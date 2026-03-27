@@ -196,7 +196,7 @@ export default function Sidebar() {
                 initial={false}
                 onMouseEnter={() => !isMobile && isSidebarCollapsed && setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                animate={isMobileSidebarOpen ? { x: 0, width: 280 } : (isMobile ? { x: -300, width: 280 } : (effectiveCollapsed ? 'collapsed' : 'expanded'))}
+                animate={isMobileSidebarOpen ? { x: 0, width: '85vw' } : (isMobile ? { x: '-100vw', width: '85vw' } : (effectiveCollapsed ? 'collapsed' : 'expanded'))}
                 variants={sidebarVariants}
                 transition={sidebarTransition}
                 className={`

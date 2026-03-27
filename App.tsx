@@ -12,10 +12,10 @@ function AppContent() {
     const { activeTab, setIsMobileSidebarOpen, isDarkMode, toggleDarkMode } = useLayout();
 
     return (
-        <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-500 overflow-hidden font-sans">
+        <div className="flex min-h-[100dvh] bg-slate-50 dark:bg-slate-900 transition-colors duration-500 font-sans">
             <Sidebar />
             
-            <div className="flex-grow flex flex-col min-w-0 h-screen overflow-hidden relative">
+            <div className="flex-grow flex flex-col min-w-0 h-[100dvh] relative overflow-hidden">
 
                 {/* Mobile Top Bar */}
                 <div className="lg:hidden sticky top-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 py-3 sm:py-4 shadow-sm pt-[env(safe-area-inset-top,12px)]">
