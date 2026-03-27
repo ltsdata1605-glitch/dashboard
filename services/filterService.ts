@@ -80,8 +80,8 @@ export function applyFiltersAndProcess(
             const xuatStatus = xuatValue.toLowerCase().includes('đã') ? 'Đã' : 'Chưa';
             if (xuatStatus !== filters.xuat) return false;
         }
-        if (filters.trangThai.length > 0 && !filters.trangThai.includes(getRowValue(row, COL.TRANG_THAI))) return false;
-        if (filters.nguoiTao.length > 0 && !filters.nguoiTao.includes(getRowValue(row, COL.NGUOI_TAO))) return false;
+        if (filters.trangThai?.length > 0 && !filters.trangThai.includes(getRowValue(row, COL.TRANG_THAI))) return false;
+        if (filters.nguoiTao?.length > 0 && !filters.nguoiTao.includes(getRowValue(row, COL.NGUOI_TAO))) return false;
         
         if (departmentMap && filters.department && filters.department.length > 0) {
             const creator = getRowValue(row, COL.NGUOI_TAO);
@@ -105,27 +105,19 @@ export function applyFiltersAndProcess(
         return (!mainStartDate || rowDate >= mainStartDate) && (!mainEndDate || rowDate <= mainEndDate);
     });
     
-    const warehouseSummary = calculateWarehouseSummary(allData, filters, productConfig);
+    const warehouseSummary = calculateWarehouseSummary(allData, filters, productConfig) || [];
     
     let finalMainPeriodData = mainPeriodData;
     let topWarehouseName = '';
 
-    if (filters.kho === 'all' && warehouseSummary.length > 0) {
-        // Find the warehouse with the highest DTQĐ
-        const topWarehouse = [...warehouseSummary].sort((a, b) => b.doanhThuQD - a.doanhThuQD)[0];
-        if (topWarehouse) {
-            topWarehouseName = topWarehouse.khoName;
-            finalMainPeriodData = mainPeriodData.filter(row => getRowValue(row, COL.KHO) === topWarehouseName);
-        }
-    }
+    // We no longer auto-filter to the top warehouse when 'all' is selected.
+    // This allows the aggregate metrics to represent the total across all warehouses.
 
     const mainResult = processDataForPeriod(finalMainPeriodData, productConfig, filters, departmentMap);
     
     const filterParts = [];
     if (filters.kho !== 'all') {
         filterParts.push(`Kho: ${filters.kho}`);
-    } else if (topWarehouseName) {
-        filterParts.push(`Kho lớn nhất: ${topWarehouseName}`);
     }
     
     if(filters.xuat !== 'all') filterParts.push(`Xuất: ${filters.xuat}`);

@@ -37,7 +37,23 @@ export const useFilterState = () => {
             try {
                 const fullSavedFilters = await dbService.getSetting<FilterState>('dashboard_global_filters_v2');
                 if (fullSavedFilters) {
-                    setFilterState(fullSavedFilters);
+                    // Safe merge with initial state to ensure no missing/null arrays
+                    setFilterState({
+                        ...initialFilterState,
+                        ...fullSavedFilters,
+                        trangThai: fullSavedFilters.trangThai || [],
+                        nguoiTao: fullSavedFilters.nguoiTao || [],
+                        department: fullSavedFilters.department || [],
+                        parent: fullSavedFilters.parent || [],
+                        industryGrid: {
+                            ...initialFilterState.industryGrid,
+                            ...(fullSavedFilters.industryGrid || {})
+                        },
+                        summaryTable: {
+                            ...initialFilterState.summaryTable,
+                            ...(fullSavedFilters.summaryTable || {})
+                        }
+                    });
                 } else {
                     const savedIndustry = await dbService.getIndustryGridFilters();
                     const savedSummary = await dbService.getSummaryTableConfig();
@@ -49,7 +65,7 @@ export const useFilterState = () => {
                         industryGrid: savedIndustry || prev.industryGrid,
                         summaryTable: savedSummary || prev.summaryTable,
                         kho: savedKho || prev.kho,
-                        department: savedDepartment || prev.department
+                        department: savedDepartment || prev.department || []
                     }));
                 }
             } catch (error) {

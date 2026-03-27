@@ -56,11 +56,11 @@ export function processSummaryTable(
         creatorsForFilter.add(creatorVal);
         productsForFilter.add(productVal);
 
-        if (filters.parent && filters.parent.length > 0 && !filters.parent.includes(parentVal)) return;
-        if (filters.summaryTable.child.length > 0 && !filters.summaryTable.child.includes(childVal)) return;
-        if (filters.summaryTable.manufacturer && filters.summaryTable.manufacturer.length > 0 && !filters.summaryTable.manufacturer.includes(manufacturerVal)) return;
-        if (filters.summaryTable.creator && filters.summaryTable.creator.length > 0 && !filters.summaryTable.creator.includes(creatorVal)) return;
-        if (filters.summaryTable.product && filters.summaryTable.product.length > 0 && !filters.summaryTable.product.includes(productVal)) return;
+        if (filters.parent?.length > 0 && !filters.parent.includes(parentVal)) return;
+        if (filters.summaryTable.child?.length > 0 && !filters.summaryTable.child.includes(childVal)) return;
+        if (filters.summaryTable.manufacturer?.length > 0 && !filters.summaryTable.manufacturer.includes(manufacturerVal)) return;
+        if (filters.summaryTable.creator?.length > 0 && !filters.summaryTable.creator.includes(creatorVal)) return;
+        if (filters.summaryTable.product?.length > 0 && !filters.summaryTable.product.includes(productVal)) return;
 
         const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
         const price = Number(getRowValue(row, COL.PRICE)) || 0;
@@ -153,7 +153,7 @@ export function calculateWarehouseSummary(
     });
 
     const uniqueKhos = [...new Set(allData.map(r => getRowValue(r, COL.KHO)).filter(Boolean))];
-    if (uniqueKhos.length <= 1) return null;
+    if (uniqueKhos.length === 0) return [];
 
     const summaryByKho: { [key: string]: any } = {};
     uniqueKhos.forEach(kho => {

@@ -96,6 +96,10 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         // isFilterProcessing is a soft signal (optional, kept for future use).
         const timer = setTimeout(() => {
             try {
+                if (!productConfig) {
+                    throw new Error("Cấu hình sản phẩm chưa được tải. Vui lòng đợi trong giây lát.");
+                }
+
                 const { processedData: result, baseFilteredData: newBaseData } = applyFiltersAndProcess(originalData, productConfig, filterState, departmentMap);
                 setProcessedData(result);
                 setBaseFilteredData(newBaseData);
@@ -109,7 +113,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 }
             } catch (error) {
                 console.error("Lỗi khi xử lý lại dữ liệu:", error);
-                setStatus({ message: "Đã xảy ra lỗi trong quá trình xử lý dữ liệu.", type: 'error', progress: 0 });
+                const errorMsg = error instanceof Error ? error.message : "Đã xảy ra lỗi trong quá trình xử lý dữ liệu.";
+                setStatus({ message: errorMsg, type: 'error', progress: 0 });
             } finally {
                 setIsFilterProcessing(false);
             }
