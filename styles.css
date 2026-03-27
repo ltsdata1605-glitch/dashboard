@@ -28,6 +28,8 @@
   body {
     @apply bg-[#f1f5f9] text-slate-900 dark:bg-slate-950 dark:text-slate-100 antialiased selection:bg-indigo-100 selection:text-indigo-700;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    min-width: 1280px;
+    overflow-x: auto;
   }
 }
 

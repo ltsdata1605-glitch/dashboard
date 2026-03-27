@@ -254,17 +254,17 @@ const IndustryGrid: React.FC = React.memo(() => {
                     </div>
                 )}
 
-                <div className="flex flex-col xl:flex-row gap-5 items-start">
+                <div className="flex flex-row gap-5 items-start">
 
                     {/* ══════ LEFT 50%: CARD GRID ══════ */}
-                    <div className="w-full xl:w-1/2 shrink-0">
+                    <div className="w-1/2 shrink-0">
                         {currentView.data.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-14 bg-slate-50/50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
                                 <Icon name="search-x" size={8} className="text-slate-300 dark:text-slate-700 mb-3" />
                                 <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Không có dữ liệu</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-4 gap-2">
+                            <div className="grid grid-cols-4 gap-2">
                                 {currentView.data.map(({ name, revenue, quantity, icon, color }) => {
                                     const pct = currentView.totalRevenue > 0
                                         ? (revenue / currentView.totalRevenue * 100)
@@ -316,7 +316,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                     </div>
 
                     {/* ══════ RIGHT 50%: PIE CHART ══════ */}
-                    <div className="w-full xl:w-1/2 flex flex-col" style={{ minHeight: 340 }}>
+                    <div className="w-1/2 flex flex-col" style={{ minHeight: 340 }}>
                         {/* Header */}
                         <div className="flex items-center justify-between mb-2 px-1">
                             <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 dark:text-slate-500">

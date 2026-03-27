@@ -157,7 +157,7 @@ export default function DashboardView() {
 
     return (
         <div className="w-full">
-            <div className="max-w-[1200px] mx-auto p-4 md:p-6 lg:p-8 w-full">
+            <div className="w-[1200px] mx-auto p-8">
                 <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx, .xls" onChange={(e) => e.target.files?.[0] && handleFileProcessing(e.target.files[0])} />
                 <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx, .xls" multiple onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
 
@@ -207,7 +207,7 @@ export default function DashboardView() {
                                             >
                                                 <div className="flex items-center gap-2 hide-on-export">
                                                     {/* Apple-style Toolbar for Kho Tạo */}
-                                                    <div className="hidden md:flex max-w-[300px] lg:max-w-[400px] overflow-x-auto hide-scrollbar mr-2">
+                                                    <div className="flex max-w-[400px] overflow-x-auto hide-scrollbar mr-2">
                                                         <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                                                             {['all', ...(uniqueFilterOptions?.kho || [])].map(val => (
                                                                 <button 

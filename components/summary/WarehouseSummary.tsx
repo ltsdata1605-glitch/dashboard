@@ -188,7 +188,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                 >
                     <div className="flex items-center space-x-2 hide-on-export">
                         {/* Apple-style Toolbar for Trạng Thái Xuất */}
-                        <div className="hidden sm:inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 mr-2">
+                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 mr-2">
                             {['all', 'Đã', 'Chưa'].map(val => (
                                 <button 
                                     key={val}

@@ -56,19 +56,11 @@ const secondaryItems = [
 export default function Sidebar() {
     const { isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, activeTab, setActiveTab } = useLayout();
     const [isHovered, setIsHovered] = useState(false);
-    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
+    const [isMobile, setIsMobile] = useState(false);
 
-    // Update isMobile on resize and close mobile sidebar on resize to desktop
+    // Desktop-only logic: close mobile sidebar correctly if it was ever opened
     useEffect(() => {
-        const handleResize = () => {
-            const width = window.innerWidth;
-            setIsMobile(width < 1024);
-            if (width >= 1024) {
-                setIsMobileSidebarOpen(false);
-            }
-        };
-        window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
+        setIsMobileSidebarOpen(false);
     }, [setIsMobileSidebarOpen]);
 
     const sidebarVariants = {
