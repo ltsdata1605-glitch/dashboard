@@ -17,6 +17,7 @@ interface FileUploadLogicProps {
     setFileInfo: (info: { filename: string; savedAt: string } | null) => void;
     setAppState: (state: AppState) => void;
     setStatus: (status: Status) => void;
+    setFilterState?: (filters: any) => void;
 }
 
 export const useFileUploadLogic = ({
@@ -27,7 +28,8 @@ export const useFileUploadLogic = ({
     setProcessedData,
     setFileInfo,
     setAppState,
-    setStatus
+    setStatus,
+    setFilterState
 }: FileUploadLogicProps) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isClearingDepartments, setIsClearingDepartments] = useState(false);
@@ -120,6 +122,13 @@ export const useFileUploadLogic = ({
                     setStatus({ message: 'Đang lưu dữ liệu...', type: 'info', progress: 95 });
                     await saveSalesData(payload, file.name);
                     setFileInfo({ filename: file.name, savedAt: new Date().toLocaleString('vi-VN') });
+                    
+                    // Reset filters to initial state to avoid stale filters from previous data
+                    if (setFilterState) {
+                        const { initialFilterState } = await import('./useFilterState');
+                        setFilterState(initialFilterState);
+                    }
+                    
                     setOriginalData(payload);
                     setStatus({ message: 'Đang tổng hợp báo cáo...', type: 'info', progress: 98 });
                     setAppState('dashboard');

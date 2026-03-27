@@ -54,7 +54,8 @@ export const useDashboardLogic = () => {
         setProcessedData,
         setFileInfo,
         setAppState,
-        setStatus
+        setStatus,
+        setFilterState
     });
 
     // 6. Export Logic
