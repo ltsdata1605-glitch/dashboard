@@ -143,6 +143,7 @@ export async function processShiftFile(file: File): Promise<{ map: DepartmentMap
                     }
                     
                     const userId = row[1];
+                    const userName = row[2]; // Potential separate name column
 
                     if (userId && currentDepartment) {
                         const userIdStr = String(userId).trim();
@@ -151,9 +152,14 @@ export async function processShiftFile(file: File): Promise<{ map: DepartmentMap
                         const cleanId = idMatch ? idMatch[1] : userIdStr.split(' - ')[0].trim();
                         
                         if (cleanId) {
+                             // If userIdStr is just the ID and we have row[2] as a string, combine them
+                             let storedName = userIdStr;
+                             if (userIdStr === cleanId && userName && typeof userName === 'string' && userName.trim() !== '') {
+                                 storedName = `${cleanId} - ${userName.trim()}`;
+                             }
+
                              // Always store the full string to preserve name information
-                             // Previously this was conditional on ' - ', which caused issues with non-standard separators
-                             const storedValue = `${currentDepartment};;${userIdStr}`;
+                             const storedValue = `${currentDepartment};;${storedName}`;
                              map[cleanId] = storedValue;
                              departments.add(currentDepartment);
                         }

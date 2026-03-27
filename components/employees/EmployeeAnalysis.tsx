@@ -5,9 +5,11 @@ import { useEmployeeAnalysisLogic } from '../../hooks/useEmployeeAnalysisLogic';
 import { useEmployeeAnalysisData } from '../../hooks/useEmployeeAnalysisData';
 import { useEmployeeAnalysisTabs } from '../../hooks/useEmployeeAnalysisTabs';
 import { Icon } from '../common/Icon';
+import { SectionHeader } from '../common/SectionHeader';
 import EmployeeAnalysisTabs from './EmployeeAnalysisTabs';
 import EmployeeAnalysisModals from './EmployeeAnalysisModals';
 import EmployeeAnalysisContent from './EmployeeAnalysisContent';
+import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
 
 export const ICON_OPTIONS = ['bar-chart-3', 'trophy', 'target', 'trending-up', 'star'];
 
@@ -31,11 +33,11 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
     const warehouseFilterRef = useRef<HTMLDivElement>(null);
 
     const defaultTabs = [
-        { id: 'topSellers', label: 'Top', icon: 'award' },
-        { id: 'performanceTable', label: 'Hiệu Suất', icon: 'bar-chart-horizontal' },
-        { id: 'industryAnalysis', label: 'Khai Thác', icon: 'gantt-chart-square' },
-        { id: 'headToHead', label: '7 Ngày', icon: 'swords' },
-        { id: 'summarySynthesis', label: 'Tổng Hợp', icon: 'sigma' },
+        { id: 'topSellers', label: 'Top', icon: 'award', color: 'indigo' },
+        { id: 'performanceTable', label: 'Hiệu Suất', icon: 'bar-chart-horizontal', color: 'emerald' },
+        { id: 'industryAnalysis', label: 'Khai Thác', icon: 'gantt-chart-square', color: 'amber' },
+        { id: 'headToHead', label: '7 Ngày', icon: 'swords', color: 'rose' },
+        { id: 'summarySynthesis', label: 'Tổng Hợp', icon: 'sigma', color: 'purple' },
     ];
 
     // Use Custom Hooks
@@ -72,17 +74,18 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         allSubgroups,
         allManufacturers,
         allDepartments,
-        allWarehouses,
         selectedDepartments,
         setSelectedDepartments,
-        selectedWarehouses,
-        setSelectedWarehouses,
         deptSearchTerm,
         setDeptSearchTerm,
-        warehouseSearchTerm,
-        setWarehouseSearchTerm,
+        hideZeroRevenue,
+        setHideZeroRevenue,
         filteredEmployeeAnalysisData
     } = useEmployeeAnalysisData();
+
+    // Pull warehouse state from global context
+    const { filterState, handleFilterChange, uniqueFilterOptions } = useDashboardContext();
+    const allWarehouses = uniqueFilterOptions?.kho || [];
 
     const exportRef = useRef<HTMLDivElement>(null);
     const industryAnalysisTabRef = useRef<HTMLDivElement>(null);
@@ -168,17 +171,68 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
     return (
         <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 rounded-none mb-8 flex flex-col flex-grow transition-all duration-300">
             {/* BEGIN: Header Section */}
-            <header className="px-6 py-5 flex justify-between items-center border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400 flex items-center justify-center shadow-sm">
-                        <Icon name="users" size={6} />
-                    </div>
-                    <div>
-                        <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white uppercase">Phân tích nhân viên</h1>
-                        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">Đánh giá hiệu quả khai thác và thi đua</p>
+            <SectionHeader
+                title="Phân tích nhân viên"
+                icon="users"
+                subtitle="Đánh giá hiệu quả khai thác và thi đua"
+            >
+                <div className="flex items-center gap-2 hide-on-export">
+                    <EmployeeAnalysisFilters 
+                        allWarehouses={allWarehouses}
+                        globalKho={filterState.kho}
+                        handleFilterChange={handleFilterChange}
+                        isWarehouseFilterOpen={isWarehouseFilterOpen}
+                        setIsWarehouseFilterOpen={setIsWarehouseFilterOpen}
+                        warehouseFilterRef={warehouseFilterRef}
+                        allDepartments={allDepartments}
+                        selectedDepartments={selectedDepartments}
+                        setSelectedDepartments={setSelectedDepartments}
+                        deptSearchTerm={deptSearchTerm}
+                        setDeptSearchTerm={setDeptSearchTerm}
+                        isDeptFilterOpen={isDeptFilterOpen}
+                        setIsDeptFilterOpen={setIsDeptFilterOpen}
+                        deptFilterRef={deptFilterRef}
+                        hideZeroRevenue={hideZeroRevenue}
+                        setHideZeroRevenue={setHideZeroRevenue}
+                    />
+                    <div ref={settingsRef} className="relative">
+                        <button 
+                            onClick={() => setIsSettingsOpen(prev => !prev)} 
+                            title="Tùy chọn hiển thị" 
+                            className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            <Icon name="settings-2" size={5}/>
+                        </button>
+                        {isSettingsOpen && (
+                            <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-3 border border-slate-100 dark:border-slate-700 z-[200]">
+                                <h4 className="font-bold text-sm mb-3 px-2 pt-1 text-slate-800 dark:text-slate-100">Hiển thị màn hình thi đua</h4>
+                                <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
+                                    {allAvailableTabs.map(tab => (
+                                        <label key={tab.id} htmlFor={`vis-toggle-${tab.id}`} className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                                            <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                                                <div className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500">
+                                                    <Icon name={tab.icon} size={3.5}/>
+                                                </div>
+                                                {tab.label || (tab as any).name}
+                                            </span>
+                                            <div className="relative inline-flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={visibleTabs.has(tab.id)}
+                                                    onChange={() => handleToggleTabVisibility(tab.id)}
+                                                    className="sr-only peer"
+                                                    id={`vis-toggle-${tab.id}`}
+                                                />
+                                                <div className="w-9 h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-500"></div>
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </header>
+            </SectionHeader>
             {/* END: Header Section */}
             
             <EmployeeAnalysisTabs
@@ -190,26 +244,6 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                 visibleTabs={visibleTabs}
                 handleToggleTabVisibility={handleToggleTabVisibility}
                 allAvailableTabs={allAvailableTabs}
-                isSettingsOpen={isSettingsOpen}
-                setIsSettingsOpen={setIsSettingsOpen}
-                settingsRef={settingsRef}
-                // Pass filter props to tabs
-                allWarehouses={allWarehouses}
-                selectedWarehouses={selectedWarehouses}
-                setSelectedWarehouses={setSelectedWarehouses}
-                warehouseSearchTerm={warehouseSearchTerm}
-                setWarehouseSearchTerm={setWarehouseSearchTerm}
-                isWarehouseFilterOpen={isWarehouseFilterOpen}
-                setIsWarehouseFilterOpen={setIsWarehouseFilterOpen}
-                warehouseFilterRef={warehouseFilterRef}
-                allDepartments={allDepartments}
-                selectedDepartments={selectedDepartments}
-                setSelectedDepartments={setSelectedDepartments}
-                deptSearchTerm={deptSearchTerm}
-                setDeptSearchTerm={setDeptSearchTerm}
-                isDeptFilterOpen={isDeptFilterOpen}
-                setIsDeptFilterOpen={setIsDeptFilterOpen}
-                deptFilterRef={deptFilterRef}
             />
             
             <div className="flex-grow p-6">

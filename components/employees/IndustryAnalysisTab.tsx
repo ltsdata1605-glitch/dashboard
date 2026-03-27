@@ -3,7 +3,6 @@ import React, { useMemo, useState, forwardRef, useEffect, useRef } from 'react';
 import { formatCurrency, abbreviateName, formatQuantityWithFraction, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import type { ExploitationData } from '../../types';
-import { getIndustryAnalysis } from '../../services/aiService';
 import { getThemeMap, saveThemeMap, getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../services/dbService';
 
 
@@ -25,12 +24,16 @@ const HeaderCell: React.FC<{
     className?: string;
     onSort: (key: SortConfig['key']) => void;
     sortConfig: SortConfig;
-}> = ({ label, sortKey, onSort, sortConfig, className }) => {
+    colorConfig?: { bg: string; text: string };
+}> = ({ label, sortKey, onSort, sortConfig, className, colorConfig }) => {
     const isActive = sortConfig.key === sortKey;
+    const bgClass = colorConfig ? colorConfig.bg : (isActive ? 'bg-indigo-50/80 dark:bg-indigo-900/20' : 'bg-transparent');
+    const textClass = colorConfig ? colorConfig.text : (isActive ? 'text-indigo-700 dark:text-indigo-400' : 'text-[#46505e] dark:text-slate-300');
+    
     return (
         <th
             onClick={() => onSort(sortKey)}
-            className={`px-3 py-2 text-[11px] font-semibold text-[#46505e] dark:text-slate-300 cursor-pointer select-none text-center uppercase tracking-wider border-b border-slate-300 dark:border-slate-700 ${isActive ? 'bg-indigo-50/80 dark:bg-indigo-900/20 shadow-[inset_0_-2px_0_0_#4f46e5]' : 'hover:bg-slate-200 dark:hover:bg-slate-700'} transition-colors ${className || ''}`}
+            className={`px-3 py-2 text-[13px] font-bold cursor-pointer select-none text-center uppercase tracking-wider border-b-4 border-slate-200 border-r border-slate-300 dark:border-slate-700 ${bgClass} ${textClass} transition-colors ${className || ''}`}
         >
             <div className="flex items-center justify-center gap-1">
                 {label}
@@ -286,54 +289,54 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     const renderDetailModeCells = (rowData: any) => (
         <>
             {visibleGroups.has('doanhThu') && <>
-                <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(rowData.doanhThuThuc)}</td>
-                <td className="px-3 py-1 text-center text-sm font-bold text-slate-800 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(rowData.doanhThuQD)}</td>
-                <td className="px-3 py-1 text-center text-sm font-black text-indigo-600 dark:text-indigo-400 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatPct(rowData.hieuQuaQD)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(rowData.doanhThuThuc)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-bold text-slate-800 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(rowData.doanhThuQD)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-black text-indigo-600 dark:text-indigo-400 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatPct(rowData.hieuQuaQD)}</td>
             </>}
             {visibleGroups.has('spChinh') && <>
-                <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slICT)}</td>
-                <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slCE_main)}</td>
-                <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slGiaDung_main)}</td>
-                <td className="px-3 py-1 text-center text-sm font-black text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-800/50 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slSPChinh_Tong)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slICT)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slCE_main)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slGiaDung_main)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-800/50 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slSPChinh_Tong)}</td>
             </>}
             {visibleGroups.has('baoHiem') && <>
-                <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slBaoHiem)}</td>
-                <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(rowData.doanhThuBaoHiem)}</td>
-                <td className="px-3 py-1 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slBaoHiem)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(rowData.doanhThuBaoHiem)}</td>
+                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                     <span className={getHeatmapClass(rowData.percentBaoHiem, 40)}>{formatPct(rowData.percentBaoHiem)}</span>
                 </td>
             </>}
             {visibleGroups.has('sim') && <>
-                <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slSim)}</td>
-                <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(rowData.doanhThuSim)}</td>
-                <td className="px-3 py-1 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slSim)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(rowData.doanhThuSim)}</td>
+                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                     <span className={getHeatmapClass(rowData.percentSimKT, 30)}>{formatPct(rowData.percentSimKT)}</span>
                 </td>
             </>}
             {visibleGroups.has('dongHo') && <>
-                <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slDongHo)}</td>
-                <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(rowData.doanhThuDongHo)}</td>
-                <td className="px-3 py-1 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slDongHo)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(rowData.doanhThuDongHo)}</td>
+                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                     <span className={getHeatmapClass(rowData.percentDongHoKT, 20)}>{formatPct(rowData.percentDongHoKT)}</span>
                 </td>
             </>}
             {visibleGroups.has('phuKien') && <>
-                <td className="px-3 py-1 text-center text-sm text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slCamera)}</td>
-                <td className="px-3 py-1 text-center text-sm text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slLoa)}</td>
-                <td className="px-3 py-1 text-center text-sm text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slPinSDP)}</td>
-                <td className="px-3 py-1 text-center text-sm text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slTaiNgheBLT)}</td>
-                <td className="px-3 py-1 text-center text-sm font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(rowData.doanhThuPhuKien)}</td>
-                <td className="px-3 py-1 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slCamera)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slLoa)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slPinSDP)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slTaiNgheBLT)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(rowData.doanhThuPhuKien)}</td>
+                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                     <span className={getHeatmapClass(rowData.percentPhuKienKT, 10)}>{formatPct(rowData.percentPhuKienKT)}</span>
                 </td>
             </>}
             {visibleGroups.has('giaDung') && <>
-                <td className="px-3 py-1 text-center text-sm text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slMayLocNuoc)}</td>
-                <td className="px-3 py-1 text-center text-sm text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slNoiCom)}</td>
-                <td className="px-3 py-1 text-center text-sm text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slNoiChien)}</td>
-                <td className="px-3 py-1 text-center text-sm text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(rowData.slQuatDien)}</td>
-                <td className="px-3 py-1 text-center text-sm font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(rowData.doanhThuGiaDung)}</td>
-                <td className="px-3 py-1 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slMayLocNuoc)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slNoiCom)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slNoiChien)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(rowData.slQuatDien)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(rowData.doanhThuGiaDung)}</td>
+                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                     <span className={getHeatmapClass(rowData.percentGiaDungKT, 30)}>{formatPct(rowData.percentGiaDungKT)}</span>
                 </td>
             </>}
@@ -356,7 +359,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     ];
 
     return (
-        <div ref={ref} className="overflow-hidden flex flex-col h-full">
+        <div ref={ref} className="overflow-hidden flex flex-col h-full rounded-none border-2 border-primary-400 dark:border-slate-600 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] bg-white dark:bg-slate-900">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-4">
@@ -413,58 +416,71 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
 
             <div className="overflow-x-auto custom-scrollbar flex-grow p-0">
                 <table className="w-full text-left border-collapse">
-                     <thead className="sticky top-0 z-30 bg-[#dee6ed] dark:bg-slate-800 backdrop-blur-sm">
+                     <thead className="sticky top-0 z-30 backdrop-blur-sm bg-white dark:bg-slate-900 border-b-4 border-slate-200">
                         {viewMode === 'detail' ? (
                             <>
                                 <tr>
-                                    <th rowSpan={2} onClick={() => handleSort('name')} className={`px-3 py-2 text-left text-[11px] font-semibold text-[#46505e] dark:text-slate-300 cursor-pointer select-none min-w-[140px] align-bottom sticky left-0 bg-[#dee6ed] dark:bg-slate-800 z-40 border-b border-slate-300 dark:border-slate-700 uppercase tracking-wider`}>Nhân Viên</th>
-                                    {detailQuickFilters.filter(f => visibleGroups.has(f.key)).map(f => (
-                                        <th key={f.key} colSpan={detailHeaderGroups[f.key].colSpan} className="px-3 py-2 text-center text-[11px] font-semibold text-[#46505e] dark:text-slate-300 border-b border-slate-300 dark:border-slate-700 uppercase tracking-wider">
-                                            <span className="bg-white/50 dark:bg-slate-800 px-3 py-1 rounded-full shadow-sm border border-slate-100 dark:border-slate-700">
-                                                {detailHeaderGroups[f.key].label}
-                                            </span>
+                                    <th rowSpan={2} onClick={() => handleSort('name')} className="px-4 py-2 text-left text-sm font-bold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-slate-900 border-b-4 border-teal-200 border-r border-slate-300 cursor-pointer select-none min-w-[140px] align-bottom sticky left-0 z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        NHÂN VIÊN
+                                    </th>
+                                    {detailQuickFilters.filter(f => visibleGroups.has(f.key)).map((f, gIdx) => (
+                                        <th key={f.key} colSpan={detailHeaderGroups[f.key].colSpan} className="px-3 py-1.5 text-center text-[11px] font-bold text-slate-500 bg-slate-50 border-b border-slate-200 border-r border-slate-300">
+                                            {detailHeaderGroups[f.key].label}
                                         </th>
                                     ))}
                                 </tr>
                                 <tr>
-                                    {detailQuickFilters.filter(f => visibleGroups.has(f.key)).flatMap(f => detailHeaderGroups[f.key].subHeaders).map(subHeader => <HeaderCell key={subHeader.key} label={subHeader.label} sortKey={subHeader.key} onSort={handleSort} sortConfig={sortConfig}/>)}
+                                    {detailQuickFilters.filter(f => visibleGroups.has(f.key)).flatMap((f, gIdx) => {
+                                        const colorConfigs = [
+                                            { bg: 'bg-sky-50', text: 'text-sky-700' },
+                                            { bg: 'bg-emerald-50', text: 'text-emerald-700' },
+                                            { bg: 'bg-amber-50', text: 'text-amber-700' },
+                                            { bg: 'bg-rose-50', text: 'text-rose-700' }
+                                        ];
+                                        return detailHeaderGroups[f.key].subHeaders.map((subHeader, sIdx) => (
+                                            <HeaderCell 
+                                                key={subHeader.key} 
+                                                label={subHeader.label} 
+                                                sortKey={subHeader.key} 
+                                                onSort={handleSort} 
+                                                sortConfig={sortConfig}
+                                                colorConfig={colorConfigs[sIdx % colorConfigs.length]}
+                                            />
+                                        ));
+                                    })}
                                 </tr>
                             </>
                         ) : (
                             <>
                                  <tr>
-                                    <th rowSpan={2} onClick={() => handleSort('name')} className={`px-3 py-2 text-left text-[11px] font-semibold text-[#46505e] dark:text-slate-300 cursor-pointer select-none min-w-[140px] align-bottom sticky left-0 bg-[#dee6ed] dark:bg-slate-800 z-40 border-b border-slate-300 dark:border-slate-700 uppercase tracking-wider`}>Nhân Viên</th>
-                                    <th colSpan={4} className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-widest text-[#46505e] dark:text-slate-300 border-b border-slate-300 dark:border-slate-700">
-                                        <span className="bg-white/50 dark:bg-slate-800 px-3 py-1 rounded-full shadow-sm border border-slate-100 dark:border-slate-700">
-                                            SỐ LƯỢNG SẢN PHẨM CHÍNH
-                                        </span>
+                                    <th rowSpan={2} onClick={() => handleSort('name')} className="px-4 py-2 text-left text-sm font-bold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-slate-900 border-b-4 border-teal-200 border-r border-slate-300 cursor-pointer select-none min-w-[140px] align-bottom sticky left-0 z-40 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        NHÂN VIÊN
+                                    </th>
+                                    <th colSpan={4} className="px-3 py-1.5 text-center text-[11px] font-bold text-slate-500 bg-slate-50 border-b border-slate-200 border-r border-slate-300">
+                                        SỐ LƯỢNG SẢN PHẨM CHÍNH
                                     </th>
                                     {viewMode === 'efficiency' ? (
-                                        <th colSpan={6} className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-widest text-[#46505e] dark:text-slate-300 border-b border-slate-300 dark:border-slate-700">
-                                            <span className="bg-white/50 dark:bg-slate-800 px-3 py-1 rounded-full shadow-sm border border-slate-100 dark:border-slate-700">
-                                                HIỆU QUẢ KHAI THÁC BÁN KÈM
-                                            </span>
-                                        </th>
+                                        <th colSpan={6} className="px-3 py-1.5 text-center text-[11px] font-bold text-slate-500 bg-slate-50 border-b border-slate-200 border-r border-slate-300">HIỆU QUẢ KHAI THÁC BÁN KÈM</th>
                                     ) : viewMode === 'efficiency_dt_sl' ? (
-                                        <th colSpan={5} className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-widest text-[#46505e] dark:text-slate-300 border-b border-slate-300 dark:border-slate-700">
-                                            <span className="bg-white/50 dark:bg-slate-800 px-3 py-1 rounded-full shadow-sm border border-slate-100 dark:border-slate-700">
-                                                HIỆU QUẢ DOANH THU
-                                            </span>
-                                        </th>
+                                        <th colSpan={5} className="px-3 py-1.5 text-center text-[11px] font-bold text-slate-500 bg-slate-50 border-b border-slate-200 border-r border-slate-300">HIỆU QUẢ DOANH THU</th>
                                     ) : (
-                                        <th colSpan={5} className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-widest text-[#46505e] dark:text-slate-300 border-b border-slate-300 dark:border-slate-700">
-                                            <span className="bg-white/50 dark:bg-slate-800 px-3 py-1 rounded-full shadow-sm border border-slate-100 dark:border-slate-700">
-                                                HIỆU QUẢ SỐ LƯỢNG
-                                            </span>
-                                        </th>
+                                        <th colSpan={5} className="px-3 py-1.5 text-center text-[11px] font-bold text-slate-500 bg-slate-50 border-b border-slate-200 border-r border-slate-300">HIỆU QUẢ SỐ LƯỢNG</th>
                                     )}
                                 </tr>
                                 <tr>
-                                    <HeaderCell label="ICT" sortKey="slICT" onSort={handleSort} sortConfig={sortConfig} />
-                                    <HeaderCell label="CE" sortKey="slCE_main" onSort={handleSort} sortConfig={sortConfig} />
-                                    <HeaderCell label="ĐGD" sortKey="slGiaDung_main" onSort={handleSort} sortConfig={sortConfig} />
-                                    <HeaderCell label="Tổng" sortKey="slSPChinh_Tong" onSort={handleSort} sortConfig={sortConfig} />
-                                    {(viewMode === 'efficiency' ? efficiencyKtHeaders : viewMode === 'efficiency_dt_sl' ? efficiencyDtHeaders : efficiencyQuantityHeaders).map(h => <HeaderCell key={h.key} label={h.label} sortKey={h.key as SortConfig['key']} onSort={handleSort} sortConfig={sortConfig} />)}
+                                    <HeaderCell label="ICT" sortKey="slICT" onSort={handleSort} sortConfig={sortConfig} colorConfig={{bg: 'bg-sky-50', text: 'text-sky-700'}} />
+                                    <HeaderCell label="CE" sortKey="slCE_main" onSort={handleSort} sortConfig={sortConfig} colorConfig={{bg: 'bg-emerald-50', text: 'text-emerald-700'}} />
+                                    <HeaderCell label="ĐGD" sortKey="slGiaDung_main" onSort={handleSort} sortConfig={sortConfig} colorConfig={{bg: 'bg-amber-50', text: 'text-amber-700'}} />
+                                    <HeaderCell label="Tổng" sortKey="slSPChinh_Tong" onSort={handleSort} sortConfig={sortConfig} colorConfig={{bg: 'bg-slate-50', text: 'text-slate-700'}} />
+                                    {(viewMode === 'efficiency' ? efficiencyKtHeaders : viewMode === 'efficiency_dt_sl' ? efficiencyDtHeaders : efficiencyQuantityHeaders).map((h, i) => {
+                                        const colorConfigs = [
+                                            { bg: 'bg-sky-50', text: 'text-sky-700' },
+                                            { bg: 'bg-emerald-50', text: 'text-emerald-700' },
+                                            { bg: 'bg-amber-50', text: 'text-amber-700' },
+                                            { bg: 'bg-rose-50', text: 'text-rose-700' }
+                                        ];
+                                        return <HeaderCell key={h.key} label={h.label} sortKey={h.key as SortConfig['key']} onSort={handleSort} sortConfig={sortConfig} colorConfig={colorConfigs[i % colorConfigs.length]} />;
+                                    })}
                                 </tr>
                             </>
                         )}
@@ -486,76 +502,79 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                             return (
                             <React.Fragment key={dept}>
                                 {showDeptHeaders && (
-                                    <tr className={deptColor}>
-                                        <td colSpan={100} className="px-3 py-1 text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 sticky left-0 z-10">
-                                            <div className="flex items-center gap-2"><Icon name="users" size={3} /> {dept}</div>
+                                    <tr>
+                                        <td colSpan={100} className="px-3 py-1.5 border-y border-slate-100 dark:border-slate-700/50 sticky left-0 z-10">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2 h-3.5 rounded-full flex-shrink-0" style={{background: ['#10b981','#3b82f6','#a855f7','#f59e0b','#f43f5e','#0ea5e9','#14b8a6','#f97316'][deptIdx % 8]}} />
+                                                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{dept} — {(employees as any[]).length} người</span>
+                                            </div>
                                         </td>
                                     </tr>
                                 )}
-                                {(employees as (ExploitationData & { slSPChinh_Tong: number, belowAverageCount: number })[]).map((employee, index) => {
-                                    const medals = ['🥇', '🥈', '🥉'];
+                                 {(employees as (ExploitationData & { slSPChinh_Tong: number, belowAverageCount: number })[]).map((employee, index) => {
                                     const rankIndex = (processedData[dept] as any[]).findIndex(e => e.name === employee.name);
-                                    const medal = rankIndex < 3 ? medals[rankIndex] : null;
-                                    let rankDisplay = medal ? <span className="text-lg w-6 text-center inline-block">{medal}</span> : <span className="text-xs w-6 text-center inline-block text-slate-400 font-bold">#{rankIndex + 1}</span>;
+                                    let rankDisplay = rankIndex < 3 
+                                        ? <span className="text-lg w-6 text-center inline-block">{['🥇', '🥈', '🥉'][rankIndex]}</span> 
+                                        : <span className="text-[13px] w-6 text-center inline-block text-slate-500 font-bold">#{rankIndex + 1}</span>;
 
                                     return (
-                                        <tr key={employee.name} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
-                                            <td className="px-3 py-1 text-left sticky left-0 bg-white dark:bg-slate-900 z-20 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/30 transition-colors border-r border-slate-50 dark:border-slate-800/50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-200 dark:border-slate-800">
+                                        <tr key={employee.name} className={`group transition-colors hover:bg-teal-50/50 dark:hover:bg-slate-800 ${index % 2 === 0 ? 'bg-white dark:bg-slate-900 border-b border-slate-50' : 'bg-slate-50/30 dark:bg-slate-800/20 border-b border-slate-50'}`}>
+                                            <td className="px-3 py-2 text-left sticky left-0 bg-inherit z-20 group-hover:brightness-95 transition-all border-r border-slate-300 dark:border-slate-800/50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-100 dark:border-slate-800">
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex flex-col items-center justify-center min-w-[32px]">
                                                         {rankDisplay}
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 transition-colors truncate max-w-[140px]">{abbreviateName(employee.name)}</span>
+                                                        <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 group-hover:text-primary-600 transition-colors truncate max-w-[140px]">{abbreviateName(employee.name)}</span>
                                                     </div>
                                                 </div>
                                             </td>
                                             {viewMode === 'detail' ? renderDetailModeCells(employee) : viewMode === 'efficiency' ? (
                                                 <>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slICT)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slCE_main)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slGiaDung_main)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum((employee as any).slSPChinh_Tong)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-black text-rose-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{((employee as any).belowAverageCount) > 0 ? (employee as any).belowAverageCount : '-'}</td>
-                                                    <td className="px-3 py-1 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slICT)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slCE_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slGiaDung_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum((employee as any).slSPChinh_Tong)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-black text-rose-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{((employee as any).belowAverageCount) > 0 ? (employee as any).belowAverageCount : '-'}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                                                         <span className={getHeatmapClass(employee.percentBaoHiem, 40)}>{formatPct(employee.percentBaoHiem)}</span>
                                                     </td>
-                                                    <td className="px-3 py-1 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                                                    <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                                                         <span className={getHeatmapClass((employee as any).percentSimKT, 30)}>{formatPct((employee as any).percentSimKT)}</span>
                                                     </td>
-                                                    <td className="px-3 py-1 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                                                    <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                                                         <span className={getHeatmapClass((employee as any).percentPhuKienKT, 10)}>{formatPct((employee as any).percentPhuKienKT)}</span>
                                                     </td>
-                                                    <td className="px-3 py-1 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                                                    <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                                                         <span className={getHeatmapClass((employee as any).percentDongHoKT, 20)}>{formatPct((employee as any).percentDongHoKT)}</span>
                                                     </td>
-                                                    <td className="px-3 py-1 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                                                    <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                                                         <span className={getHeatmapClass((employee as any).percentGiaDungKT, 30)}>{formatPct((employee as any).percentGiaDungKT)}</span>
                                                     </td>
                                                 </>
                                             ) : viewMode === 'efficiency_dt_sl' ? (
                                                  <>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slICT)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slCE_main)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slGiaDung_main)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum((employee as any).slSPChinh_Tong)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(employee.doanhThuSim)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(employee.doanhThuDongHo)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(employee.doanhThuBaoHiem)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(employee.doanhThuPhuKien)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(employee.doanhThuGiaDung)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slICT)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slCE_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slGiaDung_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum((employee as any).slSPChinh_Tong)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(employee.doanhThuSim)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(employee.doanhThuDongHo)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(employee.doanhThuBaoHiem)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(employee.doanhThuPhuKien)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(employee.doanhThuGiaDung)}</td>
                                                 </>
                                             ) : ( // efficiency_quantity
                                                 <>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slICT)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slCE_main)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-500 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slGiaDung_main)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum((employee as any).slSPChinh_Tong)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slSim)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slDongHo)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slBaoHiem)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slPhuKien)}</td>
-                                                    <td className="px-3 py-1 text-center text-sm font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(employee.slGiaDung)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slICT)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slCE_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slGiaDung_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum((employee as any).slSPChinh_Tong)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slSim)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slDongHo)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slBaoHiem)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slPhuKien)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(employee.slGiaDung)}</td>
                                                 </>
                                             )}
                                         </tr>
@@ -564,52 +583,52 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                 {Object.keys(processedData).length > 1 && groupTotals[dept] && (
                                     <tr className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 font-bold">
                                         <td className="px-3 py-2 text-left text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest sticky left-0 bg-slate-50 dark:bg-slate-800 z-20 border-b border-slate-200 dark:border-slate-700">Tổng Nhóm</td>
-                                        {viewMode === 'detail' ? renderDetailModeCells(groupTotals[dept]) : viewMode === 'efficiency' ? (
+                                         {viewMode === 'detail' ? renderDetailModeCells(groupTotals[dept]) : viewMode === 'efficiency' ? (
                                             <>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slICT)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slCE_main)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slGiaDung_main)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-800 dark:text-white tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slSPChinh_Tong)}</td>
-                                                <td className="px-3 py-2 text-center border-b border-slate-200 dark:border-slate-800"></td>
-                                                <td className="px-3 py-2 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slICT)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slCE_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slGiaDung_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-800 dark:text-white tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slSPChinh_Tong)}</td>
+                                                <td className="px-3 py-2 text-center border-b border-slate-100 dark:border-slate-800 border-r border-slate-50"></td>
+                                                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                                                     <span className={getHeatmapClass(groupTotals[dept].percentBaoHiem, 40)}>{formatPct(groupTotals[dept].percentBaoHiem)}</span>
                                                 </td>
-                                                <td className="px-3 py-2 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                                                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                                                     <span className={getHeatmapClass(groupTotals[dept].percentSimKT, 30)}>{formatPct(groupTotals[dept].percentSimKT)}</span>
                                                 </td>
-                                                <td className="px-3 py-2 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                                                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                                                     <span className={getHeatmapClass(groupTotals[dept].percentPhuKienKT, 10)}>{formatPct(groupTotals[dept].percentPhuKienKT)}</span>
                                                 </td>
-                                                <td className="px-3 py-2 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                                                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                                                     <span className={getHeatmapClass(groupTotals[dept].percentDongHoKT, 20)}>{formatPct(groupTotals[dept].percentDongHoKT)}</span>
                                                 </td>
-                                                <td className="px-3 py-2 text-center text-sm border-b border-slate-200 dark:border-slate-800">
+                                                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
                                                     <span className={getHeatmapClass(groupTotals[dept].percentGiaDungKT, 30)}>{formatPct(groupTotals[dept].percentGiaDungKT)}</span>
                                                 </td>
                                             </>
                                         ) : viewMode === 'efficiency_dt_sl' ? (
                                             <>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slICT)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slCE_main)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slGiaDung_main)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-800 dark:text-white tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slSPChinh_Tong)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(groupTotals[dept].doanhThuSim)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(groupTotals[dept].doanhThuDongHo)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(groupTotals[dept].doanhThuBaoHiem)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(groupTotals[dept].doanhThuPhuKien)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatC(groupTotals[dept].doanhThuGiaDung)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slICT)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slCE_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slGiaDung_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-800 dark:text-white tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slSPChinh_Tong)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(groupTotals[dept].doanhThuSim)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(groupTotals[dept].doanhThuDongHo)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(groupTotals[dept].doanhThuBaoHiem)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(groupTotals[dept].doanhThuPhuKien)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatC(groupTotals[dept].doanhThuGiaDung)}</td>
                                             </>
                                         ) : ( // efficiency_quantity
                                             <>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slICT)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slCE_main)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slGiaDung_main)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-800 dark:text-white tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slSPChinh_Tong)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slSim)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slDongHo)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slBaoHiem)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slPhuKien)}</td>
-                                                <td className="px-3 py-2 text-center text-sm font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-200 dark:border-slate-800">{formatNum(groupTotals[dept].slGiaDung)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slICT)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slCE_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slGiaDung_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-800 dark:text-white tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slSPChinh_Tong)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slSim)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slDongHo)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slBaoHiem)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slPhuKien)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">{formatNum(groupTotals[dept].slGiaDung)}</td>
                                             </>
                                         )}
                                     </tr>
@@ -617,55 +636,55 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                             </React.Fragment>
                         );})}
                     </tbody>
-                    <tfoot className="bg-[#c4cbd3] dark:bg-slate-800 border-t border-slate-300 dark:border-slate-700">
+                    <tfoot className="bg-teal-100 dark:bg-teal-900/40 border-t-2 border-teal-200 dark:border-teal-800">
                          <tr>
-                            <td className="px-4 py-2 text-left text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest sticky left-0 bg-[#c4cbd3] dark:bg-slate-800 z-30 border-b border-slate-300 dark:border-slate-700 text-center">Tổng cộng</td>
+                            <td className="px-4 py-2.5 text-center text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest sticky left-0 bg-teal-100 dark:bg-teal-900 z-30 border-r border-slate-300 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">∑ TỔNG CỘNG</td>
                             {viewMode === 'detail' ? renderDetailModeCells(grandTotal) : viewMode === 'efficiency' ? (
                                 <>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slICT)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slCE_main)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slGiaDung_main)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slSPChinh_Tong)}</td>
-                                    <td className="px-3 py-2 text-center border-b border-slate-300 dark:border-slate-700"></td>
-                                    <td className="px-3 py-2 text-center text-sm border-b border-slate-300 dark:border-slate-700">
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slICT)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slCE_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slGiaDung_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slSPChinh_Tong)}</td>
+                                    <td className="px-3 py-2.5 text-center border-r border-slate-200/50"></td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] border-r border-slate-200/50">
                                         <span className={getHeatmapClass(grandTotal.percentBaoHiem, 40)}>{formatPct(grandTotal.percentBaoHiem)}</span>
                                     </td>
-                                    <td className="px-3 py-2 text-center text-sm border-b border-slate-300 dark:border-slate-700">
+                                    <td className="px-3 py-2.5 text-center text-[13px] border-r border-slate-200/50">
                                         <span className={getHeatmapClass(grandTotal.percentSimKT, 30)}>{formatPct(grandTotal.percentSimKT)}</span>
                                     </td>
-                                    <td className="px-3 py-2 text-center text-sm border-b border-slate-300 dark:border-slate-700">
+                                    <td className="px-3 py-2.5 text-center text-[13px] border-r border-slate-200/50">
                                         <span className={getHeatmapClass(grandTotal.percentPhuKienKT, 10)}>{formatPct(grandTotal.percentPhuKienKT)}</span>
                                     </td>
-                                    <td className="px-3 py-2 text-center text-sm border-b border-slate-300 dark:border-slate-700">
+                                    <td className="px-3 py-2.5 text-center text-[13px] border-r border-slate-200/50">
                                         <span className={getHeatmapClass(grandTotal.percentDongHoKT, 20)}>{formatPct(grandTotal.percentDongHoKT)}</span>
                                     </td>
-                                    <td className="px-3 py-2 text-center text-sm border-b border-slate-300 dark:border-slate-700">
+                                    <td className="px-3 py-2.5 text-center text-[13px] border-r border-slate-200/50">
                                         <span className={getHeatmapClass(grandTotal.percentGiaDungKT, 30)}>{formatPct(grandTotal.percentGiaDungKT)}</span>
                                     </td>
                                 </>
                             ) : viewMode === 'efficiency_dt_sl' ? (
                                 <>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slICT)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slCE_main)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slGiaDung_main)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slSPChinh_Tong)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatC(grandTotal.doanhThuSim)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatC(grandTotal.doanhThuDongHo)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatC(grandTotal.doanhThuBaoHiem)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatC(grandTotal.doanhThuPhuKien)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatC(grandTotal.doanhThuGiaDung)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slICT)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slCE_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slGiaDung_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slSPChinh_Tong)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatC(grandTotal.doanhThuSim)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatC(grandTotal.doanhThuDongHo)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatC(grandTotal.doanhThuBaoHiem)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatC(grandTotal.doanhThuPhuKien)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatC(grandTotal.doanhThuGiaDung)}</td>
                                 </>
                             ) : ( // efficiency_quantity
                                 <>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slICT)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slCE_main)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slGiaDung_main)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slSPChinh_Tong)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slSim)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slDongHo)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slBaoHiem)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slPhuKien)}</td>
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 tabular-nums border-b border-slate-300 dark:border-slate-700">{formatNum(grandTotal.slGiaDung)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slICT)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slCE_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slGiaDung_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slSPChinh_Tong)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slSim)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slDongHo)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slBaoHiem)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slPhuKien)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200/50">{formatNum(grandTotal.slGiaDung)}</td>
                                 </>
                             )}
                         </tr>

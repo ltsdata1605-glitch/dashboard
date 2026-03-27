@@ -1,7 +1,7 @@
 
 import { useState, useRef } from 'react';
 import type { DataRow, Status, AppState, ProductConfig } from '../types';
-import { processShiftFile, processSalesFile, DepartmentMap } from '../services/dataService';
+import { processShiftFile, DepartmentMap } from '../services/dataService';
 import { 
     saveDepartmentMap, clearDepartmentMap, 
     saveSalesData, clearSalesData, 
@@ -109,27 +109,48 @@ export const useFileUploadLogic = ({
         setIsProcessing(true);
         startTimer();
         
-        setTimeout(async () => {
-            try {
-                const data = await processSalesFile(file, isDeduplicationEnabled, setStatus);
-                
-                setStatus({ message: 'Đang lưu dữ liệu...', type: 'info', progress: 95 });
-                await saveSalesData(data, file.name);
-                setFileInfo({ filename: file.name, savedAt: new Date().toLocaleString('vi-VN') });
-                setOriginalData(data);
-                setStatus({ message: 'Đang tổng hợp báo cáo...', type: 'info', progress: 98 });
-                setAppState('dashboard');
-                setIsProcessing(false);
-                stopTimer();
-            } catch (error) {
-                console.error("Lỗi xử lý file:", error);
-                const msg = error instanceof Error ? error.message : "Lỗi không xác định";
-                setStatus({ message: msg, type: 'error', progress: 0 });
+        const worker = new Worker(new URL('../services/worker.ts', import.meta.url), { type: 'module' });
+        
+        worker.onmessage = async (e) => {
+            const { type, payload } = e.data;
+            if (type === 'progress') {
+                setStatus(payload);
+            } else if (type === 'result') {
+                try {
+                    setStatus({ message: 'Đang lưu dữ liệu...', type: 'info', progress: 95 });
+                    await saveSalesData(payload, file.name);
+                    setFileInfo({ filename: file.name, savedAt: new Date().toLocaleString('vi-VN') });
+                    setOriginalData(payload);
+                    setStatus({ message: 'Đang tổng hợp báo cáo...', type: 'info', progress: 98 });
+                    setAppState('dashboard');
+                } catch (error) {
+                    console.error("Lỗi lưu dữ liệu:", error);
+                    setStatus({ message: 'Lỗi khi lưu vào hệ thống', type: 'error', progress: 0 });
+                    setAppState('upload');
+                } finally {
+                    setIsProcessing(false);
+                    stopTimer();
+                    worker.terminate();
+                }
+            } else if (type === 'error') {
+                setStatus({ message: payload, type: 'error', progress: 0 });
                 setAppState('upload');
                 setIsProcessing(false);
                 stopTimer();
+                worker.terminate();
             }
-        }, 100);
+        };
+
+        worker.onerror = (error) => {
+            console.error("Worker err:", error);
+            setStatus({ message: 'Lỗi luồng xử lý nền (Worker)', type: 'error', progress: 0 });
+            setAppState('upload');
+            setIsProcessing(false);
+            stopTimer();
+            worker.terminate();
+        };
+
+        worker.postMessage({ file, enableDeduplication: isDeduplicationEnabled });
     };
 
     return {

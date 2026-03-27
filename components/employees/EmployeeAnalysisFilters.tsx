@@ -1,13 +1,10 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Icon } from '../common/Icon';
 
 interface EmployeeAnalysisFiltersProps {
     allWarehouses: string[];
-    selectedWarehouses: string[];
-    setSelectedWarehouses: React.Dispatch<React.SetStateAction<string[]>>;
-    warehouseSearchTerm: string;
-    setWarehouseSearchTerm: (val: string) => void;
+    globalKho: string;
+    handleFilterChange: (filters: any) => void;
     isWarehouseFilterOpen: boolean;
     setIsWarehouseFilterOpen: React.Dispatch<React.SetStateAction<boolean>>;
     warehouseFilterRef: React.RefObject<HTMLDivElement | null>;
@@ -20,14 +17,14 @@ interface EmployeeAnalysisFiltersProps {
     isDeptFilterOpen: boolean;
     setIsDeptFilterOpen: React.Dispatch<React.SetStateAction<boolean>>;
     deptFilterRef: React.RefObject<HTMLDivElement | null>;
+    hideZeroRevenue: boolean;
+    setHideZeroRevenue: (val: boolean) => void;
 }
 
 const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
     allWarehouses,
-    selectedWarehouses,
-    setSelectedWarehouses,
-    warehouseSearchTerm,
-    setWarehouseSearchTerm,
+    globalKho,
+    handleFilterChange,
     isWarehouseFilterOpen,
     setIsWarehouseFilterOpen,
     warehouseFilterRef,
@@ -40,7 +37,11 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
     isDeptFilterOpen,
     setIsDeptFilterOpen,
     deptFilterRef,
+    hideZeroRevenue,
+    setHideZeroRevenue,
 }) => {
+    const [warehouseSearchTerm, setWarehouseSearchTerm] = useState('');
+
     return (
         <div className="flex items-center gap-2 pb-2 hide-on-export">
             {/* Warehouse Filter */}
@@ -52,14 +53,14 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
                         className="relative p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                     >
                         <Icon name="building-2" />
-                        {selectedWarehouses.length > 0 && selectedWarehouses.length < allWarehouses.length && (
+                        {globalKho !== 'all' && (
                             <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary-500 text-xs font-semibold text-white pointer-events-none">
-                                {selectedWarehouses.length}
+                                1
                             </span>
                         )}
                     </button>
                     {isWarehouseFilterOpen && (
-                        <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-2 border border-slate-200 dark:border-slate-700 z-50 flex flex-col">
+                        <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-2 border border-slate-200 dark:border-slate-700 z-[200] flex flex-col">
                             <input
                                 type="text"
                                 placeholder="Tìm kiếm siêu thị..."
@@ -68,13 +69,14 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
                                 className="w-full text-sm bg-slate-50 dark:bg-slate-600 border-slate-300 dark:border-slate-500 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 mb-2 px-2 py-1.5"
                             />
                             <div className="flex items-center border-b border-slate-200 dark:border-slate-600 pb-2 mb-2">
-                                    <input 
-                                        id="select-all-warehouses" 
-                                        type="checkbox" 
-                                        checked={selectedWarehouses.length === allWarehouses.length && allWarehouses.length > 0} 
-                                        onChange={(e) => setSelectedWarehouses(e.target.checked ? allWarehouses : [])} 
-                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" 
-                                    />
+                                <input 
+                                    id="select-all-warehouses" 
+                                    type="radio" 
+                                    name="warehouse"
+                                    checked={globalKho === 'all'} 
+                                    onChange={() => handleFilterChange({ kho: 'all' })} 
+                                    className="h-4 w-4 rounded-full border-gray-300 text-primary-600 focus:ring-primary-500" 
+                                />
                                 <label htmlFor="select-all-warehouses" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Chọn tất cả</label>
                             </div>
                             <div className="flex-grow overflow-y-auto max-h-48">
@@ -82,12 +84,11 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
                                     <div key={option} className="flex items-center p-1 rounded-md hover:bg-slate-100 dark:hover:bg-slate-600">
                                         <input 
                                             id={`wh-opt-${option}`} 
-                                            type="checkbox" 
-                                            checked={selectedWarehouses.includes(option)} 
-                                            onChange={() => {
-                                                setSelectedWarehouses(prev => prev.includes(option) ? prev.filter(item => item !== option) : [...prev, option]);
-                                            }} 
-                                            className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" 
+                                            type="radio" 
+                                            name="warehouse"
+                                            checked={globalKho === option} 
+                                            onChange={() => handleFilterChange({ kho: option })} 
+                                            className="h-4 w-4 rounded-full border-gray-300 text-primary-600 focus:ring-primary-500" 
                                         />
                                         <label htmlFor={`wh-opt-${option}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300 truncate">{option}</label>
                                     </div>
@@ -114,7 +115,7 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
                         )}
                     </button>
                     {isDeptFilterOpen && (
-                        <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-2 border border-slate-200 dark:border-slate-700 z-50 flex flex-col">
+                        <div className="absolute top-full right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-2 border border-slate-200 dark:border-slate-700 z-[200] flex flex-col">
                             <input
                                 type="text"
                                 placeholder="Tìm kiếm bộ phận..."
@@ -123,13 +124,13 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
                                 className="w-full text-sm bg-slate-50 dark:bg-slate-600 border-slate-300 dark:border-slate-500 rounded-md shadow-sm focus:ring-primary-500 focus:border-primary-500 mb-2 px-2 py-1.5"
                             />
                             <div className="flex items-center border-b border-slate-200 dark:border-slate-600 pb-2 mb-2">
-                                    <input 
-                                        id="select-all-depts" 
-                                        type="checkbox" 
-                                        checked={selectedDepartments.length === allDepartments.length && allDepartments.length > 0} 
-                                        onChange={(e) => setSelectedDepartments(e.target.checked ? allDepartments : [])} 
-                                        className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" 
-                                    />
+                                <input 
+                                    id="select-all-depts" 
+                                    type="checkbox" 
+                                    checked={selectedDepartments.length === allDepartments.length && allDepartments.length > 0} 
+                                    onChange={(e) => setSelectedDepartments(e.target.checked ? allDepartments : [])} 
+                                    className="h-4 w-4 rounded border-gray-300 text-primary-600 focus:ring-primary-500" 
+                                />
                                 <label htmlFor="select-all-depts" className="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Chọn tất cả</label>
                             </div>
                             <div className="flex-grow overflow-y-auto max-h-48">
@@ -152,6 +153,20 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
                     )}
                 </div>
             )}
+
+            {/* No sale Checkbox */}
+            <div 
+                className="flex items-center ml-auto px-3 py-1.5 rounded-xl bg-white/70 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                onClick={() => setHideZeroRevenue(!hideZeroRevenue)}
+            >
+                <input 
+                    type="checkbox" 
+                    checked={hideZeroRevenue} 
+                    onChange={() => {}} // Handled by div click
+                    className="w-4 h-4 rounded border-slate-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                />
+                <span className="ml-2 text-[12px] font-bold text-slate-600 dark:text-slate-400 whitespace-nowrap">No sale</span>
+            </div>
         </div>
     );
 };

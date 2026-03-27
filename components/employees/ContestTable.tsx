@@ -331,60 +331,86 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
     };
 
     return (
-        <div ref={exportRef}>
+        <div ref={exportRef} className="rounded-none border-2 border-primary-400 dark:border-slate-600 overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
             <div className="overflow-hidden">
                 <div
-                    className={`p-3 flex justify-between items-center bg-[#dee6ed] dark:bg-slate-800 border-b-2 ${tableColorTheme.border}`}
+                    className="px-4 py-3 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800"
                 >
-                    <h3 className="text-base font-bold uppercase flex items-center gap-2 text-slate-800 dark:text-slate-100">
-                        <Icon name="target" size={4} />
+                    <h3 className="text-sm font-extrabold uppercase flex items-center gap-2 text-slate-800 dark:text-white">
+                        <Icon name="target" size={4} className="text-primary-500" />
                         <span>{config.tableName}</span>
                     </h3>
                     <div className="flex items-center gap-1 hide-on-export">
-                        <button onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 rounded-full text-slate-600 hover:bg-black/10 transition-colors"><Icon name="plus-circle" size={4}/></button>
-                        <button onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 rounded-full text-slate-600 hover:bg-black/10 transition-colors"><Icon name="settings-2" size={4}/></button>
-                        <button onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 rounded-full text-slate-600 hover:bg-black/10 transition-colors"><Icon name="trash-2" size={4}/></button>
-                        <button onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 rounded-full text-slate-600 hover:bg-black/10 transition-colors">
+                        <button onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"><Icon name="plus-circle" size={4}/></button>
+                        <button onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"><Icon name="settings-2" size={4}/></button>
+                        <button onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"><Icon name="trash-2" size={4}/></button>
+                        <button onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
                             {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} />}
                         </button>
                     </div>
                 </div>
                 
                 <div className="overflow-x-auto table-container">
-                    <table className="min-w-full text-sm compact-export-table border-collapse border border-slate-200 dark:border-slate-800">
-                        <thead className={`bg-[#dee6ed] dark:bg-slate-800 uppercase text-slate-800 dark:text-slate-200`}>
-                            <tr className="divide-x divide-slate-200/50 dark:divide-slate-700/50">
-                                <th rowSpan={2} className="px-2 py-2 text-center font-bold border border-slate-200 dark:border-slate-800">#STT</th>
-                                <th rowSpan={2} onClick={() => handleSort('name')} className={`px-2 py-2 text-left font-bold cursor-pointer select-none align-middle border border-slate-200 dark:border-slate-800`}>
-                                    Nhân Viên
+                    <table className="min-w-full text-sm compact-export-table border-collapse">
+                        <thead className="uppercase">
+                            <tr>
+                                <th rowSpan={2} className="px-3 py-2 text-center text-sm font-bold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-slate-900 border-b-4 border-teal-200 border-r border-slate-300">#</th>
+                                <th rowSpan={2} onClick={() => handleSort('name')} className="px-4 py-2 text-left text-sm font-bold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-slate-900 border-b-4 border-teal-200 border-r border-slate-300 cursor-pointer select-none align-middle min-w-[140px]">
+                                    DANH MỤC
                                 </th>
                                 
-                                {groupsWithHeader.map(group => (
-                                    <th key={group.name} colSpan={group.columns.length} className="px-2 py-2 text-center font-bold border border-slate-200 dark:border-slate-800">
+                                {groupsWithHeader.map((group, gIdx) => (
+                                    <th key={group.name} colSpan={group.columns.length} className={`px-2 py-1.5 text-center text-[11px] font-bold text-slate-500 bg-slate-50 border-b border-slate-200 border-r border-slate-300`}>
                                         {group.name}
                                     </th>
                                 ))}
 
-                                {columnsWithoutHeader.map(col => (
-                                    <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className="px-2 py-2 text-center font-bold cursor-pointer select-none group/th relative align-middle border border-slate-200 dark:border-slate-800">
-                                        {col.columnName}
-                                        <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                            <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-500 bg-white dark:bg-slate-800 rounded-l-md"><Icon name="edit-3" size={3.5}/></button>
-                                            <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-red-500 bg-white dark:bg-slate-800 rounded-r-md"><Icon name="trash-2" size={3.5}/></button>
-                                        </div>
-                                    </th>
-                                ))}
+                                {columnsWithoutHeader.map((col, cIdx) => {
+                                    const colorConfigs = [
+                                        { bg: 'bg-sky-50', text: 'text-sky-700' },
+                                        { bg: 'bg-emerald-50', text: 'text-emerald-700' },
+                                        { bg: 'bg-amber-50', text: 'text-amber-700' },
+                                    ];
+                                    const config = colorConfigs[cIdx % colorConfigs.length];
+                                    return (
+                                        <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-3 py-2 text-center text-sm font-bold uppercase tracking-wider cursor-pointer select-none group/th relative align-middle border-b-4 border-slate-200 border-r border-slate-300 ${config.bg} ${config.text} dark:bg-slate-800 dark:text-slate-200`}>
+                                            <div className="flex items-center justify-center gap-1">
+                                                {col.columnName}
+                                                {sortConfig.key === col.id && (
+                                                    <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
+                                                )}
+                                            </div>
+                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
+                                                <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3}/></button>
+                                                <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3}/></button>
+                                            </div>
+                                        </th>
+                                    );
+                                })}
                             </tr>
-                            <tr className={`divide-x divide-slate-200/50 dark:divide-slate-700/50`}>
-                                {columnsWithHeader.map(col => (
-                                    <th key={col.id} onClick={() => handleSort(col.id)} className="px-2 py-2 text-center font-bold cursor-pointer select-none group/th relative border border-slate-200 dark:border-slate-800">
-                                        {col.columnName}
-                                        <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                            <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-500 bg-white dark:bg-slate-800 rounded-l-md"><Icon name="edit-3" size={3.5}/></button>
-                                            <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-red-500 bg-white dark:bg-slate-800 rounded-r-md"><Icon name="trash-2" size={3.5}/></button>
-                                        </div>
-                                    </th>
-                                ))}
+                            <tr>
+                                {columnsWithHeader.map((col, cIdx) => {
+                                    const colorConfigs = [
+                                        { bg: 'bg-sky-50', text: 'text-sky-700' },
+                                        { bg: 'bg-emerald-50', text: 'text-emerald-700' },
+                                        { bg: 'bg-amber-50', text: 'text-amber-700' },
+                                    ];
+                                    const config = colorConfigs[cIdx % colorConfigs.length];
+                                    return (
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-3 py-2 text-center text-sm font-bold uppercase tracking-wider cursor-pointer select-none group/th relative border-b-4 border-slate-200 border-r border-slate-300 ${config.bg} ${config.text} dark:bg-slate-800 dark:text-slate-200`}>
+                                            <div className="flex items-center justify-center gap-1">
+                                                {col.columnName}
+                                                {sortConfig.key === col.id && (
+                                                    <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
+                                                )}
+                                            </div>
+                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
+                                                <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3}/></button>
+                                                <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3}/></button>
+                                            </div>
+                                        </th>
+                                    );
+                                })}
                             </tr>
                         </thead>
                         <tbody>
@@ -395,35 +421,42 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                 return (
                                     <React.Fragment key={department}>
                                         {showDeptHeaders && (
-                                            <tr className={`${deptColor}`}>
-                                                <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className={`px-2 py-2 text-sm font-bold bg-inherit border border-slate-200 dark:border-slate-800`}>
+                                            <tr>
+                                                <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className="px-3 py-2 border-y border-slate-100 dark:border-slate-800/50 bg-slate-50/80">
                                                     <div className="flex items-center gap-2">
-                                                        <Icon name="users-round" size={4} />
-                                                        <span>{department}</span>
+                                                        <span className={`w-2 h-3.5 rounded-full flex-shrink-0 ${getPastelColor(deptIndex).replace('bg-', 'bg-').replace('/80', '-500')}`} style={{background: ['#3b82f6','#10b981','#f59e0b','#f43f5e','#6366f1','#14b8a6','#f97316','#a855f7'][deptIndex % 8]}} />
+                                                        <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                                                            {department} — {rows.length} người
+                                                        </span>
                                                     </div>
                                                 </td>
                                             </tr>
                                         )}
                                         {rows.map((row, rowIndex) => {
-                                            const rowClass = rowIndex % 2 === 0 ? 'bg-white dark:bg-slate-800/50' : 'bg-slate-50/50 dark:bg-slate-900/20';
+                                            const rowClass = rowIndex % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/30 dark:bg-slate-800/20';
                                             return (
-                                                <tr key={row.name} className={`${rowClass} divide-x divide-slate-200 dark:divide-slate-700`}>
-                                                    <td className="px-2 py-2 text-center text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-slate-800">{rowIndex + 1}</td>
-                                                    <td className={`px-2 py-2 font-medium text-slate-800 dark:text-slate-200 whitespace-nowrap text-left border border-slate-200 dark:border-slate-800`}>{abbreviateName(row.name)}</td>
+                                                <tr key={row.name} className={`${rowClass} hover:bg-teal-50/50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800`}>
+                                                    <td className="px-3 py-2 text-center border-r border-slate-100 dark:border-slate-800">
+                                                        {rowIndex < 3
+                                                            ? <span className="text-base leading-none">{['🥇','🥈','🥉'][rowIndex]}</span>
+                                                            : <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">#{rowIndex + 1}</span>
+                                                        }
+                                                    </td>
+                                                    <td className="px-4 py-2 font-bold text-[13px] text-slate-800 dark:text-slate-100 whitespace-nowrap text-left border-r border-slate-300 dark:border-slate-700">{abbreviateName(row.name)}</td>
                                                     {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
                                                         const value = row.columnValues.get(col.id);
                                                         const average = averages.get(col.id);
                                                         const style = getConditionalStyle(value, col, average);
-                                                        return <td key={col.id} className="px-2 py-2 text-center text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800" style={style}>{formatValue(value, col)}</td>;
+                                                        return <td key={col.id} className="px-3 py-2 text-center text-[13px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800/50" style={style}>{formatValue(value, col)}</td>;
                                                     })}
                                                 </tr>
                                             );
                                         })}
                                         {sortedDepartments.length > 1 && deptTotals && (
-                                            <tr className="bg-slate-100 dark:bg-slate-800 font-semibold text-slate-700 dark:text-slate-200 divide-x divide-slate-200 dark:divide-slate-700">
-                                                <td colSpan={2} className="px-2 py-2 text-left bg-inherit border border-slate-200 dark:border-slate-800">Tổng Nhóm</td>
+                                            <tr className="bg-teal-50/30 dark:bg-teal-900/10 font-bold">
+                                                <td colSpan={2} className="px-3 py-2 text-center text-[11px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-300 shadow-[inset_-2px_0_4px_-2px_rgba(0,0,0,0.05)]">∑ {department}</td>
                                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => (
-                                                    <td key={col.id} className="px-2 py-2 text-center font-semibold border border-slate-200 dark:border-slate-800">
+                                                    <td key={col.id} className="px-3 py-2 text-center text-[13px] font-extrabold text-slate-700 dark:text-slate-300 border-r border-slate-200/50">
                                                         {formatValue(deptTotals.get(col.id), col)}
                                                     </td>
                                                 ))}
@@ -433,14 +466,14 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                 );
                             })}
                         </tbody>
-                        <tfoot className={`font-extrabold uppercase bg-[#c4cbd3] dark:bg-slate-800 text-slate-800 dark:text-slate-100`}>
-                             <tr className="divide-x divide-slate-300 dark:divide-slate-700">
-                                <td colSpan={2} className={`px-2 py-2 text-left border-t-2 ${tableColorTheme.border} border border-slate-200 dark:border-slate-800`}>TỔNG CỘNG</td>
+                        <tfoot className="bg-teal-100 dark:bg-teal-900/40 border-t-2 border-teal-200 dark:border-teal-800">
+                             <tr>
+                                <td colSpan={2} className="px-4 py-2.5 text-center text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-300">∑ TỔNG CỘNG</td>
                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
                                     const value = totals.get(col.id);
                                     const average = averages.get(col.id);
                                     const style = getConditionalStyle(value, col, average);
-                                    return <td key={col.id} className={`px-2 py-2 text-center border-t-2 ${tableColorTheme.border} border border-slate-200 dark:border-slate-800`} style={style}>{formatValue(value, col)}</td>;
+                                    return <td key={col.id} className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 border-r border-slate-200/50" style={style}>{formatValue(value, col)}</td>;
                                 })}
                             </tr>
                         </tfoot>

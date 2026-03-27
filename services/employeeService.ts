@@ -178,8 +178,23 @@ export function processEmployeeData(
         const dateKey = dateCreated.toISOString().split('T')[0];
 
         // --- Initialize stats objects ---
-        if (!employeeStats[creator]) employeeStats[creator] = { name: creator, doanhThuThuc: 0, doanhThuQD: 0, slTraCham: 0, doanhThuTraCham: 0, customerSet: new Set(), totalOrders: 0, slCE_ICT: 0, slTraCham_CE_ICT: 0, doanhThu_CE_ICT: 0, doanhThuTraCham_CE_ICT: 0 };
-        if (!exploitationStats[creator]) exploitationStats[creator] = { name: creator, slICT: 0, doanhThuICT: 0, slCE_main: 0, doanhThuCE_main: 0, slGiaDung_main: 0, slBaoHiem: 0, doanhThuBaoHiem: 0, slSim: 0, doanhThuSim: 0, slDongHo: 0, doanhThuDongHo: 0, doanhThuPhuKien: 0, slPhuKien: 0, slCamera: 0, slLoa: 0, slPinSDP: 0, slTaiNgheBLT: 0, doanhThuGiaDung: 0, slGiaDung: 0, slMayLocNuoc: 0, slNoiCom: 0, slNoiChien: 0, slQuatDien: 0 };
+        if (!employeeStats[creator]) {
+            let nameToUse = creator;
+            if (departmentMap) {
+                const id = creator.split(' - ')[0].trim();
+                const rawDept = departmentMap[id];
+                if (rawDept && rawDept.includes(';;')) {
+                    const fullName = rawDept.split(';;')[1];
+                    if (fullName && fullName.trim() !== '' && fullName !== id) {
+                        nameToUse = fullName.includes(' - ') ? fullName : `${id} - ${fullName.trim()}`;
+                    }
+                }
+            }
+            employeeStats[creator] = { name: nameToUse, doanhThuThuc: 0, doanhThuQD: 0, slTraCham: 0, doanhThuTraCham: 0, customerSet: new Set(), totalOrders: 0, slCE_ICT: 0, slTraCham_CE_ICT: 0, doanhThu_CE_ICT: 0, doanhThuTraCham_CE_ICT: 0 };
+        }
+        if (!exploitationStats[creator]) {
+            exploitationStats[creator] = { name: employeeStats[creator].name, slICT: 0, doanhThuICT: 0, slCE_main: 0, doanhThuCE_main: 0, slGiaDung_main: 0, slBaoHiem: 0, doanhThuBaoHiem: 0, slSim: 0, doanhThuSim: 0, slDongHo: 0, doanhThuDongHo: 0, doanhThuPhuKien: 0, slPhuKien: 0, slCamera: 0, slLoa: 0, slPinSDP: 0, slTaiNgheBLT: 0, doanhThuGiaDung: 0, slGiaDung: 0, slMayLocNuoc: 0, slNoiCom: 0, slNoiChien: 0, slQuatDien: 0 };
+        }
         if (!employeeIndustryStats[creator]) employeeIndustryStats[creator] = {};
         if (!employeeDailyTrend[creator]) employeeDailyTrend[creator] = {};
         if (!employeeDailyTrend[creator][dateKey]) employeeDailyTrend[creator][dateKey] = 0;
@@ -279,13 +294,17 @@ export function processEmployeeData(
                 // Handle the "Dept;;FullName" format to extract the proper name
                 const parts = rawVal.split(';;');
                 const dept = parts[0];
-                // If FullName exists (from processShiftFile), use it. Otherwise fallback to ID.
-                const fullName = parts.length > 1 ? parts[1] : cleanId;
+                // If FullName exists (from processShiftFile), use it.
+                // Ensure it follows "ID - Name" format if it doesn't already
+                const fullNameFromShift = parts.length > 1 ? parts[1] : cleanId;
+                const finalDisplayName = fullNameFromShift.includes(' - ') 
+                    ? fullNameFromShift 
+                    : (fullNameFromShift === cleanId ? cleanId : `${cleanId} - ${fullNameFromShift}`);
 
                 // This employee is in the shift file but has no sales data
                 // We add them with 0 performance so they show up in the "Outstanding" table
                 employeeStats[cleanId] = {
-                    name: fullName,
+                    name: finalDisplayName,
                     department: dept,
                     doanhThuThuc: 0,
                     doanhThuQD: 0,
@@ -302,7 +321,7 @@ export function processEmployeeData(
                 
                 // Initialize empty exploitation stats for safety (though not strictly needed for Outstanding table)
                 exploitationStats[cleanId] = {
-                    name: fullName,
+                    name: finalDisplayName,
                     department: dept,
                     slICT: 0, doanhThuICT: 0, slCE_main: 0, doanhThuCE_main: 0, slGiaDung_main: 0,
                     slBaoHiem: 0, doanhThuBaoHiem: 0, slSim: 0, doanhThuSim: 0, slDongHo: 0, doanhThuDongHo: 0,

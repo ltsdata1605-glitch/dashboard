@@ -2,20 +2,43 @@
 import React, { Suspense, lazy } from 'react';
 import { LayoutProvider, useLayout } from './contexts/LayoutContext';
 import Sidebar from './components/layout/Sidebar';
+import { Menu, Moon, Sun } from 'lucide-react';
 
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
 const CheckThuongView = lazy(() => import('./components/views/CheckThuongView'));
 const ExternalToolView = lazy(() => import('./components/views/ExternalToolView'));
 
 function AppContent() {
-    const { activeTab } = useLayout();
+    const { activeTab, setIsMobileSidebarOpen, isDarkMode, toggleDarkMode } = useLayout();
 
     return (
         <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-500 overflow-hidden font-sans">
             <Sidebar />
             
             <div className="flex-grow flex flex-col min-w-0 h-screen overflow-hidden relative">
-                
+
+                {/* Mobile Top Bar */}
+                <div className="lg:hidden sticky top-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 py-3 sm:py-4 shadow-sm pt-[env(safe-area-inset-top,12px)]">
+                    <button
+                        onClick={() => setIsMobileSidebarOpen(true)}
+                        className="p-3 -ml-2 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
+                        aria-label="Open Menu"
+                    >
+                        <Menu size={24} />
+                    </button>
+                    <div className="flex items-center gap-2">
+                        <span className="font-bold text-slate-800 dark:text-white text-base tracking-tight">DMX Analytics</span>
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(79,70,229,0.5)]"></div>
+                    </div>
+                    <button
+                        onClick={toggleDarkMode}
+                        className="p-3 -mr-2 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
+                        aria-label="Toggle Dark Mode"
+                    >
+                        {isDarkMode ? <Sun size={22} className="text-amber-500" /> : <Moon size={22} />}
+                    </button>
+                </div>
+
                 <main className="flex-grow overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-950/20">
                     <div className="w-full h-full relative">
                         <Suspense fallback={

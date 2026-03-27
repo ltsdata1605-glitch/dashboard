@@ -56,11 +56,14 @@ const secondaryItems = [
 export default function Sidebar() {
     const { isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, activeTab, setActiveTab } = useLayout();
     const [isHovered, setIsHovered] = useState(false);
+    const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 1024 : false);
 
-    // Close mobile sidebar on resize
+    // Update isMobile on resize and close mobile sidebar on resize to desktop
     useEffect(() => {
         const handleResize = () => {
-            if (window.innerWidth >= 1024) {
+            const width = window.innerWidth;
+            setIsMobile(width < 1024);
+            if (width >= 1024) {
                 setIsMobileSidebarOpen(false);
             }
         };
@@ -74,7 +77,8 @@ export default function Sidebar() {
     };
 
     const sidebarTransition: any = { duration: 0.2, ease: 'easeInOut' };
-    const effectiveCollapsed = isSidebarCollapsed && !isHovered;
+    // On mobile, never collapse if open. On desktop, follow isSidebarCollapsed state.
+    const effectiveCollapsed = isMobile ? false : (isSidebarCollapsed && !isHovered);
 
     const [expandedMenus, setExpandedMenus] = useState<string[]>(['tools']);
 
@@ -190,9 +194,9 @@ export default function Sidebar() {
             {/* Sidebar Container */}
             <motion.aside
                 initial={false}
-                onMouseEnter={() => isSidebarCollapsed && setIsHovered(true)}
+                onMouseEnter={() => !isMobile && isSidebarCollapsed && setIsHovered(true)}
                 onMouseLeave={() => setIsHovered(false)}
-                animate={isMobileSidebarOpen ? { x: 0, width: 280 } : (window.innerWidth < 1024 ? { x: -300 } : (effectiveCollapsed ? 'collapsed' : 'expanded'))}
+                animate={isMobileSidebarOpen ? { x: 0, width: 280 } : (isMobile ? { x: -300, width: 280 } : (effectiveCollapsed ? 'collapsed' : 'expanded'))}
                 variants={sidebarVariants}
                 transition={sidebarTransition}
                 className={`

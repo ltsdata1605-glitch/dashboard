@@ -51,7 +51,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({ type, label, options, s
 
     return (
         <div data-debug-id={debugId} data-debug-info={debugInfo} className="w-full">
-            {!hideLabel && <label className="block text-[10px] font-bold uppercase text-slate-400 mb-1.5 tracking-widest ml-1">{label}</label>}
+            {!hideLabel && <label className="block text-[11px] font-black uppercase text-slate-400 dark:text-slate-500 mb-2 tracking-widest ml-1">{label}</label>}
             <div className="relative" ref={containerRef}>
                 <button 
                     onClick={() => setIsOpen(!isOpen)} 
@@ -62,7 +62,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({ type, label, options, s
                 </button>
                 
                 {isOpen && (
-                    <div className="absolute z-40 mt-2 w-full rounded-2xl shadow-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 ring-1 ring-black/5 p-4 animate-fade-in-up">
+                    <div className="absolute z-[100] mt-2 w-full rounded-2xl shadow-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 ring-1 ring-black/5 p-4 animate-in fade-in zoom-in-95 duration-200">
                         <input
                             type="text"
                             placeholder="Tìm kiếm..."

@@ -123,11 +123,19 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
         return colors[index % colors.length];
     };
 
+    const getMetricColor = () => {
+        if (config.metricType === 'revenue' || config.metricType === 'revenueQD') return { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-100' };
+        if (config.metricType === 'hieuQuaQD') return { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-100' };
+        return { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-100' }; // quantity
+    };
+
+    const metricColor = getMetricColor();
+
     return (
-        <div ref={tableRef} className="bg-white dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800 overflow-hidden flex flex-col h-full">
-            <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 sticky top-0 z-20">
+        <div ref={tableRef} className="bg-white dark:bg-slate-900 shadow-xl border-2 border-primary-400 dark:border-primary-500/50 overflow-hidden flex flex-col h-full rounded-xl">
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 sticky top-0 z-20">
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-indigo-50 text-indigo-600 shadow-sm">
+                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary-50 text-primary-600 shadow-sm">
                         <Icon name="swords" size={5} />
                     </div>
                     <div>
@@ -136,10 +144,10 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
                     </div>
                 </div>
                 <div className="flex items-center gap-1 hide-on-export">
-                    <button onClick={(e) => { e.stopPropagation(); onAdd(); }} title="Thêm Bảng Mới" className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"><Icon name="plus-circle" size={4}/></button>
+                    <button onClick={(e) => { e.stopPropagation(); onAdd(); }} title="Thêm Bảng Mới" className="p-2 rounded-xl text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"><Icon name="plus-circle" size={4}/></button>
                     <button onClick={(e) => { e.stopPropagation(); onEdit(); }} title="Sửa Bảng" className="p-2 rounded-xl text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"><Icon name="pencil" size={4}/></button>
                     <button onClick={(e) => { e.stopPropagation(); onDelete(); }} title="Xóa Bảng" className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"><Icon name="trash-2" size={4}/></button>
-                    <button onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-2 rounded-xl text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors">
+                    <button onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-2 rounded-xl text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
                         {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} />}
                     </button>
                 </div>
@@ -154,37 +162,30 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
 
             <div className="overflow-x-auto custom-scrollbar flex-grow p-2">
                 <table className="w-full text-left border-collapse">
-                    <thead className="sticky top-0 z-20 bg-[#dee6ed] dark:bg-slate-800/90 backdrop-blur-sm shadow-sm">
-                        <tr>
-                            <th onClick={() => handleSort('name')} className="px-3 py-2 text-left text-[11px] font-semibold text-[#46505e] dark:text-slate-300 cursor-pointer select-none min-w-[140px] sticky left-0 bg-[#dee6ed] dark:bg-slate-800 z-20 border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider">
-                                Nhân Viên
-                                {sortConfig.key === 'name' && (
-                                    <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1" />
-                                )}
+                    <thead className="sticky top-0 z-20">
+                        <tr className="border-b-2 border-primary-400">
+                            <th onClick={() => handleSort('name')} className="px-3 py-2 text-left text-[12px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest cursor-pointer select-none min-w-[140px] sticky left-0 bg-slate-50 dark:bg-slate-900 z-20 border-r border-slate-300 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                <div className="flex items-center gap-1">Nhân Viên <Icon name="chevrons-up-down" size={3} className="text-slate-400"/></div>
                             </th>
                             {processedData.dateHeaders.map(date => {
                                 const dateKey = toLocalISOString(date);
                                 const isSorted = sortConfig.key === dateKey;
                                 return (
-                                    <th key={date.toISOString()} onClick={() => handleSort(dateKey)} className={`px-2 py-2 text-center text-[11px] font-semibold text-[#46505e] dark:text-slate-300 cursor-pointer select-none border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider ${isSorted ? 'text-indigo-600' : ''}`}>
+                                    <th key={date.toISOString()} onClick={() => handleSort(dateKey)} className={`px-2 py-2 text-center text-[12px] font-black ${metricColor.text} uppercase tracking-widest cursor-pointer select-none ${metricColor.bg} border-r ${metricColor.border} ${isSorted ? 'ring-2 ring-primary-400 ring-inset' : ''}`}>
                                         <div className="flex flex-col items-center">
                                             <span>{date.toLocaleDateString('vi-VN', { weekday: 'short' })}</span>
-                                            <span className="text-[9px] opacity-70">{date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</span>
+                                            <span className="text-[10px] font-bold opacity-60">{date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}</span>
                                         </div>
                                     </th>
                                 )
                             })}
-                            <th onClick={() => handleSort('total')} className="px-3 py-2 text-center text-[11px] font-semibold text-[#46505e] dark:text-slate-300 cursor-pointer select-none border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider">
+                            <th onClick={() => handleSort('total')} className="px-3 py-2 text-center text-[12px] font-black text-indigo-700 dark:text-indigo-300 uppercase tracking-widest cursor-pointer select-none bg-indigo-50 dark:bg-indigo-900 border-r border-indigo-100">
                                 {config.totalCalculationMethod === 'average' ? 'TB' : 'TỔNG'}
-                                {sortConfig.key === 'total' && (
-                                    <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1" />
-                                )}
+                                {sortConfig.key === 'total' && <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1 text-indigo-400" />}
                             </th>
-                            <th onClick={() => handleSort('daysWithNoSales')} className="px-3 py-2 text-center text-[11px] font-semibold text-[#46505e] dark:text-slate-300 cursor-pointer select-none border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider">
-                                NO<br/>SALE
-                                {sortConfig.key === 'daysWithNoSales' && (
-                                    <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1" />
-                                )}
+                            <th onClick={() => handleSort('daysWithNoSales')} className="px-3 py-2 text-center text-[12px] font-black text-rose-700 dark:text-rose-300 uppercase tracking-widest cursor-pointer select-none bg-rose-50 dark:bg-rose-900 border-r border-rose-100">
+                                NO SALE
+                                {sortConfig.key === 'daysWithNoSales' && <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1 text-rose-400" />}
                             </th>
                         </tr>
                     </thead>
@@ -195,26 +196,27 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
                             const pastelBg = getPastelColor(deptIndex);
                             return(
                                 <React.Fragment key={department}>
-                                     <tr className={`${pastelBg}`}>
-                                        <td colSpan={100} className={`px-3 py-1 text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 sticky left-0 ${pastelBg} z-10`}>
+                                     <tr>
+                                        <td colSpan={100} className="px-3 py-1.5 border-y border-slate-100 dark:border-slate-700/50 sticky left-0 z-10">
                                             <div className="flex items-center gap-2">
-                                                <Icon name="users-round" size={3} />
-                                                <span>{department}</span>
+                                                <span className="w-2 h-3.5 rounded-full flex-shrink-0" style={{background: ['#14b8a6','#3b82f6','#a855f7','#f59e0b','#f43f5e','#0ea5e9','#10b981','#f97316'][deptIndex % 8]}} />
+                                                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{department} — {rows.length} người</span>
                                             </div>
                                         </td>
                                     </tr>
                                     {rows.map((row, rowIndex) => {
-                                        const medals = ['🥇', '🥈', '🥉'];
                                         const rankIndex = rowIndex; 
-                                        const medal = rankIndex < 3 ? medals[rankIndex] : null;
-                                        let rankDisplay = medal ? <span className="text-lg w-5 text-center inline-block">{medal}</span> : <span className="text-[10px] font-bold text-slate-300 w-5 text-center inline-block">#{rowIndex + 1}</span>;
 
                                         return (
-                                            <tr key={row.name} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
-                                                <td className="px-3 py-1 text-left sticky left-0 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 transition-colors border-r border-slate-100 dark:border-slate-800/50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-200 dark:border-slate-800 z-10">
-                                                     <div className="flex items-center gap-2">
-                                                        {rankDisplay}
-                                                        <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{abbreviateName(row.name)}</span>
+                                            <tr key={row.name} className={`group transition-colors hover:bg-teal-50/50 dark:hover:bg-slate-800 ${rowIndex % 2 === 0 ? 'bg-white dark:bg-slate-900 border-b border-slate-50' : 'bg-slate-50/30 dark:bg-slate-800/20 border-b border-slate-50'}`}>
+                                                <td className="px-3 py-2 text-left sticky left-0 bg-inherit z-10 group-hover:brightness-95 transition-all border-r border-slate-300 dark:border-slate-800/50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-100 dark:border-slate-800">
+                                                     <div className="flex items-center gap-3">
+                                                        <div className="flex flex-col items-center justify-center min-w-[32px]">
+                                                            {rankIndex < 3 
+                                                                ? <span className="text-lg w-6 text-center inline-block">{['🥇', '🥈', '🥉'][rankIndex]}</span> 
+                                                                : <span className="text-[13px] w-6 text-center inline-block text-slate-500 font-bold">#{rankIndex + 1}</span>}
+                                                        </div>
+                                                        <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 group-hover:text-primary-600 transition-colors truncate">{abbreviateName(row.name)}</span>
                                                     </div>
                                                 </td>
                                                 {processedData.dateHeaders.map(date => {
@@ -222,17 +224,17 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
                                                     const value = row.dailyValues[dateKey] || 0;
                                                     const cellStyle = getCellStyle(value, row, dateKey);
                                                     return (
-                                                        <td key={dateKey} className="px-2 py-1 text-center text-sm font-medium text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+                                                        <td key={dateKey} className={`px-2 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-slate-100 dark:border-slate-800 border-r border-slate-50 ${metricColor.bg}`}>
                                                             <div className="inline-block px-2 py-1" style={cellStyle}>
                                                                 {formatValue(value)}
                                                             </div>
                                                         </td>
                                                     );
                                                 })}
-                                                <td className={`px-3 py-1 text-center font-bold text-indigo-600 dark:text-indigo-400 text-sm border-b border-slate-200 dark:border-slate-800`}>{formatValue(row.total)}</td>
-                                                <td className="px-3 py-1 text-center border-b border-slate-200 dark:border-slate-800">
+                                                <td className={`px-3 py-2 text-center font-bold text-indigo-600 dark:text-indigo-400 text-[13px] border-b border-slate-100 bg-indigo-50/30 border-r border-slate-50`}>{formatValue(row.total)}</td>
+                                                <td className="px-3 py-2 text-center border-b border-slate-100 bg-rose-50/30 border-r border-slate-50">
                                                     {row.daysWithNoSales > 0 ? (
-                                                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${row.daysWithNoSales >= 4 ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-500'}`}>
+                                                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[13px] font-black ${row.daysWithNoSales >= 4 ? 'bg-red-100 text-red-600' : 'bg-slate-100 text-slate-500'}`}>
                                                             {row.daysWithNoSales}
                                                         </span>
                                                     ) : '-'}
@@ -246,13 +248,13 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
                                             {processedData.dateHeaders.map(date => {
                                                 const dateKey = toLocalISOString(date);
                                                 return (
-                                                    <td key={dateKey} className="px-2 py-2 text-center text-sm font-bold border-b border-slate-200 dark:border-slate-800">
+                                                    <td key={dateKey} className={`px-2 py-2 text-center text-[13px] font-bold border-b border-slate-200 dark:border-slate-800 ${metricColor.bg}`}>
                                                         {formatValue(deptTotalData.daily.get(dateKey) || 0)}
                                                     </td>
                                                 );
                                             })}
-                                            <td className="px-3 py-2 text-center text-sm font-black text-indigo-700 dark:text-indigo-300 border-b border-slate-200 dark:border-slate-800">{formatValue(deptTotalData.total)}</td>
-                                            <td className="px-3 py-2 text-center text-sm font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800">
+                                            <td className="px-3 py-2 text-center text-[13px] font-black text-indigo-700 dark:text-indigo-300 border-b border-slate-200 dark:border-slate-800 bg-indigo-50/30">{formatValue(deptTotalData.total)}</td>
+                                            <td className="px-3 py-2 text-center text-[13px] font-bold text-slate-500 border-b border-slate-200 dark:border-slate-800 bg-rose-50/30">
                                                 {deptTotalData.daysWithNoSales > 0 ? deptTotalData.daysWithNoSales.toFixed(1) : '-'}
                                             </td>
                                         </tr>
@@ -261,14 +263,14 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
                             );
                         })}
                     </tbody>
-                    <tfoot className="bg-[#c4cbd3] dark:bg-slate-800 border-t border-slate-300 dark:border-slate-700">
+                    <tfoot className="bg-teal-100 dark:bg-teal-900/40 border-t-2 border-teal-200 dark:border-teal-800">
                         <tr>
-                            <td className="px-3 py-2 text-left text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest sticky left-0 bg-[#c4cbd3] dark:bg-slate-800 z-10 border-b border-slate-300 dark:border-slate-700 text-center">Tổng cộng</td>
+                            <td className="px-3 py-2.5 text-left text-[12px] font-black text-teal-700 dark:text-teal-300 uppercase tracking-widest sticky left-0 bg-teal-100 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">∑ Tổng cộng</td>
                             {processedData.dateHeaders.map(date => (
-                                <td key={date.toISOString()} className="px-2 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">{formatValue(processedData.totals.daily.get(toLocalISOString(date)) || 0)}</td>
+                                <td key={date.toISOString()} className="px-2 py-2.5 text-center text-[13px] font-extrabold text-teal-800 dark:text-teal-100 tabular-nums border-r border-teal-200/50">{formatValue(processedData.totals.daily.get(toLocalISOString(date)) || 0)}</td>
                             ))}
-                            <td className="px-3 py-2 text-center text-sm font-bold text-indigo-600 dark:text-indigo-400 border-b border-slate-300 dark:border-slate-700">{formatValue(processedData.totals.total)}</td>
-                            <td className="px-3 py-2 text-center text-sm font-bold text-slate-500 border-b border-slate-300 dark:border-slate-700">{processedData.totals.daysWithNoSales.toFixed(1)}</td>
+                            <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-teal-800 dark:text-teal-100 tabular-nums border-r border-teal-200/50">{formatValue(processedData.totals.total)}</td>
+                            <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-teal-700/70 border-r border-teal-200/50">{processedData.totals.daysWithNoSales.toFixed(1)}</td>
                         </tr>
                     </tfoot>
                 </table>

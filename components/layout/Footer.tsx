@@ -4,22 +4,25 @@ import React from 'react';
 interface FooterProps {
     lastUpdated: string;
     onToggleDebug: () => void;
+    onOpenChangelog: () => void;
 }
 
-const Footer: React.FC<FooterProps> = ({ lastUpdated, onToggleDebug }) => {
+const Footer: React.FC<FooterProps> = ({ lastUpdated, onToggleDebug, onOpenChangelog }) => {
     return (
         <footer className="mt-8 text-center text-sm text-slate-500 dark:text-slate-400 pb-4">
-            <p>
-                Intelligence Hub 2.0 (High Performance Update)
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
                 <button 
-                    onClick={onToggleDebug} 
-                    className="ml-4 px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded text-xs font-mono hover:bg-slate-300 dark:hover:bg-slate-600"
-                    title="Bật/Tắt Bảng gỡ lỗi"
+                    onClick={onOpenChangelog} 
+                    className="font-bold text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors tracking-wide flex items-center gap-2"
                 >
-                    [Debug]
+                    Phiên bản 3.0.0 
+                    <span className="text-[10px] uppercase bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 px-2 py-0.5 rounded-full">
+                        Lịch sử cập nhật
+                    </span>
                 </button>
-            </p>
-            <p className="mt-1">Dữ liệu cập nhật: {lastUpdated}</p>
+                <span className="hidden sm:inline text-slate-300 dark:text-slate-600">|</span>
+                <span className="text-xs font-medium">Bản vá dữ liệu: {lastUpdated}</span>
+            </div>
         </footer>
     );
 };

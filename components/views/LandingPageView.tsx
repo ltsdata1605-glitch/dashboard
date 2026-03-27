@@ -27,7 +27,7 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({ onProcessFile, config
                           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
                           <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
                         </span>
-                        <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Intelligence Hub 2.0</span>
+                        <span className="text-[11px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400">Dashboard Phiên Bản 3.0</span>
                     </div>
                 </div>
 
@@ -76,8 +76,8 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({ onProcessFile, config
                     </div>
                     <div className="space-y-1">
                         <div className="flex justify-center text-slate-400 mb-2"><Icon name="sparkles" size={5} /></div>
-                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300">AI Powered</p>
-                        <p className="text-[10px] text-slate-500">Phân tích thông minh</p>
+                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300">Smart UI</p>
+                        <p className="text-[10px] text-slate-500">Giao diện thông minh</p>
                     </div>
                 </div>
 

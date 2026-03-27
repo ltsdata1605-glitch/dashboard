@@ -19,14 +19,11 @@ import PerformanceModal from '../modals/PerformanceModal';
 import UnshippedOrdersModal from '../modals/UnshippedOrdersModal';
 import ProcessingLoader from '../common/ProcessingLoader';
 import ExportLoader from '../common/ExportLoader';
-import ChatFab from '../ai/ChatFab';
-import ChatModal from '../ai/ChatModal';
+import ChangelogModal from '../modals/ChangelogModal';
 import { SectionHeader } from '../common/SectionHeader';
 import { Icon } from '../common/Icon';
 import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } from '../common/SkeletonLoader';
 import { DebugPanel } from '../common/DebugPanel';
-
-import { BottomNav } from '../common/BottomNav';
 
 const defaultVisibilityState: VisibilityState = {
     trendChart: false,
@@ -53,13 +50,13 @@ export default function DashboardView() {
         departmentMap, processedData,
         configUrl, setConfigUrl, uniqueFilterOptions,
         activeModal, setActiveModal, modalData,
-        isChatOpen, setIsChatOpen, chatHistory, isAiResponding,
         handleClearDepartments, handleClearData, handleShiftFileProcessing, handleFileProcessing,
-        handleSendMessage, openUnshippedModal, handleExport, handleBatchKhoExport,
+        openUnshippedModal, handleExport, handleBatchKhoExport,
         filterState,
         isDeduplicationEnabled,
         handleDeduplicationChange,
-        processingTime
+        processingTime,
+        handleFilterChange
     } = logic;
 
     const [visibleComponents, setVisibleComponents] = useState<VisibilityState>(() => {
@@ -72,17 +69,6 @@ export default function DashboardView() {
     });
 
     const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'filters' | 'settings' | 'chat'>('dashboard');
-
-    const handleTabChange = (tab: 'dashboard' | 'filters' | 'settings' | 'chat') => {
-        if (tab === 'filters') {
-            setIsFilterSidebarOpen(true);
-        } else if (tab === 'chat') {
-            setIsChatOpen(true);
-        } else {
-            setActiveTab(tab);
-        }
-    };
     const [isDebugPanelVisible, setIsDebugPanelVisible] = useState(false);
     const [isInspectorActive, setIsInspectorActive] = useState(false);
     const [debugInfo, setDebugInfo] = useState<any | null>(null);
@@ -163,7 +149,7 @@ export default function DashboardView() {
 
     useEffect(() => {
         // Lucide icon initialization is now handled by the Icon component using lucide-react
-    }, [appState, processedData, activeModal, isExporting, isChatOpen, isDebugPanelVisible, uniqueFilterOptions, isProcessing, filterState, isFilterSidebarOpen]);
+    }, [appState, processedData, activeModal, isExporting, isDebugPanelVisible, uniqueFilterOptions, isProcessing, filterState, isFilterSidebarOpen]);
     
     const showDashboard = appState === 'dashboard' && processedData;
     const showProcessingOverlay = appState === 'loading' || (appState === 'processing' && !processedData);
@@ -205,7 +191,7 @@ export default function DashboardView() {
                     {showDashboard && (
                         <>
                             <main id="dashboard-container" className="pb-20 md:pb-0" ref={dashboardContainerRef}>
-                                <div className="container mx-auto px-4 py-8 space-y-10">
+                                <div className="container mx-auto px-4 py-4 space-y-6">
                                     {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (
                                         <div data-debug-id="WarehouseSummary" data-debug-info={JSON.stringify(debugInitialData.WarehouseSummary)}>
                                             <WarehouseSummary onBatchExport={handleBatchKhoExport} />
@@ -220,48 +206,60 @@ export default function DashboardView() {
                                                 subtitle={processedData.reportSubTitle}
                                             >
                                                 <div className="flex items-center gap-2 hide-on-export">
+                                                    {/* Apple-style Toolbar for Kho Tạo */}
+                                                    <div className="hidden md:flex max-w-[300px] lg:max-w-[400px] overflow-x-auto hide-scrollbar mr-2">
+                                                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                                                            {['all', ...(uniqueFilterOptions?.kho || [])].map(val => (
+                                                                <button 
+                                                                    key={val}
+                                                                    onClick={() => handleFilterChange({ kho: val })}
+                                                                    className={`py-1 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${filterState.kho === val ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-slate-500 hover:text-indigo-600'}`}
+                                                                >
+                                                                    {val === 'all' ? 'Tất cả kho' : val}
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                     <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Tổng Quan" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                         <Icon name="camera" size={5} />
                                                     </button>
                                                 </div>
                                             </SectionHeader>
 
-                                            <div className="p-6">
+                                            <div className={`p-6 transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                                 <div data-debug-id="KpiCards" data-debug-info={JSON.stringify(debugInitialData.KpiCards)}>
-                                                    {isProcessing ? <KpiCardsSkeleton /> : <KpiCards onUnshippedClick={openUnshippedModal} />}
+                                                    <KpiCards onUnshippedClick={openUnshippedModal} />
                                                 </div>
                                             </div>
                                         </div>
 
                                         {visibleComponents.trendChart && (
-                                            <div data-debug-id="TrendChart" data-debug-info={JSON.stringify(debugInitialData.TrendChart)} id="trend-chart-section">
-                                                {isProcessing ? <ChartSkeleton /> : <TrendChart />}
+                                            <div data-debug-id="TrendChart" data-debug-info={JSON.stringify(debugInitialData.TrendChart)} id="trend-chart-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                                <TrendChart />
                                             </div>
                                         )}
                                         
                                         {visibleComponents.industryGrid && (
-                                            <div data-debug-id="IndustryGrid" data-debug-info={JSON.stringify(debugInitialData.IndustryGrid)} id="industry-grid-section">
-                                                {isProcessing ? <ChartSkeleton height="h-[580px]" /> : <IndustryGrid />}
+                                            <div data-debug-id="IndustryGrid" data-debug-info={JSON.stringify(debugInitialData.IndustryGrid)} id="industry-grid-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                                <IndustryGrid />
                                             </div>
                                         )}
                                         
                                         {visibleComponents.employeeAnalysis && (
-                                            <div data-debug-id="EmployeeAnalysis" data-debug-info={JSON.stringify(debugInitialData.EmployeeAnalysis)} id="employee-analysis-section">
-                                                {isProcessing ? <TabbedTableSkeleton /> : <EmployeeAnalysis />}
+                                            <div data-debug-id="EmployeeAnalysis" data-debug-info={JSON.stringify(debugInitialData.EmployeeAnalysis)} id="employee-analysis-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                                <EmployeeAnalysis />
                                             </div>
                                         )}
                                     </div>
                                     
                                     {visibleComponents.summaryTable && (
-                                        <div data-debug-id="SummaryTable" data-debug-info={JSON.stringify(debugInitialData.SummaryTable)} id="summary-table-section">
-                                            {isProcessing ? <TableSkeleton /> : <SummaryTable />}
+                                        <div data-debug-id="SummaryTable" data-debug-info={JSON.stringify(debugInitialData.SummaryTable)} id="summary-table-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                            <SummaryTable />
                                         </div>
                                     )}
                                 </div>
                             </main>
-                            <Footer lastUpdated={processedData.lastUpdated} onToggleDebug={() => setIsDebugPanelVisible(p => !p)} />
-                            <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
-                            <ChatFab onClick={() => setIsChatOpen(true)} />
+                            <Footer lastUpdated={processedData.lastUpdated} onToggleDebug={() => setIsDebugPanelVisible(p => !p)} onOpenChangelog={() => setActiveModal('changelog')} />
 
                             {/* Right Slide Menu Filters */}
                             <div className={`fixed inset-0 z-[150] transition-opacity duration-300 ${isFilterSidebarOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
@@ -279,11 +277,9 @@ export default function DashboardView() {
                             </div>
                         </>
                     )}
-
-                    {isExporting && <ExportLoader />}
                     {activeModal === 'performance' && processedData && <PerformanceModal isOpen={true} onClose={() => setActiveModal(null)} employeeName={modalData.employeeName} onExport={handleExport}/>}
                     {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
-                    {isChatOpen && <ChatModal isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} history={chatHistory} isSending={isAiResponding} onSendMessage={handleSendMessage} />}
+                    <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />
                 </DashboardContext.Provider>
                 
                 <DebugPanel 

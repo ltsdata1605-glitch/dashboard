@@ -3,7 +3,6 @@ import React, { useState, useMemo, forwardRef, useEffect } from 'react';
 import { Icon } from '../common/Icon';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../../types';
 import { exportElementAsImage } from '../../services/uiService';
-import { getHeadToHeadAnalysis } from '../../services/aiService';
 import { getHeadToHeadCustomTables, saveHeadToHeadCustomTables } from '../../services/dbService';
 import ModalWrapper from '../modals/ModalWrapper';
 
@@ -41,8 +40,6 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
     const [tables, setTables] = useState<HeadToHeadTableConfig[]>([]);
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [modalState, setModalState] = useState<{ type: 'ADD' | 'EDIT' | 'DELETE' | null, data?: HeadToHeadTableConfig }>({ type: null });
-    const [analysis, setAnalysis] = useState<string | null>(null);
-    const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
     const [isBatchExporting, setIsBatchExporting] = useState(false);
     
     const tableRefs = React.useRef<(HTMLDivElement | null)[]>([]);
@@ -124,22 +121,6 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             };
             setTables(prev => [...prev, newConfig]);
         }
-    };
-    
-    const handleAiAnalysis = async (tableConfig: HeadToHeadTableConfig, tableRows: any[]) => {
-        if (!tableRows.length) {
-            setAnalysis("Không có dữ liệu để phân tích.");
-            return;
-        }
-        setIsAnalysisLoading(true);
-        setAnalysis(null);
-        try {
-            const result = await getHeadToHeadAnalysis(tableRows, tableConfig.metricType, tableConfig.selectedSubgroups);
-            setAnalysis(result);
-        } catch (error) {
-            console.error("Lỗi khi phân tích 7 ngày:", error);
-            setAnalysis("Đã xảy ra lỗi khi phân tích. Vui lòng thử lại.");
-        } finally { setIsAnalysisLoading(false); }
     };
 
     const handleBatchExport = async () => {
@@ -237,25 +218,6 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                 })}
             </div>
 
-             {(analysis || isAnalysisLoading) && (
-                <div className="mt-4 p-4 border rounded-xl">
-                    <h4 className="font-bold text-indigo-800 dark:text-indigo-200 flex items-center gap-2">
-                        <Icon name="sparkles" />
-                        AI Phân Tích 7 Ngày
-                    </h4>
-                    {isAnalysisLoading ? (
-                        <div className="space-y-2 mt-2">
-                            <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-4 w-full"></div>
-                            <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-4 w-3/4"></div>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-slate-700 dark:text-slate-300 mt-1 whitespace-pre-wrap">
-                            {analysis}
-                        </p>
-                    )}
-                </div>
-            )}
-            
             {(modalState.type === 'ADD' || modalState.type === 'EDIT') && (
                 <HeadToHeadConfigModal 
                     isOpen={true} 

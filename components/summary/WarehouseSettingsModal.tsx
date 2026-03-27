@@ -58,6 +58,94 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
         }, {});
     }, [internalColumns]);
 
+    const groupOrder = useMemo(() => {
+        const groups: string[] = [];
+        internalColumns.forEach(col => {
+            const key = col.mainHeader || 'Khác';
+            if (!groups.includes(key)) {
+                groups.push(key);
+            }
+        });
+        return groups;
+    }, [internalColumns]);
+
+    const handleMoveGroup = (groupName: string, direction: 'up' | 'down') => {
+        const groups = [...groupOrder];
+        const index = groups.indexOf(groupName);
+        if (index < 0) return;
+        if (direction === 'up' && index === 0) return;
+        if (direction === 'down' && index === groups.length - 1) return;
+
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        const temp = groups[index];
+        groups[index] = groups[targetIndex];
+        groups[targetIndex] = temp;
+
+        const newColumns: WarehouseColumnConfig[] = [];
+        groups.forEach(group => {
+            const colsInGroup = internalColumns.filter(c => (c.mainHeader || 'Khác') === group);
+            newColumns.push(...colsInGroup);
+        });
+
+        const reorderedColumns = newColumns.map((c, i) => ({ ...c, order: i }));
+        setInternalColumns(reorderedColumns);
+    };
+
+    const handleSwapGroups = (source: string, target: string) => {
+        const groups = [...groupOrder];
+        const sourceIndex = groups.indexOf(source);
+        const targetIndex = groups.indexOf(target);
+        if (sourceIndex < 0 || targetIndex < 0 || sourceIndex === targetIndex) return;
+
+        // Remove source and insert at target position
+        groups.splice(sourceIndex, 1);
+        groups.splice(targetIndex, 0, source);
+
+        const newColumns: WarehouseColumnConfig[] = [];
+        groups.forEach(group => {
+            const colsInGroup = internalColumns.filter(c => (c.mainHeader || 'Khác') === group);
+            newColumns.push(...colsInGroup);
+        });
+
+        const reorderedColumns = newColumns.map((c, i) => ({ ...c, order: i }));
+        setInternalColumns(reorderedColumns);
+    };
+
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, groupName: string) => {
+        e.dataTransfer.setData('text/plain', groupName);
+        e.dataTransfer.effectAllowed = 'move';
+        // Add a slight delay to allow the drag image to be captured before reducing opacity
+        setTimeout(() => e.target && (e.target as HTMLElement).classList.add('opacity-40'), 0);
+    };
+
+    const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+        e.currentTarget.classList.remove('opacity-40');
+        e.currentTarget.classList.remove('scale-[1.02]');
+    };
+
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    };
+
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        e.currentTarget.classList.add('scale-[1.02]');
+    };
+
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+        e.currentTarget.classList.remove('scale-[1.02]');
+    };
+
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>, targetGroupName: string) => {
+        e.preventDefault();
+        e.currentTarget.classList.remove('scale-[1.02]');
+        const sourceGroupName = e.dataTransfer.getData('text/plain');
+        if (sourceGroupName && sourceGroupName !== targetGroupName) {
+            handleSwapGroups(sourceGroupName, targetGroupName);
+        }
+    };
+
     const resetForm = (switchToPicker = true) => {
         setEditingColumn(null);
         setMainHeader(''); setSubHeader(''); setCategoryType('industry');
@@ -168,29 +256,44 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                     <div className="w-px h-3 bg-slate-300 dark:bg-slate-600"></div>
                     <button onClick={() => handleSelectAll(false)} className="px-4 py-1.5 text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all">Ẩn tất cả</button>
                 </div>
-                 <button onClick={() => { resetForm(false); setView('form'); }} className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-semibold text-white bg-slate-900 hover:bg-black dark:bg-white dark:text-slate-900 transition-all shadow-lg hover:shadow-xl active:scale-95">
+                 <button onClick={() => { resetForm(false); setView('form'); }} className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-semibold text-white bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95">
                     <Icon name="plus" size={3.5} /> Thêm cột
                 </button>
             </div>
             
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pb-4">
-                 {Object.entries(groupedColumns).map(([mainHeader, cols]) => {
-                    if (!Array.isArray(cols)) return null;
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+                 {groupOrder.map((mainHeader, groupIndex) => {
+                    const cols = groupedColumns[mainHeader] || [];
+                    if (cols.length === 0) return null;
                     const visibleCount = cols.filter(c => c.isVisible).length;
                     const isCustomGroup = cols.every(c => c.isCustom);
                     const styles = groupColorMap[mainHeader] || groupColorMap.DEFAULT;
 
                     return (
-                        <div key={mainHeader} className={`group relative flex flex-col h-full rounded-[1.75rem] ${styles.bg} transition-all duration-500 hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] ring-1 ring-black/5 dark:ring-white/5`}>
-                            <div className="px-5 py-4 flex justify-between items-center">
+                        <div 
+                            key={mainHeader} 
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, mainHeader)}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={handleDragOver}
+                            onDragEnter={handleDragEnter}
+                            onDragLeave={handleDragLeave}
+                            onDrop={(e) => handleDrop(e, mainHeader)}
+                            className={`group relative flex flex-col h-full rounded-[1.25rem] ${styles.bg} transition-all duration-300 hover:shadow-md ring-1 ring-black/5 dark:ring-white/5 cursor-grab active:cursor-grabbing`}
+                        >
+                            <div className="px-4 py-3 flex justify-between items-center border-b border-white/20 dark:border-white/5 pointer-events-none">
                                 <div className="flex flex-col">
                                     {/* Typography: Light & Elegant */}
-                                    <h4 className={`text-xs font-semibold uppercase tracking-wider ${styles.text} opacity-90`}>{mainHeader}</h4>
-                                    <span className="text-[10px] font-medium text-slate-400 mt-0.5 tracking-wide">
+                                    <h4 className={`text-[11px] font-bold uppercase tracking-wider ${styles.text} opacity-90 flex items-center gap-1.5`}>
+                                        <span className="bg-white/50 dark:bg-black/20 px-1.5 py-0.5 rounded-md text-[9px]">{groupIndex + 1}</span> {mainHeader}
+                                    </h4>
+                                    <span className="text-[9px] font-medium text-slate-500 mt-0.5 tracking-wide">
                                         Hiển thị {visibleCount}/{cols.length}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0">
+                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-auto">
+                                    <div className="text-slate-400 p-1 cursor-grab" title="Giữ và kéo để di chuyển"><Icon name="grip-horizontal" size={3.5} /></div>
+                                    <div className="w-px h-3 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                                     <button onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện nhóm" className="p-1.5 hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-emerald-500 rounded-full transition-colors"><Icon name="eye" size={3.5}/></button>
                                     <button onClick={() => handleToggleGroupVisibility(mainHeader, false)} title="Ẩn nhóm" className="p-1.5 hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 rounded-full transition-colors"><Icon name="eye-off" size={3.5}/></button>
                                     {isCustomGroup && (
@@ -199,7 +302,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                 </div>
                             </div>
                             
-                            <div className="px-5 pb-5 pt-0 flex flex-wrap content-start gap-2 flex-grow">
+                            <div className="px-4 pb-4 pt-3 flex flex-wrap content-start gap-1.5 flex-grow">
                                 {cols.map(col => (
                                     <div 
                                         key={col.id} 
@@ -215,8 +318,8 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                         
                                         {col.isCustom && (
                                             <div className="flex items-center ml-1 pl-1 border-l border-slate-100 dark:border-slate-700 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(col); }} className="p-0.5 hover:text-blue-500"><Icon name="edit-3" size={3} /></button>
-                                                <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 hover:text-red-500"><Icon name="x" size={3} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-blue-500"><Icon name="edit-3" size={3} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 text-slate-400 hover:text-red-500"><Icon name="x" size={3} /></button>
                                             </div>
                                         )}
                                     </div>
@@ -252,9 +355,9 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
             </div>
 
             <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar">
-                <div className="bg-white dark:bg-slate-800 rounded-[2rem] p-6 space-y-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 dark:border-slate-800">
+                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 dark:border-slate-800">
                     
-                    <div className="grid grid-cols-2 gap-5">
+                    <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-1">
                             <SearchableSelect
                                 label="Nhóm (Cha)"
@@ -266,14 +369,14 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             />
                         </div>
                         <div className="col-span-1">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Cột (Con)</label>
-                            <input value={subHeader} onChange={e => setSubHeader(e.target.value)} placeholder="VD: SL Camera" className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 placeholder:text-slate-400 transition-all" required />
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Cột (Con)</label>
+                            <input value={subHeader} onChange={e => setSubHeader(e.target.value)} placeholder="VD: SL Camera" className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 placeholder:text-slate-400 transition-all" required />
                         </div>
 
                         <div className="col-span-1">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Loại danh mục</label>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Loại danh mục</label>
                             <div className="relative">
-                                <select value={categoryType} onChange={e => { setCategoryType(e.target.value as WarehouseCategoryType); setCategoryName(''); }} className="w-full h-11 px-4 rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 appearance-none cursor-pointer">
+                                <select value={categoryType} onChange={e => { setCategoryType(e.target.value as WarehouseCategoryType); setCategoryName(''); }} className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 appearance-none cursor-pointer">
                                     <option value="industry">Ngành hàng (Lớn)</option>
                                     <option value="group">Nhóm hàng (Nhỏ)</option>
                                 </select>
@@ -292,7 +395,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                         </div>
 
                         <div className="col-span-1">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">Chỉ số tính</label>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Chỉ số tính</label>
                             <div className="flex rounded-xl bg-slate-50 dark:bg-slate-900 p-1">
                                 {Object.entries(WAREHOUSE_METRIC_TYPE_MAP).map(([key, label]) => (
                                     <button
@@ -317,16 +420,16 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             />
                         </div>
 
-                        <div className="col-span-2 pt-2">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 ml-1">
+                        <div className="col-span-2 pt-1">
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
                                 Mã sản phẩm (Nâng cao) 
                             </label>
                             <textarea 
                                 value={productCodesInput} 
                                 onChange={e => setProductCodesInput(e.target.value)} 
                                 placeholder="Nhập các mã nhóm hàng, cách nhau bằng dấu phẩy..." 
-                                rows={3} 
-                                className="w-full p-4 rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 placeholder:text-slate-400 transition-all resize-none" 
+                                rows={2} 
+                                className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 placeholder:text-slate-400 transition-all resize-none" 
                             />
                         </div>
                     </div>
@@ -337,7 +440,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                 <button type="button" onClick={() => resetForm()} className="flex-1 h-12 rounded-xl font-semibold text-sm text-slate-500 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 transition-all">
                     Hủy bỏ
                 </button>
-                <button type="submit" className="flex-1 h-12 rounded-xl font-semibold text-sm text-white bg-slate-900 hover:bg-black dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200 shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+                <button type="submit" className="flex-1 h-12 rounded-xl font-semibold text-sm text-white bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
                     <Icon name={editingColumn ? 'save' : 'plus'} size={4} />
                     {editingColumn ? 'Lưu thay đổi' : 'Tạo cột'}
                 </button>
@@ -361,10 +464,10 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                 
                 {view === 'picker' && (
                     <div className="pt-6 mt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                        <button onClick={handleRestoreDefaults} className="text-[11px] font-semibold text-slate-400 hover:text-amber-600 transition-colors flex items-center gap-1.5">
+                        <button onClick={handleRestoreDefaults} className="text-[11px] font-semibold text-red-500 hover:text-red-600 transition-colors flex items-center gap-1.5">
                             <Icon name="rotate-ccw" size={3.5} /> Khôi phục mặc định
                         </button>
-                        <button onClick={handleSaveAndClose} className="px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-slate-900 hover:bg-black dark:bg-white dark:text-slate-900 shadow-xl transition-all hover:scale-105 active:scale-95">
+                        <button onClick={handleSaveAndClose} className="px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 shadow-xl transition-all hover:scale-105 active:scale-95">
                             Hoàn tất & Đóng
                         </button>
                     </div>

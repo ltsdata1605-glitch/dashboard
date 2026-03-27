@@ -35,11 +35,11 @@ export const TabModal: React.FC<{
     };
     
     return (
-          <ModalWrapper isOpen={isOpen} onClose={onClose} title={tabId ? "Sửa Tab Thi Đua" : "Tạo Tab Thi Đua Mới"} subTitle={tabId ? "Chỉnh sửa tên cho tab" : "Tạo một trang báo cáo thi đua mới"} titleColorClass="text-primary-600 dark:text-primary-400" maxWidthClass="max-w-md">
+          <ModalWrapper isOpen={isOpen} onClose={onClose} title={tabId ? "Sửa Tab Thi Đua" : "Tạo Tab Thi Đua Mới"} subTitle={tabId ? "Chỉnh sửa tên cho tab" : "Tạo một trang báo cáo thi đua mới"} titleColorClass="text-indigo-600 dark:text-indigo-400" maxWidthClass="max-w-md">
             <form onSubmit={handleSubmit}>
                 <div className="p-6 space-y-4">
                     <div>
-                        <label htmlFor="tabName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tên Tab</label>
+                        <label htmlFor="tabName" className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Tên Tab</label>
                         <input
                             ref={inputRef}
                             id="tabName"
@@ -47,14 +47,14 @@ export const TabModal: React.FC<{
                             value={tabName}
                             onChange={e => setTabName(e.target.value)}
                             placeholder="VD: Thi Đua Tháng 10"
-                            className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg p-3 text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none"
                             required
                         />
                     </div>
                 </div>
-                 <div className="p-4 flex justify-end gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <button type="button" onClick={onClose} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                    <button type="submit" className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors">{tabId ? "Lưu thay đổi" : "Tạo Tab"}</button>
+                 <div className="p-4 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/80 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onClick={onClose} className="py-2 px-4 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors">Ừỷ</button>
+                    <button type="submit" className="py-2 px-6 rounded-xl text-sm font-bold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors shadow-sm">{tabId ? "Lưu thay đổi" : "Tạo Tab"}</button>
                 </div>
             </form>
          </ModalWrapper>
@@ -91,11 +91,11 @@ export const TableModal: React.FC<{
     };
 
     return (
-        <ModalWrapper isOpen={isOpen} onClose={onClose} title={isEditing ? "Sửa Bảng Thi Đua" : "Tạo Bảng Thi Đua Mới"} subTitle={isEditing ? "Chỉnh sửa tên và cài đặt cho bảng này" : "Đặt tên cho bảng thi đua trong tab hiện tại"} titleColorClass="text-primary-600 dark:text-primary-400" maxWidthClass="max-w-md">
+        <ModalWrapper isOpen={isOpen} onClose={onClose} title={isEditing ? "Sửa Bảng Thi Đua" : "Tạo Bảng Thi Đua Mới"} subTitle={isEditing ? "Chỉnh sửa tên và cài đặt cho bảng này" : "Đặt tên cho bảng thi đua trong tab hiện tại"} titleColorClass="text-emerald-600 dark:text-emerald-400" maxWidthClass="max-w-md">
             <form onSubmit={handleSubmit}>
                 <div className="p-6 space-y-4">
                     <div>
-                        <label htmlFor="tableName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tên Bảng</label>
+                        <label htmlFor="tableName" className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Tên Bảng</label>
                         <input
                             ref={inputRef}
                             id="tableName"
@@ -103,18 +103,18 @@ export const TableModal: React.FC<{
                             value={tableName}
                             onChange={e => setTableName(e.target.value)}
                             placeholder="VD: Bảng thi đua Sim số"
-                            className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg p-3 text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition outline-none"
                             required
                         />
                     </div>
                     {isEditing && columns.length > 0 && (
                         <div>
-                            <label htmlFor="sortColumn" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Sắp xếp mặc định (giảm dần)</label>
+                            <label htmlFor="sortColumn" className="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Sắp xếp mặc định (giảm dần)</label>
                             <select
                                 id="sortColumn"
                                 value={sortColumnId}
                                 onChange={e => setSortColumnId(e.target.value)}
-                                className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg p-3 text-base focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition"
+                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition outline-none"
                             >
                                 <option value="">-- Không sắp xếp --</option>
                                 {columns.map(col => (
@@ -124,9 +124,9 @@ export const TableModal: React.FC<{
                         </div>
                     )}
                 </div>
-                <div className="p-4 flex justify-end gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <button type="button" onClick={onClose} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                    <button type="submit" className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors">{isEditing ? "Lưu thay đổi" : "Tạo Bảng"}</button>
+                <div className="p-4 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/80 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onClick={onClose} className="py-2 px-4 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors">Ừỷ</button>
+                    <button type="submit" className="py-2 px-6 rounded-xl text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 transition-colors shadow-sm">{isEditing ? "Lưu thay đổi" : "Tạo Bảng"}</button>
                 </div>
             </form>
         </ModalWrapper>

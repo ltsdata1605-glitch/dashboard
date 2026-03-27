@@ -35,18 +35,23 @@ export const useFilterState = () => {
     useEffect(() => {
         const loadSavedFilters = async () => {
             try {
-                const savedIndustry = await dbService.getIndustryGridFilters();
-                const savedSummary = await dbService.getSummaryTableConfig();
-                const savedKho = await dbService.getSetting<string>('filter_kho');
-                const savedDepartment = await dbService.getSetting<string[]>('filter_department');
-                
-                setFilterState(prev => ({
-                    ...prev,
-                    industryGrid: savedIndustry || prev.industryGrid,
-                    summaryTable: savedSummary || prev.summaryTable,
-                    kho: savedKho || prev.kho,
-                    department: savedDepartment || prev.department
-                }));
+                const fullSavedFilters = await dbService.getSetting<FilterState>('dashboard_global_filters_v2');
+                if (fullSavedFilters) {
+                    setFilterState(fullSavedFilters);
+                } else {
+                    const savedIndustry = await dbService.getIndustryGridFilters();
+                    const savedSummary = await dbService.getSummaryTableConfig();
+                    const savedKho = await dbService.getSetting<string>('filter_kho');
+                    const savedDepartment = await dbService.getSetting<string[]>('filter_department');
+                    
+                    setFilterState(prev => ({
+                        ...prev,
+                        industryGrid: savedIndustry || prev.industryGrid,
+                        summaryTable: savedSummary || prev.summaryTable,
+                        kho: savedKho || prev.kho,
+                        department: savedDepartment || prev.department
+                    }));
+                }
             } catch (error) {
                 console.error("Failed to load filters from IndexedDB:", error);
             } finally {
@@ -56,33 +61,15 @@ export const useFilterState = () => {
         loadSavedFilters();
     }, []);
 
+    // Auto-save any filter state changes to IndexedDB
+    useEffect(() => {
+        if (isLoaded) {
+            dbService.saveSetting('dashboard_global_filters_v2', filterState).catch(console.error);
+        }
+    }, [filterState, isLoaded]);
+
     const handleFilterChange = useCallback((newFilters: Partial<FilterState>) => {
-        setFilterState(prev => {
-            const updated = { ...prev, ...newFilters };
-            
-            // Persist changes to IndexedDB
-            if (newFilters.industryGrid) {
-                const industryGrid = { ...prev.industryGrid, ...newFilters.industryGrid };
-                updated.industryGrid = industryGrid;
-                dbService.saveIndustryGridFilters(industryGrid).catch(console.error);
-            }
-            
-            if (newFilters.summaryTable) {
-                const summaryTable = { ...prev.summaryTable, ...newFilters.summaryTable };
-                updated.summaryTable = summaryTable;
-                dbService.saveSummaryTableConfig(summaryTable).catch(console.error);
-            }
-
-            if (newFilters.kho !== undefined) {
-                dbService.saveSetting('filter_kho', newFilters.kho).catch(console.error);
-            }
-
-            if (newFilters.department !== undefined) {
-                dbService.saveSetting('filter_department', newFilters.department).catch(console.error);
-            }
-            
-            return updated;
-        });
+        setFilterState(prev => ({ ...prev, ...newFilters }));
     }, []);
 
     return {

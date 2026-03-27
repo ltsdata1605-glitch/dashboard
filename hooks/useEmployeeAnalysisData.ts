@@ -1,9 +1,7 @@
-
 import { useState, useEffect, useMemo } from 'react';
 import { useDashboardContext } from '../contexts/DashboardContext';
 import { getRowValue } from '../utils/dataUtils';
 import { COL } from '../constants';
-import type { EmployeeData } from '../types';
 import { saveSetting, getSetting } from '../services/dbService';
 
 export const useEmployeeAnalysisData = () => {
@@ -15,16 +13,12 @@ export const useEmployeeAnalysisData = () => {
     } = useDashboardContext();
 
     const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-    const [selectedWarehouses, setSelectedWarehouses] = useState<string[]>([]);
 
     // Load saved filters
     useEffect(() => {
         const loadSavedFilters = async () => {
             const savedDepts = await getSetting<string[]>('employee_analysis_selected_departments');
-            const savedWarehouses = await getSetting<string[]>('employee_analysis_selected_warehouses');
-            
             if (savedDepts) setSelectedDepartments(savedDepts);
-            if (savedWarehouses) setSelectedWarehouses(savedWarehouses);
         };
         loadSavedFilters();
     }, []);
@@ -35,23 +29,15 @@ export const useEmployeeAnalysisData = () => {
             saveSetting('employee_analysis_selected_departments', selectedDepartments);
         }
     }, [selectedDepartments]);
-
-    useEffect(() => {
-        if (selectedWarehouses.length > 0) {
-            saveSetting('employee_analysis_selected_warehouses', selectedWarehouses);
-        }
-    }, [selectedWarehouses]);
     
     const [deptSearchTerm, setDeptSearchTerm] = useState('');
-    const [warehouseSearchTerm, setWarehouseSearchTerm] = useState('');
+    const [hideZeroRevenue, setHideZeroRevenue] = useState(false);
 
     const { 
         allIndustries, 
         allSubgroups, 
         allManufacturers, 
         allDepartments, 
-        allWarehouses, 
-        employeeWarehouseMap 
     } = useMemo(() => {
         if (!productConfig || !originalData || !employeeAnalysisData) {
             return { 
@@ -59,8 +45,6 @@ export const useEmployeeAnalysisData = () => {
                 allSubgroups: [], 
                 allManufacturers: [], 
                 allDepartments: [], 
-                allWarehouses: [], 
-                employeeWarehouseMap: new Map<string, Set<string>>() 
             };
         }
         
@@ -72,35 +56,13 @@ export const useEmployeeAnalysisData = () => {
         const manufacturers = new Set<string>(originalData.map(row => String(getRowValue(row, COL.MANUFACTURER) || '')).filter(Boolean));
         const depts = new Set<string>(employeeAnalysisData.fullSellerArray.map(emp => String(emp.department || '')).filter(Boolean));
         
-        const warehouses = new Set<string>();
-        const empMap = new Map<string, Set<string>>();
-
-        baseFilteredData.forEach(row => {
-            const rawKho = getRowValue(row, COL.KHO);
-            const empName = getRowValue(row, COL.NGUOI_TAO);
-            
-            if (rawKho !== undefined && rawKho !== null && rawKho !== '') {
-                const kho = String(rawKho).trim();
-                warehouses.add(kho);
-                
-                if (empName) {
-                    if (!empMap.has(empName)) {
-                        empMap.set(empName, new Set());
-                    }
-                    empMap.get(empName)!.add(kho);
-                }
-            }
-        });
-
         return { 
             allIndustries: Array.from(industries).sort(), 
             allSubgroups: Array.from(subgroups).sort(),
             allManufacturers: Array.from(manufacturers).sort(),
             allDepartments: Array.from(depts).sort(),
-            allWarehouses: Array.from(warehouses).sort(),
-            employeeWarehouseMap: empMap
         };
-    }, [productConfig, originalData, employeeAnalysisData, baseFilteredData]);
+    }, [productConfig, originalData, employeeAnalysisData]);
 
     // Restore selected departments
     useEffect(() => {
@@ -120,66 +82,33 @@ export const useEmployeeAnalysisData = () => {
         loadDepartments();
     }, [allDepartments]);
 
-    // Restore selected warehouses
-    useEffect(() => {
-        const loadWarehouses = async () => {
-            try {
-                const saved = await getSetting<string[]>('employeeAnalysis_selectedWarehouses');
-                if (saved && Array.isArray(saved) && allWarehouses.length > 0) {
-                    const validWarehouses = saved.filter(w => allWarehouses.includes(w));
-                    setSelectedWarehouses(validWarehouses);
-                } else if (allWarehouses.length > 0 && selectedWarehouses.length === 0) {
-                    setSelectedWarehouses(allWarehouses);
-                }
-            } catch (e) {
-                console.error("Failed to load selected warehouses", e);
-            }
-        };
-        loadWarehouses();
-    }, [allWarehouses]);
-
     // Save filters
     useEffect(() => {
         saveSetting('employeeAnalysis_selectedDepartments', selectedDepartments);
     }, [selectedDepartments]);
 
-    useEffect(() => {
-        saveSetting('employeeAnalysis_selectedWarehouses', selectedWarehouses);
-    }, [selectedWarehouses]);
-
     const filteredEmployeeAnalysisData = useMemo(() => {
         if (!employeeAnalysisData) return null;
         
         const isAllDepartments = selectedDepartments.length === 0 || selectedDepartments.length === allDepartments.length;
-        const isAllWarehouses = selectedWarehouses.length === 0 || selectedWarehouses.length === allWarehouses.length;
 
-        if (isAllDepartments && isAllWarehouses) {
-            return employeeAnalysisData;
-        }
-
-        const filterEmployee = (empName: string, empDept: string) => {
-            const deptMatch = selectedDepartments.length === 0 || selectedDepartments.includes(empDept);
-            const empWarehouses = employeeWarehouseMap.get(empName);
-            const warehouseMatch = selectedWarehouses.length === 0 || 
-                                   (empWarehouses && Array.from(empWarehouses).some(w => selectedWarehouses.includes(w)));
-            
-            if (!empWarehouses && !isAllWarehouses) return false;
-            return deptMatch && warehouseMatch;
+        const filterEmployee = (emp: any) => {
+            // Check Department
+            if (!isAllDepartments && !selectedDepartments.includes(emp.department)) return false;
+            // Check Zero Revenue
+            if (hideZeroRevenue && (emp.doanhThuThuc || 0) === 0) return false;
+            return true;
         };
 
-        const filteredFullSellerArray = employeeAnalysisData.fullSellerArray.filter(emp => filterEmployee(emp.name, emp.department));
-        const filteredExploitationData = employeeAnalysisData.exploitationData.filter(emp => filterEmployee(emp.name, emp.department));
+        const filteredFullSellerArray = employeeAnalysisData.fullSellerArray.filter(filterEmployee);
+        const filteredExploitationData = employeeAnalysisData.exploitationData.filter(filterEmployee);
         
         // Filter baseFilteredData as well
         const filteredBaseData = baseFilteredData.filter(row => {
-            const rawKho = getRowValue(row, COL.KHO);
             const empName = getRowValue(row, COL.NGUOI_TAO);
-            const empDept = empName ? (employeeAnalysisData.fullSellerArray.find(e => e.name === empName)?.department || '') : '';
-            
-            const khoMatch = selectedWarehouses.length === 0 || (rawKho && selectedWarehouses.includes(String(rawKho).trim()));
-            const deptMatch = selectedDepartments.length === 0 || selectedDepartments.includes(empDept);
-            
-            return khoMatch && deptMatch;
+            const empObj = empName ? employeeAnalysisData.fullSellerArray.find(e => e.name === empName) : null;
+            if (!empObj) return !hideZeroRevenue; // If name not found, usually means 0 revenue info in this context, but follow filter
+            return filterEmployee(empObj);
         });
 
         return {
@@ -188,22 +117,19 @@ export const useEmployeeAnalysisData = () => {
             exploitationData: filteredExploitationData,
             filteredBaseData
         } as any;
-    }, [employeeAnalysisData, selectedDepartments, selectedWarehouses, allDepartments, allWarehouses, employeeWarehouseMap, baseFilteredData]);
+    }, [employeeAnalysisData, selectedDepartments, allDepartments, baseFilteredData, hideZeroRevenue]);
 
     return {
         allIndustries,
         allSubgroups,
         allManufacturers,
         allDepartments,
-        allWarehouses,
         selectedDepartments,
         setSelectedDepartments,
-        selectedWarehouses,
-        setSelectedWarehouses,
         deptSearchTerm,
         setDeptSearchTerm,
-        warehouseSearchTerm,
-        setWarehouseSearchTerm,
+        hideZeroRevenue,
+        setHideZeroRevenue,
         filteredEmployeeAnalysisData: filteredEmployeeAnalysisData ? {
             ...filteredEmployeeAnalysisData,
             filteredBaseData: filteredEmployeeAnalysisData.filteredBaseData

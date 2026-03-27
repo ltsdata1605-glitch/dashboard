@@ -49,7 +49,7 @@ const Header: React.FC<HeaderProps> = ({
     };
     
     return (
-        <header className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-10 pb-8 border-b border-slate-200/60 dark:border-slate-800/60">
+        <header className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-5 pb-5 border-b border-slate-200/60 dark:border-slate-800/60">
             {/* Title Section with Editorial Style */}
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-4">

@@ -192,14 +192,6 @@ export function sortSummaryData(data: { [key: string]: SummaryTableNode }, sortK
     return sortedData;
 }
 
-export function isValidSale(row: DataRow): boolean {
-    const getString = (keys: string[]) => (getRowValue(row, keys) || '').toString().trim().toLowerCase();
-    
-    return getString(COL.TRANG_THAI_HUY) === 'chưa hủy' &&
-           getString(COL.TINH_TRANG_NHAP_TRA) === 'chưa trả' &&
-           getString(COL.TRANG_THAI_THU_TIEN) === 'đã thu';
-}
-
 export function getHinhThucThanhToan(row: DataRow): 'tra_gop' | 'tien_mat' | 'thu_ho' | 'khac' {
     const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT);
     if (HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat)) return 'tra_gop';

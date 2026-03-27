@@ -4,7 +4,6 @@ import { Icon } from '../common/Icon';
 import { formatCurrency, abbreviateName, formatQuantity, getHeSoQuyDoi, getRowValue } from '../../utils/dataUtils';
 import type { DataRow, ProductConfig, Employee } from '../../types';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
-import { getSummarySynthesisAnalysis } from '../../services/aiService';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 
 interface CustomTabConfig {
@@ -31,8 +30,6 @@ const SummarySynthesisTab = React.memo(forwardRef<HTMLDivElement, SummarySynthes
     const [internalGroupMode, setInternalGroupMode] = useState<'parent' | 'subgroup'>('subgroup'); 
     const [internalSelectedGroups, setInternalSelectedGroups] = useState<string[]>([]);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: isCustomTab ? 'value' : 'name', direction: isCustomTab ? 'desc' : 'asc' });
-    const [analysis, setAnalysis] = useState<string | null>(null);
-    const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
 
     const metricType = customConfig ? customConfig.metricType : internalMetricType;
     const selectedGroups = customConfig ? customConfig.selectedSubgroups : internalSelectedGroups;
@@ -229,20 +226,6 @@ const SummarySynthesisTab = React.memo(forwardRef<HTMLDivElement, SummarySynthes
         return { rows: tableRows, subgroupTotals, groupedRows, sortedDepartments, departmentTotals };
     }, [baseFilteredData, productConfig, employeeData, isCustomTab, customConfig, metricType, internalGroupMode, selectedGroups, sortConfig]);
 
-    const handleAiAnalysis = async () => {
-        setIsAnalysisLoading(true);
-        setAnalysis(null);
-        try {
-            const result = await getSummarySynthesisAnalysis(rows, selectedGroups, metricType);
-            setAnalysis(result);
-        } catch (error) {
-            console.error("AI Error:", error);
-            setAnalysis("Đã xảy ra lỗi khi phân tích.");
-        } finally {
-            setIsAnalysisLoading(false);
-        }
-    };
-
     return (
         <div ref={ref} className="space-y-4">
             {/* Header */}
@@ -283,10 +266,6 @@ const SummarySynthesisTab = React.memo(forwardRef<HTMLDivElement, SummarySynthes
                             </div>
 
                             <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
-
-                            <button onClick={handleAiAnalysis} disabled={isAnalysisLoading} className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all" title="Phân tích AI">
-                                {isAnalysisLoading ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="sparkles" size={5} />}
-                            </button>
                             
                             {onExport && (
                                 <button onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
@@ -298,33 +277,47 @@ const SummarySynthesisTab = React.memo(forwardRef<HTMLDivElement, SummarySynthes
                 )}
             </div>
 
-            <div className="overflow-hidden">
-                <div className="overflow-x-auto">
+            <div className="overflow-hidden border-2 border-primary-400 dark:border-slate-600">
+                <div className="overflow-x-auto custom-scrollbar">
                     <table className="w-full text-left border-collapse">
-                        <thead className="sticky top-0 z-20 bg-[#dee6ed] dark:bg-slate-800/90 backdrop-blur-sm shadow-sm">
+                        <thead className="sticky top-0 z-20 backdrop-blur-sm">
                             <tr>
-                                <th onClick={() => handleSort('name')} className="px-3 py-2 text-left text-[11px] font-semibold text-[#46505e] dark:text-slate-300 cursor-pointer select-none min-w-[140px] sticky left-0 bg-[#dee6ed] dark:bg-slate-800 z-20 border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider">
-                                    Nhân Viên
-                                    {sortConfig.key === 'name' && (
-                                        <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1" />
-                                    )}
+                                <th onClick={() => handleSort('name')} className="px-4 py-2 text-left text-sm font-bold text-teal-800 dark:text-teal-200 uppercase tracking-wider cursor-pointer select-none min-w-[140px] sticky left-0 z-40 bg-teal-50 dark:bg-slate-900 border-b-4 border-teal-200 border-r border-slate-300">
+                                    <div className="flex items-center gap-1">
+                                        DANH MỤC
+                                        {sortConfig.key === 'name' && (
+                                            <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                        )}
+                                    </div>
                                 </th>
                                 {isCustomTab ? (
-                                    <th onClick={() => handleSort('value')} className="px-3 py-2 text-center text-[11px] font-semibold text-[#46505e] dark:text-slate-300 cursor-pointer select-none border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider">
-                                        {customConfig?.label || 'Giá trị'}
-                                        {sortConfig.key === 'value' && (
-                                            <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1" />
-                                        )}
+                                    <th onClick={() => handleSort('value')} className={`px-4 py-2 text-center text-sm font-bold uppercase tracking-wider cursor-pointer select-none border-b-4 border-slate-200 border-r border-slate-300 bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400`}>
+                                        <div className="flex items-center justify-center gap-1">
+                                            {customConfig?.label || 'Giá trị'}
+                                            {sortConfig.key === 'value' && (
+                                                <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                            )}
+                                        </div>
                                     </th>
                                 ) : (
-                                    selectedGroups.map(group => (
-                                        <th key={group} onClick={() => handleSort(group)} className="px-3 py-2 text-center text-[11px] font-semibold text-[#46505e] dark:text-slate-300 cursor-pointer select-none border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider">
-                                            {group}
-                                            {sortConfig.key === group && (
-                                                <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} className="inline ml-1" />
-                                            )}
-                                        </th>
-                                    ))
+                                    selectedGroups.map((group, gIdx) => {
+                                        const colorConfigs = [
+                                            { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-slate-200' },
+                                            { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-slate-200' },
+                                            { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-slate-200' },
+                                        ];
+                                        const config = colorConfigs[gIdx % colorConfigs.length];
+                                        return (
+                                            <th key={group} onClick={() => handleSort(group)} className={`px-4 py-2 text-center text-sm font-bold uppercase tracking-wider cursor-pointer select-none border-b-4 ${config.border} border-r border-slate-300 ${config.bg} ${config.text} dark:bg-slate-800 dark:text-slate-200`}>
+                                                <div className="flex items-center justify-center gap-1">
+                                                    {group}
+                                                    {sortConfig.key === group && (
+                                                        <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                                    )}
+                                                </div>
+                                            </th>
+                                        );
+                                    })
                                 )}
                             </tr>
                         </thead>
@@ -344,29 +337,34 @@ const SummarySynthesisTab = React.memo(forwardRef<HTMLDivElement, SummarySynthes
                                 
                                 return (
                                 <React.Fragment key={dept}>
-                                    <tr className={deptColor}>
-                                        <td className="px-3 py-1 text-xs font-black text-slate-500 uppercase tracking-widest border-b border-slate-200 dark:border-slate-800 sticky left-0 z-10" colSpan={isCustomTab ? 2 : selectedGroups.length + 1}>
+                                    <tr>
+                                        <td className="px-3 py-2 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest sticky left-0 z-10 border-y border-slate-100 dark:border-slate-800 bg-slate-50/80" colSpan={isCustomTab ? 2 : selectedGroups.length + 1}>
                                             <div className="flex items-center gap-2">
-                                                <Icon name="users-round" size={3} />
-                                                <span>{dept}</span>
+                                                <span className={`w-2 h-3.5 rounded-full flex-shrink-0 ${
+                                                    ['bg-blue-500','bg-emerald-500','bg-violet-500','bg-amber-500','bg-rose-500','bg-sky-500','bg-teal-500','bg-fuchsia-500'][deptIdx % 8]
+                                                }`} />
+                                                <span>{dept} — {groupedRows[dept].length} người</span>
                                             </div>
                                         </td>
                                     </tr>
                                     {groupedRows[dept].map((row, idx) => (
-                                        <tr key={row.name} className="group hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
-                                            <td className="px-3 py-1 text-left sticky left-0 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800/50 transition-colors border-r border-slate-100 dark:border-slate-800/50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)] border-b border-slate-200 dark:border-slate-800 z-10">
-                                                <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{abbreviateName(row.name)}</span>
+                                        <tr key={row.name} className={`group border-b border-slate-100 dark:border-slate-800 transition-colors hover:bg-teal-50/50 dark:hover:bg-slate-800/80 ${idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/30 dark:bg-slate-800/20'}`}>
+                                            <td className="px-3 py-2 text-left sticky left-0 bg-inherit border-r border-slate-300 dark:border-slate-700 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 w-6 flex-shrink-0">#{idx + 1}</span>
+                                                    <span className="text-[13px] font-bold text-slate-700 dark:text-slate-200 truncate group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">{abbreviateName(row.name)}</span>
+                                                </div>
                                             </td>
                                             {isCustomTab ? (
-                                                <td className="px-3 py-1 text-center text-sm font-bold text-indigo-600 dark:text-indigo-400 border-b border-slate-200 dark:border-slate-800">
+                                                <td className="px-3 py-2 text-center text-[13px] font-extrabold text-sky-700 dark:text-sky-400 border-r border-slate-100 dark:border-slate-800">
                                                     {metricType === 'quantity' ? formatQuantity(row.value) : formatCurrency(row.value)}
                                                 </td>
                                             ) : (
                                                 selectedGroups.map(group => {
                                                     const val = row.subgroupMetrics.get(group) || 0;
                                                     return (
-                                                        <td key={group} className="px-3 py-1 text-center text-sm font-medium text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
-                                                            {metricType === 'quantity' ? (val > 0 ? formatQuantity(val) : '-') : (val > 0 ? formatCurrency(val) : '-')}
+                                                        <td key={group} className="px-3 py-2 text-center text-[13px] font-medium text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800">
+                                                            {metricType === 'quantity' ? (val > 0 ? formatQuantity(val) : <span className="text-slate-200 dark:text-slate-700">—</span>) : (val > 0 ? formatCurrency(val) : <span className="text-slate-200 dark:text-slate-700">—</span>)}
                                                         </td>
                                                     );
                                                 })
@@ -375,15 +373,17 @@ const SummarySynthesisTab = React.memo(forwardRef<HTMLDivElement, SummarySynthes
                                     ))}
                                     {/* Department Total */}
                                     {sortedDepartments.length > 1 && (
-                                        <tr className="bg-slate-50 dark:bg-slate-800/50 font-semibold text-slate-700 dark:text-slate-200">
-                                            <td className="px-3 py-2 text-left text-xs uppercase font-bold text-slate-500 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10 border-b border-slate-200 dark:border-slate-800">Tổng {dept}</td>
+                                        <tr className="bg-teal-50/30 dark:bg-teal-900/10 font-bold text-slate-700 dark:text-slate-200">
+                                            <td className="px-3 py-2 text-center text-[11px] uppercase tracking-wider font-extrabold text-teal-700 dark:text-teal-300 sticky left-0 z-10 bg-inherit border-b border-slate-200 dark:border-slate-800 border-r border-slate-300">
+                                                ∑ Tổng {dept}
+                                            </td>
                                             {isCustomTab ? (
-                                                <td className="px-3 py-2 text-center text-sm font-black text-indigo-700 dark:text-indigo-300 border-b border-slate-200 dark:border-slate-800">
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-sky-700 dark:text-sky-300 border-b border-slate-200 dark:border-slate-800">
                                                     {metricType === 'quantity' ? formatQuantity(departmentTotals.get(dept)?.get('value')) : formatCurrency(departmentTotals.get(dept)?.get('value') || 0)}
                                                 </td>
                                             ) : (
                                                 selectedGroups.map(group => (
-                                                    <td key={group} className="px-3 py-2 text-center text-sm font-bold border-b border-slate-200 dark:border-slate-800">
+                                                    <td key={group} className="px-3 py-2 text-center text-[13px] font-bold border-b border-slate-200 dark:border-slate-800 border-r border-slate-100">
                                                         {metricType === 'quantity' ? formatQuantity(departmentTotals.get(dept)?.get(group)) : formatCurrency(departmentTotals.get(dept)?.get(group) || 0)}
                                                     </td>
                                                 ))
@@ -393,16 +393,16 @@ const SummarySynthesisTab = React.memo(forwardRef<HTMLDivElement, SummarySynthes
                                 </React.Fragment>
                             );})}
                         </tbody>
-                        <tfoot className="bg-[#c4cbd3] dark:bg-slate-800 border-t border-slate-300 dark:border-slate-700">
+                        <tfoot className="bg-teal-100 dark:bg-teal-900/40 border-t-2 border-teal-200 dark:border-teal-800">
                             <tr>
-                                <td className="px-3 py-2 text-left text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest sticky left-0 bg-[#c4cbd3] dark:bg-slate-800 z-10 border-b border-slate-300 dark:border-slate-700 text-center">Tổng cộng</td>
+                                <td className="px-4 py-2 text-center text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest sticky left-0 z-10 bg-inherit border-r border-slate-300">∑ Tổng cộng</td>
                                 {isCustomTab ? (
-                                    <td className="px-3 py-2 text-center text-sm font-bold text-indigo-600 dark:text-indigo-400 border-b border-slate-300 dark:border-slate-700">
+                                    <td className="px-3 py-2 text-center text-[13px] font-extrabold text-sky-700 dark:text-sky-300">
                                         {metricType === 'quantity' ? formatQuantity(subgroupTotals.get('value')) : formatCurrency(subgroupTotals.get('value') || 0)}
                                     </td>
                                 ) : (
                                     selectedGroups.map(group => (
-                                        <td key={group} className="px-3 py-2 text-center text-sm font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
+                                        <td key={group} className="px-3 py-2 text-center text-[13px] font-extrabold text-slate-700 dark:text-slate-200 border-r border-slate-200/50">
                                             {metricType === 'quantity' ? formatQuantity(subgroupTotals.get(group)) : formatCurrency(subgroupTotals.get(group) || 0)}
                                         </td>
                                     ))
@@ -412,16 +412,6 @@ const SummarySynthesisTab = React.memo(forwardRef<HTMLDivElement, SummarySynthes
                     </table>
                 </div>
             </div>
-
-            {analysis && (
-                <div className="mt-4 p-4 border rounded-xl">
-                    <div className="flex items-center gap-2 mb-2 text-purple-800 dark:text-purple-300 font-bold">
-                        <Icon name="sparkles" />
-                        <span>AI Phân Tích</span>
-                    </div>
-                    <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">{analysis}</p>
-                </div>
-            )}
         </div>
     );
 }));

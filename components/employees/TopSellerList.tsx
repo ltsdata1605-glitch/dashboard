@@ -3,8 +3,7 @@ import React, { useState, forwardRef, useMemo, useEffect } from 'react';
 import type { Employee } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
-import { getTopSellerAnalysis } from '../../services/aiService';
-import { getTopSellerAnalysisHistory, saveTopSellerAnalysis } from '../../services/dbService';
+import { saveTopSellerAnalysis } from '../../services/dbService';
 
 interface TopSellerListProps {
     fullSellerArray: Employee[];
@@ -23,9 +22,6 @@ const getTraChamPercentClass = (percentage: number) => {
 
 
 const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(({ fullSellerArray, onEmployeeClick, onBatchExport, onExport, isExporting }, ref) => {
-    const [analysis, setAnalysis] = useState<string | null>(null);
-    const [isAnalysisLoading, setIsAnalysisLoading] = useState(false);
-    const [copyStatus, setCopyStatus] = useState<'idle' | 'copied'>('idle');
     const [isExpanded, setIsExpanded] = useState(false);
     
     const sortedSellers = useMemo(() => {
@@ -70,52 +66,6 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
         onBatchExport(sortedSellers);
     };
 
-    const handleAiAnalysis = async () => {
-        setIsAnalysisLoading(true);
-        setAnalysis(null);
-        try {
-            const history = await getTopSellerAnalysisHistory();
-            const result = await getTopSellerAnalysis(sortedSellers, history); 
-            setAnalysis(result);
-            await saveTopSellerAnalysis(result, sortedSellers);
-        } catch (error) {
-            console.error("Lỗi khi phân tích top seller:", error);
-            setAnalysis("Đã xảy ra lỗi khi phân tích. Vui lòng thử lại.");
-        } finally {
-            setIsAnalysisLoading(false);
-        }
-    };
-
-    const handleCopyAnalysis = () => {
-        if (analysis) {
-            const textArea = document.createElement('textarea');
-            textArea.value = analysis;
-            textArea.style.position = 'fixed';
-            textArea.style.top = '0';
-            textArea.style.left = '0';
-            textArea.style.width = '2em';
-            textArea.style.height = '2em';
-            textArea.style.padding = '0';
-            textArea.style.border = 'none';
-            textArea.style.outline = 'none';
-            textArea.style.boxShadow = 'none';
-            textArea.style.background = 'transparent';
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    setCopyStatus('copied');
-                    setTimeout(() => setCopyStatus('idle'), 2000);
-                }
-            } catch (err) {
-                console.error('Fallback: Oops, unable to copy', err);
-            }
-            document.body.removeChild(textArea);
-        }
-    };
-
     return (
         <div ref={ref}>
             <div className="flex justify-between items-center mb-6">
@@ -135,14 +85,6 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                             <button onClick={() => setIsExpanded(true)} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${isExpanded ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Toàn bộ</button>
                         </div>
                         <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
-                        <button
-                            onClick={handleAiAnalysis}
-                            disabled={isAnalysisLoading}
-                            className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all"
-                            title="Nhận xét bằng AI"
-                        >
-                            {isAnalysisLoading ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="sparkles" size={5} />}
-                        </button>
                         <button 
                             onClick={handleBatchExportClick}
                             className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
@@ -214,37 +156,6 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                     })
                 )}
             </div>
-            {(analysis || isAnalysisLoading) && (
-                <div className="mt-4 p-4 bg-indigo-50 dark:bg-slate-900/50 border border-indigo-200 dark:border-indigo-900/50 hide-on-export">
-                    <div className="flex justify-between items-center">
-                        <h4 className="font-bold text-indigo-800 dark:text-indigo-200 flex items-center gap-2">
-                            <Icon name="sparkles" />
-                            AI Nhận Xét
-                        </h4>
-                        {analysis && !isAnalysisLoading && (
-                            <button
-                                onClick={handleCopyAnalysis}
-                                title={copyStatus === 'copied' ? 'Đã sao chép!' : 'Sao chép nhận xét'}
-                                className="flex items-center gap-1.5 text-xs font-semibold py-1 px-2 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 transition-colors"
-                            >
-                                <Icon name={copyStatus === 'copied' ? "check" : "copy"} size={4} />
-                                {copyStatus === 'copied' && <span>Đã chép</span>}
-                            </button>
-                        )}
-                    </div>
-
-                    {isAnalysisLoading ? (
-                        <div className="space-y-2 mt-2">
-                            <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-4 w-full"></div>
-                            <div className="animate-pulse bg-slate-200 dark:bg-slate-700 rounded h-4 w-3/4"></div>
-                        </div>
-                    ) : (
-                        <p className="text-sm text-slate-700 dark:text-slate-300 mt-1 whitespace-pre-wrap">
-                            {analysis}
-                        </p>
-                    )}
-                </div>
-            )}
         </div>
     );
 }));

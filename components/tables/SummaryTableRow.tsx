@@ -151,8 +151,8 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     const indentMargin = `${(level - 1) * 16}px`;
     const traGopDisplay = traGopPercent === 0 ? '-' : `${traGopPercent.toFixed(0)}%`;
 
-    const cellClass = "px-3 py-2 text-center text-[13px]"; 
-    const deltaCellClass = "px-2 py-2 text-center bg-slate-50/30 dark:bg-white/[0.01]"; 
+    const cellClass = "px-2 py-1.5 text-center text-[13px]"; 
+    const deltaCellClass = "px-2 py-1.5 text-center bg-slate-50/30 dark:bg-white/[0.01]"; 
     const separatorClass = "border-r border-slate-100 dark:border-white/5";
 
     return (
@@ -162,7 +162,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 onClick={isExpandable ? () => toggleExpand(currentId) : undefined}
             >
                 {/* NGÀNH HÀNG */}
-                <td className={`px-6 py-2 text-[13px] whitespace-nowrap border-r border-slate-100 dark:border-white/5 sticky left-0 z-30 ${isRoot ? 'bg-white dark:bg-[#1c1c1e]' : 'bg-slate-50/95 dark:bg-[#242426]/95'}`}>
+                <td className={`px-4 py-1.5 text-[13px] whitespace-nowrap border-r border-slate-100 dark:border-white/5 sticky left-0 z-30 ${isRoot ? 'bg-white dark:bg-[#1c1c1e]' : 'bg-slate-50/95 dark:bg-[#242426]/95'}`}>
                     <div className={`flex items-center gap-3 ${contentColorClass}`} style={{ marginLeft: indentMargin }}>
                         {isExpandable ? (
                             <div className={`w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''} flex-shrink-0 text-slate-400`}>

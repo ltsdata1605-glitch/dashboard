@@ -19,28 +19,21 @@ interface EmployeeAnalysisTabsProps {
     visibleTabs: Set<string>;
     handleToggleTabVisibility: (id: string) => void;
     allAvailableTabs: any[];
-    isSettingsOpen: boolean;
-    setIsSettingsOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    settingsRef: React.RefObject<HTMLDivElement | null>;
-
-    // Filter Props
-    allWarehouses: string[];
-    selectedWarehouses: string[];
-    setSelectedWarehouses: React.Dispatch<React.SetStateAction<string[]>>;
-    warehouseSearchTerm: string;
-    setWarehouseSearchTerm: (val: string) => void;
-    isWarehouseFilterOpen: boolean;
-    setIsWarehouseFilterOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    warehouseFilterRef: React.RefObject<HTMLDivElement | null>;
-    allDepartments: string[];
-    selectedDepartments: string[];
-    setSelectedDepartments: React.Dispatch<React.SetStateAction<string[]>>;
-    deptSearchTerm: string;
-    setDeptSearchTerm: (val: string) => void;
-    isDeptFilterOpen: boolean;
-    setIsDeptFilterOpen: React.Dispatch<React.SetStateAction<boolean>>;
-    deptFilterRef: React.RefObject<HTMLDivElement | null>;
 }
+
+const getTabColorClasses = (color: string, isActive: boolean) => {
+    if (!isActive) return 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800';
+    switch (color) {
+        case 'indigo': return 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 shadow-sm';
+        case 'emerald': return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 shadow-sm';
+        case 'amber': return 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 shadow-sm';
+        case 'rose': return 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 shadow-sm';
+        case 'purple': return 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 shadow-sm';
+        case 'sky': return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400 shadow-sm';
+        case 'cyan': return 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400 shadow-sm';
+        default: return 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200 shadow-sm';
+    }
+};
 
 const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
     renderedDefaultTabs,
@@ -50,47 +43,37 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
     setModalState,
     visibleTabs,
     handleToggleTabVisibility,
-    allAvailableTabs,
-    isSettingsOpen,
-    setIsSettingsOpen,
-    settingsRef,
-    
-    allWarehouses,
-    selectedWarehouses,
-    setSelectedWarehouses,
-    warehouseSearchTerm,
-    setWarehouseSearchTerm,
-    isWarehouseFilterOpen,
-    setIsWarehouseFilterOpen,
-    warehouseFilterRef,
-    allDepartments,
-    selectedDepartments,
-    setSelectedDepartments,
-    deptSearchTerm,
-    setDeptSearchTerm,
-    isDeptFilterOpen,
-    setIsDeptFilterOpen,
-    deptFilterRef
+    allAvailableTabs
 }) => {
     return (
         <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-200 dark:border-slate-700 px-4 z-50 relative">
-            <div className="flex items-end gap-1 overflow-x-auto flex-1 min-w-0">
+            <div className="flex items-end gap-1 overflow-x-auto flex-1 min-w-0 pb-1 pt-1 hide-scrollbar">
                 {renderedDefaultTabs.map(tab => (
                     <button 
                         key={tab.id} 
                         onClick={() => setActiveTab(tab.id)} 
-                        className={`flex items-center gap-2 py-3 px-3 font-semibold text-sm transition-colors whitespace-nowrap ${activeTab === tab.id ? 'border-b-2 border-primary-500 text-primary-600 dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                        className={`flex items-center gap-2 py-1.5 px-3 rounded-xl font-bold text-[13px] transition-all whitespace-nowrap ${getTabColorClasses((tab as any).color || 'indigo', activeTab === tab.id)}`}
                     >
-                        <Icon name={tab.icon} /> {tab.label}
+                        <div className={`p-1 rounded-lg ${activeTab === tab.id ? 'bg-white/60 dark:bg-black/20 text-current' : 'text-slate-400'}`}>
+                            <Icon name={tab.icon} size={3.5}/> 
+                        </div>
+                        {tab.label}
                     </button>
                 ))}
-                {renderedCustomTabs.map(tab => (
+                {renderedCustomTabs.map(tab => {
+                    // Assign a consistent color based on string length to custom tabs
+                    const colors = ['cyan', 'purple', 'rose', 'amber', 'emerald'];
+                    const customColor = colors[tab.id.length % colors.length];
+                    return (
                     <div key={tab.id} className="group relative">
                         <button 
                             onClick={() => setActiveTab(tab.id)} 
-                            className={`flex items-center gap-2 py-3 px-3 font-semibold text-sm transition-colors whitespace-nowrap ${activeTab === tab.id ? 'border-b-2 border-primary-500 text-primary-600 dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'}`}
+                            className={`flex items-center gap-2 py-1.5 px-3 rounded-xl font-bold text-[13px] transition-all whitespace-nowrap ${getTabColorClasses(customColor, activeTab === tab.id)}`}
                         >
-                            <Icon name={tab.icon} /> {tab.name}
+                            <div className={`p-1 rounded-lg ${activeTab === tab.id ? 'bg-white/60 dark:bg-black/20 text-current' : 'text-slate-400'}`}>
+                                <Icon name={tab.icon} size={3.5}/> 
+                            </div>
+                            {tab.name}
                         </button>
                         <div className="absolute top-0 right-0 flex items-center transition-opacity hide-on-export">
                             <button 
@@ -107,67 +90,15 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                             </button>
                         </div>
                     </div>
-                ))}
+                    )
+                })}
                 <button 
                     onClick={() => setModalState({type: 'CREATE_TAB'})} 
                     title="Tạo tab thi đua mới" 
                     className="ml-2 mb-1 p-2 text-slate-400 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                 >
-                    <Icon name="plus-circle" />
+                    <Icon name="plus-circle" size={4.5} />
                 </button>
-            </div>
-            <div className="flex items-center gap-2 pb-2 hide-on-export">
-                {/* Render Filters here */}
-                <EmployeeAnalysisFilters 
-                    allWarehouses={allWarehouses}
-                    selectedWarehouses={selectedWarehouses}
-                    setSelectedWarehouses={setSelectedWarehouses}
-                    warehouseSearchTerm={warehouseSearchTerm}
-                    setWarehouseSearchTerm={setWarehouseSearchTerm}
-                    isWarehouseFilterOpen={isWarehouseFilterOpen}
-                    setIsWarehouseFilterOpen={setIsWarehouseFilterOpen}
-                    warehouseFilterRef={warehouseFilterRef}
-                    allDepartments={allDepartments}
-                    selectedDepartments={selectedDepartments}
-                    setSelectedDepartments={setSelectedDepartments}
-                    deptSearchTerm={deptSearchTerm}
-                    setDeptSearchTerm={setDeptSearchTerm}
-                    isDeptFilterOpen={isDeptFilterOpen}
-                    setIsDeptFilterOpen={setIsDeptFilterOpen}
-                    deptFilterRef={deptFilterRef}
-                />
-
-                <div ref={settingsRef} className="relative">
-                    <button 
-                        onClick={() => setIsSettingsOpen(prev => !prev)} 
-                        title="Tùy chọn hiển thị" 
-                        className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                    >
-                        <Icon name="settings" />
-                    </button>
-                    {isSettingsOpen && (
-                        <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-2xl p-2 border border-slate-200 dark:border-slate-700 z-20">
-                            <h4 className="font-bold text-sm mb-2 px-2 pt-2 text-slate-800 dark:text-slate-100">Ẩn/Hiện Tab</h4>
-                            <div className="space-y-1 max-h-60 overflow-y-auto">
-                                {allAvailableTabs.map(tab => (
-                                    <label key={tab.id} htmlFor={`vis-toggle-${tab.id}`} className="flex items-center justify-between cursor-pointer p-2 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700">
-                                        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">{tab.label || tab.name}</span>
-                                        <div className="relative inline-flex items-center">
-                                            <input
-                                                type="checkbox"
-                                                checked={visibleTabs.has(tab.id)}
-                                                onChange={() => handleToggleTabVisibility(tab.id)}
-                                                className="sr-only peer"
-                                                id={`vis-toggle-${tab.id}`}
-                                            />
-                                            <div className="w-9 h-5 bg-slate-300 dark:bg-slate-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-500 peer-checked:bg-primary-600"></div>
-                                        </div>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
             </div>
         </div>
     );

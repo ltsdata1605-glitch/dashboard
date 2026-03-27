@@ -3,7 +3,6 @@ import { useState, useEffect, useCallback } from 'react';
 import type { Status, AppState } from '../types';
 
 // Import specialized hooks
-import { useAiChatLogic } from './useAiChatLogic';
 import { useExportLogic } from './useExportLogic';
 import { useFileUploadLogic } from './useFileUploadLogic';
 import { useFilterState } from './useFilterState';
@@ -15,7 +14,7 @@ export const useDashboardLogic = () => {
     const [appState, setAppState] = useState<AppState>('loading');
     const [configUrl, setConfigUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRhes_lcas8n2_xYHKylsjyD3PIVbdchCiL2XDKJ4OYfgUZlVjAT7ZGWDHrYRzQVrK2w50W86Da3l48/pub?output=csv');
     const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(true);
-    const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | null>(null);
+    const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'changelog' | null>(null);
     const [modalData, setModalData] = useState<any>(null);
 
     // 1. Filter State Management
@@ -37,11 +36,6 @@ export const useDashboardLogic = () => {
 
     // 3. Warehouse Targets Management
     const { handleSaveWarehouseTargets } = useWarehouseTargets(setWarehouseTargets);
-
-    // 4. AI Chat Logic
-    const {
-        isChatOpen, setIsChatOpen, chatHistory, isAiResponding, handleSendMessage
-    } = useAiChatLogic(processedData);
 
     // 5. File Upload Logic
     const {
@@ -111,9 +105,8 @@ export const useDashboardLogic = () => {
         configUrl, setConfigUrl, uniqueFilterOptions,
         filterState, handleFilterChange,
         activeModal, setActiveModal, modalData,
-        isChatOpen, setIsChatOpen, chatHistory, isAiResponding,
         handleClearDepartments, handleClearData, handleShiftFileProcessing, handleFileProcessing,
-        handleSendMessage, openPerformanceModal, openUnshippedModal, handleExport,
+        openPerformanceModal, openUnshippedModal, handleExport,
         handleBatchExport,
         handleBatchKhoExport,
         isDeduplicationEnabled,

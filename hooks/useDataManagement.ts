@@ -21,14 +21,15 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [processedData, setProcessedData] = useState<ProcessedData | null>(null);
     const [employeeAnalysisData, setEmployeeAnalysisData] = useState<ProcessedData['employeeData'] | null>(null);
     const [warehouseTargets, setWarehouseTargets] = useState<Record<string, number>>({});
-    const [isInternalProcessing, setIsInternalProcessing] = useState(false);
+    const [isHardProcessing, setIsHardProcessing] = useState(false);    // initial load / file upload
+    const [isFilterProcessing, setIsFilterProcessing] = useState(false); // filter-only fast re-calc
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
 
     // Initial data loading
     useEffect(() => {
         const loadInitialData = async () => {
             setAppState('loading');
-            setIsInternalProcessing(true);
+            setIsHardProcessing(true);
             try {
                 let config: ProductConfig;
                 const cachedConfig = await dbService.getProductConfig();
@@ -79,7 +80,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 setAppState('upload');
                 await Promise.all([dbService.clearSalesData(), dbService.clearProductConfig()]);
             } finally {
-                setIsInternalProcessing(false);
+                setIsHardProcessing(false);
             }
         };
         loadInitialData();
@@ -91,7 +92,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         // and to handle dependencies correctly
         if (!originalData.length || !productConfig) return;
 
-        setIsInternalProcessing(true);
+        // For filter changes, we DON'T set isHardProcessing to avoid layout shift.
+        // isFilterProcessing is a soft signal (optional, kept for future use).
         const timer = setTimeout(() => {
             try {
                 const { processedData: result, baseFilteredData: newBaseData } = applyFiltersAndProcess(originalData, productConfig, filterState, departmentMap);
@@ -109,9 +111,9 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 console.error("Lỗi khi xử lý lại dữ liệu:", error);
                 setStatus({ message: "Đã xảy ra lỗi trong quá trình xử lý dữ liệu.", type: 'error', progress: 0 });
             } finally {
-                setIsInternalProcessing(false);
+                setIsFilterProcessing(false);
             }
-        }, 100);
+        }, 0); // run as soon as possible without triggering a hard loading state
 
         return () => clearTimeout(timer);
     }, [originalData, productConfig, filterState, departmentMap, setStatus]);
@@ -143,7 +145,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         employeeAnalysisData,
         warehouseTargets, setWarehouseTargets,
         uniqueFilterOptions,
-        isInternalProcessing,
+        isInternalProcessing: isHardProcessing, // only true during file upload / initial load
         fileInfo, setFileInfo
     };
 };

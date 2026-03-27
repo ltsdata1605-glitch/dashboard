@@ -12,21 +12,21 @@ export interface GridItem {
     color: string;
 }
 
-// Icons for each industry group (parent groups)
+// Icons for each industry group (parent groups) — all verified in lucide-react
 const industryIcons: { [key: string]: string } = {
     'Smartphone': 'smartphone', 'Laptop': 'laptop', 'Tablet': 'tablet',
-    'Phụ kiện': 'headphones', 'Gia dụng': 'sofa', 'Wearable': 'watch',
-    'CE': 'tv', 'Bảo hiểm': 'shield-check', 'Sim': 'smartphone-nfc',
+    'Phụ kiện': 'headphones', 'Gia dụng': 'plug-zap', 'Wearable': 'watch',
+    'CE': 'tv', 'Bảo hiểm': 'shield-check', 'Sim': 'signal',
     'Máy lọc nước': 'droplets', 'Vieon': 'film', 'IT': 'printer', 'Office & Virus': 'file-key-2',
     'Khác': 'package'
 };
 
-// Icons for subgroups (nhóm con)
+// Icons for subgroups — all verified available in lucide-react
 const subgroupIcons: { [key: string]: string } = {
     'Smartphone': 'smartphone',
     'Laptop': 'laptop',
     'Tablet': 'tablet',
-    'Phụ kiện Laptop, PC': 'keyboard-mouse',
+    'Phụ kiện Laptop, PC': 'keyboard',
     'Phụ kiện Gaming': 'gamepad-2',
     'Thiết bị mạng': 'router',
     'Linh kiện PC, Laptop': 'cpu',
@@ -34,19 +34,19 @@ const subgroupIcons: { [key: string]: string } = {
     'Tai nghe': 'headphones',
     'Webcam': 'webcam',
     'Bàn phím': 'keyboard',
-    'Chuột': 'mouse',
+    'Chuột': 'mouse-pointer-2',
     'Apple': 'apple',
     'Sạc dự phòng': 'battery-charging',
     'Cáp sạc': 'cable',
-    'Thẻ nhớ': 'sd-card',
-    'Bếp điện': 'heater',
-    'Tủ lạnh': 'fridge',
-    'Máy giặt': 'washing-machine',
-    'Máy lạnh': 'air-vent',
-    'Nồi cơm điện': 'cooking-pot',
-    'Máy xay sinh tố': 'blender',
-    'Lò vi sóng': 'microwave',
-    'Máy hút bụi': 'wind',
+    'Thẻ nhớ': 'memory-stick',
+    'Bếp điện': 'zap',
+    'Tủ lạnh': 'thermometer-snowflake',
+    'Máy giặt': 'waves',
+    'Máy lạnh': 'wind',
+    'Nồi cơm điện': 'flame',
+    'Máy xay sinh tố': 'coffee',
+    'Lò vi sóng': 'box',
+    'Máy hút bụi': 'tornado',
     'Quạt điều hòa': 'fan',
     'Đồng hồ thông minh': 'watch',
     'Vòng đeo tay thông minh': 'activity',
@@ -55,7 +55,7 @@ const subgroupIcons: { [key: string]: string } = {
     'Máy lọc nước': 'droplets',
     'Phụ kiện Apple': 'apple',
     'Bao da, ốp lưng': 'smartphone',
-    'Miếng dán màn hình': 'tablet-smartphone',
+    'Miếng dán màn hình': 'layers',
     'Túi chống sốc': 'briefcase',
     'Balo': 'backpack'
 };
@@ -74,11 +74,12 @@ const specialGroups = new Set(['Smartphone', 'Laptop', 'Tablet', 'Máy lọc nư
 
 interface UseIndustryGridLogicProps {
     industryData: IndustryData[];
-    filteredValidSalesData: DataRow[];
+    // ✅ Phải là data CHƯА bị filter theo parent để drilldown hoạt động đúng
+    allSalesData: DataRow[];
     productConfig: ProductConfig | null;
 }
 
-export const useIndustryGridLogic = ({ industryData, filteredValidSalesData, productConfig }: UseIndustryGridLogicProps) => {
+export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig }: UseIndustryGridLogicProps) => {
     const [drilldownPath, setDrilldownPath] = useState<string[]>([]);
     
     // State for chart tab logic (moved here for consistency if needed, but primarily for Grid view now)
@@ -107,7 +108,7 @@ export const useIndustryGridLogic = ({ industryData, filteredValidSalesData, pro
         const parentColor = industryColors[parentGroup] || 'slate';
         
         // Filter data relevant to the selected top-level industry
-        const dataForParent = filteredValidSalesData.filter(row => {
+        const dataForParent = allSalesData.filter(row => {
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
             const pGroup = productConfig.childToParentMap[maNhomHang] || 'Khác';
             const cGroup = productConfig.childToSubgroupMap[maNhomHang];
@@ -193,7 +194,7 @@ export const useIndustryGridLogic = ({ industryData, filteredValidSalesData, pro
         }
 
         return { data: [], totalRevenue: 0, levelType: 'end' };
-    }, [drilldownPath, industryData, filteredValidSalesData, productConfig]);
+    }, [drilldownPath, industryData, allSalesData, productConfig]);
 
     // Data preparation for charts
     const allSubgroups = useMemo(() => {
@@ -208,13 +209,13 @@ export const useIndustryGridLogic = ({ industryData, filteredValidSalesData, pro
     const manufacturerDataForChart = useMemo(() => {
         if (!productConfig) return [];
         const dataToFilter = selectedChartSubgroups.length > 0
-            ? filteredValidSalesData.filter(row => {
+            ? allSalesData.filter(row => {
                 const subgroup = productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)];
                 return subgroup && selectedChartSubgroups.includes(subgroup);
             })
-            : filteredValidSalesData;
+            : allSalesData;
 
-        const dataByManufacturer = dataToFilter.reduce((acc, row) => {
+        const dataByManufacturer = dataToFilter.reduce((acc: { [key: string]: { revenue: number; quantity: number } }, row) => {
             const manufacturer = getRowValue(row, COL.MANUFACTURER) || 'Không rõ';
             const revenue = Number(getRowValue(row, COL.PRICE)) || 0;
             const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
@@ -227,7 +228,7 @@ export const useIndustryGridLogic = ({ industryData, filteredValidSalesData, pro
         return Object.entries(dataByManufacturer)
             .map(([name, data]) => ({ name, ...data }))
             .sort((a,b) => b.revenue - a.revenue);
-    }, [filteredValidSalesData, selectedChartSubgroups, productConfig]);
+    }, [allSalesData, selectedChartSubgroups, productConfig]);
 
     const getTitle = (activeTab: 'card' | 'chart') => {
         if (activeTab === 'chart') return "BIỂU ĐỒ TỶ TRỌNG";

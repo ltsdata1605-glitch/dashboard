@@ -1,10 +1,8 @@
 
-import { GoogleGenAI, Chat } from "@google/genai";
+
 
 export type AppState = 'upload' | 'loading' | 'processing' | 'dashboard';
 
-// Simplified ViewType as only dashboard remains
-export type ViewType = 'dashboard';
 
 export interface Status {
     message: string;
@@ -27,11 +25,6 @@ export interface StoredSalesData {
     savedAt: Date;
 }
 
-export interface StoredProductConfig {
-    config: ProductConfig;
-    url: string;
-    fetchedAt: Date;
-}
 
 export interface KpiData {
     doanhThuQD: number;
@@ -260,14 +253,6 @@ export interface FilterState {
     };
 }
 
-export interface ChartRef {
-    [key: string]: any;
-}
-
-export interface ChatMessage {
-    role: 'user' | 'model';
-    content: string;
-}
 
 export interface VisibilityState {
     trendChart: boolean;

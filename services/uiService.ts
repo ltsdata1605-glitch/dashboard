@@ -132,10 +132,43 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     }
     
     // FIX FOR SCROLLABLE CONTENT (Expand scrollable tables for export)
-    const scrollableContainers = clone.querySelectorAll('.max-h-96.overflow-y-auto, .max-h-60.overflow-y-auto, [class*="max-h-"][class*="overflow-y-"]');
+    const scrollableContainers = clone.querySelectorAll('.overflow-x-auto, .overflow-y-auto, .custom-scrollbar, [class*="max-h-"], [class*="overflow-"]');
     scrollableContainers.forEach((container: any) => {
         container.style.maxHeight = 'none';
+        container.style.maxWidth = 'none';
+        container.style.overflow = 'visible';
+        container.style.overflowX = 'visible';
         container.style.overflowY = 'visible';
+        // Force hide scrollbars in webkit
+        if (container instanceof HTMLElement) {
+            container.style.scrollbarWidth = 'none'; // Firefox
+            const style = document.createElement('style');
+            style.textContent = `
+                .clone-no-scrollbar::-webkit-scrollbar { display: none !important; }
+            `;
+            container.classList.add('clone-no-scrollbar');
+            container.appendChild(style);
+        }
+    });
+
+    // 6. FIX GOOGLE CHARTS SVG SCALING (For TrendChart / IndustryGrid)
+    // Make them responsive so they scale down to the exported format perfectly
+    const svgs = clone.querySelectorAll('svg');
+    svgs.forEach((svg: any) => {
+        if (svg.hasAttribute('aria-label') && svg.getAttribute('aria-label') === 'A chart.') {
+            const currentWidthStr = svg.getAttribute('width');
+            const currentHeightStr = svg.getAttribute('height');
+            
+            if (currentWidthStr && currentWidthStr !== '100%') {
+                const w = parseFloat(currentWidthStr);
+                const h = parseFloat(currentHeightStr || '0');
+                if (w && h && !svg.hasAttribute('viewBox')) {
+                    svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                    svg.setAttribute('width', '100%');
+                    svg.setAttribute('height', '100%');
+                }
+            }
+        }
     });
 
     const captureContainer = document.createElement('div');
@@ -179,13 +212,21 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         await document.fonts.ready;
         await waitForImages(clone);
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 500)); // Increased from 300 to 500ms
 
         console.log(`Bắt đầu chụp ảnh bằng html-to-image: ${filename}...`);
 
-        const finalWidth = captureAsDisplayed ? element.clientWidth : clone.scrollWidth;
-        const finalHeight = captureAsDisplayed ? element.clientHeight : clone.scrollHeight;
+        // Use getBoundingClientRect for better accuracy on scaled/cloned elements
+        const rect = clone.getBoundingClientRect();
+        const finalWidth = captureAsDisplayed ? element.clientWidth : (rect.width || clone.scrollWidth);
+        let finalHeight = captureAsDisplayed ? element.clientHeight : (rect.height || clone.scrollHeight);
         
+        // Safety: Add padding-bottom to the clone to ensure footer is not clipped
+        if (!captureAsDisplayed) {
+            clone.style.paddingBottom = '40px';
+            finalHeight += 40;
+        }
+
         let finalScale = scale;
         if (finalHeight * scale > 15000) {
             finalScale = Math.max(1, 15000 / finalHeight);

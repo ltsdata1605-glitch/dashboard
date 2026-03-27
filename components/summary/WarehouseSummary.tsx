@@ -17,7 +17,7 @@ interface WarehouseSummaryProps {
 }
 
 const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) => {
-    const { processedData, productConfig, originalData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget } = useDashboardContext();
+    const { processedData, productConfig, originalData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, filterState, handleFilterChange } = useDashboardContext();
     const data = processedData?.warehouseSummary ?? [];
     
     const summaryRef = useRef<HTMLDivElement>(null);
@@ -140,14 +140,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     const visibleColumns = useMemo(() => {
         return columns
             .filter(c => c.isVisible)
-            .sort((a, b) => {
-                // First, sort by mainHeader to ensure grouping
-                if (a.mainHeader !== b.mainHeader) {
-                    return a.mainHeader.localeCompare(b.mainHeader);
-                }
-                // Then, sort by order within the group
-                return a.order - b.order;
-            });
+            .sort((a, b) => a.order - b.order);
     }, [columns]);
 
     const groupedHeaders = useMemo(() => {
@@ -194,6 +187,18 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     subtitle="Phân tích hiệu suất từng siêu thị"
                 >
                     <div className="flex items-center space-x-2 hide-on-export">
+                        {/* Apple-style Toolbar for Trạng Thái Xuất */}
+                        <div className="hidden sm:inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 mr-2">
+                            {['all', 'Đã', 'Chưa'].map(val => (
+                                <button 
+                                    key={val}
+                                    onClick={() => handleFilterChange({ xuat: val })}
+                                    className={`py-1 px-3 text-xs font-bold rounded-lg transition-all ${filterState.xuat === val ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-slate-500 hover:text-indigo-600'}`}
+                                >
+                                    {val === 'all' ? 'Tất cả trạng thái' : val === 'Đã' ? 'Đã Xuất' : 'Chưa Xuất'}
+                                </button>
+                            ))}
+                        </div>
                         <button onClick={() => setIsSettingsModalOpen(true)} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
                             <Icon name="settings-2" size={5} />
                         </button>

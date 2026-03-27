@@ -7,7 +7,6 @@ import { formatCurrency } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import { getTrendAnalysis } from '../../services/aiService';
 import { useTrendChartLogic } from '../../hooks/useTrendChartLogic';
 import { exportElementAsImage } from '../../services/uiService';
 
