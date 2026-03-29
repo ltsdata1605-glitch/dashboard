@@ -5,6 +5,7 @@ import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useTrendChartLogic, RechartsTrendData } from '../../hooks/useTrendChartLogic';
+import RevenueCalendar from './RevenueCalendar';
 
 const CustomTooltip = ({ active, payload, metricName }: any) => {
     if (!active || !payload?.length) return null;
@@ -50,12 +51,20 @@ const CustomLabel = (props: any) => {
 };
 
 const TrendChart: React.FC = React.memo(() => {
-  const { processedData, handleExport, isExporting } = useDashboardContext();
+  const { processedData, handleExport, isExporting, filterState } = useDashboardContext();
   const trendData = processedData?.trendData;
 
   const chartCardRef = useRef<HTMLDivElement>(null);
-  const [trendState, setTrendState] = useState({ view: 'shift', metric: 'thuc' });
+  const [trendState, setTrendState] = useState({ view: 'daily', metric: 'thuc' });
+  const [displayMode, setDisplayMode] = useState<'chart' | 'calendar'>('chart');
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
+  
+  // Handle sync between display modes
+  useEffect(() => {
+    if (displayMode === 'calendar' && trendState.view !== 'daily') {
+        setTrendState(prev => ({ ...prev, view: 'daily' }));
+    }
+  }, [displayMode, trendState.view]);
   
   useEffect(() => {
       const observer = new MutationObserver(() => {
@@ -187,16 +196,42 @@ const TrendChart: React.FC = React.memo(() => {
             {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
               <button
                 key={v}
+                disabled={displayMode === 'calendar' && v !== 'daily'}
                 onClick={() => setTrendState(prev => ({ ...prev, view: v }))}
                 className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${
                   trendState.view === v 
                   ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
                   : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
-                }`}
+                } ${displayMode === 'calendar' && v !== 'daily' ? 'opacity-40 cursor-not-allowed' : ''}`}
               >
                 {v === 'shift' ? 'Ca' : v === 'daily' ? 'Ngày' : v === 'weekly' ? 'Tuần' : 'Tháng'}
               </button>
             ))}
+          </div>
+
+          <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 ml-1 hide-on-export">
+            <button
+                onClick={() => setDisplayMode('chart')}
+                className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
+                    displayMode === 'chart'
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm'
+                        : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
+                }`}
+                title="Dạng Biểu đồ"
+            >
+                <Icon name="bar-chart-2" size={4.5} />
+            </button>
+            <button
+                onClick={() => setDisplayMode('calendar')}
+                className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${
+                    displayMode === 'calendar'
+                        ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm'
+                        : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
+                }`}
+                title="Dạng Bảng Lịch"
+            >
+                <Icon name="calendar" size={4.5} />
+            </button>
           </div>
 
           <button 
@@ -214,9 +249,16 @@ const TrendChart: React.FC = React.memo(() => {
         </div>
       </SectionHeader>
 
-      <div className="p-5 md:p-6 pb-2">
-        <div className="w-full h-[320px]">
-           {renderChart()}
+      <div className={`p-5 md:p-6 ${displayMode === 'calendar' ? 'pb-5' : 'pb-2'}`}>
+        <div className={`w-full ${displayMode === 'calendar' ? '' : 'h-[320px]'}`}>
+           {displayMode === 'calendar' ? (
+                <RevenueCalendar 
+                    data={chartData} 
+                    monthDate={chartData.length > 0 && chartData[0].rawDate ? new Date(chartData[0].rawDate) : new Date(filterState.startDate || new Date())} 
+                    metricName={metricName}
+                    title={filterState.industryGrid?.selectedGroups?.[0] || 'DOANH THU'}
+                />
+            ) : renderChart()}
         </div>
       </div>
     </div>
