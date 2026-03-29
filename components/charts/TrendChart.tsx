@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
-import { formatCurrency } from '../../utils/dataUtils';
+import { formatCurrency, getHeSoQuyDoi } from '../../utils/dataUtils';
+import { HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { useDashboardContext } from '../../contexts/DashboardContext';
@@ -51,12 +52,21 @@ const CustomLabel = (props: any) => {
 };
 
 const TrendChart: React.FC = React.memo(() => {
-  const { processedData, handleExport, isExporting, filterState } = useDashboardContext();
+  const { processedData, handleExport, isExporting, filterState, baseFilteredData, productConfig } = useDashboardContext();
   const trendData = processedData?.trendData;
 
   const chartCardRef = useRef<HTMLDivElement>(null);
   const [trendState, setTrendState] = useState({ view: 'daily', metric: 'thuc' });
   const [displayMode, setDisplayMode] = useState<'chart' | 'calendar'>('chart');
+  
+  // Local Filter States for Calendar
+  const [calendarFilters, setCalendarFilters] = useState({
+      parentGroup: 'all',
+      childGroup: 'all',
+      month: '',
+      metric: 'revenue' // 'revenue' | 'revenueQD' | 'quantity'
+  });
+
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   
   // Handle sync between display modes
@@ -65,6 +75,81 @@ const TrendChart: React.FC = React.memo(() => {
         setTrendState(prev => ({ ...prev, view: 'daily' }));
     }
   }, [displayMode, trendState.view]);
+
+  // Extract unique months for Calendar Filter
+  const availableMonths = useMemo(() => {
+      if (!baseFilteredData) return [];
+      const months = new Set<string>();
+      baseFilteredData.forEach(row => {
+          if (row.parsedDate && !isNaN(row.parsedDate.getTime())) {
+              const y = row.parsedDate.getFullYear();
+              const m = String(row.parsedDate.getMonth() + 1).padStart(2, '0');
+              months.add(`${y}-${m}`); 
+          }
+      });
+      return Array.from(months).sort().reverse();
+  }, [baseFilteredData]);
+
+  // Set initial month for calendar if empty
+  useEffect(() => {
+      if (availableMonths.length > 0 && !calendarFilters.month) {
+          setCalendarFilters(prev => ({ ...prev, month: availableMonths[0] }));
+      }
+  }, [availableMonths, calendarFilters.month]);
+
+  // Compute Data explicitly for Calendar (allowing Local Filtering without affecting Global Dashboard)
+  const calendarData = useMemo(() => {
+      if (displayMode !== 'calendar' || !baseFilteredData || !productConfig || !calendarFilters.month) return [];
+      
+      const [selYear, selMonth] = calendarFilters.month.split('-');
+      const targetYear = parseInt(selYear);
+      const targetMonth = parseInt(selMonth) - 1; 
+
+      const dailySums: { [key: string]: { value: number, rawDate: Date } } = {};
+
+      baseFilteredData.forEach(row => {
+          const rowDate = row.parsedDate;
+          if (!rowDate || isNaN(rowDate.getTime())) return;
+          if (rowDate.getFullYear() !== targetYear || rowDate.getMonth() !== targetMonth) return;
+
+          const maNhomHang = row['Mã Nhóm Hàng'];
+          const parentGroup = productConfig.childToParentMap[maNhomHang] || 'Khác';
+          const childGroup = productConfig.childToSubgroupMap[maNhomHang] || 'Khác';
+
+          // Apply local filters
+          if (calendarFilters.parentGroup !== 'all' && parentGroup !== calendarFilters.parentGroup) return;
+          if (calendarFilters.childGroup !== 'all' && childGroup !== calendarFilters.childGroup) return;
+
+          // Exclude "Thu Hộ" from revenue calculations
+          const hinhThucXuat = row['Hình thức xuất'] || '';
+          if (HINH_THUC_XUAT_THU_HO?.has(hinhThucXuat) && calendarFilters.metric !== 'quantity') return;
+
+          const price = Number(row['Giá bán_1']) || 0;
+          const quantity = Number(row['Số lượng']) || 0;
+          const maNganhHang = row['Mã Ngành Hàng'];
+          const productName = row['Tên vật tư'];
+
+          const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+          
+          let valueToAdd = 0;
+          if (calendarFilters.metric === 'revenue') {
+              valueToAdd = price;
+          } else if (calendarFilters.metric === 'revenueQD') {
+              valueToAdd = price * heso;
+          } else if (calendarFilters.metric === 'quantity') {
+              const isVieon = childGroup === 'Vieon' || parentGroup === 'Vieon' || (productName || '').toString().includes('VieON');
+              valueToAdd = isVieon ? (quantity * heso) : quantity;
+          }
+
+          if (valueToAdd > 0) {
+              const dateStr = `${rowDate.getFullYear()}-${String(rowDate.getMonth() + 1).padStart(2, '0')}-${String(rowDate.getDate()).padStart(2, '0')}`;
+              if (!dailySums[dateStr]) dailySums[dateStr] = { value: 0, rawDate: rowDate };
+              dailySums[dateStr].value += valueToAdd;
+          }
+      });
+
+      return Object.values(dailySums).sort((a,b) => a.rawDate.getTime() - b.rawDate.getTime());
+  }, [displayMode, baseFilteredData, productConfig, calendarFilters]);
   
   useEffect(() => {
       const observer = new MutationObserver(() => {
@@ -169,45 +254,89 @@ const TrendChart: React.FC = React.memo(() => {
         icon="trending-up"
       >
         <div className="flex flex-wrap items-center gap-2 hide-on-export">
-          <div className="flex items-center gap-1.5 p-1 bg-slate-50 dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5">
-            <button
-              onClick={() => setTrendState(prev => ({ ...prev, metric: 'thuc' }))}
-              className={`px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold uppercase transition-all ${
-                trendState.metric === 'thuc' 
-                ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-slate-200/60 dark:border-white/10' 
-                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 border border-transparent'
-              }`}
-            >
-              Thực tế
-            </button>
-            <button
-              onClick={() => setTrendState(prev => ({ ...prev, metric: 'qd' }))}
-              className={`px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold uppercase transition-all ${
-                trendState.metric === 'qd' 
-                ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-slate-200/60 dark:border-white/10' 
-                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 border border-transparent'
-              }`}
-            >
-              Quy đổi
-            </button>
-          </div>
+          {displayMode === 'calendar' ? (
+              <div className="flex items-center gap-1.5">
+                  <select
+                      className="text-[11px] font-medium bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
+                      value={calendarFilters.month}
+                      onChange={(e) => setCalendarFilters(prev => ({ ...prev, month: e.target.value }))}
+                  >
+                      {availableMonths.map(m => <option key={m} value={m}>Tháng {m.split('-')[1]}/{m.split('-')[0]}</option>)}
+                  </select>
 
-          <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 ml-1">
-            {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
-              <button
-                key={v}
-                disabled={displayMode === 'calendar' && v !== 'daily'}
-                onClick={() => setTrendState(prev => ({ ...prev, view: v }))}
-                className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${
-                  trendState.view === v 
-                  ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
-                  : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
-                } ${displayMode === 'calendar' && v !== 'daily' ? 'opacity-40 cursor-not-allowed' : ''}`}
-              >
-                {v === 'shift' ? 'Ca' : v === 'daily' ? 'Ngày' : v === 'weekly' ? 'Tuần' : 'Tháng'}
-              </button>
-            ))}
-          </div>
+                  <select
+                      className="text-[11px] font-medium bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 max-w-[110px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 truncate"
+                      value={calendarFilters.parentGroup}
+                      onChange={(e) => setCalendarFilters(prev => ({ ...prev, parentGroup: e.target.value, childGroup: 'all' }))}
+                  >
+                      <option value="all">Tất cả Ngành</option>
+                      {productConfig && Object.keys(productConfig.groups).sort().map(g => <option key={g} value={g}>{g}</option>)}
+                  </select>
+
+                  <select
+                      className="text-[11px] font-medium bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 max-w-[110px] cursor-pointer transition-colors hover:bg-slate-100 dark:hover:bg-slate-700 truncate"
+                      value={calendarFilters.childGroup}
+                      onChange={(e) => setCalendarFilters(prev => ({ ...prev, childGroup: e.target.value }))}
+                  >
+                      <option value="all">Tất cả Nhóm</option>
+                      {productConfig && calendarFilters.parentGroup !== 'all' 
+                          ? Array.from(productConfig.groups[calendarFilters.parentGroup] || []).sort().map(c => <option key={c} value={c}>{c}</option>)
+                          : productConfig ? Object.keys(productConfig.childToParentMap).sort().map(c => <option key={c} value={c}>{c}</option>) : null
+                      }
+                  </select>
+
+                  <select
+                      className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer transition-colors hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                      value={calendarFilters.metric}
+                      onChange={(e) => setCalendarFilters(prev => ({ ...prev, metric: e.target.value }))}
+                  >
+                      <option value="revenue">Doanh thu</option>
+                      <option value="revenueQD">Doanh thu QĐ</option>
+                      <option value="quantity">Số lượng</option>
+                  </select>
+              </div>
+          ) : (
+              <>
+                  <div className="flex items-center gap-1.5 p-1 bg-slate-50 dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5">
+                    <button
+                      onClick={() => setTrendState(prev => ({ ...prev, metric: 'thuc' }))}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold uppercase transition-all ${
+                        trendState.metric === 'thuc' 
+                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-slate-200/60 dark:border-white/10' 
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 border border-transparent'
+                      }`}
+                    >
+                      Thực tế
+                    </button>
+                    <button
+                      onClick={() => setTrendState(prev => ({ ...prev, metric: 'qd' }))}
+                      className={`px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold uppercase transition-all ${
+                        trendState.metric === 'qd' 
+                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-slate-200/60 dark:border-white/10' 
+                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 border border-transparent'
+                      }`}
+                    >
+                      Quy đổi
+                    </button>
+                  </div>
+
+                  <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 ml-1">
+                    {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setTrendState(prev => ({ ...prev, view: v }))}
+                        className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${
+                          trendState.view === v 
+                          ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
+                          : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
+                        }`}
+                      >
+                        {v === 'shift' ? 'Ca' : v === 'daily' ? 'Ngày' : v === 'weekly' ? 'Tuần' : 'Tháng'}
+                      </button>
+                    ))}
+                  </div>
+              </>
+          )}
 
           <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 ml-1 hide-on-export">
             <button
@@ -253,10 +382,10 @@ const TrendChart: React.FC = React.memo(() => {
         <div className={`w-full ${displayMode === 'calendar' ? '' : 'h-[320px]'}`}>
            {displayMode === 'calendar' ? (
                 <RevenueCalendar 
-                    data={chartData} 
-                    monthDate={chartData.length > 0 && chartData[0].rawDate ? new Date(chartData[0].rawDate) : new Date(filterState.startDate || new Date())} 
-                    metricName={metricName}
-                    title={filterState.industryGrid?.selectedGroups?.[0] || 'DOANH THU'}
+                    data={calendarData} 
+                    monthDate={new Date(`${calendarFilters.month || new Date().toISOString().substring(0,7)}-01`)} 
+                    metricName={calendarFilters.metric === 'quantity' ? 'Số lượng' : (calendarFilters.metric === 'revenueQD' ? 'Doanh thu QĐ' : 'Doanh thu')}
+                    title={calendarFilters.parentGroup !== 'all' ? (calendarFilters.childGroup !== 'all' ? `${calendarFilters.parentGroup} - ${calendarFilters.childGroup}` : calendarFilters.parentGroup) : 'TỔNG CÔNG TY'}
                 />
             ) : renderChart()}
         </div>
