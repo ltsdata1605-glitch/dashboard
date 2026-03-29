@@ -11,6 +11,7 @@ interface DashboardContextType {
     originalData: DataRow[];
     baseFilteredData: DataRow[];
     departmentMap: DepartmentMap | null;
+    updateDepartmentMap: (newMap: DepartmentMap) => void;
     employeeAnalysisData: EmployeeData | null;
     openPerformanceModal: (employeeName: string) => void;
     handleBatchExport: (employees: Employee[]) => void;

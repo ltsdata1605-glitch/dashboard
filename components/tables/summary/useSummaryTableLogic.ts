@@ -1,12 +1,13 @@
 import { useState, useMemo, useRef, useEffect, useCallback, useTransition, useDeferredValue } from 'react';
 import type { SummaryTableNode, GrandTotal } from '../../../types';
+import { HEADER_CONFIG } from './SummaryTableUtils';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { processSummaryTable } from '../../../services/summaryService';
 import { saveSummaryTableConfig } from '../../../services/dbService';
 import { exportElementAsImage } from '../../../services/uiService';
 import { getWeeksInMonth, getSafeDateInPrevMonth, toInputDate, toInputMonth, formatCompactDateRange } from './SummaryTableUtils';
 
-export type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'custom_range';
+export type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'month_same_period_year' | 'quarter_adjacent' | 'quarter_same_period_year' | 'ytd_same_period_year' | 'custom_range';
 
 export const useSummaryTableLogic = () => {
     const { filterState: filters, handleFilterChange: onFilterChange, baseFilteredData, productConfig } = useDashboardContext();
@@ -87,11 +88,18 @@ export const useSummaryTableLogic = () => {
 
     const [dateDisplay, setDateDisplay] = useState({ current: '', prev: '' });
     const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+    const [expandLevel, setExpandLevel] = useState<number>(0); // 0: None, 1: Level 1, 2: Level 2, 3: Full
+    const [visibleColumns, setVisibleColumns] = useState<string[]>(
+        (summaryTableFilters.visibleColumns && summaryTableFilters.visibleColumns.length > 0) 
+            ? summaryTableFilters.visibleColumns 
+            : HEADER_CONFIG.map(h => h.key)
+    );
     const [isExporting, setIsExporting] = useState(false);
     const tableContainerRef = useRef<HTMLDivElement>(null);
     const sortableListRef = useRef<HTMLDivElement>(null);
     
     const [isPending, startTransition] = useTransition();
+    const [isExpanding, setIsExpanding] = useState(false);
 
     const standardSummaryData = useMemo(() => {
         if (!baseFilteredData.length || !productConfig) return null;
@@ -228,6 +236,49 @@ export const useSummaryTableLogic = () => {
             prevEnd = new Date(y, m - 1, 0, 23, 59, 59, 999);
             titleSuffix = `THÁNG (LIỀN KỀ)`;
             description = `So sánh tháng ${m}/${y} với tháng trước đó.`;
+        } else if (compMode === 'month_same_period_year') {
+            const [y, m] = selectedMonth.split('-').map(Number);
+            currentStart = new Date(y, m - 1, 1);
+            currentEnd = new Date(y, m, 0, 23, 59, 59, 999);
+
+            prevStart = new Date(y - 1, m - 1, 1);
+            prevEnd = new Date(y - 1, m, 0, 23, 59, 59, 999);
+            titleSuffix = `THÁNG (CÙNG KỲ NĂM TRƯỚC)`;
+            description = `So sánh tháng ${m}/${y} với cùng kỳ năm trước.`;
+        } else if (compMode.startsWith('quarter')) {
+            const [y, m] = selectedMonth.split('-').map(Number);
+            const quarter = Math.floor((m - 1) / 3);
+            currentStart = new Date(y, quarter * 3, 1);
+            currentEnd = new Date(y, quarter * 3 + 3, 0, 23, 59, 59, 999);
+            
+            if (compMode === 'quarter_adjacent') {
+                if (quarter === 0) {
+                    prevStart = new Date(y - 1, 9, 1);
+                    prevEnd = new Date(y - 1, 12, 0, 23, 59, 59, 999);
+                } else {
+                    prevStart = new Date(y, (quarter - 1) * 3, 1);
+                    prevEnd = new Date(y, (quarter - 1) * 3 + 3, 0, 23, 59, 59, 999);
+                }
+                titleSuffix = `QUÝ (LIỀN KỀ)`;
+                description = `So sánh Quý ${quarter + 1}/${y} với quý liền kề trước đó.`;
+            } else {
+                prevStart = new Date(y - 1, quarter * 3, 1);
+                prevEnd = new Date(y - 1, quarter * 3 + 3, 0, 23, 59, 59, 999);
+                titleSuffix = `QUÝ (CÙNG KỲ NĂM TRƯỚC)`;
+                description = `So sánh Quý ${quarter + 1}/${y} với cùng kỳ năm trước.`;
+            }
+        } else if (compMode === 'ytd_same_period_year') {
+            const current = new Date(selectedDate);
+            currentStart = new Date(current.getFullYear(), 0, 1);
+            currentEnd = new Date(current); currentEnd.setHours(23, 59, 59, 999);
+
+            prevStart = new Date(current.getFullYear() - 1, 0, 1);
+            const prev = new Date(current);
+            prev.setFullYear(current.getFullYear() - 1);
+            prevEnd = new Date(prev); prevEnd.setHours(23, 59, 59, 999);
+            
+            titleSuffix = `LŨY KẾ YTD (ĐẾN HIỆN TẠI)`;
+            description = `So sánh lũy kế từ đầu năm đến ${current.toLocaleDateString('vi-VN')} với cùng kỳ năm ngoái.`;
         } else if (compMode === 'custom_range') {
             currentStart = new Date(customRangeA.start); currentStart.setHours(0,0,0,0);
             currentEnd = new Date(customRangeA.end); currentEnd.setHours(23,59,59,999);
@@ -345,26 +396,38 @@ export const useSummaryTableLogic = () => {
         });
     }, []);
     
-    const toggleAllLevels = () => {
-        const shouldExpand = expandedIds.size === 0;
-        if (!shouldExpand) setExpandedIds(new Set());
-        else {
-            const newExpanded = new Set<string>();
-            const activeData = isComparisonMode && compTree ? compTree.current.data : standardSummaryData?.data;
-            if (activeData) {
-                const expandNode = (node: { [key: string]: SummaryTableNode }, parentId: string, level: number) => {
-                    if (level > 2) return;
-                    Object.keys(node).forEach(key => {
-                        const currentId = `${parentId}-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
-                        newExpanded.add(currentId);
-                        expandNode(node[key].children, currentId, level + 1);
-                    });
-                };
-                expandNode(activeData, 'root', 1);
-            }
-            setExpandedIds(newExpanded);
-        }
+    const setLevelAndExpand = (level: number) => {
+        setIsExpanding(true);
+        // Force React to render the loading spinner before crunching the tree map
+        setTimeout(() => {
+            startTransition(() => {
+                setExpandLevel(level);
+                if (level === 0) {
+                    setExpandedIds(new Set());
+                } else {
+                    const newExpanded = new Set<string>();
+                    const activeData = isComparisonMode && compTree ? compTree.current.data : standardSummaryData?.data;
+                    if (activeData) {
+                        const targetDepth = level === 3 ? 5 : level;
+                        const expandNode = (node: { [key: string]: SummaryTableNode }, parentId: string, currentDepth: number) => {
+                            if (currentDepth > targetDepth) return;
+                            Object.keys(node).forEach(key => {
+                                const currentId = `${parentId}-${key.replace(/[^a-zA-Z0-9]/g, '-')}`;
+                                newExpanded.add(currentId);
+                                expandNode(node[key].children, currentId, currentDepth + 1);
+                            });
+                        };
+                        expandNode(activeData, 'root', 1);
+                    }
+                    setExpandedIds(newExpanded);
+                }
+            });
+            setIsExpanding(false);
+        }, 10);
     };
+
+    const handleExpandAll = () => setLevelAndExpand(Math.min(expandLevel + 1, 3));
+    const handleCollapseAll = () => setLevelAndExpand(Math.max(expandLevel - 1, 0));
     
     const handleExport = async () => {
         if(tableContainerRef.current) {
@@ -485,13 +548,14 @@ export const useSummaryTableLogic = () => {
         isPending, getFilterProps,
         activeFilterKey, setActiveFilterKey,
         hasActiveFilters, handleResetAllFilters,
-        toggleAllLevels, expandedIds, setExpandedIds,
+        handleExpandAll, handleCollapseAll, isExpanding, expandedIds, setExpandedIds,
         handleExport, isExporting,
         tableContainerRef, sortableListRef,
         standardSummaryData, compTree,
         activeSortConfig, displayKeys,
         grandTotal, deltaQuantity, deltaRevenue, deltaRevenueQD, deltaAOV, deltaTraGopPercent, traGopDisplayTotal,
         handleSort, toggleExpand,
-        weeksInSelectedMonth, compSortConfig
+        weeksInSelectedMonth, compSortConfig,
+        expandLevel, visibleColumns, setVisibleColumns
     };
 };

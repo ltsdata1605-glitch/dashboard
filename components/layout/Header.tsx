@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Icon } from '../common/Icon';
 import { motion, AnimatePresence } from 'motion/react';
+import ModalWrapper from '../modals/ModalWrapper';
+import EmployeeManagerModal from '../modals/EmployeeManagerModal';
 
 interface HeaderProps {
     onNewFile: () => void;
@@ -28,6 +30,18 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
     const [deptClearSuccess, setDeptClearSuccess] = useState(false);
     const [dataClearSuccess, setDataClearSuccess] = useState(false);
+    const [showInstructionModal, setShowInstructionModal] = useState(false);
+    const [showEmployeeModal, setShowEmployeeModal] = useState(false);
+
+    const handleExternalLinkClick = (e: React.MouseEvent) => {
+        e.preventDefault();
+        setShowInstructionModal(true);
+    };
+
+    const proceedToExternalLink = () => {
+        setShowInstructionModal(false);
+        window.open("https://office.thegioididong.com/quan-ly-phan-ca", "_blank");
+    };
 
     useEffect(() => {
         if (fileInfo) {
@@ -49,7 +63,8 @@ const Header: React.FC<HeaderProps> = ({
     };
     
     return (
-        <header className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-5 pb-5 border-b border-slate-200/60 dark:border-slate-800/60">
+        <>
+            <header className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-5 pb-5 border-b border-slate-200/60 dark:border-slate-800/60">
             {/* Title Section with Editorial Style */}
             <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-4">
@@ -92,14 +107,25 @@ const Header: React.FC<HeaderProps> = ({
                             title="Tải lên file phân ca của cụm"
                         >
                             <Icon name="users-round" size={4} />
-                            <span>Phân ca</span>
+                            <span>DS Nhân Viên</span>
                         </button>
+                        
+                        {hasDepartmentData && (
+                            <div className="flex items-center bg-blue-50/30 dark:bg-blue-900/10 border-l border-blue-100 dark:border-blue-900/30">
+                                <button 
+                                    onClick={() => setShowEmployeeModal(true)}
+                                    className="p-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors border-r border-blue-100 dark:border-blue-900/30"
+                                    title="Quản lý danh sách nhân viên"
+                                >
+                                    <Icon name="settings" size={4} />
+                                </button>
+                            </div>
+                        )}
                         
                         <div className="flex items-center bg-blue-50/30 dark:bg-blue-900/10 border-l border-blue-100 dark:border-blue-900/30">
                             <a 
-                                href="https://office.thegioididong.com/quan-ly-phan-ca" 
-                                target="_blank" 
-                                rel="noopener noreferrer"
+                                href="#" 
+                                onClick={handleExternalLinkClick}
                                 className="p-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors border-r border-blue-100 dark:border-blue-900/30"
                                 title="Mở trang quản lý phân ca"
                             >
@@ -147,6 +173,40 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
             )}
         </header>
+
+            {/* Instruction Modal */}
+            <ModalWrapper
+                isOpen={showInstructionModal}
+                onClose={() => setShowInstructionModal(false)}
+                title="Hướng Dẫn Nhập DS Nhân Viên"
+                subTitle="Thao tác trên Hệ thống BCNB"
+                titleColorClass="text-blue-600 dark:text-blue-400"
+                maxWidthClass="max-w-md"
+            >
+                <div className="p-6">
+                    <div className="text-sm text-slate-600 dark:text-slate-300 space-y-4">
+                        <p><strong>Bước 1:</strong> Nếu chưa đăng nhập BCNB thì hãy đăng nhập hệ thống.</p>
+                        <p><strong>Bước 2:</strong> Click vào "Đã Hiểu & Tiếp Tục" &gt; Chọn siêu thị &gt; Xem &gt; Tùy chọn "Xuất excel".</p>
+                        <p><em>(Nếu cụm có nhiều siêu thị, hãy lặp lại việc xuất cho từng siêu thị)</em></p>
+                        <p><strong>Bước 3:</strong> Quay lại Dashboard &gt; Click "DS Nhân Viên" &gt; Tải lên tất cả file excel bạn vừa tải về.</p>
+                    </div>
+                    <div className="mt-8 flex justify-end gap-3">
+                        <button onClick={() => setShowInstructionModal(false)} className="px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors font-semibold">
+                            Hủy
+                        </button>
+                        <button onClick={proceedToExternalLink} className="px-6 py-2 bg-blue-600 text-white hover:bg-blue-700 rounded-lg shadow-sm transition-colors font-semibold">
+                            Đã Hiểu & Tiếp Tục
+                        </button>
+                    </div>
+                </div>
+            </ModalWrapper>
+
+            {/* Employee Manager Modal */}
+            <EmployeeManagerModal 
+                isOpen={showEmployeeModal} 
+                onClose={() => setShowEmployeeModal(false)} 
+            />
+        </>
     );
 };
 

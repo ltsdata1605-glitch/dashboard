@@ -136,7 +136,7 @@ export async function processShiftFile(file: File): Promise<{ map: DepartmentMap
                 let currentDepartment: string | null = null;
                 const departments = new Set<string>();
 
-                for (let i = 1; i < rows.length; i++) {
+                for (let i = 2; i < rows.length; i++) {
                     const row = rows[i];
                     if (row[0] && typeof row[0] === 'string' && row[0].trim() !== '') {
                         currentDepartment = row[0].trim();

@@ -16,6 +16,9 @@ interface RecursiveRowProps {
     isComparisonMode: boolean;
     sortConfig: { column: string, type: 'current' | 'delta', direction: 'asc' | 'desc' };
     drilldownOrder: string[]; // Receive the dynamic order
+    parentRevenue: number; // Mới thêm: Doanh thu của node cha để tính %DT Thực
+    parentQuantity: number; // Mới thêm: Số lượng của node cha để tính %SL
+    visibleColumns: string[]; // State điều khiển Ẩn Hiện Cột
 }
 
 const getTraGopPercentClass = (percentage: number) => {
@@ -35,7 +38,7 @@ const ROW_TEXT_COLORS: Record<string, string> = {
 };
 
 const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({ 
-    nodeKey, currentNode, prevNode, level, parentId, expandedIds, toggleExpand, rootIndex, isComparisonMode, sortConfig, drilldownOrder
+    nodeKey, currentNode, prevNode, level, parentId, expandedIds, toggleExpand, rootIndex, isComparisonMode, sortConfig, drilldownOrder, parentRevenue, parentQuantity, visibleColumns
 }) => {
     const currentId = `${parentId}-${nodeKey.replace(/[^a-zA-Z0-9]/g, '-')}`;
     const isExpanded = expandedIds.has(currentId);
@@ -89,6 +92,8 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
 
     const aov = quantity > 0 ? revenue / quantity : 0;
     const traGopPercent = revenue > 0 ? (traGopRevenue / revenue) * 100 : 0;
+    const dtThucPercent = parentRevenue > 0 ? (revenue / parentRevenue) * 100 : 0;
+    const slPercent = parentQuantity > 0 ? (quantity / parentQuantity) * 100 : 0;
     
     // Calculate Deltas
     let deltaQuantity = 0, deltaRevenue = 0, deltaRevenueQD = 0, deltaAOV = 0, deltaTraGopPercent = 0;
@@ -176,53 +181,113 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 </td>
                 
                 {/* Quantity */}
-                <td className={`${cellClass} font-bold text-slate-600 dark:text-slate-400 ${!isComparisonMode ? separatorClass : ''}`}>
-                    {formatQuantity(quantity)}
-                </td>
-                {isComparisonMode && (
-                    <td className={`${deltaCellClass} ${separatorClass}`}>
-                        {renderDelta(deltaQuantity, 'number')}
-                    </td>
+                {visibleColumns.includes('totalQuantity') && (
+                    <>
+                        <td className={`${cellClass} font-bold text-slate-600 dark:text-slate-400 ${!isComparisonMode ? separatorClass : ''}`}>
+                            {formatQuantity(quantity)}
+                        </td>
+                        {isComparisonMode && (
+                            <td className={`${deltaCellClass} ${separatorClass}`}>
+                                {renderDelta(deltaQuantity, 'number')}
+                            </td>
+                        )}
+                    </>
+                )}
+
+                {/* %SL */}
+                {visibleColumns.includes('slPercent') && (
+                    isComparisonMode ? (
+                        <td className={`px-2 py-1.5 text-center text-[12px] font-bold ${separatorClass} bg-slate-50/50 dark:bg-white/[0.02]`}>
+                            {(() => {
+                                const qCurr = quantity;
+                                const qPrev = prevNode?.totalQuantity || 0;
+                                const growth = qPrev > 0 ? ((qCurr - qPrev) / qPrev) * 100 : (qCurr > 0 ? 100 : 0);
+                                if (qCurr === 0 && qPrev === 0) return <span className="text-slate-400">-</span>;
+                                return renderDelta(growth, 'percent');
+                            })()}
+                        </td>
+                    ) : (
+                        <td className={`${cellClass} font-bold text-emerald-600 dark:text-emerald-400 ${separatorClass}`}>
+                            {slPercent > 0 ? `${slPercent.toFixed(1)}%` : '-'}
+                        </td>
+                    )
                 )}
 
                 {/* Revenue (Doanh thu thực) */}
-                <td className={`${cellClass} font-black text-slate-900 dark:text-white tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
-                    {formatCurrency(revenue)}
-                </td>
-                {isComparisonMode && (
-                    <td className={`${deltaCellClass} ${separatorClass}`}>
-                        {renderDelta(deltaRevenue, 'currency')}
-                    </td>
+                {visibleColumns.includes('totalRevenue') && (
+                    <>
+                        <td className={`${cellClass} font-black text-slate-900 dark:text-white tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
+                            {formatCurrency(revenue)}
+                        </td>
+                        {isComparisonMode && (
+                            <td className={`${deltaCellClass} ${separatorClass}`}>
+                                {renderDelta(deltaRevenue, 'currency')}
+                            </td>
+                        )}
+                    </>
+                )}
+
+                {/* % DT Thuc */}
+                {visibleColumns.includes('dtThucPercent') && (
+                    isComparisonMode ? (
+                        <td className={`px-2 py-1.5 text-center text-[12px] font-bold ${separatorClass} bg-slate-50/50 dark:bg-white/[0.02]`}>
+                            {(() => {
+                                const rCurr = revenue;
+                                const rPrev = prevNode?.totalRevenue || 0;
+                                const growth = rPrev > 0 ? ((rCurr - rPrev) / rPrev) * 100 : (rCurr > 0 ? 100 : 0);
+                                if (rCurr === 0 && rPrev === 0) return <span className="text-slate-400">-</span>;
+                                return renderDelta(growth, 'percent');
+                            })()}
+                        </td>
+                    ) : (
+                        <td className={`${cellClass} font-bold text-orange-600 dark:text-orange-400 ${separatorClass}`}>
+                            {dtThucPercent > 0 ? `${dtThucPercent.toFixed(1)}%` : '-'}
+                        </td>
+                    )
                 )}
 
                 {/* RevenueQD (DT Quy Doi) */}
-                <td className={`${cellClass} font-black text-primary-600 dark:text-primary-400 tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
-                    {formatCurrency(revenueQD)}
-                </td>
-                {isComparisonMode && (
-                    <td className={`${deltaCellClass} ${separatorClass}`}>
-                        {renderDelta(deltaRevenueQD, 'currency')}
-                    </td>
+                {visibleColumns.includes('totalRevenueQD') && (
+                    <>
+                        <td className={`${cellClass} font-black text-primary-600 dark:text-primary-400 tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
+                            {formatCurrency(revenueQD)}
+                        </td>
+                        {isComparisonMode && (
+                            <td className={`${deltaCellClass} ${separatorClass}`}>
+                                {renderDelta(deltaRevenueQD, 'currency')}
+                            </td>
+                        )}
+                    </>
                 )}
 
                 {/* AOV */}
-                <td className={`${cellClass} font-bold text-slate-600 dark:text-slate-400 ${!isComparisonMode ? separatorClass : ''}`}>
-                    {formatCurrency(aov)}
-                </td>
-                {isComparisonMode && (
-                    <td className={`${deltaCellClass} ${separatorClass}`}>
-                        {renderDelta(deltaAOV, 'currency')}
-                    </td>
+                {visibleColumns.includes('aov') && (
+                    <>
+                        <td className={`${cellClass} font-bold text-slate-600 dark:text-slate-400 ${!isComparisonMode ? separatorClass : ''}`}>
+                            {aov === 0 ? '-' : (aov / 1000000).toFixed(1)}
+                        </td>
+                        {isComparisonMode && (
+                            <td className={`${deltaCellClass} ${separatorClass}`}>
+                                <span className={`text-[11px] font-bold block whitespace-nowrap ${deltaAOV > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                    {deltaAOV === 0 ? '-' : (deltaAOV > 0 ? '+' : '') + (deltaAOV / 1000000).toFixed(1)}
+                                </span>
+                            </td>
+                        )}
+                    </>
                 )}
 
                 {/* Tra Gop % */}
-                <td className={`${cellClass} ${getTraGopPercentClass(traGopPercent)}`}>
-                    {traGopDisplay}
-                </td>
-                {isComparisonMode && (
-                    <td className={`${deltaCellClass}`}>
-                        {renderDelta(deltaTraGopPercent, 'percent')}
-                    </td>
+                {visibleColumns.includes('traGopPercent') && (
+                    <>
+                        <td className={`${cellClass} ${getTraGopPercentClass(traGopPercent)} ${!isComparisonMode ? separatorClass : ''}`}>
+                            {traGopDisplay}
+                        </td>
+                        {isComparisonMode && (
+                            <td className={`${deltaCellClass} ${separatorClass}`}>
+                                {renderDelta(deltaTraGopPercent, 'percent')}
+                            </td>
+                        )}
+                    </>
                 )}
             </tr>
             
@@ -240,6 +305,9 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                     isComparisonMode={isComparisonMode}
                     sortConfig={sortConfig}
                     drilldownOrder={drilldownOrder}
+                    parentRevenue={revenue}
+                    parentQuantity={quantity}
+                    visibleColumns={visibleColumns}
                 />
             ))}
         </>

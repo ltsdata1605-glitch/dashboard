@@ -95,12 +95,13 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
             const displayData = industryData.filter(item => !hiddenGroups.has(item.name));
             const topData = displayData.slice(0, 12);
             const totalRevenue = topData.reduce((sum, item) => sum + item.revenue, 0);
+            const totalQuantity = topData.reduce((sum, item) => sum + item.quantity, 0);
             const finalData: GridItem[] = topData.map(item => ({
                 ...item,
                 icon: industryIcons[item.name] || 'package',
                 color: industryColors[item.name] || 'slate'
             }));
-            return { data: finalData, totalRevenue, levelType: 'industry' };
+            return { data: finalData, totalRevenue, totalQuantity, levelType: 'industry' };
         }
 
         const parentGroup = drilldownPath[0];
@@ -123,6 +124,7 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
         });
         
         const totalRevenueForPath = dataForParent.reduce((sum, row) => sum + (Number(getRowValue(row, COL.PRICE)) || 0), 0);
+        const totalQuantityForPath = dataForParent.reduce((sum, row) => sum + (Number(getRowValue(row, COL.QUANTITY)) || 0), 0);
         
         // Level 1: Subgroups or Special Choices
         if (level === 1) {
@@ -132,7 +134,7 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
                     { name: 'Hãng sản xuất', revenue: totalRevenueForPath, quantity: totalQuantity, icon: 'factory', color: parentColor },
                     { name: 'Người tạo', revenue: totalRevenueForPath, quantity: totalQuantity, icon: 'user-cog', color: parentColor }
                 ];
-                return { data: choiceData, totalRevenue: totalRevenueForPath, levelType: 'choice' };
+                return { data: choiceData, totalRevenue: totalRevenueForPath, totalQuantity: totalQuantityForPath, levelType: 'choice' };
             } else {
                 const groupedData = dataForParent.reduce((acc, row) => {
                     const subgroup = productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || 'Khác';
@@ -150,7 +152,7 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
                     color: parentColor
                 }));
                 formattedData.sort((a,b) => b.revenue - a.revenue);
-                return { data: formattedData, totalRevenue: totalRevenueForPath, levelType: 'subgroup' };
+                return { data: formattedData, totalRevenue: totalRevenueForPath, totalQuantity: totalQuantityForPath, levelType: 'subgroup' };
             }
         }
 
@@ -190,10 +192,11 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
             }));
             formattedData.sort((a,b) => b.revenue - a.revenue);
             const totalRevenueForSubpath = formattedData.reduce((sum, item) => sum + item.revenue, 0);
-            return { data: formattedData, totalRevenue: totalRevenueForSubpath, levelType: 'breakdown' };
+            const totalQuantityForSubpath = formattedData.reduce((sum, item) => sum + item.quantity, 0);
+            return { data: formattedData, totalRevenue: totalRevenueForSubpath, totalQuantity: totalQuantityForSubpath, levelType: 'breakdown' };
         }
 
-        return { data: [], totalRevenue: 0, levelType: 'end' };
+        return { data: [], totalRevenue: 0, totalQuantity: 0, levelType: 'end' };
     }, [drilldownPath, industryData, allSalesData, productConfig]);
 
     // Data preparation for charts

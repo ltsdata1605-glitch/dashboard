@@ -39,7 +39,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
 
     return (
         <div 
-            className="modal-overlay fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4 transition-opacity duration-300 opacity-100"
+            className="modal-overlay fixed inset-0 bg-slate-800/60 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-opacity duration-300 opacity-100"
             onClick={onClose}
         >
             <div

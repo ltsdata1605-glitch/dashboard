@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://ltsdata1605-glitch.github.io/dashboard/",
+  "homepage": "https://dashboard.pro.vn/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

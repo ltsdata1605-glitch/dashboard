@@ -250,6 +250,7 @@ export interface FilterState {
             column: string;
             direction: 'asc' | 'desc';
         };
+        visibleColumns?: string[];
     };
 }
 

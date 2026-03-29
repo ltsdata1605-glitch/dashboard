@@ -5,7 +5,8 @@ import { processShiftFile, DepartmentMap } from '../services/dataService';
 import { 
     saveDepartmentMap, clearDepartmentMap, 
     saveSalesData, clearSalesData, 
-    clearCustomTabs 
+    clearCustomTabs,
+    saveSetting
 } from '../services/dbService';
 
 interface FileUploadLogicProps {
@@ -94,6 +95,7 @@ export const useFileUploadLogic = ({
             }
             
             await saveDepartmentMap(mergedMap);
+            await saveSetting('originalDepartmentMap', mergedMap);
             setDepartmentMap(mergedMap);
             setStatus({ message: `Đã xử lý và gộp ${files.length} file phân ca!`, type: 'success', progress: 100 });
         } catch (error) {

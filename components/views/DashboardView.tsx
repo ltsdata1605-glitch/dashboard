@@ -26,7 +26,7 @@ import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } f
 import { DebugPanel } from '../common/DebugPanel';
 
 const defaultVisibilityState: VisibilityState = {
-    trendChart: false,
+    trendChart: true,
     industryGrid: true,
     employeeAnalysis: true,
     summaryTable: true,
@@ -158,8 +158,9 @@ export default function DashboardView() {
     return (
         <div className="w-full">
             <div className="w-[1200px] mx-auto p-8">
-                <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx, .xls" onChange={(e) => e.target.files?.[0] && handleFileProcessing(e.target.files[0])} />
-                <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx, .xls" multiple onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
+                <DashboardContext.Provider value={logic as any}>
+                    <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx, .xls" onChange={(e) => e.target.files?.[0] && handleFileProcessing(e.target.files[0])} />
+                    <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx, .xls" multiple onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
 
                 <Header 
                     onNewFile={handleNewFileClick} 
@@ -187,7 +188,6 @@ export default function DashboardView() {
                 
                 {showProcessingOverlay && <ProcessingLoader status={status} processingTime={processingTime} />}
                 
-                <DashboardContext.Provider value={logic as any}>
                     {showDashboard && (
                         <>
                             <main id="dashboard-container" className="pb-20 md:pb-0" ref={dashboardContainerRef}>
@@ -280,8 +280,6 @@ export default function DashboardView() {
                     {activeModal === 'performance' && processedData && <PerformanceModal isOpen={true} onClose={() => setActiveModal(null)} employeeName={modalData.employeeName} onExport={handleExport}/>}
                     {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
                     <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />
-                </DashboardContext.Provider>
-                
                 <DebugPanel 
                     isVisible={isDebugPanelVisible} 
                     isInspectorActive={isInspectorActive} 
@@ -289,6 +287,7 @@ export default function DashboardView() {
                     onClose={() => setIsDebugPanelVisible(false)} 
                     onToggleInspector={() => setIsInspectorActive(p => !p)} 
                 />
+                </DashboardContext.Provider>
             </div>
         </div>
     );

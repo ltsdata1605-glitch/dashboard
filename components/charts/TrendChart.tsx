@@ -1,257 +1,197 @@
-
-// Added a global declaration for the 'google' object to resolve TypeScript errors about 'google' not being found.
-declare const google: any;
-
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
 import { formatCurrency } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import { useTrendChartLogic } from '../../hooks/useTrendChartLogic';
-import { exportElementAsImage } from '../../services/uiService';
+import { useTrendChartLogic, RechartsTrendData } from '../../hooks/useTrendChartLogic';
+
+const CustomTooltip = ({ active, payload, metricName }: any) => {
+    if (!active || !payload?.length) return null;
+    const data: RechartsTrendData = payload[0].payload;
+    const { label, value, changePercent, isDecrease } = data;
+    
+    let changeHtml = null;
+    if (changePercent !== undefined && !isNaN(changePercent)) {
+        const changeClass = isDecrease ? 'text-red-500' : 'text-green-500';
+        const changeIcon = isDecrease ? '▼' : '▲';
+        changeHtml = (
+            <div className="mt-1">
+                So với kỳ trước: <span className={`font-bold ${changeClass}`}>{changeIcon} {Math.abs(changePercent).toFixed(1)}%</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="p-3 shadow-xl rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans z-50 min-w-[180px]">
+            <div className="font-extrabold text-slate-800 dark:text-slate-100 mb-2 border-b border-slate-100 dark:border-slate-700 pb-1.5 text-xs">{label}</div>
+            <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-3 text-xs mb-1">
+                <span>{metricName}:</span>
+                <span className="font-bold text-indigo-600 dark:text-indigo-400">{value.toLocaleString('vi-VN')}</span>
+            </div>
+            {changeHtml && <div className="text-[11px] text-slate-500 dark:text-slate-400 border-t border-slate-100 dark:border-slate-700/50 pt-1.5 mt-1.5">{changeHtml}</div>}
+        </div>
+    );
+};
+
+const CustomLabel = (props: any) => {
+    const { x, y, width, value, textColor, positionOffset = 8 } = props;
+    if (!value) return null;
+    
+    // For AreaChart, width is undefined.
+    const cx = width !== undefined ? x + width / 2 : x;
+    const cy = y - positionOffset;
+    
+    return (
+      <text x={cx} y={cy} fill={textColor} textAnchor="middle" fontSize={10} fontWeight="bold">
+        {formatCurrency(value)}
+      </text>
+    );
+};
 
 const TrendChart: React.FC = React.memo(() => {
   const { processedData, handleExport, isExporting } = useDashboardContext();
   const trendData = processedData?.trendData;
 
-  const chartDivRef = useRef<HTMLDivElement>(null);
   const chartCardRef = useRef<HTMLDivElement>(null);
-  const chartInstanceRef = useRef<any>(null);
   const [trendState, setTrendState] = useState({ view: 'shift', metric: 'thuc' });
+  const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   
+  useEffect(() => {
+      const observer = new MutationObserver(() => {
+          setIsDark(document.documentElement.classList.contains('dark'));
+      });
+      observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+      return () => observer.disconnect();
+  }, []);
+
   const { totalValue, chartData, hasData, metricName } = useTrendChartLogic({
       trendData,
       view: trendState.view,
       metric: trendState.metric
   });
   
-  const drawChart = useCallback(() => {
-    if (!chartDivRef.current || !(window as any).google?.visualization) {
-      if (chartDivRef.current) chartDivRef.current.innerHTML = ''; // Clear previous content
-      return;
+  const textColor = isDark ? '#94a3b8' : '#64748b';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.05)' : '#f1f5f9';
+  const dailyBaseColor = isDark ? '#818cf8' : '#4f46e5';
+
+  const renderChart = () => {
+    if (!hasData || chartData.length === 0) {
+        return <div className="flex items-center justify-center h-full"><p className="text-center text-slate-500 dark:text-slate-400 text-sm font-semibold tracking-wide">Không có dữ liệu xu hướng.</p></div>;
     }
-    if (!trendData || !hasData) {
-        chartDivRef.current.innerHTML = '<div class="flex items-center justify-center h-full"><p class="text-center text-slate-500 dark:text-slate-400">Không có dữ liệu xu hướng.</p></div>';
-        return;
-    }
-
-    const isDark = document.documentElement.classList.contains('dark');
-    const textColor = isDark ? '#f1f5f9' : '#0f172a';
-    const gridColor = isDark ? '#334155' : '#e2e8f0';
-    const dailyBaseColor = isDark ? '#818cf8' : '#4f46e5';
-    const chartAreaBg = isDark ? 'rgba(255, 255, 255, 0.02)' : '#f8fafc';
-    const decreaseAnnotationColor = isDark ? '#f87171' : '#dc2626';
-
-    const dataTable = new (window as any).google.visualization.DataTable();
-
-    // Define columns based on view type
-    if (trendState.view === 'daily') {
-        dataTable.addColumn('date', 'Ngày');
-        dataTable.addColumn('number', metricName);
-        dataTable.addColumn({ type: 'string', role: 'annotation' });
-        dataTable.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
-        dataTable.addRows(chartData);
-    } else if (trendState.view === 'shift') {
-        dataTable.addColumn('string', 'Ca');
-        dataTable.addColumn('number', metricName);
-        dataTable.addColumn({ type: 'string', role: 'style' });
-        dataTable.addColumn({ type: 'string', role: 'annotation' });
-        dataTable.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
-        dataTable.addRows(chartData);
-    } else { // Weekly or Monthly
-        dataTable.addColumn('string', trendState.view === 'weekly' ? 'Tuần' : 'Tháng');
-        dataTable.addColumn('number', metricName); // Series 0: Increase/Same
-        dataTable.addColumn({ type: 'string', role: 'style' });
-        dataTable.addColumn({ type: 'string', role: 'annotation' });
-        dataTable.addColumn('number', metricName); // Series 1: Decrease
-        dataTable.addColumn({ type: 'string', role: 'style' });
-        dataTable.addColumn({ type: 'string', role: 'annotation' });
-        dataTable.addColumn({ type: 'string', role: 'tooltip', p: { html: true } });
-        dataTable.addRows(chartData);
-    }
-
-    const baseOptions = {
-        backgroundColor: 'transparent',
-        legend: { position: 'none' },
-        chartArea: {
-            width: '90%',
-            height: '75%',
-            left: 70,
-            top: 40,
-            backgroundColor: chartAreaBg
-        },
-        hAxis: {
-            textStyle: { color: textColor, fontSize: 12 },
-            gridlines: { color: 'transparent' },
-            baselineColor: 'transparent',
-            slantedText: trendState.view !== 'shift',
-            slantedTextAngle: 30
-        },
-        vAxis: {
-            textStyle: { color: textColor, fontSize: 12 },
-            format: 'short',
-            gridlines: { color: gridColor },
-            minorGridlines: { count: 0 },
-            viewWindow: { min: 0 },
-            baselineColor: 'transparent',
-        },
-        tooltip: { isHtml: true, trigger: 'focus' },
-        animation: {
-            startup: true,
-            duration: 1200,
-            easing: 'out',
-        },
-    };
-
-    let finalOptions;
-    let ChartClass;
 
     if (trendState.view === 'daily') {
-        ChartClass = (window as any).google.visualization.AreaChart;
-        finalOptions = {
-            ...baseOptions,
-            hAxis: { ...baseOptions.hAxis, format: 'dd/MM' },
-            lineWidth: 2,
-            pointSize: 5,
-            areaOpacity: 0.15,
-            colors: [dailyBaseColor],
-            crosshair: { trigger: 'both', orientation: 'vertical', color: gridColor },
-            curveType: 'function',
-            series: {
-                0: {
-                    color: dailyBaseColor,
-                    pointShape: { type: 'circle' },
-                    pointsVisible: true,
-                }
-            },
-            annotations: {
-                textStyle: { fontSize: 11, bold: false, color: textColor, auraColor: 'none' },
-                stem: { color: 'transparent' },
-                style: 'point'
-            },
-        };
-    } else if (trendState.view === 'shift') {
-        ChartClass = (window as any).google.visualization.ColumnChart;
-        finalOptions = {
-            ...baseOptions,
-            bar: { groupWidth: '60%' },
-            annotations: {
-                textStyle: { fontSize: 12, bold: true, color: textColor, auraColor: 'none' },
-                alwaysOutside: true,
-            },
-        };
-    } else { // weekly or monthly
-         ChartClass = (window as any).google.visualization.ColumnChart;
-         finalOptions = {
-            ...baseOptions,
-            isStacked: true,
-            bar: { groupWidth: '60%' },
-            series: {
-                0: { // Series 0 for Increase/Same
-                    annotations: {
-                        textStyle: { fontSize: 11, bold: true, color: textColor, auraColor: 'none' },
-                        alwaysOutside: true,
-                    }
-                },
-                1: { // Series 1 for Decrease
-                    annotations: {
-                        textStyle: { fontSize: 11, bold: true, color: decreaseAnnotationColor, auraColor: 'none' },
-                        alwaysOutside: true,
-                    }
-                }
-            }
-        };
-    }
-    
-    if (chartInstanceRef.current) {
-        chartInstanceRef.current.clearChart();
-    }
-    chartInstanceRef.current = new ChartClass(chartDivRef.current);
-    chartInstanceRef.current.draw(dataTable, finalOptions);
-    
-    // Update Title
-    const titleEl = chartCardRef.current?.querySelector('#trend-chart-title');
-    if(titleEl) {
-        titleEl.innerHTML = `XU HƯỚNG DOANH THU <span class="text-slate-500 dark:text-slate-400 font-medium text-base ml-2"> - TỔNG: ${formatCurrency(totalValue)}</span>`;
+        return (
+            <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
+                    <defs>
+                        <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor={dailyBaseColor} stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor={dailyBaseColor} stopOpacity={0}/>
+                        </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
+                    <XAxis dataKey="label" tick={{ fill: textColor, fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} minTickGap={15} />
+                    <YAxis tickFormatter={(val) => formatCurrency(val)} tick={{ fill: textColor, fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} dx={-10} width={60} />
+                    <RechartsTooltip content={<CustomTooltip metricName={metricName} />} cursor={{ stroke: gridColor, strokeWidth: 1, strokeDasharray: '3 3' }} />
+                    <Area 
+                        type="monotone" 
+                        dataKey="value" 
+                        stroke={dailyBaseColor} 
+                        strokeWidth={3} 
+                        fillOpacity={1} 
+                        fill="url(#colorValue)" 
+                        dot={{ fill: isDark ? '#1e293b' : '#ffffff', stroke: dailyBaseColor, strokeWidth: 2, r: 4 }} 
+                        activeDot={{ r: 6, stroke: isDark ? '#ffffff' : dailyBaseColor, strokeWidth: 2, fill: dailyBaseColor }} 
+                    >
+                        <LabelList dataKey="value" content={(props: any) => <CustomLabel {...props} textColor={textColor} positionOffset={12} />} />
+                    </Area>
+                </AreaChart>
+            </ResponsiveContainer>
+        );
     }
 
-  }, [trendData, trendState, chartData, hasData, totalValue, metricName]);
-
-  useEffect(() => {
-    let observer: ResizeObserver;
-    
-    const drawAndObserve = () => {
-        drawChart();
-        if (chartCardRef.current) {
-            observer = new ResizeObserver(() => {
-                setTimeout(() => drawChart(), 150);
-            });
-            observer.observe(chartCardRef.current);
-        }
-    };
-
-    if ((window as any).google?.visualization) {
-        drawAndObserve();
-    } else {
-        (window as any).google?.charts?.load('current', { 'packages': ['corechart'] });
-        (window as any).google?.charts?.setOnLoadCallback(drawAndObserve);
-    }
-
-    return () => {
-        if (observer && chartCardRef.current) {
-            observer.unobserve(chartCardRef.current);
-        }
-        if (chartInstanceRef.current) {
-            chartInstanceRef.current.clearChart();
-        }
-    };
-  }, [drawChart]);
+    return (
+        <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData} margin={{ top: 30, right: 10, left: 10, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
+                <XAxis dataKey="label" tick={{ fill: textColor, fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />
+                <YAxis tickFormatter={(val) => formatCurrency(val)} tick={{ fill: textColor, fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} dx={-10} width={60} />
+                <RechartsTooltip content={<CustomTooltip metricName={metricName} />} cursor={{ fill: 'transparent' }} />
+                <Bar 
+                    dataKey="value" 
+                    radius={[4, 4, 0, 0]} 
+                >
+                    <LabelList dataKey="value" content={(props: any) => <CustomLabel {...props} textColor={textColor} positionOffset={8} />} />
+                    {chartData.map((entry, index) => (
+                        <Cell 
+                            key={`cell-${index}`} 
+                            fill={
+                                entry.fill 
+                                    ? entry.fill 
+                                    : entry.isDecrease 
+                                        ? (isDark ? '#F56565' : '#FC8181') 
+                                        : (isDark ? '#48BB78' : '#68D391')
+                            } 
+                        />
+                    ))}
+                </Bar>
+            </BarChart>
+        </ResponsiveContainer>
+    );
+  };
 
   return (
     <div 
       ref={chartCardRef}
-      className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden rounded-none mb-8 transition-all duration-300"
+      className="bg-white dark:bg-[#1c1c1e] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-white/5 rounded-2xl mb-8 transition-all duration-300 relative z-0"
     >
       <SectionHeader 
-        title="XU HƯỚNG DOANH THU" 
+        title={(
+            <div className="flex items-center gap-3">
+                <span className="text-slate-800 dark:text-slate-100 uppercase">XU HƯỚNG DOANH THU</span>
+                {totalValue > 0 && (
+                    <div className="text-slate-500 dark:text-slate-400 font-extrabold text-sm border-l border-slate-200 dark:border-slate-700/50 pl-3">
+                        TỔNG: <span className="text-indigo-600 dark:text-indigo-400 ml-1">{formatCurrency(totalValue)}</span>
+                    </div>
+                )}
+            </div>
+        ) as any}
         icon="trending-up"
-        subtitle="Phân tích theo thời gian & ca làm việc"
       >
         <div className="flex flex-wrap items-center gap-2 hide-on-export">
-          {/* Metric Selector */}
-          <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
+          <div className="flex items-center gap-1.5 p-1 bg-slate-50 dark:bg-black/20 rounded-xl border border-slate-100 dark:border-white/5">
             <button
               onClick={() => setTrendState(prev => ({ ...prev, metric: 'thuc' }))}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold uppercase transition-all ${
                 trendState.metric === 'thuc' 
-                ? 'bg-white dark:bg-white/10 text-indigo-600 dark:text-indigo-400 shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-slate-200/60 dark:border-white/10' 
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 border border-transparent'
               }`}
             >
               Thực tế
             </button>
             <button
               onClick={() => setTrendState(prev => ({ ...prev, metric: 'qd' }))}
-              className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold uppercase transition-all ${
                 trendState.metric === 'qd' 
-                ? 'bg-white dark:bg-white/10 text-indigo-600 dark:text-indigo-400 shadow-sm' 
-                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-slate-200/60 dark:border-white/10' 
+                : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 border border-transparent'
               }`}
             >
               Quy đổi
             </button>
           </div>
 
-          {/* View Selector */}
-          <div className="flex bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
+          <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 ml-1">
             {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
               <button
                 key={v}
                 onClick={() => setTrendState(prev => ({ ...prev, view: v }))}
-                className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${
                   trendState.view === v 
-                  ? 'bg-white dark:bg-white/10 text-indigo-600 dark:text-indigo-400 shadow-sm' 
-                  : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
+                  : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
                 }`}
               >
                 {v === 'shift' ? 'Ca' : v === 'daily' ? 'Ngày' : v === 'weekly' ? 'Tuần' : 'Tháng'}
@@ -262,26 +202,21 @@ const TrendChart: React.FC = React.memo(() => {
           <button 
             onClick={() => handleExport(chartCardRef.current, 'xu-huong-doanh-thu', { captureAsDisplayed: true })}
             disabled={isExporting}
-            className={`w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${
+            className={`w-9 h-9 ml-1 rounded-xl flex items-center justify-center transition-colors border ${
               isExporting 
-              ? 'bg-slate-200 text-slate-400 dark:bg-white/10 opacity-70 cursor-not-allowed'
-              : 'bg-slate-100 text-slate-600 dark:bg-white/5 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-white/10'
+              ? 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:border-slate-700 opacity-70 cursor-not-allowed'
+              : 'bg-white text-slate-500 dark:bg-slate-800 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50 hover:text-indigo-600 dark:hover:bg-slate-700 dark:hover:text-indigo-400 shadow-sm'
             }`}
-            title="Export Image"
+            title="Xuất ảnh biểu đồ"
           >
-            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="download" size={5} />}
+            {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin" /> : <Icon name="download" size={4.5} />}
           </button>
         </div>
       </SectionHeader>
 
-
-      <div className="p-6">
-        <div className="relative">
-          <div 
-            ref={chartDivRef} 
-            className="w-full h-[350px] transition-opacity duration-500"
-            style={{ opacity: hasData ? 1 : 0.5 }}
-          />
+      <div className="p-5 md:p-6 pb-2">
+        <div className="w-full h-[320px]">
+           {renderChart()}
         </div>
       </div>
     </div>

@@ -42,27 +42,50 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
     return (
         <div className="flex flex-col h-full">
             {/* Header Area inside the component */}
-            <div className="px-8 pt-8 pb-4 flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700 flex items-center justify-center text-blue-600 dark:text-blue-400">
-                        <Icon name="database" size={5} />
+            <div className="px-8 pt-8 pb-4 flex justify-between items-center relative z-10">
+                <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-50/50 dark:bg-slate-800/50 backdrop-blur-md shadow-sm border border-indigo-100 dark:border-slate-700/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                        <Icon name="database" size={6} />
                     </div>
                     <div>
-                        <h3 className="text-base font-bold text-slate-900 dark:text-white">Nhập dữ liệu</h3>
-                        <p className="text-xs text-slate-500 font-medium">Hỗ trợ Excel (.xlsx, .xls)</p>
+                        <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Nhập dữ liệu</h3>
+                        <p className="text-sm text-slate-500 font-medium">Hỗ trợ Excel (.xlsx, .xls)</p>
                     </div>
                 </div>
                 <button 
                     onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                    className={`p-2 rounded-full transition-all duration-200 ${isSettingsOpen ? 'bg-slate-200 text-slate-800' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600'} dark:hover:bg-slate-800`}
+                    className={`p-2.5 rounded-xl transition-all duration-200 ${isSettingsOpen ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800/60'} shadow-sm`}
                     title="Cài đặt cấu hình"
                 >
                     <Icon name="settings-2" size={5} />
                 </button>
             </div>
 
+            {/* Download Data Callout - New Feature */}
+            <div className="mx-8 mb-8 p-5 rounded-2xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white/60 dark:border-slate-700/50 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-sm relative z-10 transition-all hover:bg-white/60 dark:hover:bg-slate-800/60">
+                <div className="flex items-center gap-4 mb-3 sm:mb-0">
+                    <div className="w-10 h-10 shrink-0 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 flex items-center justify-center shadow-sm">
+                        <Icon name="download-cloud" size={5} />
+                    </div>
+                    <div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Bước 1: Tải dữ liệu báo cáo</h4>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Trích xuất file xuất từ BCNB (Doanh thu siêu thị).</p>
+                    </div>
+                </div>
+                <a 
+                    href="https://report.mwgroup.vn/home/dashboard/77" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="shrink-0 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-indigo-500/20 flex items-center gap-2 group active:scale-95"
+                >
+                    Tải file dữ liệu <Icon name="external-link" size={4} className="opacity-80 group-hover:opacity-100 transition-opacity" />
+                </a>
+            </div>
+
             {/* Main Upload Area */}
-            <div className="px-8 pb-8">
+            <div className="px-8 pb-8 relative">
+                {/* Decorative node for step 2 */}
+                <div className="absolute top-[-36px] left-12 w-0.5 h-6 bg-indigo-200 dark:bg-indigo-800/50 hidden sm:block"></div>
                 {isSettingsOpen ? (
                     <div className="p-6 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 animate-fade-in space-y-5">
                         <div>
@@ -105,10 +128,10 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                 ) : (
                     <label
                         htmlFor="file-upload"
-                        className={`group relative flex flex-col items-center justify-center w-full h-56 rounded-2xl cursor-pointer transition-all duration-300 overflow-hidden
+                        className={`group relative flex flex-col items-center justify-center w-full h-[260px] rounded-[24px] cursor-pointer transition-all duration-300 overflow-hidden
                             ${isDragging 
-                                ? 'bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500 scale-[1.02]' 
-                                : 'bg-white dark:bg-slate-800 border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-blue-400 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                                ? 'bg-indigo-50/50 dark:bg-indigo-900/20 border-2 border-indigo-500 scale-[1.01] shadow-inner backdrop-blur-xl' 
+                                : 'bg-white/40 dark:bg-slate-800/30 border-2 border-dashed border-indigo-200/60 dark:border-slate-700 hover:border-indigo-400 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md'
                             }`}
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
@@ -126,12 +149,13 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                         <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
 
                         <div className="flex flex-col items-center justify-center relative z-10 space-y-4">
-                            <div className={`p-4 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:scale-110 transition-all duration-300`}>
+                            <div className={`p-4 rounded-2xl bg-white dark:bg-slate-700 text-slate-400 shadow-sm border border-slate-100 dark:border-slate-600 group-hover:text-indigo-600 group-hover:border-indigo-200 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:scale-110 transition-all duration-300`}>
                                 <Icon name="upload-cloud" size={8} />
                             </div>
                             <div className="text-center">
-                                <p className="text-base font-semibold text-slate-700 dark:text-slate-200">
-                                    <span className="text-blue-600 dark:text-blue-400 hover:underline">Chọn file</span> hoặc kéo thả vào đây
+                                <h4 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight mb-1">Bước 2: Nạp báo cáo vào hệ thống</h4>
+                                <p className="text-base font-medium text-slate-600 dark:text-slate-300">
+                                    <span className="text-indigo-600 dark:text-indigo-400 group-hover:underline">Chọn file</span> hoặc thả file Excel vào đây
                                 </p>
                                 <p className="text-xs text-slate-400 mt-1 font-medium">
                                     Xử lý an toàn • Không tải lên máy chủ

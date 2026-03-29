@@ -20,24 +20,3 @@ root.render(
   </React.StrictMode>
 );
 
-// Load Google Charts asynchronously after app mount to prevent blocking
-if (typeof window !== 'undefined') {
-    const loadCharts = () => {
-        if ((window as any).google?.charts) {
-            (window as any).google.charts.load('current', { 'packages': ['corechart'] });
-        }
-    };
-
-    if ((window as any).google?.charts) {
-        loadCharts();
-    } else {
-        // Check if script already exists to avoid duplicates
-        if (!document.querySelector('script[src*="gstatic.com/charts/loader.js"]')) {
-            const script = document.createElement('script');
-            script.src = 'https://www.gstatic.com/charts/loader.js';
-            script.async = true;
-            script.onload = loadCharts;
-            document.head.appendChild(script);
-        }
-    }
-}

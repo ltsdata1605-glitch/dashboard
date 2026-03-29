@@ -8,6 +8,7 @@ import { useFileUploadLogic } from './useFileUploadLogic';
 import { useFilterState } from './useFilterState';
 import { useDataManagement } from './useDataManagement';
 import { useWarehouseTargets } from './useWarehouseTargets';
+import * as dbService from '../services/dbService';
 
 export const useDashboardLogic = () => {
     const [status, setStatus] = useState<Status>({ message: '', type: 'info', progress: 0 });
@@ -114,7 +115,11 @@ export const useDashboardLogic = () => {
         handleDeduplicationChange,
         processingTime,
         warehouseTargets,
-        updateWarehouseTarget
+        updateWarehouseTarget,
+        updateDepartmentMap: async (map: any) => {
+            setDepartmentMap(map);
+            await dbService.saveDepartmentMap(map);
+        }
     };
 };
 

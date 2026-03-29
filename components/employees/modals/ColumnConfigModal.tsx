@@ -214,7 +214,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label htmlFor="mainHeader" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tiêu đề chính</label>
-                            <input id="mainHeader" type="text" value={mainHeader} onChange={e => setMainHeader(e.target.value.toUpperCase())} placeholder="VD: THI ĐUA SIM" className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition" />
+                            <input id="mainHeader" list="main-header-options" type="text" value={mainHeader} onChange={e => setMainHeader(e.target.value.toUpperCase())} placeholder="VD: THI ĐUA SIM" className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition" />
                         </div>
                         <div>
                             <label htmlFor="columnName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tiêu đề phụ *</label>
@@ -387,6 +387,12 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     </div>
 
                 </div>
+                {/* Datalist for Main Headers */}
+                <datalist id="main-header-options">
+                    {Array.from(new Set(existingColumns.map(c => c.mainHeader).filter(Boolean))).sort().map((group, idx) => (
+                        <option key={idx} value={group} />
+                    ))}
+                </datalist>
                 <div className="p-4 flex justify-end gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
                     <button type="button" onClick={onClose} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Đóng</button>
                     <button type="submit" className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors">{editingColumn ? "Lưu Thay Đổi" : "Lưu Cột"}</button>
