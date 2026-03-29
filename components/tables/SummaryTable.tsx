@@ -179,24 +179,13 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                     {isComparisonMode && (
                         <div className="animate-fade-in-down px-5 py-3 border-b border-slate-200 dark:border-slate-700 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                             
-                            <div className="flex flex-wrap items-center gap-3 hide-on-export w-full lg:w-auto">
+                            <div className="flex flex-col w-full lg:w-auto">
+                                <div className="flex flex-wrap items-center gap-3 hide-on-export">
                                     {/* Mode Selector */}
                                     <select 
                                         value={compMode} 
                                         onChange={(e) => setCompMode(e.target.value as ComparisonMode)} 
                                         className="text-xs font-bold text-indigo-700 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-800 dark:text-indigo-400 dark:border-slate-700 py-1.5 pl-3 pr-8 cursor-pointer hover:bg-white transition-colors"
-                                        title={
-                                            compMode === 'day_adjacent' ? "So sánh trực tiếp kết quả của ngày được chọn so với ngày hôm trước (VD: Thứ Ba so với Thứ Hai). Giúp theo dõi tốc độ biến động hàng ngày." :
-                                            compMode === 'day_same_period' ? "So sánh ngày được chọn với ngày cùng số của tháng trước (VD: 15/03 vs 15/02). Dùng để loại bỏ biến động nhất thời khi đầu/cuối tháng." :
-                                            compMode === 'week_adjacent' ? "So sánh một tuần với tuần liền kề trước đó trong cùng 1 tháng. Theo dõi nhịp chạy số giữa các tuần trong kỳ lương." :
-                                            compMode === 'week_same_period' ? "So sánh tuần thứ N của tháng này với tuần thứ N tương ứng của tháng trước. Cho cái nhìn đối chiếu cùng giai đoạn tuần." :
-                                            compMode === 'month_adjacent' ? "Đối chiếu toàn bộ doanh số của 1 tháng so với tháng liền kề ngay trước nó." :
-                                            compMode === 'month_same_period_year' ? "So sánh tháng này năm nay với CHÍNH THÁNG NÀY CỦA NĂM NGOÁI. Đây là tiêu chí vàng (YoY) để loại bỏ tính chu kỳ mùa vụ." :
-                                            compMode === 'quarter_adjacent' ? "Gom dữ liệu 3 tháng của Quý được chọn đo với Quý liền kề. Thích hợp đánh giá chiến dịch trung hạn." :
-                                            compMode === 'quarter_same_period_year' ? "So sánh số liệu cả Quý năm nay với năng lực của chính Quý đó năm ngoái." :
-                                            compMode === 'ytd_same_period_year' ? "Lũy kế từ ngày 01/01 đến thời điểm được chọn, so sánh với cùng khoảng thời gian năm trước. Xem xét tiến độ KPI năm." :
-                                            "So sánh tùy chọn tự do giữa 2 khoảng thời gian bất kỳ mà bạn muốn."
-                                        }
                                     >
                                         <option value="day_adjacent">Ngày (Liền kề)</option>
                                         <option value="day_same_period">Ngày (CK tháng trước)</option>
@@ -284,26 +273,42 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         </div>
                                     )}
 
-                                    {/* Custom Range Inputs */}
+                                     {/* Custom Range Inputs */}
                                     {compMode === 'custom_range' && (
                                         <div className="flex flex-col sm:flex-row gap-2">
                                             <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
                                                 <span className="text-[10px] font-bold text-teal-600 dark:text-teal-400">Kỳ A:</span>
-                                                <input type="date" value={customRangeA.start} onChange={e => setCustomRangeA(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24" />
+                                                <input type="date" value={customRangeA.start} onChange={e => setCustomRangeA(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24 focus:outline-none" />
                                                 <span className="text-slate-400 text-xs">-</span>
-                                                <input type="date" value={customRangeA.end} onChange={e => setCustomRangeA(p => ({ ...p, end: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24" />
+                                                <input type="date" value={customRangeA.end} onChange={e => setCustomRangeA(p => ({ ...p, end: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24 focus:outline-none" />
                                             </div>
                                             <div className="flex items-center gap-1 px-2 py-1 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
                                                 <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">Kỳ B:</span>
-                                                <input type="date" value={customRangeB.start} onChange={e => setCustomRangeB(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24" />
+                                                <input type="date" value={customRangeB.start} onChange={e => setCustomRangeB(p => ({ ...p, start: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24 focus:outline-none" />
                                                 <span className="text-slate-400 text-xs">-</span>
-                                                <input type="date" value={customRangeB.end} onChange={e => setCustomRangeB(p => ({ ...p, end: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24" />
+                                                <input type="date" value={customRangeB.end} onChange={e => setCustomRangeB(p => ({ ...p, end: e.target.value }))} className="text-xs border-none bg-transparent focus:ring-0 p-0 w-24 focus:outline-none" />
                                             </div>
                                         </div>
                                     )}
+                                </div>
+                                <div className="text-[11px] text-slate-500 dark:text-slate-400 italic mt-1.5 flex items-start gap-1.5 max-w-xl line-clamp-2 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                                    <Icon name="info" size={3.5} className="mt-0.5 shrink-0 text-indigo-400 dark:text-indigo-500"/>
+                                    <span>
+                                        {compMode === 'day_adjacent' ? "So sánh trực tiếp kết quả của ngày được chọn so với ngày hôm trước (VD: Thứ Ba so với Thứ Hai). Giúp theo dõi tốc độ biến động hàng ngày." :
+                                        compMode === 'day_same_period' ? "So sánh ngày được chọn với ngày cùng số của tháng trước (VD: 15/03 vs 15/02). Dùng để loại bỏ biến động nhất thời khi đầu/cuối tháng." :
+                                        compMode === 'week_adjacent' ? "So sánh một tuần với tuần liền kề trước đó trong cùng 1 tháng. Theo dõi nhịp chạy số giữa các tuần trong kỳ lương." :
+                                        compMode === 'week_same_period' ? "So sánh tuần thứ N của tháng này với tuần thứ N tương ứng của tháng trước. Cho cái nhìn đối chiếu cùng giai đoạn tuần." :
+                                        compMode === 'month_adjacent' ? "Đối chiếu toàn bộ doanh số của 1 tháng so với tháng liền kề ngay trước nó." :
+                                        compMode === 'month_same_period_year' ? "So sánh tháng này năm nay với CHÍNH THÁNG NÀY CỦA NĂM NGOÁI. Đây là tiêu chí vàng (YoY) để loại bỏ tính chu kỳ mùa vụ." :
+                                        compMode === 'quarter_adjacent' ? "Gom dữ liệu 3 tháng của Quý được chọn đo với Quý liền kề. Thích hợp đánh giá chiến dịch trung hạn." :
+                                        compMode === 'quarter_same_period_year' ? "So sánh số liệu cả Quý năm nay với năng lực của chính Quý đó năm ngoái." :
+                                        compMode === 'ytd_same_period_year' ? "Lũy kế từ ngày 01/01 đến thời điểm được chọn, so sánh với cùng khoảng thời gian năm trước. Xem xét tiến độ KPI năm." :
+                                        "So sánh tùy chọn tự do giữa 2 khoảng thời gian bất kỳ mà bạn muốn."}
+                                    </span>
+                                </div>
+                            </div>
                                     
                                     {/* Tooltip removed as now embedded in select title */}
-                                </div>
 
                                 {/* Mini Analysis Charts & Target Badges */}
                                 {compTree && (
