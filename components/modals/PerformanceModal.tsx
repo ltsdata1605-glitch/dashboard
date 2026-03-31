@@ -62,6 +62,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
 
     const modalBodyRef = React.useRef<HTMLDivElement>(null);
     const pieChartRef = useRef<HTMLDivElement>(null);
+    const chartInstanceRef = useRef<any>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [exportScale, setExportScale] = useState(2);
     const [isAllCustomersExpanded, setIsAllCustomersExpanded] = useState(false);
@@ -143,7 +144,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 return acc;
             }, { totalRevenue: 0, totalRevenueQD: 0 });
 
-            const hieuQuaQD = totalRevenue > 0 ? ((totalRevenueQD - totalRevenue) / totalRevenue) * 100 : 0;
+            const hieuQuaQD = totalRevenue !== 0 ? ((totalRevenueQD - totalRevenue) / Math.abs(totalRevenue)) * 100 : 0;
             const firstOrder = orders[0];
             const scheduledDateRaw = getRowValue(firstOrder, ['TG Hẹn Giao']) || firstOrder.parsedDate;
             const scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
@@ -160,7 +161,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                  return acc;
             }, { totalRevenueUnshipped: 0, totalRevenueQDUnshipped: 0 });
             
-            const hieuQuaQDUnshipped = totalRevenueUnshipped > 0 ? ((totalRevenueQDUnshipped - totalRevenueUnshipped) / totalRevenueUnshipped) * 100 : 0;
+            const hieuQuaQDUnshipped = totalRevenueUnshipped !== 0 ? ((totalRevenueQDUnshipped - totalRevenueUnshipped) / Math.abs(totalRevenueUnshipped)) * 100 : 0;
 
             const orderGroups: { [id: string]: DataRow[] } = {};
             orders.filter(o => (Number(getRowValue(o, COL.PRICE)) || 0) > 0).forEach(o => {
@@ -217,6 +218,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
 
         const chart = new (window as any).google.visualization.PieChart(pieChartRef.current);
         chart.draw(dataTable, options);
+        chartInstanceRef.current = chart;
     }, [industryBreakdown]);
 
     useEffect(() => {
@@ -244,6 +246,10 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 clearTimeout(timer);
                 if (observer && chartContainer) {
                     observer.unobserve(chartContainer);
+                }
+                if (chartInstanceRef.current && chartInstanceRef.current.clearChart) {
+                    chartInstanceRef.current.clearChart();
+                    chartInstanceRef.current = null;
                 }
             };
         }
@@ -356,7 +362,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                  </h4>
                  <div ref={customerDetailsContainerRef} className="space-y-2 max-h-96 overflow-y-auto pr-2">
                     {customerBreakdown.map(customer => (
-                        <details key={customer.name} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
+                        <details key={customer.name} className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-none overflow-hidden">
                              <summary className="p-3 cursor-pointer flex justify-between items-center list-none">
                                 <p className="font-semibold text-slate-800 dark:text-slate-200">{customer.name.toUpperCase()}</p>
                                 <div className="flex items-center gap-x-3 gap-y-1 flex-wrap justify-end text-xs font-semibold">
@@ -381,17 +387,17 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                 </div>
                              </summary>
                               <div className="border-t border-slate-200 dark:border-slate-700">
-                                 <table className="w-full text-sm table-auto compact-export-table border-collapse">
-                                     <thead className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs">
+                                 <table className="w-full text-sm table-auto compact-export-table border-collapse border border-slate-200 dark:border-slate-700">
+                                     <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 text-xs">
                                          <tr>
-                                             <th className="p-2 text-left font-semibold w-28">Mã ĐH</th>
-                                             <th className="p-2 text-left font-semibold">Sản phẩm</th>
-                                             <th className="p-2 text-center font-semibold w-12">SL</th>
-                                             <th className="p-2 text-right font-semibold whitespace-nowrap">Doanh Thu</th>
-                                             <th className="p-2 text-center font-semibold w-24">Trạng Thái</th>
+                                             <th className="p-2 text-left font-semibold w-28 border-b border-r border-slate-200 dark:border-slate-700">Mã ĐH</th>
+                                             <th className="p-2 text-left font-semibold border-b border-r border-slate-200 dark:border-slate-700">Sản phẩm</th>
+                                             <th className="p-2 text-center font-semibold w-12 border-b border-r border-slate-200 dark:border-slate-700">SL</th>
+                                             <th className="p-2 text-right font-semibold whitespace-nowrap border-b border-r border-slate-200 dark:border-slate-700">Doanh Thu</th>
+                                             <th className="p-2 text-center font-semibold w-24 border-b border-slate-200 dark:border-slate-700">Trạng Thái</th>
                                          </tr>
                                      </thead>
-                                     <tbody>
+                                     <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                                          {customer.orderGroups.map((group) => {
                                             return group.lines.map((order, lineIndex) => {
                                                 const orderId = group.id === 'no-id' ? '-' : group.id;
@@ -400,9 +406,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                 const isInstallment = getHinhThucThanhToan(order) === 'tra_gop';
                                                 
                                                 return (
-                                                    <tr key={`${group.id}-${lineIndex}`} className="border-t border-slate-100 dark:border-slate-700/50">
+                                                    <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                                         {lineIndex === 0 && (
-                                                            <td rowSpan={group.lines.length} className="p-2 text-center text-xs text-slate-500 dark:text-slate-400 align-middle border-r border-slate-100 dark:border-slate-700/30">
+                                                            <td rowSpan={group.lines.length} className="p-2 text-center text-xs text-slate-500 dark:text-slate-400 align-middle border-r border-slate-200 dark:border-slate-700">
                                                                 <div className="flex flex-col items-center justify-center gap-1">
                                                                     <span className="font-mono font-bold text-slate-700 dark:text-slate-300">{orderId}</span>
                                                                     {group.isAttached && (
@@ -413,7 +419,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                 </div>
                                                             </td>
                                                         )}
-                                                        <td className="p-2 text-left text-slate-800 dark:text-slate-200 allow-wrap">
+                                                        <td className="p-2 text-left text-slate-800 dark:text-slate-200 allow-wrap border-r border-slate-200 dark:border-slate-700">
                                                             <div className="flex flex-wrap items-center gap-2">
                                                                 {getRowValue(order, COL.PRODUCT)}
                                                                 {isInstallment && (
@@ -423,10 +429,10 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                 )}
                                                             </div>
                                                         </td>
-                                                        <td className="p-2 text-center text-slate-600 dark:text-slate-300">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
-                                                        <td className="p-2 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap">{formatCurrency(price)}</td>
+                                                        <td className="p-2 text-center text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
+                                                        <td className="p-2 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-r border-slate-200 dark:border-slate-700">{formatCurrency(price)}</td>
                                                         {lineIndex === 0 && (
-                                                            <td rowSpan={group.lines.length} className="p-2 text-center text-xs align-middle border-l border-slate-100 dark:border-slate-700/30">
+                                                            <td rowSpan={group.lines.length} className="p-2 text-center text-xs align-middle">
                                                                 {isUnshipped ? (
                                                                     <span className="inline-flex items-center px-2 py-0.5 rounded-full font-semibold bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200">
                                                                         <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5 animate-pulse"></span>

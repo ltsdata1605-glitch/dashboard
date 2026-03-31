@@ -19,20 +19,6 @@ interface HeadToHeadTabProps {
     colorThemes: { header: string; row: string; border: string; }[];
 }
 
-const suggestionGroups = [
-  { name: 'Máy lọc nước', filterType: 'subgroup', groups: ['Máy lọc nước'], metric: 'quantity' as const },
-  { name: 'Nồi chiên', filterType: 'subgroup', groups: ['Nồi chiên'], metric: 'quantity' as const },
-  { name: 'Nồi Cơm', filterType: 'subgroup', groups: ['NC đ.tử/cao tần', 'NC nắp gài/rời'], metric: 'quantity' as const },
-  { name: 'Quạt điện', filterType: 'subgroup', groups: ['Quạt điện'], metric: 'quantity' as const },
-  { name: 'Xay Sinh tố/ép', filterType: 'subgroup', groups: ['Xay Sinh tố/ép'], metric: 'quantity' as const },
-  { name: 'Bảo hiểm', filterType: 'parent', groups: ['Bảo hiểm'], metric: 'revenueQD' as const },
-  { name: 'Đồng hồ', filterType: 'parent', groups: ['Wearable'], metric: 'quantity' as const },
-  { name: 'Sim', filterType: 'parent', groups: ['Sim'], metric: 'quantity' as const },
-  { name: 'Camera', filterType: 'subgroup', groups: ['Camera'], metric: 'quantity' as const },
-  { name: 'Vieon', filterType: 'subgroup', groups: ['Vieon'], metric: 'quantity' as const },
-  { name: 'Pin SDP', filterType: 'subgroup', groups: ['Pin SDP'], metric: 'quantity' as const },
-  { name: 'Tai nghe BLT', filterType: 'subgroup', groups: ['Tai nghe BLT'], metric: 'quantity' as const }
-];
 
 
 const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(({ onExport, isExporting, colorThemes, ...props }, ref) => {
@@ -103,25 +89,6 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
         setModalState({ type: null });
     };
 
-    const handleSuggestionToggle = (sg: typeof suggestionGroups[0]) => {
-        const tableName = `7 NGÀY - ${sg.name.toUpperCase()}`;
-        const tableExists = tables.some(t => t.tableName === tableName);
-
-        if (tableExists) {
-            setTables(prev => prev.filter(t => t.tableName !== tableName));
-        } else {
-            const newConfig: HeadToHeadTableConfig = {
-                id: `h2h-suggestion-${Date.now()}-${sg.name}`,
-                tableName,
-                metricType: sg.metric,
-                totalCalculationMethod: 'sum',
-                conditionalFormats: [],
-                selectedSubgroups: sg.filterType === 'subgroup' ? sg.groups : [],
-                selectedParentGroups: sg.filterType === 'parent' ? sg.groups : [],
-            };
-            setTables(prev => [...prev, newConfig]);
-        }
-    };
 
     const handleBatchExport = async () => {
         const elements = document.querySelectorAll('.h2h-table-container');
@@ -150,7 +117,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 shadow-sm`}>
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400`}>
                         <Icon name="calendar-days" size={6} />
                     </div>
                     <div>
@@ -158,27 +125,12 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                         <p className="text-xs font-medium text-slate-400">Phân tích hiệu suất 7 ngày gần nhất</p>
                     </div>
                 </div>
-                <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
+                <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-visible rounded-xl">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-bold text-slate-500 mr-2">Gợi ý:</span>
-                        <div className="flex items-center gap-2 flex-wrap">
-                            {suggestionGroups.map(sg => {
-                                const tableName = `7 NGÀY - ${sg.name.toUpperCase()}`;
-                                const isActive = tables.some(t => t.tableName === tableName);
-                                return (
-                                    <button 
-                                        key={sg.name}
-                                        onClick={() => handleSuggestionToggle(sg)}
-                                        className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${isActive ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm border border-slate-200 dark:border-slate-600' : 'text-slate-500 hover:text-indigo-600 bg-slate-100/50 dark:bg-slate-800/50'}`}
-                                    >
-                                        {sg.name}
-                                    </button>
-                                );
-                            })}
-                        </div>
-
+                        <button onClick={() => setModalState({ type: 'ADD' })} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="Tạo bảng 7 Ngày mới">
+                            <Icon name="plus" size={5} />
+                        </button>
                         <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
-
                         <div className="flex items-center gap-1">
                             {onExport && (
                                 <button onClick={onExport} disabled={isExporting} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="Xuất ảnh toàn bộ tab 7 ngày">

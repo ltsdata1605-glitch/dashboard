@@ -9,6 +9,50 @@ import { processEmployeeData } from './employeeService';
 import { processSummaryTable, calculateWarehouseSummary } from './summaryService';
 import { processIndustryData } from './industryService';
 
+/**
+ * PREDICATES (Centralized Filtering Logic)
+ */
+
+export const isXuatMatch = (row: DataRow, xuatFilter: string) => {
+    if (xuatFilter === 'all') return true;
+    const xuatValue = getRowValue(row, COL.XUAT) || '';
+    const xuatStatus = xuatValue.toLowerCase().includes('đã') ? 'Đã' : 'Chưa';
+    return xuatStatus === xuatFilter;
+};
+
+export const isTrangThaiMatch = (row: DataRow, trangThaiFilter: string[]) => {
+    if (!trangThaiFilter || trangThaiFilter.length === 0) return true;
+    return trangThaiFilter.includes(getRowValue(row, COL.TRANG_THAI));
+};
+
+export const isNguoiTaoMatch = (row: DataRow, nguoiTaoFilter: string[]) => {
+    if (!nguoiTaoFilter || nguoiTaoFilter.length === 0) return true;
+    return nguoiTaoFilter.includes(getRowValue(row, COL.NGUOI_TAO));
+};
+
+export const isKhoMatch = (row: DataRow, khoFilter: string[]) => {
+    if (!khoFilter || khoFilter.length === 0 || khoFilter.includes('all')) return true;
+    return khoFilter.includes(getRowValue(row, COL.KHO).toString());
+};
+
+export const isDepartmentMatch = (row: DataRow, departmentFilter: string[], departmentMap: DepartmentMap | null) => {
+    if (!departmentMap || !departmentFilter || departmentFilter.length === 0) return true;
+    
+    const creator = getRowValue(row, COL.NGUOI_TAO);
+    if (!creator) return false;
+    
+    const creatorId = creator.split(' - ')[0].trim();
+    const rawDept = departmentMap[creatorId];
+    const department = rawDept ? rawDept.split(';;')[0] : undefined;
+    
+    return !!department && departmentFilter.includes(department);
+};
+
+export const isDateMatch = (row: DataRow, startDate: Date | null, endDate: Date | null) => {
+    const rowDate = row.parsedDate;
+    if (!rowDate) return false;
+    return (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
+};
 
 /**
  * Processes a filtered subset of data for a specific period to generate all dashboard metrics.
@@ -20,32 +64,26 @@ function processDataForPeriod(
     departmentMap: DepartmentMap | null
 ): Omit<ProcessedData, 'lastUpdated' | 'reportSubTitle' | 'warehouseSummary'> {
     
-    // 1. INITIAL DATA FILTERING & PREPARATION
     const isRevenueEligible = (row: DataRow) => {
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
         return HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat);
     };
 
-    // Data is now pre-filtered by isValidSale at the worker level.
-    // We only need to filter out 'Thu Hộ' for revenue-specific calculations.
     const filteredValidSalesData = periodData.filter(row => {
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
         return !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
     });
 
-    // The checks for 'chưa hủy', 'chưa trả', 'đã thu' are now redundant as periodData is pre-filtered.
     const unshippedOrders = periodData.filter(row => {
         return getRowValue(row, COL.XUAT) === 'Chưa xuất' && isRevenueEligible(row);
     });
 
-    // 2. DELEGATE TO SPECIALIZED SERVICES
     const kpis = processKpis(filteredValidSalesData, unshippedOrders, periodData, productConfig);
     const trendData = processTrendData(filteredValidSalesData, productConfig);
     const employeeData = processEmployeeData(filteredValidSalesData, periodData, productConfig, departmentMap);
     const industryData = processIndustryData(filteredValidSalesData, productConfig, filters);
     const summaryTable = processSummaryTable(filteredValidSalesData, productConfig, filters);
     
-    // 3. ASSEMBLE RESULTS
     return {
         kpis,
         trendData,
@@ -57,7 +95,6 @@ function processDataForPeriod(
     };
 }
 
-
 /**
  * Applies all filters to the dataset and orchestrates the processing of different data slices.
  */
@@ -66,61 +103,35 @@ export function applyFiltersAndProcess(
     productConfig: ProductConfig,
     filters: FilterState,
     departmentMap: DepartmentMap | null
-): { processedData: ProcessedData, baseFilteredData: DataRow[] } {
+): { processedData: ProcessedData, baseFilteredData: DataRow[], calendarSourceData: DataRow[] } {
     const mainStartDate = filters.startDate ? new Date(filters.startDate) : null;
     if (mainStartDate) mainStartDate.setHours(0, 0, 0, 0);
     const mainEndDate = filters.endDate ? new Date(filters.endDate) : null;
     if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
     
-    // Base data for the main dashboard (respects all filters)
-    const baseFilteredData = allData.filter(row => {
-        if (filters.kho !== 'all' && getRowValue(row, COL.KHO) != filters.kho) return false;
-        if (filters.xuat !== 'all') {
-            const xuatValue = getRowValue(row, COL.XUAT) || '';
-            const xuatStatus = xuatValue.toLowerCase().includes('đã') ? 'Đã' : 'Chưa';
-            if (xuatStatus !== filters.xuat) return false;
-        }
-        if (filters.trangThai?.length > 0 && !filters.trangThai.includes(getRowValue(row, COL.TRANG_THAI))) return false;
-        if (filters.nguoiTao?.length > 0 && !filters.nguoiTao.includes(getRowValue(row, COL.NGUOI_TAO))) return false;
-        
-        if (departmentMap && filters.department && filters.department.length > 0) {
-            const creator = getRowValue(row, COL.NGUOI_TAO);
-            if (!creator) return false;
-            
-            const creatorId = creator.split(' - ')[0].trim();
-            const rawDept = departmentMap[creatorId];
-            // Split to handle encoded "Dept;;Name" values
-            const department = rawDept ? rawDept.split(';;')[0] : undefined;
-            
-            if (!department || !filters.department.includes(department)) {
-                return false;
-            }
-        }
-        
-        return true;
+    // Base data for Calendar (respects all non-kho and non-date filters)
+    const calendarSourceData = allData.filter(row => {
+        return isXuatMatch(row, filters.xuat) &&
+               isTrangThaiMatch(row, filters.trangThai) &&
+               isNguoiTaoMatch(row, filters.nguoiTao) &&
+               isDepartmentMatch(row, filters.department, departmentMap);
     });
 
-    const mainPeriodData = baseFilteredData.filter(row => {
-        const rowDate = row.parsedDate;
-        return (!mainStartDate || rowDate >= mainStartDate) && (!mainEndDate || rowDate <= mainEndDate);
-    });
+    // Base data for the main dashboard (respects all filters including kho)
+    const baseFilteredData = calendarSourceData.filter(row => isKhoMatch(row, filters.kho));
+
+    const mainPeriodData = baseFilteredData.filter(row => isDateMatch(row, mainStartDate, mainEndDate));
     
     const warehouseSummary = calculateWarehouseSummary(allData, filters, productConfig) || [];
     
-    let finalMainPeriodData = mainPeriodData;
-    let topWarehouseName = '';
-
-    // We no longer auto-filter to the top warehouse when 'all' is selected.
-    // This allows the aggregate metrics to represent the total across all warehouses.
-
-    const mainResult = processDataForPeriod(finalMainPeriodData, productConfig, filters, departmentMap);
+    const mainResult = processDataForPeriod(mainPeriodData, productConfig, filters, departmentMap);
     
     const filterParts = [];
-    if (filters.kho !== 'all') {
-        filterParts.push(`Kho: ${filters.kho}`);
+    if (filters.kho && filters.kho.length > 0 && !filters.kho.includes('all')) {
+        const khoArr = Array.isArray(filters.kho) ? filters.kho : [filters.kho];
+        filterParts.push(`Kho: ${khoArr.join(', ')}`);
     }
-    
-    if(filters.xuat !== 'all') filterParts.push(`Xuất: ${filters.xuat}`);
+    if (filters.xuat !== 'all') filterParts.push(`Xuất: ${filters.xuat}`);
     
     const processedData: ProcessedData = {
         ...mainResult,
@@ -129,5 +140,5 @@ export function applyFiltersAndProcess(
         reportSubTitle: filterParts.length > 0 ? `Lọc theo: ${filterParts.join(' | ')}` : "Dữ liệu được cập nhật dựa trên các bộ lọc đã chọn."
     };
 
-    return { processedData, baseFilteredData };
+    return { processedData, baseFilteredData, calendarSourceData };
 }

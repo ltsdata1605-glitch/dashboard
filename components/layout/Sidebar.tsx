@@ -27,36 +27,39 @@ import {
     ClipboardCheck
 } from 'lucide-react';
 import { useLayout } from '../../contexts/LayoutContext';
-
-const menuItems = [
-    { id: 'analysis', label: 'Phân tích', icon: BarChart3, path: '/analysis' },
-    { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard, path: '/' },
-    { id: 'employees', label: 'Nhân viên', icon: Users, path: '/employees' },
-    { id: 'inventory', label: 'Kho hàng', icon: Package, path: '/inventory' },
-    { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports' },
-    { 
-        id: 'tools', 
-        label: 'Công cụ', 
-        icon: Wrench, 
-        path: '/tools',
-        subItems: [
-            { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket },
-            { id: 'tools-tax', label: 'Tính thuế nhận thưởng', icon: Calculator },
-            { id: 'tools-sticker', label: 'Sticker Event', icon: Sticker },
-            { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck },
-        ]
-    },
-];
-
-const secondaryItems = [
-    { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' },
-    { id: 'help', label: 'Hỗ trợ', icon: HelpCircle, path: '/help' },
-];
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Sidebar() {
     const { isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, activeTab, setActiveTab } = useLayout();
+    const { user, userRole, logout, isDemoMode } = useAuth();
     const [isHovered, setIsHovered] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+
+    const menuItems = [
+        { id: 'analysis', label: 'Phân tích', icon: BarChart3, path: '/analysis' },
+        { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard, path: '/' },
+        { id: 'employees', label: 'Nhân viên', icon: Users, path: '/employees' },
+        { id: 'inventory', label: 'Kho hàng', icon: Package, path: '/inventory' },
+        { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports' },
+        { 
+            id: 'tools', 
+            label: 'Công cụ', 
+            icon: Wrench, 
+            path: '/tools',
+            subItems: [
+                { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket },
+                { id: 'tools-tax', label: 'Tính thuế nhận thưởng', icon: Calculator },
+                { id: 'tools-sticker', label: 'Sticker Event', icon: Sticker },
+                { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck },
+            ]
+        },
+    ];
+
+    const secondaryItems = [
+        { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' },
+        ...(userRole === 'admin' ? [{ id: 'admin', label: 'Phân quyền', icon: ClipboardCheck, path: '/admin' }] : []),
+        { id: 'help', label: 'Hỗ trợ', icon: HelpCircle, path: '/help' },
+    ];
 
     // Desktop-only logic: close mobile sidebar correctly if it was ever opened
     useEffect(() => {
@@ -243,9 +246,19 @@ export default function Sidebar() {
 
                 {/* Bottom Section */}
                 <div className="p-4 border-t border-slate-100 dark:border-slate-800/50">
-                    <div className={`flex items-center ${effectiveCollapsed ? 'justify-center' : 'gap-3 px-2'}`}>
-                        <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User" className="w-full h-full object-cover" />
+                    <button 
+                        onClick={logout}
+                        className={`w-full flex items-center transition-opacity hover:opacity-80 active:scale-95 ${effectiveCollapsed ? 'justify-center' : 'gap-3 px-2'}`}
+                        title="Đăng xuất"
+                    >
+                        <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
+                            {user?.photoURL ? (
+                                <img src={user.photoURL} alt={user.displayName || "User"} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                            ) : (
+                                <span className="font-bold text-indigo-600 dark:text-indigo-400">
+                                    {user?.email ? user.email.charAt(0).toUpperCase() : (isDemoMode ? "T" : "U")}
+                                </span>
+                            )}
                         </div>
                         <motion.div
                             initial={false}
@@ -253,12 +266,12 @@ export default function Sidebar() {
                                 opacity: effectiveCollapsed ? 0 : 1,
                                 display: effectiveCollapsed ? 'none' : 'flex'
                             }}
-                            className="flex flex-col overflow-hidden whitespace-nowrap"
+                            className="flex flex-col overflow-hidden whitespace-nowrap text-left"
                         >
-                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">Admin User</span>
-                            <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">lts.truongson@gmail.com</span>
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-200 truncate">{user?.displayName || (isDemoMode ? "Tài khoản Thử nghiệm" : "Guest")}</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{user?.email || "Chế độ Offline"}</span>
                         </motion.div>
-                    </div>
+                    </button>
                 </div>
 
                 {/* Mobile Close Button */}

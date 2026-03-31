@@ -161,7 +161,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                 totalCreatorRevenueQD += rowRevenue * heso;
             });
 
-            const hieuQuaQD = totalCreatorRevenue > 0 ? ((totalCreatorRevenueQD - totalCreatorRevenue) / totalCreatorRevenue) * 100 : 0;
+            const hieuQuaQD = totalCreatorRevenue !== 0 ? ((totalCreatorRevenueQD - totalCreatorRevenue) / Math.abs(totalCreatorRevenue)) * 100 : 0;
 
             const groupedByCustomer = creatorOrders.reduce((acc, order) => {
                 const customer = getRowValue(order, COL.CUSTOMER_NAME) || 'Khách lẻ';
@@ -183,7 +183,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                     totalCustomerRevenueQD += rowRevenue * heso;
                 });
 
-                const customerHieuQuaQD = totalCustomerRevenue > 0 ? ((totalCustomerRevenueQD - totalCustomerRevenue) / totalCustomerRevenue) * 100 : 0;
+                const customerHieuQuaQD = totalCustomerRevenue !== 0 ? ((totalCustomerRevenueQD - totalCustomerRevenue) / Math.abs(totalCustomerRevenue)) * 100 : 0;
                 const firstOrder = customerOrders[0];
                 const scheduledDateRaw = getRowValue(firstOrder, ['TG Hẹn Giao']) || firstOrder.parsedDate;
                 const scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
@@ -267,7 +267,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                         </div>
                         <div className="mt-6 space-y-3">
                             {creatorData.map(creator => (
-                                <details key={creator.name} ref={el => { creatorRefs.current[creator.name] = el; }} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden transition-shadow shadow-sm hover:shadow-md">
+                                <details key={creator.name} ref={el => { creatorRefs.current[creator.name] = el; }} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none overflow-hidden transition-shadow">
                                     <summary className="p-4 cursor-pointer flex justify-between items-center list-none">
                                         <p className="font-bold text-lg text-slate-800 dark:text-slate-200">{creator.name}</p>
                                         <div className="flex items-center gap-x-4 gap-y-1 flex-wrap justify-end text-sm font-semibold">
@@ -296,23 +296,23 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                                                 </div>
                                             </summary>
                                             <div className="border-t border-slate-200 dark:border-slate-700">
-                                                <table className="w-full text-sm table-auto compact-export-table">
-                                                    <thead className="bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs">
+                                                <table className="w-full text-sm table-auto compact-export-table border-collapse border border-slate-200 dark:border-slate-700">
+                                                    <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 text-xs">
                                                         <tr>
-                                                            <th className="p-2 text-left font-semibold">Mã ĐH</th>
-                                                            <th className="p-2 text-left font-semibold">Sản phẩm</th>
-                                                            <th className="p-2 text-center font-semibold">SL</th>
-                                                            <th className="p-2 text-right font-semibold whitespace-nowrap">Doanh Thu</th>
+                                                            <th className="p-2 text-left font-semibold border-b border-r border-slate-200 dark:border-slate-700">Mã ĐH</th>
+                                                            <th className="p-2 text-left font-semibold border-b border-r border-slate-200 dark:border-slate-700">Sản phẩm</th>
+                                                            <th className="p-2 text-center font-semibold border-b border-r border-slate-200 dark:border-slate-700">SL</th>
+                                                            <th className="p-2 text-right font-semibold whitespace-nowrap border-b border-slate-200 dark:border-slate-700">Doanh Thu</th>
                                                         </tr>
                                                     </thead>
-                                                    <tbody>
+                                                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                                                         {customer.orders.map((order, index) => {
                                                             const price = Number(getRowValue(order, COL.PRICE)) || 0;
                                                             return (
-                                                                <tr key={getRowValue(order, COL.ID) || index} className="border-t border-slate-100 dark:border-slate-700/50">
-                                                                    <td className="p-2 text-left text-xs text-slate-500 dark:text-slate-400">{getRowValue(order, COL.ID)}</td>
-                                                                    <td className="p-2 text-left text-slate-800 dark:text-slate-200 allow-wrap">{getRowValue(order, COL.PRODUCT)}</td>
-                                                                    <td className="p-2 text-center text-slate-600 dark:text-slate-300">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
+                                                                <tr key={getRowValue(order, COL.ID) || index} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                                                                    <td className="p-2 text-left text-xs text-slate-500 dark:text-slate-400 border-r border-slate-200 dark:border-slate-700">{getRowValue(order, COL.ID)}</td>
+                                                                    <td className="p-2 text-left text-slate-800 dark:text-slate-200 allow-wrap border-r border-slate-200 dark:border-slate-700">{getRowValue(order, COL.PRODUCT)}</td>
+                                                                    <td className="p-2 text-center text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
                                                                     <td className="p-2 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap">{formatCurrency(price)}</td>
                                                                 </tr>
                                                             );

@@ -25,12 +25,15 @@ export const useDashboardLogic = () => {
     const {
         originalData, setOriginalData,
         baseFilteredData,
+        calendarSourceData,
         departmentMap, setDepartmentMap,
         productConfig, setProductConfig,
         processedData, setProcessedData,
         employeeAnalysisData,
         warehouseTargets, setWarehouseTargets,
+        gtdhTargets, setGtdhTargets,
         uniqueFilterOptions,
+        crossSellingConfig, setCrossSellingConfig,
         isInternalProcessing,
         fileInfo, setFileInfo
     } = useDataManagement({ filterState, configUrl, setStatus, setAppState });
@@ -103,7 +106,7 @@ export const useDashboardLogic = () => {
 
     return {
         status, appState, isProcessing, isClearingDepartments, isExporting, fileInfo,
-        departmentMap, originalData, baseFilteredData, productConfig, processedData, employeeAnalysisData,
+        departmentMap, originalData, baseFilteredData, calendarSourceData, productConfig, processedData, employeeAnalysisData,
         configUrl, setConfigUrl, uniqueFilterOptions,
         filterState, handleFilterChange,
         activeModal, setActiveModal, modalData,
@@ -116,6 +119,23 @@ export const useDashboardLogic = () => {
         processingTime,
         warehouseTargets,
         updateWarehouseTarget,
+        gtdhTargets,
+        updateGtdhTarget: async (nhomHang: string, target: number) => {
+            const newTargets = { ...gtdhTargets, [nhomHang]: target };
+            setGtdhTargets(newTargets);
+            await dbService.saveGtdhTargets(newTargets);
+        },
+        deleteGtdhTarget: async (nhomHang: string) => {
+            const newTargets = { ...gtdhTargets };
+            delete newTargets[nhomHang];
+            setGtdhTargets(newTargets);
+            await dbService.saveGtdhTargets(newTargets);
+        },
+        crossSellingConfig,
+        updateCrossSellingConfig: async (config: any) => {
+            setCrossSellingConfig(config);
+            await dbService.saveCrossSellingConfig(config);
+        },
         updateDepartmentMap: async (map: any) => {
             setDepartmentMap(map);
             await dbService.saveDepartmentMap(map);

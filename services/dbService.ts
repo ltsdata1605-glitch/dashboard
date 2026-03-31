@@ -171,6 +171,24 @@ export async function getDailyTarget(): Promise<number | null> {
     return getSetting('dailyTarget');
 }
 
+// --- GTĐH Targets ---
+export async function saveGtdhTargets(targets: Record<string, number>): Promise<void> {
+    return saveSetting('gtdhTargets', targets);
+}
+
+export async function getGtdhTargets(): Promise<Record<string, number> | null> {
+    return getSetting('gtdhTargets');
+}
+
+// --- Cross Selling Table Config ---
+export async function saveCrossSellingConfig(config: any): Promise<void> {
+    return saveSetting('crossSellingConfig', config);
+}
+
+export async function getCrossSellingConfig(): Promise<any | null> {
+    return getSetting('crossSellingConfig');
+}
+
 // --- Industry Visible Groups ---
 export async function saveIndustryVisibleGroups(groups: string[]): Promise<void> {
     return saveSetting('industryVisibleGroups', groups);
@@ -259,3 +277,22 @@ export async function getDeduplicationSetting(): Promise<boolean> {
 export async function saveDeduplicationSetting(enabled: boolean): Promise<void> {
     return saveSetting(DEDUPLICATION_SETTING_KEY, enabled);
 }
+
+// --- Custom Calendars ---
+export async function saveCustomCalendars(calendars: any[]): Promise<void> {
+    return saveSetting('customCalendars', calendars);
+}
+
+export async function getCustomCalendars(): Promise<any[] | null> {
+    return getSetting('customCalendars');
+}
+
+// --- Global Font ---
+export async function saveGlobalFont(font: string): Promise<void> {
+    return saveSetting('globalFont', font);
+}
+
+export async function getGlobalFont(): Promise<string | null> {
+    return getSetting('globalFont');
+}
+

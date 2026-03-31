@@ -4,6 +4,10 @@ import { Icon } from '../common/Icon';
 import { motion, AnimatePresence } from 'motion/react';
 import ModalWrapper from '../modals/ModalWrapper';
 import EmployeeManagerModal from '../modals/EmployeeManagerModal';
+import FontSelector from './FontSelector';
+import { useAuth } from '../../contexts/AuthContext';
+import { useDashboardContext } from '../../contexts/DashboardContext';
+import { useCloudSync } from '../../hooks/useCloudSync';
 
 interface HeaderProps {
     onNewFile: () => void;
@@ -28,6 +32,15 @@ const Header: React.FC<HeaderProps> = ({
     fileInfo, 
     onToggleFilters 
 }) => {
+    const { user, isDemoMode } = useAuth();
+    const context = useDashboardContext();
+    const { syncState } = useCloudSync(
+        context.productConfig,
+        context.departmentMap,
+        context.warehouseTargets,
+        context.gtdhTargets,
+        context.crossSellingConfig
+    );
     const [deptClearSuccess, setDeptClearSuccess] = useState(false);
     const [dataClearSuccess, setDataClearSuccess] = useState(false);
     const [showInstructionModal, setShowInstructionModal] = useState(false);
@@ -88,17 +101,6 @@ const Header: React.FC<HeaderProps> = ({
 
             {showNewFileButton && (
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto bg-slate-50/50 dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-100 dark:border-slate-800/50 backdrop-blur-sm">
-                    {/* Filter Action - Refined with Pastel Color */}
-                    <button 
-                        onClick={onToggleFilters}
-                        className="group flex items-center gap-2.5 px-5 py-2.5 bg-indigo-50/80 dark:bg-indigo-900/20 border border-indigo-100 dark:border-indigo-800/50 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold text-sm hover:bg-indigo-100 dark:hover:bg-indigo-900/30 transition-all active:scale-95 shadow-sm"
-                    >
-                        <Icon name="filter" size={4} className="text-indigo-500 group-hover:scale-110 transition-transform" />
-                        <span>Bộ lọc</span>
-                    </button>
-
-                    <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block mx-1" />
-
                     {/* Shift Management Group - Professional Split Button with Pastel Color */}
                     <div className="flex items-center shadow-sm rounded-xl overflow-hidden border border-blue-100 dark:border-blue-900/30">
                         <button 
@@ -107,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({
                             title="Tải lên file phân ca của cụm"
                         >
                             <Icon name="users-round" size={4} />
-                            <span>DS Nhân Viên</span>
+                            <span>Nhân Viên</span>
                         </button>
                         
                         {hasDepartmentData && (
@@ -157,9 +159,38 @@ const Header: React.FC<HeaderProps> = ({
                             className="flex items-center gap-2.5 px-5 py-2.5 bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all active:scale-95"
                         >
                             <Icon name="file-up" size={4} />
-                            <span>Nhập YCX</span>
+                            <span>YCX</span>
                         </button>
                         
+                        <a 
+                            href="https://report.mwgroup.vn/home/dashboard/77"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 border-l border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                            title="Tải dữ liệu báo cáo"
+                        >
+                            <Icon name="external-link" size={4} />
+                        </a>
+
+                        <FontSelector />
+                        
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                className={`flex items-center justify-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30 transition-colors 
+                                    ${syncState === 'synced' ? 'text-emerald-500' 
+                                    : syncState === 'error' ? 'text-rose-500'
+                                    : 'text-emerald-600 dark:text-emerald-400'} 
+                                    ${(!user || isDemoMode) ? 'opacity-50' : ''}`}
+                                title={!user ? "Chưa đăng nhập" : (isDemoMode ? "Chế độ Offline" : (syncState === 'syncing' ? "Đang lưu lên Cloud..." : (syncState === 'error' ? "Lỗi lưu Cloud" : "Đã đồng bộ Cloud")))}
+                            >
+                                <Icon 
+                                    name={syncState === 'synced' ? 'cloud-snow' : (syncState === 'syncing' ? 'loader-2' : (syncState === 'error' ? 'cloud-off' : 'cloud-check'))} 
+                                    size={4} 
+                                    className={syncState === 'syncing' ? 'animate-spin text-indigo-500' : ''} 
+                                />
+                            </motion.div>
+                        </AnimatePresence>
+
                         <AnimatePresence mode="wait">
                             <motion.button
                                 onClick={handleDataClear}

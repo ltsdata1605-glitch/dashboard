@@ -5,6 +5,7 @@ import ModalWrapper from '../modals/ModalWrapper';
 import { Icon } from '../common/Icon';
 import SearchableSelect from '../common/SearchableSelect';
 import { WAREHOUSE_METRIC_TYPE_MAP, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
+import ColumnConfigModal from '../employees/modals/ColumnConfigModal';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -340,114 +341,6 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
         return Array.from(groups).sort();
     }, [internalColumns]);
 
-    const renderFormView = () => (
-        <form onSubmit={handleSaveColumn} className="flex flex-col h-full">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-3">
-                    <button type="button" onClick={() => resetForm()} className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-slate-500">
-                        <Icon name="arrow-left" size={5} />
-                    </button>
-                    <div>
-                        <h3 className="font-semibold text-lg text-slate-800 dark:text-slate-100 tracking-tight">{editingColumn ? 'Chỉnh sửa cột' : 'Tạo cột mới'}</h3>
-                        <p className="text-xs text-slate-400 font-medium">{editingColumn ? editingColumn.subHeader : 'Thiết lập thông số cho cột báo cáo'}</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex-grow overflow-y-auto pr-2 custom-scrollbar">
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] border border-slate-100 dark:border-slate-800">
-                    
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="col-span-1">
-                            <SearchableSelect
-                                label="Nhóm (Cha)"
-                                options={existingGroups}
-                                value={mainHeader}
-                                onChange={setMainHeader}
-                                placeholder="Chọn hoặc nhập mới..."
-                                allowCustom={true}
-                            />
-                        </div>
-                        <div className="col-span-1">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Cột (Con)</label>
-                            <input value={subHeader} onChange={e => setSubHeader(e.target.value)} placeholder="VD: SL Camera" className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 placeholder:text-slate-400 transition-all" required />
-                        </div>
-
-                        <div className="col-span-1">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Loại danh mục</label>
-                            <div className="relative">
-                                <select value={categoryType} onChange={e => { setCategoryType(e.target.value as WarehouseCategoryType); setCategoryName(''); }} className="w-full h-10 px-3 rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 appearance-none cursor-pointer">
-                                    <option value="industry">Ngành hàng (Lớn)</option>
-                                    <option value="group">Nhóm hàng (Nhỏ)</option>
-                                </select>
-                                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400"><Icon name="chevron-down" size={4}/></div>
-                            </div>
-                        </div>
-                        
-                        <div className="col-span-1">
-                             <SearchableSelect
-                                label="Danh mục chính"
-                                options={(categoryType === 'industry' ? allIndustries : allGroups)}
-                                value={categoryName}
-                                onChange={setCategoryName}
-                                placeholder="Chọn danh mục"
-                            />
-                        </div>
-
-                        <div className="col-span-1">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Chỉ số tính</label>
-                            <div className="flex rounded-xl bg-slate-50 dark:bg-slate-900 p-1">
-                                {Object.entries(WAREHOUSE_METRIC_TYPE_MAP).map(([key, label]) => (
-                                    <button
-                                        type="button"
-                                        key={key}
-                                        onClick={() => setMetricType(key as WarehouseMetricType)}
-                                        className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-wide rounded-lg transition-all ${metricType === key ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                                    >
-                                        {label}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="col-span-1">
-                            <SearchableSelect
-                                label="Nhà sản xuất (Tùy chọn)"
-                                options={allManufacturers}
-                                value={manufacturerName}
-                                onChange={setManufacturerName}
-                                placeholder="Tất cả"
-                            />
-                        </div>
-
-                        <div className="col-span-2 pt-1">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">
-                                Mã sản phẩm (Nâng cao) 
-                            </label>
-                            <textarea 
-                                value={productCodesInput} 
-                                onChange={e => setProductCodesInput(e.target.value)} 
-                                placeholder="Nhập các mã nhóm hàng, cách nhau bằng dấu phẩy..." 
-                                rows={2} 
-                                className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-900 border-none focus:ring-2 focus:ring-indigo-500/20 text-sm font-medium text-slate-700 placeholder:text-slate-400 transition-all resize-none" 
-                            />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div className="pt-6 mt-2 border-t border-slate-100 dark:border-slate-800 flex gap-3">
-                <button type="button" onClick={() => resetForm()} className="flex-1 h-12 rounded-xl font-semibold text-sm text-slate-500 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700 transition-all">
-                    Hủy bỏ
-                </button>
-                <button type="submit" className="flex-1 h-12 rounded-xl font-semibold text-sm text-white bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                    <Icon name={editingColumn ? 'save' : 'plus'} size={4} />
-                    {editingColumn ? 'Lưu thay đổi' : 'Tạo cột'}
-                </button>
-            </div>
-        </form>
-    );
-
     return (
         <ModalWrapper 
             isOpen={isOpen} 
@@ -458,9 +351,68 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
             maxWidthClass="max-w-4xl"
         >
             <div className="p-6 flex flex-col h-[80vh] max-h-[750px] bg-[#FAFAFA]/50 dark:bg-slate-950/50 backdrop-blur-3xl">
-                <div className="flex-grow overflow-y-auto custom-scrollbar px-1">
-                   {view === 'picker' ? renderPickerView() : renderFormView()}
-                </div>
+                {view === 'picker' && (
+                    <div className="flex-grow overflow-y-auto custom-scrollbar px-1">
+                        {renderPickerView()}
+                    </div>
+                )}
+                
+                {view === 'form' && (
+                    <ColumnConfigModal
+                        isOpen={true}
+                        onClose={() => { setView('picker'); setEditingColumn(null); }}
+                        allIndustries={allIndustries}
+                        allSubgroups={allGroups} // Warehouse "groups" acts as subgroups
+                        allManufacturers={allManufacturers}
+                        existingColumns={internalColumns.map(c => ({
+                            id: c.id, mainHeader: c.mainHeader, columnName: c.subHeader, type: c.type || 'data'
+                        })) as import('../../types').ColumnConfig[]}
+                        editingColumn={editingColumn ? {
+                            id: editingColumn.id,
+                            mainHeader: editingColumn.mainHeader,
+                            columnName: editingColumn.subHeader,
+                            type: editingColumn.type || 'data',
+                            metricType: editingColumn.metricType as any,
+                            filters: editingColumn.filters || (editingColumn.productCodes ? {
+                                selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [],
+                                productCodes: editingColumn.productCodes
+                            } : undefined),
+                            operation: editingColumn.operation,
+                            operand1_columnId: editingColumn.operand1_columnId,
+                            operand2_columnId: editingColumn.operand2_columnId,
+                            displayAs: editingColumn.displayAs,
+                            targetValue: editingColumn.targetValue,
+                            conditionalFormatting: editingColumn.conditionalFormatting
+                        } as import('../../types').ColumnConfig : undefined}
+                        onSave={(newColumn) => {
+                            const mappedColumn: WarehouseColumnConfig = {
+                                id: newColumn.id,
+                                order: editingColumn ? editingColumn.order : internalColumns.length,
+                                isVisible: true,
+                                isCustom: true,
+                                mainHeader: newColumn.mainHeader,
+                                subHeader: newColumn.columnName,
+                                type: newColumn.type,
+                                metricType: newColumn.metricType as WarehouseMetricType,
+                                filters: newColumn.filters,
+                                operation: newColumn.operation,
+                                operand1_columnId: newColumn.operand1_columnId,
+                                operand2_columnId: newColumn.operand2_columnId,
+                                displayAs: newColumn.displayAs,
+                                targetValue: newColumn.targetValue,
+                                conditionalFormatting: newColumn.conditionalFormatting
+                            };
+                            
+                            if (editingColumn) {
+                                setInternalColumns(prev => prev.map(col => col.id === editingColumn.id ? mappedColumn : col));
+                            } else {
+                                setInternalColumns(prev => [...prev, mappedColumn]);
+                            }
+                            setView('picker');
+                            setEditingColumn(null);
+                        }}
+                    />
+                )}
                 
                 {view === 'picker' && (
                     <div className="pt-6 mt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">

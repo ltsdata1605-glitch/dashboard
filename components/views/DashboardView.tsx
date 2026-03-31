@@ -9,6 +9,7 @@ import Footer from '../layout/Footer';
 import LandingPageView from './LandingPageView';
 import StatusDisplay from '../upload/StatusDisplay';
 import FilterSection from '../filters/FilterSection';
+import FilterBar from '../filters/FilterBar';
 import KpiCards from '../kpis/KpiCards';
 import TrendChart from '../charts/TrendChart';
 import IndustryGrid from '../charts/IndustryGrid';
@@ -56,7 +57,9 @@ export default function DashboardView() {
         isDeduplicationEnabled,
         handleDeduplicationChange,
         processingTime,
-        handleFilterChange
+        handleFilterChange,
+        baseFilteredData,
+        originalData
     } = logic;
 
     const [visibleComponents, setVisibleComponents] = useState<VisibilityState>(() => {
@@ -153,7 +156,7 @@ export default function DashboardView() {
     
     const showDashboard = appState === 'dashboard' && processedData;
     const showProcessingOverlay = appState === 'loading' || (appState === 'processing' && !processedData);
-    const showLanding = appState === 'upload' || showProcessingOverlay;
+    const showLanding = appState === 'upload';
 
     return (
         <div className="w-full">
@@ -186,12 +189,50 @@ export default function DashboardView() {
                     />
                 )}
                 
-                {showProcessingOverlay && <ProcessingLoader status={status} processingTime={processingTime} />}
+                {showProcessingOverlay && (
+                    <div className="relative w-full">
+                        <div className="container mx-auto px-4 py-4 space-y-6 opacity-40 blur-[3px] pointer-events-none select-none transition-all duration-700">
+                            {/* Fake Filter Bar */}
+                            <div className="h-16 w-full bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse mb-6"></div>
+                            <KpiCardsSkeleton />
+                            <div className="space-y-8">
+                                <ChartSkeleton height="h-[350px]" />
+                                <TableSkeleton rows={4} />
+                            </div>
+                        </div>
+                        <ProcessingLoader status={status} processingTime={processingTime} />
+                    </div>
+                )}
                 
                     {showDashboard && (
                         <>
                             <main id="dashboard-container" className="pb-20 md:pb-0" ref={dashboardContainerRef}>
                                 <div className="container mx-auto px-4 py-4 space-y-6">
+                                    <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} />
+                                    
+                                    {/* Data Coverage Indicator */}
+                                    <div className="flex items-center justify-between px-2 mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <div className="flex -space-x-1">
+                                                <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
+                                                <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
+                                            </div>
+                                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                                                Đã lọc: <span className="text-slate-700 dark:text-slate-300">{baseFilteredData.length.toLocaleString()}</span> / {originalData.length.toLocaleString()} dòng 
+                                                <span className="ml-2 py-0.5 px-1.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-500">
+                                                    {originalData.length > 0 ? Math.round((baseFilteredData.length / originalData.length) * 100) : 0}%
+                                                </span>
+                                            </span>
+                                        </div>
+                                        
+                                        {processingTime > 0 && (
+                                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
+                                                <Icon name="zap" size={3} className="text-amber-500" />
+                                                <span>Xử lý {processingTime}ms</span>
+                                            </div>
+                                        )}
+                                    </div>
+
                                     {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (
                                         <div data-debug-id="WarehouseSummary" data-debug-info={JSON.stringify(debugInitialData.WarehouseSummary)}>
                                             <WarehouseSummary onBatchExport={handleBatchKhoExport} />
@@ -205,26 +246,13 @@ export default function DashboardView() {
                                                 icon="bar-chart-3" 
                                                 subtitle={processedData.reportSubTitle}
                                             >
-                                                <div className="flex items-center gap-2 hide-on-export">
-                                                    {/* Apple-style Toolbar for Kho Tạo */}
-                                                    <div className="flex max-w-[400px] overflow-x-auto hide-scrollbar mr-2">
-                                                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                                                            {['all', ...(uniqueFilterOptions?.kho || [])].map(val => (
-                                                                <button 
-                                                                    key={val}
-                                                                    onClick={() => handleFilterChange({ kho: val })}
-                                                                    className={`py-1 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${filterState.kho === val ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-slate-500 hover:text-indigo-600'}`}
-                                                                >
-                                                                    {val === 'all' ? 'Tất cả kho' : val}
-                                                                </button>
-                                                            ))}
-                                                        </div>
+                                                    <div className="flex items-center gap-2 hide-on-export">
+                                                        {/* Local warehouse filter removed as it is now in the global FilterBar */}
+                                                        <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Tổng Quan" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                            <Icon name="camera" size={5} />
+                                                        </button>
                                                     </div>
-                                                    <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Tổng Quan" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                                        <Icon name="camera" size={5} />
-                                                    </button>
-                                                </div>
-                                            </SectionHeader>
+                                                </SectionHeader>
 
                                             <div className={`p-6 transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                                 <div data-debug-id="KpiCards" data-debug-info={JSON.stringify(debugInitialData.KpiCards)}>

@@ -23,6 +23,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     const summaryRef = useRef<HTMLDivElement>(null);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'doanhThuQD', direction: 'desc' });
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const rowsPerPage = 50;
     
     const [columns, setColumns] = useState<WarehouseColumnConfig[]>([]);
     
@@ -143,6 +145,16 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
             .sort((a, b) => a.order - b.order);
     }, [columns]);
 
+    // Pagination Logic
+    useEffect(() => {
+        setCurrentPage(1); // Reset page when filter or root data changes
+    }, [data, filterState, sortConfig]);
+
+    const totalPages = Math.ceil(sortedData.length / rowsPerPage);
+    const currentData = useMemo(() => {
+        return sortedData.slice((currentPage - 1) * rowsPerPage, currentPage * rowsPerPage);
+    }, [sortedData, currentPage]);
+
     const groupedHeaders = useMemo(() => {
         const groups: { name: string; colSpan: number; }[] = [];
         if (visibleColumns.length === 0) return groups;
@@ -173,7 +185,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
     return (
         <>
-            <div id="warehouse-summary-view" className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden rounded-none mb-8 transition-all duration-300" ref={summaryRef}>
+            <div id="warehouse-summary-view" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden rounded-none mb-8 transition-all duration-300" ref={summaryRef}>
                 {(isProcessing || isExporting) && (
                     <div className="hide-on-export">
                         <LoadingOverlay />
@@ -187,18 +199,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     subtitle="Phân tích hiệu suất từng siêu thị"
                 >
                     <div className="flex items-center space-x-2 hide-on-export">
-                        {/* Apple-style Toolbar for Trạng Thái Xuất */}
-                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 mr-2">
-                            {['all', 'Đã', 'Chưa'].map(val => (
-                                <button 
-                                    key={val}
-                                    onClick={() => handleFilterChange({ xuat: val })}
-                                    className={`py-1 px-3 text-xs font-bold rounded-lg transition-all ${filterState.xuat === val ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-[0_1px_3px_rgba(0,0,0,0.1)]' : 'text-slate-500 hover:text-indigo-600'}`}
-                                >
-                                    {val === 'all' ? 'Tất cả trạng thái' : val === 'Đã' ? 'Đã Xuất' : 'Chưa Xuất'}
-                                </button>
-                            ))}
-                        </div>
+                        {/* Export status filter removed as it is now in the global FilterBar */}
                         <button onClick={() => setIsSettingsModalOpen(true)} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
                             <Icon name="settings-2" size={5} />
                         </button>
@@ -221,34 +222,45 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         <thead>
                             {/* Top Level Group Headers */}
                             <tr className="text-[11px] font-bold uppercase tracking-wider">
-                                <th className="px-2 py-3 text-[#e11d48] bg-[#ffe4e6] border-b border-gray-200 sticky left-0 z-20 h-px">Kho</th>
+                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-4 py-3 text-left text-[11px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 h-px hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider">
+                                    <div className="flex items-center gap-1">
+                                        MÃ KHO
+                                        {sortConfig.key === 'khoName' && (
+                                            <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                        )}
+                                    </div>
+                                </th>
                                 {groupedHeaders.map((group, i) => {
                                     const styles = WAREHOUSE_HEADER_COLORS[group.name] || WAREHOUSE_HEADER_COLORS.DEFAULT;
                                     return (
-                                        <th key={i} colSpan={group.colSpan} className={`px-2 py-3 ${styles.text} ${styles.sub} border-b border-gray-200 border-l first:border-l-0 h-px`}>
+                                        <th key={i} colSpan={group.colSpan} className={`px-2 py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 h-px uppercase tracking-wider text-[11px] font-bold border-r`}>
                                             {group.name}
                                         </th>
                                     );
                                 })}
                             </tr>
                             {/* Sub-Headers */}
-                            <tr className="bg-white text-[11px] font-bold text-gray-500 uppercase tracking-tight">
-                                <th onClick={() => handleSort('khoName')} className="px-2 py-3 border-b border-gray-200 sticky left-0 z-20 bg-white cursor-pointer hover:bg-gray-50 h-px">Mã Kho</th>
+                            <tr>
                                 {visibleColumns.map((col, index) => {
-                                    const isStart = isGroupStart(index);
+                                    const styles = WAREHOUSE_HEADER_COLORS[col.mainHeader] || WAREHOUSE_HEADER_COLORS.DEFAULT;
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-2 py-3 border-b border-gray-200 cursor-pointer hover:bg-gray-50 ${isStart ? 'border-l' : ''} h-px`}>
-                                            {col.subHeader}
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-2 py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity h-px uppercase tracking-wider text-[11px] font-bold text-center ${styles.sub} ${styles.text}`}>
+                                            <div className="flex items-center justify-center gap-1">
+                                                {col.subHeader}
+                                                {sortConfig.key === col.id && (
+                                                    <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
+                                                )}
+                                            </div>
                                         </th>
                                     );
                                 })}
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-200">
-                            {sortedData.map((row) => (
-                                <tr key={row.khoName} className="hover:bg-gray-50 transition-colors">
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                            {currentData.map((row) => (
+                                <tr key={row.khoName} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                     <td 
-                                        className="px-2 py-3 font-bold text-gray-900 underline decoration-dotted decoration-gray-400 underline-offset-4 sticky left-0 z-10 bg-white group-hover:bg-gray-50 cursor-pointer leading-tight h-px"
+                                        className="px-2 py-3 font-bold text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 cursor-pointer leading-tight h-px border-r border-slate-200 dark:border-slate-700"
                                         onClick={() => handleTargetClick(row.khoName)}
                                     >
                                         {row.khoName}
@@ -259,7 +271,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         const isPercentHT = col.metric === 'percentHT';
                                         const isStart = isGroupStart(index);
 
-                                        let value = (col.isCustom && col.productCodes) ? customProductColumnValues.get(col.id)?.get(row.khoName) : getColumnValue(row, col);
+                                        let value = getColumnValue(row, col);
                                         
                                         if (col.metric === 'target') {
                                             value = warehouseTargets[row.khoName] || 0;
@@ -278,14 +290,16 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                             content = <span className="font-bold text-orange-500">{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                         } else if (col.metric === 'traChamPercent') {
                                             content = <span className="font-medium text-gray-500">{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
-                                        } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.metric === 'doanhThuThuc' || col.metric === 'target') {
+                                        } else if (col.type === 'calculated' && col.displayAs === 'percentage') {
+                                            content = <span className="font-bold text-slate-700 dark:text-slate-300">{value !== undefined && value !== 0 ? `${Math.round(value * 100)}%` : '0%'}</span>;
+                                        } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.metric === 'doanhThuThuc' || col.metric === 'target' || col.type === 'target') {
                                             content = <span>{formatRevenueForKho(value)}</span>;
                                         } else {
                                             content = <span>{formatQuantityForKho(value)}</span>;
                                         }
 
                                         return (
-                                            <td key={`${row.khoName}-${col.id}`} className={`px-2 py-3 ${isStart ? 'border-l' : ''} leading-tight h-px`}>
+                                            <td key={`${row.khoName}-${col.id}`} className={`px-2 py-3 ${isStart ? 'border-l border-slate-200 dark:border-slate-700' : ''} leading-tight h-px`}>
                                                 {content}
                                             </td>
                                         );
@@ -294,12 +308,12 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                             ))}
                         </tbody>
                         {/* Table Footer / Total Row */}
-                        <tfoot className="bg-slate-100 dark:bg-slate-800 border-t-2 border-slate-300 dark:border-slate-600">
+                        <tfoot className="bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
                             <tr className="font-bold text-slate-900 dark:text-slate-100">
-                                <td className="px-2 py-3 uppercase tracking-tight text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 h-px">Tổng</td>
+                                <td className="px-2 py-3 uppercase tracking-tight text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 h-px border-r border-slate-200 dark:border-slate-700">Tổng</td>
                                 {visibleColumns.map((col, index) => {
                                     let value;
-                                    if (col.isCustom && col.productCodes) {
+                                    if (col.isCustom) {
                                         value = customTotals.get(col.id) || 0;
                                     } else if (col.metric && (totals as any)[col.metric] !== undefined) {
                                         value = (totals as any)[col.metric];
@@ -326,7 +340,9 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         content = <span className="text-orange-500">{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                     } else if (col.metric === 'traChamPercent') {
                                         content = <span>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
-                                    } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.metric === 'doanhThuThuc' || col.metric === 'target') {
+                                    } else if (col.type === 'calculated' && col.displayAs === 'percentage') {
+                                        content = <span className="font-bold text-slate-700 dark:text-slate-300">{value !== undefined && value !== 0 ? `${Math.round(value * 100)}%` : '0%'}</span>;
+                                    } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.metric === 'doanhThuThuc' || col.metric === 'target' || col.type === 'target') {
                                         content = <span>{formatRevenueForKho(value)}</span>;
                                     } else {
                                         content = <span>{formatQuantityForKho(value)}</span>;
@@ -342,6 +358,33 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         </tfoot>
                     </table>
                 </section>
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hide-on-export">
+                        <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                            Hiển thị {(currentPage - 1) * rowsPerPage + 1} - {Math.min(currentPage * rowsPerPage, sortedData.length)} trên <span className="font-bold">{sortedData.length}</span> kết quả
+                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={currentPage === 1}
+                                className="px-3 py-1 text-sm bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-slate-700 dark:text-slate-200"
+                            >
+                                Trước
+                            </button>
+                            <div className="px-3 py-1 text-sm font-semibold bg-slate-200/50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center min-w-[3rem]">
+                                {currentPage} / {totalPages}
+                            </div>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={currentPage === totalPages}
+                                className="px-3 py-1 text-sm bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-slate-700 dark:text-slate-200"
+                            >
+                                Sau
+                            </button>
+                        </div>
+                    </div>
+                )}
                 {/* END: Data Table Section */}
             </div>
 

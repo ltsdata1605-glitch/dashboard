@@ -4,7 +4,6 @@ import TopSellerList from './TopSellerList';
 import PerformanceTable from './PerformanceTable';
 import IndustryAnalysisTab from './IndustryAnalysisTab';
 import HeadToHeadTab from './HeadToHeadTab';
-import SummarySynthesisTab from './SummarySynthesisTab';
 import ContestTable from './ContestTable';
 import { Icon } from '../common/Icon';
 import type { ExploitationData } from '../../types';
@@ -71,57 +70,43 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                             }
                         }}
                     />
-                    <div className="mt-8">
-                        <div className="flex justify-between items-center hide-on-export mb-4 flex-wrap gap-4">
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">Bảng Thi Đua Tùy Chỉnh (Khai Thác)</h3>
-                            <div className="flex items-center gap-2">
-                                <button onClick={() => setModalState({ type: 'CREATE_TABLE', data: { tabId: 'industryAnalysis' } })} className="inline-flex items-center gap-2 py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors">
-                                    <Icon name="plus" size={4} /> Tạo Bảng Thi Đua Mới
-                                </button>
-                            </div>
-                        </div>
-                        {industryAnalysisTables.length === 0 ? (
-                            <p className="text-center text-slate-500 py-8">Chưa có bảng thi đua tùy chỉnh nào.</p>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {industryAnalysisTables.map((tableConfig, index) => (
-                                    <ContestTable
-                                        key={tableConfig.id}
-                                        config={tableConfig}
-                                        allEmployees={filteredEmployeeAnalysisData.fullSellerArray}
-                                        baseFilteredData={baseFilteredData}
-                                        productConfig={productConfig!}
-                                        tableColorTheme={colorThemes[(index + 1) % colorThemes.length]}
-                                        onManageColumns={() => setModalState({ type: 'EDIT_TABLE', data: { tabId: 'industryAnalysis', tableId: tableConfig.id, tableName: tableConfig.tableName, columns: tableConfig.columns, initialSortColumnId: tableConfig.defaultSortColumnId } })}
-                                        onDeleteTable={() => setModalState({ type: 'CONFIRM_DELETE_TABLE', data: { tabId: 'industryAnalysis', tableId: tableConfig.id, tableName: tableConfig.tableName } })}
-                                        onAddColumn={() => setModalState({ type: 'CREATE_COLUMN', data: { tabId: 'industryAnalysis', tableId: tableConfig.id, existingColumns: tableConfig.columns } })}
-                                        onEditColumn={(columnId) => setModalState({ type: 'EDIT_COLUMN', data: { tabId: 'industryAnalysis', tableId: tableConfig.id, existingColumns: tableConfig.columns, editingColumn: tableConfig.columns.find(c => c.id === columnId) } })}
-                                        onTriggerDeleteColumn={(columnId) => setModalState({ type: 'CONFIRM_DELETE_COLUMN', data: { tabId: 'industryAnalysis', tableId: tableConfig.id, columnId: columnId, columnName: tableConfig.columns.find(c => c.id === columnId)?.columnName } })}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                    </div>
+
                 </div>
             );
         case 'headToHead': 
             return <HeadToHeadTab ref={exportRef} baseFilteredData={baseFilteredData} productConfig={productConfig!} employeeData={filteredEmployeeAnalysisData.fullSellerArray} onExport={handleMainExport} isExporting={isExporting} colorThemes={colorThemes} />;
-        case 'summarySynthesis': 
-            return <SummarySynthesisTab ref={exportRef} baseFilteredData={baseFilteredData} productConfig={productConfig!} employeeData={filteredEmployeeAnalysisData.fullSellerArray} onExport={handleMainExport} isExporting={isExporting} />;
+
         default:
             const customTab = customTabs.find(t => t.id === activeTab);
             if (customTab) {
                 return (
                     <div ref={exportRef}>
-                        <div className="flex justify-between items-center hide-on-export mb-4 flex-wrap gap-4">
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100">{customTab.name}</h3>
-                            <div className="flex items-center gap-2">
-                                 <button onClick={() => setModalState({ type: 'CREATE_TABLE', data: { tabId: customTab.id }})} className="inline-flex items-center gap-2 py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors">
-                                    <Icon name="plus" size={4}/> Tạo Bảng Thi Đua Mới
-                                </button>
-                                <button onClick={handleMainExport} disabled={isExporting} className="inline-flex items-center gap-2 py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">
-                                    {isExporting ? <Icon name="loader-2" className="animate-spin" /> : <Icon name="camera" />} Xuất Ảnh Tab
-                                </button>
+                        <div className="flex justify-between items-center mb-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
+                                    <Icon name={customTab.icon || 'folder'} size={6} />
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-black text-slate-800 dark:text-white leading-tight">{customTab.name}</h3>
+                                    <p className="text-xs font-medium text-slate-400">Bảng thi đua tùy chỉnh</p>
+                                </div>
+                            </div>
+                            <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <button onClick={() => setModalState({ type: 'CREATE_TABLE', data: { tabId: customTab.id }})} title="Tạo Bảng Thi Đua Mới" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                                        <Icon name="plus" size={5}/>
+                                    </button>
+                                    <button onClick={() => setModalState({ type: 'EDIT_TAB', data: { tabId: customTab.id, initialName: customTab.name, initialIcon: customTab.icon }})} title="Sửa Tên Tab" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                                        <Icon name="edit-3" size={5}/>
+                                    </button>
+                                    <button onClick={() => setModalState({ type: 'CONFIRM_DELETE_TAB', data: { tabId: customTab.id, tabName: customTab.name }})} title="Xóa Tab" className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
+                                        <Icon name="trash-2" size={5}/>
+                                    </button>
+                                    <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                                    <button onClick={handleMainExport} disabled={isExporting} title="Xuất Ảnh Tab" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                                        {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         {customTab.tables.length === 0 ? (

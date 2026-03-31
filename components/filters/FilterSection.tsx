@@ -3,7 +3,8 @@ import type { VisibilityState } from '../../types';
 import { toLocalISOString } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import DropdownFilter from '../common/DropdownFilter';
+import MultiSelectDropdown from '../common/MultiSelectDropdown';
+import GtdhTargetModal from '../modals/GtdhTargetModal';
 
 const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; onToggle: () => void; color: string; }> = ({ label, icon, isActive, onToggle, color }) => {
     const getColorClasses = (colorStr: string, active: boolean) => {
@@ -70,7 +71,14 @@ interface FilterSectionProps {
 }
 
 const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVisibilityChange, onClose }) => {
-    const { filterState: globalFilters, handleFilterChange: applyGlobalFilters, originalData: allData } = useDashboardContext();
+    const { 
+        filterState: globalFilters, 
+        handleFilterChange: applyGlobalFilters, 
+        originalData: allData,
+        productConfig,
+        gtdhTargets,
+        updateGtdhTarget
+    } = useDashboardContext();
     
     const [localFilters, setLocalFilters] = useState(globalFilters);
 
@@ -79,14 +87,16 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
     }, [globalFilters]);
 
     const updateLocalFilter = (newVals: Partial<typeof globalFilters>) => {
-        setLocalFilters(prev => ({ ...prev, ...newVals }));
+        const nextFilters = { ...localFilters, ...newVals };
+        setLocalFilters(nextFilters);
+        applyGlobalFilters(nextFilters);
     };
 
     const handleResetFilters = () => {
          const allTrangThai = [...new Set(allData.map(r => r['Trạng thái hồ sơ']).filter(Boolean))]; 
          const allNguoiTao = [...new Set(allData.map(r => r['Người tạo']).filter(Boolean))];
          updateLocalFilter({
-            kho: 'all',
+            kho: [],
             xuat: 'all',
             trangThai: allTrangThai,
             nguoiTao: allNguoiTao,
@@ -134,6 +144,8 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
         updateLocalFilter({ [type]: selected });
     }
 
+    const [isGtdhModalOpen, setGtdhModalOpen] = useState(false);
+
     const visibilityOptions = [
         { key: 'trendChart', label: 'Xu hướng doanh thu', icon: 'area-chart', color: 'violet' },
         { key: 'industryGrid', label: 'Tỷ trọng ngành hàng', icon: 'layout-grid', color: 'emerald' },
@@ -174,28 +186,19 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
             {/* Slide Menu Body */}
             <div className="flex-grow overflow-y-auto custom-scrollbar pb-20">
                 <div className="p-4 space-y-6">
-                    {/* Kho Tạo - Premium Segmented Control */}
-                    <div className="space-y-2.5">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400 shadow-sm">
-                                    <Icon name="warehouse" size={3.5} />
-                                </div>
-                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Kho Tạo</label>
+                    <div className="space-y-2.5 px-3">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400 shadow-sm">
+                                <Icon name="warehouse" size={3.5} />
                             </div>
-                            <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full border border-indigo-100 dark:border-indigo-800/50">{localFilters.kho === 'all' ? 'TẤT CẢ' : localFilters.kho}</span>
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Kho Tạo</label>
                         </div>
-                        <div className="flex flex-wrap gap-1.5 p-1 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                            {['all', ...options.kho].map(val => (
-                                <button 
-                                    key={val}
-                                    onClick={() => updateLocalFilter({ kho: val })} 
-                                    className={`px-2 py-1.5 text-xs font-bold rounded-lg transition-all flex-grow text-center ${localFilters.kho === val ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                                >
-                                    {val === 'all' ? 'Tất cả kho' : val}
-                                </button>
-                            ))}
-                        </div>
+                        <MultiSelectDropdown 
+                            label="Kho Tạo" 
+                            options={options.kho} 
+                            selected={localFilters.kho} 
+                            onChange={(sel) => updateLocalFilter({ kho: sel })} 
+                        />
                     </div>
 
                     {/* Trạng Thái Xuất - Premium Segmented Control */}
@@ -220,29 +223,39 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                     </div>
 
                     {/* Dropdowns */}
-                    <div className="space-y-1 bg-slate-50/50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800/50 pb-2">
                         {options.department.length > 0 && (
                             <>
                                 <div className="px-3 py-1">
-                                    <DropdownFilter 
-                                        type="department" 
+                                    <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 mb-2 tracking-widest ml-1">Bộ phận</label>
+                                    <MultiSelectDropdown 
                                         label="Bộ phận" 
                                         options={options.department} 
                                         selected={localFilters.department} 
-                                        onChange={handleDropdownChange} 
+                                        onChange={(sel) => updateLocalFilter({ department: sel })} 
                                     />
                                 </div>
                                 <div className="h-px bg-slate-100 dark:bg-slate-800 mx-3" />
                             </>
                         )}
                         <div className="px-3 py-1">
-                            <DropdownFilter type="nguoiTao" label="Người Tạo" options={options.nguoiTao} selected={localFilters.nguoiTao} onChange={handleDropdownChange} />
+                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 mb-2 tracking-widest ml-1">Người Tạo</label>
+                            <MultiSelectDropdown 
+                                label="Người Tạo" 
+                                options={options.nguoiTao} 
+                                selected={localFilters.nguoiTao} 
+                                onChange={(sel) => updateLocalFilter({ nguoiTao: sel })} 
+                            />
                         </div>
                         <div className="h-px bg-slate-100 dark:bg-slate-800 mx-3" />
                         <div className="px-3 py-1">
-                            <DropdownFilter type="trangThai" label="Trạng thái hồ sơ" options={options.trangThai} selected={localFilters.trangThai} onChange={handleDropdownChange} />
+                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 mb-2 tracking-widest ml-1">Trạng thái hồ sơ</label>
+                            <MultiSelectDropdown 
+                                label="Trạng thái hồ sơ" 
+                                options={options.trangThai} 
+                                selected={localFilters.trangThai} 
+                                onChange={(sel) => updateLocalFilter({ trangThai: sel })} 
+                            />
                         </div>
-                    </div>
 
                     {/* Date Selection */}
                     <div className="space-y-4 pt-1">
@@ -303,18 +316,33 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                             ))}
                         </div>
                     </div>
+
+                    {/* GTĐH Settings */}
+                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800 pb-8">
+                        <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Cấu Hình GTĐH Mục Tiêu</label>
+                        <button
+                            onClick={() => setGtdhModalOpen(true)}
+                            className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/60 transition-colors">
+                                    <Icon name="settings-2" size={5} />
+                                </div>
+                                <div className="flex flex-col items-start">
+                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Quản lý GTĐH Target</span>
+                                    <span className="text-[10px] whitespace-nowrap font-medium text-slate-500 dark:text-slate-400 mt-0.5">Thêm/Sửa/Xóa Mục Tiêu AOV</span>
+                                </div>
+                            </div>
+                            <Icon name="chevron-right" size={5} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            {/* Slide Menu Footer - Fixed for Mobile */}
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky bottom-0 z-20">
-                <button 
-                    onClick={handleSubmit}
-                    className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none transition-all uppercase tracking-widest text-sm"
-                >
-                    Áp dụng bộ lọc
-                </button>
-            </div>
+            <GtdhTargetModal 
+                isOpen={isGtdhModalOpen} 
+                onClose={() => setGtdhModalOpen(false)} 
+            />
         </div>
     );
 };

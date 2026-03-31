@@ -30,6 +30,8 @@
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     min-width: 1280px;
     overflow-x: auto;
+    overscroll-behavior-y: none;
+    touch-action: pan-x pan-y;
   }
 }
 

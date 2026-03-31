@@ -208,46 +208,53 @@ const IndustryGrid: React.FC = React.memo(() => {
             {/* ──── SECTION HEADER ──── */}
             <SectionHeader
                 title={(
-                    <div className="flex items-center gap-3">
-                        <span>{getTitle('card')}</span>
-                        {drilldownPath.length > 0 && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>}
-                        <nav className="flex items-center text-[10px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider gap-0.5">
-                            {drilldownPath.length > 0 && (
-                                <button
-                                    onClick={() => handleBreadcrumbClick(0)}
-                                    className="px-1 hover:text-[#0584c7] transition-colors"
-                                >
-                                    Tất cả
-                                </button>
-                            )}
-                            {drilldownPath.map((item, idx) => (
-                                <React.Fragment key={idx}>
-                                    <Icon name="chevron-right" size={3} className="opacity-40 mx-0.5" />
+                    <div className="flex flex-col">
+                        <div className="flex items-center gap-3">
+                            <span>{getTitle('card')}</span>
+                            {drilldownPath.length > 0 && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>}
+                            <nav className="flex items-center text-[10px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider gap-0.5">
+                                {drilldownPath.length > 0 && (
                                     <button
-                                        onClick={() => handleBreadcrumbClick(idx + 1)}
-                                        className="px-1 max-w-[110px] truncate hover:text-[#0584c7] transition-colors"
-                                        title={item}
+                                        onClick={() => handleBreadcrumbClick(0)}
+                                        className="px-1 hover:text-[#0584c7] transition-colors"
                                     >
-                                        {item}
+                                        Tất cả
                                     </button>
-                                </React.Fragment>
-                            ))}
-                        </nav>
+                                )}
+                                {drilldownPath.map((item, idx) => (
+                                    <React.Fragment key={idx}>
+                                        <Icon name="chevron-right" size={3} className="opacity-40 mx-0.5" />
+                                        <button
+                                            onClick={() => handleBreadcrumbClick(idx + 1)}
+                                            className="px-1 max-w-[110px] truncate hover:text-[#0584c7] transition-colors"
+                                            title={item}
+                                        >
+                                            {item}
+                                        </button>
+                                    </React.Fragment>
+                                ))}
+                            </nav>
+                        </div>
+                        <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">
+                            {(filters.kho.length > 0 && !filters.kho.includes('all')) ? `KHO: ${filters.kho.join(', ')} | ` : ''} 
+                            {(filters.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filters.xuat} | ` : ''}
+                            {filters.dateRange !== 'all' ? `TỪ ${filters.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filters.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
+                        </span>
                     </div>
                 ) as any}
                 icon="pie-chart"
             >
                 <div className="flex flex-wrap items-center gap-2 hide-on-export">
-                    <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg mr-2">
+                    <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 mr-2">
                         <button 
                             onClick={() => setMetricToDisplay('quantity')}
-                            className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${metricToDisplay === 'quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`py-1.5 px-3 sm:px-4 text-[10px] md:text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${metricToDisplay === 'quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                         >
                             Số lượng
                         </button>
                         <button 
                             onClick={() => setMetricToDisplay('revenue')}
-                            className={`px-3 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all ${metricToDisplay === 'revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            className={`py-1.5 px-3 sm:px-4 text-[10px] md:text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${metricToDisplay === 'revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                         >
                             Doanh thu
                         </button>

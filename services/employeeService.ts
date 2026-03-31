@@ -57,6 +57,8 @@ function _buildFullEmployeeData(
         const slTiepCan = emp.customerSet ? emp.customerSet.size : 0;
         const totalOrders = emp.totalOrders || 0;
         const slCE_ICT = emp.slCE_ICT || 0;
+        const slICT = finalExploitationStats[emp.name]?.slICT || 0;
+        const slCE_main = finalExploitationStats[emp.name]?.slCE_main || 0;
         const slTraCham_CE_ICT = emp.slTraCham_CE_ICT || 0;
         const doanhThu_CE_ICT = emp.doanhThu_CE_ICT || 0;
         const doanhThuTraCham_CE_ICT = emp.doanhThuTraCham_CE_ICT || 0;
@@ -75,6 +77,8 @@ function _buildFullEmployeeData(
             totalOrders: totalOrders,
             traChamPercent: doanhThuThuc > 0 ? (doanhThuTraCham / doanhThuThuc) * 100 : 0,
             slCE_ICT,
+            slICT,
+            slCE_main,
             slTraCham_CE_ICT,
             traChamPercent_CE_ICT: slCE_ICT > 0 ? (slTraCham_CE_ICT / slCE_ICT) * 100 : 0,
             doanhThu_CE_ICT,

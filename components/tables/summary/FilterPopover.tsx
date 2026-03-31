@@ -53,9 +53,11 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
     const handleSelectAll = () => onChange(options);
     const handleDeselectAll = () => onChange([]);
 
+    const deferredSearchTerm = React.useDeferredValue(searchTerm);
+
     const filteredOptions = useMemo(() => {
-        return options.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase()));
-    }, [options, searchTerm]);
+        return options.filter(opt => opt.toLowerCase().includes(deferredSearchTerm.toLowerCase()));
+    }, [options, deferredSearchTerm]);
 
     const hasFilters = selected.length > 0 && selected.length < options.length;
 

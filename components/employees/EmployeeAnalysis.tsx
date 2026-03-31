@@ -29,15 +29,12 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
     
     const [isDeptFilterOpen, setIsDeptFilterOpen] = useState(false);
     const deptFilterRef = useRef<HTMLDivElement>(null);
-    const [isWarehouseFilterOpen, setIsWarehouseFilterOpen] = useState(false);
-    const warehouseFilterRef = useRef<HTMLDivElement>(null);
 
     const defaultTabs = [
         { id: 'topSellers', label: 'Top', icon: 'award', color: 'indigo' },
         { id: 'performanceTable', label: 'Hiệu Suất', icon: 'bar-chart-horizontal', color: 'emerald' },
         { id: 'industryAnalysis', label: 'Khai Thác', icon: 'gantt-chart-square', color: 'amber' },
         { id: 'headToHead', label: '7 Ngày', icon: 'swords', color: 'rose' },
-        { id: 'summarySynthesis', label: 'Tổng Hợp', icon: 'sigma', color: 'purple' },
     ];
 
     // Use Custom Hooks
@@ -107,9 +104,6 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
             if (deptFilterRef.current && !deptFilterRef.current.contains(event.target as Node)) {
                 setIsDeptFilterOpen(false);
             }
-            if (warehouseFilterRef.current && !warehouseFilterRef.current.contains(event.target as Node)) {
-                setIsWarehouseFilterOpen(false);
-            }
             if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
                 setIsSettingsOpen(false);
             }
@@ -172,26 +166,21 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 rounded-none mb-8 flex flex-col flex-grow transition-all duration-300">
             {/* BEGIN: Header Section */}
             <SectionHeader
-                title="Phân tích nhân viên"
+                title={(
+                    <div className="flex flex-col">
+                        <span>Phân tích nhân viên</span>
+                        <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">
+                            {(filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `KHO: ${filterState.kho.join(', ')} | ` : ''} 
+                            {(filterState.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filterState.xuat} | ` : ''}
+                            {filterState.dateRange !== 'all' ? `TỪ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
+                        </span>
+                    </div>
+                ) as any}
                 icon="users"
-                subtitle="Đánh giá hiệu quả khai thác và thi đua"
+                subtitle=""
             >
                 <div className="flex items-center gap-2 hide-on-export">
                     <EmployeeAnalysisFilters 
-                        allWarehouses={allWarehouses}
-                        globalKho={filterState.kho}
-                        handleFilterChange={handleFilterChange}
-                        isWarehouseFilterOpen={isWarehouseFilterOpen}
-                        setIsWarehouseFilterOpen={setIsWarehouseFilterOpen}
-                        warehouseFilterRef={warehouseFilterRef}
-                        allDepartments={allDepartments}
-                        selectedDepartments={selectedDepartments}
-                        setSelectedDepartments={setSelectedDepartments}
-                        deptSearchTerm={deptSearchTerm}
-                        setDeptSearchTerm={setDeptSearchTerm}
-                        isDeptFilterOpen={isDeptFilterOpen}
-                        setIsDeptFilterOpen={setIsDeptFilterOpen}
-                        deptFilterRef={deptFilterRef}
                         hideZeroRevenue={hideZeroRevenue}
                         setHideZeroRevenue={setHideZeroRevenue}
                     />

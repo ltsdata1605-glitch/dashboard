@@ -1,5 +1,5 @@
-
 import React, { useEffect, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import { Icon } from '../common/Icon';
 
 interface ModalWrapperProps {
@@ -37,15 +37,15 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
     
     if (!isOpen) return null;
 
-    return (
+    return ReactDOM.createPortal(
         <div 
-            className="modal-overlay fixed inset-0 bg-slate-800/60 backdrop-blur-md z-50 flex items-center justify-center p-4 transition-opacity duration-300 opacity-100"
+            className="modal-overlay fixed inset-0 bg-slate-800/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 transition-opacity duration-300 opacity-100"
             onClick={onClose}
         >
             <div
                 ref={modalContentRef}
                 onClick={(e) => e.stopPropagation()}
-                className={`modal-content opacity-100 scale-100 bg-slate-50 dark:bg-slate-900 rounded-xl shadow-2xl w-full ${maxWidthClass} max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700 transition-transform duration-300`}
+                className={`modal-content opacity-100 scale-100 bg-slate-50 dark:bg-slate-900 rounded-xl shadow-[0_0_40px_-10px_rgba(0,0,0,0.5)] w-full ${maxWidthClass} max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700 transition-transform duration-300`}
             >
                 <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-t-xl flex-shrink-0">
                     <div>
@@ -61,7 +61,8 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
                 </div>
                 {children}
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

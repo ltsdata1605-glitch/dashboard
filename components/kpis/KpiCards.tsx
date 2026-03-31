@@ -155,14 +155,10 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
 
     // Calculate dynamic Revenue Target based on Warehouse Summary
     const revenueTarget = useMemo(() => {
-        if (filterState.kho !== 'all') {
-            // If filtering by a specific warehouse, use its specific target
-            return warehouseTargets[filterState.kho] || 0;
+        if (filterState.kho && filterState.kho.length > 0 && !filterState.kho.includes('all')) {
+            return filterState.kho.reduce((acc, k) => acc + (warehouseTargets[k] || 0), 0);
         } else {
-            // If 'all', sum up all available warehouse targets
-            // Note: This sums all targets in the DB. 
-            // If the filtered data excludes some warehouses via other filters (unlikely for top-level 'kho' filter), this might be slightly off, 
-            // but standard behavior is sum of all configured targets.
+            // Sum all available warehouse targets
             return Object.values(warehouseTargets).reduce((acc: number, val: number) => acc + (val || 0), 0);
         }
     }, [filterState.kho, warehouseTargets]);

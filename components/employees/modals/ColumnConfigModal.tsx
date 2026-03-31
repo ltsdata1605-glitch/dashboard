@@ -19,7 +19,7 @@ interface ColumnModalProps {
 const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave, allIndustries, allSubgroups, allManufacturers, existingColumns, editingColumn }) => {
     const [mainHeader, setMainHeader] = useState('');
     const [columnName, setColumnName] = useState('');
-    const [columnType, setColumnType] = useState<'data' | 'calculated'>('data');
+    const [columnType, setColumnType] = useState<'data' | 'calculated' | 'target'>('data');
     
     // Data column state
     const [metricType, setMetricType] = useState<'quantity' | 'revenue' | 'revenueQD'>('quantity');
@@ -38,10 +38,16 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
     const [operand2, setOperand2] = useState('');
     const [displayAs, setDisplayAs] = useState<'number' | 'percentage'>('number');
 
+    // Target column state
+    const [targetValue, setTargetValue] = useState('');
+
     const [formattingRules, setFormattingRules] = useState<{ id: number; condition: string; value1: string; value2: string; color: string; }[]>([]);
     
     const [feedback, setFeedback] = useState<{type: 'error' | 'success', message: string} | null>(null);
     const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+    
+    const [showHeadersList, setShowHeadersList] = useState(false);
+    const headersRef = useRef<HTMLDivElement>(null);
 
     const resetForm = () => {
         setMainHeader('');
@@ -60,6 +66,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
         setOperand1('');
         setOperand2('');
         setDisplayAs('number');
+        setTargetValue('');
         setFormattingRules([]);
     };
     
@@ -90,6 +97,9 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     setPriceCondition(editingColumn.filters?.priceCondition || 'none');
                     setPriceValue1(editingColumn.filters?.priceValue1?.toString() || '');
                     setPriceValue2(editingColumn.filters?.priceValue2?.toString() || '');
+                } else if (editingColumn.type === 'target') {
+                    setMetricType(editingColumn.metricType || 'revenue');
+                    setTargetValue(editingColumn.targetValue?.toString() || '');
                 } else {
                     setOperation(editingColumn.operation || '+');
                     setOperand1(editingColumn.operand1_columnId || '');
@@ -102,6 +112,18 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             setFeedback(null);
         }
     }, [isOpen, editingColumn]);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (headersRef.current && !headersRef.current.contains(e.target as Node)) {
+                setShowHeadersList(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const existingMainHeaders = Array.from(new Set(existingColumns.map(c => c.mainHeader).filter(Boolean))).sort();
 
     const showFeedback = (type: 'error' | 'success', message: string) => {
         setFeedback({ type, message });
@@ -155,6 +177,21 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     priceValue1: priceValue1 ? parseFloat(priceValue1) : undefined,
                     priceValue2: priceCondition === 'between' && priceValue2 ? parseFloat(priceValue2) : undefined,
                 },
+                conditionalFormatting: finalRules.length > 0 ? finalRules : undefined,
+            };
+        } else if (columnType === 'target') {
+            const parsedTarget = parseFloat(targetValue.replace(/[^\d.-]/g, ''));
+            if (isNaN(parsedTarget)) {
+                showFeedback('error', 'Vui lòng nhập giá trị chỉ tiêu hợp lệ.');
+                return;
+            }
+            newColumn = {
+                id: editingColumn?.id || `col-${Date.now()}`,
+                mainHeader: mainHeader.trim().toUpperCase(),
+                columnName: columnName.trim().toUpperCase(),
+                type: 'target',
+                metricType, // reuse metricType to determine formatting (revenue/quantity)
+                targetValue: parsedTarget,
                 conditionalFormatting: finalRules.length > 0 ? finalRules : undefined,
             };
         } else { // calculated
@@ -212,9 +249,44 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     
                     {/* Common Fields */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
+                        <div ref={headersRef} className="relative z-10">
                             <label htmlFor="mainHeader" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tiêu đề chính</label>
-                            <input id="mainHeader" list="main-header-options" type="text" value={mainHeader} onChange={e => setMainHeader(e.target.value.toUpperCase())} placeholder="VD: THI ĐUA SIM" className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg p-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition" />
+                            <div className="relative">
+                                <input 
+                                    id="mainHeader" 
+                                    type="text" 
+                                    value={mainHeader} 
+                                    onChange={e => { setMainHeader(e.target.value.toUpperCase()); setShowHeadersList(true); }}
+                                    onFocus={() => setShowHeadersList(true)}
+                                    placeholder="VD: THI ĐUA SIM" 
+                                    className="w-full bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 rounded-lg p-2 pr-8 text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none" 
+                                />
+                                {existingMainHeaders.length > 0 && (
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setShowHeadersList(!showHeadersList)} 
+                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors p-1"
+                                    >
+                                        <Icon name="chevron-down" size={4} />
+                                    </button>
+                                )}
+                            </div>
+                            {showHeadersList && existingMainHeaders.length > 0 && (
+                                <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl max-h-48 overflow-y-auto py-1 z-20">
+                                    {existingMainHeaders.filter(h => h.includes(mainHeader)).length === 0 && mainHeader && (
+                                        <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400 italic">Nhóm mới: {mainHeader}</div>
+                                    )}
+                                    {existingMainHeaders.filter(h => h.includes(mainHeader)).map(h => (
+                                        <div 
+                                            key={h} 
+                                            className="px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer font-medium"
+                                            onClick={() => { setMainHeader(h); setShowHeadersList(false); }}
+                                        >
+                                            {h}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div>
                             <label htmlFor="columnName" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tiêu đề phụ *</label>
@@ -222,9 +294,10 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Loại Cột *</label>
-                             <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-200/50 dark:bg-slate-800">
+                             <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-200/50 dark:bg-slate-800 flex-wrap gap-1">
                                 <button type="button" onClick={() => setColumnType('data')} className={`py-1.5 px-4 text-sm font-semibold rounded-md transition-colors ${columnType === 'data' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700'}`}>Dữ liệu</button>
                                 <button type="button" onClick={() => setColumnType('calculated')} className={`py-1.5 px-4 text-sm font-semibold rounded-md transition-colors ${columnType === 'calculated' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700'}`}>Tính toán</button>
+                                <button type="button" onClick={() => setColumnType('target')} className={`py-1.5 px-4 text-sm font-semibold rounded-md transition-colors ${columnType === 'target' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700'}`}>Chỉ tiêu (Target)</button>
                             </div>
                         </div>
                     </div>
@@ -292,6 +365,46 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                             )}
                                         </>
                                     )}
+                                </div>
+                            </div>
+                        </div>
+                    ) : columnType === 'target' ? (
+                        <div className="space-y-4 p-4 bg-indigo-50/50 dark:bg-indigo-900/20 rounded-lg">
+                            <h4 className="font-semibold text-indigo-800 dark:text-indigo-200">Thiết lập Chỉ Tiêu (Target) Kho</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Đinh dạng chỉ tiêu *</label>
+                                    <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-200/50 dark:bg-slate-800">
+                                        <button type="button" onClick={() => setMetricType('revenue')} className={`py-1.5 px-4 text-sm font-semibold rounded-md transition-colors ${metricType === 'revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700'}`}>Tiền Tệ (Doanh thu)</button>
+                                        <button type="button" onClick={() => setMetricType('quantity')} className={`py-1.5 px-4 text-sm font-semibold rounded-md transition-colors ${metricType === 'quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700'}`}>Con Số (Số lượng)</button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mục Tiêu Tổng (Của Siêu thị/Kho) *</label>
+                                    <div className="relative">
+                                        <input 
+                                            type="text" 
+                                            value={targetValue} 
+                                            onChange={(e) => {
+                                                // Allow numbers and commas
+                                                const raw = e.target.value.replace(/[^\d]/g, '');
+                                                if (raw) {
+                                                    setTargetValue(Number(raw).toLocaleString('en-US'));
+                                                } else {
+                                                    setTargetValue('');
+                                                }
+                                            }}
+                                            placeholder="VD: 1,500,000,000" 
+                                            className="w-full bg-white dark:bg-slate-700 border-indigo-200 dark:border-indigo-800 rounded-lg p-2.5 pl-10 text-sm font-bold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm"
+                                        />
+                                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-indigo-400">
+                                            <Icon name={metricType === 'revenue' ? "dollar-sign" : "hash"} size={4} />
+                                        </div>
+                                    </div>
+                                    <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 flex items-start gap-1">
+                                        <Icon name="info" size={3.5} className="mt-0.5 flex-shrink-0" />
+                                        <span>Tổng số này sẽ được hệ thống phân bổ và tự động chia đều cho tổng số lượng nhân viên hiện có trong bảng hiển thị.</span>
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -387,15 +500,9 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     </div>
 
                 </div>
-                {/* Datalist for Main Headers */}
-                <datalist id="main-header-options">
-                    {Array.from(new Set(existingColumns.map(c => c.mainHeader).filter(Boolean))).sort().map((group, idx) => (
-                        <option key={idx} value={group} />
-                    ))}
-                </datalist>
                 <div className="p-4 flex justify-end gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
                     <button type="button" onClick={onClose} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Đóng</button>
-                    <button type="submit" className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 transition-colors">{editingColumn ? "Lưu Thay Đổi" : "Lưu Cột"}</button>
+                    <button type="submit" className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">{editingColumn ? "Lưu Thay Đổi" : "Lưu Cột"}</button>
                 </div>
             </form>
         </ModalWrapper>

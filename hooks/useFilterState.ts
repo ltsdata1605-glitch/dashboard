@@ -1,10 +1,10 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, startTransition } from 'react';
 import type { FilterState } from '../types';
 import * as dbService from '../services/dbService';
 
 export const initialFilterState: FilterState = {
-    kho: 'all',
+    kho: [],
     xuat: 'all',
     trangThai: [],
     nguoiTao: [],
@@ -41,6 +41,7 @@ export const useFilterState = () => {
                     setFilterState({
                         ...initialFilterState,
                         ...fullSavedFilters,
+                        kho: Array.isArray(fullSavedFilters.kho) ? fullSavedFilters.kho : (fullSavedFilters.kho ? [fullSavedFilters.kho as any] : []),
                         trangThai: fullSavedFilters.trangThai || [],
                         nguoiTao: fullSavedFilters.nguoiTao || [],
                         department: fullSavedFilters.department || [],
@@ -57,14 +58,14 @@ export const useFilterState = () => {
                 } else {
                     const savedIndustry = await dbService.getIndustryGridFilters();
                     const savedSummary = await dbService.getSummaryTableConfig();
-                    const savedKho = await dbService.getSetting<string>('filter_kho');
+                    const savedKho = await dbService.getSetting<string | string[]>('filter_kho');
                     const savedDepartment = await dbService.getSetting<string[]>('filter_department');
                     
                     setFilterState(prev => ({
                         ...prev,
                         industryGrid: savedIndustry || prev.industryGrid,
                         summaryTable: savedSummary || prev.summaryTable,
-                        kho: savedKho || prev.kho,
+                        kho: Array.isArray(savedKho) ? savedKho : (savedKho ? [savedKho] : []),
                         department: savedDepartment || prev.department || []
                     }));
                 }
@@ -85,7 +86,9 @@ export const useFilterState = () => {
     }, [filterState, isLoaded]);
 
     const handleFilterChange = useCallback((newFilters: Partial<FilterState>) => {
-        setFilterState(prev => ({ ...prev, ...newFilters }));
+        startTransition(() => {
+            setFilterState(prev => ({ ...prev, ...newFilters }));
+        });
     }, []);
 
     return {

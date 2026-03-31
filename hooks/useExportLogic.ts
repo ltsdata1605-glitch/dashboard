@@ -93,7 +93,7 @@ export const useExportLogic = ({
             }
     
             for (const kho of khosToExport) {
-                handleFilterChange({ kho });
+                handleFilterChange({ kho: [kho] });
                 await new Promise(resolve => setTimeout(resolve, 1500));
     
                 let rowToHighlight: Element | null = warehouseElement.querySelector(`tr[data-kho-id="${kho}"]`);

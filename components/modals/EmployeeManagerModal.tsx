@@ -12,6 +12,7 @@ interface EmployeeManagerModalProps {
 export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOpen, onClose }) => {
     const { departmentMap, updateDepartmentMap } = useDashboardContext();
     const [searchTerm, setSearchTerm] = useState('');
+    const deferredSearchTerm = React.useDeferredValue(searchTerm);
     const [localMap, setLocalMap] = useState<Record<string, string>>({});
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editDept, setEditDept] = useState('');
@@ -37,11 +38,11 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
             const [dept, name] = val.split(';;');
             return { id, dept: dept || '', name: name || '' };
         }).filter(emp => 
-            emp.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-            emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            emp.dept.toLowerCase().includes(searchTerm.toLowerCase())
+            emp.id.toLowerCase().includes(deferredSearchTerm.toLowerCase()) || 
+            emp.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
+            emp.dept.toLowerCase().includes(deferredSearchTerm.toLowerCase())
         ).sort((a, b) => a.dept.localeCompare(b.dept));
-    }, [localMap, searchTerm]);
+    }, [localMap, deferredSearchTerm]);
 
     const departments = useMemo(() => {
         return Array.from(new Set(Object.values(localMap).map(v => {
@@ -105,7 +106,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
         >
             <div className="flex flex-col h-[70vh]">
                 {/* Toolbar */}
-                <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
                     <div className="relative w-64">
                         <input 
                             type="text" 
@@ -123,23 +124,23 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
 
                 {/* Table */}
                 <div className="flex-1 overflow-auto custom-scrollbar">
-                    <table className="min-w-full text-sm text-left border-collapse">
-                        <thead className="bg-slate-100 dark:bg-slate-800 sticky top-0 z-10 shadow-sm">
+                    <table className="min-w-full text-sm text-left border-collapse border border-slate-200 dark:border-slate-700">
+                        <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 w-32">Mã NV</th>
-                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700">Họ và Tên</th>
-                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 w-64">Bộ phận</th>
-                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700 w-24 text-center">Thao tác</th>
+                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-32">Mã NV</th>
+                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700">Họ và Tên</th>
+                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-64">Bộ phận</th>
+                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-24 text-center">Thao tác</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {employees.map(emp => (
                                 <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100">{emp.id}</td>
+                                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-700">{emp.id}</td>
                                     
                                     {editingId === emp.id ? (
                                         <>
-                                            <td className="px-4 py-2">
+                                            <td className="px-4 py-2 border-r border-slate-200 dark:border-slate-700">
                                                 <input 
                                                     type="text" 
                                                     value={editName} 
@@ -148,7 +149,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                     autoFocus
                                                 />
                                             </td>
-                                            <td className="px-4 py-2">
+                                            <td className="px-4 py-2 border-r border-slate-200 dark:border-slate-700">
                                                 <input 
                                                     list="department-options"
                                                     type="text" 
@@ -158,7 +159,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                     placeholder="Chọn hoặc nhập phòng ban..."
                                                 />
                                             </td>
-                                            <td className="px-4 py-3 text-center">
+                                            <td className="px-4 py-3 text-center border-r border-slate-200 dark:border-slate-700">
                                                 <div className="flex justify-center gap-2">
                                                     <button onClick={handleSave} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
                                                         <Icon name="check" size={4} />
@@ -171,13 +172,13 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                         </>
                                     ) : (
                                         <>
-                                            <td className="px-4 py-3 text-slate-700 dark:text-slate-300">{emp.name}</td>
-                                            <td className="px-4 py-3 text-slate-600 dark:text-slate-400">
+                                            <td className="px-4 py-3 text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">{emp.name}</td>
+                                            <td className="px-4 py-3 text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-700">
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
                                                     {emp.dept}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-center">
+                                            <td className="px-4 py-3 text-center border-r border-slate-200 dark:border-slate-700">
                                                 <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ opacity: 1 }}>
                                                     <button onClick={() => handleEdit(emp)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Sửa">
                                                         <Icon name="pencil" size={4} />

@@ -195,8 +195,17 @@ export async function processSalesFile(file: File, enableDeduplication: boolean,
         
         setStatus({ message: 'Đang phân tích Excel...', type: 'info', progress: 30 });
         const data = new Uint8Array(arrayBuffer);
-        // Use dense mode for memory efficiency
-        const workbook = XLSX.read(data, { type: 'array', cellDates: true, dense: true });
+        
+        let workbook;
+        try {
+            // Use dense mode for memory efficiency
+            workbook = XLSX.read(data, { type: 'array', cellDates: true, dense: true });
+        } catch (err: any) {
+            if (err?.message?.includes('Invalid HTML') || err?.message?.includes('find <table>')) {
+                throw new Error("File bị lỗi cấu trúc (File HTML bị đổi đuôi xanh .xlsx). Vui lòng đảm bảo bạn đang tải lên file Excel (.xlsx) chuẩn từ hệ thống.");
+            }
+            throw err;
+        }
         
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];

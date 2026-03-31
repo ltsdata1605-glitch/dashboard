@@ -17,16 +17,21 @@ import {
     PILL_ICONS, PILL_COLORS
 } from './summary/SummaryTableUtils';
 import { useSummaryTableLogic } from './summary/useSummaryTableLogic';
+import { CrossSellingTable } from './summary/CrossSellingTable';
+import CrossSellingBuilderModal from '../modals/CrossSellingBuilderModal';
 
 interface SummaryTableProps {}
 
 type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'custom_range';
 
 const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
+    const { filterState } = useDashboardContext();
     const state = useSummaryTableLogic();
+    const [isBuilderOpen, setIsBuilderOpen] = useState(false);
 
     const {
-        isComparisonMode, setIsComparisonMode,
+        tableMode, setTableMode,
+        isComparisonMode, isCrossSellingMode,
         compMode, setCompMode,
         selectedDate, setSelectedDate,
         selectedMonth, setSelectedMonth,
@@ -83,7 +88,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
 
     const footerCellClass = "px-2 py-2 text-center text-[13px]";
     const footerDeltaCellClass = "px-2 py-2 text-center text-[13px]"; 
-    const separatorClass = "border-r border-slate-300 dark:border-slate-600";
+    const separatorClass = "border-r border-slate-200 dark:border-slate-700";
 
     // --- Helper to get options and selected state dynamically ---
     // Moved to useSummaryTableLogic.ts
@@ -106,15 +111,20 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                 <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
                                     {displayDescription}
                                 </p>
+                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+                                    {(filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `KHO: ${filterState.kho.join(', ')} | ` : ''} 
+                                    {(filterState.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filterState.xuat} | ` : ''}
+                                    {filterState.dateRange !== 'all' ? `TỪ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
+                                </p>
                             </div>
                         </div>
                         
                         <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                             <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hide-on-export">
                                 <button 
-                                    onClick={() => React.startTransition(() => setIsComparisonMode(false))}
+                                    onClick={() => React.startTransition(() => setTableMode('standard'))}
                                     className={`py-1.5 px-3 sm:px-4 text-xs font-bold rounded-lg transition-all ${
-                                        !isComparisonMode 
+                                        tableMode === 'standard' 
                                         ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
                                         : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
                                     }`}
@@ -122,54 +132,85 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     Tiêu chuẩn
                                 </button>
                                 <button 
-                                    onClick={() => React.startTransition(() => setIsComparisonMode(true))}
+                                    onClick={() => React.startTransition(() => setTableMode('comparison'))}
                                     className={`py-1.5 px-3 sm:px-4 text-xs font-bold rounded-lg transition-all ${
-                                        isComparisonMode 
+                                        tableMode === 'comparison' 
                                         ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
                                         : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
                                     }`}
                                 >
                                     So sánh
                                 </button>
+                                <button 
+                                    onClick={() => React.startTransition(() => setTableMode('cross_selling'))}
+                                    className={`py-1.5 px-3 sm:px-4 text-xs font-bold rounded-lg transition-all ${
+                                        tableMode === 'cross_selling' 
+                                        ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' 
+                                        : 'text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400'
+                                    }`}
+                                >
+                                    Bán kèm
+                                </button>
+                                {isCrossSellingMode && (
+                                    <button
+                                        onClick={() => setIsBuilderOpen(true)}
+                                        className="p-1.5 px-3 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm ml-2 hide-on-export shrink-0 flex items-center gap-1"
+                                    >
+                                        <Icon name="sliders-horizontal" size={3.5} /> Cấu Hình Bảng
+                                    </button>
+                                )}
                             </div>
                             
-                            {/* Cột hiển thị */}
-                            <div className="relative z-[80] hide-on-export">
-                                <button
-                                    onClick={() => setActiveFilterKey(prev => prev === 'columns' ? null : 'columns')}
-                                    className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-                                    title="Tùy chọn hiển thị cột"
-                                >
-                                    <Icon name="settings-2" size={5}/>
-                                </button>
-                                {activeFilterKey === 'columns' && (
-                                    <div className="absolute right-0 sm:left-0 sm:right-auto md:right-0 md:left-auto mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-3 border border-slate-100 dark:border-slate-700 z-[200]">
-                                        <div className="flex justify-between items-center mb-3 px-2 pt-1 border-b border-slate-50 pb-2 dark:border-slate-700/50">
-                                            <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">Tùy chọn hiển thị cột</h4>
-                                            <button onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={4}/></button>
-                                        </div>
-                                        <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
-                                            {HEADER_CONFIG.map(col => (
-                                                <div key={col.key} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} className="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
-                                                    <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 select-none">
-                                                        <div className={`p-1.5 rounded-lg ${col.colorClass}`}>
-                                                            <Icon name={col.icon || 'columns'} size={3.5} />
-                                                        </div>
-                                                        {col.label}
-                                                    </span>
-                                                    <div className="relative inline-flex items-center pointer-events-none">
-                                                        <input 
-                                                            type="checkbox" 
-                                                            className="sr-only peer" 
-                                                            checked={visibleColumns.includes(col.key)} 
-                                                            readOnly
-                                                        />
-                                                        <div className="w-9 h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-500"></div>
-                                                    </div>
+                            {/* Cột hiển thị hoặc Nút Xuất Ảnh (Bán Kèm) */}
+                            <div className="relative z-[100] hide-on-export">
+                                {isCrossSellingMode ? (
+                                    <button 
+                                        onClick={handleExport} 
+                                        disabled={isExporting} 
+                                        title="Xuất Ảnh" 
+                                        className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                    >
+                                        {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
+                                    </button>
+                                ) : (
+                                    <>
+                                        <button
+                                            onClick={() => setActiveFilterKey(prev => prev === 'columns' ? null : 'columns')}
+                                            className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                            title="Tùy chọn hiển thị cột"
+                                        >
+                                            <Icon name="settings-2" size={5}/>
+                                        </button>
+                                        {activeFilterKey === 'columns' && (
+                                            <div className="absolute right-0 sm:left-0 sm:right-auto md:right-0 md:left-auto mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-3 border border-slate-100 dark:border-slate-700 z-[200]">
+                                                <div className="flex justify-between items-center mb-3 px-2 pt-1 border-b border-slate-50 pb-2 dark:border-slate-700/50">
+                                                    <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">Tùy chọn hiển thị cột</h4>
+                                                    <button onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={4}/></button>
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                                <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
+                                                    {HEADER_CONFIG.map(col => (
+                                                        <div key={col.key} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} className="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                                                            <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 select-none">
+                                                                <div className={`p-1.5 rounded-lg ${col.colorClass}`}>
+                                                                    <Icon name={col.icon || 'columns'} size={3.5} />
+                                                                </div>
+                                                                {col.label}
+                                                            </span>
+                                                            <div className="relative inline-flex items-center pointer-events-none">
+                                                                <input 
+                                                                    type="checkbox" 
+                                                                    className="sr-only peer" 
+                                                                    checked={visibleColumns.includes(col.key)} 
+                                                                    readOnly
+                                                                />
+                                                                <div className="w-9 h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-500"></div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
                             </div>
                         </div>
@@ -402,95 +443,97 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                     )}
 
                     {/* CONTROL BAR */}
-                    <div className="relative z-[70] flex flex-wrap items-center justify-between gap-3 hide-on-export pt-2 border-t border-slate-100 dark:border-slate-700/50">
-                        {/* New Configurable Level Order UI (Drag & Drop Enabled) */}
-                        <div className="flex flex-col gap-1 w-full lg:w-auto">
-                            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cấu trúc hiển thị & Lọc (Kéo thả để sắp xếp):</span>
-                            <div className={`flex flex-wrap items-center gap-2 ${isPending ? 'opacity-50 pointer-events-none' : ''}`} ref={sortableListRef}>
-                                {localDrilldownOrder.map((key, index) => {
-                                    const colorClass = PILL_COLORS[key] || 'bg-slate-100 text-slate-700 border-slate-200';
-                                    const iconName = PILL_ICONS[key] || 'box';
-                                    const { options, selected, onChange } = getFilterProps(key);
-                                    
-                                    // Determine alignment based on index to prevent overflow
-                                    // First 2 items align left, others default to right (via prop default)
-                                    const alignment = index < 2 ? 'left' : 'right';
+                    {!isCrossSellingMode && (
+                        <div className="relative z-[50] flex flex-wrap items-center justify-between gap-3 hide-on-export pt-2 border-t border-slate-100 dark:border-slate-700/50">
+                            {/* Configurable Level Order UI (Drag & Drop Enabled) */}
+                            <div className="flex flex-col gap-1 w-full lg:w-auto">
+                                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cấu trúc hiển thị & Lọc (Kéo thả để sắp xếp):</span>
+                                <div className={`flex flex-wrap items-center gap-2 ${isPending ? 'opacity-50 pointer-events-none' : ''}`} ref={sortableListRef}>
+                                    {localDrilldownOrder.map((key, index) => {
+                                        const colorClass = PILL_COLORS[key] || 'bg-slate-100 text-slate-700 border-slate-200';
+                                        const iconName = PILL_ICONS[key] || 'box';
+                                        const { options, selected, onChange } = getFilterProps(key);
+                                        
+                                        // Determine alignment based on index to prevent overflow
+                                        // First 2 items align left, others default to right (via prop default)
+                                        const alignment = index < 2 ? 'left' : 'right';
 
-                                    return (
-                                        <div key={key} className={`flex items-center ${colorClass} border rounded-full pl-3 pr-2 py-1 cursor-move transition-transform hover:scale-105 shadow-sm select-none group relative`}>
-                                            <Icon name={iconName} size={3} className="mr-1.5 opacity-70" />
-                                            <span className="text-xs font-bold mr-1">{ORDER_LABELS[key]}</span>
-                                            {/* Integrated Filter Popover */}
-                                            <FilterPopover 
-                                                label={ORDER_LABELS[key]}
-                                                options={options}
-                                                selected={selected}
-                                                onChange={onChange}
-                                                isOpen={activeFilterKey === key}
-                                                onToggle={() => setActiveFilterKey(prev => prev === key ? null : key)}
-                                                onClose={() => setActiveFilterKey(null)}
-                                                alignment={alignment}
-                                            />
+                                        return (
+                                            <div key={key} className={`flex items-center ${colorClass} border rounded-full pl-3 pr-2 py-1 cursor-move transition-transform hover:scale-105 shadow-sm select-none group relative`}>
+                                                <Icon name={iconName} size={3} className="mr-1.5 opacity-70" />
+                                                <span className="text-xs font-bold mr-1">{ORDER_LABELS[key]}</span>
+                                                {/* Integrated Filter Popover */}
+                                                <FilterPopover 
+                                                    label={ORDER_LABELS[key]}
+                                                    options={options}
+                                                    selected={selected}
+                                                    onChange={onChange}
+                                                    isOpen={activeFilterKey === key}
+                                                    onToggle={() => setActiveFilterKey(prev => prev === key ? null : key)}
+                                                    onClose={() => setActiveFilterKey(null)}
+                                                    alignment={alignment}
+                                                />
+                                            </div>
+                                        );
+                                    })}
+                                    
+                                    {/* Reset Button - Only show if any filters are active */}
+                                    {hasActiveFilters && (
+                                        <div className="flex items-center gap-1.5 hide-on-export">
+                                            <button
+                                                onClick={handleExpandAll}
+                                                className="h-7 w-7 rounded-lg bg-teal-100 text-teal-700 hover:bg-teal-200 flex items-center justify-center transition-colors dark:bg-teal-900/40 dark:text-teal-400 dark:hover:bg-teal-800/60"
+                                                title="Mở rộng 1 cấp độ"
+                                            >
+                                                <Icon name="maximize-2" size={4} />
+                                            </button>
+                                            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                                            <button
+                                                onClick={handleCollapseAll}
+                                                className="h-7 w-7 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 flex items-center justify-center transition-colors dark:bg-amber-900/40 dark:text-amber-400 dark:hover:bg-amber-800/60"
+                                                title="Thu gọn 1 cấp độ"
+                                            >
+                                                <Icon name="minimize-2" size={4} />
+                                            </button>
+                                            <button
+                                                onClick={handleResetAllFilters}
+                                                className="p-1.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ml-1"
+                                                title="Làm mới tất cả bộ lọc"
+                                            >
+                                                <Icon name="rotate-ccw" size={4} />
+                                            </button>
                                         </div>
-                                    );
-                                })}
-                                
-                                {/* Reset Button - Only show if any filters are active */}
-                                {hasActiveFilters && (
-                                    <div className="flex items-center gap-1.5 hide-on-export">
-                                        <button
-                                            onClick={handleExpandAll}
-                                            className="h-7 w-7 rounded-lg bg-teal-100 text-teal-700 hover:bg-teal-200 flex items-center justify-center transition-colors dark:bg-teal-900/40 dark:text-teal-400 dark:hover:bg-teal-800/60"
-                                            title="Mở rộng 1 cấp độ"
-                                        >
-                                            <Icon name="maximize-2" size={4} />
-                                        </button>
-                                        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                                        <button
-                                            onClick={handleCollapseAll}
-                                            className="h-7 w-7 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 flex items-center justify-center transition-colors dark:bg-amber-900/40 dark:text-amber-400 dark:hover:bg-amber-800/60"
-                                            title="Thu gọn 1 cấp độ"
-                                        >
-                                            <Icon name="minimize-2" size={4} />
-                                        </button>
-                                        <button
-                                            onClick={handleResetAllFilters}
-                                            className="p-1.5 rounded-full text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ml-1"
-                                            title="Làm mới tất cả bộ lọc"
-                                        >
-                                            <Icon name="rotate-ccw" size={4} />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-3 ml-auto mt-2 lg:mt-0">
-                            {/* Nút Expand/Collapse */}
-                            <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200 dark:border-slate-700 items-center">
-                                <button
-                                    onClick={handleExpandAll}
-                                    className="p-1.5 px-2 text-teal-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors relative"
-                                    title="Mở rộng 1 cấp"
-                                >
-                                    <Icon name="maximize-2" size={4} />
-                                    {expandLevel > 0 && <span className="absolute -top-1 -right-1 flex items-center justify-center w-3.5 h-3.5 bg-teal-500 text-white text-[8px] font-bold rounded-full">{expandLevel}</span>}
-                                </button>
-                                <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                                <button
-                                    onClick={handleCollapseAll}
-                                    className="p-1.5 px-2 text-amber-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
-                                    title="Thu gọn 1 cấp"
-                                >
-                                    <Icon name="minimize-2" size={4} />
-                                </button>
+                                    )}
+                                </div>
                             </div>
                             
-                            <button onClick={handleExport} disabled={isExporting} title="Xuất Ảnh" className="p-2 text-slate-500 dark:text-slate-400 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                               {isExporting ? <Icon name="loader-2" className="animate-spin" /> : <Icon name="camera" />}
-                            </button>
+                            <div className="flex items-center gap-3 ml-auto mt-2 lg:mt-0">
+                                {/* Nút Expand/Collapse */}
+                                <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200 dark:border-slate-700 items-center">
+                                    <button
+                                        onClick={handleExpandAll}
+                                        className="p-1.5 px-2 text-teal-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors relative"
+                                        title="Mở rộng 1 cấp"
+                                    >
+                                        <Icon name="maximize-2" size={4} />
+                                        {expandLevel > 0 && <span className="absolute -top-1 -right-1 flex items-center justify-center w-3.5 h-3.5 bg-teal-500 text-white text-[8px] font-bold rounded-full">{expandLevel}</span>}
+                                    </button>
+                                    <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                                    <button
+                                        onClick={handleCollapseAll}
+                                        className="p-1.5 px-2 text-amber-600 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
+                                        title="Thu gọn 1 cấp"
+                                    >
+                                        <Icon name="minimize-2" size={4} />
+                                    </button>
+                                </div>
+                                
+                                <button onClick={handleExport} disabled={isExporting} title="Xuất Ảnh" className="p-2 text-slate-500 dark:text-slate-400 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                   {isExporting ? <Icon name="loader-2" className="animate-spin" /> : <Icon name="camera" />}
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </header>
 
@@ -504,7 +547,10 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                   </div>
               )}
               {/* Thicker fresh outer border */}
-              <div className="overflow-hidden border border-slate-100 dark:border-slate-700 rounded-none">
+              <div className="overflow-hidden border border-slate-200 dark:border-slate-700 rounded-none">
+                  {isCrossSellingMode ? (
+                      <CrossSellingTable tableContainerRef={tableContainerRef} />
+                  ) : (
                   <table className="w-full min-w-full table-auto compact-export-table border-collapse" id="summary-table">
                       {/* HEADER */}
                       <thead>
@@ -514,28 +560,67 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 shadow-sm border-b-4 border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
                                     >
                                         DANH MỤC
                                     </th>
-                                    {HEADER_CONFIG.filter(h => h.showInComparison && visibleColumns.includes(h.key)).map(h => (
-                                        <th 
-                                            key={h.key} 
-                                            colSpan={h.singleColumnInCompare ? 1 : 2} 
-                                            scope="col" 
-                                            className={`px-2 py-2 text-center text-sm font-bold uppercase tracking-wider border-b ${h.colorClass} ${separatorClass}`}
-                                        >
-                                            {h.label}
-                                        </th>
-                                    ))}
+                                    {(() => {
+                                        const visibleHeaders = HEADER_CONFIG.filter(h => h.showInComparison && visibleColumns.includes(h.key));
+                                        const elements: React.ReactNode[] = [];
+                                        let currentGroup: string | null = null;
+                                        let groupChildren: any[] = [];
+                                        
+                                        const flushGroup = () => {
+                                            if (currentGroup && groupChildren.length > 0) {
+                                                const colorClass = groupChildren[0].colorClass;
+                                                const totalColSpan = groupChildren.reduce((acc, h) => acc + (h.singleColumnInCompare ? 1 : 2), 0);
+                                                elements.push(
+                                                    <th 
+                                                        key={`group-${currentGroup}`} 
+                                                        colSpan={totalColSpan} 
+                                                        scope="col" 
+                                                        className={`px-2 py-2 text-center text-sm font-bold uppercase tracking-wider border-b ${colorClass} ${separatorClass}`}
+                                                    >
+                                                        {currentGroup}
+                                                    </th>
+                                                );
+                                            } else if (!currentGroup && groupChildren.length > 0) {
+                                                groupChildren.forEach(h => {
+                                                    const colSpan = h.singleColumnInCompare ? 1 : 2;
+                                                    elements.push(
+                                                        <th 
+                                                            key={`ungrouped-${h.key}`} 
+                                                            colSpan={colSpan} 
+                                                            scope="col" 
+                                                            className={`px-2 py-2 text-center text-sm font-bold uppercase tracking-wider border-b ${h.colorClass} ${separatorClass}`}
+                                                        >
+                                                            {h.label}
+                                                        </th>
+                                                    );
+                                                });
+                                            }
+                                        };
+
+                                        visibleHeaders.forEach(h => {
+                                            if (h.group !== currentGroup) {
+                                                flushGroup();
+                                                currentGroup = h.group || null;
+                                                groupChildren = [h];
+                                            } else {
+                                                groupChildren.push(h);
+                                            }
+                                        });
+                                        flushGroup();
+                                        return elements;
+                                    })()}
                                 </tr>
-                                <tr className="bg-white dark:bg-slate-800 border-b-4 border-slate-200 dark:border-slate-700">
+                                <tr className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
                                     {HEADER_CONFIG.filter(h => h.showInComparison && visibleColumns.includes(h.key)).map(h => {
                                         if (h.singleColumnInCompare) {
                                             return (
                                                 <th 
                                                     key={`${h.key}-delta`}
-                                                    className={`px-2 py-1 text-center text-[10px] font-bold uppercase ${h.colorClass} border-b border-r border-slate-200/50 cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
+                                                    className={`px-2 py-1 text-center text-[10px] font-bold uppercase ${h.colorClass} border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
                                                     onClick={() => handleSort(h.key, 'delta')}
                                                 >
                                                     <div className="flex items-center justify-center gap-1">
@@ -547,7 +632,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         return (
                                             <React.Fragment key={`${h.key}-sub`}>
                                             <th 
-                                                className={`px-2 py-1 text-center text-[10px] font-bold uppercase ${h.colorClass} border-b border-r border-slate-200/50 cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
+                                                className={`px-2 py-1 text-center text-[10px] font-bold uppercase ${h.colorClass} border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
                                                 onClick={() => handleSort(h.key, 'current')}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
@@ -558,7 +643,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                 </div>
                                             </th>
                                             <th 
-                                                className={`px-2 py-1 text-center text-[10px] font-bold uppercase ${h.colorClass} border-b ${separatorClass} cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
+                                                className={`px-2 py-1 text-center text-[10px] font-bold uppercase ${h.colorClass} border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 ${separatorClass} cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
                                                 onClick={() => handleSort(h.key, 'delta')}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
@@ -574,19 +659,83 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                 </tr>
                             </>
                         ) : (
-                            <tr>
-                                <th scope="col" className={`px-4 py-2 text-left uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-4 border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e] ${separatorClass}`}>DANH MỤC</th>
-                                {HEADER_CONFIG.filter(h => visibleColumns.includes(h.key)).map((h, index) => {
-                                    return (
-                                        <th key={h.key} scope="col" onClick={() => handleSort(h.key)} className={`px-4 py-2 text-center uppercase text-sm font-bold tracking-wider border-b-4 border-slate-200 cursor-pointer hover:opacity-80 transition-opacity ${separatorClass} ${h.colorClass}`}>
+                            <>
+                                <tr>
+                                    <th 
+                                        rowSpan={2} 
+                                        scope="col" 
+                                        className={`px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                    >
+                                        DANH MỤC
+                                    </th>
+                                    {(() => {
+                                        const visibleHeaders = HEADER_CONFIG.filter(h => visibleColumns.includes(h.key));
+                                        const elements: React.ReactNode[] = [];
+                                        let currentGroup: string | null = null;
+                                        let groupChildren: any[] = [];
+                                        
+                                        const flushGroup = () => {
+                                            if (currentGroup && groupChildren.length > 0) {
+                                                const colorClass = groupChildren[0].colorClass;
+                                                elements.push(
+                                                    <th 
+                                                        key={`group-${currentGroup}`} 
+                                                        colSpan={groupChildren.length} 
+                                                        scope="col" 
+                                                        className={`px-2 py-2 text-center text-sm font-bold uppercase tracking-wider border-b ${colorClass} ${separatorClass}`}
+                                                    >
+                                                        {currentGroup}
+                                                    </th>
+                                                );
+                                            } else if (!currentGroup && groupChildren.length > 0) {
+                                                groupChildren.forEach(h => {
+                                                    elements.push(
+                                                        <th 
+                                                            key={`ungrouped-${h.key}`} 
+                                                            rowSpan={2} 
+                                                            scope="col" 
+                                                            onClick={() => handleSort(h.key)} 
+                                                            className={`px-2 py-1 text-center text-xs font-bold uppercase cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/40 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${h.colorClass}`}
+                                                        >
+                                                            <div className="flex items-center justify-center gap-1">
+                                                                {h.label}
+                                                                {activeSortConfig.column === h.key && <Icon name={activeSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />}
+                                                            </div>
+                                                        </th>
+                                                    );
+                                                });
+                                            }
+                                        };
+
+                                        visibleHeaders.forEach(h => {
+                                            if (h.group !== currentGroup) {
+                                                flushGroup();
+                                                currentGroup = h.group || null;
+                                                groupChildren = [h];
+                                            } else {
+                                                groupChildren.push(h);
+                                            }
+                                        });
+                                        flushGroup();
+                                        return elements;
+                                    })()}
+                                </tr>
+                                <tr className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
+                                    {HEADER_CONFIG.filter(h => visibleColumns.includes(h.key) && h.group).map(h => (
+                                        <th 
+                                            key={h.key} 
+                                            scope="col" 
+                                            onClick={() => handleSort(h.key)} 
+                                            className={`px-2 py-1 text-center text-xs font-bold uppercase cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/40 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${h.colorClass}`}
+                                        >
                                             <div className="flex items-center justify-center gap-1">
                                                 {h.label}
                                                 {activeSortConfig.column === h.key && <Icon name={activeSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />}
                                             </div>
                                         </th>
-                                    );
-                                })}
-                            </tr>
+                                    ))}
+                                </tr>
+                            </>
                         )}
                       </thead>
                        <tbody>
@@ -683,9 +832,11 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                            </tr>
                         </tfoot>
                   </table>
+                  )}
               </div>
            </div>
         </div>
+        <CrossSellingBuilderModal isOpen={isBuilderOpen} onClose={() => setIsBuilderOpen(false)} />
         </>
     );
 });

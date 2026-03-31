@@ -10,6 +10,7 @@ interface DashboardContextType {
     productConfig: ProductConfig | null;
     originalData: DataRow[];
     baseFilteredData: DataRow[];
+    calendarSourceData: DataRow[];
     departmentMap: DepartmentMap | null;
     updateDepartmentMap: (newMap: DepartmentMap) => void;
     employeeAnalysisData: EmployeeData | null;
@@ -19,9 +20,14 @@ interface DashboardContextType {
     handleExport: (element: HTMLElement | null, filename: string, options?: any) => Promise<void>;
     isProcessing: boolean;
     isExporting: boolean;
-    uniqueFilterOptions: { kho: string[]; trangThai: string[]; nguoiTao: string[], department: string[] };
+    uniqueFilterOptions: { kho: string[]; trangThai: string[]; nguoiTao: string[], department: string[], hangSX: string[] };
     warehouseTargets: Record<string, number>;
     updateWarehouseTarget: (kho: string, target: number) => void;
+    gtdhTargets: Record<string, number>;
+    updateGtdhTarget: (nhomHang: string, target: number) => void;
+    deleteGtdhTarget: (nhomHang: string) => void;
+    crossSellingConfig: any;
+    updateCrossSellingConfig: (config: any) => void;
 }
 
 export const DashboardContext = React.createContext<DashboardContextType | undefined>(undefined);

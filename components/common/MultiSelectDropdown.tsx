@@ -1,5 +1,6 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo, useDeferredValue } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon } from './Icon';
 
 interface MultiSelectDropdownProps {
@@ -8,6 +9,8 @@ interface MultiSelectDropdownProps {
     onChange: (selected: string[]) => void;
     label: string;
     placeholder?: string;
+    className?: string;
+    variant?: 'default' | 'compact';
 }
 
 const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({ 
@@ -15,21 +18,71 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     selected, 
     onChange, 
     label,
-    placeholder = "Tìm kiếm..." 
+    placeholder = "Tìm kiếm...",
+    className = "",
+    variant = 'default'
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const containerRef = useRef<HTMLDivElement>(null);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
+
+    const updatePosition = () => {
+        if (containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const minW = Math.max(rect.width, 240);
+            let leftPos = rect.left;
+            
+            // Prevent going out of screen on the right
+            if (leftPos + minW > window.innerWidth - 10) {
+                leftPos = Math.max(10, window.innerWidth - minW - 10);
+            }
+
+            setDropdownStyles({
+                position: 'fixed',
+                top: `${rect.bottom + 6}px`,
+                left: `${leftPos}px`,
+                minWidth: `${minW}px`,
+                width: 'max-content',
+                maxWidth: '90vw',
+                zIndex: 9999
+            });
+        }
+    };
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+            const isOutsideContainer = containerRef.current && !containerRef.current.contains(event.target as Node);
+            const isOutsideDropdown = dropdownRef.current && !dropdownRef.current.contains(event.target as Node);
+            if (isOutsideContainer && isOutsideDropdown) {
                 setIsOpen(false);
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
+
+    useEffect(() => {
+        const handleScroll = (e: Event) => {
+            // Dropdown scrolling inside itself should not close it
+            if (dropdownRef.current && dropdownRef.current.contains(e.target as Node)) {
+                return;
+            }
+            // External scrolling closes dropdown naturally without lagging the UI
+            setIsOpen(false);
+        };
+
+        if (isOpen) {
+            updatePosition();
+            window.addEventListener('scroll', handleScroll, true);
+            window.addEventListener('resize', handleScroll);
+            return () => {
+                window.removeEventListener('scroll', handleScroll, true);
+                window.removeEventListener('resize', handleScroll);
+            };
+        }
+    }, [isOpen]);
 
     const handleToggleOption = (option: string) => {
         const newSelected = selected.includes(option)
@@ -41,50 +94,149 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         onChange(e.target.checked ? options : []);
     };
-    
-    let displayLabel = `Tất cả ${label.toLowerCase()}`;
-    if (selected.length > 0 && selected.length < options.length) {
-        displayLabel = `${selected.length} ${label.toLowerCase()}`;
-    }
 
-    const filteredOptions = options.filter(option =>
-        option.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const deferredSearchTerm = useDeferredValue(searchTerm);
+
+    const filteredOptions = useMemo(() => {
+        return options.filter(option =>
+            option.toLowerCase().includes(deferredSearchTerm.toLowerCase())
+        );
+    }, [options, deferredSearchTerm]);
+
+    // Format display text or tags
+    const renderContent = () => {
+        const labelText = variant === 'compact' ? label : label;
+        if (selected.length === 0) return <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[10px] tracking-wider">{label}</span>;
+        if (selected.length === options.length) return <span className="text-indigo-600 dark:text-indigo-400 font-bold text-[10px] uppercase tracking-wider">Tất cả</span>;
+        
+        if (variant === 'compact') {
+            return <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-wider">{label} ({selected.length})</span>;
+        }
+
+        if (selected.length <= 2) {
+            return (
+                <div className="flex flex-wrap gap-1">
+                    {selected.map(item => (
+                        <span key={item} className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] px-1.5 py-0.5 rounded-md border border-indigo-100/50 dark:border-indigo-800/50 font-bold max-w-[80px] truncate">
+                            {item}
+                        </span>
+                    ))}
+                </div>
+            );
+        }
+        
+        return <span className="text-indigo-600 dark:text-indigo-400 font-bold">{selected.length} {label}</span>;
+    };
 
     return (
-        <div className="relative w-full" ref={containerRef} style={{ zIndex: 11 }}>
-            <button type="button" onClick={() => setIsOpen(!isOpen)} className="w-full h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm transition-colors">
-                <span className={`truncate ${selected.length > 0 ? 'text-slate-800 dark:text-slate-100 font-medium' : 'text-slate-500'}`}>
-                    {displayLabel}
-                </span>
-                <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                    <Icon name="chevrons-up-down" size={4} className="text-slate-400" />
-                </span>
-            </button>
-            {isOpen && (
-                <div className="absolute z-20 mt-1 w-full max-h-60 overflow-y-auto bg-white dark:bg-slate-800 rounded-md shadow-lg border border-slate-200 dark:border-slate-700 p-2 flex flex-col animate-fade-in-up">
-                    <input
-                        type="text"
-                        placeholder={placeholder}
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        className="w-full text-sm bg-slate-50 dark:bg-slate-600 border-slate-300 dark:border-slate-500 rounded-md shadow-sm focus:border-indigo-500 focus:border-indigo-500 mb-2 px-2 py-1.5"
+        <div className={`relative w-full ${className}`} ref={containerRef} style={{ zIndex: isOpen ? 50 : 11 }}>
+            <button 
+                type="button" 
+                onClick={() => setIsOpen(!isOpen)} 
+                className={`w-full flex items-center justify-between rounded-xl border transition-all duration-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                    variant === 'compact' ? 'min-h-[32px] py-1' : 'min-h-[38px] py-1.5'
+                } ${
+                    isOpen 
+                    ? 'border-indigo-500 bg-white dark:bg-slate-800 shadow-md ring-2 ring-indigo-500/10' 
+                    : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm'
+                }`}
+            >
+                <div className="flex-grow flex items-center overflow-hidden">
+                    {renderContent()}
+                </div>
+                <div className="flex items-center gap-1.5 ml-2">
+                    {selected.length > 0 && (
+                        <div className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200">
+                            {selected.length}
+                        </div>
+                    )}
+                    <Icon 
+                        name="chevron-down" 
+                        size={3.5} 
+                        className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
                     />
-                     <div className="flex items-center border-b border-slate-200 dark:border-slate-600 pb-2 mb-2 px-1">
-                        <input id={`select-all-${label}`} type="checkbox" checked={selected.length === options.length && options.length > 0} onChange={handleSelectAll} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                        <label htmlFor={`select-all-${label}`} className="ml-2 text-sm font-bold text-gray-900 dark:text-gray-100 cursor-pointer">Chọn tất cả</label>
+                </div>
+            </button>
+
+            {isOpen && createPortal(
+                <div 
+                    ref={dropdownRef}
+                    style={dropdownStyles}
+                    className="absolute z-[9999] overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-black/40 border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm"
+                >
+                    {/* Search Field */}
+                    <div className="p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
+                        <div className="relative">
+                            <Icon name="search" size={3.5} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder={placeholder}
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                className="w-full text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                                autoFocus
+                            />
+                        </div>
                     </div>
-                    <div className="flex-grow overflow-y-auto">
-                        {filteredOptions.length > 0 ? filteredOptions.map(option => (
-                            <div key={option} className="flex items-center p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors">
-                                <input id={`opt-${label}-${option}`} type="checkbox" checked={selected.includes(option)} onChange={() => handleToggleOption(option)} className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer" />
-                                <label htmlFor={`opt-${label}-${option}`} className="ml-2 text-sm text-gray-700 dark:text-gray-300 truncate cursor-pointer select-none flex-grow">{option}</label>
+
+                    {/* Actions */}
+                    <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-slate-700/50">
+                        <label className="flex items-center gap-2 cursor-pointer group">
+                            <div className="relative flex items-center">
+                                <input 
+                                    type="checkbox" 
+                                    checked={selected.length === options.length && options.length > 0} 
+                                    onChange={handleSelectAll} 
+                                    className="peer sr-only" 
+                                />
+                                <div className="w-4 h-4 rounded border-2 border-slate-300 dark:border-slate-600 transition-all peer-checked:bg-indigo-600 peer-checked:border-indigo-600" />
+                                <Icon name="check" size={3} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
                             </div>
-                        )) : (
-                            <p className="text-xs text-slate-500 text-center py-2">Không tìm thấy kết quả</p>
+                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Tất cả {label}</span>
+                        </label>
+                        <span className="text-[10px] font-bold text-slate-400">{filteredOptions.length} / {options.length}</span>
+                    </div>
+
+                    {/* Options List */}
+                    <div className="flex-grow overflow-y-auto custom-scrollbar p-1 max-h-48">
+                        {filteredOptions.length > 0 ? (
+                            <div className="grid grid-cols-1 gap-0.5">
+                                {filteredOptions.slice(0, 200).map(option => {
+                                    const isSelected = selected.includes(option);
+                                    return (
+                                        <button
+                                            key={option}
+                                            onClick={() => handleToggleOption(option)}
+                                            className={`flex items-center gap-2.5 w-full text-left px-2.5 py-2 rounded-lg transition-all ${
+                                                isSelected 
+                                                ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' 
+                                                : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                            }`}
+                                        >
+                                            <div className={`relative flex items-center justify-center w-4 h-4 rounded border-2 transition-all ${
+                                                isSelected ? 'bg-indigo-600 border-indigo-600 shadow-sm' : 'border-slate-300 dark:border-slate-600'
+                                            }`}>
+                                                {isSelected && <Icon name="check" size={3} className="text-white" />}
+                                            </div>
+                                            <span className={`text-[12px] truncate ${isSelected ? 'font-black' : 'font-medium'}`}>{option}</span>
+                                        </button>
+                                    );
+                                })}
+                                {filteredOptions.length > 200 && (
+                                    <div className="text-center py-2 text-[10px] items-center italic text-slate-400 font-medium">
+                                        Hiển thị 200 kết quả đầu tiên. Vui lòng sử dụng ô tìm kiếm để xem thêm.
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
+                                <Icon name="search-x" size={6} className="text-slate-300 mb-2" />
+                                <p className="text-[11px] text-slate-500 font-medium">Không tìm thấy "{searchTerm}"</p>
+                            </div>
                         )}
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

@@ -13,14 +13,21 @@ export const useSummaryTableLogic = () => {
     const { filterState: filters, handleFilterChange: onFilterChange, baseFilteredData, productConfig } = useDashboardContext();
     const { summaryTable: summaryTableFilters, parent: globalParentFilters } = filters;
     
+    // Comparison State (Hoisted up)
+    const [tableMode, setTableMode] = useState<'standard' | 'comparison' | 'cross_selling'>('standard');
+    const isComparisonMode = tableMode === 'comparison';
+    const isCrossSellingMode = tableMode === 'cross_selling';
+
     // --- Local State for Performance Optimization ---
     const [localDrilldownOrder, setLocalDrilldownOrder] = useState<string[]>(
         (summaryTableFilters.drilldownOrder && summaryTableFilters.drilldownOrder.length > 0)
             ? summaryTableFilters.drilldownOrder
             : ['parent', 'child', 'creator', 'manufacturer', 'product']
     );
+    const [crossSellingDrilldownOrder, setCrossSellingDrilldownOrder] = useState<string[]>(['parent', 'child']);
     
-    const deferredDrilldownOrder = useDeferredValue(localDrilldownOrder);
+    const activeDrilldownOrder = isCrossSellingMode ? crossSellingDrilldownOrder : localDrilldownOrder;
+    const deferredDrilldownOrder = useDeferredValue(activeDrilldownOrder);
 
     const [localParentFilters, setLocalParentFilters] = useState<string[]>(globalParentFilters || []);
     const [localChildFilters, setLocalChildFilters] = useState<string[]>(summaryTableFilters.child || []);
@@ -64,7 +71,6 @@ export const useSummaryTableLogic = () => {
 
 
     // Comparison State
-    const [isComparisonMode, setIsComparisonMode] = useState(false);
     const [compMode, setCompMode] = useState<ComparisonMode>('day_adjacent');
     const [selectedDate, setSelectedDate] = useState(toInputDate(new Date()));
     const [selectedMonth, setSelectedMonth] = useState(toInputMonth(new Date()));
@@ -536,7 +542,8 @@ export const useSummaryTableLogic = () => {
     };
 
     return {
-        isComparisonMode, setIsComparisonMode,
+        tableMode, setTableMode,
+        isComparisonMode, isCrossSellingMode,
         compMode, setCompMode,
         selectedDate, setSelectedDate,
         selectedMonth, setSelectedMonth,
@@ -544,7 +551,8 @@ export const useSummaryTableLogic = () => {
         customRangeA, setCustomRangeA,
         customRangeB, setCustomRangeB,
         dateDisplay, displayDescription, displayTitle,
-        localDrilldownOrder, setLocalDrilldownOrder,
+        localDrilldownOrder: activeDrilldownOrder, 
+        setLocalDrilldownOrder: isCrossSellingMode ? setCrossSellingDrilldownOrder : setLocalDrilldownOrder,
         isPending, getFilterProps,
         activeFilterKey, setActiveFilterKey,
         hasActiveFilters, handleResetAllFilters,

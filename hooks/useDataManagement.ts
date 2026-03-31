@@ -1,10 +1,10 @@
-
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, startTransition } from 'react';
 import type { DataRow, FilterState, ProductConfig, ProcessedData, Status, AppState } from '../types';
 import type { DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
 import { applyFiltersAndProcess } from '../services/filterService';
+import { useAuth } from '../contexts/AuthContext';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -14,13 +14,17 @@ interface DataManagementProps {
 }
 
 export const useDataManagement = ({ filterState, configUrl, setStatus, setAppState }: DataManagementProps) => {
+    const { user, isDemoMode } = useAuth();
     const [originalData, setOriginalData] = useState<DataRow[]>([]);
     const [baseFilteredData, setBaseFilteredData] = useState<DataRow[]>([]);
+    const [calendarSourceData, setCalendarSourceData] = useState<DataRow[]>([]);
     const [departmentMap, setDepartmentMap] = useState<DepartmentMap | null>(null);
     const [productConfig, setProductConfig] = useState<ProductConfig | null>(null);
     const [processedData, setProcessedData] = useState<ProcessedData | null>(null);
     const [employeeAnalysisData, setEmployeeAnalysisData] = useState<ProcessedData['employeeData'] | null>(null);
     const [warehouseTargets, setWarehouseTargets] = useState<Record<string, number>>({});
+    const [gtdhTargets, setGtdhTargets] = useState<Record<string, number>>({});
+    const [crossSellingConfig, setCrossSellingConfig] = useState<any>(null);
     const [isHardProcessing, setIsHardProcessing] = useState(false);    // initial load / file upload
     const [isFilterProcessing, setIsFilterProcessing] = useState(false); // filter-only fast re-calc
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
@@ -31,34 +35,100 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             setAppState('loading');
             setIsHardProcessing(true);
             try {
+                // Auto-Pull from Cloud First
+                let cloudData: any = null;
+                if (user && !isDemoMode) {
+                    try {
+                        setStatus({ message: 'Đang tải cấu hình Đám Mây...', type: 'info', progress: 5 });
+                        const { fetchFromCloud } = await import('../services/firestoreService');
+                        cloudData = await fetchFromCloud(user);
+                    } catch (e) {
+                        console.error("Lỗi PULL Firestore:", e);
+                    }
+                }
+
+                setStatus({ message: 'Khởi tạo cấu hình hệ thống...', type: 'info', progress: 10 });
                 let config: ProductConfig;
-                const cachedConfig = await dbService.getProductConfig();
-                if (cachedConfig) {
-                    config = cachedConfig.config;
-                } else {
-                    config = await loadConfigFromSheet(configUrl, () => {});
+                if (cloudData && cloudData.productConfig) {
+                    config = cloudData.productConfig;
                     await dbService.saveProductConfig(config, configUrl);
+                } else {
+                    const cachedConfig = await dbService.getProductConfig();
+                    if (cachedConfig) {
+                        config = cachedConfig.config;
+                    } else {
+                        config = await loadConfigFromSheet(configUrl, () => {});
+                        await dbService.saveProductConfig(config, configUrl);
+                    }
                 }
                 setProductConfig(config);
 
-                const savedDeptMap = await dbService.getDepartmentMap();
-                if (savedDeptMap) setDepartmentMap(savedDeptMap);
+                if (cloudData && cloudData.departmentMap) {
+                    setDepartmentMap(cloudData.departmentMap);
+                    await dbService.saveDepartmentMap(cloudData.departmentMap);
+                } else {
+                    const savedDeptMap = await dbService.getDepartmentMap();
+                    if (savedDeptMap) setDepartmentMap(savedDeptMap);
+                }
 
-                const savedTargets = await dbService.getWarehouseTargets();
-                if (savedTargets) setWarehouseTargets(savedTargets);
+                if (cloudData && cloudData.warehouseTargets) {
+                    const targetArr = cloudData.warehouseTargets as any[];
+                    const map: Record<string, number> = {};
+                    targetArr.forEach(t => map[t.kho] = t.dsMucTieu);
+                    setWarehouseTargets(map);
+                    await dbService.saveWarehouseTargets(map);
+                } else {
+                    const savedTargets = await dbService.getWarehouseTargets();
+                    if (savedTargets) setWarehouseTargets(savedTargets);
+                }
+
+                if (cloudData && cloudData.gtdhTargets) {
+                    const targetArr = cloudData.gtdhTargets as any[];
+                    const map: Record<string, number> = {};
+                    targetArr.forEach(t => map[t.nhomHang] = t.gtdh);
+                    setGtdhTargets(map);
+                    await dbService.saveGtdhTargets(map);
+                } else {
+                    const savedGtdhTargets = await dbService.getGtdhTargets();
+                    if (savedGtdhTargets) setGtdhTargets(savedGtdhTargets);
+                }
+
+                if (cloudData && cloudData.crossSellingConfig) {
+                    setCrossSellingConfig(cloudData.crossSellingConfig);
+                    await dbService.saveCrossSellingConfig(cloudData.crossSellingConfig);
+                } else {
+                    const savedCrossSelling = await dbService.getCrossSellingConfig();
+                    if (savedCrossSelling) setCrossSellingConfig(savedCrossSelling);
+                }
 
                 const savedSales = await dbService.getSalesData();
                 if (savedSales && savedSales.data.length > 0) {
                     setStatus({ message: 'Đang tải dữ liệu đã lưu...', type: 'info', progress: 25 });
                     setFileInfo({ filename: savedSales.filename, savedAt: savedSales.savedAt.toLocaleString('vi-VN') });
 
-                    const rehydratedData = savedSales.data.map(row => ({
-                        ...row,
-                        parsedDate: row.parsedDate ? new Date(row.parsedDate as string) : null,
-                    })).filter(row => row.parsedDate && !isNaN(row.parsedDate.getTime()));
-                    
-                    setOriginalData(rehydratedData);
-                    setAppState('dashboard');
+                    const parseDataAndSet = () => {
+                        let validCount = 0;
+                        const srcData = savedSales.data;
+                        const len = srcData.length;
+                        for (let i = 0; i < len; i++) {
+                            const row = srcData[i];
+                            if (row.parsedDate) {
+                                row.parsedDate = new Date(row.parsedDate as string);
+                                if (!isNaN((row.parsedDate as Date).getTime())) {
+                                    srcData[validCount++] = row;
+                                }
+                            }
+                        }
+                        srcData.length = validCount; // Cắt bỏ rác không hợp lệ
+                        
+                        startTransition(() => {
+                            setOriginalData(srcData);
+                            setAppState('dashboard');
+                        });
+                    };
+
+                    // Yield Main Thread before parsing dates
+                    setTimeout(parseDataAndSet, 10);
 
                     try {
                         const latestConfig = await loadConfigFromSheet(configUrl, () => {});
@@ -100,17 +170,21 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     throw new Error("Cấu hình sản phẩm chưa được tải. Vui lòng đợi trong giây lát.");
                 }
 
-                const { processedData: result, baseFilteredData: newBaseData } = applyFiltersAndProcess(originalData, productConfig, filterState, departmentMap);
-                setProcessedData(result);
-                setBaseFilteredData(newBaseData);
+                const { processedData: result, baseFilteredData: newBaseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(originalData, productConfig, filterState, departmentMap);
                 
+                let employeeResultData = result.employeeData;
                 if (departmentMap) {
                     const employeeFilterState = { ...filterState, department: [] };
                     const { processedData: employeeResult } = applyFiltersAndProcess(originalData, productConfig, employeeFilterState, departmentMap);
-                    setEmployeeAnalysisData(employeeResult.employeeData);
-                } else {
-                    setEmployeeAnalysisData(result.employeeData);
+                    employeeResultData = employeeResult.employeeData;
                 }
+                
+                startTransition(() => {
+                    setProcessedData(result);
+                    setBaseFilteredData(newBaseData);
+                    setCalendarSourceData(newCalendarSourceData);
+                    setEmployeeAnalysisData(employeeResultData);
+                });
             } catch (error) {
                 console.error("Lỗi khi xử lý lại dữ liệu:", error);
                 const errorMsg = error instanceof Error ? error.message : "Đã xảy ra lỗi trong quá trình xử lý dữ liệu.";
@@ -125,11 +199,34 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
     // Unique filter options
     const uniqueFilterOptions = useMemo(() => {
-        if (originalData.length === 0) return { kho: [], trangThai: [], nguoiTao: [], department: [] };
+        if (originalData.length === 0) return { kho: [], trangThai: [], nguoiTao: [], department: [], hangSX: [] };
         
-        const khoOptions = [...new Set(originalData.map(r => r['Mã kho tạo']).filter(Boolean).map(String))].sort();
-        const trangThaiOptions = [...new Set(originalData.map(r => r['Trạng thái hồ sơ']).filter(Boolean).map(String))].sort();
-        const nguoiTaoOptions = [...new Set(originalData.map(r => r['Người tạo']).filter(Boolean).map(String))].sort();
+        const khos = new Set<string>();
+        const trangThais = new Set<string>();
+        const nguoiTaos = new Set<string>();
+        const hangSxs = new Set<string>();
+
+        const len = originalData.length;
+        for (let i = 0; i < len; i++) {
+            const r = originalData[i];
+            
+            const kho = r['Mã kho tạo'];
+            if (kho) khos.add(String(kho));
+            
+            const tt = r['Trạng thái hồ sơ'];
+            if (tt) trangThais.add(String(tt));
+            
+            const tao = r['Người tạo'];
+            if (tao) nguoiTaos.add(String(tao));
+            
+            const hsx = r['Hãng'] || r['Hãng SX'];
+            if (hsx) hangSxs.add(String(hsx));
+        }
+        
+        const khoOptions = Array.from(khos).sort();
+        const trangThaiOptions = Array.from(trangThais).sort();
+        const nguoiTaoOptions = Array.from(nguoiTaos).sort();
+        const hangSXOptions = Array.from(hangSxs).sort();
         
         let deptOptions: string[] = [];
         if(departmentMap) {
@@ -138,17 +235,20 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             deptOptions = uniqueDepartments.filter(d => !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)));
         }
 
-        return { kho: khoOptions, trangThai: trangThaiOptions, nguoiTao: nguoiTaoOptions, department: deptOptions };
+        return { kho: khoOptions, trangThai: trangThaiOptions, nguoiTao: nguoiTaoOptions, department: deptOptions, hangSX: hangSXOptions };
     }, [originalData, departmentMap]);
 
     return {
         originalData, setOriginalData,
         baseFilteredData,
+        calendarSourceData,
         departmentMap, setDepartmentMap,
         productConfig, setProductConfig,
         processedData, setProcessedData,
         employeeAnalysisData,
         warehouseTargets, setWarehouseTargets,
+        gtdhTargets, setGtdhTargets,
+        crossSellingConfig, setCrossSellingConfig,
         uniqueFilterOptions,
         isInternalProcessing: isHardProcessing, // only true during file upload / initial load
         fileInfo, setFileInfo

@@ -1,5 +1,4 @@
-
-import { useState, useRef } from 'react';
+import { useState, useRef, startTransition } from 'react';
 import type { DataRow, Status, AppState, ProductConfig } from '../types';
 import { processShiftFile, DepartmentMap } from '../services/dataService';
 import { 
@@ -113,6 +112,21 @@ export const useFileUploadLogic = ({
         setIsProcessing(true);
         startTimer();
         
+        let driveFileId = "";
+        try {
+            const token = sessionStorage.getItem('googleOAuthToken');
+            if (token) {
+                setStatus({ message: `Đang sao lưu file bảo mật lên Google Drive...`, type: 'info', progress: 5 });
+                const { uploadFileToDrive } = await import('../services/googleDriveService');
+                driveFileId = await uploadFileToDrive(file, token, 'dmx_sales');
+                setStatus({ message: `Đã sao lưu an toàn! Bắt đầu trích xuất...`, type: 'info', progress: 10 });
+            }
+        } catch (err: any) {
+            console.error("Lỗi Google Drive Upload:", err);
+            // Non-blocking fallback
+            setStatus({ message: `Lỗi kết nối Drive, đang xử lý nội bộ...`, type: 'error', progress: 10 });
+        }
+
         const worker = new Worker(new URL('../services/worker.ts', import.meta.url), { type: 'module' });
         
         worker.onmessage = async (e) => {
@@ -122,8 +136,10 @@ export const useFileUploadLogic = ({
             } else if (type === 'result') {
                 try {
                     setStatus({ message: 'Đang lưu dữ liệu...', type: 'info', progress: 95 });
+                    await new Promise(r => setTimeout(r, 50)); // nhường CPU để vẽ progress
+                    
                     await saveSalesData(payload, file.name);
-                    setFileInfo({ filename: file.name, savedAt: new Date().toLocaleString('vi-VN') });
+                    setFileInfo({ filename: file.name, savedAt: new Date(file.lastModified).toLocaleString('vi-VN') });
                     
                     // Reset filters to initial state to avoid stale filters from previous data
                     if (setFilterState) {
@@ -133,7 +149,11 @@ export const useFileUploadLogic = ({
                     
                     setOriginalData(payload);
                     setStatus({ message: 'Đang tổng hợp báo cáo...', type: 'info', progress: 98 });
-                    setAppState('dashboard');
+                    await new Promise(r => setTimeout(r, 50)); // nhường CPU trước khi React render Dashboard khổng lồ
+                    
+                    startTransition(() => {
+                        setAppState('dashboard');
+                    });
                 } catch (error) {
                     console.error("Lỗi lưu dữ liệu:", error);
                     setStatus({ message: 'Lỗi khi lưu vào hệ thống', type: 'error', progress: 0 });

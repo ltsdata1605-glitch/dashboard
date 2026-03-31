@@ -147,6 +147,21 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
             });
         });
 
+        // Step 1.5: Process 'target' columns
+        const validEmployeesCount = allEmployees.length;
+        config.columns.forEach(col => {
+            if (col.type !== 'target') return;
+            const valuePerEmployee = validEmployeesCount > 0 ? (col.targetValue || 0) / validEmployeesCount : 0;
+            
+            allEmployees.forEach(emp => {
+                if (!employeeColumnValues.has(emp.name)) {
+                    employeeColumnValues.set(emp.name, new Map<string, number>());
+                }
+                const employeeValues = employeeColumnValues.get(emp.name)!;
+                employeeValues.set(col.id, valuePerEmployee);
+            });
+        });
+
         // Step 2: Process all employees and calculate 'calculated' columns
         allEmployees.forEach(emp => {
             const employeeName = emp.name;
@@ -331,10 +346,10 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
     };
 
     return (
-        <div ref={exportRef} className="rounded-none border-2 border-primary-400 dark:border-slate-600 overflow-hidden shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
+        <div ref={exportRef} className="rounded-none border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="overflow-hidden">
                 <div
-                    className="px-4 py-3 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800"
+                    className="px-4 py-3 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700"
                 >
                     <h3 className="text-sm font-extrabold uppercase flex items-center gap-2 text-slate-800 dark:text-white">
                         <Icon name="target" size={4} className="text-primary-500" />
@@ -354,26 +369,40 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                     <table className="min-w-full text-sm compact-export-table border-collapse">
                         <thead className="uppercase">
                             <tr>
-                                <th rowSpan={2} className="px-3 py-2 text-center text-sm font-bold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-slate-900 border-b-4 border-teal-200 border-r border-slate-300">#</th>
-                                <th rowSpan={2} onClick={() => handleSort('name')} className="px-4 py-2 text-left text-sm font-bold text-teal-800 dark:text-teal-200 bg-teal-50 dark:bg-slate-900 border-b-4 border-teal-200 border-r border-slate-300 cursor-pointer select-none align-middle min-w-[140px]">
-                                    DANH MỤC
+                                <th rowSpan={2} colSpan={2} onClick={() => handleSort('name')} className="px-4 py-3 text-center text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle min-w-[140px] tracking-wider sticky left-0 z-20 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                                    <div className="flex items-center justify-center gap-1">
+                                        NHÂN VIÊN
+                                        {sortConfig.key === 'name' && (
+                                            <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                        )}
+                                    </div>
                                 </th>
                                 
-                                {groupsWithHeader.map((group, gIdx) => (
-                                    <th key={group.name} colSpan={group.columns.length} className={`px-2 py-1.5 text-center text-[11px] font-bold text-slate-500 bg-slate-50 border-b border-slate-200 border-r border-slate-300`}>
-                                        {group.name}
-                                    </th>
-                                ))}
+                                {groupsWithHeader.map((group, gIdx) => {
+                                    const colorConfigs = [
+                                        { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300' },
+                                        { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300' },
+                                        { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300' },
+                                        { bg: 'bg-cyan-50 dark:bg-cyan-900/20', text: 'text-cyan-700 dark:text-cyan-300' },
+                                        { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300' }
+                                    ];
+                                    const config = colorConfigs[gIdx % colorConfigs.length];
+                                    return (
+                                        <th key={group.name} colSpan={group.columns.length} className={`px-2 py-3 text-center text-[11px] uppercase tracking-wider font-bold border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text}`}>
+                                            {group.name}
+                                        </th>
+                                    );
+                                })}
 
                                 {columnsWithoutHeader.map((col, cIdx) => {
                                     const colorConfigs = [
-                                        { bg: 'bg-sky-50', text: 'text-sky-700' },
-                                        { bg: 'bg-emerald-50', text: 'text-emerald-700' },
-                                        { bg: 'bg-amber-50', text: 'text-amber-700' },
+                                        { bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300' },
+                                        { bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-300' },
+                                        { bg: 'bg-teal-50 dark:bg-teal-900/20', text: 'text-teal-700 dark:text-teal-300' },
                                     ];
                                     const config = colorConfigs[cIdx % colorConfigs.length];
                                     return (
-                                        <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-3 py-2 text-center text-sm font-bold uppercase tracking-wider cursor-pointer select-none group/th relative align-middle border-b-4 border-slate-200 border-r border-slate-300 ${config.bg} ${config.text} dark:bg-slate-800 dark:text-slate-200`}>
+                                        <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none group/th relative align-middle border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
@@ -390,14 +419,18 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                             </tr>
                             <tr>
                                 {columnsWithHeader.map((col, cIdx) => {
+                                    // Assign same pastel colors based on their index mapping to parent groups but simplified here
+                                    const groupIdx = groupsWithHeader.findIndex(g => g.columns.some(c => c.id === col.id));
                                     const colorConfigs = [
-                                        { bg: 'bg-sky-50', text: 'text-sky-700' },
-                                        { bg: 'bg-emerald-50', text: 'text-emerald-700' },
-                                        { bg: 'bg-amber-50', text: 'text-amber-700' },
+                                        { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300' },
+                                        { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300' },
+                                        { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300' },
+                                        { bg: 'bg-cyan-50 dark:bg-cyan-900/20', text: 'text-cyan-700 dark:text-cyan-300' },
+                                        { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300' }
                                     ];
-                                    const config = colorConfigs[cIdx % colorConfigs.length];
+                                    const config = colorConfigs[Math.max(0, groupIdx) % colorConfigs.length];
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-3 py-2 text-center text-sm font-bold uppercase tracking-wider cursor-pointer select-none group/th relative border-b-4 border-slate-200 border-r border-slate-300 ${config.bg} ${config.text} dark:bg-slate-800 dark:text-slate-200`}>
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-3 py-2 text-center text-[11px] h-px font-bold uppercase tracking-wider cursor-pointer select-none group/th relative border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
@@ -422,7 +455,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     <React.Fragment key={department}>
                                         {showDeptHeaders && (
                                             <tr>
-                                                <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className="px-3 py-2 border-y border-slate-100 dark:border-slate-800/50 bg-slate-50/80">
+                                                <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className="px-3 py-2 border-y border-slate-200 dark:border-slate-700 bg-slate-50/80">
                                                     <div className="flex items-center gap-2">
                                                         <span className={`w-2 h-3.5 rounded-full flex-shrink-0 ${getPastelColor(deptIndex).replace('bg-', 'bg-').replace('/80', '-500')}`} style={{background: ['#3b82f6','#10b981','#f59e0b','#f43f5e','#6366f1','#14b8a6','#f97316','#a855f7'][deptIndex % 8]}} />
                                                         <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
@@ -435,28 +468,28 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                         {rows.map((row, rowIndex) => {
                                             const rowClass = rowIndex % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/30 dark:bg-slate-800/20';
                                             return (
-                                                <tr key={row.name} className={`${rowClass} hover:bg-teal-50/50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800`}>
-                                                    <td className="px-3 py-2 text-center border-r border-slate-100 dark:border-slate-800">
+                                                <tr key={row.name} className={`${rowClass} hover:bg-teal-50/50 dark:hover:bg-slate-800 transition-colors border-b border-slate-200 dark:border-slate-700`}>
+                                                    <td className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700">
                                                         {rowIndex < 3
                                                             ? <span className="text-base leading-none">{['🥇','🥈','🥉'][rowIndex]}</span>
                                                             : <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">#{rowIndex + 1}</span>
                                                         }
                                                     </td>
-                                                    <td className="px-4 py-2 font-bold text-[13px] text-slate-800 dark:text-slate-100 whitespace-nowrap text-left border-r border-slate-300 dark:border-slate-700">{abbreviateName(row.name)}</td>
+                                                    <td className="px-4 py-2 font-bold text-[13px] text-slate-800 dark:text-slate-100 whitespace-nowrap text-left border-r border-slate-200 dark:border-slate-700">{abbreviateName(row.name)}</td>
                                                     {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
                                                         const value = row.columnValues.get(col.id);
                                                         const average = averages.get(col.id);
                                                         const style = getConditionalStyle(value, col, average);
-                                                        return <td key={col.id} className="px-3 py-2 text-center text-[13px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-100 dark:border-slate-800/50" style={style}>{formatValue(value, col)}</td>;
+                                                        return <td key={col.id} className="px-3 py-2 text-center text-[13px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700" style={style}>{formatValue(value, col)}</td>;
                                                     })}
                                                 </tr>
                                             );
                                         })}
                                         {sortedDepartments.length > 1 && deptTotals && (
                                             <tr className="bg-teal-50/30 dark:bg-teal-900/10 font-bold">
-                                                <td colSpan={2} className="px-3 py-2 text-center text-[11px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-300 shadow-[inset_-2px_0_4px_-2px_rgba(0,0,0,0.05)]">∑ {department}</td>
+                                                <td colSpan={2} className="px-3 py-2 text-center text-[11px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700">∑ {department}</td>
                                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => (
-                                                    <td key={col.id} className="px-3 py-2 text-center text-[13px] font-extrabold text-slate-700 dark:text-slate-300 border-r border-slate-200/50">
+                                                    <td key={col.id} className="px-3 py-2 text-center text-[13px] font-extrabold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
                                                         {formatValue(deptTotals.get(col.id), col)}
                                                     </td>
                                                 ))}
@@ -466,14 +499,14 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                 );
                             })}
                         </tbody>
-                        <tfoot className="bg-teal-100 dark:bg-teal-900/40 border-t-2 border-teal-200 dark:border-teal-800">
+                        <tfoot className="bg-teal-100 dark:bg-teal-900/40 border-t border-slate-200 dark:border-slate-700">
                              <tr>
-                                <td colSpan={2} className="px-4 py-2.5 text-center text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-300">∑ TỔNG CỘNG</td>
+                                <td colSpan={2} className="px-4 py-2.5 text-center text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700">∑ TỔNG CỘNG</td>
                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
                                     const value = totals.get(col.id);
                                     const average = averages.get(col.id);
                                     const style = getConditionalStyle(value, col, average);
-                                    return <td key={col.id} className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 border-r border-slate-200/50" style={style}>{formatValue(value, col)}</td>;
+                                    return <td key={col.id} className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700" style={style}>{formatValue(value, col)}</td>;
                                 })}
                             </tr>
                         </tfoot>

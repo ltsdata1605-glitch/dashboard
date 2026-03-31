@@ -35,15 +35,15 @@ export const WAREHOUSE_METRIC_TYPE_MAP: Record<WarehouseMetricType, string> = {
 };
 
 export const WAREHOUSE_HEADER_COLORS: Record<string, { border: string; sub: string; text: string; }> = {
-    'KHO': { border: 'border-gray-200', sub: 'bg-[#ffe4e6]', text: 'text-[#e11d48]' },
-    'Doanh Thu': { border: 'border-gray-200', sub: 'bg-[#f0f9ff]', text: 'text-gray-600' },
-    'TRAFFIC & TỶ LỆ TC/DT': { border: 'border-gray-200', sub: 'bg-[#f8fafc]', text: 'text-gray-600' },
-    'SP CHÍNH': { border: 'border-gray-200', sub: 'bg-[#ecfdf5]', text: 'text-gray-600' },
-    'SL BÁN KÈM': { border: 'border-gray-200', sub: 'bg-[#f5f3ff]', text: 'text-gray-600' },
-    'DT THỰC': { border: 'border-gray-200', sub: 'bg-[#fdf2f8]', text: 'text-gray-600' },
-    'Phụ Kiện': { border: 'border-gray-200', sub: 'bg-amber-50', text: 'text-gray-600' },
-    'Gia Dụng': { border: 'border-gray-200', sub: 'bg-orange-50', text: 'text-gray-600' },
-    'DEFAULT': { border: 'border-gray-200', sub: 'bg-slate-50', text: 'text-gray-600' },
+    'KHO': { border: 'border-rose-200 dark:border-rose-800', sub: 'bg-rose-50 dark:bg-rose-900/30', text: 'text-rose-700 dark:text-rose-300' },
+    'Doanh Thu': { border: 'border-sky-200 dark:border-sky-800', sub: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-300' },
+    'TRAFFIC & TỶ LỆ TC/DT': { border: 'border-slate-200 dark:border-slate-800', sub: 'bg-slate-50 dark:bg-slate-900/30', text: 'text-slate-600 dark:text-slate-400' },
+    'SP CHÍNH': { border: 'border-emerald-200 dark:border-emerald-800', sub: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300' },
+    'SL BÁN KÈM': { border: 'border-purple-200 dark:border-purple-800', sub: 'bg-purple-50 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300' },
+    'DT THỰC': { border: 'border-fuchsia-200 dark:border-fuchsia-800', sub: 'bg-fuchsia-50 dark:bg-fuchsia-900/30', text: 'text-fuchsia-700 dark:text-fuchsia-300' },
+    'Phụ Kiện': { border: 'border-amber-200 dark:border-amber-800', sub: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300' },
+    'Gia Dụng': { border: 'border-orange-200 dark:border-orange-800', sub: 'bg-orange-50 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300' },
+    'DEFAULT': { border: 'border-slate-200 dark:border-slate-700', sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' },
 };
 
 export const DEFAULT_WAREHOUSE_COLUMNS: WarehouseColumnConfig[] = [

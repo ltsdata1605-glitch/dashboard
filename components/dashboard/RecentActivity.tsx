@@ -58,8 +58,8 @@ const activities = [
 
 export default function RecentActivity() {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden">
-      <div className="p-8 border-b border-slate-50 dark:border-slate-800 flex items-center justify-between">
+    <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+      <div className="p-8 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
         <div>
           <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">Recent Activity</h3>
           <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Latest transactions across your platform</p>
@@ -70,17 +70,17 @@ export default function RecentActivity() {
       </div>
       
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-slate-50/50 dark:bg-slate-800/30">
-              <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">User</th>
-              <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Action</th>
-              <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Amount</th>
-              <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest">Status</th>
-              <th className="px-8 py-4 text-xs font-bold text-slate-400 uppercase tracking-widest text-right">Time</th>
+            <tr className="bg-slate-50 dark:bg-slate-800/50">
+              <th className="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-r border-slate-200 dark:border-slate-700">User</th>
+              <th className="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-r border-slate-200 dark:border-slate-700">Action</th>
+              <th className="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-r border-slate-200 dark:border-slate-700">Amount</th>
+              <th className="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest border-b border-r border-slate-200 dark:border-slate-700">Status</th>
+              <th className="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right border-b border-slate-200 dark:border-slate-700">Time</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50 dark:divide-slate-800">
+          <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
             {activities.map((activity, idx) => (
               <motion.tr 
                 key={activity.id}
@@ -89,7 +89,7 @@ export default function RecentActivity() {
                 transition={{ delay: idx * 0.1 }}
                 className="hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors group"
               >
-                <td className="px-8 py-5">
+                <td className="px-8 py-5 border-r border-slate-200 dark:border-slate-700">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold text-sm">
                       {activity.user.split(' ').map(n => n[0]).join('')}
@@ -97,16 +97,16 @@ export default function RecentActivity() {
                     <span className="font-bold text-slate-900 dark:text-white">{activity.user}</span>
                   </div>
                 </td>
-                <td className="px-8 py-5">
+                <td className="px-8 py-5 border-r border-slate-200 dark:border-slate-700">
                   <span className="text-sm font-medium text-slate-600 dark:text-slate-400">{activity.action}</span>
                 </td>
-                <td className="px-8 py-5">
+                <td className="px-8 py-5 border-r border-slate-200 dark:border-slate-700">
                   <div className={`flex items-center gap-1 font-bold text-sm ${activity.amount.startsWith('+') ? 'text-emerald-500' : activity.amount === 'Free' ? 'text-slate-400' : 'text-rose-500'}`}>
                     {activity.amount.startsWith('+') ? <ArrowUpRight className="w-4 h-4" /> : activity.amount.startsWith('-') ? <ArrowDownRight className="w-4 h-4" /> : null}
                     {activity.amount}
                   </div>
                 </td>
-                <td className="px-8 py-5">
+                <td className="px-8 py-5 border-r border-slate-200 dark:border-slate-700">
                   <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${activity.color}`}>
                     <activity.icon className="w-3.5 h-3.5" />
                     <span className="capitalize">{activity.status}</span>

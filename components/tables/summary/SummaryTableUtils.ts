@@ -72,6 +72,7 @@ export const getSafeDateInPrevMonth = (date: Date) => {
 
 export interface HeaderConfig {
     label: string;
+    group: string;
     key: string;
     showInComparison: boolean;
     singleColumnInCompare?: boolean;
@@ -82,13 +83,13 @@ export interface HeaderConfig {
 }
 
 export const HEADER_CONFIG: HeaderConfig[] = [
-    { label: 'S.LƯỢNG', key: 'totalQuantity', showInComparison: true, colorClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-500/20', icon: 'package' },
-    { label: '%SL', key: 'slPercent', showInComparison: true, singleColumnInCompare: true, compareLabel: '+/-%SL', colorClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-500/20', icon: 'trending-up' },
-    { label: 'DT', key: 'totalRevenue', showInComparison: true, colorClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', borderColor: 'border-sky-200 dark:border-sky-500/20', icon: 'banknote' },
-    { label: '%DT', key: 'dtThucPercent', showInComparison: true, singleColumnInCompare: true, compareLabel: '+/-%DT', colorClass: 'bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400', borderColor: 'border-orange-200 dark:border-orange-500/20', icon: 'trending-up' },
-    { label: 'DTQĐ', key: 'totalRevenueQD', showInComparison: true, colorClass: 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400', borderColor: 'border-teal-200 dark:border-teal-500/20', icon: 'award' },
-    { label: 'GTĐH', key: 'aov', showInComparison: true, colorClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', borderColor: 'border-indigo-200 dark:border-indigo-500/20', icon: 'shopping-bag' },
-    { label: '% T.Chậm', key: 'traGopPercent', showInComparison: true, colorClass: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400', borderColor: 'border-cyan-200 dark:border-cyan-500/20', icon: 'clock' },
+    { label: 'SL', group: 'SỐ LƯỢNG', key: 'totalQuantity', showInComparison: true, colorClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-500/20', icon: 'package' },
+    { label: '%SL', group: 'SỐ LƯỢNG', key: 'slPercent', showInComparison: true, singleColumnInCompare: true, compareLabel: '+/-%', colorClass: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', borderColor: 'border-emerald-200 dark:border-emerald-500/20', icon: 'trending-up' },
+    { label: 'DT', group: 'DOANH THU', key: 'totalRevenue', showInComparison: true, colorClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', borderColor: 'border-sky-200 dark:border-sky-500/20', icon: 'banknote' },
+    { label: '%DT', group: 'DOANH THU', key: 'dtThucPercent', showInComparison: true, singleColumnInCompare: true, compareLabel: '+/-%DT', colorClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', borderColor: 'border-sky-200 dark:border-sky-500/20', icon: 'trending-up' },
+    { label: 'DTQĐ', group: '', key: 'totalRevenueQD', showInComparison: true, colorClass: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400', borderColor: 'border-amber-200 dark:border-amber-500/20', icon: 'award' },
+    { label: 'GIÁ TRỊ ĐH', group: '', key: 'aov', showInComparison: true, colorClass: 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400', borderColor: 'border-violet-200 dark:border-violet-500/20', icon: 'shopping-bag' },
+    { label: 'TRẢ CHẬM', group: '', key: 'traGopPercent', showInComparison: true, colorClass: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400', borderColor: 'border-rose-200 dark:border-rose-500/20', icon: 'clock' },
 ];
 
 export const ORDER_LABELS: Record<string, string> = {

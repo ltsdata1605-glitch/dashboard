@@ -70,7 +70,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
         <div ref={ref}>
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-100 text-amber-600 shadow-sm">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-100 text-amber-600">
                         <Icon name="trophy" size={6} />
                     </div>
                     <div>

@@ -21,7 +21,7 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                         </div>
                         <div>
                             <h2 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white uppercase">Lịch sử cập nhật</h2>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Phiên bản 3.0.0 (High Performance)</p>
+                            <p className="text-xs text-slate-500 dark:text-slate-400">Phiên bản 3.1.0 (Dynamic Matrix & Hyper Speed)</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
@@ -31,10 +31,34 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
 
                 {/* Content */}
                 <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-8">
-                    
-                    {/* v3.0.0 */}
-                    <div className="relative pl-6 border-l-2 border-primary-500">
+                    {/* v3.1.0 */}
+                    <div className="relative pl-6 border-l-2 border-primary-500 pb-8">
                         <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary-500 border-4 border-white dark:border-slate-900"></div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Phiên bản 3.1.0 (Dynamic Matrix & Hyper Speed)</h3>
+                        <p className="text-xs text-primary-600 dark:text-primary-400 font-bold mb-4 uppercase tracking-wider">Cập nhật lớn - Cuối Tháng 03/2026</p>
+                        <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
+                            <li className="flex gap-2">
+                                <Icon name="table-2" size={4} className="text-emerald-500 shrink-0 mt-0.5" />
+                                <span><strong>Ma trận Cấu Hình Động (Dynamic Cross-Selling):</strong> Bảng Bán Kèm lột xác hoàn toàn, cho phép tự do thiết kế vô hạn số cột và dòng. Tự động quy đổi linh hoạt giữa Sản Lượng và Doanh Thu. Hỗ trợ Format điều kiện Xanh/Đỏ theo Target %.</span>
+                            </li>
+                            <li className="flex gap-2">
+                                <Icon name="download-cloud" size={4} className="text-indigo-500 shrink-0 mt-0.5" />
+                                <span><strong>Hệ thống Nạp Cấu Hình Mẫu:</strong> Nút One-Click thần thánh dựng lại khung báo cáo chuẩn ngành hàng (ICT, CE, Tử Lạnh, Bảo Hiểm...) với đầy đủ bộ lọc nhóm con 100% ngay lập tức mà không cần tốn 10 phút click tay.</span>
+                            </li>
+                            <li className="flex gap-2">
+                                <Icon name="gallery-horizontal-end" size={4} className="text-pink-500 shrink-0 mt-0.5" />
+                                <span><strong>Trải nghiệm Load siêu thực (Skeleton Blur):</strong> Kỹ thuật làm mờ UI nền thay thế cho màn hình trắng truyền thống. Tận hưởng cảm giác màn hình Dashboard chuyển động mượt mà trong lúc dữ liệu tải lại.</span>
+                            </li>
+                            <li className="flex gap-2">
+                                <Icon name="cpu" size={4} className="text-amber-500 shrink-0 mt-0.5" />
+                                <span><strong>RAM Memory Management 2.0:</strong> Đập đi xây lại luồng xử lý Data (Single-pass iteration). Dữ liệu sẽ load ngay lập tức cực êm mà không còn bị treo cứng trình duyệt như ở phiên bản 3.0.0. Tăng tốc Load gấp 20 lần!</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* v3.0.0 */}
+                    <div className="relative pl-6 border-l-2 border-slate-200 dark:border-slate-700 pb-8">
+                        <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-slate-300 dark:bg-slate-600 border-4 border-white dark:border-slate-900"></div>
                         <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-1">Phiên bản 3.0.0 (High Performance & Core Update)</h3>
                         <p className="text-xs text-primary-600 dark:text-primary-400 font-bold mb-4 uppercase tracking-wider">Cập nhật lớn - Tháng 03/2026</p>
                         <ul className="space-y-3 text-sm text-slate-600 dark:text-slate-300">

@@ -3,6 +3,7 @@ import React from 'react';
 import type { SummaryTableNode } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
+import { useDashboardContext } from '../../contexts/DashboardContext';
 
 interface RecursiveRowProps {
     nodeKey: string;
@@ -40,6 +41,8 @@ const ROW_TEXT_COLORS: Record<string, string> = {
 const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({ 
     nodeKey, currentNode, prevNode, level, parentId, expandedIds, toggleExpand, rootIndex, isComparisonMode, sortConfig, drilldownOrder, parentRevenue, parentQuantity, visibleColumns
 }) => {
+    const { gtdhTargets, productConfig } = useDashboardContext() || {};
+    
     const currentId = `${parentId}-${nodeKey.replace(/[^a-zA-Z0-9]/g, '-')}`;
     const isExpanded = expandedIds.has(currentId);
     
@@ -91,6 +94,22 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     const isExpandable = hasChildren && level < 5; 
 
     const aov = quantity > 0 ? revenue / quantity : 0;
+    
+    // Resolve inherited GTĐH targets
+    let activeTarget: number | undefined = undefined;
+    if (gtdhTargets && gtdhTargets[nodeKey]) {
+        activeTarget = gtdhTargets[nodeKey];
+    } else if (productConfig) {
+        const nhomHang = productConfig.childToSubgroupMap?.[nodeKey];
+        if (nhomHang && gtdhTargets?.[nhomHang]) {
+            activeTarget = gtdhTargets[nhomHang];
+        } else {
+            const nganhHang = productConfig.childToParentMap?.[nhomHang || nodeKey];
+            if (nganhHang && gtdhTargets?.[nganhHang]) {
+                activeTarget = gtdhTargets[nganhHang];
+            }
+        }
+    }
     const traGopPercent = revenue > 0 ? (traGopRevenue / revenue) * 100 : 0;
     const dtThucPercent = parentRevenue > 0 ? (revenue / parentRevenue) * 100 : 0;
     const slPercent = parentQuantity > 0 ? (quantity / parentQuantity) * 100 : 0;
@@ -148,9 +167,9 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     }
 
     if (isRoot) {
-        rowClasses = `bg-white dark:bg-[#1c1c1e] border-b border-slate-100 dark:border-white/5 hover:bg-primary-50/30 dark:hover:bg-primary-500/5 transition-all duration-200`;
+        rowClasses = `bg-white dark:bg-[#1c1c1e] border-b border-slate-200 dark:border-slate-700 hover:bg-primary-50/30 dark:hover:bg-primary-500/5 transition-all duration-200`;
     } else {
-        rowClasses = `bg-slate-50/30 dark:bg-white/[0.02] hover:bg-slate-100/50 dark:hover:bg-white/[0.05] border-b border-slate-100/50 dark:border-white/5 transition-all duration-200`;
+        rowClasses = `bg-slate-50/30 dark:bg-white/[0.02] hover:bg-slate-100/50 dark:hover:bg-white/[0.05] border-b border-slate-200 dark:border-slate-700 transition-all duration-200`;
     }
 
     const indentMargin = `${(level - 1) * 16}px`;
@@ -158,7 +177,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
 
     const cellClass = "px-2 py-1.5 text-center text-[13px]"; 
     const deltaCellClass = "px-2 py-1.5 text-center bg-slate-50/30 dark:bg-white/[0.01]"; 
-    const separatorClass = "border-r border-slate-100 dark:border-white/5";
+    const separatorClass = "border-r border-slate-200 dark:border-slate-700";
 
     return (
         <>
@@ -167,7 +186,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 onClick={isExpandable ? () => toggleExpand(currentId) : undefined}
             >
                 {/* NGÀNH HÀNG */}
-                <td className={`px-4 py-1.5 text-[13px] whitespace-nowrap border-r border-slate-100 dark:border-white/5 sticky left-0 z-30 ${isRoot ? 'bg-white dark:bg-[#1c1c1e]' : 'bg-slate-50/95 dark:bg-[#242426]/95'}`}>
+                <td className={`px-4 py-1.5 text-[13px] whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 ${isRoot ? 'bg-white dark:bg-[#1c1c1e]' : 'bg-slate-50/95 dark:bg-[#242426]/95'}`}>
                     <div className={`flex items-center gap-3 ${contentColorClass}`} style={{ marginLeft: indentMargin }}>
                         {isExpandable ? (
                             <div className={`w-6 h-6 rounded-lg bg-slate-100 dark:bg-white/5 flex items-center justify-center transition-transform duration-300 ${isExpanded ? 'rotate-90' : ''} flex-shrink-0 text-slate-400`}>
@@ -263,12 +282,12 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* AOV */}
                 {visibleColumns.includes('aov') && (
                     <>
-                        <td className={`${cellClass} font-bold text-slate-600 dark:text-slate-400 ${!isComparisonMode ? separatorClass : ''}`}>
+                        <td className={`${cellClass} font-bold ${(activeTarget !== undefined && aov < activeTarget) ? 'text-red-500 dark:text-red-400' : 'text-slate-600 dark:text-slate-400'} ${!isComparisonMode ? separatorClass : ''}`}>
                             {aov === 0 ? '-' : (aov / 1000000).toFixed(1)}
                         </td>
                         {isComparisonMode && (
                             <td className={`${deltaCellClass} ${separatorClass}`}>
-                                <span className={`text-[11px] font-bold block whitespace-nowrap ${deltaAOV > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                <span className={`text-[11px] font-bold block whitespace-nowrap ${deltaAOV > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                     {deltaAOV === 0 ? '-' : (deltaAOV > 0 ? '+' : '') + (deltaAOV / 1000000).toFixed(1)}
                                 </span>
                             </td>

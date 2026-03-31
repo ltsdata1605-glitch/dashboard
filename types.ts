@@ -66,6 +66,8 @@ export interface Employee {
     
     // For Performance Table v2
     slCE_ICT: number;
+    slICT: number;
+    slCE_main: number;
     slTraCham_CE_ICT: number;
     traChamPercent_CE_ICT: number; // Tỷ lệ trả chậm theo SỐ LƯỢỢNG
     doanhThu_CE_ICT: number;
@@ -193,7 +195,38 @@ export interface WarehouseColumnConfig {
   // for core metrics or direct properties
   metric?: WarehouseCoreMetric;
 
-  // for category-based metrics
+  // New flexible column system (from Employee Analysis 'ColumnConfig')
+  type?: 'data' | 'calculated' | 'target';
+  
+  // For 'data' type
+  filters?: {
+      selectedIndustries: string[];
+      selectedSubgroups: string[];
+      selectedManufacturers: string[];
+      productCodes: string[];
+      priceType?: 'original' | 'discounted';
+      priceCondition?: 'greater' | 'less' | 'equal' | 'between';
+      priceValue1?: number;
+      priceValue2?: number;
+  };
+
+  // For 'calculated' type
+  operation?: '+' | '-' | '*' | '/';
+  operand1_columnId?: string;
+  operand2_columnId?: string;
+  displayAs?: 'number' | 'percentage';
+
+  // For 'target' type
+  targetValue?: number;
+
+  conditionalFormatting?: {
+      condition: '>' | '<' | '=' | 'between' | '>avg' | '<avg';
+      value1: number;
+      value2?: number;
+      color: string;
+  }[];
+
+  // Old simple category-based metrics (kept for backward compatibility)
   categoryType?: WarehouseCategoryType;
   categoryName?: string;
   metricType?: WarehouseMetricType;
@@ -227,7 +260,7 @@ export interface ProcessedData {
 }
 
 export interface FilterState {
-    kho: string;
+    kho: string[];
     xuat: string;
     trangThai: string[];
     nguoiTao: string[];
@@ -273,7 +306,8 @@ export interface ColumnConfig {
     id: string;
     mainHeader: string;
     columnName: string;
-    type: 'data' | 'calculated';
+    type: 'data' | 'calculated' | 'target';
+    targetValue?: number;
 
     // For 'data' type
     metricType?: 'quantity' | 'revenue' | 'revenueQD';
@@ -333,4 +367,43 @@ export interface HeadToHeadTableConfig {
     metricType: 'revenue' | 'quantity' | 'revenueQD' | 'hieuQuaQD';
     totalCalculationMethod?: 'sum' | 'average';
     conditionalFormats?: HeadToHeadConditionalFormatRule[];
+}
+
+export type CrossSellingColumnType = 'data' | 'ratio' | 'target';
+
+export interface CrossSellingDynamicColumn {
+    id: string; // unique UUID
+    name: string; // Tên hiển thị cột
+    type: CrossSellingColumnType; 
+    
+    // Thuộc tính dùng khi type = 'data'
+    subgroupsNhomCha?: string[]; // Ngành hàng
+    subgroupsNhomCon?: string[]; // Nhóm hàng
+    dataType?: 'quantity' | 'revenueQD'; // Lấy Số Lượng hay Doanh Thu Q.Đổi
+    
+    // Thuộc tính dùng khi type = 'ratio'
+    numeratorColId?: string; // ID Cột bị chia (Tử số)
+    denominatorColId?: string; // ID Cột chia (Mẫu số)
+    compareWithTarget?: boolean; // So sánh bôi xanh/đỏ với Target Dòng?
+}
+
+export interface CrossSellingDynamicRow {
+    id: string;
+    name: string; // Tên dòng hiển thị
+    subgroupsNhomCha?: string[]; // Điều kiện lọc Ngành hàng
+    subgroupsNhomCon?: string[]; // Điều kiện lọc Nhóm hàng
+    manufacturers?: string[]; // Điều kiện lọc Nhà Sản Xuất (Hãng)
+    keywords?: string; // Tên/Mã Sản Phẩm, phân cách bằng dấu phẩy
+    targetValue?: number; // Chỉ tiêu % của dòng
+}
+
+export interface CrossSellingDynamicSection {
+    id: string;
+    header: string; // Tên phân khu (Header - VD: PHỤ KIỆN)
+    rows: CrossSellingDynamicRow[]; // Danh sách các dòng con
+}
+
+export interface CrossSellingConfig {
+    columns: CrossSellingDynamicColumn[]; // Danh sách các Cột phân tích động
+    sections: CrossSellingDynamicSection[]; // Cấu trúc Dòng nhóm theo Section
 }
