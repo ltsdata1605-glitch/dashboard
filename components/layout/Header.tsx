@@ -266,7 +266,7 @@ const Header: React.FC<HeaderProps> = ({
                 <DriveHistoryModal
                     isOpen={showDriveHistory}
                     onClose={() => setShowDriveHistory(false)}
-                    onSelectFile={(file) => onSelectHistoryFile && onSelectHistoryFile([file])}
+                    onSelectFile={(files) => onSelectHistoryFile && onSelectHistoryFile(files)}
                 />
             )}
         </>

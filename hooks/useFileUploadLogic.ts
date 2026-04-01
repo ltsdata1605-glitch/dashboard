@@ -135,9 +135,11 @@ export const useFileUploadLogic = ({
                     setStatus({ message: `Kiểm tra File ${i + 1}/${files.length}: ${file.name}...`, type: 'info', progress: progressBase });
                     
                     const formattedCreation = formatDate(new Date(file.lastModified));
-                    const isDuplicate = existingFiles.some(f => 
-                        f.name.includes(formattedCreation) && f.size === file.size.toString()
-                    );
+                    const isDuplicate = existingFiles.some(f => {
+                        const nameMatches = f.name.includes(`YCX_${formattedCreation}`) || f.name.includes(`Tải file: ${formattedCreation}`);
+                        const sizeMatches = f.size ? f.size === file.size.toString() : true;
+                        return nameMatches && sizeMatches;
+                    });
                     
                     if (isDuplicate) {
                         skippedCount++;

@@ -15,7 +15,7 @@ export const uploadFileToDrive = async (file: File, token: string, filenamePrefi
     const uploadTime = formatDate(new Date());
     const creationTime = formatDate(new Date(file.lastModified));
     const extension = file.name.split('.').pop() || 'xlsx';
-    const formattedName = `YCX_${uploadTime} |Tải file: ${creationTime}.${extension}`;
+    const formattedName = `YCX_${creationTime} |Upload: ${uploadTime}.${extension}`;
 
     const metadata = {
         name: formattedName,
