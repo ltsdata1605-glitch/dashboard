@@ -58,7 +58,8 @@ export default function Sidebar() {
     const secondaryItems = [
         { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' },
         ...(userRole === 'admin' ? [{ id: 'admin', label: 'Quản trị hệ thống', icon: ClipboardCheck, path: '/admin' }] : []),
-        ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'approval', label: 'Phê duyệt Quyền', icon: Users, path: '/approval' }] : []),
+        ...((userRole === 'admin' || userRole === 'manager') ? [{ id: 'approval', label: 'Phê duyệt Quyền', icon: Users, path: '/approval' }] : []),
+        ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: Users, path: '/pending' }] : []),
         { id: 'help', label: 'Hỗ trợ', icon: HelpCircle, path: '/help' },
     ];
 
@@ -117,8 +118,14 @@ export default function Sidebar() {
                     
                     {!isCollapsed && (
                         <div className="flex-grow overflow-hidden flex items-center justify-between">
-                            <span className="font-medium whitespace-nowrap">
+                            <span className="font-medium whitespace-nowrap flex items-center gap-2">
                                 {item.label}
+                                {item.id === 'pending-approval' && (
+                                    <span className="relative flex h-2 w-2">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                                    </span>
+                                )}
                             </span>
                             
                             {hasSubItems && (

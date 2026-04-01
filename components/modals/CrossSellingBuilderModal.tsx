@@ -17,7 +17,7 @@ const INITIAL_CONFIG: CrossSellingConfig = {
     sections: []
 };
 
-const SAMPLE_CONFIG: CrossSellingConfig = {
+export const SAMPLE_CONFIG: CrossSellingConfig = {
     columns: [
         { id: "c_target", name: "TỈ LỆ T.B VÙNG", type: "target" },
         { id: "c_ms", name: "SỐ LƯỢNG MẪU SỐ", type: "data", dataType: "quantity", subgroupsNhomCha: ["164 - Điện Thoại", "164 - Điện Tử", "164 - Máy tính bảng", "164 - Laptop", "164 - Điện lạnh", "164 - Điện gia dụng"] },
@@ -88,9 +88,11 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
             // Migration legacy guard
             if (crossSellingConfig && Array.isArray(crossSellingConfig.columns) && crossSellingConfig.columns.length > 0 && typeof crossSellingConfig.columns[0] === 'string') {
                 console.warn("Legacy Config detected! Wiping out old configuration.");
-                setConfig(INITIAL_CONFIG);
+                setConfig(SAMPLE_CONFIG);
+            } else if (crossSellingConfig && (crossSellingConfig.columns.length > 0 || crossSellingConfig.sections.length > 0)) {
+                setConfig(crossSellingConfig);
             } else {
-                setConfig(crossSellingConfig || INITIAL_CONFIG);
+                setConfig(SAMPLE_CONFIG); // Automatically pour data for first time use
             }
         }
     }, [isOpen, crossSellingConfig]);

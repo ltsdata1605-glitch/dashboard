@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useDashboardLogic } from '../../hooks/useDashboardLogic';
 import type { VisibilityState } from '../../types';
 import { DashboardContext } from '../../contexts/DashboardContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
@@ -61,6 +62,7 @@ export default function DashboardView() {
         baseFilteredData,
         originalData
     } = logic;
+    const { userRole } = useAuth();
 
     const [visibleComponents, setVisibleComponents] = useState<VisibilityState>(() => {
         try {
@@ -192,6 +194,13 @@ export default function DashboardView() {
                 
                 {showProcessingOverlay && (
                     <div className="relative w-full">
+                        {/* Banner for Pending Users */}
+                        {userRole === 'pending' && (
+                            <div className="bg-rose-500 text-white px-4 py-3 text-center text-sm font-bold shadow-md shadow-rose-500/20 z-50 sticky top-0 flex items-center justify-center gap-2">
+                                <Icon name="alert-triangle" size={5} />
+                                Tài khoản của bạn hiện CHƯA ĐƯỢC PHÊ DUYỆT hoặc ĐÃ HẾT HẠN. Bạn đang xem giao diện rút gọn. Vui lòng bật "Dữ liệu Mẫu" ở Menu trái để thử nghiệm tính năng!
+                            </div>
+                        )}
                         <div className="container mx-auto px-4 py-4 space-y-6 opacity-40 blur-[3px] pointer-events-none select-none transition-all duration-700">
                             {/* Fake Filter Bar */}
                             <div className="h-16 w-full bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse mb-6"></div>

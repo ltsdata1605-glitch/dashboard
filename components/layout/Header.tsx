@@ -109,7 +109,7 @@ const Header: React.FC<HeaderProps> = ({
             {showNewFileButton && (
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto bg-slate-50/50 dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-100 dark:border-slate-800/50 backdrop-blur-sm">
                     {/* Shift Management Group */}
-                    {userRole !== 'employee' && (
+                    {(userRole === 'admin' || userRole === 'manager') && (
                     <div className="flex items-center shadow-sm rounded-xl overflow-hidden border border-blue-100 dark:border-blue-900/30">
                         <button 
                             onClick={onLoadShiftFile}
@@ -163,7 +163,7 @@ const Header: React.FC<HeaderProps> = ({
 
                     {/* Data Import Group */}
                     <div className="flex items-center shadow-sm rounded-xl overflow-hidden border border-emerald-100 dark:border-emerald-900/30">
-                        {userRole !== 'employee' && (
+                        {(userRole === 'admin' || userRole === 'manager') && (
                             <>
                                 <button 
                                     onClick={onNewFile}

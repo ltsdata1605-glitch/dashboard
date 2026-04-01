@@ -7,7 +7,7 @@ interface AuthContextType {
     userRole: 'admin' | 'manager' | 'employee' | 'pending' | null;
     departmentId?: string;
     employeeName?: string;
-    status?: 'pending' | 'approved' | 'rejected' | 'new';
+    status?: 'pending' | 'approved' | 'rejected' | 'new' | 'expired';
     isLoading: boolean;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
@@ -23,7 +23,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [userRole, setUserRole] = useState<'admin' | 'manager' | 'employee' | 'pending' | null>(null);
     const [departmentId, setDepartmentId] = useState<string | undefined>(undefined);
     const [employeeName, setEmployeeName] = useState<string | undefined>(undefined);
-    const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'new'>('new');
+    const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'new' | 'expired'>('new');
     
     const [isLoading, setIsLoading] = useState(true);
     const [isDemoMode, setDemoMode] = useState(false);
@@ -33,15 +33,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(currentUser);
             if (currentUser) {
                 try {
-                    const { doc, getDoc, setDoc, serverTimestamp } = await import('firebase/firestore');
+                    const { doc, getDoc, setDoc, serverTimestamp, updateDoc } = await import('firebase/firestore');
                     const userRef = doc(db, 'users', currentUser.uid);
                     const snap = await getDoc(userRef);
                     if (snap.exists()) {
                         const data = snap.data();
-                        setUserRole(data.role || 'pending');
+                        
+                        let currentRole = data.role || 'pending';
+                        let currentStatus = data.status || (currentRole === 'pending' ? 'new' : 'approved');
+
+                        // Check Expiration
+                        if (data.expiresAt && typeof data.expiresAt.toDate === 'function') {
+                            const expiryDate = data.expiresAt.toDate();
+                            if (new Date() > expiryDate && currentRole !== 'pending' && currentRole !== 'admin') {
+                                // Demote expired user
+                                currentRole = 'pending';
+                                currentStatus = 'expired';
+                                try {
+                                    await updateDoc(userRef, { role: 'pending', status: 'expired' });
+                                } catch (e) { console.error("Could not auto-demote:", e); }
+                            }
+                        }
+
+                        setUserRole(currentRole);
                         setDepartmentId(data.departmentId);
                         setEmployeeName(data.employeeName);
-                        setStatus(data.status || (data.role === 'pending' ? 'new' : 'approved'));
+                        setStatus(currentStatus);
                     } else {
                         await setDoc(userRef, {
                             uid: currentUser.uid,

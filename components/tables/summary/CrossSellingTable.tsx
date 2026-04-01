@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { formatQuantity, formatCurrency, getHeSoQuyDoi } from '../../../utils/dataUtils';
 import { CrossSellingConfig } from '../../../types';
+import { SAMPLE_CONFIG } from '../../modals/CrossSellingBuilderModal';
 
 interface CrossSellingTableProps {
     tableContainerRef: React.RefObject<HTMLDivElement>;
@@ -9,7 +10,7 @@ interface CrossSellingTableProps {
 
 export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableContainerRef }) => {
     const { baseFilteredData, crossSellingConfig, productConfig } = useDashboardContext();
-    const config: CrossSellingConfig = crossSellingConfig || { columns: [], sections: [] };
+    const config: CrossSellingConfig = (crossSellingConfig && (crossSellingConfig.columns.length > 0 || crossSellingConfig.sections.length > 0)) ? crossSellingConfig : SAMPLE_CONFIG;
 
     const stats = useMemo(() => {
         const result: Record<string, Record<string, number>> = {};

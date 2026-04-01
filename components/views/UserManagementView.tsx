@@ -23,6 +23,7 @@ const UserManagementView: React.FC = () => {
     const { user, userRole, departmentId } = useAuth();
     const [requests, setRequests] = useState<AccessRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [expiryDates, setExpiryDates] = useState<Record<string, string>>({});
 
     const fetchRequests = async () => {
         if (!userRole) return;
@@ -73,12 +74,25 @@ const UserManagementView: React.FC = () => {
 
     const handleApproval = async (requestId: string, targetRole: 'manager' | 'employee', isApproved: boolean) => {
         try {
+            const { Timestamp } = await import('firebase/firestore');
             const userRef = doc(db, 'users', requestId);
+            
             if (isApproved) {
-                await updateDoc(userRef, {
+                const updateData: any = {
                     role: targetRole,
                     status: 'approved'
-                });
+                };
+                
+                // Add expiresAt if specified
+                const dateStr = expiryDates[requestId];
+                if (dateStr) {
+                    const d = new Date(dateStr);
+                    // Set expiry to end of the selected day
+                    d.setHours(23, 59, 59, 999);
+                    updateData.expiresAt = Timestamp.fromDate(d);
+                }
+
+                await updateDoc(userRef, updateData);
                 toast.success(`Đã CẤP QUYỀN ${targetRole === 'manager' ? 'Quản Lý' : 'Nhân Viên'} thành công!`);
             } else {
                 await updateDoc(userRef, {
@@ -88,6 +102,11 @@ const UserManagementView: React.FC = () => {
             }
             // Remove from list
             setRequests(prev => prev.filter(req => req.id !== requestId));
+            setExpiryDates(prev => {
+                const next = { ...prev };
+                delete next[requestId];
+                return next;
+            });
         } catch (error) {
             console.error('Lỗi khi cập nhật trạng thái:', error);
             toast.error('Có lỗi xảy ra, vui lòng thử lại.');
@@ -150,6 +169,7 @@ const UserManagementView: React.FC = () => {
                                     {userRole === 'manager' && (
                                         <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Khớp Tên Báo Cáo</th>
                                     )}
+                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40">Hạn Cấp Phép</th>
                                     <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Thao tác</th>
                                 </tr>
                             </thead>
@@ -216,6 +236,17 @@ const UserManagementView: React.FC = () => {
                                                         </div>
                                                     </td>
                                                 )}
+                                                <td className="px-6 py-4">
+                                                    <div className="flex flex-col gap-1.5 min-w-[130px]">
+                                                        <label className="text-[10px] uppercase font-bold text-slate-400">Hạn sử dụng (Tuỳ chọn)</label>
+                                                        <input 
+                                                            type="date"
+                                                            value={expiryDates[req.id] || ''}
+                                                            onChange={e => setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value }))}
+                                                            className="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300 w-full"
+                                                        />
+                                                    </div>
+                                                </td>
                                                 <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
                                                     <button 
                                                         onClick={() => handleApproval(req.id, req.requestedRole, false)}

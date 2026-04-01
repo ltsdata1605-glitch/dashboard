@@ -44,10 +44,7 @@ function AppContent() {
         return <LoginView />;
     }
 
-    // Nếu đang chờ duyệt -> Khóa cứng ở màn hình chờ
-    if (user && userRole === 'pending' && !isDemoMode) {
-        return <PendingApprovalView />;
-    }
+    // Đã thay đổi: Không khóa cứng quyền pending để họ xem được giao diện Dashboard (nhưng không có data thực)
 
     return (
         <div className="flex min-h-[100dvh] bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
@@ -102,6 +99,10 @@ function AppContent() {
 
                             <div className={activeTab === 'settings' ? 'block w-full h-full' : 'hidden'}>
                                 <SettingsView />
+                            </div>
+
+                            <div className={activeTab === 'pending-approval' ? 'block w-full h-full' : 'hidden'}>
+                                <PendingApprovalView />
                             </div>
                             
                             <div className={activeTab === 'check-thuong' ? 'block h-full' : 'hidden'}>
