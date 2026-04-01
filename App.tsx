@@ -9,6 +9,7 @@ const CheckThuongView = lazy(() => import('./components/views/CheckThuongView'))
 const ExternalToolView = lazy(() => import('./components/views/ExternalToolView'));
 const AdminPanelView = lazy(() => import('./components/views/AdminPanelView'));
 const UserManagementView = lazy(() => import('./components/views/UserManagementView'));
+const SettingsView = lazy(() => import('./components/views/SettingsView'));
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginView from './components/views/LoginView';
@@ -97,6 +98,10 @@ function AppContent() {
 
                             <div className={activeTab === 'approval' ? 'block w-full h-full' : 'hidden'}>
                                 <UserManagementView />
+                            </div>
+
+                            <div className={activeTab === 'settings' ? 'block w-full h-full' : 'hidden'}>
+                                <SettingsView />
                             </div>
                             
                             <div className={activeTab === 'check-thuong' ? 'block h-full' : 'hidden'}>
