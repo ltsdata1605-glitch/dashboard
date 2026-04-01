@@ -7,7 +7,6 @@ import { getGlobalFont } from './services/dbService';
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
 const CheckThuongView = lazy(() => import('./components/views/CheckThuongView'));
 const ExternalToolView = lazy(() => import('./components/views/ExternalToolView'));
-const AdminPanelView = lazy(() => import('./components/views/AdminPanelView'));
 const UserManagementView = lazy(() => import('./components/views/UserManagementView'));
 const SettingsView = lazy(() => import('./components/views/SettingsView'));
 
@@ -44,7 +43,10 @@ function AppContent() {
         return <LoginView />;
     }
 
-    // Đã thay đổi: Không khóa cứng quyền pending để họ xem được giao diện Dashboard (nhưng không có data thực)
+    // Hiển thị màn hình thông tin chờ duyệt hoặc form đăng ký cho user mới
+    if (user && userRole === 'pending' && !isDemoMode) {
+        return <PendingApprovalView />;
+    }
 
     return (
         <div className="flex min-h-[100dvh] bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
@@ -88,10 +90,6 @@ function AppContent() {
                             <div className={activeTab === 'analysis' ? 'block h-full' : 'hidden'}>
                                 <DashboardView />
                             </div>
-                            
-                            <div className={activeTab === 'admin' ? 'block w-full h-full' : 'hidden'}>
-                                <AdminPanelView />
-                            </div>
 
                             <div className={activeTab === 'approval' ? 'block w-full h-full' : 'hidden'}>
                                 <UserManagementView />
@@ -126,7 +124,7 @@ function AppContent() {
                             </div>
 
                             {/* Fallback for other tabs */}
-                            {!['analysis', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit'].includes(activeTab) && (
+                            {!['analysis', 'approval', 'settings', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit'].includes(activeTab) && (
                                 <div className="flex flex-col items-center justify-center h-full text-slate-400">
                                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                                     <p className="text-sm">Vui lòng quay lại sau</p>

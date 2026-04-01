@@ -16,10 +16,10 @@ const FONTS = [
 ];
 
 const SettingsView: React.FC = () => {
-    const { user, userRole, departmentId, employeeName, logout } = useAuth();
+    const { user, userRole, departmentId, employeeName, expiresAt, logout } = useAuth();
     const { isDarkMode, toggleDarkMode } = useLayout();
     
-    const [activeTab, setActiveTab] = useState<SettingsTab>('appearance');
+    const [activeTab, setActiveTab] = useState<SettingsTab>('account');
     const [font, setFont] = useState('Inter');
     const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(true);
     const [configUrl, setConfigUrl] = useState('');
@@ -113,9 +113,9 @@ const SettingsView: React.FC = () => {
     };
 
     const tabs = [
+        { id: 'account', label: 'Tài Khoản', icon: 'user' },
         { id: 'appearance', label: 'Giao Diện', icon: 'palette' },
-        ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'data', label: 'Lọc Dữ Liệu', icon: 'server' }] : []),
-        { id: 'account', label: 'Tài Khoản', icon: 'user' }
+        ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'data', label: 'Lọc Dữ Liệu', icon: 'server' }] : [])
     ];
 
     return (
@@ -270,89 +270,104 @@ const SettingsView: React.FC = () => {
                                     className="space-y-8"
                                 >
                                     <div>
-                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Hồ Sơ Định Danh</h3>
+                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Hồ Sơ Định Danh & Quyền Hạn</h3>
                                         
-                                        <div className="flex flex-col sm:flex-row items-center gap-6 bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200 dark:border-slate-700">
-                                            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-slate-800 shadow-lg bg-indigo-100 flex items-center justify-center flex-shrink-0">
-                                                {user?.photoURL ? (
-                                                    <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
-                                                ) : (
-                                                    <Icon name="user" size={10} className="text-indigo-400" />
-                                                )}
-                                            </div>
-                                            
-                                            <div className="flex-1 text-center sm:text-left w-full mt-4 sm:mt-0">
-                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
-                                                    <div>
-                                                        <h4 className="text-2xl font-black text-slate-800 dark:text-white">{user?.displayName || 'Thành viên YCX'}</h4>
-                                                        <p className="text-slate-500 dark:text-slate-400 font-medium mb-3">{user?.email}</p>
-                                                    </div>
-                                                    
-                                                    {userRole !== 'admin' && (
-                                                        <button 
-                                                            onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
-                                                            className={`px-4 py-2 text-sm font-bold flex items-center justify-center gap-2 rounded-xl transition-colors shadow-sm ${isEditingProfile ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-500'}`}
-                                                        >
-                                                            <Icon name={isEditingProfile ? "save" : "edit-3"} size={4} />
-                                                            {isEditingProfile ? 'Lưu Dữ Liệu' : 'Sửa Mã Kho'}
-                                                        </button>
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-6">
+                                            {/* Top: Avatar & Basic Info */}
+                                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b border-slate-200 dark:border-slate-700/50 pb-6">
+                                                <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-md bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 relative group">
+                                                    {user?.photoURL ? (
+                                                        <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <Icon name="user" size={10} className="text-indigo-400" />
                                                     )}
                                                 </div>
                                                 
-                                                {isEditingProfile ? (
-                                                    <div className="space-y-3 bg-white dark:bg-slate-800 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
-                                                        <div className="flex flex-col gap-1.5">
-                                                            <label className="text-xs font-bold text-slate-500">KHO QUẢN LÝ (Nhập mã kho, phân cách bởi dấu Phẩy)</label>
-                                                            <input 
-                                                                type="text"
-                                                                value={stagedDept}
-                                                                onChange={e => setStagedDept(e.target.value)}
-                                                                placeholder="Ví dụ: 58614, 58615, 66708"
-                                                                className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300 font-mono"
-                                                            />
-                                                        </div>
-                                                        {userRole === 'employee' && (
-                                                            <div className="flex flex-col gap-1.5">
-                                                                <label className="text-xs font-bold text-slate-500">TÊN NHÂN VIÊN (Phải khớp chính xác File YCX)</label>
-                                                                <input 
-                                                                    type="text"
-                                                                    value={stagedEmployee}
-                                                                    onChange={e => setStagedEmployee(e.target.value)}
-                                                                    placeholder="Ví dụ: 58614 - Nguyễn Đăng Khoa"
-                                                                    className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300"
-                                                                />
-                                                            </div>
-                                                        )}
-                                                        <p className={`text-[11px] font-medium mt-2 ${userRole === 'manager' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}`}>
-                                                            {userRole === 'manager' 
-                                                                ? '💡 Quản lý có thể cập nhật chuỗi Mã Kho và áp dụng ngay lập tức mà không cần Admin phê duyệt lại.' 
-                                                                : '⚠️ Đổi Mã / Tên sẽ đưa tài khoản về trạng thái CHỜ DUYỆT LẠI bởi Quản lý Kho.'}
-                                                        </p>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-4">
-                                                        <span className={`px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider border ${
-                                                            userRole === 'admin' ? 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800' :
-                                                            userRole === 'manager' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800' :
-                                                            'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800'
+                                                <div className="flex-1 text-center sm:text-left flex flex-col justify-center h-full mt-2 sm:mt-0">
+                                                    <h4 className="text-2xl font-black text-slate-800 dark:text-white">{user?.displayName || 'Thành viên YCX'}</h4>
+                                                    <p className="text-slate-500 dark:text-slate-400 font-medium mb-3">{user?.email}</p>
+                                                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                                                        <span className={`px-3 py-1.5 text-xs font-bold rounded-lg uppercase tracking-wider flex items-center gap-1.5 ${
+                                                            userRole === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
+                                                            userRole === 'manager' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
+                                                            'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400'
                                                         }`}>
-                                                            {userRole === 'admin' ? 'Quản Trị Viên' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'}
+                                                            <Icon name={userRole === 'manager' ? 'briefcase' : userRole === 'admin' ? 'shield' : 'users'} size={4} />
+                                                            {userRole === 'admin' ? 'Quản Trị Hệ Thống' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên Mảng'}
                                                         </span>
                                                         
-                                                        {departmentId && (
-                                                            <span className="px-3 py-1 text-xs font-bold rounded-full border bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
-                                                                KHO: {departmentId}
-                                                            </span>
-                                                        )}
-
-                                                        {employeeName && (
-                                                            <span className="px-3 py-1 text-xs font-bold rounded-full border bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800 truncate max-w-[200px]" title={employeeName}>
-                                                                NV: {employeeName}
+                                                        {expiresAt && (
+                                                            <span className="px-3 py-1.5 text-xs font-bold rounded-lg bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 flex items-center gap-1.5">
+                                                                <Icon name="calendar" size={4} /> Hạn: {expiresAt.toLocaleDateString('vi-VN')}
                                                             </span>
                                                         )}
                                                     </div>
+                                                </div>
+                                                
+                                                {userRole !== 'admin' && (
+                                                    <button 
+                                                        onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
+                                                        className={`px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 rounded-xl transition-all shadow-sm ${isEditingProfile ? 'bg-emerald-600 text-white hover:bg-emerald-700 w-full sm:w-auto' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-500 w-full sm:w-auto'}`}
+                                                    >
+                                                        <Icon name={isEditingProfile ? "save" : "edit-3"} size={4} />
+                                                        {isEditingProfile ? 'Lưu Dữ Liệu' : 'Yêu Cầu Đổi Kho'}
+                                                    </button>
                                                 )}
                                             </div>
+
+                                            {/* Bottom: Fields & Editing */}
+                                            {isEditingProfile ? (
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-slate-800 p-5 rounded-2xl border-2 border-indigo-100 dark:border-indigo-900/50 shadow-inner">
+                                                    <div className="flex flex-col gap-2">
+                                                        <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> MÃ KHO ĐĂNG KÝ (Cách nhau bởi dấu phẩy)</label>
+                                                        <input 
+                                                            type="text"
+                                                            value={stagedDept}
+                                                            onChange={e => setStagedDept(e.target.value)}
+                                                            placeholder="Ví dụ: 58614, 58615, 66708"
+                                                            className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-700 dark:text-slate-300 font-mono transition-all uppercase"
+                                                        />
+                                                    </div>
+                                                    {userRole === 'employee' && (
+                                                        <div className="flex flex-col gap-2">
+                                                            <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> KHỚP TÊN BÁO CÁO (Chính xác như File YCX)</label>
+                                                            <input 
+                                                                type="text"
+                                                                value={stagedEmployee}
+                                                                onChange={e => setStagedEmployee(e.target.value)}
+                                                                placeholder="Ví dụ: 58614 - Nguyễn Đăng Khoa"
+                                                                className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-700 dark:text-slate-300 transition-all"
+                                                            />
+                                                        </div>
+                                                    )}
+                                                    <div className="md:col-span-2 mt-1">
+                                                        <p className={`text-xs font-bold px-4 py-2 rounded-lg flex items-center gap-2 ${userRole === 'manager' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'}`}>
+                                                            {userRole === 'manager' 
+                                                                ? <><Icon name="check-circle" size={4} /> Quản lý có thể cập nhật chuỗi Mã Kho và áp dụng ngay lập tức mà không cần duyệt lại.</>
+                                                                : <><Icon name="alert-triangle" size={4} /> Gửi yêu cầu đổi Mã Kho sẽ tạm khóa quyền làm việc (về trạng thái Pending) cho đến khi Quản Lý Kho đó phê duyệt.</>}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> Danh sách Mã Kho</span>
+                                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-sm truncate uppercase">{departmentId || 'Chưa Đăng Ký'}</span>
+                                                    </div>
+                                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> Tên Đối Chiếu NV</span>
+                                                        <span className="font-bold text-amber-600 dark:text-amber-400 text-sm truncate px-1 italic">{employeeName || 'Không áp dụng'}</span>
+                                                    </div>
+                                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="shield" size={3.5} /> Chức năng khả dụng</span>
+                                                        <span className="font-bold text-slate-700 dark:text-slate-300 text-sm truncate">{userRole === 'admin' ? 'Toàn bộ tính năng' : userRole === 'manager' ? 'Quản Lý Doanh Thu Kho' : 'Xem Báo Cáo Cá Nhân'}</span>
+                                                    </div>
+                                                    <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="calendar" size={3.5} /> Thời hạn Cấp Phép</span>
+                                                        <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm truncate">{expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô Thời Hạn'}</span>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     

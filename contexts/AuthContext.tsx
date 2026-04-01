@@ -7,6 +7,7 @@ interface AuthContextType {
     userRole: 'admin' | 'manager' | 'employee' | 'pending' | null;
     departmentId?: string;
     employeeName?: string;
+    expiresAt?: Date | null;
     status?: 'pending' | 'approved' | 'rejected' | 'new' | 'expired';
     isLoading: boolean;
     loginWithGoogle: () => Promise<void>;
@@ -23,6 +24,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [userRole, setUserRole] = useState<'admin' | 'manager' | 'employee' | 'pending' | null>(null);
     const [departmentId, setDepartmentId] = useState<string | undefined>(undefined);
     const [employeeName, setEmployeeName] = useState<string | undefined>(undefined);
+    const [expiresAt, setExpiresAt] = useState<Date | null>(null);
     const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'new' | 'expired'>('new');
     
     const [isLoading, setIsLoading] = useState(true);
@@ -45,6 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         // Check Expiration
                         if (data.expiresAt && typeof data.expiresAt.toDate === 'function') {
                             const expiryDate = data.expiresAt.toDate();
+                            setExpiresAt(expiryDate);
                             if (new Date() > expiryDate && currentRole !== 'pending' && currentRole !== 'admin') {
                                 // Demote expired user
                                 currentRole = 'pending';
@@ -53,6 +56,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                                     await updateDoc(userRef, { role: 'pending', status: 'expired' });
                                 } catch (e) { console.error("Could not auto-demote:", e); }
                             }
+                        } else {
+                            setExpiresAt(null);
                         }
 
                         setUserRole(currentRole);
@@ -82,6 +87,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setUserRole(null);
                 setDepartmentId(undefined);
                 setEmployeeName(undefined);
+                setExpiresAt(null);
                 setStatus('new');
             }
             setIsLoading(false);
@@ -123,7 +129,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, userRole, departmentId, employeeName, status, isLoading, loginWithGoogle, logout, isDemoMode, setDemoMode, requestAccess }}>
+        <AuthContext.Provider value={{ user, userRole, departmentId, employeeName, expiresAt, status, isLoading, loginWithGoogle, logout, isDemoMode, setDemoMode, requestAccess }}>
             {children}
         </AuthContext.Provider>
     );

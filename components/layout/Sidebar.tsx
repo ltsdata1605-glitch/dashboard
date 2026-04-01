@@ -28,10 +28,12 @@ import {
 } from 'lucide-react';
 import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 
 export default function Sidebar() {
     const { isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, activeTab, setActiveTab } = useLayout();
     const { user, userRole, logout, isDemoMode } = useAuth();
+    const { totalVisits, onlineUsers } = useSystemTraffic();
     const [isHovered, setIsHovered] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -57,8 +59,7 @@ export default function Sidebar() {
 
     const secondaryItems = [
         { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' },
-        ...(userRole === 'admin' ? [{ id: 'admin', label: 'Quản trị hệ thống', icon: ClipboardCheck, path: '/admin' }] : []),
-        ...((userRole === 'admin' || userRole === 'manager') ? [{ id: 'approval', label: 'Phê duyệt Quyền', icon: Users, path: '/approval' }] : []),
+        ...((userRole === 'admin' || userRole === 'manager') ? [{ id: 'approval', label: 'Quản trị Truy cập', icon: Users, path: '/approval' }] : []),
         ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: Users, path: '/pending' }] : []),
         { id: 'help', label: 'Hỗ trợ', icon: HelpCircle, path: '/help' },
     ];
@@ -274,11 +275,33 @@ export default function Sidebar() {
                 </div>
 
                 {/* Bottom Section */}
-                <div className="p-4 border-t border-slate-100 dark:border-slate-800/50">
+                <div className="p-4 border-t border-slate-100 dark:border-slate-800/50 flex flex-col gap-3">
+                    {!effectiveCollapsed && (
+                        <div className="flex justify-between items-center px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                            <div className="flex flex-col">
+                                <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Lượt Truy Cập</span>
+                                <span className="text-sm font-black text-slate-700 dark:text-slate-300">{totalVisits.toLocaleString('vi-VN')}</span>
+                            </div>
+                            <div className="flex flex-col items-end">
+                                <span className="text-[9px] font-bold text-emerald-500 dark:text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span className="relative flex h-1.5 w-1.5">
+                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                                    </span>
+                                    Online
+                                </span>
+                                <span className="text-sm font-black text-emerald-600 dark:text-emerald-400">{onlineUsers}</span>
+                            </div>
+                        </div>
+                    )}
+
                     <button 
-                        onClick={logout}
-                        className={`w-full flex items-center transition-opacity hover:opacity-80 active:scale-95 ${effectiveCollapsed ? 'justify-center' : 'gap-3 px-2'}`}
-                        title="Đăng xuất"
+                        onClick={() => {
+                            setActiveTab('settings');
+                            if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
+                        }}
+                        className={`w-full flex items-center transition-opacity hover:opacity-80 active:scale-95 ${effectiveCollapsed ? 'justify-center' : 'gap-3 px-2'} mt-1`}
+                        title="Thông tin tài khoản"
                     >
                         <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
                             {user?.photoURL ? (

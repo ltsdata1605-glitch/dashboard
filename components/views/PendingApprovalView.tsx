@@ -60,8 +60,8 @@ const PendingApprovalView: React.FC = () => {
                                 className="w-full h-full rounded-full object-cover"
                             />
                         ) : (
-                            <div className="w-full h-full rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 flex items-center justify-center text-3xl font-bold">
-                                {user?.displayName?.[0] || user?.email?.[0] || '?'}
+                            <div className="w-full h-full rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 flex items-center justify-center text-3xl font-bold uppercase">
+                                {user?.email ? user.email[0] : '?'}
                             </div>
                         )}
                         <div className="absolute bottom-0 right-0 w-6 h-6 bg-amber-400 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center shadow-sm">
@@ -88,6 +88,14 @@ const PendingApprovalView: React.FC = () => {
                             >
                                 <Icon name="refresh-ccw" size={4} />
                                 <span>Tải lại trạng thái</span>
+                            </button>
+                            <button 
+                                type="button" 
+                                onClick={logout} 
+                                className="w-full py-3 px-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-rose-500 font-semibold hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center gap-2"
+                            >
+                                <Icon name="log-out" size={4} />
+                                Đăng xuất
                             </button>
                         </div>
                     ) : (
@@ -121,11 +129,19 @@ const PendingApprovalView: React.FC = () => {
                                         type="text" 
                                         value={deptId}
                                         onChange={(e) => setDeptId(e.target.value)}
-                                        placeholder="VD: 1022" 
+                                        placeholder={selectedRole === 'manager' ? "VD: 1022, 58614, 12345" : "VD: 1022"} 
                                         className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
                                         required
                                     />
-                                    <p className="text-[11px] text-slate-500 mt-1 italic">Nhập chính xác MÃ KHO hiển thị trên báo cáo.</p>
+                                    {selectedRole === 'manager' ? (
+                                        <p className="text-[11px] text-slate-500 mt-1 italic">
+                                            Quản lý có thể nhập <strong>nhiều mã kho</strong>, ngăn cách bằng dấu phẩy (,).
+                                        </p>
+                                    ) : (
+                                        <p className="text-[11px] text-slate-500 mt-1 italic">
+                                            Nhân viên chỉ được đăng nhập <strong>một kho duy nhất</strong>.
+                                        </p>
+                                    )}
                                 </div>
 
                                 {selectedRole === 'employee' && (
@@ -142,15 +158,26 @@ const PendingApprovalView: React.FC = () => {
                                         <p className="text-[11px] text-slate-500 mt-1 italic">Vui lòng nhập <strong className="font-bold text-slate-700 dark:text-slate-300">đúng Cú pháp: [Mã NV] - [Họ Tên]</strong>. Tính năng này yêu cầu định dạng phải chuẩn xác để tự động lọc dữ liệu.</p>
                                     </div>
                                 )}
-
-                                <button 
-                                    type="submit" 
-                                    disabled={isSubmitting}
-                                    className="w-full py-3 mt-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all shadow-md shadow-indigo-500/30 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                                >
-                                    {isSubmitting ? <Icon name="loader-2" className="animate-spin" /> : <Icon name="send" />}
-                                    <span>Gửi Yêu Cầu</span>
-                                </button>
+                                {selectedRole && (
+                                    <div className="pt-4 flex gap-3">
+                                        <button 
+                                            type="button" 
+                                            onClick={logout} 
+                                            className="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                                        >
+                                            <Icon name="log-out" size={4} />
+                                            Đăng xuất
+                                        </button>
+                                        <button 
+                                            type="submit" 
+                                            disabled={isSubmitting}
+                                            className="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-indigo-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        >
+                                            {isSubmitting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="check-circle" size={5} />}
+                                            {isSubmitting ? 'Đang gửi...' : 'Gửi Đăng Ký'}
+                                        </button>
+                                    </div>
+                                )}
                             </motion.div>
                         </form>
                     )}

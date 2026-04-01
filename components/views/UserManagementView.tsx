@@ -28,6 +28,7 @@ const UserManagementView: React.FC = () => {
     const [editDepartments, setEditDepartments] = useState<Record<string, string>>({});
     const [editNames, setEditNames] = useState<Record<string, string>>({});
     const [listMode, setListMode] = useState<'pending' | 'active'>('pending');
+    const [editRoles, setEditRoles] = useState<Record<string, string>>({});
 
     const fetchRequests = async () => {
         if (!userRole) return;
@@ -36,21 +37,16 @@ const UserManagementView: React.FC = () => {
             const usersRef = collection(db, 'users');
             let q;
             
-            // Admin sees Manager requests
+            // Admin fetches all to manually control roles & statuses.
+            // Manager fetches strictly to their scope.
             if (userRole === 'admin') {
-                if (listMode === 'pending') {
-                    q = query(usersRef, where('status', '==', 'pending'), where('requestedRole', '==', 'manager'));
-                } else {
-                    q = query(usersRef, where('role', '==', 'manager'), where('status', 'in', ['approved', 'pending', 'expired']));
-                }
+                q = usersRef;
             } 
-            // Manager sees Employee requests for their specific departments
             else if (userRole === 'manager' && departmentId) {
-                const allowedKhos = departmentId.split(',').map(s=>s.trim()).filter(Boolean);
                 if (listMode === 'pending') {
-                    q = query(usersRef, where('status', '==', 'pending'), where('requestedRole', '==', 'employee'));
+                    q = query(usersRef, where('status', '==', 'pending'));
                 } else {
-                    q = query(usersRef, where('role', '==', 'employee'), where('status', 'in', ['approved', 'pending', 'expired']));
+                    q = query(usersRef, where('role', '==', 'employee'));
                 }
             } else {
                 setRequests([]);
@@ -63,6 +59,7 @@ const UserManagementView: React.FC = () => {
             const newExpiry: Record<string, string> = {};
             const newDept: Record<string, string> = {};
             const newNames: Record<string, string> = {};
+            const newRoles: Record<string, string> = {};
 
             querySnapshot.forEach((doc) => {
                 const docData = doc.data() as any;
@@ -72,20 +69,38 @@ const UserManagementView: React.FC = () => {
                 }
                 newDept[doc.id] = docData.departmentId || '';
                 newNames[doc.id] = docData.employeeName || '';
+                newRoles[doc.id] = docData.role || docData.requestedRole || 'pending';
             });
 
             setExpiryDates(newExpiry);
             setEditDepartments(newDept);
             setEditNames(newNames);
+            setEditRoles(newRoles);
             
-            // Client side filter for Manager observing Employees because Firestore `in` is limited
+            // Client side filter 
             let filteredData = data;
-            if (userRole === 'manager' && departmentId) {
+            
+            if (userRole === 'admin') {
+                if (listMode === 'active') {
+                    // Rule 1: Must be explicitly approved AND must have a departmentId.
+                    // Meaning users who just logged in (new) or haven't registered dept yet won't show.
+                    filteredData = filteredData.filter(req => req.status === 'approved' && !!req.departmentId);
+                } else {
+                    filteredData = filteredData.filter(req => req.status === 'pending');
+                }
+            }
+            else if (userRole === 'manager' && departmentId) {
                 const allowedKhos = departmentId.split(',').map(s=>s.trim()).filter(Boolean);
+                if (listMode === 'active') {
+                    filteredData = filteredData.filter(req => req.role === 'employee' && req.status !== 'pending' && req.status !== 'new');
+                } else {
+                    filteredData = filteredData.filter(req => req.requestedRole === 'employee' && req.status === 'pending');
+                }
+                // Manager only sees matching departments
                 filteredData = filteredData.filter(req => allowedKhos.includes(req.departmentId));
             }
             
-            // Sort client side by requestDate descending since Firestore requires composite index for multi-field queries with orderBy
+            // Sort client side by requestDate descending
             filteredData.sort((a, b) => {
                 const dateA = a.requestDate?.toMillis() || 0;
                 const dateB = b.requestDate?.toMillis() || 0;
@@ -105,15 +120,16 @@ const UserManagementView: React.FC = () => {
         fetchRequests();
     }, [userRole, departmentId, listMode]);
 
-    const handleApproval = async (requestId: string, targetRole: 'manager' | 'employee', isApproved: boolean) => {
+    const handleApproval = async (requestId: string, isApproved: boolean) => {
         try {
             const { Timestamp } = await import('firebase/firestore');
             const userRef = doc(db, 'users', requestId);
             
             if (isApproved) {
+                const targetRole = editRoles[requestId];
                 const updateData: any = {
-                    role: targetRole,
-                    status: 'approved',
+                    role: targetRole || 'pending',
+                    status: targetRole === 'blocked' ? 'blocked' : 'approved',
                     departmentId: editDepartments[requestId] || '',
                     employeeName: editNames[requestId] || ''
                 };
@@ -169,7 +185,7 @@ const UserManagementView: React.FC = () => {
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
-                                Quyết Toán Phân Quyền
+                                Quản Trị Hệ Thống & Phân Quyền
                             </h1>
                             <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
                                 {userRole === 'admin' 
@@ -205,160 +221,169 @@ const UserManagementView: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Table */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-slate-100 dark:border-slate-700/50 overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead>
-                                <tr className="bg-slate-50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
-                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Người dùng</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Yêu cầu quyền</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Mã Kho</th>
-                                    {userRole === 'manager' && (
-                                        <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Khớp Tên Báo Cáo</th>
-                                    )}
-                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider w-40">Hạn Cấp Phép</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Thao tác</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700/50">
-                                <AnimatePresence>
-                                    {isLoading ? (
-                                        <tr>
-                                            <td colSpan={5} className="py-12 text-center text-slate-400">
-                                                <Icon name="loader-2" size={8} className="animate-spin mx-auto mb-3" />
-                                                <p>Đang tải danh sách...</p>
-                                            </td>
-                                        </tr>
-                                    ) : requests.length === 0 ? (
-                                        <motion.tr 
-                                            initial={{ opacity: 0 }}
-                                            animate={{ opacity: 1 }}
-                                            exit={{ opacity: 0 }}
-                                        >
-                                            <td colSpan={5} className="py-16 text-center text-slate-400">
-                                                <div className="w-16 h-16 bg-slate-50 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4">
-                                                    <Icon name="check-circle-2" size={8} className="text-emerald-500 dark:text-emerald-400" />
+                {/* Modern Card Grid Layout */}
+                <div className="mt-6">
+                    <AnimatePresence>
+                        {isLoading ? (
+                            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
+                                <Icon name="loader-2" size={8} className="animate-spin text-indigo-500 mb-4" />
+                                <p className="text-slate-500 font-medium">Đang tải danh sách...</p>
+                            </div>
+                        ) : requests.length === 0 ? (
+                            <motion.div 
+                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                                className="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm"
+                            >
+                                <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-5">
+                                    <Icon name="check-circle-2" size={10} className="text-indigo-400" />
+                                </div>
+                                <p className="text-xl font-bold text-slate-700 dark:text-slate-200">
+                                    {listMode === 'pending' ? 'Không có yêu cầu chờ duyệt' : 'Chưa có người dùng hoạt động'}
+                                </p>
+                                <p className="text-slate-500 mt-2 font-medium">
+                                    {listMode === 'pending' ? 'Hệ thống đã xử lý xong tất cả đơn đăng ký.' : 'Danh sách trống hoặc hệ thống chưa cập nhật.'}
+                                </p>
+                            </motion.div>
+                        ) : (
+                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                                {requests.map((req) => (
+                                    <motion.div 
+                                        key={req.id}
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden group"
+                                    >
+                                        {/* Row Header: User Profile */}
+                                        <div className="p-5 flex items-center gap-4 bg-slate-50/50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700/50">
+                                            <div className="relative">
+                                                <img src={req.photoURL} alt="" className="w-14 h-14 rounded-2xl shadow-sm object-cover" />
+                                                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-800 ${req.status === 'approved' ? 'bg-emerald-500' : req.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'}`}></div>
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h3 className="font-bold text-slate-800 dark:text-white text-lg truncate">{req.displayName}</h3>
+                                                <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{req.email}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Body Fields Grid */}
+                                        <div className="p-5 flex-1 flex flex-col gap-5">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                {/* Role Field */}
+                                                <div className="flex flex-col gap-2">
+                                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="shield" size={3.5} /> Vị Trí / Quyền</span>
+                                                    {userRole === 'admin' ? (
+                                                        <select 
+                                                            value={editRoles[req.id] || req.role || req.requestedRole || 'pending'}
+                                                            onChange={(e) => setEditRoles(prev => ({...prev, [req.id]: e.target.value}))}
+                                                            className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 outline-none focus:border-indigo-500 transition-all w-full"
+                                                        >
+                                                            <option value="pending">Chờ phê duyệt</option>
+                                                            <option value="employee">Nhân Viên</option>
+                                                            <option value="manager">Quản Lý</option>
+                                                            <option value="admin">Quản Trị Viên</option>
+                                                            <option value="blocked">Khoá Tài Khoản</option>
+                                                        </select>
+                                                    ) : (
+                                                        <span className={`inline-flex items-center w-max gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold ${
+                                                            (req.role === 'manager' || req.requestedRole === 'manager')
+                                                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400' 
+                                                            : 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/40 dark:text-teal-400'
+                                                        }`}>
+                                                            <Icon name={(req.role === 'manager' || req.requestedRole === 'manager') ? 'briefcase' : 'users'} size={4} />
+                                                            {(req.role === 'manager' || req.requestedRole === 'manager') ? 'Quản Lý Kho' : 'Nhân Viên'}
+                                                        </span>
+                                                    )}
                                                 </div>
-                                                <p className="text-lg font-bold text-slate-600 dark:text-slate-300">Không có yêu cầu chờ duyệt</p>
-                                                <p className="text-sm mt-1">Làm mới để kiểm tra yêu cầu mới.</p>
-                                            </td>
-                                        </motion.tr>
-                                    ) : (
-                                        requests.map((req) => (
-                                            <motion.tr 
-                                                key={req.id}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, x: -20 }}
-                                                className="hover:bg-slate-50 dark:hover:bg-slate-700/20 transition-colors"
-                                            >
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-3">
-                                                        <img src={req.photoURL} alt="" className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700" />
-                                                        <div>
-                                                            <div className="font-bold text-slate-800 dark:text-slate-200">{req.displayName}</div>
-                                                            <div className="text-xs text-slate-500 dark:text-slate-400">{req.email}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold ${
-                                                        req.requestedRole === 'manager' 
-                                                        ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400 dark:border-indigo-800' 
-                                                        : 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800'
-                                                    }`}>
-                                                        <Icon name={req.requestedRole === 'manager' ? 'briefcase' : 'users'} size={3} />
-                                                        {req.requestedRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4">
+
+                                                {/* Department Code Field */}
+                                                <div className="flex flex-col gap-2">
+                                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> Mã Kho (ID)</span>
                                                     {listMode === 'active' ? (
                                                         <input
                                                             type="text"
                                                             value={editDepartments[req.id] || ''}
                                                             onChange={e => setEditDepartments(prev => ({...prev, [req.id]: e.target.value}))}
-                                                            placeholder="58614, 58615"
-                                                            className="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300 w-full font-mono uppercase"
+                                                            placeholder="VD: 58614, 21707"
+                                                            className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:bg-white text-slate-800 dark:text-slate-200 w-full font-mono uppercase transition-all"
                                                         />
                                                     ) : (
-                                                        <div className="font-bold text-slate-700 dark:text-slate-300 uppercase">
-                                                            {req.departmentId}
+                                                        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg px-3 py-2 font-mono text-sm font-bold text-slate-700 dark:text-slate-300 border border-transparent">
+                                                            {req.departmentId || 'Chưa ĐK'}
                                                         </div>
                                                     )}
-                                                </td>
-                                                {userRole === 'manager' && (
-                                                    <td className="px-6 py-4">
-                                                        {listMode === 'active' ? (
-                                                            <input
-                                                                type="text"
-                                                                value={editNames[req.id] || ''}
-                                                                onChange={e => setEditNames(prev => ({...prev, [req.id]: e.target.value}))}
-                                                                placeholder="Tên nhân viên..."
-                                                                className="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300 w-full"
-                                                            />
-                                                        ) : (
-                                                            <div className="font-bold text-amber-600 dark:text-amber-400 italic">
-                                                                {req.employeeName}
-                                                            </div>
-                                                        )}
-                                                    </td>
-                                                )}
-                                                <td className="px-6 py-4">
-                                                    <div className="flex flex-col gap-1.5 min-w-[130px]">
-                                                        <label className="text-[10px] uppercase font-bold text-slate-400">Hạn sử dụng (Tuỳ chọn)</label>
-                                                        <input 
-                                                            type="date"
-                                                            value={expiryDates[req.id] || ''}
-                                                            onChange={e => setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value }))}
-                                                            className="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300 w-full"
+                                                </div>
+
+                                                {/* Report Matching Name */}
+                                                <div className="flex flex-col gap-2 col-span-2">
+                                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> Khớp tên báo cáo doanh thu</span>
+                                                    {listMode === 'active' || userRole === 'admin' ? (
+                                                        <input
+                                                            type="text"
+                                                            value={editNames[req.id] || ''}
+                                                            onChange={e => setEditNames(prev => ({...prev, [req.id]: e.target.value}))}
+                                                            placeholder="VD: Lê Thị A..."
+                                                            className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:bg-white text-slate-800 dark:text-slate-200 w-full transition-all"
                                                         />
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                                                    {listMode === 'pending' ? (
-                                                        <>
-                                                            <button 
-                                                                onClick={() => handleApproval(req.id, req.requestedRole, false)}
-                                                                className="px-3 py-1.5 bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors font-semibold tooltip"
-                                                                title="Từ chối"
-                                                            >
-                                                                Từ chối
-                                                            </button>
-                                                            <button 
-                                                                onClick={() => handleApproval(req.id, req.requestedRole, true)}
-                                                                className="px-4 py-1.5 bg-indigo-600 text-white dark:bg-indigo-500 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm font-semibold tooltip"
-                                                                title="Phê duyệt"
-                                                            >
-                                                                Phê duyệt
-                                                            </button>
-                                                        </>
                                                     ) : (
-                                                        <>
-                                                            <button 
-                                                                onClick={() => handleApproval(req.id, req.role as any, false)}
-                                                                className="px-3 py-1.5 bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors font-semibold tooltip"
-                                                                title="Thu hồi quyền đăng nhập"
-                                                            >
-                                                                Thu hồi
-                                                            </button>
-                                                            <button 
-                                                                onClick={() => handleApproval(req.id, req.role as any, true)}
-                                                                className="px-4 py-1.5 bg-emerald-600 text-white dark:bg-emerald-500 rounded-lg hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors shadow-sm font-semibold tooltip"
-                                                                title="Lưu lại Khai báo mới nhất"
-                                                            >
-                                                                Lưu & Cập Nhật
-                                                            </button>
-                                                        </>
+                                                        <div className="font-bold text-amber-600 dark:text-amber-400 italic text-sm px-1">
+                                                            {req.employeeName || 'Chưa thiết lập'}
+                                                        </div>
                                                     )}
-                                                </td>
-                                            </motion.tr>
-                                        ))
-                                    )}
-                                </AnimatePresence>
-                            </tbody>
-                        </table>
-                    </div>
+                                                </div>
+
+                                                {/* Expiry Date */}
+                                                <div className="flex flex-col gap-2 col-span-2">
+                                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="calendar" size={3.5} /> Hạn Cấp Phép Truy Cập</span>
+                                                    <input 
+                                                        type="date"
+                                                        value={expiryDates[req.id] || ''}
+                                                        onChange={e => setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value }))}
+                                                        className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:bg-white text-slate-800 dark:text-slate-200 w-full transition-all"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Actions Footer */}
+                                        <div className="p-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700/50 flex gap-3">
+                                            {listMode === 'pending' ? (
+                                                <>
+                                                    <button 
+                                                        onClick={() => handleApproval(req.id, false)}
+                                                        className="flex-1 py-2.5 bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors font-bold text-sm flex items-center justify-center gap-2"
+                                                    >
+                                                        <Icon name="x" size={4} /> Từ chối
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleApproval(req.id, true)}
+                                                        className="flex-1 py-2.5 bg-indigo-600 text-white dark:bg-indigo-500 rounded-xl hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm font-bold text-sm flex items-center justify-center gap-2"
+                                                    >
+                                                        <Icon name="check" size={4} /> Phê duyệt
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <button 
+                                                        onClick={() => handleApproval(req.id, false)}
+                                                        className="px-4 py-2.5 bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors font-bold text-sm flex items-center gap-2"
+                                                    >
+                                                        <Icon name="user-minus" size={4.5} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleApproval(req.id, true)}
+                                                        className="flex-1 py-2.5 bg-emerald-600 text-white dark:bg-emerald-500 rounded-xl hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors shadow-sm font-bold text-sm flex items-center justify-center gap-2"
+                                                    >
+                                                        <Icon name="save" size={4.5} /> Lưu & Cập Nhật
+                                                    </button>
+                                                </>
+                                            )}
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
         </div>
