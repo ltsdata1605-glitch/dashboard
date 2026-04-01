@@ -53,7 +53,7 @@ export const TabModal: React.FC<{
                     </div>
                 </div>
                  <div className="p-4 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/80 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <button type="button" onClick={onClose} className="py-2 px-4 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors">Ừỷ</button>
+                    <button type="button" onClick={onClose} className="py-2 px-4 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors">Hủy</button>
                     <button type="submit" className="py-2 px-6 rounded-xl text-sm font-bold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors shadow-sm">{tabId ? "Lưu thay đổi" : "Tạo Tab"}</button>
                 </div>
             </form>
@@ -125,7 +125,7 @@ export const TableModal: React.FC<{
                     )}
                 </div>
                 <div className="p-4 flex justify-end gap-3 bg-slate-50 dark:bg-slate-800/80 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <button type="button" onClick={onClose} className="py-2 px-4 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors">Ừỷ</button>
+                    <button type="button" onClick={onClose} className="py-2 px-4 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors">Hủy</button>
                     <button type="submit" className="py-2 px-6 rounded-xl text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 transition-colors shadow-sm">{isEditing ? "Lưu thay đổi" : "Tạo Bảng"}</button>
                 </div>
             </form>
