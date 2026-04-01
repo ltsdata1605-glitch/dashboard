@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -24,7 +23,8 @@ import {
     Ticket,
     Calculator,
     Sticker,
-    ClipboardCheck
+    ClipboardCheck,
+    ExternalLink
 } from 'lucide-react';
 import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -49,8 +49,8 @@ export default function Sidebar() {
             subItems: [
                 { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket },
                 { id: 'tools-tax', label: 'Tính thuế nhận thưởng', icon: Calculator },
-                { id: 'tools-sticker', label: 'Sticker Event', icon: Sticker },
-                { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck },
+                { id: 'tools-sticker', label: 'Sticker Event', icon: Sticker, externalUrl: 'https://stickerevent-final-487587635482.us-west1.run.app' },
+                { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-final-487587635482.us-west1.run.app' },
             ]
         },
     ];
@@ -145,6 +145,27 @@ export default function Sidebar() {
                     <div className="overflow-hidden pl-10 pr-2 space-y-1">
                         {item.subItems.map((sub: any) => {
                             const isSubActive = activeTab === sub.id;
+                            
+                            if (sub.externalUrl) {
+                                return (
+                                    <a
+                                        key={sub.id}
+                                        href={sub.externalUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className={`
+                                            flex items-center w-full px-3 py-2 rounded-lg text-sm transition-all duration-200
+                                            text-slate-500 dark:text-slate-400 hover:text-[#0584c7] dark:hover:text-[#0584c7] hover:bg-slate-50 dark:hover:bg-slate-800/50
+                                        `}
+                                    >
+                                        <sub.icon size={16} className="mr-2" />
+                                        <span className="truncate">{sub.label}</span>
+                                        <div className="flex-grow"></div>
+                                        <ExternalLink size={12} className="opacity-50" />
+                                    </a>
+                                );
+                            }
+
                             return (
                                 <button
                                     key={sub.id}

@@ -11,6 +11,7 @@ const AdminPanelView = lazy(() => import('./components/views/AdminPanelView'));
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginView from './components/views/LoginView';
+import { Toaster } from 'react-hot-toast';
 
 function AppContent() {
     const { activeTab, setIsMobileSidebarOpen, isDarkMode, toggleDarkMode } = useLayout();
@@ -127,6 +128,7 @@ export default function App() {
         <AuthProvider>
             <LayoutProvider>
                 <AppContent />
+                <Toaster position="bottom-right" />
             </LayoutProvider>
         </AuthProvider>
     );

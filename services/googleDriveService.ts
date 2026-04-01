@@ -10,12 +10,12 @@ export const uploadFileToDrive = async (file: File, token: string, filenamePrefi
     if (!token) throw new Error("Missing Google OAuth Token");
 
     const pad = (n: number) => n.toString().padStart(2, '0');
-    const formatDate = (date: Date) => `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    const formatDate = (date: Date) => `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
     
     const uploadTime = formatDate(new Date());
     const creationTime = formatDate(new Date(file.lastModified));
     const extension = file.name.split('.').pop() || 'xlsx';
-    const formattedName = `YCX_${uploadTime} | ${creationTime}.${extension}`;
+    const formattedName = `YCX_${uploadTime} |Tải file: ${creationTime}.${extension}`;
 
     const metadata = {
         name: formattedName,
@@ -59,8 +59,42 @@ export const downloadFileFromDrive = async (fileId: string, token: string): Prom
     });
 
     if (!response.ok) {
-        throw new Error(`Google Drive Download Failed: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`Google Drive Download Failed: ${response.statusText} - ${errorText}`);
     }
 
     return await response.blob();
+};
+
+export interface DriveFile {
+    id: string;
+    name: string;
+    createdTime: string;
+    size?: string;
+}
+
+/**
+ * Lists all previous YCX Excel reports uploaded to Google Drive.
+ */
+export const listDriveFiles = async (token: string): Promise<DriveFile[]> => {
+    if (!token) throw new Error("Missing Google OAuth Token");
+
+    const query = encodeURIComponent(`name contains 'YCX_' and mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' and trashed=false`);
+    const fields = encodeURIComponent('files(id, name, createdTime, size)');
+    const url = `${DRIVE_FILES_URL}?q=${query}&orderBy=createdTime desc&fields=${fields}&pageSize=30`;
+
+    const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Google Drive List Failed: ${response.statusText} - ${errorText}`);
+    }
+
+    const data = await response.json();
+    return data.files as DriveFile[];
 };

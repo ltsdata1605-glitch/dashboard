@@ -122,6 +122,7 @@ export const useFileUploadLogic = ({
                 const { uploadFileToDrive } = await import('../services/googleDriveService');
                 driveFileId = await uploadFileToDrive(file, token, 'dmx_sales');
                 setStatus({ message: `Đã sao lưu an toàn! Bắt đầu trích xuất...`, type: 'info', progress: 10 });
+                import('react-hot-toast').then(m => m.toast.success("Đã đồng bộ báo cáo lên Google Drive an toàn!"));
             }
         } catch (err: any) {
             console.error("Lỗi Google Drive Upload:", err);

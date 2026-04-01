@@ -4,6 +4,7 @@ import { Icon } from '../common/Icon';
 import { motion, AnimatePresence } from 'motion/react';
 import ModalWrapper from '../modals/ModalWrapper';
 import EmployeeManagerModal from '../modals/EmployeeManagerModal';
+import DriveHistoryModal from '../modals/DriveHistoryModal';
 import FontSelector from './FontSelector';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardContext } from '../../contexts/DashboardContext';
@@ -19,6 +20,7 @@ interface HeaderProps {
     onClearData: () => void;
     fileInfo: { filename: string; savedAt: string } | null;
     onToggleFilters?: () => void;
+    onSelectHistoryFile?: (file: File) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -30,7 +32,8 @@ const Header: React.FC<HeaderProps> = ({
     showNewFileButton, 
     onClearData, 
     fileInfo, 
-    onToggleFilters 
+    onToggleFilters,
+    onSelectHistoryFile 
 }) => {
     const { user, isDemoMode } = useAuth();
     const context = useDashboardContext();
@@ -45,6 +48,10 @@ const Header: React.FC<HeaderProps> = ({
     const [dataClearSuccess, setDataClearSuccess] = useState(false);
     const [showInstructionModal, setShowInstructionModal] = useState(false);
     const [showEmployeeModal, setShowEmployeeModal] = useState(false);
+    const [showDriveHistory, setShowDriveHistory] = useState(false);
+
+    // Prevent hydration warnings
+    const [mounted, setMounted] = useState(false);
 
     const handleExternalLinkClick = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -157,9 +164,18 @@ const Header: React.FC<HeaderProps> = ({
                         <button 
                             onClick={onNewFile}
                             className="flex items-center gap-2.5 px-5 py-2.5 bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all active:scale-95"
+                            title="Tải lên báo cáo YCX mới từ máy tính"
                         >
                             <Icon name="file-up" size={4} />
                             <span>YCX</span>
+                        </button>
+                        
+                        <button 
+                            onClick={() => setShowDriveHistory(true)}
+                            className="flex items-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 border-l border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors tooltip"
+                            title="Lịch sử dữ liệu (Mây)"
+                        >
+                            <Icon name="cloud-cog" size={4} />
                         </button>
                         
                         <a 
@@ -237,6 +253,15 @@ const Header: React.FC<HeaderProps> = ({
                 isOpen={showEmployeeModal} 
                 onClose={() => setShowEmployeeModal(false)} 
             />
+
+            {/* Drive History Modal */}
+            {onSelectHistoryFile && (
+                <DriveHistoryModal
+                    isOpen={showDriveHistory}
+                    onClose={() => setShowDriveHistory(false)}
+                    onSelectFile={onSelectHistoryFile}
+                />
+            )}
         </>
     );
 };

@@ -174,7 +174,8 @@ export default function DashboardView() {
                     showNewFileButton={appState === 'dashboard'} 
                     onClearData={handleClearData} 
                     fileInfo={fileInfo}
-                    onToggleFilters={() => setIsFilterSidebarOpen(true)}
+                    onToggleFilters={() => setIsFilterSidebarOpen(!isFilterSidebarOpen)}
+                    onSelectHistoryFile={handleFileProcessing}
                 />
                 
                 {status.message && status.type === 'error' && <StatusDisplay status={status} />}
