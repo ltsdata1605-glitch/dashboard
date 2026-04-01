@@ -9,8 +9,16 @@ const DRIVE_FILES_URL = "https://www.googleapis.com/drive/v3/files";
 export const uploadFileToDrive = async (file: File, token: string, filenamePrefix: string = 'ycv_report'): Promise<string> => {
     if (!token) throw new Error("Missing Google OAuth Token");
 
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const formatDate = (date: Date) => `${pad(date.getDate())}-${pad(date.getMonth() + 1)}-${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    
+    const uploadTime = formatDate(new Date());
+    const creationTime = formatDate(new Date(file.lastModified));
+    const extension = file.name.split('.').pop() || 'xlsx';
+    const formattedName = `YCX_${uploadTime} | ${creationTime}.${extension}`;
+
     const metadata = {
-        name: `${filenamePrefix}_${Date.now()}_${file.name}`,
+        name: formattedName,
         mimeType: file.type || 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         parents: [] // Optionally create an app folder and put ID here
     };
