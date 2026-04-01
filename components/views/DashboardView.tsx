@@ -164,8 +164,8 @@ export default function DashboardView() {
         <div className="w-full">
             <div className="w-[1200px] mx-auto p-8">
                 <DashboardContext.Provider value={logic as any}>
-                    <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx, .xls" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleFileProcessing(Array.from(e.target.files))} />
-                    <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx, .xls" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
+                    <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleFileProcessing(Array.from(e.target.files))} />
+                    <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
 
                 <Header 
                     onNewFile={handleNewFileClick} 

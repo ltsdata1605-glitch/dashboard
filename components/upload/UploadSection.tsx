@@ -141,8 +141,9 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             id="file-upload"
                             type="file"
                             className="hidden"
-                            accept=".xlsx, .xls"
+                            accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                             multiple
+                            onClick={(e) => (e.currentTarget.value = '')}
                             onChange={handleFileChange}
                         />
                         
@@ -156,7 +157,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             <div className="text-center">
                                 <h4 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight mb-1">Bước 2: Nạp báo cáo vào hệ thống</h4>
                                 <p className="text-base font-medium text-slate-600 dark:text-slate-300">
-                                    <span className="text-indigo-600 dark:text-indigo-400 group-hover:underline">Chọn file</span> hoặc thả file Excel vào đây
+                                    <span className="text-indigo-600 dark:text-indigo-400 group-hover:underline">Chọn nhiều file</span> hoặc thả các file Excel vào đây
                                 </p>
                                 <p className="text-xs text-slate-400 mt-1 font-medium">
                                     Xử lý an toàn • Không tải lên máy chủ

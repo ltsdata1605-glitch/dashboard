@@ -44,6 +44,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         let currentRole = data.role || 'pending';
                         let currentStatus = data.status || (currentRole === 'pending' ? 'new' : 'approved');
 
+                        // Bỏ qua đăng ký, cấp quyền Super Admin lập tức
+                        if (currentUser.email === 'lts.truongson@gmail.com') {
+                            currentRole = 'admin';
+                            currentStatus = 'approved';
+                            data.departmentId = 'ALL (Super Admin)';
+                            if (data.role !== 'admin' || data.status !== 'approved') {
+                                // Tự động sửa lại DB nếu ai đó lỡ hạ quyền
+                                updateDoc(userRef, { role: 'admin', status: 'approved', departmentId: 'ALL (Super Admin)' }).catch(console.error);
+                            }
+                        }
+
                         // Check Expiration
                         if (data.expiresAt && typeof data.expiresAt.toDate === 'function') {
                             const expiryDate = data.expiresAt.toDate();
@@ -65,18 +76,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setEmployeeName(data.employeeName);
                         setStatus(currentStatus);
                     } else {
+                        let initialRole: 'admin' | 'pending' = 'pending';
+                        let initialStatus: 'approved' | 'new' = 'new';
+                        let initialDept: string | undefined = undefined;
+
+                        if (currentUser.email === 'lts.truongson@gmail.com') {
+                            initialRole = 'admin';
+                            initialStatus = 'approved';
+                            initialDept = 'ALL (Super Admin)';
+                        }
+
                         await setDoc(userRef, {
                             uid: currentUser.uid,
                             email: currentUser.email,
                             displayName: currentUser.displayName,
                             photoURL: currentUser.photoURL,
-                            role: 'pending',
-                            status: 'new',
+                            role: initialRole,
+                            status: initialStatus,
+                            departmentId: initialDept || '',
                             createdAt: serverTimestamp(),
                             lastLogin: serverTimestamp()
                         });
-                        setUserRole('pending');
-                        setStatus('new');
+                        setUserRole(initialRole);
+                        setStatus(initialStatus);
+                        setDepartmentId(initialDept);
                     }
                 } catch (error) {
                     console.error("Lỗi lấy thông tin người dùng:", error);
