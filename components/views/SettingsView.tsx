@@ -25,6 +25,12 @@ const SettingsView: React.FC = () => {
     const [configUrl, setConfigUrl] = useState('');
     const [isClearing, setIsClearing] = useState(false);
 
+    // Profile Editing
+    const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [stagedDept, setStagedDept] = useState(departmentId || '');
+    const [stagedEmployee, setStagedEmployee] = useState(employeeName || '');
+    const { requestAccess } = useAuth();
+
     useEffect(() => {
         // Load initial settings
         const loadSettings = async () => {
@@ -73,6 +79,36 @@ const SettingsView: React.FC = () => {
             toast.error('Có lỗi xảy ra khi dọn dẹp!');
         } finally {
             setIsClearing(false);
+        }
+    };
+
+    const handleSaveProfile = async () => {
+        if (!stagedDept.trim()) return toast.error("Mã Kho không được bỏ trống");
+        if (userRole === 'employee' && !stagedEmployee.trim()) return toast.error("Tên nhân viên không được bỏ trống");
+
+        try {
+            if (userRole === 'manager') {
+                const { doc, updateDoc } = await import('firebase/firestore');
+                const { db } = await import('../../services/firebase');
+                const userRef = doc(db, 'users', user!.uid);
+                await updateDoc(userRef, {
+                    departmentId: stagedDept,
+                    employeeName: stagedEmployee || ''
+                });
+                toast.success("Cấu hình Kho đã được Cập Nhật Thành Công!");
+            } else {
+                await requestAccess(
+                    'employee',
+                    stagedDept,
+                    stagedEmployee
+                );
+                toast.success("Đã ghi nhận thay đổi. Yêu cầu xét duyệt lại kích hoạt...");
+            }
+            
+            setIsEditingProfile(false);
+            setTimeout(() => window.location.reload(), 2000);
+        } catch (error) {
+            toast.error("Có lỗi xảy ra khi Cập nhật thông tin!");
         }
     };
 
@@ -245,31 +281,77 @@ const SettingsView: React.FC = () => {
                                                 )}
                                             </div>
                                             
-                                            <div className="flex-1 text-center sm:text-left">
-                                                <h4 className="text-2xl font-black text-slate-800 dark:text-white">{user?.displayName || 'Thành viên YCX'}</h4>
-                                                <p className="text-slate-500 dark:text-slate-400 font-medium mb-3">{user?.email}</p>
-                                                
-                                                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                                                    <span className={`px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider border ${
-                                                        userRole === 'admin' ? 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800' :
-                                                        userRole === 'manager' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800' :
-                                                        'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800'
-                                                    }`}>
-                                                        {userRole === 'admin' ? 'Quản Trị Viên' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'}
-                                                    </span>
+                                            <div className="flex-1 text-center sm:text-left w-full mt-4 sm:mt-0">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
+                                                    <div>
+                                                        <h4 className="text-2xl font-black text-slate-800 dark:text-white">{user?.displayName || 'Thành viên YCX'}</h4>
+                                                        <p className="text-slate-500 dark:text-slate-400 font-medium mb-3">{user?.email}</p>
+                                                    </div>
                                                     
-                                                    {departmentId && (
-                                                        <span className="px-3 py-1 text-xs font-bold rounded-full border bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
-                                                            KHO: {departmentId}
-                                                        </span>
-                                                    )}
-
-                                                    {employeeName && (
-                                                        <span className="px-3 py-1 text-xs font-bold rounded-full border bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800 truncate max-w-[200px]" title={employeeName}>
-                                                            NV: {employeeName}
-                                                        </span>
+                                                    {userRole !== 'admin' && (
+                                                        <button 
+                                                            onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
+                                                            className={`px-4 py-2 text-sm font-bold flex items-center justify-center gap-2 rounded-xl transition-colors shadow-sm ${isEditingProfile ? 'bg-emerald-600 text-white hover:bg-emerald-700' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-500'}`}
+                                                        >
+                                                            <Icon name={isEditingProfile ? "save" : "edit-3"} size={4} />
+                                                            {isEditingProfile ? 'Lưu Dữ Liệu' : 'Sửa Mã Kho'}
+                                                        </button>
                                                     )}
                                                 </div>
+                                                
+                                                {isEditingProfile ? (
+                                                    <div className="space-y-3 bg-white dark:bg-slate-800 p-4 rounded-xl border border-indigo-100 dark:border-indigo-900/30">
+                                                        <div className="flex flex-col gap-1.5">
+                                                            <label className="text-xs font-bold text-slate-500">KHO QUẢN LÝ (Nhập mã kho, phân cách bởi dấu Phẩy)</label>
+                                                            <input 
+                                                                type="text"
+                                                                value={stagedDept}
+                                                                onChange={e => setStagedDept(e.target.value)}
+                                                                placeholder="Ví dụ: 58614, 58615, 66708"
+                                                                className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300 font-mono"
+                                                            />
+                                                        </div>
+                                                        {userRole === 'employee' && (
+                                                            <div className="flex flex-col gap-1.5">
+                                                                <label className="text-xs font-bold text-slate-500">TÊN NHÂN VIÊN (Phải khớp chính xác File YCX)</label>
+                                                                <input 
+                                                                    type="text"
+                                                                    value={stagedEmployee}
+                                                                    onChange={e => setStagedEmployee(e.target.value)}
+                                                                    placeholder="Ví dụ: 58614 - Nguyễn Đăng Khoa"
+                                                                    className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300"
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <p className={`text-[11px] font-medium mt-2 ${userRole === 'manager' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-500'}`}>
+                                                            {userRole === 'manager' 
+                                                                ? '💡 Quản lý có thể cập nhật chuỗi Mã Kho và áp dụng ngay lập tức mà không cần Admin phê duyệt lại.' 
+                                                                : '⚠️ Đổi Mã / Tên sẽ đưa tài khoản về trạng thái CHỜ DUYỆT LẠI bởi Quản lý Kho.'}
+                                                        </p>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-4">
+                                                        <span className={`px-3 py-1 text-xs font-bold rounded-full uppercase tracking-wider border ${
+                                                            userRole === 'admin' ? 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400 dark:border-rose-800' :
+                                                            userRole === 'manager' ? 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800' :
+                                                            'bg-teal-100 text-teal-700 border-teal-200 dark:bg-teal-900/30 dark:text-teal-400 dark:border-teal-800'
+                                                        }`}>
+                                                            {userRole === 'admin' ? 'Quản Trị Viên' : userRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'}
+                                                        </span>
+                                                        
+                                                        {departmentId && (
+                                                            <span className="px-3 py-1 text-xs font-bold rounded-full border bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700">
+                                                                KHO: {departmentId}
+                                                            </span>
+                                                        )}
+
+                                                        {employeeName && (
+                                                            <span className="px-3 py-1 text-xs font-bold rounded-full border bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800 truncate max-w-[200px]" title={employeeName}>
+                                                                NV: {employeeName}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

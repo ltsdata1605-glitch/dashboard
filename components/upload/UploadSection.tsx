@@ -3,7 +3,7 @@ import React, { useState, useCallback } from 'react';
 import { Icon } from '../common/Icon';
 
 interface UploadSectionProps {
-    onProcessFile: (file: File) => void;
+    onProcessFile: (files: File[]) => void;
     configUrl: string;
     onConfigUrlChange: (url: string) => void;
     isDeduplicationEnabled?: boolean;
@@ -27,15 +27,15 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
     const handleDrop = useCallback((e: React.DragEvent) => {
         e.preventDefault();
         setIsDragging(false);
-        const files = e.dataTransfer.files;
+        const files = Array.from(e.dataTransfer.files);
         if (files.length > 0) {
-            onProcessFile(files[0]);
+            onProcessFile(files);
         }
     }, [onProcessFile]);
 
     const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            onProcessFile(e.target.files[0]);
+            onProcessFile(Array.from(e.target.files));
         }
     }, [onProcessFile]);
 
@@ -142,6 +142,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             type="file"
                             className="hidden"
                             accept=".xlsx, .xls"
+                            multiple
                             onChange={handleFileChange}
                         />
                         

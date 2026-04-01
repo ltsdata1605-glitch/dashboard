@@ -20,7 +20,7 @@ interface HeaderProps {
     onClearData: () => void;
     fileInfo: { filename: string; savedAt: string } | null;
     onToggleFilters?: () => void;
-    onSelectHistoryFile?: (file: File) => void;
+    onSelectHistoryFile?: (files: File[]) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ 
@@ -266,7 +266,7 @@ const Header: React.FC<HeaderProps> = ({
                 <DriveHistoryModal
                     isOpen={showDriveHistory}
                     onClose={() => setShowDriveHistory(false)}
-                    onSelectFile={onSelectHistoryFile}
+                    onSelectFile={(file) => onSelectHistoryFile && onSelectHistoryFile([file])}
                 />
             )}
         </>

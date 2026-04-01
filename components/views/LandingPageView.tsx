@@ -4,7 +4,7 @@ import UploadSection from '../upload/UploadSection';
 import { Icon } from '../common/Icon';
 
 interface LandingPageViewProps {
-    onProcessFile: (file: File) => void;
+    onProcessFile: (files: File[]) => void;
     configUrl: string;
     onConfigUrlChange: (url: string) => void;
     isDeduplicationEnabled?: boolean;

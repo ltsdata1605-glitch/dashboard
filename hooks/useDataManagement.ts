@@ -175,7 +175,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     rbacData = originalData.filter(row => {
                         const kho = String(row['Mã kho tạo'] || '').trim();
                         // 1. Manager & Employee both need Kho matching
-                        if (kho !== departmentId) return false;
+                        const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
+                        if (!allowedKhos.includes(kho)) return false;
                         
                         // 2. Employee additional check for exact name match
                         if (userRole === 'employee') {

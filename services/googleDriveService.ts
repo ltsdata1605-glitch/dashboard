@@ -81,7 +81,7 @@ export const listDriveFiles = async (token: string): Promise<DriveFile[]> => {
 
     const query = encodeURIComponent(`name contains 'YCX_' and mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' and trashed=false`);
     const fields = encodeURIComponent('files(id, name, createdTime, size)');
-    const url = `${DRIVE_FILES_URL}?q=${query}&orderBy=createdTime desc&fields=${fields}&pageSize=30`;
+    const url = `${DRIVE_FILES_URL}?q=${query}&orderBy=createdTime desc&fields=${fields}&pageSize=100`;
 
     const response = await fetch(url, {
         method: 'GET',

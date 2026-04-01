@@ -5,44 +5,53 @@ import { getRowValue, parseExcelDate } from '../utils/dataUtils';
 import { COL } from '../constants';
 
 interface WorkerMessage {
-    file: File;
+    files: File[];
     enableDeduplication: boolean;
 }
 
 // The worker's message handler
 self.onmessage = (event: MessageEvent<WorkerMessage>) => {
-    const { file, enableDeduplication } = event.data;
-    processFileInWorker(file, enableDeduplication);
+    const { files, enableDeduplication } = event.data;
+    processFilesInWorker(files, enableDeduplication);
 };
 
 // This function is adapted from dataService.ts
-async function processFileInWorker(file: File, enableDeduplication: boolean) {
+async function processFilesInWorker(files: File[], enableDeduplication: boolean) {
     const postStatus = (status: Status) => {
         self.postMessage({ type: 'progress', payload: status });
     };
 
     try {
-        postStatus({ message: 'Đang đọc file (nền)...', type: 'info', progress: 0 });
-        const arrayBuffer = await file.arrayBuffer();
+        let combinedJson: DataRow[] = [];
+        
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const progressBase = 40 * (i / files.length); // Reading phase takes up to 40%
+            
+            postStatus({ message: `Đang nạp bộ đệm file ${i+1}/${files.length}...`, type: 'info', progress: progressBase });
+            const arrayBuffer = await file.arrayBuffer();
 
-        postStatus({ message: 'Đang phân tích cấu trúc Excel (nền)...', type: 'info', progress: 20 });
-        const data = new Uint8Array(arrayBuffer);
-        
-        // OPTIMIZATION 1: Enable 'dense' mode. 
-        // This creates dense arrays instead of sparse objects, significantly reducing memory usage for large files.
-        const workbook = XLSX.read(data, { type: 'array', cellDates: true, dense: true });
-        
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
+            postStatus({ message: `Dịch cú pháp Excel ${i+1}/${files.length}...`, type: 'info', progress: progressBase + 5 });
+            const data = new Uint8Array(arrayBuffer);
+            
+            // OPTIMIZATION 1: Enable 'dense' mode. 
+            // This creates dense arrays instead of sparse objects, significantly reducing memory usage for large files.
+            const workbook = XLSX.read(data, { type: 'array', cellDates: true, dense: true });
+            
+            const sheetName = workbook.SheetNames[0];
+            const worksheet = workbook.Sheets[sheetName];
 
-        postStatus({ message: 'Đang chuyển đổi dữ liệu JSON (nền)...', type: 'info', progress: 40 });
-        const json: DataRow[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+            postStatus({ message: `Trích xuất JSON file ${i+1}/${files.length}...`, type: 'info', progress: progressBase + 10 });
+            const json: DataRow[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+            
+            combinedJson = combinedJson.concat(json);
+        }
         
-        let processedList: DataRow[] = json;
+        let processedList: DataRow[] = combinedJson;
 
         // OPTIMIZATION 2: Ultra-fast Deduplication
         if (enableDeduplication) {
-            postStatus({ message: 'Đang loại bỏ dữ liệu trùng lặp (siêu tốc)...', type: 'info', progress: 60 });
+            postStatus({ message: `Đang chạy Xoá Trùng Ngẫu Nhiên trên ${processedList.length} dòng...`, type: 'info', progress: 50 });
             
             const uniqueSet = new Set<string>();
             const deduplicated: DataRow[] = [];
@@ -50,9 +59,9 @@ async function processFileInWorker(file: File, enableDeduplication: boolean) {
             // Pre-calculate column keys to avoid repeated object access overhead if possible,
             // but for safety with dynamic excel, we iterate row keys.
             // Using string concatenation is ~10x faster than JSON.stringify for this purpose.
-            const len = json.length;
+            const len = processedList.length;
             for (let i = 0; i < len; i++) {
-                const row = json[i];
+                const row = processedList[i];
                 let signature = '';
                 
                 // Fast signature generation skipping 'STT_1'
@@ -68,11 +77,14 @@ async function processFileInWorker(file: File, enableDeduplication: boolean) {
                     deduplicated.push(row);
                 }
             }
+            if (files.length > 1) {
+                postStatus({ message: `Đã cắt giảm ${processedList.length - deduplicated.length} dòng dữ liệu bị trùng.`, type: 'info', progress: 65 });
+            }
             processedList = deduplicated;
             // Clear memory immediately
             uniqueSet.clear(); 
         } else {
-            postStatus({ message: 'Bỏ qua bước xóa trùng...', type: 'info', progress: 60 });
+            postStatus({ message: `Bỏ qua bước xóa trùng, bắt đầu gộp ${processedList.length} dòng...`, type: 'info', progress: 60 });
         }
 
         postStatus({ message: 'Đang lọc và chuẩn hóa dữ liệu...', type: 'info', progress: 80 });

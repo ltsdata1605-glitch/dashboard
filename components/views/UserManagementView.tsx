@@ -12,6 +12,7 @@ interface AccessRequest {
     email: string;
     photoURL: string;
     requestedRole: 'manager' | 'employee';
+    role?: 'admin' | 'manager' | 'employee' | 'pending';
     departmentId: string;
     employeeName: string;
     status: 'pending' | 'approved' | 'rejected' | 'new';
@@ -24,6 +25,9 @@ const UserManagementView: React.FC = () => {
     const [requests, setRequests] = useState<AccessRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [expiryDates, setExpiryDates] = useState<Record<string, string>>({});
+    const [editDepartments, setEditDepartments] = useState<Record<string, string>>({});
+    const [editNames, setEditNames] = useState<Record<string, string>>({});
+    const [listMode, setListMode] = useState<'pending' | 'active'>('pending');
 
     const fetchRequests = async () => {
         if (!userRole) return;
@@ -34,11 +38,20 @@ const UserManagementView: React.FC = () => {
             
             // Admin sees Manager requests
             if (userRole === 'admin') {
-                q = query(usersRef, where('status', '==', 'pending'), where('requestedRole', '==', 'manager'));
+                if (listMode === 'pending') {
+                    q = query(usersRef, where('status', '==', 'pending'), where('requestedRole', '==', 'manager'));
+                } else {
+                    q = query(usersRef, where('role', '==', 'manager'), where('status', 'in', ['approved', 'pending', 'expired']));
+                }
             } 
-            // Manager sees Employee requests for their specific department
+            // Manager sees Employee requests for their specific departments
             else if (userRole === 'manager' && departmentId) {
-                q = query(usersRef, where('status', '==', 'pending'), where('requestedRole', '==', 'employee'), where('departmentId', '==', departmentId));
+                const allowedKhos = departmentId.split(',').map(s=>s.trim()).filter(Boolean);
+                if (listMode === 'pending') {
+                    q = query(usersRef, where('status', '==', 'pending'), where('requestedRole', '==', 'employee'));
+                } else {
+                    q = query(usersRef, where('role', '==', 'employee'), where('status', 'in', ['approved', 'pending', 'expired']));
+                }
             } else {
                 setRequests([]);
                 setIsLoading(false);
@@ -47,19 +60,39 @@ const UserManagementView: React.FC = () => {
 
             const querySnapshot = await getDocs(q);
             const data: AccessRequest[] = [];
+            const newExpiry: Record<string, string> = {};
+            const newDept: Record<string, string> = {};
+            const newNames: Record<string, string> = {};
+
             querySnapshot.forEach((doc) => {
                 const docData = doc.data() as any;
                 data.push({ id: doc.id, ...docData } as AccessRequest);
+                if (docData.expiresAt) {
+                    newExpiry[doc.id] = docData.expiresAt.toDate().toISOString().split('T')[0];
+                }
+                newDept[doc.id] = docData.departmentId || '';
+                newNames[doc.id] = docData.employeeName || '';
             });
+
+            setExpiryDates(newExpiry);
+            setEditDepartments(newDept);
+            setEditNames(newNames);
+            
+            // Client side filter for Manager observing Employees because Firestore `in` is limited
+            let filteredData = data;
+            if (userRole === 'manager' && departmentId) {
+                const allowedKhos = departmentId.split(',').map(s=>s.trim()).filter(Boolean);
+                filteredData = filteredData.filter(req => allowedKhos.includes(req.departmentId));
+            }
             
             // Sort client side by requestDate descending since Firestore requires composite index for multi-field queries with orderBy
-            data.sort((a, b) => {
+            filteredData.sort((a, b) => {
                 const dateA = a.requestDate?.toMillis() || 0;
                 const dateB = b.requestDate?.toMillis() || 0;
                 return dateB - dateA;
             });
             
-            setRequests(data);
+            setRequests(filteredData);
         } catch (error) {
             console.error("Lỗi lấy danh sách yêu cầu:", error);
             toast.error('Không thể tải danh sách yêu cầu.');
@@ -70,7 +103,7 @@ const UserManagementView: React.FC = () => {
 
     useEffect(() => {
         fetchRequests();
-    }, [userRole, departmentId]);
+    }, [userRole, departmentId, listMode]);
 
     const handleApproval = async (requestId: string, targetRole: 'manager' | 'employee', isApproved: boolean) => {
         try {
@@ -80,7 +113,9 @@ const UserManagementView: React.FC = () => {
             if (isApproved) {
                 const updateData: any = {
                     role: targetRole,
-                    status: 'approved'
+                    status: 'approved',
+                    departmentId: editDepartments[requestId] || '',
+                    employeeName: editNames[requestId] || ''
                 };
                 
                 // Add expiresAt if specified
@@ -90,23 +125,20 @@ const UserManagementView: React.FC = () => {
                     // Set expiry to end of the selected day
                     d.setHours(23, 59, 59, 999);
                     updateData.expiresAt = Timestamp.fromDate(d);
+                } else {
+                    updateData.expiresAt = null; // Clear if not set
                 }
 
                 await updateDoc(userRef, updateData);
-                toast.success(`Đã CẤP QUYỀN ${targetRole === 'manager' ? 'Quản Lý' : 'Nhân Viên'} thành công!`);
+                toast.success(listMode === 'pending' ? `Đã CẤP QUYỀN thành công!` : `Đã CẬP NHẬT QUYỀN thành công!`);
             } else {
                 await updateDoc(userRef, {
-                    status: 'rejected'
+                    status: listMode === 'pending' ? 'rejected' : 'expired'
                 });
-                toast.success('Đã TỪ CHỐI yêu cầu truy cập!');
+                toast.success(listMode === 'pending' ? 'Đã TỪ CHỐI yêu cầu!' : 'Đã THU HỒI quyền truy cập!');
             }
-            // Remove from list
-            setRequests(prev => prev.filter(req => req.id !== requestId));
-            setExpiryDates(prev => {
-                const next = { ...prev };
-                delete next[requestId];
-                return next;
-            });
+            
+            fetchRequests(); // Refresh data
         } catch (error) {
             console.error('Lỗi khi cập nhật trạng thái:', error);
             toast.error('Có lỗi xảy ra, vui lòng thử lại.');
@@ -154,6 +186,22 @@ const UserManagementView: React.FC = () => {
                     >
                         <Icon name="refresh-ccw" size={4} className={isLoading ? 'animate-spin' : ''} />
                         Làm Mới
+                    </button>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl w-fit">
+                    <button 
+                        onClick={() => setListMode('pending')}
+                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${listMode === 'pending' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    >
+                        Đơn Chờ Duyệt
+                    </button>
+                    <button 
+                        onClick={() => setListMode('active')}
+                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${listMode === 'active' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                    >
+                        Người Dùng Hoạt Động
                     </button>
                 </div>
 
@@ -225,15 +273,35 @@ const UserManagementView: React.FC = () => {
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className="font-bold text-slate-700 dark:text-slate-300 uppercase">
-                                                        {req.departmentId}
-                                                    </div>
+                                                    {listMode === 'active' ? (
+                                                        <input
+                                                            type="text"
+                                                            value={editDepartments[req.id] || ''}
+                                                            onChange={e => setEditDepartments(prev => ({...prev, [req.id]: e.target.value}))}
+                                                            placeholder="58614, 58615"
+                                                            className="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300 w-full font-mono uppercase"
+                                                        />
+                                                    ) : (
+                                                        <div className="font-bold text-slate-700 dark:text-slate-300 uppercase">
+                                                            {req.departmentId}
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 {userRole === 'manager' && (
                                                     <td className="px-6 py-4">
-                                                        <div className="font-bold text-amber-600 dark:text-amber-400 italic">
-                                                            {req.employeeName}
-                                                        </div>
+                                                        {listMode === 'active' ? (
+                                                            <input
+                                                                type="text"
+                                                                value={editNames[req.id] || ''}
+                                                                onChange={e => setEditNames(prev => ({...prev, [req.id]: e.target.value}))}
+                                                                placeholder="Tên nhân viên..."
+                                                                className="text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300 w-full"
+                                                            />
+                                                        ) : (
+                                                            <div className="font-bold text-amber-600 dark:text-amber-400 italic">
+                                                                {req.employeeName}
+                                                            </div>
+                                                        )}
                                                     </td>
                                                 )}
                                                 <td className="px-6 py-4">
@@ -248,20 +316,41 @@ const UserManagementView: React.FC = () => {
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                                                    <button 
-                                                        onClick={() => handleApproval(req.id, req.requestedRole, false)}
-                                                        className="px-3 py-1.5 bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors font-semibold tooltip"
-                                                        title="Từ chối"
-                                                    >
-                                                        Từ chối
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => handleApproval(req.id, req.requestedRole, true)}
-                                                        className="px-4 py-1.5 bg-indigo-600 text-white dark:bg-indigo-500 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm font-semibold tooltip"
-                                                        title="Phê duyệt"
-                                                    >
-                                                        Phê duyệt
-                                                    </button>
+                                                    {listMode === 'pending' ? (
+                                                        <>
+                                                            <button 
+                                                                onClick={() => handleApproval(req.id, req.requestedRole, false)}
+                                                                className="px-3 py-1.5 bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors font-semibold tooltip"
+                                                                title="Từ chối"
+                                                            >
+                                                                Từ chối
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleApproval(req.id, req.requestedRole, true)}
+                                                                className="px-4 py-1.5 bg-indigo-600 text-white dark:bg-indigo-500 rounded-lg hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm font-semibold tooltip"
+                                                                title="Phê duyệt"
+                                                            >
+                                                                Phê duyệt
+                                                            </button>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <button 
+                                                                onClick={() => handleApproval(req.id, req.role as any, false)}
+                                                                className="px-3 py-1.5 bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors font-semibold tooltip"
+                                                                title="Thu hồi quyền đăng nhập"
+                                                            >
+                                                                Thu hồi
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleApproval(req.id, req.role as any, true)}
+                                                                className="px-4 py-1.5 bg-emerald-600 text-white dark:bg-emerald-500 rounded-lg hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors shadow-sm font-semibold tooltip"
+                                                                title="Lưu lại Khai báo mới nhất"
+                                                            >
+                                                                Lưu & Cập Nhật
+                                                            </button>
+                                                        </>
+                                                    )}
                                                 </td>
                                             </motion.tr>
                                         ))

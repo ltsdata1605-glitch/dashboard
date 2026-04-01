@@ -109,25 +109,56 @@ export const useFileUploadLogic = ({
         }
     };
 
-    const handleFileProcessing = async (file: File) => {
+    const handleFileProcessing = async (files: File[]) => {
+        if (!files || files.length === 0) return;
         setAppState('loading');
         setIsProcessing(true);
         startTimer();
         
-        let driveFileId = "";
         try {
             const token = sessionStorage.getItem('googleOAuthToken');
             if (token) {
-                setStatus({ message: `Đang sao lưu file bảo mật lên Google Drive...`, type: 'info', progress: 5 });
-                const { uploadFileToDrive } = await import('../services/googleDriveService');
-                driveFileId = await uploadFileToDrive(file, token, 'dmx_sales');
-                setStatus({ message: `Đã sao lưu an toàn! Bắt đầu trích xuất...`, type: 'info', progress: 10 });
-                import('react-hot-toast').then(m => m.toast.success("Đã đồng bộ báo cáo lên Google Drive an toàn!"));
+                const { uploadFileToDrive, listDriveFiles } = await import('../services/googleDriveService');
+                
+                setStatus({ message: `Đang kiểm tra lịch sử tải lên...`, type: 'info', progress: 5 });
+                const existingFiles = await listDriveFiles(token);
+                
+                const pad = (n: number) => n.toString().padStart(2, '0');
+                const formatDate = (date: Date) => `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+                
+                let uploadedCount = 0;
+                let skippedCount = 0;
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const progressBase = 5 + (15 * (i / files.length)); // Drive gets first 20%
+                    setStatus({ message: `Kiểm tra File ${i + 1}/${files.length}: ${file.name}...`, type: 'info', progress: progressBase });
+                    
+                    const formattedCreation = formatDate(new Date(file.lastModified));
+                    const isDuplicate = existingFiles.some(f => 
+                        f.name.includes(formattedCreation) && f.size === file.size.toString()
+                    );
+                    
+                    if (isDuplicate) {
+                        skippedCount++;
+                    } else {
+                        setStatus({ message: `Đang tải lên Drive File ${i + 1}/${files.length}...`, type: 'info', progress: progressBase + 5 });
+                        await uploadFileToDrive(file, token, 'dmx_sales');
+                        uploadedCount++;
+                    }
+                }
+
+                if (uploadedCount > 0) {
+                    import('react-hot-toast').then(m => m.toast.success(`Đã đồng bộ ${uploadedCount} báo cáo lên Google Drive!`));
+                }
+                if (skippedCount > 0) {
+                    import('react-hot-toast').then(m => m.toast(`Bỏ qua ${skippedCount} file (đã tồn tại trên Drive)!`, { icon: '⚠️' }));
+                }
             }
         } catch (err: any) {
             console.error("Lỗi Google Drive Upload:", err);
             // Non-blocking fallback
-            setStatus({ message: `Lỗi kết nối Drive, đang xử lý nội bộ...`, type: 'error', progress: 10 });
+            setStatus({ message: `Lỗi kết nối Drive, đang tiếp tục xử lý nội bộ...`, type: 'error', progress: 20 });
         }
 
         let worker: Worker;
@@ -149,8 +180,11 @@ export const useFileUploadLogic = ({
                     setStatus({ message: 'Đang lưu dữ liệu...', type: 'info', progress: 95 });
                     await new Promise(r => setTimeout(r, 50)); // nhường CPU để vẽ progress
                     
-                    await saveSalesData(payload, file.name);
-                    setFileInfo({ filename: file.name, savedAt: new Date(file.lastModified).toLocaleString('vi-VN') });
+                    const mergedName = files.length === 1 ? files[0].name : `Gộp ${files.length} Báo cáo`;
+                    const latestDate = new Date(Math.max(...files.map(f => f.lastModified)));
+                    
+                    await saveSalesData(payload, mergedName);
+                    setFileInfo({ filename: mergedName, savedAt: latestDate.toLocaleString('vi-VN') });
                     
                     // Reset filters to initial state to avoid stale filters from previous data
                     if (setFilterState) {
@@ -192,7 +226,7 @@ export const useFileUploadLogic = ({
             worker.terminate();
         };
 
-        worker.postMessage({ file, enableDeduplication: isDeduplicationEnabled });
+        worker.postMessage({ files: files, enableDeduplication: isDeduplicationEnabled });
     };
 
     return {
