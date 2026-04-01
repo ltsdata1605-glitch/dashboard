@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({
     onToggleFilters,
     onSelectHistoryFile 
 }) => {
-    const { user, isDemoMode } = useAuth();
+    const { user, isDemoMode, userRole } = useAuth();
     const context = useDashboardContext();
     const { syncState } = useCloudSync(
         context.productConfig,
@@ -108,7 +108,8 @@ const Header: React.FC<HeaderProps> = ({
 
             {showNewFileButton && (
                 <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto bg-slate-50/50 dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-100 dark:border-slate-800/50 backdrop-blur-sm">
-                    {/* Shift Management Group - Professional Split Button with Pastel Color */}
+                    {/* Shift Management Group */}
+                    {userRole !== 'employee' && (
                     <div className="flex items-center shadow-sm rounded-xl overflow-hidden border border-blue-100 dark:border-blue-900/30">
                         <button 
                             onClick={onLoadShiftFile}
@@ -158,26 +159,30 @@ const Header: React.FC<HeaderProps> = ({
                             </AnimatePresence>
                         </div>
                     </div>
+                    )}
 
-                    {/* Data Import Group - Professional Split Button with Pastel Color */}
+                    {/* Data Import Group */}
                     <div className="flex items-center shadow-sm rounded-xl overflow-hidden border border-emerald-100 dark:border-emerald-900/30">
-                        <button 
-                            onClick={onNewFile}
-                            className="flex items-center gap-2.5 px-5 py-2.5 bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all active:scale-95"
-                            title="Tải lên báo cáo YCX mới từ máy tính"
-                        >
-                            <Icon name="file-up" size={4} />
-                            <span>YCX</span>
-                        </button>
-                        
-                        <button 
-                            onClick={() => setShowDriveHistory(true)}
-                            className="flex items-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 border-l border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors tooltip"
-                            title="Lịch sử dữ liệu (Mây)"
-                        >
-                            <Icon name="cloud-cog" size={4} />
-                        </button>
-                        
+                        {userRole !== 'employee' && (
+                            <>
+                                <button 
+                                    onClick={onNewFile}
+                                    className="flex items-center gap-2.5 px-5 py-2.5 bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all active:scale-95"
+                                    title="Tải lên báo cáo YCX mới từ máy tính"
+                                >
+                                    <Icon name="file-up" size={4} />
+                                    <span>YCX</span>
+                                </button>
+                                
+                                <button 
+                                    onClick={() => setShowDriveHistory(true)}
+                                    className="flex items-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 border-l border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors tooltip"
+                                    title="Lịch sử dữ liệu (Mây)"
+                                >
+                                    <Icon name="cloud-cog" size={4} />
+                                </button>
+                            </>
+                        )}
                         <a 
                             href="https://report.mwgroup.vn/home/dashboard/77"
                             target="_blank"
@@ -207,15 +212,17 @@ const Header: React.FC<HeaderProps> = ({
                             </motion.div>
                         </AnimatePresence>
 
-                        <AnimatePresence mode="wait">
-                            <motion.button
-                                onClick={handleDataClear}
-                                className={`p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30 transition-colors ${dataClearSuccess ? 'text-emerald-600' : 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20'}`}
-                                title="Xóa toàn bộ dữ liệu"
-                            >
-                                <Icon name={dataClearSuccess ? 'check' : 'trash-2'} size={4} />
-                            </motion.button>
-                        </AnimatePresence>
+                        {userRole !== 'employee' && (
+                            <AnimatePresence mode="wait">
+                                <motion.button
+                                    onClick={handleDataClear}
+                                    className={`p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30 transition-colors ${dataClearSuccess ? 'text-emerald-600' : 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20'}`}
+                                    title="Xóa toàn bộ dữ liệu"
+                                >
+                                    <Icon name={dataClearSuccess ? 'check' : 'trash-2'} size={4} />
+                                </motion.button>
+                            </AnimatePresence>
+                        )}
                     </div>
                 </div>
             )}

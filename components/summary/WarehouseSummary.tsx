@@ -11,12 +11,14 @@ import LoadingOverlay from '../common/LoadingOverlay';
 import WarehouseSettingsModal from './WarehouseSettingsModal';
 import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
 import ModalWrapper from '../modals/ModalWrapper';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface WarehouseSummaryProps {
     onBatchExport: () => Promise<void>;
 }
 
 const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) => {
+    const { userRole } = useAuth();
     const { processedData, productConfig, originalData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, filterState, handleFilterChange } = useDashboardContext();
     const data = processedData?.warehouseSummary ?? [];
     
@@ -98,6 +100,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     };
     
     const handleTargetClick = (kho: string) => {
+        if (userRole === 'employee') return;
         const currentTarget = warehouseTargets[kho] || 0;
         // Format initial value with commas
         const formattedValue = currentTarget > 0 ? currentTarget.toLocaleString('en-US') : '';
@@ -200,9 +203,11 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                 >
                     <div className="flex items-center space-x-2 hide-on-export">
                         {/* Export status filter removed as it is now in the global FilterBar */}
-                        <button onClick={() => setIsSettingsModalOpen(true)} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
-                            <Icon name="settings-2" size={5} />
-                        </button>
+                        {userRole !== 'employee' && (
+                            <button onClick={() => setIsSettingsModalOpen(true)} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
+                                <Icon name="settings-2" size={5} />
+                            </button>
+                        )}
                         {uniqueFilterOptions.kho.length > 1 && (
                             <button onClick={onBatchExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
                                 <Icon name="images" size={5} />
@@ -260,7 +265,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                             {currentData.map((row) => (
                                 <tr key={row.khoName} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                     <td 
-                                        className="px-2 py-3 font-bold text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 cursor-pointer leading-tight h-px border-r border-slate-200 dark:border-slate-700"
+                                        className={`px-2 py-3 font-bold text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 leading-tight h-px border-r border-slate-200 dark:border-slate-700 ${userRole !== 'employee' ? 'cursor-pointer' : ''}`}
                                         onClick={() => handleTargetClick(row.khoName)}
                                     >
                                         {row.khoName}

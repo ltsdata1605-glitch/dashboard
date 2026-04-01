@@ -8,14 +8,16 @@ const DashboardView = lazy(() => import('./components/views/DashboardView'));
 const CheckThuongView = lazy(() => import('./components/views/CheckThuongView'));
 const ExternalToolView = lazy(() => import('./components/views/ExternalToolView'));
 const AdminPanelView = lazy(() => import('./components/views/AdminPanelView'));
+const UserManagementView = lazy(() => import('./components/views/UserManagementView'));
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginView from './components/views/LoginView';
+import PendingApprovalView from './components/views/PendingApprovalView';
 import { Toaster } from 'react-hot-toast';
 
 function AppContent() {
     const { activeTab, setIsMobileSidebarOpen, isDarkMode, toggleDarkMode } = useLayout();
-    const { user, isDemoMode, isLoading } = useAuth();
+    const { user, userRole, isDemoMode, isLoading } = useAuth();
 
     React.useEffect(() => {
         getGlobalFont().then(font => {
@@ -39,6 +41,11 @@ function AppContent() {
     // Nếu chưa đăng nhập và cũng chưa bật chế độ Demo -> Bắt buộc ở màn Login
     if (!user && !isDemoMode) {
         return <LoginView />;
+    }
+
+    // Nếu đang chờ duyệt -> Khóa cứng ở màn hình chờ
+    if (user && userRole === 'pending' && !isDemoMode) {
+        return <PendingApprovalView />;
     }
 
     return (
@@ -86,6 +93,10 @@ function AppContent() {
                             
                             <div className={activeTab === 'admin' ? 'block w-full h-full' : 'hidden'}>
                                 <AdminPanelView />
+                            </div>
+
+                            <div className={activeTab === 'approval' ? 'block w-full h-full' : 'hidden'}>
+                                <UserManagementView />
                             </div>
                             
                             <div className={activeTab === 'check-thuong' ? 'block h-full' : 'hidden'}>

@@ -19,12 +19,14 @@ import {
 import { useSummaryTableLogic } from './summary/useSummaryTableLogic';
 import { CrossSellingTable } from './summary/CrossSellingTable';
 import CrossSellingBuilderModal from '../modals/CrossSellingBuilderModal';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface SummaryTableProps {}
 
 type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'custom_range';
 
 const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
+    const { userRole } = useAuth();
     const { filterState } = useDashboardContext();
     const state = useSummaryTableLogic();
     const [isBuilderOpen, setIsBuilderOpen] = useState(false);
@@ -151,7 +153,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                 >
                                     Bán kèm
                                 </button>
-                                {isCrossSellingMode && (
+                                {isCrossSellingMode && userRole !== 'employee' && (
                                     <button
                                         onClick={() => setIsBuilderOpen(true)}
                                         className="p-1.5 px-3 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm ml-2 hide-on-export shrink-0 flex items-center gap-1"

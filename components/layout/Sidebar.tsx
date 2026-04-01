@@ -57,7 +57,8 @@ export default function Sidebar() {
 
     const secondaryItems = [
         { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' },
-        ...(userRole === 'admin' ? [{ id: 'admin', label: 'Phân quyền', icon: ClipboardCheck, path: '/admin' }] : []),
+        ...(userRole === 'admin' ? [{ id: 'admin', label: 'Quản trị hệ thống', icon: ClipboardCheck, path: '/admin' }] : []),
+        ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'approval', label: 'Phê duyệt Quyền', icon: Users, path: '/approval' }] : []),
         { id: 'help', label: 'Hỗ trợ', icon: HelpCircle, path: '/help' },
     ];
 

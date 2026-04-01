@@ -14,7 +14,7 @@ interface DataManagementProps {
 }
 
 export const useDataManagement = ({ filterState, configUrl, setStatus, setAppState }: DataManagementProps) => {
-    const { user, isDemoMode } = useAuth();
+    const { user, userRole, departmentId, employeeName, isDemoMode } = useAuth();
     const [originalData, setOriginalData] = useState<DataRow[]>([]);
     const [baseFilteredData, setBaseFilteredData] = useState<DataRow[]>([]);
     const [calendarSourceData, setCalendarSourceData] = useState<DataRow[]>([]);
@@ -170,12 +170,29 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     throw new Error("Cấu hình sản phẩm chưa được tải. Vui lòng đợi trong giây lát.");
                 }
 
-                const { processedData: result, baseFilteredData: newBaseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(originalData, productConfig, filterState, departmentMap);
+                let rbacData = originalData;
+                if ((userRole === 'employee' || userRole === 'manager') && user?.email !== 'nguyendangkhoafit2@gmail.com') {
+                    rbacData = originalData.filter(row => {
+                        const kho = String(row['Mã kho tạo'] || '').trim();
+                        // 1. Manager & Employee both need Kho matching
+                        if (kho !== departmentId) return false;
+                        
+                        // 2. Employee additional check for exact name match
+                        if (userRole === 'employee') {
+                            const emp = String(row['Người tạo'] || '').trim().toLowerCase();
+                            if (emp !== employeeName?.trim().toLowerCase()) return false;
+                        }
+                        
+                        return true;
+                    });
+                }
+
+                const { processedData: result, baseFilteredData: newBaseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(rbacData, productConfig, filterState, departmentMap);
                 
                 let employeeResultData = result.employeeData;
                 if (departmentMap) {
                     const employeeFilterState = { ...filterState, department: [] };
-                    const { processedData: employeeResult } = applyFiltersAndProcess(originalData, productConfig, employeeFilterState, departmentMap);
+                    const { processedData: employeeResult } = applyFiltersAndProcess(rbacData, productConfig, employeeFilterState, departmentMap);
                     employeeResultData = employeeResult.employeeData;
                 }
                 
@@ -195,7 +212,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         }, 0); // run as soon as possible without triggering a hard loading state
 
         return () => clearTimeout(timer);
-    }, [originalData, productConfig, filterState, departmentMap, setStatus]);
+    }, [originalData, productConfig, filterState, departmentMap, setStatus, userRole, departmentId, employeeName, user?.email]);
 
     // Unique filter options
     const uniqueFilterOptions = useMemo(() => {
