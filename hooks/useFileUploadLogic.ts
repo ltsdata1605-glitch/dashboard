@@ -1,4 +1,6 @@
 import { useState, useRef, startTransition } from 'react';
+// @ts-ignore: Vite virtual module alias for Web Workers
+import SalesWorker from '../services/worker?worker';
 import type { DataRow, Status, AppState, ProductConfig } from '../types';
 import { processShiftFile, DepartmentMap } from '../services/dataService';
 import { 
@@ -127,8 +129,16 @@ export const useFileUploadLogic = ({
             setStatus({ message: `Lỗi kết nối Drive, đang xử lý nội bộ...`, type: 'error', progress: 10 });
         }
 
-        const worker = new Worker(new URL('../services/worker.ts', import.meta.url), { type: 'module' });
-        
+        let worker: Worker;
+        try {
+            worker = new SalesWorker();
+        } catch (e) {
+            console.error("Worker instantiation error:", e);
+            setStatus({ message: 'Trình duyệt không hỗ trợ xử lý nền', type: 'error', progress: 0 });
+            setAppState('upload');
+            setIsProcessing(false);
+            return;
+        }
         worker.onmessage = async (e) => {
             const { type, payload } = e.data;
             if (type === 'progress') {
