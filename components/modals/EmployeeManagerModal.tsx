@@ -10,7 +10,7 @@ interface EmployeeManagerModalProps {
 }
 
 export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOpen, onClose }) => {
-    const { departmentMap, updateDepartmentMap } = useDashboardContext();
+    const { departmentMap, updateDepartmentMap, uniqueFilterOptions } = useDashboardContext();
     const [searchTerm, setSearchTerm] = useState('');
     const deferredSearchTerm = React.useDeferredValue(searchTerm);
     const [localMap, setLocalMap] = useState<Record<string, string>>({});
@@ -24,7 +24,20 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
     // Khởi tạo Modal
     useEffect(() => {
         if (isOpen) {
-            if (departmentMap) setLocalMap(departmentMap);
+            const combinedMap = { ...departmentMap };
+            if (uniqueFilterOptions && uniqueFilterOptions.nguoiTao) {
+                uniqueFilterOptions.nguoiTao.forEach(empStr => {
+                    if (!empStr) return;
+                    const parts = empStr.split(' - ');
+                    const id = parts[0].trim();
+                    const name = parts.slice(1).join(' - ').trim() || id;
+                    if (!combinedMap[id]) {
+                        // Những nhân viên có trong data nhưng chưa có trong map
+                        combinedMap[id] = `Chưa xác định;;${name}`;
+                    }
+                });
+            }
+            setLocalMap(combinedMap);
             setSearchTerm('');
             setEditingId(null);
             setHasUnsavedChanges(false);

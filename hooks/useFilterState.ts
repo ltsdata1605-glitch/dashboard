@@ -13,6 +13,7 @@ export const initialFilterState: FilterState = {
     startDate: '',
     endDate: '',
     dateRange: 'all',
+    selectedMonths: [],
     industryGrid: {
         selectedGroups: [],
         selectedSubgroups: [],

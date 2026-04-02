@@ -1,7 +1,7 @@
-export const getTraGopPercentClass = (percentage: number) => {
+export const getTraGopPercentClass = (percentage: number, target: number = 45) => {
     if (isNaN(percentage)) return 'text-slate-600 dark:text-slate-300';
-    if (percentage >= 45) return 'text-green-600 dark:text-green-500 font-bold';
-    if (percentage >= 40) return 'text-amber-600 dark:text-amber-500';
+    if (percentage >= target) return 'text-green-600 dark:text-green-500 font-bold';
+    if (percentage >= target - 5) return 'text-amber-600 dark:text-amber-500';
     return 'text-red-600 dark:text-red-500 font-bold';
 };
 

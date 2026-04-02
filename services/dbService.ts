@@ -123,11 +123,11 @@ export async function clearProductConfig(): Promise<void> {
 }
 
 // --- KPI Targets ---
-export async function saveKpiTargets(targets: { hieuQua: number, traGop: number, doanhThu?: number }): Promise<void> {
+export async function saveKpiTargets(targets: { hieuQua: number, traGop: number, doanhThu?: number, gtdh?: number }): Promise<void> {
     return saveSetting('kpiTargets', targets);
 }
 
-export async function getKpiTargets(): Promise<{ hieuQua: number, traGop: number, doanhThu?: number } | null> {
+export async function getKpiTargets(): Promise<{ hieuQua: number, traGop: number, doanhThu?: number, gtdh?: number } | null> {
     return getSetting('kpiTargets');
 }
 

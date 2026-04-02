@@ -4,6 +4,7 @@ import type { Employee, EmployeeData } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { getDailyTarget, saveDailyTarget } from '../../services/dbService';
+import { useDashboardContext } from '../../contexts/DashboardContext';
 
 interface PerformanceTableProps {
     employeeData: EmployeeData | null | undefined;
@@ -32,15 +33,15 @@ const getPercentBadge = (pct: number) => {
     return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300';
 };
 
-const getTraChamBadge = (pct: number) => {
+const getTraChamBadge = (pct: number, target: number = 45) => {
     if (isNaN(pct)) return 'text-slate-400';
-    if (pct >= 45) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 px-2 py-0.5 rounded-lg font-bold';
-    if (pct >= 35) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 px-2 py-0.5 rounded-lg font-bold';
+    if (pct >= target) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 px-2 py-0.5 rounded-lg font-bold';
+    if (pct >= target - 10) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 px-2 py-0.5 rounded-lg font-bold';
     return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300 px-2 py-0.5 rounded-lg font-bold';
 };
 
-const getHieuQuaBadge = (pct: number) => {
-    if (pct >= 35) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300';
+const getHieuQuaBadge = (pct: number, target: number = 35) => {
+    if (pct >= target) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300';
     return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300';
 };
 
@@ -128,7 +129,7 @@ const RenderSingleTable = ({
     isExporting, groupedData, outstandingData, grandTotal, targetPerEmployee,
     onEmployeeClick, isEditingTarget, targetInputRef, setTargetPerEmployee,
     handleSaveTarget, setIsEditingTarget, tempTarget, setTempTarget, fullSellerArrayLength,
-    showSortArrow, onBatchExport
+    showSortArrow, onBatchExport, kpiTargets
 }: {
     groupType: GroupType;
     handleTabChange: (tab: GroupType) => void;
@@ -152,6 +153,7 @@ const RenderSingleTable = ({
     fullSellerArrayLength: number;
     showSortArrow: boolean;
     onBatchExport: () => void;
+    kpiTargets?: { hieuQua: number, traGop: number };
 }) => {
     const [copyKey, setCopyKey] = useState<string | null>(null);
 
@@ -464,12 +466,12 @@ const RenderSingleTable = ({
                                                             <span className="font-extrabold text-slate-800 dark:text-slate-100">{formatCurrency(emp.doanhThuQD)}</span>
                                                         )}
                                                         {h.key === 'hieuQuaValue' && (
-                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${getHieuQuaBadge(Number(emp.hieuQuaValue || 0))}`}>
+                                                            <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[10px] font-extrabold ${getHieuQuaBadge(Number(emp.hieuQuaValue || 0), kpiTargets?.hieuQua)}`}>
                                                                 {Number(emp.hieuQuaValue || 0).toFixed(0)}%
                                                             </span>
                                                         )}
                                                         {h.key === 'dtTraChamPercent_CE_ICT' && (
-                                                            <span className={`text-[10px] ${getTraChamBadge(Number(emp.dtTraChamPercent_CE_ICT || 0))}`}>
+                                                            <span className={`text-[10px] ${getTraChamBadge(Number(emp.dtTraChamPercent_CE_ICT || 0), kpiTargets?.traGop)}`}>
                                                                 {Number(emp.dtTraChamPercent_CE_ICT || 0).toFixed(0)}%
                                                             </span>
                                                         )}
@@ -575,6 +577,7 @@ const RenderSingleTable = ({
 const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableProps>(({
     employeeData, onEmployeeClick, onExport, isExporting,
 }, ref) => {
+    const { kpiTargets } = useDashboardContext() || {};
     const [activeTab, setActiveTab] = useState<GroupType>('doanhThu');
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>({ key: 'doanhThuQD', direction: 'desc' });
     const [targetPerEmployee, setTargetPerEmployee] = useState(150_000_000);
@@ -734,6 +737,7 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
                 fullSellerArrayLength={sellerCount}
                 showSortArrow={showSortArrow}
                 onBatchExport={handleBatchPerformanceExport}
+                kpiTargets={kpiTargets}
             />
         </div>
     );

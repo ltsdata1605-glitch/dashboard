@@ -54,7 +54,12 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
             availableWeeks: Array.from(weeksMap.entries())
                 .sort((a, b) => b[0].localeCompare(a[0]))
                 .map(([value, label]) => ({ value, label })),
-            availableMonths: Array.from(months).sort((a, b) => b.localeCompare(a))
+            availableMonths: Array.from(months)
+                .sort((a, b) => b.localeCompare(a))
+                .map(mStr => {
+                    const [year, month] = mStr.split('-');
+                    return `Tháng ${month}/${year}`;
+                })
         };
     }, [originalData]);
 
@@ -83,7 +88,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
         handleFilterChange({
             startDate: start ? toLocalISOString(start) : '',
             endDate: end ? toLocalISOString(end) : '',
-            dateRange: range
+            dateRange: range,
+            selectedMonths: [] // Clear selected months when selecting a quick range
         });
     };
 
@@ -140,13 +146,30 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                         />
                     </div>
 
+                    {/* NEW: Month Filter (Multi-select) */}
+                    <div className="w-full lg:w-[150px] shrink-0 transform transition-transform hover:scale-105">
+                        <MultiSelectDropdown
+                            label="Tháng"
+                            options={availableMonths}
+                            selected={filterState.selectedMonths || []}
+                            onChange={(sel) => {
+                                handleFilterChange({ 
+                                    selectedMonths: sel, 
+                                    dateRange: sel.length > 0 ? '' : 'all',
+                                    startDate: '',
+                                    endDate: '',
+                                });
+                            }}
+                            variant="compact"
+                        />
+                    </div>
+
                     {/* 2. Quick Date Ranges */}
                     <div className="relative flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200/50 dark:border-slate-700/50 shrink-0">
                         {[
-                            { range: 'today', label: 'Hôm nay' },
                             { range: 'week', label: 'Tuần' },
-                            { range: 'month', label: 'Tháng' },
-                            { range: 'all', label: 'All' }
+                            { range: 'today', label: 'Hôm nay' },
+                            { range: 'all', label: 'Tất cả' }
                         ].map(({ range, label }) => (
                             <div key={range} className="relative">
                                 {range === 'week' && (
@@ -164,28 +187,11 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                                             start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
                                             const end = new Date(start);
                                             end.setDate(start.getDate() + 6);
-                                            handleFilterChange({ startDate: toLocalISOString(start), endDate: toLocalISOString(end), dateRange: 'week' });
+                                            handleFilterChange({ startDate: toLocalISOString(start), endDate: toLocalISOString(end), dateRange: 'week', selectedMonths: [] });
                                         }}
                                     >
                                         <option value="" disabled>Chọn Tuần</option>
                                         {availableWeeks.map(w => <option key={w.value} value={w.value}>{w.label}</option>)}
-                                    </select>
-                                )}
-                                {range === 'month' && (
-                                    <select 
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                        value=""
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            if (!val) return;
-                                            const [yStr, mStr] = val.split('-');
-                                            const start = new Date(parseInt(yStr, 10), parseInt(mStr, 10) - 1, 1);
-                                            const end = new Date(parseInt(yStr, 10), parseInt(mStr, 10), 0);
-                                            handleFilterChange({ startDate: toLocalISOString(start), endDate: toLocalISOString(end), dateRange: 'month' });
-                                        }}
-                                    >
-                                        <option value="" disabled>Chọn Tháng</option>
-                                        {availableMonths.map(m => <option key={m} value={m}>Tháng {m.split('-')[1]}/{m.split('-')[0]}</option>)}
                                     </select>
                                 )}
                                 <button

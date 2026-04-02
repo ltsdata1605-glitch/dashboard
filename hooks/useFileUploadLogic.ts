@@ -199,7 +199,7 @@ export const useFileUploadLogic = ({
                     await new Promise(r => setTimeout(r, 50)); // nhường CPU trước khi React render Dashboard khổng lồ
                     
                     startTransition(() => {
-                        setAppState('dashboard');
+                        setAppState('processing');
                     });
                 } catch (error) {
                     console.error("Lỗi lưu dữ liệu:", error);

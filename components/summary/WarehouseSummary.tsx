@@ -19,7 +19,7 @@ interface WarehouseSummaryProps {
 
 const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) => {
     const { userRole } = useAuth();
-    const { processedData, productConfig, originalData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, filterState, handleFilterChange } = useDashboardContext();
+    const { processedData, productConfig, originalData, baseFilteredData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, filterState, handleFilterChange } = useDashboardContext();
     const data = processedData?.warehouseSummary ?? [];
     
     const summaryRef = useRef<HTMLDivElement>(null);
@@ -37,7 +37,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     const { sortedData, totals, customTotals, customProductColumnValues, getColumnValue } = useWarehouseLogic({
         data,
         columns,
-        originalData,
+        originalData: baseFilteredData, // Passing baseFilteredData massively speeds up calculate loop
         productConfig,
         sortConfig
     });
@@ -202,20 +202,21 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     subtitle="Phân tích hiệu suất từng siêu thị"
                 >
                     <div className="flex items-center space-x-2 hide-on-export">
-                        {/* Export status filter removed as it is now in the global FilterBar */}
-                        {userRole !== 'employee' && (
-                            <button onClick={() => setIsSettingsModalOpen(true)} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
-                                <Icon name="settings-2" size={5} />
-                            </button>
-                        )}
+                        <button onClick={handleSingleExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
+                            {isExporting ? <Icon name="loader-2" className="animate-spin" size={5} /> : <Icon name="camera" size={5} />}
+                        </button>
                         {uniqueFilterOptions.kho.length > 1 && (
                             <button onClick={onBatchExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
                                 <Icon name="images" size={5} />
                             </button>
                         )}
-                        <button onClick={handleSingleExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
-                            {isExporting ? <Icon name="loader-2" className="animate-spin" size={5} /> : <Icon name="camera" size={5} />}
-                        </button>
+                        {/* Divider */}
+                        {userRole !== 'employee' && <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>}
+                        {userRole !== 'employee' && (
+                            <button onClick={() => setIsSettingsModalOpen(true)} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
+                                <Icon name="settings-2" size={5} />
+                            </button>
+                        )}
                     </div>
                 </SectionHeader>
 
@@ -286,21 +287,54 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                             value = target > 0 ? (dtqd / target) * 100 : 0;
                                         }
 
+                                        let avg: number | undefined;
+                                        if (col.conditionalFormatting?.some(r => r.condition === '>avg' || r.condition === '<avg')) {
+                                            const totalRows = currentData.length || 1;
+                                            if (col.metric && totals[col.metric as keyof typeof totals] !== undefined) {
+                                                avg = (totals[col.metric as keyof typeof totals] as number) / totalRows;
+                                            } else if (col.metricType === 'revenueQD' && totals.doanhThuQD !== undefined) {
+                                                avg = totals.doanhThuQD / totalRows;
+                                            } else if (customTotals[col.id] !== undefined) {
+                                                avg = customTotals[col.id] / totalRows;
+                                            }
+                                        }
+
+                                        let customColor: string | null = null;
+                                        if (col.conditionalFormatting && value !== undefined) {
+                                            for (const rule of col.conditionalFormatting) {
+                                                let isMatch = false;
+                                                switch (rule.condition) {
+                                                    case '>': isMatch = value > rule.value1; break;
+                                                    case '<': isMatch = value < rule.value1; break;
+                                                    case '=': isMatch = value === rule.value1; break;
+                                                    case 'between': isMatch = rule.value2 !== undefined && value >= rule.value1 && value <= rule.value2; break;
+                                                    case '>avg': isMatch = avg !== undefined && value > avg; break;
+                                                    case '<avg': isMatch = avg !== undefined && value < avg; break;
+                                                }
+                                                if (isMatch) {
+                                                    customColor = rule.color;
+                                                    break;
+                                                }
+                                            }
+                                        }
+
                                         let content;
+                                        const textColorStyle = customColor ? { color: customColor } : {};
+                                        
                                         if (isHqqd) {
-                                            content = <span className={getHqqdClass(value)}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '—'}</span>;
+                                            content = <span className={customColor ? "font-bold" : getHqqdClass(value)} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '—'}</span>;
                                         } else if (isDTQD) {
-                                            content = <span className="font-semibold text-indigo-700">{formatRevenueForKho(value)}</span>;
+                                            content = <span className={customColor ? "font-semibold" : "font-semibold text-indigo-700"} style={textColorStyle}>{formatRevenueForKho(value)}</span>;
                                         } else if (isPercentHT) {
-                                            content = <span className="font-bold text-orange-500">{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
+                                            content = <span className={customColor ? "font-bold" : "font-bold text-orange-500"} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                         } else if (col.metric === 'traChamPercent') {
-                                            content = <span className="font-medium text-gray-500">{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
+                                            content = <span className={customColor ? "font-medium" : "font-medium text-gray-500"} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                         } else if (col.type === 'calculated' && col.displayAs === 'percentage') {
-                                            content = <span className="font-bold text-slate-700 dark:text-slate-300">{value !== undefined && value !== 0 ? `${Math.round(value * 100)}%` : '0%'}</span>;
+                                            content = <span className={customColor ? "font-bold" : "font-bold text-slate-700 dark:text-slate-300"} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value * 100)}%` : '0%'}</span>;
                                         } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.metric === 'doanhThuThuc' || col.metric === 'target' || col.type === 'target') {
-                                            content = <span>{formatRevenueForKho(value)}</span>;
+                                            content = <span style={textColorStyle}>{formatRevenueForKho(value)}</span>;
                                         } else {
-                                            content = <span>{formatQuantityForKho(value)}</span>;
+                                            content = <span style={textColorStyle}>{formatQuantityForKho(value)}</span>;
                                         }
 
                                         return (

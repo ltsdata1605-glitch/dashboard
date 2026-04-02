@@ -24,6 +24,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [employeeAnalysisData, setEmployeeAnalysisData] = useState<ProcessedData['employeeData'] | null>(null);
     const [warehouseTargets, setWarehouseTargets] = useState<Record<string, number>>({});
     const [gtdhTargets, setGtdhTargets] = useState<Record<string, number>>({});
+    const [kpiTargets, setKpiTargets] = useState<{ hieuQua: number, traGop: number, gtdh?: number }>({ hieuQua: 40, traGop: 45, gtdh: 1 });
     const [crossSellingConfig, setCrossSellingConfig] = useState<any>(null);
     const [isHardProcessing, setIsHardProcessing] = useState(false);    // initial load / file upload
     const [isFilterProcessing, setIsFilterProcessing] = useState(false); // filter-only fast re-calc
@@ -93,6 +94,14 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     if (savedGtdhTargets) setGtdhTargets(savedGtdhTargets);
                 }
 
+                if (cloudData && cloudData.kpiTargets) {
+                    setKpiTargets(cloudData.kpiTargets);
+                    await dbService.saveKpiTargets(cloudData.kpiTargets);
+                } else {
+                    const savedKpiTargets = await dbService.getKpiTargets();
+                    if (savedKpiTargets) setKpiTargets(savedKpiTargets);
+                }
+
                 if (cloudData && cloudData.crossSellingConfig) {
                     setCrossSellingConfig(cloudData.crossSellingConfig);
                     await dbService.saveCrossSellingConfig(cloudData.crossSellingConfig);
@@ -123,7 +132,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         
                         startTransition(() => {
                             setOriginalData(srcData);
-                            setAppState('dashboard');
+                            setAppState('processing');
                         });
                     };
 
@@ -196,12 +205,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     const { processedData: employeeResult } = applyFiltersAndProcess(rbacData, productConfig, employeeFilterState, departmentMap);
                     employeeResultData = employeeResult.employeeData;
                 }
-                
                 startTransition(() => {
                     setProcessedData(result);
                     setBaseFilteredData(newBaseData);
                     setCalendarSourceData(newCalendarSourceData);
                     setEmployeeAnalysisData(employeeResultData);
+                    setAppState('dashboard');
                 });
             } catch (error) {
                 console.error("Lỗi khi xử lý lại dữ liệu:", error);
@@ -210,7 +219,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             } finally {
                 setIsFilterProcessing(false);
             }
-        }, 0); // run as soon as possible without triggering a hard loading state
+        }, 50); // Yield UI Thread to ensure loading spinner paints before heavy calculation
 
         return () => clearTimeout(timer);
     }, [originalData, productConfig, filterState, departmentMap, setStatus, userRole, departmentId, employeeName, user?.email]);
@@ -251,6 +260,15 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             const uniqueDepartments = Array.from(new Set(Object.values(departmentMap).map(v => (v as string).split(';;')[0]))).sort();
             const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
             deptOptions = uniqueDepartments.filter(d => !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)));
+            
+            // Check for unassigned employees
+            const hasUnassigned = nguoiTaoOptions.some(empStr => {
+                const id = empStr.split(' - ')[0].trim();
+                return !departmentMap[id];
+            });
+            if (hasUnassigned && !deptOptions.includes('Chưa xác định')) {
+                deptOptions.push('Chưa xác định');
+            }
         }
 
         return { kho: khoOptions, trangThai: trangThaiOptions, nguoiTao: nguoiTaoOptions, department: deptOptions, hangSX: hangSXOptions };
@@ -266,6 +284,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         employeeAnalysisData,
         warehouseTargets, setWarehouseTargets,
         gtdhTargets, setGtdhTargets,
+        kpiTargets,
+        updateKpiTargets: setKpiTargets,
         crossSellingConfig, setCrossSellingConfig,
         uniqueFilterOptions,
         isInternalProcessing: isHardProcessing, // only true during file upload / initial load

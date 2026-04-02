@@ -43,14 +43,22 @@ export const isDepartmentMatch = (row: DataRow, departmentFilter: string[], depa
     
     const creatorId = creator.split(' - ')[0].trim();
     const rawDept = departmentMap[creatorId];
-    const department = rawDept ? rawDept.split(';;')[0] : undefined;
+    const department = rawDept ? rawDept.split(';;')[0] : "Chưa xác định";
     
     return !!department && departmentFilter.includes(department);
 };
 
-export const isDateMatch = (row: DataRow, startDate: Date | null, endDate: Date | null) => {
+export const isDateMatch = (row: DataRow, startDate: Date | null, endDate: Date | null, selectedMonths?: string[]) => {
     const rowDate = row.parsedDate;
-    if (!rowDate) return false;
+    if (!rowDate || isNaN(rowDate.getTime())) return false;
+    
+    if (selectedMonths && selectedMonths.length > 0) {
+        const monthNum = rowDate.getMonth() + 1;
+        const yearNum = rowDate.getFullYear();
+        const mStr = `Tháng ${String(monthNum).padStart(2, '0')}/${yearNum}`;
+        return selectedMonths.includes(mStr);
+    }
+
     return (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
 };
 
@@ -120,7 +128,7 @@ export function applyFiltersAndProcess(
     // Base data for the main dashboard (respects all filters including kho)
     const baseFilteredData = calendarSourceData.filter(row => isKhoMatch(row, filters.kho));
 
-    const mainPeriodData = baseFilteredData.filter(row => isDateMatch(row, mainStartDate, mainEndDate));
+    const mainPeriodData = baseFilteredData.filter(row => isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths));
     
     const warehouseSummary = calculateWarehouseSummary(allData, filters, productConfig) || [];
     

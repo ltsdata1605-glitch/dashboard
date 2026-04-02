@@ -81,22 +81,31 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({ type, label, options, s
                             <label htmlFor={`select-all-${type}`} className="ml-3 block text-sm font-bold text-indigo-600 cursor-pointer">Chọn tất cả</label>
                         </div>
                         <div className="max-h-60 overflow-y-auto space-y-0.5 custom-scrollbar pr-1">
-                            {filteredOptions.length > 0 ? filteredOptions.map(option => (
-                                <label key={option} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors group">
-                                    <div className="flex items-center min-w-0">
-                                        <input 
-                                            type="checkbox" 
-                                            id={`cb-${type}-${option}`} 
-                                            value={option} 
-                                            checked={selected.includes(option)} 
-                                            onChange={() => handleOptionChange(option)} 
-                                            className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" 
-                                        />
-                                        <span className="ml-3 block text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{option}</span>
-                                    </div>
-                                    <Icon name="chevron-right" size={3} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
-                                </label>
-                            )) : (
+                            {filteredOptions.length > 0 ? (
+                                <>
+                                    {filteredOptions.slice(0, 200).map(option => (
+                                        <label key={option} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer transition-colors group">
+                                            <div className="flex items-center min-w-0">
+                                                <input 
+                                                    type="checkbox" 
+                                                    id={`cb-${type}-${option}`} 
+                                                    value={option} 
+                                                    checked={selected.includes(option)} 
+                                                    onChange={() => handleOptionChange(option)} 
+                                                    className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" 
+                                                />
+                                                <span className="ml-3 block text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{option}</span>
+                                            </div>
+                                            <Icon name="chevron-right" size={3} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </label>
+                                    ))}
+                                    {filteredOptions.length > 200 && (
+                                        <div className="text-center py-2 text-xs italic text-slate-400 font-medium">
+                                            Hiển thị 200 kết quả đầu tiên.
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
                                 <p className="text-center text-xs text-slate-400 py-4 font-bold">Không tìm thấy kết quả</p>
                             )}
                         </div>

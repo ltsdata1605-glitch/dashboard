@@ -41,6 +41,8 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
     // Target column state
     const [targetValue, setTargetValue] = useState('');
 
+    const [headerColor, setHeaderColor] = useState<string>('');
+
     const [formattingRules, setFormattingRules] = useState<{ id: number; condition: string; value1: string; value2: string; color: string; }[]>([]);
     
     const [feedback, setFeedback] = useState<{type: 'error' | 'success', message: string} | null>(null);
@@ -49,9 +51,32 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
     const [showHeadersList, setShowHeadersList] = useState(false);
     const headersRef = useRef<HTMLDivElement>(null);
 
+    const PASTEL_COLORS = [
+        { label: 'Mặc định', value: '' },
+        { label: 'Đỏ', value: '#fca5a5' },
+        { label: 'Cam', value: '#fdba74' },
+        { label: 'Vàng', value: '#fde047' },
+        { label: 'Lục', value: '#86efac' },
+        { label: 'Lục bảo', value: '#6ee7b7' },
+        { label: 'Lơ', value: '#93c5fd' },
+        { label: 'Chàm', value: '#a5b4fc' },
+        { label: 'Tím', value: '#d8b4fe' },
+        { label: 'Hồng', value: '#f9a8d4' },
+        { label: 'Đỏ đậm', value: '#ef4444' },
+        { label: 'Cam đậm', value: '#f97316' },
+        { label: 'Lục đậm', value: '#10b981' },
+        { label: 'Lơ đậm', value: '#3b82f6' },
+        { label: 'Xám', value: '#cbd5e1' }
+    ];
+    
+    const ALERT_COLORS = [
+        '#ef4444', '#f97316', '#eab308', '#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'
+    ];
+
     const resetForm = () => {
         setMainHeader('');
         setColumnName('');
+        setHeaderColor('');
         setColumnType('data');
         setMetricType('quantity');
         setSelectedIndustries([]);
@@ -75,6 +100,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             if (editingColumn) {
                 setMainHeader(editingColumn.mainHeader || '');
                 setColumnName(editingColumn.columnName);
+                setHeaderColor(editingColumn.headerColor || '');
                 setColumnType(editingColumn.type);
                  if (editingColumn.conditionalFormatting) {
                     setFormattingRules(editingColumn.conditionalFormatting.map((rule, index) => ({
@@ -165,13 +191,14 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                 id: editingColumn?.id || `col-${Date.now()}`,
                 mainHeader: mainHeader.trim().toUpperCase(),
                 columnName: columnName.trim().toUpperCase(),
+                headerColor: headerColor || undefined,
                 type: 'data',
                 metricType,
                 filters: {
                     selectedIndustries,
                     selectedSubgroups,
                     selectedManufacturers,
-                    productCodes: productCodes.split(/[\s,]+/).map(code => code.trim()).filter(Boolean),
+                    productCodes: productCodes.split(/[,;\n]+/).map(code => code.trim()).filter(Boolean),
                     priceType,
                     priceCondition: priceCondition === 'none' ? undefined : priceCondition,
                     priceValue1: priceValue1 ? parseFloat(priceValue1) : undefined,
@@ -189,6 +216,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                 id: editingColumn?.id || `col-${Date.now()}`,
                 mainHeader: mainHeader.trim().toUpperCase(),
                 columnName: columnName.trim().toUpperCase(),
+                headerColor: headerColor || undefined,
                 type: 'target',
                 metricType, // reuse metricType to determine formatting (revenue/quantity)
                 targetValue: parsedTarget,
@@ -203,6 +231,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                 id: editingColumn?.id || `col-${Date.now()}`,
                 mainHeader: mainHeader.trim().toUpperCase(),
                 columnName: columnName.trim().toUpperCase(),
+                headerColor: headerColor || undefined,
                 type: 'calculated',
                 operation,
                 operand1_columnId: operand1,
@@ -249,7 +278,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     
                     {/* Common Fields */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div ref={headersRef} className="relative z-10">
+                        <div ref={headersRef} className="relative z-[99]">
                             <label htmlFor="mainHeader" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Tiêu đề chính</label>
                             <div className="relative">
                                 <input 
@@ -299,6 +328,25 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                 <button type="button" onClick={() => setColumnType('calculated')} className={`py-1.5 px-4 text-sm font-semibold rounded-md transition-colors ${columnType === 'calculated' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700'}`}>Tính toán</button>
                                 <button type="button" onClick={() => setColumnType('target')} className={`py-1.5 px-4 text-sm font-semibold rounded-md transition-colors ${columnType === 'target' ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-slate-700'}`}>Chỉ tiêu (Target)</button>
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="mt-4 p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Màu nền tiêu đề (Tùy chọn)</label>
+                        <div className="flex flex-wrap gap-2">
+                            {PASTEL_COLORS.map(c => (
+                                <button
+                                    key={c.label}
+                                    type="button"
+                                    onClick={() => setHeaderColor(c.value)}
+                                    title={c.label}
+                                    className={`w-7 h-7 rounded-full transition-transform hover:scale-110 flex items-center justify-center ${headerColor === c.value ? 'ring-2 ring-offset-1 ring-primary-500 scale-110' : 'ring-1 ring-black/5'} ${!c.value ? 'bg-stripes-slate-200' : ''}`}
+                                    style={c.value ? { backgroundColor: c.value } : {}}
+                                >
+                                    {!c.value && <Icon name="slash" size={3} className="text-slate-400" />}
+                                    {headerColor === c.value && c.value && <Icon name="check" size={3} className="text-slate-700" />}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
@@ -490,9 +538,21 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                     <div className="flex items-end gap-2">
                                         <div className="flex-grow">
                                             <label className="text-xs font-medium text-slate-600 dark:text-slate-400">Màu</label>
-                                            <input type="color" value={rule.color} onChange={e => updateFormattingRule(rule.id, 'color', e.target.value)} className="w-full h-9 mt-1 p-1 block rounded-md border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 shadow-sm cursor-pointer"/>
+                                            <div className="flex items-center gap-1.5 mt-1 bg-white dark:bg-slate-700 p-1.5 rounded-md border border-slate-300 dark:border-slate-600 shadow-sm h-9">
+                                                {ALERT_COLORS.map(c => (
+                                                    <button
+                                                        key={c}
+                                                        type="button"
+                                                        onClick={() => updateFormattingRule(rule.id, 'color', c)}
+                                                        className={`w-5 h-5 rounded-full transition-transform hover:scale-110 flex-shrink-0 ${rule.color === c ? 'ring-2 ring-offset-1 ring-primary-500 scale-110' : ''}`}
+                                                        style={{ backgroundColor: c }}
+                                                    />
+                                                ))}
+                                                <div className="w-px h-4 bg-slate-200 dark:bg-slate-600 mx-0.5"></div>
+                                                <input type="color" value={rule.color} onChange={e => updateFormattingRule(rule.id, 'color', e.target.value)} className="w-6 h-6 p-0 border-0 rounded cursor-pointer shrink-0"/>
+                                            </div>
                                         </div>
-                                        <button type="button" onClick={() => removeFormattingRule(rule.id)} className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-md"><Icon name="trash-2" size={4}/></button>
+                                        <button type="button" onClick={() => removeFormattingRule(rule.id)} className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-md h-9"><Icon name="trash-2" size={4}/></button>
                                     </div>
                                 </div>
                             )})}

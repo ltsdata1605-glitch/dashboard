@@ -22,10 +22,10 @@ interface RecursiveRowProps {
     visibleColumns: string[]; // State điều khiển Ẩn Hiện Cột
 }
 
-const getTraGopPercentClass = (percentage: number) => {
+const getTraGopPercentClass = (percentage: number, target: number) => {
     if (isNaN(percentage)) return 'text-slate-600 dark:text-slate-300';
-    if (percentage >= 45) return 'text-green-600 dark:text-green-500 font-bold';
-    if (percentage >= 40) return 'text-amber-600 dark:text-amber-500';
+    if (percentage >= target) return 'text-green-600 dark:text-green-500 font-bold';
+    if (percentage >= target - 5) return 'text-amber-600 dark:text-amber-500';
     return 'text-red-600 dark:text-red-500 font-bold';
 };
 
@@ -41,7 +41,7 @@ const ROW_TEXT_COLORS: Record<string, string> = {
 const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({ 
     nodeKey, currentNode, prevNode, level, parentId, expandedIds, toggleExpand, rootIndex, isComparisonMode, sortConfig, drilldownOrder, parentRevenue, parentQuantity, visibleColumns
 }) => {
-    const { gtdhTargets, productConfig } = useDashboardContext() || {};
+    const { gtdhTargets, productConfig, kpiTargets } = useDashboardContext() || {};
     
     const currentId = `${parentId}-${nodeKey.replace(/[^a-zA-Z0-9]/g, '-')}`;
     const isExpanded = expandedIds.has(currentId);
@@ -109,6 +109,11 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 activeTarget = gtdhTargets[nganhHang];
             }
         }
+    }
+    
+    // Mặc định là 1 (1M) nếu < 1 là không đạt mục tiêu
+    if (activeTarget === undefined) {
+        activeTarget = 1000000;
     }
     const traGopPercent = revenue > 0 ? (traGopRevenue / revenue) * 100 : 0;
     const dtThucPercent = parentRevenue > 0 ? (revenue / parentRevenue) * 100 : 0;
@@ -298,7 +303,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* Tra Gop % */}
                 {visibleColumns.includes('traGopPercent') && (
                     <>
-                        <td className={`${cellClass} ${getTraGopPercentClass(traGopPercent)} ${!isComparisonMode ? separatorClass : ''}`}>
+                        <td className={`${cellClass} ${getTraGopPercentClass(traGopPercent, kpiTargets?.traGop || 45)} ${!isComparisonMode ? separatorClass : ''}`}>
                             {traGopDisplay}
                         </td>
                         {isComparisonMode && (

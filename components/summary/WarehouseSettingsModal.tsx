@@ -203,7 +203,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
             return;
         }
 
-        const productCodes = productCodesInput.split(/[\s,]+/).map(code => code.trim()).filter(Boolean);
+        const productCodes = productCodesInput.split(/[,;\n]+/).map(code => code.trim()).filter(Boolean);
 
         const newColumnData = {
             mainHeader: mainHeader.trim(), subHeader: subHeader.trim(), categoryType, 
@@ -317,12 +317,10 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                         <div className={`w-1.5 h-1.5 rounded-full transition-colors ${col.isVisible ? styles.indicator : 'bg-slate-300 dark:bg-slate-600'}`}></div>
                                         <span className="truncate max-w-[130px] tracking-tight">{col.subHeader}</span>
                                         
-                                        {col.isCustom && (
-                                            <div className="flex items-center ml-1 pl-1 border-l border-slate-100 dark:border-slate-700 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                                <button onClick={(e) => { e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-blue-500"><Icon name="edit-3" size={3} /></button>
-                                                <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 text-slate-400 hover:text-red-500"><Icon name="x" size={3} /></button>
-                                            </div>
-                                        )}
+                                        <div className="flex items-center ml-1 pl-1 border-l border-slate-100 dark:border-slate-700 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                            <button onClick={(e) => { e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-blue-500"><Icon name="edit-3" size={3} /></button>
+                                            <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 text-slate-400 hover:text-red-500"><Icon name="x" size={3} /></button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
@@ -382,7 +380,8 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             operand2_columnId: editingColumn.operand2_columnId,
                             displayAs: editingColumn.displayAs,
                             targetValue: editingColumn.targetValue,
-                            conditionalFormatting: editingColumn.conditionalFormatting
+                            conditionalFormatting: editingColumn.conditionalFormatting,
+                            headerColor: editingColumn.headerColor
                         } as import('../../types').ColumnConfig : undefined}
                         onSave={(newColumn) => {
                             const mappedColumn: WarehouseColumnConfig = {
@@ -400,7 +399,8 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                 operand2_columnId: newColumn.operand2_columnId,
                                 displayAs: newColumn.displayAs,
                                 targetValue: newColumn.targetValue,
-                                conditionalFormatting: newColumn.conditionalFormatting
+                                conditionalFormatting: newColumn.conditionalFormatting,
+                                headerColor: newColumn.headerColor
                             };
                             
                             if (editingColumn) {

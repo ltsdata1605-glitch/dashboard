@@ -5,6 +5,7 @@ import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
+import * as XLSX from 'xlsx';
 
 interface UnshippedOrdersModalProps {
     isOpen: boolean;
@@ -104,6 +105,55 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             allDetails.forEach(detail => (detail.open = nextState));
         }
         setIsAllExpanded(nextState);
+    };
+
+    const handleExportExcel = () => {
+        const finalUnshippedOrders = salesData.filter(row =>
+            (Number(getRowValue(row, COL.PRICE)) || 0) > 0
+        );
+        
+        const exportData = finalUnshippedOrders.map(order => {
+            const maNganhHang = getRowValue(order, COL.MA_NGANH_HANG);
+            const maNhomHang = getRowValue(order, COL.MA_NHOM_HANG);
+            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig || undefined);
+            const price = Number(getRowValue(order, COL.PRICE)) || 0;
+            const revenueQD = price * heso;
+            
+            let scheduledDateRaw = order['TG Hẹn Giao'] || order.parsedDate;
+            let formattedDate = 'N/A';
+            if (scheduledDateRaw) {
+                let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
+                if (!isNaN(scheduledDate.getTime())) {
+                    formattedDate = scheduledDate.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'});
+                }
+            }
+
+            return {
+                'Kho Xuất': getRowValue(order, ['Kho', 'Kho xuất', 'TenKho']),
+                'Người Tạo': getRowValue(order, ['NguoiTao', 'Người tạo', 'NV Tạo']),
+                'Tên Khách Hàng': getRowValue(order, ['TenKhachHang', 'Khách hàng', 'Tên khách hàng']) || 'Khách lẻ',
+                'Mã Đơn Hàng': getRowValue(order, COL.ID),
+                'Tên Sản Phẩm': getRowValue(order, COL.PRODUCT),
+                'Số Lượng': Number(getRowValue(order, COL.QUANTITY)) || 0,
+                'Doanh Thu Thực': price,
+                'Doanh Thu QĐ': revenueQD,
+                'Thời Gian Hẹn': formattedDate,
+                'Trạng Thái Xuất': getRowValue(order, ['TrangThaiXuat', 'Trạng thái xuất']) || 'Chưa xuất'
+            };
+        });
+
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        
+        // Auto-size columns slightly
+        const wscols = [
+            {wch: 15}, {wch: 25}, {wch: 25}, {wch: 15}, {wch: 40}, 
+            {wch: 10}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 15}
+        ];
+        ws['!cols'] = wscols;
+
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "DonHangChoXuat");
+        XLSX.writeFile(wb, "DanhSachDonHangChoXuat.xlsx");
     };
 
     const { industryDataForDisplay, totalUnshippedRevenue, totalUnshippedRevenueQD, creatorData } = useMemo(() => {
@@ -223,7 +273,10 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                  <Icon name="switch-camera" size={4} />
             </button>
             <button onClick={handleExportAll} disabled={isExporting} title="Xuất ảnh toàn bộ danh sách" className="p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center w-10 h-10">
-                 <Icon name="camera" />
+                 <Icon name="camera" size={4} />
+            </button>
+            <button onClick={handleExportExcel} disabled={isExporting} title="Xuất File Excel" className="px-3 gap-2 border border-green-300 dark:border-green-600 rounded-md shadow-sm text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors flex items-center justify-center h-10 font-bold text-sm">
+                 <Icon name="file-spreadsheet" size={4} /> Excel
             </button>
         </div>
     );

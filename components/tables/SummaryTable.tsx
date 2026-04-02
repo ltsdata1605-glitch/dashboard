@@ -27,7 +27,7 @@ type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'we
 
 const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
     const { userRole } = useAuth();
-    const { filterState } = useDashboardContext();
+    const { filterState, kpiTargets } = useDashboardContext();
     const state = useSummaryTableLogic();
     const [isBuilderOpen, setIsBuilderOpen] = useState(false);
 
@@ -829,7 +829,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                 {isComparisonMode && <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaAOV, 'currency')}</td>}
 
                                 {/* Tra Gop */}
-                                <td className={`${footerCellClass} ${getTraGopPercentClass(grandTotal.traGopPercent)} ${!isComparisonMode ? separatorClass : ''}`}>{traGopDisplayTotal}</td>
+                                <td className={`${footerCellClass} ${getTraGopPercentClass(grandTotal.traGopPercent, kpiTargets?.traGop || 45)} ${!isComparisonMode ? separatorClass : ''}`}>{traGopDisplayTotal}</td>
                                 {isComparisonMode && <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaTraGopPercent, 'percent')}</td>}
                            </tr>
                         </tfoot>

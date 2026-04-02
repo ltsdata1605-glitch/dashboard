@@ -236,6 +236,7 @@ export interface WarehouseColumnConfig {
   // display
   mainHeader: string;
   subHeader: string;
+  headerColor?: string;
 }
 
 export interface ProcessedData {
@@ -269,6 +270,7 @@ export interface FilterState {
     startDate: string;
     endDate: string;
     dateRange: string;
+    selectedMonths: string[];
     industryGrid: {
         selectedGroups: string[];
         selectedSubgroups: string[];
@@ -334,6 +336,7 @@ export interface ColumnConfig {
         value2?: number;
         color: string;
     }[];
+    headerColor?: string;
 }
 
 export interface ContestTableConfig {

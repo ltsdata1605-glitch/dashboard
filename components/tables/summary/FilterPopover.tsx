@@ -98,20 +98,29 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                         <button onClick={handleDeselectAll} className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:underline">Bỏ chọn</button>
                     </div>
                     <div className="overflow-y-auto max-h-60 space-y-1 custom-scrollbar">
-                        {filteredOptions.length > 0 ? filteredOptions.map(option => (
-                            <label key={option} className="flex items-center justify-between p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer">
-                                <span className="text-sm text-slate-700 dark:text-slate-300 truncate pr-2 flex-grow" title={option}>{option}</span>
-                                <div className="relative inline-flex items-center cursor-pointer">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={selected.includes(option)} 
-                                        onChange={() => toggleOption(option)} 
-                                        className="sr-only peer" 
-                                    />
-                                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
-                                </div>
-                            </label>
-                        )) : (
+                        {filteredOptions.length > 0 ? (
+                            <>
+                                {filteredOptions.slice(0, 200).map(option => (
+                                    <label key={option} className="flex items-center justify-between p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-pointer">
+                                        <span className="text-sm text-slate-700 dark:text-slate-300 truncate pr-2 flex-grow" title={option}>{option}</span>
+                                        <div className="relative inline-flex items-center cursor-pointer">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selected.includes(option)} 
+                                                onChange={() => toggleOption(option)} 
+                                                className="sr-only peer" 
+                                            />
+                                            <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+                                        </div>
+                                    </label>
+                                ))}
+                                {filteredOptions.length > 200 && (
+                                    <div className="text-center py-2 text-xs italic text-slate-400 font-medium">
+                                        Hiển thị 200 kết quả đầu tiên. Vui lòng sử dụng ô tìm kiếm để xem thêm.
+                                    </div>
+                                )}
+                            </>
+                        ) : (
                             <div className="text-center text-xs text-slate-500 py-4">Không tìm thấy kết quả</div>
                         )}
                     </div>

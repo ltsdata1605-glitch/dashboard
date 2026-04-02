@@ -74,13 +74,13 @@ const KpiCard: React.FC<{
     );
 };
 
-// Inline Editor Component for Percentage (Small Width)
 const KpiTargetEditor: React.FC<{ 
     value: string; 
     onChange: (val: string) => void; 
     onFinish: () => void; 
     onCancel: () => void;
-}> = ({ value, onChange, onFinish, onCancel }) => {
+    suffix?: string;
+}> = ({ value, onChange, onFinish, onCancel, suffix = '%' }) => {
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -96,7 +96,7 @@ const KpiTargetEditor: React.FC<{
                 ref={inputRef}
                 type="number"
                 min="0"
-                max="100"
+                step="any"
                 value={value}
                 onChange={(e) => onChange(e.target.value)}
                 onBlur={onFinish}
@@ -105,32 +105,29 @@ const KpiTargetEditor: React.FC<{
                     if (e.key === 'Escape') onCancel();
                     e.stopPropagation(); 
                 }}
-                className="w-10 px-1 py-0.5 text-center text-xs font-bold text-slate-900 bg-slate-100 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+                className="w-12 px-1 py-0.5 text-center text-xs font-bold text-slate-900 bg-slate-100 rounded focus:ring-2 focus:ring-blue-500 outline-none"
             />
-            <span className="text-[10px] font-bold text-slate-500">%</span>
+            {suffix && <span className="text-[10px] font-bold text-slate-500">{suffix}</span>}
         </div>
     );
 };
 
 const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
-    const { processedData, filterState, warehouseTargets } = useDashboardContext();
+    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets } = useDashboardContext();
     const kpis = processedData?.kpis;
-    const [targets, setTargets] = useState({ hieuQua: 40, traGop: 45 });
     
-    const [editingState, setEditingState] = useState<{ field: 'hieuQua' | 'traGop' | null, value: string }>({ field: null, value: '' });
+    // targets fallbacks
+    const hieuQuaTarget = kpiTargets?.hieuQua ?? 40;
+    const traGopTarget = kpiTargets?.traGop ?? 45;
+    const gtdhTarget = kpiTargets?.gtdh ?? 1;
 
-    useEffect(() => {
-        getKpiTargets().then(saved => {
-            if (saved) {
-                setTargets(prev => ({ ...prev, ...saved }));
-            }
-        });
-    }, []);
+    const [editingState, setEditingState] = useState<{ field: 'hieuQua' | 'traGop' | 'gtdh' | null, value: string }>({ field: null, value: '' });
 
-    const startEditing = (e: React.MouseEvent, field: 'hieuQua' | 'traGop') => {
+    const startEditing = (e: React.MouseEvent, field: 'hieuQua' | 'traGop' | 'gtdh') => {
         e.preventDefault();
         e.stopPropagation();
-        setEditingState({ field, value: targets[field].toString() });
+        const initialVal = field === 'hieuQua' ? hieuQuaTarget : (field === 'traGop' ? traGopTarget : gtdhTarget);
+        setEditingState({ field, value: initialVal.toString() });
     };
 
     const handleEditChange = (val: string) => {
@@ -141,10 +138,14 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         if (!editingState.field) return;
         const newVal = parseFloat(editingState.value);
         if (!isNaN(newVal) && newVal >= 0) {
-            const newTargets = { ...targets, [editingState.field]: newVal };
-            setTargets(newTargets);
-            // Save including dummy doanhThu to match type, though not used here anymore
-            saveKpiTargets({ ...newTargets, doanhThu: 0 }).catch(console.error);
+            const newTargets = { 
+                hieuQua: hieuQuaTarget, 
+                traGop: traGopTarget, 
+                gtdh: gtdhTarget,
+                [editingState.field]: newVal 
+            };
+            updateKpiTargets(newTargets);
+            saveKpiTargets(newTargets).catch(console.error);
         }
         setEditingState({ field: null, value: '' });
     };
@@ -168,15 +169,16 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     }
 
     const hieuQuaValue = kpis.hieuQuaQD * 100;
-    const isHieuQuaGood = hieuQuaValue >= targets.hieuQua;
-    const isTraGopGood = kpis.traGopPercent >= targets.traGop;
+    const isHieuQuaGood = hieuQuaValue >= hieuQuaTarget;
+    const isTraGopGood = kpis.traGopPercent >= traGopTarget;
+    const isGtdhGood = gtdhTarget >= 1;
     
     // Revenue Target Logic
     const revenuePercentHT = revenueTarget > 0 ? (kpis.doanhThuQD / revenueTarget) * 100 : 0;
     const isRevenueGood = revenuePercentHT >= 100;
 
     return (
-        <div className="grid grid-cols-4 gap-4 mb-6 kpi-grid-for-export">
+        <div className="grid grid-cols-5 gap-4 mb-6 kpi-grid-for-export">
             
             <KpiCard 
                 icon="wallet-cards" 
@@ -206,7 +208,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 trendLabel="Mục tiêu"
                 trendValue={editingState.field === 'hieuQua' ? (
                     <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} />
-                ) : `${targets.hieuQua}%`}
+                ) : `${hieuQuaTarget}%`}
             >
                 <div className={`text-[22px] font-extrabold leading-none tracking-tight ${isHieuQuaGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-600'}`}>
                     {hieuQuaValue.toFixed(1)}%
@@ -221,14 +223,30 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 trendLabel="Mục tiêu"
                 trendValue={editingState.field === 'traGop' ? (
                     <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} />
-                ) : `${targets.traGop}%`}
+                ) : `${traGopTarget}%`}
             >
                 <div className={`text-[22px] font-extrabold leading-none tracking-tight ${isTraGopGood ? 'text-pink-700 dark:text-pink-400' : 'text-amber-600'}`}>
                     {kpis.traGopPercent.toFixed(1)}%
                 </div>
             </KpiCard>
             
-            {/* CARD 4: DOANH THU CHỜ XUẤT */}
+            {/* CARD 4: MỤC TIÊU GTĐH */}
+            <KpiCard 
+                icon="target" 
+                iconColor="blue" 
+                title="GTĐH Mục Tiêu"
+                onClick={(e) => startEditing(e, 'gtdh')}
+                trendLabel="Trạng thái"
+                trendValue={editingState.field === 'gtdh' ? (
+                    <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} suffix="Tr" />
+                ) : (isGtdhGood ? <span className="text-emerald-600 dark:text-emerald-400">Đạt</span> : <span className="text-rose-600 dark:text-rose-400">Chưa đạt</span>)}
+            >
+                <div className={`text-[22px] font-extrabold leading-none tracking-tight ${isGtdhGood ? 'text-slate-800 dark:text-slate-100' : 'text-rose-600 dark:text-rose-400'}`}>
+                    {gtdhTarget} Tr
+                </div>
+            </KpiCard>
+            
+            {/* CARD 5: DOANH THU CHỜ XUẤT */}
             <KpiCard 
                 icon="archive-restore" 
                 iconColor="red" 

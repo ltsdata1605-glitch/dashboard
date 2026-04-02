@@ -227,11 +227,8 @@ export default function DashboardView() {
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
                                             </div>
-                                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">
-                                                Đã lọc: <span className="text-slate-700 dark:text-slate-300">{baseFilteredData.length.toLocaleString()}</span> / {originalData.length.toLocaleString()} dòng 
-                                                <span className="ml-2 py-0.5 px-1.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-500">
-                                                    {originalData.length > 0 ? Math.round((baseFilteredData.length / originalData.length) * 100) : 0}%
-                                                </span>
+                                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                                Lượt Truy Cập và <span className="animate-pulse text-emerald-500 font-bold whitespace-nowrap">Online</span>
                                             </span>
                                         </div>
                                         
@@ -250,19 +247,58 @@ export default function DashboardView() {
                                     )}
                                     
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-8">
-                                        <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden">
-                                            <SectionHeader 
-                                                title="TỔNG QUAN DOANH THU" 
-                                                icon="bar-chart-3" 
-                                                subtitle={processedData.reportSubTitle}
-                                            >
-                                                    <div className="flex items-center gap-2 hide-on-export">
-                                                        {/* Local warehouse filter removed as it is now in the global FilterBar */}
-                                                        <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Tổng Quan" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                                            <Icon name="camera" size={5} />
-                                                        </button>
-                                                    </div>
+                                        <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden relative">
+                                            {/* Overdue Export Warning Banner */}
+                                            {(() => {
+                                                const now = new Date();
+                                                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                                                const overdueOrders = processedData.unshippedOrders?.filter(row => {
+                                                    let scheduledDateRaw = row['TG Hẹn Giao'] || row.parsedDate;
+                                                    if (!scheduledDateRaw) return false;
+                                                    let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
+                                                    if (!isNaN(scheduledDate.getTime())) {
+                                                        const schedTime = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate()).getTime();
+                                                        return todayStart > schedTime;
+                                                    }
+                                                    return false;
+                                                }) || [];
+                                                
+                                                if (overdueOrders.length > 0) {
+                                                    return (
+                                                        <div 
+                                                            onClick={openUnshippedModal}
+                                                            className="absolute top-0 right-0 left-0 bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[5]"
+                                                        >
+                                                            <div className="flex items-center gap-2 font-bold text-sm">
+                                                                <span className="relative flex h-3 w-3 mr-1">
+                                                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                                                                </span>
+                                                                ĐƠN HÀNG QUÁ HẠN XUẤT ({overdueOrders.length})
+                                                            </div>
+                                                            <div className="text-xs font-semibold underline underline-offset-2">
+                                                                Xem chi tiết & Cập nhật nhanh
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            })()}
+                                            
+                                            <div className="relative z-10 pt-8">
+                                                <SectionHeader 
+                                                    title="TỔNG QUAN DOANH THU" 
+                                                    icon="bar-chart-3" 
+                                                    subtitle={processedData.reportSubTitle}
+                                                >
+                                                        <div className="flex items-center gap-2 hide-on-export">
+                                                            {/* Local warehouse filter removed as it is now in the global FilterBar */}
+                                                            <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Tổng Quan" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                                <Icon name="camera" size={5} />
+                                                            </button>
+                                                        </div>
                                                 </SectionHeader>
+                                            </div>
 
                                             <div className={`p-6 transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                                 <div data-debug-id="KpiCards" data-debug-info={JSON.stringify(debugInitialData.KpiCards)}>

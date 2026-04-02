@@ -70,7 +70,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 return;
             }
             // External scrolling closes dropdown naturally without lagging the UI
-            setIsOpen(false);
+            // BUG FIX: Prevent closing on scroll. Just update position. Browsers often trigger scroll when focus occurs, causing jumping/flickering.
+            updatePosition();
         };
 
         if (isOpen) {
