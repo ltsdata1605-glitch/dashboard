@@ -256,12 +256,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                                     color={chip.color}
                                 />
                             ))
-                        ) : (
-                            <div className="flex items-center gap-2 text-slate-400 px-2 animate-in fade-in duration-500 overflow-hidden">
-                                <Icon name="info" size={3} className="shrink-0" />
-                                <span className="text-[10px] font-bold uppercase tracking-widest opacity-60 whitespace-nowrap">Đang hiển thị toàn bộ</span>
-                            </div>
-                        )}
+                        ) : null}
                     </div>
 
                     {/* Right: Actions */}

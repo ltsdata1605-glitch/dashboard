@@ -17,7 +17,7 @@ interface SettingsModalProps {
     allManufacturers: string[];
 }
 
-const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, columns, onSave, allIndustries, allGroups, allManufacturers }) => {
+const EmployeeAnalysisSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, columns, onSave, allIndustries, allGroups, allManufacturers }) => {
     const [internalColumns, setInternalColumns] = useState<WarehouseColumnConfig[]>([]);
     const [view, setView] = useState<'picker' | 'form'>('picker');
     
@@ -431,4 +431,4 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     );
 };
 
-export default WarehouseSettingsModal;
+export default EmployeeAnalysisSettingsModal;

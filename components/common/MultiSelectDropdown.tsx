@@ -64,23 +64,11 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     }, []);
 
     useEffect(() => {
-        const handleScroll = (e: Event) => {
-            // Dropdown scrolling inside itself should not close it
-            if (dropdownRef.current && dropdownRef.current.contains(e.target as Node)) {
-                return;
-            }
-            // External scrolling closes dropdown naturally without lagging the UI
-            // BUG FIX: Prevent closing on scroll. Just update position. Browsers often trigger scroll when focus occurs, causing jumping/flickering.
-            updatePosition();
-        };
-
         if (isOpen) {
             updatePosition();
-            window.addEventListener('scroll', handleScroll, true);
-            window.addEventListener('resize', handleScroll);
+            window.addEventListener('resize', updatePosition);
             return () => {
-                window.removeEventListener('scroll', handleScroll, true);
-                window.removeEventListener('resize', handleScroll);
+                window.removeEventListener('resize', updatePosition);
             };
         }
     }, [isOpen]);

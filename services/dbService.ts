@@ -216,6 +216,15 @@ export async function getWarehouseColumnConfig(): Promise<WarehouseColumnConfig[
     return getSetting('warehouseColumnConfig');
 }
 
+// --- Employee Analysis Custom Columns ---
+export async function saveEmployeeColumnConfig(config: WarehouseColumnConfig[]): Promise<void> {
+    return saveSetting('employeeColumnConfig', config);
+}
+
+export async function getEmployeeColumnConfig(): Promise<WarehouseColumnConfig[] | null> {
+    return getSetting('employeeColumnConfig');
+}
+
 // --- Summary Table Config ---
 export async function saveSummaryTableConfig(config: FilterState['summaryTable']): Promise<void> {
     return saveSetting(SUMMARY_TABLE_CONFIG_KEY, config);

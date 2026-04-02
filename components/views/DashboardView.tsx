@@ -4,6 +4,7 @@ import { useDashboardLogic } from '../../hooks/useDashboardLogic';
 import type { VisibilityState } from '../../types';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
@@ -63,6 +64,7 @@ export default function DashboardView() {
         originalData
     } = logic;
     const { userRole } = useAuth();
+    const { totalVisits, onlineUsers } = useSystemTraffic();
 
     const [visibleComponents, setVisibleComponents] = useState<VisibilityState>(() => {
         try {
@@ -227,9 +229,13 @@ export default function DashboardView() {
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
                                             </div>
-                                            <span className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
                                                 Lượt Truy Cập và <span className="animate-pulse text-emerald-500 font-bold whitespace-nowrap">Online</span>
                                             </span>
+                                            <div className="w-px h-3 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+                                            <span className="text-[10px] font-black text-slate-700 dark:text-slate-300">{totalVisits.toLocaleString('vi-VN')}</span>
+                                            <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
+                                            <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">{onlineUsers}</span>
                                         </div>
                                         
                                         {processingTime > 0 && (
@@ -267,7 +273,7 @@ export default function DashboardView() {
                                                     return (
                                                         <div 
                                                             onClick={openUnshippedModal}
-                                                            className="absolute top-0 right-0 left-0 bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[5]"
+                                                            className="absolute top-0 right-0 left-0 bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20] pointer-events-auto"
                                                         >
                                                             <div className="flex items-center gap-2 font-bold text-sm">
                                                                 <span className="relative flex h-3 w-3 mr-1">

@@ -273,8 +273,23 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* RevenueQD (DT Quy Doi) */}
                 {visibleColumns.includes('totalRevenueQD') && (
                     <>
-                        <td className={`${cellClass} font-black text-primary-600 dark:text-primary-400 tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
-                            {formatCurrency(revenueQD)}
+                        <td className={`${cellClass} tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
+                            {(() => {
+                                const target = gtdhTargets?.[nodeKey] || 0;
+                                const isWarning = target > 0 && revenueQD < target;
+                                return (
+                                    <div className="flex items-center justify-center gap-1.5 font-black">
+                                        <span className={isWarning ? 'text-red-500 dark:text-red-400' : 'text-primary-600 dark:text-primary-400'}>
+                                            {formatCurrency(revenueQD)}
+                                        </span>
+                                        {isWarning && (
+                                            <div className="group relative shrink-0 text-red-500 flex items-center" title={`Mục tiêu: ${formatCurrency(target)}\nCòn thiếu: ${formatCurrency(target - revenueQD)}`}>
+                                                <Icon name="alert-triangle" size={3.5} />
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })()}
                         </td>
                         {isComparisonMode && (
                             <td className={`${deltaCellClass} ${separatorClass}`}>

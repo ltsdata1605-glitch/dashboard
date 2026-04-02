@@ -1,24 +1,24 @@
 
 import { useMemo } from 'react';
-import type { WarehouseColumnConfig, WarehouseSummaryRow, DataRow, ProductConfig, MetricValues } from '../types';
+import type { WarehouseColumnConfig, Employee, DataRow, ProductConfig, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
 import { getRowValue, getHeSoQuyDoi } from '../utils/dataUtils';
 
-interface UseWarehouseLogicProps {
-    data: WarehouseSummaryRow[];
+interface UseEmployeeColumnLogicProps {
+    data: Employee[];
     columns: WarehouseColumnConfig[];
     originalData: DataRow[];
     productConfig: ProductConfig | null;
     sortConfig: { key: string; direction: 'asc' | 'desc' };
 }
 
-export const useWarehouseLogic = ({
+export const useEmployeeColumnLogic = ({
     data,
     columns,
     originalData,
     productConfig,
     sortConfig
-}: UseWarehouseLogicProps) => {
+}: UseEmployeeColumnLogicProps) => {
 
     const customProductColumnValues = useMemo(() => {
         const results = new Map<string, Map<string, number>>();
@@ -49,8 +49,8 @@ export const useWarehouseLogic = ({
 
         // 1. Process "data" type columns
         dataRows.forEach(row => {
-            const khoName = getRowValue(row, COL.KHO);
-            if (!khoName) return;
+            const employeeName = getRowValue(row, COL.NGUOI_TAO);
+            if (!employeeName) return;
 
             customColumns.forEach(col => {
                 if (col.type !== 'data' && (col.type !== undefined || !col.productCodes)) return;
@@ -113,29 +113,29 @@ export const useWarehouseLogic = ({
                         value = rowRevenue * heso;
                     }
 
-                    const khoMap = results.get(col.id)!;
-                    khoMap.set(khoName, (khoMap.get(khoName) || 0) + value);
+                    const empMap = results.get(col.id)!;
+                    empMap.set(employeeName, (empMap.get(employeeName) || 0) + value);
                 }
             });
         });
 
-        // Get all visible Khos from aggregated data
-        const allKhoNames = data.map(d => d.khoName);
+        // Get all visible Employees from aggregated data
+        const allEmployeeNames = data.map(d => d.name);
 
         // 2. Process "target" columns
         customColumns.forEach(col => {
             if (col.type !== 'target') return;
-            const validCount = allKhoNames.length;
-            const valuePerKho = validCount > 0 ? (col.targetValue || 0) / validCount : 0;
-            allKhoNames.forEach(khoName => {
-                const khoMap = results.get(col.id)!;
-                khoMap.set(khoName, valuePerKho);
+            const validCount = allEmployeeNames.length;
+            const valuePerEmp = validCount > 0 ? (col.targetValue || 0) / validCount : 0;
+            allEmployeeNames.forEach(employeeName => {
+                const empMap = results.get(col.id)!;
+                empMap.set(employeeName, valuePerEmp);
             });
         });
 
         // Helper func to resolve old metrics for calculated columns
-        const getFallbackMetric = (khoName: string, colId: string) => {
-             const row = data.find(d => d.khoName === khoName);
+        const getFallbackMetric = (employeeName: string, colId: string) => {
+             const row = data.find(d => d.name === employeeName);
              if (!row) return 0;
              const targetCol = columns.find(c => c.id === colId);
              if (!targetCol) return 0;
@@ -156,37 +156,96 @@ export const useWarehouseLogic = ({
              return 0;
         };
 
-        // 3. Process "calculated" columns
-        allKhoNames.forEach(khoName => {
-            customColumns.forEach(col => {
-                if (col.type === 'calculated' && col.operand1_columnId && col.operand2_columnId) {
-                    let op1 = results.get(col.operand1_columnId)?.get(khoName);
-                    if (op1 === undefined) op1 = getFallbackMetric(khoName, col.operand1_columnId);
-                    
-                    let op2 = results.get(col.operand2_columnId)?.get(khoName);
-                    if (op2 === undefined) op2 = getFallbackMetric(khoName, col.operand2_columnId);
+        // 3. Process "calculated" columns iteratively
+        let calculatedProcessed = true;
+        let iterationCount = 0;
+        const maxIterations = customColumns.filter(c => c.type === 'calculated').length;
 
-                    let result = 0;
-                    switch (col.operation) {
-                        case '+': result = op1 + op2; break;
-                        case '-': result = op1 - op2; break;
-                        case '*': result = op1 * op2; break;
-                        case '/': result = op2 !== 0 ? op1 / op2 : 0; break;
+        while (calculatedProcessed && iterationCount < maxIterations) {
+            calculatedProcessed = false;
+            customColumns.forEach(col => {
+                if (col.type !== 'calculated') return;
+                
+                const empMap = results.get(col.id)!;
+                if (empMap.size > 0) return; // Already processed
+                
+                let canProcess = true;
+                const tempValues = new Map<string, number>();
+
+                allEmployeeNames.forEach(employeeName => {
+                    if (!canProcess) return;
+
+                    let val1 = 0;
+                    let val2 = 0;
+                    
+                    if (col.operand1_columnId) {
+                         const map1 = results.get(col.operand1_columnId);
+                         if (!map1 || map1.size === 0) {
+                             const fallback = getFallbackMetric(employeeName, col.operand1_columnId);
+                             if (fallback !== null) val1 = fallback;
+                             else canProcess = false;
+                         } else {
+                             val1 = map1.get(employeeName) || 0;
+                         }
                     }
-                    const khoMap = results.get(col.id)!;
-                    khoMap.set(khoName, result);
+
+                    if (canProcess && col.operand2_columnId) {
+                         const map2 = results.get(col.operand2_columnId);
+                         if (!map2 || map2.size === 0) {
+                             const fallback = getFallbackMetric(employeeName, col.operand2_columnId);
+                             if (fallback !== null) val2 = fallback;
+                             else canProcess = false;
+                         } else {
+                             val2 = map2.get(employeeName) || 0;
+                         }
+                    }
+                    
+                    if (canProcess && col.operation) {
+                        let finalResult = 0;
+                        switch (col.operation) {
+                            case '+': finalResult = val1 + val2; break;
+                            case '-': finalResult = val1 - val2; break;
+                            case '*': finalResult = val1 * val2; break;
+                            case '/': finalResult = val2 !== 0 ? val1 / val2 : 0; break;
+                        }
+
+                        // If displayAs is percentage, finalResult is stored as ratio, rendering will display finalResult * 100
+                        tempValues.set(employeeName, finalResult);
+                    }
+                });
+
+                if (canProcess) {
+                    tempValues.forEach((v, k) => empMap.set(k, v));
+                    calculatedProcessed = true;
                 }
             });
-        });
+            iterationCount++;
+        }
 
         return results;
-    }, [data, columns, originalData, productConfig]);
+    }, [originalData, columns, data, productConfig]);
 
-    const getColumnValue = (row: WarehouseSummaryRow | Partial<WarehouseSummaryRow>, column: WarehouseColumnConfig): number | undefined => {
+    const mappedData = useMemo(() => {
+        return data.map(item => {
+            const extraData: Record<string, number> = {};
+            columns.forEach(c => {
+                if (c.isCustom && (c.type || c.productCodes)) {
+                     const val = customProductColumnValues.get(c.id)?.get(item.name) || 0;
+                     extraData[c.id] = val;
+                }
+            });
+            return {
+                ...item,
+                customColumns: extraData
+            };
+        });
+    }, [data, columns, customProductColumnValues]);
+
+    const getColumnValue = (row: any, column: WarehouseColumnConfig): number | undefined => {
         if (column.metric) return (row as any)[column.metric];
         
-        if (column.isCustom && row.khoName) {
-            const mappedVal = customProductColumnValues.get(column.id)?.get(row.khoName);
+        if (column.isCustom && row.name) {
+            const mappedVal = customProductColumnValues.get(column.id)?.get(row.name);
             if (mappedVal !== undefined) return mappedVal;
         }
 
@@ -212,15 +271,15 @@ export const useWarehouseLogic = ({
             let valA: string | number = 0;
             let valB: string | number = 0;
             
-            if (sortConfig.key === 'khoName') {
-                valA = a.khoName;
-                valB = b.khoName;
+            if (sortConfig.key === 'name') {
+                valA = a.name;
+                valB = b.name;
             } else {
                 const column = columns.find(c => c.id === sortConfig.key);
                 if (column) {
                     if (column.isCustom && customProductColumnValues.has(column.id)) {
-                        valA = customProductColumnValues.get(column.id)?.get(a.khoName) || 0;
-                        valB = customProductColumnValues.get(column.id)?.get(b.khoName) || 0;
+                        valA = customProductColumnValues.get(column.id)?.get(a.name) || 0;
+                        valB = customProductColumnValues.get(column.id)?.get(b.name) || 0;
                     } else {
                         valA = getColumnValue(a, column) || 0;
                         valB = getColumnValue(b, column) || 0;
@@ -239,7 +298,7 @@ export const useWarehouseLogic = ({
     }, [data, sortConfig, columns, customProductColumnValues]);
 
     const { totals, customTotals } = useMemo(() => {
-        const initialTotals: Partial<WarehouseSummaryRow> & { metrics: any; doanhThuTraCham: number; } = {
+        const initialTotals: Partial<Employee> & { metrics: any; doanhThuTraCham: number; doanhThuThuc: number; doanhThuQD: number; slTiepCan: number; slThuHo: number; } = {
             metrics: {
                 byIndustry: {},
                 byGroup: {},
@@ -247,7 +306,11 @@ export const useWarehouseLogic = ({
                 byIndustryAndManufacturer: {},
                 byGroupAndManufacturer: {},
             },
-            doanhThuTraCham: 0
+            doanhThuTraCham: 0,
+            doanhThuThuc: 0,
+            doanhThuQD: 0,
+            slTiepCan: 0,
+            slThuHo: 0
         };
         const customTotalsMap = new Map<string, number>();
 

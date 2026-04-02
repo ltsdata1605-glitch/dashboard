@@ -71,10 +71,6 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         allSubgroups,
         allManufacturers,
         allDepartments,
-        selectedDepartments,
-        setSelectedDepartments,
-        deptSearchTerm,
-        setDeptSearchTerm,
         hideZeroRevenue,
         setHideZeroRevenue,
         filteredEmployeeAnalysisData
@@ -172,6 +168,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                         <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">
                             {(filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `KHO: ${filterState.kho.join(', ')} | ` : ''} 
                             {(filterState.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filterState.xuat} | ` : ''}
+                            {(filterState.department && filterState.department.length > 0) ? `BỘ PHẬN: ${filterState.department.join(', ')} | ` : ''}
                             {filterState.dateRange !== 'all' ? `TỪ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
                         </span>
                     </div>

@@ -12,25 +12,6 @@ export const useEmployeeAnalysisData = () => {
         originalData 
     } = useDashboardContext();
 
-    const [selectedDepartments, setSelectedDepartments] = useState<string[]>([]);
-
-    // Load saved filters
-    useEffect(() => {
-        const loadSavedFilters = async () => {
-            const savedDepts = await getSetting<string[]>('employee_analysis_selected_departments');
-            if (savedDepts) setSelectedDepartments(savedDepts);
-        };
-        loadSavedFilters();
-    }, []);
-
-    // Save filters when they change
-    useEffect(() => {
-        if (selectedDepartments.length > 0) {
-            saveSetting('employee_analysis_selected_departments', selectedDepartments);
-        }
-    }, [selectedDepartments]);
-    
-    const [deptSearchTerm, setDeptSearchTerm] = useState('');
     const [hideZeroRevenue, setHideZeroRevenue] = useState(false);
 
     const { 
@@ -64,37 +45,10 @@ export const useEmployeeAnalysisData = () => {
         };
     }, [productConfig, originalData, employeeAnalysisData]);
 
-    // Restore selected departments
-    useEffect(() => {
-        const loadDepartments = async () => {
-            try {
-                const saved = await getSetting<string[]>('employeeAnalysis_selectedDepartments');
-                if (saved && Array.isArray(saved) && allDepartments.length > 0) {
-                    const validDepts = saved.filter(d => allDepartments.includes(d));
-                    setSelectedDepartments(validDepts);
-                } else if (allDepartments.length > 0 && selectedDepartments.length === 0) {
-                    setSelectedDepartments(allDepartments);
-                }
-            } catch (e) {
-                console.error("Failed to load selected departments", e);
-            }
-        };
-        loadDepartments();
-    }, [allDepartments]);
-
-    // Save filters
-    useEffect(() => {
-        saveSetting('employeeAnalysis_selectedDepartments', selectedDepartments);
-    }, [selectedDepartments]);
-
     const filteredEmployeeAnalysisData = useMemo(() => {
         if (!employeeAnalysisData) return null;
-        
-        const isAllDepartments = selectedDepartments.length === 0 || selectedDepartments.length === allDepartments.length;
 
         const filterEmployee = (emp: any) => {
-            // Check Department
-            if (!isAllDepartments && !selectedDepartments.includes(emp.department)) return false;
             // Check Zero Revenue
             if (hideZeroRevenue && (emp.doanhThuThuc || 0) === 0) return false;
             return true;
@@ -117,17 +71,13 @@ export const useEmployeeAnalysisData = () => {
             exploitationData: filteredExploitationData,
             filteredBaseData
         } as any;
-    }, [employeeAnalysisData, selectedDepartments, allDepartments, baseFilteredData, hideZeroRevenue]);
+    }, [employeeAnalysisData, baseFilteredData, hideZeroRevenue]);
 
     return {
         allIndustries,
         allSubgroups,
         allManufacturers,
         allDepartments,
-        selectedDepartments,
-        setSelectedDepartments,
-        deptSearchTerm,
-        setDeptSearchTerm,
         hideZeroRevenue,
         setHideZeroRevenue,
         filteredEmployeeAnalysisData: filteredEmployeeAnalysisData ? {

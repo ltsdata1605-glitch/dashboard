@@ -199,17 +199,11 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
 
                 const { processedData: result, baseFilteredData: newBaseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(rbacData, productConfig, filterState, departmentMap);
                 
-                let employeeResultData = result.employeeData;
-                if (departmentMap) {
-                    const employeeFilterState = { ...filterState, department: [] };
-                    const { processedData: employeeResult } = applyFiltersAndProcess(rbacData, productConfig, employeeFilterState, departmentMap);
-                    employeeResultData = employeeResult.employeeData;
-                }
                 startTransition(() => {
                     setProcessedData(result);
                     setBaseFilteredData(newBaseData);
                     setCalendarSourceData(newCalendarSourceData);
-                    setEmployeeAnalysisData(employeeResultData);
+                    setEmployeeAnalysisData(result.employeeData);
                     setAppState('dashboard');
                 });
             } catch (error) {

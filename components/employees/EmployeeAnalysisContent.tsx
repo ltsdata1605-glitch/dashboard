@@ -59,7 +59,9 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                 <div>
                     <IndustryAnalysisTab 
                         ref={industryAnalysisTabRef}
-                        data={filteredEmployeeAnalysisData.exploitationData} 
+                        employees={filteredEmployeeAnalysisData.fullSellerArray} 
+                        baseFilteredData={baseFilteredData}
+                        productConfig={productConfig!}
                         onExport={handleIndustryTabExport} 
                         isExporting={isExporting}
                         onBatchExport={(exploitationData: ExploitationData[]) => {
