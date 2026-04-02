@@ -4,6 +4,7 @@ import type { ProcessedData, FilterState, ProductConfig, DataRow, Employee, Empl
 import { DepartmentMap } from '../services/dataService';
 
 interface DashboardContextType {
+    appState: 'upload' | 'processing' | 'dashboard' | 'loading';
     processedData: ProcessedData | null;
     filterState: FilterState;
     handleFilterChange: (newFilters: Partial<FilterState>) => void;

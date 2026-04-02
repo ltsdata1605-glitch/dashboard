@@ -29,22 +29,68 @@ async function processFilesInWorker(files: File[], enableDeduplication: boolean)
             const progressBase = 40 * (i / files.length); // Reading phase takes up to 40%
             
             postStatus({ message: `Đang nạp bộ đệm file ${i+1}/${files.length}...`, type: 'info', progress: progressBase });
-            const arrayBuffer = await file.arrayBuffer();
+            let arrayBuffer: ArrayBuffer | null = await file.arrayBuffer();
 
             postStatus({ message: `Dịch cú pháp Excel ${i+1}/${files.length}...`, type: 'info', progress: progressBase + 5 });
-            const data = new Uint8Array(arrayBuffer);
+            let data: Uint8Array | null = new Uint8Array(arrayBuffer);
+            arrayBuffer = null; // Tối ưu GC: Giải phóng ArrayBuffer lập tức
             
             // OPTIMIZATION 1: Enable 'dense' mode. 
             // This creates dense arrays instead of sparse objects, significantly reducing memory usage for large files.
-            const workbook = XLSX.read(data, { type: 'array', cellDates: true, dense: true });
+            let workbook: XLSX.WorkBook | null = XLSX.read(data, { type: 'array', cellDates: true, dense: true });
+            data = null; // Tối ưu GC: Giải phóng Uint8Array
             
             const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
+            let worksheet: any = workbook.Sheets[sheetName];
 
             postStatus({ message: `Trích xuất JSON file ${i+1}/${files.length}...`, type: 'info', progress: progressBase + 10 });
-            const json: DataRow[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+            // ÉP CÂN DỮ LIỆU: Chỉ đọc dạng mảng 2 chiều để tránh phình to Object trong RAM với các string keys thừa
+            const rows: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: null });
             
-            combinedJson = combinedJson.concat(json);
+            // Giải phóng workbook và worksheet sớm nhất có thể
+            worksheet = null;
+            workbook = null;
+            
+            if (rows.length > 0) {
+                let headers = (rows[0] || []).map(h => (h || '').toString().trim());
+                
+                // Danh sách các cột thực sự quan trọng cần được giữ lại
+                const reqCols = [
+                    'Ngày tạo', 'Ngày Tạo', 'Trạng thái hủy', 'Tình trạng nhập trả của sản phẩm đổi với sản phẩm chính',
+                    'Trạng thái thu tiền', 'Mã Đơn Hàng', 'Mã đơn hàng', 'Tên Sản Phẩm', 'Tên sản phẩm',
+                    'Tên Khách Hàng', 'Tên khách hàng', 'Số Lượng', 'Số lượng', 'Giá bán_1', 'Giá bán',
+                    'Mã kho tạo', 'Trạng thái hồ sơ', 'Người tạo', 'Trạng thái xuất', 'Hình thức xuất',
+                    'Ngành Hàng', 'Ngành hàng', 'Nhóm Hàng', 'Nhóm hàng', 'Nhà sản xuất', 'Hãng', 'TG Hẹn Giao'
+                ];
+                
+                const reqIndices: Record<number, string> = {};
+                for (let j = 0; j < headers.length; j++) {
+                    if (reqCols.includes(headers[j])) {
+                        reqIndices[j] = headers[j];
+                    }
+                }
+
+                // Chunked Array Push
+                for (let r = 1; r < rows.length; r++) {
+                    const rowArray = rows[r];
+                    if (!rowArray || rowArray.length === 0) continue;
+                    
+                    const rowObj: any = {};
+                    let hasData = false;
+                    for (const idxStr of Object.keys(reqIndices)) {
+                        const idx = parseInt(idxStr);
+                        const val = rowArray[idx];
+                        if (val !== undefined && val !== null && val !== '') {
+                            rowObj[reqIndices[idx]] = val;
+                            hasData = true;
+                        }
+                    }
+                    
+                    if (hasData) {
+                        combinedJson.push(rowObj as DataRow);
+                    }
+                }
+            }
         }
         
         let processedList: DataRow[] = combinedJson;

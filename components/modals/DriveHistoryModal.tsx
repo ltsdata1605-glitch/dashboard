@@ -136,23 +136,26 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                                         whileHover={{ scale: 1.01 }}
                                         whileTap={{ scale: 0.98 }}
                                         onClick={() => toggleSelection(file.id)}
-                                        className={`w-full text-left flex items-start gap-4 p-4 rounded-2xl border transition-all cursor-pointer group \${selectedIds.has(file.id) ? 'border-indigo-500 bg-indigo-50/50 dark:border-indigo-400 dark:bg-indigo-900/40 shadow-sm' : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10'}`}
+                                        className={`w-full text-left flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer group ${selectedIds.has(file.id) ? 'border-indigo-500 bg-indigo-50/50 dark:border-indigo-400 dark:bg-indigo-900/40 shadow-sm' : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50/30 dark:hover:bg-indigo-900/10'}`}
                                     >
-                                        <div className="flex items-center justify-center pt-2">
-                                            <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors \${selectedIds.has(file.id) ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300 dark:border-slate-600'}`}>
-                                                {selectedIds.has(file.id) && <Icon name="check" size={3.5} className="text-white" />}
-                                            </div>
+                                        <div className="flex items-center justify-center pl-1 pr-0.5 pointer-events-none">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={selectedIds.has(file.id)} 
+                                                readOnly
+                                                className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700 dark:checked:bg-indigo-500" 
+                                            />
                                         </div>
-                                        <div className="mt-1 p-2 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
-                                            <Icon name="file-spreadsheet" size={5} />
+                                        <div className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg">
+                                            <Icon name="file-spreadsheet" size={4.5} />
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className={`font-semibold transition-colors truncate \${selectedIds.has(file.id) ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`}>
+                                            <p className={`text-sm font-semibold transition-colors truncate ${selectedIds.has(file.id) ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`}>
                                                 {file.name}
                                             </p>
-                                            <div className="flex items-center gap-3 mt-1.5 text-xs font-medium whitespace-nowrap overflow-hidden text-ellipsis \${selectedIds.has(file.id) ? 'text-indigo-600/70 dark:text-indigo-400/80' : 'text-slate-500'}">
-                                                <span className="flex items-center gap-1"><Icon name="clock" size={3.5} /> {new Date(file.createdTime).toLocaleString('vi-VN')}</span>
-                                                {file.size && <span className="flex items-center gap-1"><Icon name="hard-drive" size={3.5} /> {(parseInt(file.size) / (1024 * 1024)).toFixed(2)} MB</span>}
+                                            <div className={`flex items-center gap-3 mt-0.5 text-[11px] font-medium whitespace-nowrap overflow-hidden text-ellipsis ${selectedIds.has(file.id) ? 'text-indigo-600/70 dark:text-indigo-400/80' : 'text-slate-500'}`}>
+                                                <span className="flex items-center gap-1"><Icon name="clock" size={3} /> {new Date(file.createdTime).toLocaleString('vi-VN')}</span>
+                                                {file.size && <span className="flex items-center gap-1"><Icon name="hard-drive" size={3} /> {(parseInt(file.size) / (1024 * 1024)).toFixed(2)} MB</span>}
                                             </div>
                                         </div>
                                     </motion.div>
@@ -170,7 +173,7 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                             <button
                                 onClick={handleDownloadSelected}
                                 disabled={selectedIds.size === 0 || isDownloading}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold transition-all shadow-sm \${selectedIds.size > 0 && !isDownloading ? 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95' : 'bg-slate-200 text-slate-400 dark:bg-slate-800 dark:text-slate-500 cursor-not-allowed'}`}
+                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold transition-all shadow-sm ${selectedIds.size > 0 && !isDownloading ? 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95' : 'bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400 cursor-not-allowed border border-slate-400/20'}`}
                             >
                                 {isDownloading ? (
                                     <><Icon name="loader-2" size={4.5} className="animate-spin" /> Đang xử lý...</>

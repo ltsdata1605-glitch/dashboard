@@ -131,28 +131,11 @@ export function processSummaryTable(
 
 
 export function calculateWarehouseSummary(
-    allData: DataRow[],
-    filters: FilterState,
+    dataForWarehouseSummary: DataRow[],
     productConfig: ProductConfig
 ): WarehouseSummaryRow[] | null {
-    const mainStartDate = filters.startDate ? new Date(filters.startDate) : null;
-    if (mainStartDate) mainStartDate.setHours(0, 0, 0, 0);
-    const mainEndDate = filters.endDate ? new Date(filters.endDate) : null;
-    if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
 
-    const dataForWarehouseSummary = allData.filter(row => {
-        const rowDate = row.parsedDate;
-        if (!((!mainStartDate || rowDate >= mainStartDate) && (!mainEndDate || rowDate <= mainEndDate))) return false;
-        if (filters.xuat !== 'all') {
-            const xuatValue = getRowValue(row, COL.XUAT) || '';
-            const xuatStatus = xuatValue.toLowerCase().includes('đã') ? 'Đã' : 'Chưa';
-            if (xuatStatus !== filters.xuat) return false;
-        }
-        if (filters.trangThai.length > 0 && !filters.trangThai.includes(getRowValue(row, COL.TRANG_THAI))) return false;
-        return true;
-    });
-
-    const uniqueKhos = [...new Set(allData.map(r => getRowValue(r, COL.KHO)).filter(Boolean))];
+    const uniqueKhos = [...new Set(dataForWarehouseSummary.map(r => getRowValue(r, COL.KHO)).filter(Boolean))];
     if (uniqueKhos.length === 0) return [];
 
     const summaryByKho: { [key: string]: any } = {};

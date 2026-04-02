@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Icon } from '../common/Icon';
 import { motion, AnimatePresence } from 'motion/react';
 import ModalWrapper from '../modals/ModalWrapper';
@@ -52,6 +52,16 @@ const Header: React.FC<HeaderProps> = ({
 
     // Prevent hydration warnings
     const [mounted, setMounted] = useState(false);
+    const hasPromptedDrive = useRef(false);
+
+    useEffect(() => {
+        if (user && context.appState === 'upload' && !hasPromptedDrive.current && (userRole === 'admin' || userRole === 'manager')) {
+            hasPromptedDrive.current = true;
+            setTimeout(() => {
+                 setShowDriveHistory(true);
+            }, 800); // 800ms delay to let the app load first
+        }
+    }, [user, context.appState, userRole]);
 
     const handleExternalLinkClick = (e: React.MouseEvent) => {
         e.preventDefault();

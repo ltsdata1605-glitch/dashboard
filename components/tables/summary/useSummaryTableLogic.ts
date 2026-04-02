@@ -10,7 +10,7 @@ import { getWeeksInMonth, getSafeDateInPrevMonth, toInputDate, toInputMonth, for
 export type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'month_same_period_year' | 'quarter_adjacent' | 'quarter_same_period_year' | 'ytd_same_period_year' | 'custom_range';
 
 export const useSummaryTableLogic = () => {
-    const { filterState: filters, handleFilterChange: onFilterChange, baseFilteredData, productConfig } = useDashboardContext();
+    const { filterState: filters, handleFilterChange: onFilterChange, baseFilteredData, processedData, productConfig } = useDashboardContext();
     const { summaryTable: summaryTableFilters, parent: globalParentFilters } = filters;
     
     // Comparison State (Hoisted up)
@@ -108,7 +108,8 @@ export const useSummaryTableLogic = () => {
     const [isExpanding, setIsExpanding] = useState(false);
 
     const standardSummaryData = useMemo(() => {
-        if (!baseFilteredData.length || !productConfig) return null;
+        const dataToUse = processedData?.filteredValidSalesData || [];
+        if (!dataToUse.length || !productConfig) return null;
         const localFilterState = {
             ...filters,
             parent: localParentFilters,
@@ -121,8 +122,8 @@ export const useSummaryTableLogic = () => {
                 product: localProductFilters
             }
         };
-        return processSummaryTable(baseFilteredData, productConfig, localFilterState);
-    }, [baseFilteredData, productConfig, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
+        return processSummaryTable(dataToUse, productConfig, localFilterState);
+    }, [processedData?.filteredValidSalesData, filters, productConfig, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
 
     useEffect(() => {
         try {

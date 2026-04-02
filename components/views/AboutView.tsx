@@ -183,7 +183,7 @@ export default function AboutView() {
                     </p>
                     <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-semibold shadow-inner">
                         <Github size={18} className="text-slate-400" />
-                        Tác giả: <span className="text-white hover:text-[#0584c7] cursor-pointer transition-colors">dangkhoa1605</span>
+                        Tác giả: <span className="text-white hover:text-[#0584c7] cursor-pointer transition-colors">21707 - Lê Trường Sơn</span>
                     </div>
                 </div>
             </div>

@@ -178,7 +178,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     const isRevenueGood = revenuePercentHT >= 100;
 
     return (
-        <div className="grid grid-cols-5 gap-4 mb-6 kpi-grid-for-export">
+        <div className="grid grid-cols-4 gap-4 mb-6 kpi-grid-for-export">
             
             <KpiCard 
                 icon="wallet-cards" 
@@ -230,21 +230,6 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 </div>
             </KpiCard>
             
-            {/* CARD 4: MỤC TIÊU GTĐH */}
-            <KpiCard 
-                icon="target" 
-                iconColor="blue" 
-                title="GTĐH Mục Tiêu"
-                onClick={(e) => startEditing(e, 'gtdh')}
-                trendLabel="Trạng thái"
-                trendValue={editingState.field === 'gtdh' ? (
-                    <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} suffix="Tr" />
-                ) : (isGtdhGood ? <span className="text-emerald-600 dark:text-emerald-400">Đạt</span> : <span className="text-rose-600 dark:text-rose-400">Chưa đạt</span>)}
-            >
-                <div className={`text-[22px] font-extrabold leading-none tracking-tight ${isGtdhGood ? 'text-slate-800 dark:text-slate-100' : 'text-rose-600 dark:text-rose-400'}`}>
-                    {gtdhTarget} Tr
-                </div>
-            </KpiCard>
             
             {/* CARD 5: DOANH THU CHỜ XUẤT */}
             <KpiCard 

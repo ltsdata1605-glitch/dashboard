@@ -67,7 +67,6 @@ const TrendChart: React.FC = React.memo(() => {
   const [calendarFilters, setCalendarFilters] = useState({
       parentGroup: [] as string[],
       childGroup: [] as string[],
-      kho: [] as string[],
       month: '',
       metric: 'revenue' // 'revenue' | 'revenueQD' | 'quantity' | 'traChamPercent'
   });
@@ -88,9 +87,9 @@ const TrendChart: React.FC = React.memo(() => {
           } else {
               // Mặc định sinh 3 bảng lịch - month sẽ được điền sau khi availableMonths sẵn sàng
               const defaultCals = [
-                  { id: '1-thuc', parentGroup: [], childGroup: [], kho: [], month: '', metric: 'revenue' },
-                  { id: '2-qd', parentGroup: [], childGroup: [], kho: [], month: '', metric: 'revenueQD' },
-                  { id: '3-tracham', parentGroup: [], childGroup: [], kho: [], month: '', metric: 'traChamPercent' }
+                  { id: '1-thuc', parentGroup: [], childGroup: [], month: '', metric: 'revenue' },
+                  { id: '2-qd', parentGroup: [], childGroup: [], month: '', metric: 'revenueQD' },
+                  { id: '3-tracham', parentGroup: [], childGroup: [], month: '', metric: 'traChamPercent' }
               ];
               setSavedCalendars(defaultCals);
               saveCustomCalendars(defaultCals);
@@ -124,9 +123,9 @@ const TrendChart: React.FC = React.memo(() => {
 
   // Extract unique months for Calendar Filter
   const availableMonths = useMemo(() => {
-      if (!calendarSourceData) return [];
+      if (!baseFilteredData) return [];
       const months = new Set<string>();
-      calendarSourceData.forEach(row => {
+      baseFilteredData.forEach(row => {
           if (row.parsedDate && !isNaN(row.parsedDate.getTime())) {
               const y = row.parsedDate.getFullYear();
               const m = String(row.parsedDate.getMonth() + 1).padStart(2, '0');
@@ -134,7 +133,7 @@ const TrendChart: React.FC = React.memo(() => {
           }
       });
       return Array.from(months).sort().reverse();
-  }, [calendarSourceData]);
+  }, [baseFilteredData]);
 
   // Set initial month for calendar if empty AND update default calendar months
   useEffect(() => {
@@ -159,8 +158,8 @@ const TrendChart: React.FC = React.memo(() => {
       const parents = new Set<string>();
       const children = new Set<string>();
       
-      if (calendarSourceData && productConfig) {
-          calendarSourceData.forEach(row => {
+      if (baseFilteredData && productConfig) {
+          baseFilteredData.forEach((row: any) => {
               const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG) || '';
               const parentVal = productConfig.childToParentMap[maNhomHang] || 'Không xác định';
               const childVal = productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định';
@@ -179,10 +178,10 @@ const TrendChart: React.FC = React.memo(() => {
           uniqueParentGroups: Array.from(parents).sort(),
           uniqueChildGroups: Array.from(children).sort()
       };
-  }, [calendarSourceData, productConfig, calendarFilters.parentGroup]);
+  }, [baseFilteredData, productConfig, calendarFilters.parentGroup]);
 
   const calendarData = useMemo(() => {
-      if (displayMode !== 'calendar' || !calendarSourceData || !productConfig || !calendarFilters.month) return [];
+      if (displayMode !== 'calendar' || !baseFilteredData || !productConfig || !calendarFilters.month) return [];
       
       const [selYear, selMonth] = calendarFilters.month.split('-');
       const targetYear = parseInt(selYear);
@@ -190,7 +189,7 @@ const TrendChart: React.FC = React.memo(() => {
 
       const dailySums: { [key: string]: { value: number, rawDate: Date, totalRev: number, traGopRev: number } } = {};
 
-      calendarSourceData.forEach((row: any) => {
+      baseFilteredData.forEach((row: any) => {
           const rowDate = row.parsedDate;
           if (!rowDate || isNaN(rowDate.getTime())) return;
           if (rowDate.getFullYear() !== targetYear || rowDate.getMonth() !== targetMonth) return;
@@ -200,7 +199,6 @@ const TrendChart: React.FC = React.memo(() => {
           const childGroup = productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định';
 
           // Apply local filters using centralized predicate
-          if (!isKhoMatch(row, calendarFilters.kho)) return;
           if (calendarFilters.parentGroup.length > 0 && !calendarFilters.parentGroup.includes(parentGroup)) return;
           if (calendarFilters.childGroup.length > 0 && !calendarFilters.childGroup.includes(childGroup)) return;
 
@@ -252,7 +250,7 @@ const TrendChart: React.FC = React.memo(() => {
       }
 
       return Object.values(dailySums).sort((a,b) => a.rawDate.getTime() - b.rawDate.getTime());
-  }, [displayMode, calendarSourceData, productConfig, calendarFilters]);
+  }, [displayMode, baseFilteredData, productConfig, calendarFilters]);
   
   useEffect(() => {
       const observer = new MutationObserver(() => {
@@ -391,7 +389,7 @@ const TrendChart: React.FC = React.memo(() => {
       >
         <div className="flex flex-wrap items-center gap-2 hide-on-export w-full md:w-auto">
           {displayMode === 'calendar' ? (
-              <div className="flex flex-nowrap overflow-x-auto custom-scrollbar items-center gap-1.5 p-1 bg-slate-100/30 dark:bg-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-700/50 w-full sm:w-auto pb-1 relative z-50">
+              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100/30 dark:bg-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-700/50 w-full md:w-auto pb-1 relative z-[200]">
                   {/* Cụm 1: Thời gian & Kho */}
                   <div className="flex flex-none items-center gap-1 pr-1.5 sm:pr-2 border-r border-slate-200 dark:border-slate-700">
                       <select
@@ -401,18 +399,6 @@ const TrendChart: React.FC = React.memo(() => {
                       >
                           {availableMonths.map(m => <option key={m} value={m}>{m.split('-')[1]}/{m.split('-')[0]}</option>)}
                       </select>
-
-                      {uniqueFilterOptions.kho.length > 0 && (
-                          <div className="w-[90px] xl:w-[110px]">
-                              <MultiSelectDropdown
-                                  label="KHO"
-                                  options={uniqueFilterOptions.kho}
-                                  selected={calendarFilters.kho}
-                                  onChange={(val) => setCalendarFilters(prev => ({ ...prev, kho: val }))}
-                                  variant="compact"
-                              />
-                          </div>
-                      )}
                   </div>
 
                   {/* Cụm 2: Phân nhóm */}
@@ -579,7 +565,7 @@ const TrendChart: React.FC = React.memo(() => {
                                         : 'TỔNG DOANH THU'
                                     )}
                             subtitle={
-                                (Array.isArray(calendarFilters.kho) && calendarFilters.kho.length > 0 && !calendarFilters.kho.includes('all') ? `KHO: ${calendarFilters.kho.join(', ')} • ` : (!Array.isArray(calendarFilters.kho) && calendarFilters.kho && calendarFilters.kho !== 'all' ? `KHO: ${calendarFilters.kho} • ` : '')) +
+                                (Array.isArray(filterState.kho) && filterState.kho.length > 0 && !filterState.kho.includes('all') ? `KHO: ${filterState.kho.join(', ')} • ` : (!Array.isArray(filterState.kho) && filterState.kho && filterState.kho !== 'all' ? `KHO: ${filterState.kho} • ` : '')) +
                                 (calendarFilters.metric === 'quantity' ? 'Số lượng' : (calendarFilters.metric === 'revenueQD' ? 'Doanh thu QĐ' : calendarFilters.metric === 'traChamPercent' ? 'Tỉ lệ trả chậm' : 'Doanh thu'))
                             }
                             isDraft={true}
@@ -595,14 +581,14 @@ const TrendChart: React.FC = React.memo(() => {
                                 {savedCalendars.map(cal => {
                                     const isDefault = ['1-thuc', '2-qd', '3-tracham'].includes(cal.id);
                                     const effectiveFilter = isDefault 
-                                        ? { ...cal, month: calendarFilters.month, kho: calendarFilters.kho }
+                                        ? { ...cal, month: calendarFilters.month }
                                         : cal;
 
                                     return (
                                         <SavedCalendarCard 
                                             key={cal.id} 
                                             filter={effectiveFilter} 
-                                            baseFilteredData={calendarSourceData || []} 
+                                            baseFilteredData={baseFilteredData || []} 
                                             productConfig={productConfig} 
                                             onRemove={handleRemoveCalendar} 
                                         />

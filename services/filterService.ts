@@ -130,7 +130,7 @@ export function applyFiltersAndProcess(
 
     const mainPeriodData = baseFilteredData.filter(row => isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths));
     
-    const warehouseSummary = calculateWarehouseSummary(allData, filters, productConfig) || [];
+    const warehouseSummary = calculateWarehouseSummary(mainPeriodData, productConfig) || [];
     
     const mainResult = processDataForPeriod(mainPeriodData, productConfig, filters, departmentMap);
     
