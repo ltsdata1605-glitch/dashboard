@@ -45,7 +45,6 @@ export const useSystemTraffic = () => {
 
     useEffect(() => {
         let pingInterval: ReturnType<typeof setInterval>;
-        let onlineInterval: ReturnType<typeof setInterval>;
 
         // 3. PRESENCE PING: Khai báo tôi đang Online
         if (user) {
@@ -61,27 +60,24 @@ export const useSystemTraffic = () => {
             pingInterval = setInterval(pingPresence, 3 * 60 * 1000);
         }
 
-        // 4. COUNT ONLINE USERS (Polling để tiết kiệm chi phí số Read của Firestore)
+        // 4. COUNT ONLINE USERS (Polling - Đã tắt tự động để tiết kiệm Firestore Reads)
         const fetchOnlineUsers = async () => {
             try {
-                // Những user có tương tác trong vòng 5 phút đổ lại được xem là Online
-                const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000);
-                const q = query(collection(db, 'users'), where('lastActive', '>=', fiveMinsAgo));
+                // Những user có tương tác trong vòng 15 phút đổ lại được xem là Online
+                const activeTime = new Date(Date.now() - 15 * 60 * 1000);
+                const q = query(collection(db, 'users'), where('lastActive', '>=', activeTime));
                 const snapshot = await getDocs(q);
                 setStats(prev => ({ ...prev, onlineUsers: snapshot.size }));
             } catch (e) {
-                console.error("Online Query Error (Cần tạo Composite Index nếu báo lỗi trên console):", e);
+                console.error("Online Query Error:", e);
             }
         };
         
-        // Fetch ngay lần đầu
+        // Fetch ngay lần đầu khi đăng nhập (không poll lặp lại để hạn chế spam Read lên DB)
         fetchOnlineUsers();
-        // Cập nhật lại mỗi 2 phút
-        onlineInterval = setInterval(fetchOnlineUsers, 2 * 60 * 1000);
 
         return () => {
             if (pingInterval) clearInterval(pingInterval);
-            if (onlineInterval) clearInterval(onlineInterval);
         };
     }, [user]);
 

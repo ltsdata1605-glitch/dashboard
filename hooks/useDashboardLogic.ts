@@ -15,7 +15,7 @@ export const useDashboardLogic = () => {
     const [appState, setAppState] = useState<AppState>('loading');
     const [configUrl, setConfigUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRhes_lcas8n2_xYHKylsjyD3PIVbdchCiL2XDKJ4OYfgUZlVjAT7ZGWDHrYRzQVrK2w50W86Da3l48/pub?output=csv');
     const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(true);
-    const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'changelog' | null>(null);
+    const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'changelog' | null>(null);
     const [modalData, setModalData] = useState<any>(null);
 
     // 1. Filter State Management

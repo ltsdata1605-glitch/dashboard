@@ -30,7 +30,8 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
     // Update form when Nhóm Hàng changes
     React.useEffect(() => {
         if (selectedNhomHang && gtdhTargets[selectedNhomHang] !== undefined) {
-            setTargetValue(gtdhTargets[selectedNhomHang].toString());
+             const targetDivided = (gtdhTargets[selectedNhomHang] / 1000000);
+             setTargetValue(targetDivided.toString());
         } else {
             setTargetValue('');
         }
@@ -46,7 +47,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
         if (!selectedNhomHang) return;
         const numValue = parseFloat(targetValue.replace(/,/g, ''));
         if (!isNaN(numValue) && numValue > 0) {
-            updateGtdhTarget(selectedNhomHang, numValue);
+            updateGtdhTarget(selectedNhomHang, numValue * 1000000);
             setSelectedNhomHang('');
             setTargetValue('');
         }
@@ -92,17 +93,16 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                             />
                         </div>
                         <div className="w-full">
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mục Tiêu GTĐH</label>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mục Tiêu GTĐH (Đvt: Triệu VNĐ)</label>
                             <input 
                                 type="text"
                                 value={targetValue}
                                 onChange={(e) => {
-                                    const raw = e.target.value.replace(/[^0-9]/g, '');
-                                    const parsed = parseInt(raw, 10);
-                                    if (!isNaN(parsed)) setTargetValue(parsed.toString());
-                                    else setTargetValue('');
+                                    // Allow numbers and dot for decimal
+                                    const raw = e.target.value.replace(/[^0-9.]/g, '');
+                                    setTargetValue(raw);
                                 }}
-                                placeholder="Nhập giá trị..."
+                                placeholder="Ví dụ: 9.5"
                                 className="w-full h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-bold text-rose-600 dark:text-rose-400"
                             />
                         </div>
@@ -150,7 +150,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                                             {nhom}
                                         </span>
                                         <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 mt-0.5">
-                                            GTĐH: {formatCurrency(value)}
+                                            GTĐH: {formatCurrency(value / 1000000)} T
                                         </span>
                                     </div>
                                     <button 

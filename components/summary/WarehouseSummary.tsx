@@ -102,18 +102,16 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     const handleTargetClick = (kho: string) => {
         if (userRole === 'employee') return;
         const currentTarget = warehouseTargets[kho] || 0;
-        // Format initial value with commas
-        const formattedValue = currentTarget > 0 ? currentTarget.toLocaleString('en-US') : '';
+        const targetDivided = currentTarget > 0 ? (currentTarget / 1000000) : 0;
+        const formattedValue = targetDivided > 0 ? targetDivided.toLocaleString('en-US', { maximumFractionDigits: 3 }) : '';
         setEditingTargetKho({ id: kho, name: kho, value: formattedValue });
     };
 
     const handleTargetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Remove non-digit characters
-        const rawValue = e.target.value.replace(/\D/g, '');
-        // Format with commas
-        const formattedValue = rawValue ? parseInt(rawValue, 10).toLocaleString('en-US') : '';
-        
-        setEditingTargetKho(prev => prev ? { ...prev, value: formattedValue } : null);
+        // Only allow numbers, dots, and commas
+        const rawValue = e.target.value.replace(/[^0-9.,]/g, '');
+        // Keep the input value as user typed for smooth editing (decimals!)
+        setEditingTargetKho(prev => prev ? { ...prev, value: rawValue } : null);
     };
 
     const handleTargetSave = (e?: React.FormEvent) => {
@@ -122,7 +120,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
             // Remove commas before parsing to float
             const val = parseFloat(editingTargetKho.value.replace(/,/g, ''));
             if (!isNaN(val)) {
-                updateWarehouseTarget(editingTargetKho.id, val);
+                updateWarehouseTarget(editingTargetKho.id, val * 1000000);
             }
             setEditingTargetKho(null);
         }
@@ -448,7 +446,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
             >
                 <form onSubmit={handleTargetSave} className="p-6">
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        Doanh thu mục tiêu (VNĐ)
+                        Doanh thu mục tiêu (Đvt: Triệu VNĐ)
                     </label>
                     <input
                         ref={targetInputRef}

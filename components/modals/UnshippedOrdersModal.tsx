@@ -11,6 +11,7 @@ interface UnshippedOrdersModalProps {
     isOpen: boolean;
     onClose: () => void;
     onExport: (element: HTMLElement, filename: string, options?: any) => Promise<void>;
+    onlyOverdue?: boolean;
 }
 
 // Icons for each industry group
@@ -45,9 +46,27 @@ const industryColors: { [key: string]: string } = {
 // border-slate-500 bg-slate-100 dark:bg-slate-900/50 text-slate-600 dark:text-slate-400 bg-slate-500
 
 
-const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onClose, onExport }) => {
+const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onClose, onExport, onlyOverdue }) => {
     const { processedData, productConfig } = useDashboardContext();
-    const salesData = processedData?.unshippedOrders ?? [];
+    
+    const salesData = useMemo(() => {
+        let data = processedData?.unshippedOrders ?? [];
+        if (onlyOverdue) {
+            const now = new Date();
+            const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            data = data.filter(row => {
+                let scheduledDateRaw = row['TG Hẹn Giao'] || row.parsedDate;
+                if (!scheduledDateRaw) return false;
+                let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
+                if (!isNaN(scheduledDate.getTime())) {
+                    const schedTime = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate()).getTime();
+                    return todayStart > schedTime;
+                }
+                return false;
+            });
+        }
+        return data;
+    }, [processedData?.unshippedOrders, onlyOverdue]);
 
     const modalBodyRef = React.useRef<HTMLDivElement>(null);
     const creatorRefs = useRef<{ [key: string]: HTMLDetailsElement | null }>({});

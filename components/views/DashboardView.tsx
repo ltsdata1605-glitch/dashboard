@@ -229,13 +229,13 @@ export default function DashboardView() {
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
                                             </div>
-                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
-                                                Lượt Truy Cập và <span className="animate-pulse text-emerald-500 font-bold whitespace-nowrap">Online</span>
+                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1 line-clamp-1">
+                                                Lượt Truy Cập: <span className="font-black text-slate-700 dark:text-slate-300">{totalVisits.toLocaleString('vi-VN')}</span>
                                             </span>
-                                            <div className="w-px h-3 bg-slate-300 dark:bg-slate-600 mx-1"></div>
-                                            <span className="text-[10px] font-black text-slate-700 dark:text-slate-300">{totalVisits.toLocaleString('vi-VN')}</span>
-                                            <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 mx-0.5"></div>
-                                            <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400">{onlineUsers}</span>
+                                            <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 mx-1.5"></div>
+                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1 line-clamp-1">
+                                                <span className="animate-pulse text-emerald-500 font-bold whitespace-nowrap">Online:</span> <span className="font-black text-emerald-600 dark:text-emerald-400">{onlineUsers}</span>
+                                            </span>
                                         </div>
                                         
                                         {processingTime > 0 && (
@@ -272,7 +272,7 @@ export default function DashboardView() {
                                                 if (overdueOrders.length > 0) {
                                                     return (
                                                         <div 
-                                                            onClick={openUnshippedModal}
+                                                            onClick={() => setActiveModal('unshipped_overdue')}
                                                             className="absolute top-0 right-0 left-0 bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20] pointer-events-auto"
                                                         >
                                                             <div className="flex items-center gap-2 font-bold text-sm">
@@ -359,6 +359,7 @@ export default function DashboardView() {
                     )}
                     {activeModal === 'performance' && processedData && <PerformanceModal isOpen={true} onClose={() => setActiveModal(null)} employeeName={modalData.employeeName} onExport={handleExport}/>}
                     {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
+                    {activeModal === 'unshipped_overdue' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onlyOverdue={true} />}
                     <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />
                 <DebugPanel 
                     isVisible={isDebugPanelVisible} 
