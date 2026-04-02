@@ -1,232 +1,698 @@
-import React, { useState, useMemo, useEffect, forwardRef } from 'react';
-import type { Employee, DataRow, ProductConfig, WarehouseColumnConfig, ExploitationData } from '../../types';
-import { Icon } from '../common/Icon';
-import { useEmployeeColumnLogic } from '../../hooks/useEmployeeColumnLogic';
-import EmployeeAnalysisSettingsModal from './EmployeeAnalysisSettingsModal';
-import { getEmployeeColumnConfig, saveEmployeeColumnConfig } from '../../services/dbService';
-import { WAREHOUSE_HEADER_COLORS } from '../../constants';
 
-const DEFAULT_EMPLOYEE_COLUMNS: WarehouseColumnConfig[] = [
-    {
-        id: 'doanhThuThuc', order: 0, isVisible: true, isCustom: false, metric: 'doanhThuThuc',
-        mainHeader: 'KPI CHÍNH', subHeader: 'DT THỰC'
-    },
-    {
-        id: 'doanhThuQD', order: 1, isVisible: true, isCustom: false, metric: 'doanhThuQD',
-        mainHeader: 'KPI CHÍNH', subHeader: 'DT Q.ĐỔI'
-    }
-];
+import React, { useMemo, useState, forwardRef, useEffect, useRef } from 'react';
+import { formatCurrency, abbreviateName, formatQuantityWithFraction, formatQuantity } from '../../utils/dataUtils';
+import { Icon } from '../common/Icon';
+import type { ExploitationData } from '../../types';
+import { getThemeMap, saveThemeMap, getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../services/dbService';
+
 
 interface IndustryAnalysisTabProps {
-    employees: Employee[];
-    baseFilteredData: DataRow[];
-    productConfig: ProductConfig;
+    data: ExploitationData[];
     onExport?: () => void;
     isExporting?: boolean;
     onBatchExport: (data: ExploitationData[]) => void;
 }
 
-const IndustryAnalysisTab = forwardRef<HTMLDivElement, IndustryAnalysisTabProps>(({
-    employees,
-    baseFilteredData,
-    productConfig,
-    onExport,
-    isExporting,
-    onBatchExport
-}, ref) => {
-    const [columns, setColumns] = useState<WarehouseColumnConfig[]>([]);
-    const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'doanhThuQD', direction: 'desc' });
-    
-    // Derived config
-    const { allIndustries, allGroups, allManufacturers } = useMemo(() => {
-        if (!productConfig || !baseFilteredData) return { allIndustries: [], allGroups: [], allManufacturers: [] };
-        const industries = new Set<string>();
-        const groups = new Set<string>();
-        Object.keys(productConfig.childToParentMap).forEach(childKey => industries.add(productConfig.childToParentMap[childKey]));
-        Object.values(productConfig.subgroups).forEach(parent => Object.keys(parent).forEach(subgroup => groups.add(subgroup)));
-        const manufacturers = new Set<string>(baseFilteredData.map(row => row.Manufacturer).filter(Boolean));
-        return { 
-            allIndustries: Array.from(industries).sort(), 
-            allGroups: Array.from(groups).sort(),
-            allManufacturers: Array.from(manufacturers).sort(),
-        };
-    }, [productConfig, baseFilteredData]);
+type SortConfig = {
+    key: keyof ExploitationData | 'name' | 'percentBaoHiem' | 'percentSimKT' | 'percentDongHoKT' | 'percentPhuKienKT' | 'percentGiaDungKT' | 'belowAverageCount' | 'slSPChinh_Tong';
+    direction: 'asc' | 'desc';
+};
 
+const HeaderCell: React.FC<{
+    label: string | React.ReactNode;
+    sortKey: SortConfig['key'];
+    className?: string;
+    onSort: (key: SortConfig['key']) => void;
+    sortConfig: SortConfig;
+    colorConfig?: { bg: string; text: string };
+}> = ({ label, sortKey, onSort, sortConfig, className, colorConfig }) => {
+    const isActive = sortConfig.key === sortKey;
+    const bgClass = colorConfig ? colorConfig.bg : (isActive ? 'bg-indigo-50/80 dark:bg-indigo-900/20' : 'bg-transparent');
+    const textClass = colorConfig ? colorConfig.text : (isActive ? 'text-indigo-700 dark:text-indigo-400' : 'text-[#46505e] dark:text-slate-300');
+    
+    return (
+        <th
+            onClick={() => onSort(sortKey)}
+            className={`px-3 py-2 text-[11px] font-bold cursor-pointer select-none text-center uppercase tracking-wider border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${bgClass} ${textClass} hover:opacity-80 transition-opacity ${className || ''} h-px relative group/th`}
+        >
+            <div className="flex items-center justify-center gap-1">
+                {label}
+                {isActive && <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />}
+            </div>
+        </th>
+    );
+};
+
+const detailQuickFilters: { key: string; label: string }[] = [
+    { key: 'doanhThu', label: 'Doanh Thu' },
+    { key: 'spChinh', label: 'SP Chính' },
+    { key: 'baoHiem', label: 'Bảo Hiểm' },
+    { key: 'sim', label: 'SIM' },
+    { key: 'dongHo', label: 'Đồng Hồ' },
+    { key: 'phuKien', label: 'Phụ Kiện' },
+    { key: 'giaDung', label: 'Gia Dụng' },
+];
+
+const groupToSortKeyMap: Record<string, SortConfig['key']> = {
+    baoHiem: 'percentBaoHiem',
+    sim: 'percentSimKT',
+    dongHo: 'percentDongHoKT',
+    phuKien: 'percentPhuKienKT',
+    giaDung: 'percentGiaDungKT',
+};
+
+// Data structure for detail view headers
+const detailHeaderGroups: Record<string, { label: string; colSpan: number; bg: string; text: string; subHeaders: { label: string; key: SortConfig['key'] }[] }> = {
+    doanhThu: { label: 'DOANH THU', colSpan: 3, bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300', subHeaders: [
+        { label: 'DT Thực', key: 'doanhThuThuc' },
+        { label: 'DTQĐ', key: 'doanhThuQD' },
+        { label: 'HQQĐ', key: 'hieuQuaQD' }
+    ]},
+    spChinh: { label: 'SP CHÍNH', colSpan: 4, bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300', subHeaders: [
+        { label: 'ICT', key: 'slICT' },
+        { label: 'CE', key: 'slCE_main' },
+        { label: 'ĐGD', key: 'slGiaDung_main' },
+        { label: 'Tổng', key: 'slSPChinh_Tong' }
+    ]},
+    baoHiem: { label: 'BẢO HIỂM', colSpan: 3, bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300', subHeaders: [
+        { label: 'SL', key: 'slBaoHiem' },
+        { label: 'D.Thu', key: 'doanhThuBaoHiem' },
+        { label: '%', key: 'percentBaoHiem' }
+    ]},
+    sim: { label: 'SIM', colSpan: 3, bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300', subHeaders: [
+        { label: 'SL', key: 'slSim' },
+        { label: 'D.Thu', key: 'doanhThuSim' },
+        { label: '%', key: 'percentSimKT' }
+    ]},
+    dongHo: { label: 'ĐỒNG HỒ', colSpan: 3, bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300', subHeaders: [
+        { label: 'SL', key: 'slDongHo' },
+        { label: 'D.Thu', key: 'doanhThuDongHo' },
+        { label: '%', key: 'percentDongHoKT' }
+    ]},
+    phuKien: { label: 'PHỤ KIỆN', colSpan: 6, bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-300', subHeaders: [
+        { label: 'SL Cam', key: 'slCamera' },
+        { label: 'SL Loa', key: 'slLoa' },
+        { label: 'SL Pin', key: 'slPinSDP' },
+        { label: 'SL TNghe', key: 'slTaiNgheBLT' },
+        { label: 'D.Thu', key: 'doanhThuPhuKien' },
+        { label: '%', key: 'percentPhuKienKT' }
+    ]},
+    giaDung: { label: 'GIA DỤNG', colSpan: 6, bg: 'bg-cyan-50 dark:bg-cyan-900/20', text: 'text-cyan-700 dark:text-cyan-300', subHeaders: [
+        { label: 'SL MLN', key: 'slMayLocNuoc' },
+        { label: 'SL NCơm', key: 'slNoiCom' },
+        { label: 'SL NChiên', key: 'slNoiChien' },
+        { label: 'SL Quạt', key: 'slQuatDien' },
+        { label: 'D.Thu', key: 'doanhThuGiaDung' },
+        { label: '%', key: 'percentGiaDungKT' }
+    ]}
+};
+
+const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalysisTabProps>(({ data, onExport, isExporting, onBatchExport }, ref) => {
+    const [viewMode, setViewMode] = useState<'detail' | 'efficiency' | 'efficiency_dt_sl' | 'efficiency_quantity'>('detail');
+    const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
+    const [initialGroupsLoaded, setInitialGroupsLoaded] = useState(false);
+    const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'percentBaoHiem', direction: 'desc' });
+    
     useEffect(() => {
-        const loadConfig = async () => {
-            let config = await getEmployeeColumnConfig();
-            if (!config || config.length === 0) {
-                config = [...DEFAULT_EMPLOYEE_COLUMNS];
-                // Don't auto-save an empty config initially, just to preview, but we can save it:
-                await saveEmployeeColumnConfig(config);
+        getIndustryVisibleGroups().then(savedGroups => {
+            if (savedGroups && savedGroups.length > 0) {
+                setVisibleGroups(new Set(savedGroups));
+            } else {
+                setVisibleGroups(new Set(['spChinh', 'baoHiem']));
             }
-            setColumns(config);
-        };
-        loadConfig();
+            setInitialGroupsLoaded(true);
+        });
     }, []);
 
-    const handleSaveColumns = (newColumns: WarehouseColumnConfig[]) => {
-        setColumns(newColumns);
-        saveEmployeeColumnConfig(newColumns).catch(err => console.error(err));
-        setIsSettingsModalOpen(false);
-    };
+    useEffect(() => {
+        if (initialGroupsLoaded) {
+            saveIndustryVisibleGroups(Array.from(visibleGroups) as string[]);
+        }
+    }, [visibleGroups, initialGroupsLoaded]);
+    
+    useEffect(() => {
+        if (viewMode === 'efficiency' || viewMode === 'efficiency_dt_sl' || viewMode === 'efficiency_quantity') {
+            setSortConfig({ key: 'slSPChinh_Tong', direction: 'desc' });
+        } else {
+            setSortConfig({ key: 'percentBaoHiem', direction: 'desc' });
+        }
+    }, [viewMode]);
+    
+    const handleToggleGroup = (groupKey: string) => {
+        const newVisibleGroups = new Set(visibleGroups);
+        const wasAdded = !newVisibleGroups.has(groupKey);
 
-    const { sortedData, totals, customTotals, getColumnValue } = useEmployeeColumnLogic({
-        data: employees,
-        columns,
-        originalData: baseFilteredData,
-        productConfig,
-        sortConfig
-    });
-
-    const visibleColumns = useMemo(() => columns.filter(c => c.isVisible).sort((a, b) => a.order - b.order), [columns]);
-
-    const groupedHeaders = useMemo(() => {
-        const groups: { name: string; colSpan: number; }[] = [];
-        if (visibleColumns.length === 0) return groups;
-        
-        let currentGroup = { name: visibleColumns[0].mainHeader, colSpan: 1 };
-        for (let i = 1; i < visibleColumns.length; i++) {
-            if (visibleColumns[i].mainHeader === currentGroup.name) {
-                currentGroup.colSpan++;
-            } else {
-                groups.push(currentGroup);
-                currentGroup = { name: visibleColumns[i].mainHeader, colSpan: 1 };
+        if (wasAdded) {
+            newVisibleGroups.add(groupKey);
+        } else {
+            if (newVisibleGroups.size > 1) { 
+                newVisibleGroups.delete(groupKey);
             }
         }
-        groups.push(currentGroup);
-        return groups;
-    }, [visibleColumns]);
+        
+        const setsAreEqual = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every(value => b.has(value));
 
-    const isGroupStart = (index: number) => index === 0 || visibleColumns[index].mainHeader !== visibleColumns[index - 1].mainHeader;
+        if (!setsAreEqual(visibleGroups as Set<string>, newVisibleGroups as Set<string>)) {
+            setVisibleGroups(newVisibleGroups);
 
-    const handleSort = (columnId: string) => setSortConfig(prev => ({ key: columnId, direction: prev.key === columnId && prev.direction === 'desc' ? 'asc' : 'desc' }));
+            const sortKeyForToggledGroup = groupToSortKeyMap[groupKey];
+            if (wasAdded && sortKeyForToggledGroup) {
+                setSortConfig({ key: sortKeyForToggledGroup, direction: 'desc' });
+            } else if (!wasAdded && sortConfig.key === sortKeyForToggledGroup) {
+                const remainingSpecialGroups: string[] = detailQuickFilters.map(f => f.key).filter((key) => newVisibleGroups.has(key) && groupToSortKeyMap[key]);
+                if (remainingSpecialGroups.length > 0) {
+                    const firstKey = remainingSpecialGroups[0];
+                    const newSortKey = groupToSortKeyMap[firstKey];
+                    if(newSortKey) setSortConfig({ key: newSortKey, direction: 'desc' });
+                } else {
+                    if (viewMode !== 'detail') {
+                        setSortConfig({ key: 'slSPChinh_Tong', direction: 'desc' });
+                    } else {
+                        setSortConfig({ key: 'percentBaoHiem', direction: 'desc' });
+                    }
+                }
+            }
+        }
+    };
+    
+    const { processedData, groupTotals, grandTotal } = useMemo(() => {
+        const thresholds = { percentBaoHiem: 40, percentSimKT: 30, percentDongHoKT: 20, percentPhuKienKT: 10, percentGiaDungKT: 30 };
 
-    const formatValue = (value: number | undefined, isPercentage: boolean, isRevenue: boolean) => {
-        if (value === undefined || isNaN(value)) return '—';
-        if (isPercentage) return `${Math.round(value * (isRevenue ? 1 : 100))}%`; // If it's a manual division we do *100, if it comes ready (hieuQuaQD) we don't.
-        if (isRevenue) return Math.round(value / 1000000).toLocaleString('vi-VN');
-        return Math.round(value).toLocaleString('vi-VN');
+        const enhancedData = data.map(item => {
+            const slSPChinh_Tong = (item.slICT || 0) + (item.slCE_main || 0) + (item.slGiaDung_main || 0);
+            const percentBaoHiem = slSPChinh_Tong > 0 ? ((item.slBaoHiem || 0) / slSPChinh_Tong) * 100 : 0;
+            const percentSimKT = (item.slICT || 0) > 0 ? ((item.slSim || 0) / (item.slICT || 1)) * 100 : 0;
+            const percentDongHoKT = slSPChinh_Tong > 0 ? ((item.slDongHo || 0) / slSPChinh_Tong) * 100 : 0;
+            const percentPhuKienKT = (item.doanhThuICT || 0) > 0 ? ((item.doanhThuPhuKien || 0) / (item.doanhThuICT || 1)) * 100 : 0;
+            const percentGiaDungKT = (item.doanhThuCE_main || 0) > 0 ? ((item.doanhThuGiaDung || 0) / (item.doanhThuCE_main || 1)) * 100 : 0;
+
+            let belowAverageCount = 0;
+            if (percentBaoHiem < thresholds.percentBaoHiem) belowAverageCount++;
+            if (percentSimKT < thresholds.percentSimKT) belowAverageCount++;
+            if (percentDongHoKT < thresholds.percentDongHoKT) belowAverageCount++;
+            if (percentPhuKienKT < thresholds.percentPhuKienKT) belowAverageCount++;
+            if (percentGiaDungKT < thresholds.percentGiaDungKT) belowAverageCount++;
+
+            return { ...item, slSPChinh_Tong, percentBaoHiem, percentSimKT, percentDongHoKT, percentPhuKienKT, percentGiaDungKT, belowAverageCount };
+        });
+
+        const sorted = [...enhancedData].sort((a, b) => {
+            if (sortConfig.key === 'name') {
+                return sortConfig.direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+            }
+            
+            const key = sortConfig.key as keyof typeof a;
+            
+            const valA = a[key] ?? 0;
+            const valB = b[key] ?? 0;
+
+            if (typeof valA === 'number' && typeof valB === 'number') {
+                const result = sortConfig.direction === 'asc' ? valA - valB : valB - valA;
+                if (result !== 0) return result;
+            }
+            return a.name.localeCompare(b.name);
+        });
+
+        const grouped = sorted.reduce((acc, employee) => {
+            const dept = employee.department || 'Không Phân Ca';
+            if (!acc[dept]) acc[dept] = [];
+            acc[dept].push(employee);
+            return acc;
+        }, {} as { [key: string]: typeof sorted });
+        
+        const sortedGroupKeys = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+        const finalGroupedData: { [key: string]: typeof sorted } = {};
+        sortedGroupKeys.forEach(key => { finalGroupedData[key] = grouped[key]; });
+
+        const calculateTotals = (items: typeof enhancedData) => {
+             const initialTotals = {
+                doanhThuThuc: 0, doanhThuQD: 0,
+                slICT: 0, doanhThuICT: 0, slCE_main: 0, doanhThuCE_main: 0, slGiaDung_main: 0,
+                slBaoHiem: 0, doanhThuBaoHiem: 0,
+                slSim: 0, doanhThuSim: 0, slDongHo: 0, doanhThuDongHo: 0,
+                doanhThuPhuKien: 0, slPhuKien: 0, slCamera: 0, slLoa: 0, slPinSDP: 0, slTaiNgheBLT: 0,
+                doanhThuGiaDung: 0, slGiaDung: 0, slMayLocNuoc: 0, slNoiCom: 0, slNoiChien: 0, slQuatDien: 0,
+                belowAverageCount: 0
+            };
+
+            if (items.length === 0) return { ...initialTotals, hieuQuaQD: 0, percentBaoHiem: 0, percentSimKT: 0, percentDongHoKT: 0, percentPhuKienKT: 0, percentGiaDungKT: 0, slSPChinh_Tong: 0 };
+            
+            const t = items.reduce((acc, item) => {
+                const keys = Object.keys(initialTotals) as Array<keyof typeof initialTotals>;
+                keys.forEach((key) => {
+                    const value = (item as any)[key];
+                    if (typeof value === 'number') {
+                        (acc as any)[key] += value;
+                    }
+                });
+                return acc;
+            }, { ...initialTotals });
+            
+            const hieuQuaQD = t.doanhThuThuc > 0 ? (t.doanhThuQD - t.doanhThuThuc) / t.doanhThuThuc * 100 : 0;
+            const slSPChinh_Tong = t.slICT + t.slCE_main + t.slGiaDung_main;
+            const percentBaoHiem = slSPChinh_Tong > 0 ? (t.slBaoHiem / slSPChinh_Tong) * 100 : 0;
+            const percentSimKT = t.slICT > 0 ? (t.slSim / t.slICT) * 100 : 0;
+            const percentDongHoKT = slSPChinh_Tong > 0 ? (t.slDongHo / slSPChinh_Tong) * 100 : 0;
+            const percentPhuKienKT = t.doanhThuICT > 0 ? (t.doanhThuPhuKien / t.doanhThuICT) * 100 : 0;
+            const percentGiaDungKT = t.doanhThuCE_main > 0 ? (t.doanhThuGiaDung / t.doanhThuCE_main) * 100 : 0;
+            
+            return { ...t, slSPChinh_Tong, hieuQuaQD, percentBaoHiem, percentSimKT, percentDongHoKT, percentPhuKienKT, percentGiaDungKT };
+        };
+
+        const groupTotals: { [key: string]: any } = {};
+        for (const dept in finalGroupedData) { groupTotals[dept] = calculateTotals(finalGroupedData[dept]); }
+        const grandTotal = calculateTotals(enhancedData);
+
+        return { processedData: finalGroupedData, groupTotals, grandTotal };
+    }, [data, sortConfig]);
+
+    const handleSort = (key: SortConfig['key']) => {
+        let direction: 'asc' | 'desc' = 'desc';
+        if (sortConfig.key === key && sortConfig.direction === 'desc') { direction = 'asc'; }
+        setSortConfig({ key, direction });
+    };
+    
+    const showDeptHeaders = Object.keys(processedData).length > 1 || (Object.keys(processedData).length === 1 && Object.keys(processedData)[0] !== 'Không Phân Ca');
+    
+    const formatPct = (value: number) => value > 0 ? `${value.toFixed(0)}%` : '-';
+    const formatNum = (value: number) => value > 0 ? formatQuantityWithFraction(value) : '-';
+    const formatC = (value: number) => value > 0 ? formatCurrency(value) : '-';
+    const boldBlueText = 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-lg';
+    const warningText = 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-lg';
+    
+    const getHeatmapClass = (value: number, threshold: number) => {
+        if (value === 0) return 'text-slate-300 dark:text-slate-600';
+        if (value < threshold) return 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-1 rounded-lg border border-rose-100 dark:border-rose-800/50';
+        return 'text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-lg border border-emerald-100 dark:border-emerald-800/50';
     };
 
+    const renderDetailModeCells = (rowData: any) => (
+        <>
+            {visibleGroups.has('doanhThu') && <>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuThuc)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-bold text-slate-800 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuQD)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-black text-indigo-600 dark:text-indigo-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatPct(rowData.hieuQuaQD)}</td>
+            </>}
+            {visibleGroups.has('spChinh') && <>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slICT)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slCE_main)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slGiaDung_main)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-800/50 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slSPChinh_Tong)}</td>
+            </>}
+            {visibleGroups.has('baoHiem') && <>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slBaoHiem)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuBaoHiem)}</td>
+                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                    <span className={getHeatmapClass(rowData.percentBaoHiem, 40)}>{formatPct(rowData.percentBaoHiem)}</span>
+                </td>
+            </>}
+            {visibleGroups.has('sim') && <>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slSim)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuSim)}</td>
+                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                    <span className={getHeatmapClass(rowData.percentSimKT, 30)}>{formatPct(rowData.percentSimKT)}</span>
+                </td>
+            </>}
+            {visibleGroups.has('dongHo') && <>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slDongHo)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuDongHo)}</td>
+                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                    <span className={getHeatmapClass(rowData.percentDongHoKT, 20)}>{formatPct(rowData.percentDongHoKT)}</span>
+                </td>
+            </>}
+            {visibleGroups.has('phuKien') && <>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slCamera)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slLoa)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slPinSDP)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slTaiNgheBLT)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuPhuKien)}</td>
+                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                    <span className={getHeatmapClass(rowData.percentPhuKienKT, 10)}>{formatPct(rowData.percentPhuKienKT)}</span>
+                </td>
+            </>}
+            {visibleGroups.has('giaDung') && <>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slMayLocNuoc)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slNoiCom)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slNoiChien)}</td>
+                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slQuatDien)}</td>
+                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuGiaDung)}</td>
+                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                    <span className={getHeatmapClass(rowData.percentGiaDungKT, 30)}>{formatPct(rowData.percentGiaDungKT)}</span>
+                </td>
+            </>}
+        </>
+    );
+
+    const efficiencyKtHeaders = [
+        { label: '# Yếu', key: 'belowAverageCount' }, { label: '%BH', key: 'percentBaoHiem' }, { label: '%SIM', key: 'percentSimKT' },
+        { label: '%PK', key: 'percentPhuKienKT' }, { label: '%ĐHồ', key: 'percentDongHoKT' }, { label: '%GD', key: 'percentGiaDungKT' }
+    ];
+
+    const efficiencyDtHeaders = [
+        { label: 'SIM', key: 'doanhThuSim' }, { label: 'ĐHồ', key: 'doanhThuDongHo' }, { label: 'DT BH', key: 'doanhThuBaoHiem' },
+        { label: 'DT PK', key: 'doanhThuPhuKien' }, { label: 'DT GD', key: 'doanhThuGiaDung' }
+    ];
+
+    const efficiencyQuantityHeaders = [
+        { label: 'SL SIM', key: 'slSim' }, { label: 'SL ĐH', key: 'slDongHo' }, { label: 'SL BH', key: 'slBaoHiem' },
+        { label: 'SL PK', key: 'slPhuKien' }, { label: 'SL GD', key: 'slGiaDung' }
+    ];
+
     return (
-        <div ref={ref} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden rounded-xl">
-            <div className="flex justify-between items-center px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hide-on-export">
-                <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm flex items-center gap-2">
-                    <Icon name="layout-grid" size={4.5} className="text-indigo-500"/>
-                    MA TRẬN CHỈ SỐ NHÂN VIÊN
-                </h3>
-                <div className="flex gap-2">
-                    <button onClick={() => setIsSettingsModalOpen(true)} className="px-3 py-1.5 text-xs font-semibold bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors flex items-center gap-1.5">
-                        <Icon name="settings-2" size={3.5} />
-                        Tùy chỉnh cột
-                    </button>
-                    {onExport && (
-                         <button onClick={onExport} disabled={isExporting} className="p-1.5 text-slate-400 hover:text-indigo-600 rounded-lg transition-colors">
-                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} />}
+        <div ref={ref} className="overflow-hidden flex flex-col h-full bg-transparent">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-4">
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400`}>
+                        <Icon name="gantt-chart-square" size={6} />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-black text-slate-800 dark:text-white leading-tight">Phân Tích Khai Thác</h3>
+                        <p className="text-xs font-medium text-slate-400">Chi tiết sản phẩm & hiệu quả bán kèm</p>
+                    </div>
+                </div>
+                <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                            <button onClick={() => setViewMode('detail')} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${viewMode === 'detail' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Chi tiết</button>
+                            <button onClick={() => setViewMode('efficiency')} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${viewMode === 'efficiency' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Hiệu quả %</button>
+                            <button onClick={() => setViewMode('efficiency_dt_sl')} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${viewMode === 'efficiency_dt_sl' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Doanh thu</button>
+                            <button onClick={() => setViewMode('efficiency_quantity')} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${viewMode === 'efficiency_quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Số lượng</button>
+                        </div>
+                        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+                         <button onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+                            <Icon name="switch-camera" size={5} />
                         </button>
-                    )}
+                        {onExport && (
+                            <button onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                                {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
+                            </button>
+                        )}
+                    </div>
                 </div>
             </div>
+            
+            {viewMode === 'detail' && (
+                <div className="pb-2 hide-on-export overflow-x-auto">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider mr-2">Hiển thị:</span>
+                        {detailQuickFilters.map(f => (
+                            <button 
+                                key={f.key} 
+                                onClick={() => handleToggleGroup(f.key)}
+                                className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded-lg transition-all border ${
+                                    visibleGroups.has(f.key)
+                                    ? 'bg-white dark:bg-slate-800 text-indigo-600 border-indigo-200 dark:border-indigo-800 shadow-sm'
+                                    : 'bg-transparent text-slate-500 border-transparent hover:bg-white hover:shadow-sm'
+                                }`}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
 
-            <div className="overflow-x-auto custom-scrollbar">
-                <table className="min-w-full text-sm text-center border-collapse">
-                    <thead>
-                        <tr className="text-[11px] font-bold uppercase tracking-wider">
-                            <th rowSpan={2} onClick={() => handleSort('name')} className="px-3 py-2 text-left bg-slate-50 dark:bg-slate-800/80 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-20 hover:bg-slate-100 cursor-pointer text-slate-700 dark:text-slate-300 h-px">
-                                <div className="flex items-center gap-1 min-w-[120px]">
-                                    NHÂN VIÊN 
-                                    {sortConfig.key === 'name' && <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3}/>}
-                                </div>
-                            </th>
-                            {groupedHeaders.map((g, i) => {
-                                const styles = WAREHOUSE_HEADER_COLORS[g.name] || WAREHOUSE_HEADER_COLORS.DEFAULT;
-                                return <th key={i} colSpan={g.colSpan} className={`px-2 py-2 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 border-r h-px`}>{g.name}</th>;
-                            })}
-                        </tr>
-                        <tr>
-                            {visibleColumns.map(col => {
-                                const styles = WAREHOUSE_HEADER_COLORS[col.mainHeader] || WAREHOUSE_HEADER_COLORS.DEFAULT;
-                                return (
-                                    <th key={col.id} onClick={() => handleSort(col.id)} className={`px-2 py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity ${styles.sub} ${styles.text} text-[10px] font-bold h-px`}>
-                                        <div className="flex justify-center items-center gap-1">
-                                            {col.subHeader}
-                                            {sortConfig.key === col.id && <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5}/>}
+
+            <div className="overflow-x-auto custom-scrollbar flex-grow p-0 border border-slate-200 dark:border-slate-700">
+                <table className="w-full text-left border-collapse">
+                     <thead className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600">
+                        {viewMode === 'detail' ? (
+                            <>
+                                <tr>
+                                    <th rowSpan={2} onClick={() => handleSort('name')} className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none min-w-[140px] align-middle sticky left-0 z-40 h-px hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                                        <div className="flex items-center justify-center gap-1">
+                                            NHÂN VIÊN
+                                            {sortConfig.key === 'name' && (
+                                                <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                            )}
                                         </div>
                                     </th>
-                                );
-                            })}
-                        </tr>
+                                    {detailQuickFilters.filter(f => visibleGroups.has(f.key)).map((f, gIdx) => (
+                                        <th key={f.key} colSpan={detailHeaderGroups[f.key].colSpan} className={`px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px ${detailHeaderGroups[f.key].bg} ${detailHeaderGroups[f.key].text}`}>
+                                            {detailHeaderGroups[f.key].label}
+                                        </th>
+                                    ))}
+                                </tr>
+                                <tr>
+                                    {detailQuickFilters.filter(f => visibleGroups.has(f.key)).flatMap((f, gIdx) => {
+                                        return detailHeaderGroups[f.key].subHeaders.map((subHeader, sIdx) => (
+                                            <HeaderCell 
+                                                key={subHeader.key} 
+                                                label={subHeader.label} 
+                                                sortKey={subHeader.key} 
+                                                onSort={handleSort} 
+                                                sortConfig={sortConfig}
+                                                colorConfig={{ bg: detailHeaderGroups[f.key].bg, text: detailHeaderGroups[f.key].text }}
+                                            />
+                                        ));
+                                    })}
+                                </tr>
+                            </>
+                        ) : (
+                            <>
+                                 <tr>
+                                    <th rowSpan={2} onClick={() => handleSort('name')} className="px-4 py-3 text-center text-[11px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none min-w-[140px] align-middle sticky left-0 z-40 h-px hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                                        <div className="flex items-center justify-center gap-1">
+                                            NHÂN VIÊN
+                                            {sortConfig.key === 'name' && (
+                                                <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                            )}
+                                        </div>
+                                    </th>
+                                    <th colSpan={4} className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px bg-emerald-50 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-300">
+                                        SỐ LƯỢNG SẢN PHẨM CHÍNH
+                                    </th>
+                                    {viewMode === 'efficiency' ? (
+                                        <th colSpan={6} className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-300">HIỆU QUẢ KHAI THÁC BÁN KÈM</th>
+                                    ) : viewMode === 'efficiency_dt_sl' ? (
+                                        <th colSpan={5} className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300">HIỆU QUẢ DOANH THU</th>
+                                    ) : (
+                                        <th colSpan={5} className="px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px bg-cyan-50 dark:bg-cyan-900/20 text-cyan-700 dark:text-cyan-300">HIỆU QUẢ SỐ LƯỢNG</th>
+                                    )}
+                                </tr>
+                                <tr>
+                                    <HeaderCell label="ICT" sortKey="slICT" onSort={handleSort} sortConfig={sortConfig} colorConfig={{bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300'}} />
+                                    <HeaderCell label="CE" sortKey="slCE_main" onSort={handleSort} sortConfig={sortConfig} colorConfig={{bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300'}} />
+                                    <HeaderCell label="ĐGD" sortKey="slGiaDung_main" onSort={handleSort} sortConfig={sortConfig} colorConfig={{bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300'}} />
+                                    <HeaderCell label="Tổng" sortKey="slSPChinh_Tong" onSort={handleSort} sortConfig={sortConfig} colorConfig={{bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300'}} />
+                                    {(viewMode === 'efficiency' ? efficiencyKtHeaders : viewMode === 'efficiency_dt_sl' ? efficiencyDtHeaders : efficiencyQuantityHeaders).map((h, i) => {
+                                        const bg = viewMode === 'efficiency' ? 'bg-rose-50 dark:bg-rose-900/20' : viewMode === 'efficiency_dt_sl' ? 'bg-amber-50 dark:bg-amber-900/20' : 'bg-cyan-50 dark:bg-cyan-900/20';
+                                        const text = viewMode === 'efficiency' ? 'text-rose-700 dark:text-rose-300' : viewMode === 'efficiency_dt_sl' ? 'text-amber-700 dark:text-amber-300' : 'text-cyan-700 dark:text-cyan-300';
+                                        return <HeaderCell key={h.key} label={h.label} sortKey={h.key as SortConfig['key']} onSort={handleSort} sortConfig={sortConfig} colorConfig={{bg, text}} />;
+                                    })}
+                                </tr>
+                            </>
+                        )}
                     </thead>
                     <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-                        {sortedData.map(row => (
-                            <tr key={row.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                <td className="px-3 py-2 text-left font-semibold text-slate-800 dark:text-slate-200 sticky left-0 z-10 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 whitespace-nowrap leading-tight h-px">
-                                    <div className="flex flex-col">
-                                        <span>{row.name}</span>
-                                        <span className="text-[10px] text-slate-400 font-normal">{row.department}</span>
-                                    </div>
-                                </td>
-                                {visibleColumns.map((col, idx) => {
-                                    const val = getColumnValue(row, col);
-                                    let isRev = col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.metric === 'doanhThuThuc' || col.metric === 'doanhThuQD';
-                                    let isPct = col.displayAs === 'percentage' || col.metric === 'hieuQuaQD';
+                        {Object.entries(processedData).map(([dept, employees], deptIdx) => {
+                            const pastelColors = [
+                                'bg-blue-50/50 dark:bg-blue-900/20',
+                                'bg-emerald-50/50 dark:bg-emerald-900/20',
+                                'bg-purple-50/50 dark:bg-purple-900/20',
+                                'bg-amber-50/50 dark:bg-amber-900/20',
+                                'bg-rose-50/50 dark:bg-rose-900/20',
+                                'bg-sky-50/50 dark:bg-sky-900/20',
+                                'bg-indigo-50/50 dark:bg-indigo-900/20',
+                                'bg-teal-50/50 dark:bg-teal-900/20'
+                            ];
+                            const deptColor = pastelColors[deptIdx % pastelColors.length];
 
-                                    let customColor: string | null = null;
-                                    if (col.conditionalFormatting && val !== undefined) {
-                                         for (const rule of col.conditionalFormatting) {
-                                              if (rule.condition === '>' && val > rule.value1) { customColor = rule.color; break; }
-                                              if (rule.condition === '<' && val < rule.value1) { customColor = rule.color; break; }
-                                         }
-                                    }
-                                    
-                                    // Highlight if text is red/blue for standard metrics
-                                    if(!customColor && col.metric === 'doanhThuQD') customColor = '#4338ca'; // indigo-700 loosely
+                            return (
+                            <React.Fragment key={dept}>
+                                {showDeptHeaders && (
+                                    <tr>
+                                        <td colSpan={100} className="px-3 py-1.5 border-y border-slate-200 dark:border-slate-700 sticky left-0 z-10">
+                                            <div className="flex items-center gap-2">
+                                                <span className="w-2 h-3.5 rounded-full flex-shrink-0" style={{background: ['#10b981','#3b82f6','#a855f7','#f59e0b','#f43f5e','#0ea5e9','#14b8a6','#f97316'][deptIdx % 8]}} />
+                                                <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">{dept} — {(employees as any[]).length} người</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                )}
+                                 {(employees as (ExploitationData & { slSPChinh_Tong: number, belowAverageCount: number })[]).map((employee, index) => {
+                                    const rankIndex = (processedData[dept] as any[]).findIndex(e => e.name === employee.name);
+                                    let rankDisplay = rankIndex < 3 
+                                        ? <span className="text-lg w-6 text-center inline-block">{['🥇', '🥈', '🥉'][rankIndex]}</span> 
+                                        : <span className="text-[13px] w-6 text-center inline-block text-slate-500 font-bold">#{rankIndex + 1}</span>;
 
                                     return (
-                                        <td key={col.id} className={`px-2 py-2 ${isGroupStart(idx) ? 'border-l' : ''} border-slate-200 dark:border-slate-700 h-px`}>
-                                            <span className="font-medium" style={customColor ? { color: customColor } : {}}>
-                                                {formatValue(val, isPct, isRev)}
-                                            </span>
-                                        </td>
-                                    );
+                                        <tr key={employee.name} className={`group transition-colors hover:bg-teal-50/50 dark:hover:bg-slate-800 ${index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/30 dark:bg-slate-800/20'}`}>
+                                            <td className="px-3 py-2 text-left sticky left-0 bg-inherit z-20 group-hover:brightness-95 transition-all border-b border-r border-slate-200 dark:border-slate-700">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex flex-col items-center justify-center min-w-[32px]">
+                                                        {rankDisplay}
+                                                    </div>
+                                                    <div className="flex flex-col">
+                                                        <span className="text-[13px] font-bold text-slate-800 dark:text-slate-100 group-hover:text-primary-600 transition-colors truncate max-w-[140px]">{abbreviateName(employee.name)}</span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            {viewMode === 'detail' ? renderDetailModeCells(employee) : viewMode === 'efficiency' ? (
+                                                <>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slICT)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slCE_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slGiaDung_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum((employee as any).slSPChinh_Tong)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-black text-rose-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{((employee as any).belowAverageCount) > 0 ? (employee as any).belowAverageCount : '-'}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                                                        <span className={getHeatmapClass(employee.percentBaoHiem, 40)}>{formatPct(employee.percentBaoHiem)}</span>
+                                                    </td>
+                                                    <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                                                        <span className={getHeatmapClass((employee as any).percentSimKT, 30)}>{formatPct((employee as any).percentSimKT)}</span>
+                                                    </td>
+                                                    <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                                                        <span className={getHeatmapClass((employee as any).percentPhuKienKT, 10)}>{formatPct((employee as any).percentPhuKienKT)}</span>
+                                                    </td>
+                                                    <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                                                        <span className={getHeatmapClass((employee as any).percentDongHoKT, 20)}>{formatPct((employee as any).percentDongHoKT)}</span>
+                                                    </td>
+                                                    <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                                                        <span className={getHeatmapClass((employee as any).percentGiaDungKT, 30)}>{formatPct((employee as any).percentGiaDungKT)}</span>
+                                                    </td>
+                                                </>
+                                            ) : viewMode === 'efficiency_dt_sl' ? (
+                                                 <>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slICT)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slCE_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slGiaDung_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum((employee as any).slSPChinh_Tong)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(employee.doanhThuSim)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(employee.doanhThuDongHo)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(employee.doanhThuBaoHiem)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(employee.doanhThuPhuKien)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(employee.doanhThuGiaDung)}</td>
+                                                </>
+                                            ) : ( // efficiency_quantity
+                                                <>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slICT)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slCE_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slGiaDung_main)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum((employee as any).slSPChinh_Tong)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slSim)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slDongHo)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slBaoHiem)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slPhuKien)}</td>
+                                                    <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slGiaDung)}</td>
+                                                </>
+                                            )}
+                                        </tr>
+                                    )
                                 })}
-                            </tr>
-                        ))}
+                                {Object.keys(processedData).length > 1 && groupTotals[dept] && (
+                                    <tr className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 font-bold">
+                                        <td className="px-3 py-2 text-left text-xs font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest sticky left-0 bg-slate-50 dark:bg-slate-800 z-20 border-b border-slate-200 dark:border-slate-700">Tổng Nhóm</td>
+                                         {viewMode === 'detail' ? renderDetailModeCells(groupTotals[dept]) : viewMode === 'efficiency' ? (
+                                            <>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slICT)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slCE_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slGiaDung_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-800 dark:text-white tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slSPChinh_Tong)}</td>
+                                                <td className="px-3 py-2 text-center border-b border-r border-slate-200 dark:border-slate-700"></td>
+                                                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                                                    <span className={getHeatmapClass(groupTotals[dept].percentBaoHiem, 40)}>{formatPct(groupTotals[dept].percentBaoHiem)}</span>
+                                                </td>
+                                                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                                                    <span className={getHeatmapClass(groupTotals[dept].percentSimKT, 30)}>{formatPct(groupTotals[dept].percentSimKT)}</span>
+                                                </td>
+                                                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                                                    <span className={getHeatmapClass(groupTotals[dept].percentPhuKienKT, 10)}>{formatPct(groupTotals[dept].percentPhuKienKT)}</span>
+                                                </td>
+                                                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
+                                                    <span className={getHeatmapClass(groupTotals[dept].percentDongHoKT, 20)}>{formatPct(groupTotals[dept].percentDongHoKT)}</span>
+                                                </td>
+                                                <td className="px-3 py-2 text-center text-[13px] border-b border-slate-100 dark:border-slate-800 border-r border-slate-50">
+                                                    <span className={getHeatmapClass(groupTotals[dept].percentGiaDungKT, 30)}>{formatPct(groupTotals[dept].percentGiaDungKT)}</span>
+                                                </td>
+                                            </>
+                                        ) : viewMode === 'efficiency_dt_sl' ? (
+                                            <>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slICT)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slCE_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slGiaDung_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-800 dark:text-white tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slSPChinh_Tong)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(groupTotals[dept].doanhThuSim)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(groupTotals[dept].doanhThuDongHo)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(groupTotals[dept].doanhThuBaoHiem)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(groupTotals[dept].doanhThuPhuKien)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(groupTotals[dept].doanhThuGiaDung)}</td>
+                                            </>
+                                        ) : ( // efficiency_quantity
+                                            <>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slICT)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slCE_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slGiaDung_main)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-800 dark:text-white tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slSPChinh_Tong)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slSim)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slDongHo)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slBaoHiem)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slPhuKien)}</td>
+                                                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-700 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(groupTotals[dept].slGiaDung)}</td>
+                                            </>
+                                        )}
+                                    </tr>
+                                )}
+                            </React.Fragment>
+                        );})}
                     </tbody>
-                    <tfoot className="bg-slate-50 dark:bg-slate-800 border-t-2 border-slate-300 dark:border-slate-600">
-                        <tr>
-                            <td className="px-3 py-2 font-bold text-left sticky left-0 z-10 bg-slate-50 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700 h-px">TỔNG CHUNG</td>
-                            {visibleColumns.map((col, idx) => {
-                                let totalVal = col.isCustom ? customTotals.get(col.id) : (totals as any)[col.metric || ''];
-                                let isRev = col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.metric === 'doanhThuThuc' || col.metric === 'doanhThuQD';
-                                let isPct = col.displayAs === 'percentage' || col.metric === 'hieuQuaQD';
-                                
-                                return (
-                                    <td key={col.id} className={`px-2 py-2 font-bold text-slate-800 dark:text-slate-200 ${isGroupStart(idx) ? 'border-l' : ''} border-slate-200 dark:border-slate-700 h-px`}>
-                                        {formatValue(totalVal, isPct, isRev)}
+                    <tfoot className="bg-teal-100 dark:bg-teal-900/40 border-t border-slate-200 dark:border-slate-700">
+                         <tr>
+                            <td className="px-4 py-2.5 text-center text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest sticky left-0 bg-teal-100 dark:bg-teal-900 z-30 border-r border-slate-200 dark:border-slate-700">∑ TỔNG CỘNG</td>
+                            {viewMode === 'detail' ? renderDetailModeCells(grandTotal) : viewMode === 'efficiency' ? (
+                                <>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slICT)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slCE_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slGiaDung_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slSPChinh_Tong)}</td>
+                                    <td className="px-3 py-2.5 text-center border-r border-slate-200 dark:border-slate-700"></td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] border-r border-slate-200 dark:border-slate-700">
+                                        <span className={getHeatmapClass(grandTotal.percentBaoHiem, 40)}>{formatPct(grandTotal.percentBaoHiem)}</span>
                                     </td>
-                                );
-                            })}
+                                    <td className="px-3 py-2.5 text-center text-[13px] border-r border-slate-200 dark:border-slate-700">
+                                        <span className={getHeatmapClass(grandTotal.percentSimKT, 30)}>{formatPct(grandTotal.percentSimKT)}</span>
+                                    </td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] border-r border-slate-200 dark:border-slate-700">
+                                        <span className={getHeatmapClass(grandTotal.percentPhuKienKT, 10)}>{formatPct(grandTotal.percentPhuKienKT)}</span>
+                                    </td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] border-r border-slate-200 dark:border-slate-700">
+                                        <span className={getHeatmapClass(grandTotal.percentDongHoKT, 20)}>{formatPct(grandTotal.percentDongHoKT)}</span>
+                                    </td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] border-r border-slate-200 dark:border-slate-700">
+                                        <span className={getHeatmapClass(grandTotal.percentGiaDungKT, 30)}>{formatPct(grandTotal.percentGiaDungKT)}</span>
+                                    </td>
+                                </>
+                            ) : viewMode === 'efficiency_dt_sl' ? (
+                                <>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slICT)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slCE_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slGiaDung_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slSPChinh_Tong)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatC(grandTotal.doanhThuSim)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatC(grandTotal.doanhThuDongHo)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatC(grandTotal.doanhThuBaoHiem)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatC(grandTotal.doanhThuPhuKien)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatC(grandTotal.doanhThuGiaDung)}</td>
+                                </>
+                            ) : ( // efficiency_quantity
+                                <>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slICT)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slCE_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slGiaDung_main)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slSPChinh_Tong)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slSim)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slDongHo)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slBaoHiem)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slPhuKien)}</td>
+                                    <td className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 tabular-nums border-r border-slate-200 dark:border-slate-700">{formatNum(grandTotal.slGiaDung)}</td>
+                                </>
+                            )}
                         </tr>
                     </tfoot>
                 </table>
             </div>
-            
-            {isSettingsModalOpen && (
-                <EmployeeAnalysisSettingsModal 
-                    isOpen={isSettingsModalOpen}
-                    onClose={() => setIsSettingsModalOpen(false)}
-                    onSave={handleSaveColumns}
-                    columns={columns}
-                    allIndustries={allIndustries}
-                    allGroups={allGroups}
-                    allManufacturers={allManufacturers}
-                />
-            )}
         </div>
     );
-});
+}));
 
 export default IndustryAnalysisTab;
