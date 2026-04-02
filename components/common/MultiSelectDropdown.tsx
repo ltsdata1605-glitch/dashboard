@@ -28,29 +28,6 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
 
-    const updatePosition = () => {
-        if (containerRef.current) {
-            const rect = containerRef.current.getBoundingClientRect();
-            const minW = Math.max(rect.width, 240);
-            let leftPos = rect.left;
-            
-            // Prevent going out of screen on the right
-            if (leftPos + minW > window.innerWidth - 10) {
-                leftPos = Math.max(10, window.innerWidth - minW - 10);
-            }
-
-            setDropdownStyles({
-                position: 'fixed',
-                top: `${rect.bottom + 6}px`,
-                left: `${leftPos}px`,
-                minWidth: `${minW}px`,
-                width: 'max-content',
-                maxWidth: '90vw',
-                zIndex: 9999
-            });
-        }
-    };
-
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             const isOutsideContainer = containerRef.current && !containerRef.current.contains(event.target as Node);
@@ -64,12 +41,13 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     }, []);
 
     useEffect(() => {
-        if (isOpen) {
-            updatePosition();
-            window.addEventListener('resize', updatePosition);
-            return () => {
-                window.removeEventListener('resize', updatePosition);
-            };
+        if (isOpen && containerRef.current) {
+            const rect = containerRef.current.getBoundingClientRect();
+            const minW = Math.max(rect.width, 240);
+            
+            setDropdownStyles({
+                minWidth: `${minW}px`,
+            });
         }
     }, [isOpen]);
 
@@ -147,11 +125,11 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 </div>
             </button>
 
-            {isOpen && createPortal(
+            {isOpen && (
                 <div 
                     ref={dropdownRef}
                     style={dropdownStyles}
-                    className="absolute z-[9999] overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-black/40 border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm"
+                    className="absolute top-[calc(100%+6px)] left-0 z-[200] overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-black/40 border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm w-max max-w-[90vw]"
                 >
                     {/* Search Field */}
                     <div className="p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
@@ -224,8 +202,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                             </div>
                         )}
                     </div>
-                </div>,
-                document.body
+                </div>
             )}
         </div>
     );
