@@ -9,6 +9,7 @@ const CheckThuongView = lazy(() => import('./components/views/CheckThuongView'))
 const ExternalToolView = lazy(() => import('./components/views/ExternalToolView'));
 const UserManagementView = lazy(() => import('./components/views/UserManagementView'));
 const SettingsView = lazy(() => import('./components/views/SettingsView'));
+const AboutView = lazy(() => import('./components/views/AboutView'));
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginView from './components/views/LoginView';
@@ -102,6 +103,10 @@ function AppContent() {
                             <div className={activeTab === 'pending-approval' ? 'block w-full h-full' : 'hidden'}>
                                 <PendingApprovalView />
                             </div>
+
+                            <div className={activeTab === 'help' ? 'block w-full h-full' : 'hidden'}>
+                                <AboutView />
+                            </div>
                             
                             <div className={activeTab === 'check-thuong' ? 'block h-full' : 'hidden'}>
                                 <CheckThuongView />
@@ -124,7 +129,7 @@ function AppContent() {
                             </div>
 
                             {/* Fallback for other tabs */}
-                            {!['analysis', 'approval', 'settings', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit'].includes(activeTab) && (
+                            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit'].includes(activeTab) && (
                                 <div className="flex flex-col items-center justify-center h-full text-slate-400">
                                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                                     <p className="text-sm">Vui lòng quay lại sau</p>

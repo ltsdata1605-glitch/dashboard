@@ -47,8 +47,8 @@ export default function Sidebar() {
             icon: Wrench, 
             path: '/tools',
             subItems: [
-                { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket },
-                { id: 'tools-tax', label: 'Tính thuế nhận thưởng', icon: Calculator },
+                { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket, externalUrl: 'https://chuy-n-i-coupon-487587635482.us-west1.run.app' },
+                { id: 'tools-tax', label: 'Hoàn thuế nhận thay', icon: Calculator, externalUrl: 'https://tinhthue-netify-487587635482.us-west1.run.app' },
                 { id: 'tools-sticker', label: 'Sticker Event', icon: Sticker, externalUrl: 'https://stickerevent-final-487587635482.us-west1.run.app' },
                 { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-final-487587635482.us-west1.run.app' },
             ]
@@ -59,7 +59,7 @@ export default function Sidebar() {
         { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' },
         ...((userRole === 'admin' || userRole === 'manager') ? [{ id: 'approval', label: 'Quản trị Truy cập', icon: Users, path: '/approval' }] : []),
         ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: Users, path: '/pending' }] : []),
-        { id: 'help', label: 'Hỗ trợ', icon: HelpCircle, path: '/help' },
+        { id: 'help', label: 'Giới thiệu', icon: HelpCircle, path: '/help' },
     ];
 
     // Desktop-only logic: close mobile sidebar correctly if it was ever opened
