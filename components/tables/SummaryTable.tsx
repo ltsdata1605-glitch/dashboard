@@ -553,7 +553,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                   {isCrossSellingMode ? (
                       <CrossSellingTable tableContainerRef={tableContainerRef} />
                   ) : (
-                  <table className="w-full min-w-full table-auto compact-export-table border-collapse" id="summary-table">
+                  <table className="w-full min-w-full table-fixed compact-export-table border-collapse" id="summary-table">
                       {/* HEADER */}
                       <thead>
                         {isComparisonMode ? (
@@ -562,7 +562,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`w-[25%] px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
                                     >
                                         DANH MỤC
                                     </th>
@@ -638,7 +638,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                 onClick={() => handleSort(h.key, 'current')}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
-                                                    H.TẠI
+                                                    {h.currentLabel || 'H.TẠI'}
                                                     {compSortConfig.column === h.key && compSortConfig.type === 'current' && (
                                                         <Icon name={compSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
                                                     )}
@@ -649,7 +649,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                 onClick={() => handleSort(h.key, 'delta')}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
-                                                    +/-
+                                                    {h.compareLabel || '+/-'}
                                                     {compSortConfig.column === h.key && compSortConfig.type === 'delta' && (
                                                         <Icon name={compSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
                                                     )}
@@ -666,12 +666,12 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`w-[25%] px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
                                     >
                                         DANH MỤC
                                     </th>
                                     {(() => {
-                                        const visibleHeaders = HEADER_CONFIG.filter(h => visibleColumns.includes(h.key));
+                                        const visibleHeaders = HEADER_CONFIG.filter(h => visibleColumns.includes(h.key) && h.showInStandard !== false);
                                         const elements: React.ReactNode[] = [];
                                         let currentGroup: string | null = null;
                                         let groupChildren: any[] = [];
@@ -723,7 +723,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     })()}
                                 </tr>
                                 <tr className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                                    {HEADER_CONFIG.filter(h => visibleColumns.includes(h.key) && h.group).map(h => (
+                                    {HEADER_CONFIG.filter(h => visibleColumns.includes(h.key) && h.group && h.showInStandard !== false).map(h => (
                                         <th 
                                             key={h.key} 
                                             scope="col" 
@@ -759,6 +759,8 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         parentRevenue={grandTotal.totalRevenue}
                                         parentQuantity={grandTotal.totalQuantity}
                                         visibleColumns={visibleColumns}
+                                        currentDays={compTree?.currentDays}
+                                        prevDays={compTree?.prevDays}
                                     />
                                 ))
                             ) : (
@@ -813,6 +815,38 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         return <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaPct, 'percent')}</td>;
                                     }
                                 })()}
+
+                                {/* TỔNG AVG QTY */}
+                                {visibleColumns.includes('avgQty') && (
+                                    <>
+                                        <td className={`${footerCellClass} font-bold text-slate-700 dark:text-slate-300 ${!isComparisonMode ? separatorClass : ''}`}>
+                                            {formatQuantity(grandTotal.totalQuantity / (compTree?.currentDays || 1))}
+                                        </td>
+                                        {isComparisonMode && (
+                                            <td className={`${footerDeltaCellClass} ${separatorClass}`}>
+                                                <span className="text-[11px] font-bold block whitespace-nowrap text-slate-500">
+                                                    {formatQuantity((compTree?.prev?.grandTotal?.totalQuantity || 0) / (compTree?.prevDays || 1))}
+                                                </span>
+                                            </td>
+                                        )}
+                                    </>
+                                )}
+
+                                {/* TỔNG AVG REV */}
+                                {visibleColumns.includes('avgRev') && (
+                                    <>
+                                        <td className={`${footerCellClass} font-extrabold text-slate-800 dark:text-slate-200 ${!isComparisonMode ? separatorClass : ''}`}>
+                                            {formatCurrency(grandTotal.totalRevenue / (compTree?.currentDays || 1))}
+                                        </td>
+                                        {isComparisonMode && (
+                                            <td className={`${footerDeltaCellClass} ${separatorClass}`}>
+                                                <span className="text-[11px] font-bold block whitespace-nowrap text-slate-500">
+                                                    {formatCurrency((compTree?.prev?.grandTotal?.totalRevenue || 0) / (compTree?.prevDays || 1))}
+                                                </span>
+                                            </td>
+                                        )}
+                                    </>
+                                )}
 
                                 {/* RevenueQD */}
                                 {visibleColumns.includes('totalRevenueQD') && (

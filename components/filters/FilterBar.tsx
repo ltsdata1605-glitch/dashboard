@@ -169,7 +169,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                         {[
                             { range: 'week', label: 'Tuần' },
                             { range: 'today', label: 'Hôm nay' },
-                            { range: 'all', label: 'Tất cả' }
+                            { range: 'all', label: 'All' }
                         ].map(({ range, label }) => (
                             <div key={range} className="relative">
                                 {range === 'week' && (
@@ -263,10 +263,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                     <div className="flex items-center gap-2 shrink-0">
                         <button
                             onClick={onToggleAdvanced}
-                            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-200 dark:shadow-none transition-all active:scale-95 group"
+                            title="Nâng cao"
+                            className="flex items-center justify-center p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-200 dark:shadow-none transition-all active:scale-95 group"
                         >
-                            <Icon name="sliders-horizontal" size={3.5} className="group-hover:rotate-12 transition-transform" />
-                            <span className="text-[11px] font-black uppercase tracking-wider">Nâng cao</span>
+                            <Icon name="sliders-horizontal" size={4.5} className="group-hover:rotate-12 transition-transform" />
                         </button>
                     </div>
                 </div>

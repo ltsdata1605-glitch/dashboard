@@ -20,6 +20,8 @@ interface RecursiveRowProps {
     parentRevenue: number; // Mới thêm: Doanh thu của node cha để tính %DT Thực
     parentQuantity: number; // Mới thêm: Số lượng của node cha để tính %SL
     visibleColumns: string[]; // State điều khiển Ẩn Hiện Cột
+    currentDays?: number;
+    prevDays?: number;
 }
 
 const getTraGopPercentClass = (percentage: number, target: number) => {
@@ -39,7 +41,7 @@ const ROW_TEXT_COLORS: Record<string, string> = {
 };
 
 const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({ 
-    nodeKey, currentNode, prevNode, level, parentId, expandedIds, toggleExpand, rootIndex, isComparisonMode, sortConfig, drilldownOrder, parentRevenue, parentQuantity, visibleColumns
+    nodeKey, currentNode, prevNode, level, parentId, expandedIds, toggleExpand, rootIndex, isComparisonMode, sortConfig, drilldownOrder, parentRevenue, parentQuantity, visibleColumns, currentDays = 1, prevDays = 1
 }) => {
     const { gtdhTargets, productConfig, kpiTargets } = useDashboardContext() || {};
     
@@ -270,6 +272,38 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                     )
                 )}
 
+                {/* Avg Qty (TRUNG BÌNH SL) */}
+                {visibleColumns.includes('avgQty') && (
+                    <>
+                        <td className={`${cellClass} font-bold text-slate-600 dark:text-slate-400 bg-orange-50/20 dark:bg-orange-500/5 ${!isComparisonMode ? separatorClass : ''}`}>
+                            {formatQuantity(quantity / currentDays)}
+                        </td>
+                        {isComparisonMode && (
+                            <td className={`${deltaCellClass} ${separatorClass} bg-orange-50/20 dark:bg-orange-500/5`}>
+                                <span className={`text-[11px] font-bold block whitespace-nowrap text-slate-600 dark:text-slate-400`}>
+                                    {formatQuantity((prevNode?.totalQuantity || 0) / prevDays)}
+                                </span>
+                            </td>
+                        )}
+                    </>
+                )}
+
+                {/* Avg Rev (TRUNG BÌNH DT) */}
+                {visibleColumns.includes('avgRev') && (
+                    <>
+                        <td className={`${cellClass} font-black text-slate-900 dark:text-white tracking-tight bg-yellow-50/20 dark:bg-yellow-500/5 ${!isComparisonMode ? separatorClass : ''}`}>
+                            {formatCurrency(revenue / currentDays)}
+                        </td>
+                        {isComparisonMode && (
+                            <td className={`${deltaCellClass} ${separatorClass} bg-yellow-50/20 dark:bg-yellow-500/5`}>
+                                <span className={`text-[11px] font-bold block whitespace-nowrap text-slate-600 dark:text-slate-400`}>
+                                    {formatCurrency((prevNode?.totalRevenue || 0) / prevDays)}
+                                </span>
+                            </td>
+                        )}
+                    </>
+                )}
+
                 {/* RevenueQD (DT Quy Doi) */}
                 {visibleColumns.includes('totalRevenueQD') && (
                     <>
@@ -347,6 +381,8 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                     parentRevenue={revenue}
                     parentQuantity={quantity}
                     visibleColumns={visibleColumns}
+                    currentDays={currentDays}
+                    prevDays={prevDays}
                 />
             ))}
         </>

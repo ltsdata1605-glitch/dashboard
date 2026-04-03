@@ -90,6 +90,8 @@ export const useSummaryTableLogic = () => {
         prev: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal };
         title: string;
         description?: string;
+        currentDays: number;
+        prevDays: number;
     } | null>(null);
 
     const [dateDisplay, setDateDisplay] = useState({ current: '', prev: '' });
@@ -329,11 +331,16 @@ export const useSummaryTableLogic = () => {
         const currentTree = processSummaryTable(currentDataRows, productConfig, mockFilters);
         const prevTree = processSummaryTable(prevDataRows, productConfig, mockFilters);
 
+        const currentDays = Math.max(1, Math.ceil((currentEnd.getTime() - currentStart.getTime() + 1) / (1000 * 3600 * 24)));
+        const prevDays = Math.max(1, Math.ceil((prevEnd.getTime() - prevStart.getTime() + 1) / (1000 * 3600 * 24)));
+
         setCompTree({
             current: currentTree,
             prev: prevTree,
             title: `SO SÁNH NGÀNH HÀNG: ${titleSuffix}`,
-            description
+            description,
+            currentDays,
+            prevDays
         });
 
     }, [isComparisonMode, compMode, selectedDate, selectedMonth, selectedWeeks, baseFilteredData, productConfig, filters.summaryTable, weeksInSelectedMonth, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, customRangeA, customRangeB]);
