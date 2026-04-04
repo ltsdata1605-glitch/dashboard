@@ -53,8 +53,20 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
         grandTotal, deltaQuantity, deltaRevenue, deltaRevenueQD, deltaAOV, deltaTraGopPercent, traGopDisplayTotal,
         handleSort, toggleExpand,
         weeksInSelectedMonth, compSortConfig,
-        expandLevel, visibleColumns, setVisibleColumns
+        expandLevel, visibleColumns, setVisibleColumns, daysCountData
     } = state;
+
+    const columnsPopupRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (activeFilterKey === 'columns' && columnsPopupRef.current && !columnsPopupRef.current.contains(event.target as Node)) {
+                setActiveFilterKey(null);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [activeFilterKey, setActiveFilterKey]);
 
     useEffect(() => {
         if (sortableListRef.current) {
@@ -164,7 +176,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                             </div>
                             
                             {/* Cột hiển thị hoặc Nút Xuất Ảnh (Bán Kèm) */}
-                            <div className="relative z-[100] hide-on-export">
+                            <div className="relative z-[100] hide-on-export" ref={columnsPopupRef}>
                                 {isCrossSellingMode ? (
                                     <button 
                                         onClick={handleExport} 
@@ -553,7 +565,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                   {isCrossSellingMode ? (
                       <CrossSellingTable tableContainerRef={tableContainerRef} />
                   ) : (
-                  <table className="w-full min-w-full table-fixed compact-export-table border-collapse" id="summary-table">
+                  <table className="w-full table-fixed compact-export-table border-collapse" id="summary-table">
                       {/* HEADER */}
                       <thead>
                         {isComparisonMode ? (
@@ -562,7 +574,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`w-[25%] px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`w-[40%] md:w-[30%] lg:w-[350px] px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
                                     >
                                         DANH MỤC
                                     </th>
@@ -638,7 +650,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                 onClick={() => handleSort(h.key, 'current')}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
-                                                    {h.currentLabel || 'H.TẠI'}
+                                                    H.TẠI
                                                     {compSortConfig.column === h.key && compSortConfig.type === 'current' && (
                                                         <Icon name={compSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
                                                     )}
@@ -649,7 +661,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                 onClick={() => handleSort(h.key, 'delta')}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
-                                                    {h.compareLabel || '+/-'}
+                                                    +/-
                                                     {compSortConfig.column === h.key && compSortConfig.type === 'delta' && (
                                                         <Icon name={compSortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
                                                     )}
@@ -666,12 +678,12 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`w-[25%] px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`w-[40%] md:w-[30%] lg:w-[350px] px-4 py-2 text-center uppercase text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
                                     >
                                         DANH MỤC
                                     </th>
                                     {(() => {
-                                        const visibleHeaders = HEADER_CONFIG.filter(h => visibleColumns.includes(h.key) && h.showInStandard !== false);
+                                        const visibleHeaders = HEADER_CONFIG.filter(h => visibleColumns.includes(h.key));
                                         const elements: React.ReactNode[] = [];
                                         let currentGroup: string | null = null;
                                         let groupChildren: any[] = [];
@@ -723,7 +735,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     })()}
                                 </tr>
                                 <tr className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-                                    {HEADER_CONFIG.filter(h => visibleColumns.includes(h.key) && h.group && h.showInStandard !== false).map(h => (
+                                    {HEADER_CONFIG.filter(h => visibleColumns.includes(h.key) && h.group).map(h => (
                                         <th 
                                             key={h.key} 
                                             scope="col" 
@@ -759,20 +771,23 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         parentRevenue={grandTotal.totalRevenue}
                                         parentQuantity={grandTotal.totalQuantity}
                                         visibleColumns={visibleColumns}
-                                        currentDays={compTree?.currentDays}
-                                        prevDays={compTree?.prevDays}
+                                        daysCountData={daysCountData}
                                     />
                                 ))
                             ) : (
-                                 <tr><td colSpan={visibleColumns.length * (isComparisonMode ? 2 : 1) + 1} className="text-center p-8 text-slate-500">Không có dữ liệu để hiển thị.</td></tr>
+                                 <tr><td colSpan={isComparisonMode ? 1 + visibleColumns.reduce((acc: number, key: string) => acc + (HEADER_CONFIG.find(h => h.key === key)?.singleColumnInCompare ? 1 : 2), 0) : visibleColumns.length + 1} className="text-center p-8 text-slate-500">Không có dữ liệu để hiển thị.</td></tr>
                             )}
                         </tbody>
                         <tfoot className="bg-teal-100 dark:bg-teal-900/40 font-bold text-sm border-t-2 border-teal-200 dark:border-teal-800">
                            <tr>
                                 <td className={`px-4 py-2 text-center sticky left-0 z-40 bg-teal-100 dark:bg-teal-900/60 font-extrabold text-[12px] uppercase tracking-widest text-teal-700 dark:text-teal-300 ${separatorClass}`}>TỔNG CỘNG</td>
                                 {/* Quantity */}
-                                <td className={`${footerCellClass} font-bold text-slate-700 dark:text-slate-300 ${!isComparisonMode ? separatorClass : ''}`}>{formatQuantity(grandTotal.totalQuantity)}</td>
-                                {isComparisonMode && <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaQuantity, 'number')}</td>}
+                                {visibleColumns.includes('totalQuantity') && (
+                                    <>
+                                        <td className={`${footerCellClass} font-bold text-slate-700 dark:text-slate-300 ${!isComparisonMode ? separatorClass : ''}`}>{formatQuantity(grandTotal.totalQuantity)}</td>
+                                        {isComparisonMode && <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaQuantity, 'number')}</td>}
+                                    </>
+                                )}
                                 
                                 {/* %SL */}
                                 {(() => {
@@ -789,6 +804,23 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         const deltaPct = prevQty > 0 ? ((currentQty - prevQty) / prevQty) * 100 : (currentQty > 0 ? 100 : 0);
                                         return <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaPct, 'percent')}</td>;
                                     }
+                                })()}
+
+                                {/* TrB SL */}
+                                {visibleColumns.includes('avgQuantity') && (() => {
+                                    const avgQty = grandTotal.totalQuantity / daysCountData.current;
+                                    return (
+                                        <>
+                                            <td className={`${footerCellClass} font-bold text-indigo-600 dark:text-indigo-400 ${!isComparisonMode ? separatorClass : ''}`}>
+                                                {avgQty > 0 ? avgQty.toFixed(1) : '-'}
+                                            </td>
+                                            {isComparisonMode && (() => {
+                                                const prevAvgQty = (compTree?.prev?.grandTotal?.totalQuantity || 0) / daysCountData.prev;
+                                                const deltaAvgQty = avgQty - prevAvgQty;
+                                                return <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaAvgQty, 'number')}</td>;
+                                            })()}
+                                        </>
+                                    );
                                 })()}
                                 
                                 {/* Revenue */}
@@ -816,37 +848,22 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     }
                                 })()}
 
-                                {/* TỔNG AVG QTY */}
-                                {visibleColumns.includes('avgQty') && (
-                                    <>
-                                        <td className={`${footerCellClass} font-bold text-slate-700 dark:text-slate-300 ${!isComparisonMode ? separatorClass : ''}`}>
-                                            {formatQuantity(grandTotal.totalQuantity / (compTree?.currentDays || 1))}
-                                        </td>
-                                        {isComparisonMode && (
-                                            <td className={`${footerDeltaCellClass} ${separatorClass}`}>
-                                                <span className="text-[11px] font-bold block whitespace-nowrap text-slate-500">
-                                                    {formatQuantity((compTree?.prev?.grandTotal?.totalQuantity || 0) / (compTree?.prevDays || 1))}
-                                                </span>
+                                {/* TrB DT */}
+                                {visibleColumns.includes('avgRevenue') && (() => {
+                                    const avgRev = grandTotal.totalRevenue / daysCountData.current;
+                                    return (
+                                        <>
+                                            <td className={`${footerCellClass} font-bold text-indigo-700 dark:text-indigo-300 tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
+                                                {formatCurrency(avgRev)}
                                             </td>
-                                        )}
-                                    </>
-                                )}
-
-                                {/* TỔNG AVG REV */}
-                                {visibleColumns.includes('avgRev') && (
-                                    <>
-                                        <td className={`${footerCellClass} font-extrabold text-slate-800 dark:text-slate-200 ${!isComparisonMode ? separatorClass : ''}`}>
-                                            {formatCurrency(grandTotal.totalRevenue / (compTree?.currentDays || 1))}
-                                        </td>
-                                        {isComparisonMode && (
-                                            <td className={`${footerDeltaCellClass} ${separatorClass}`}>
-                                                <span className="text-[11px] font-bold block whitespace-nowrap text-slate-500">
-                                                    {formatCurrency((compTree?.prev?.grandTotal?.totalRevenue || 0) / (compTree?.prevDays || 1))}
-                                                </span>
-                                            </td>
-                                        )}
-                                    </>
-                                )}
+                                            {isComparisonMode && (() => {
+                                                const prevAvgRev = (compTree?.prev?.grandTotal?.totalRevenue || 0) / daysCountData.prev;
+                                                const deltaAvgRev = avgRev - prevAvgRev;
+                                                return <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaAvgRev, 'currency')}</td>;
+                                            })()}
+                                        </>
+                                    );
+                                })()}
 
                                 {/* RevenueQD */}
                                 {visibleColumns.includes('totalRevenueQD') && (
@@ -857,14 +874,22 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                 )}
 
                                 {/* AOV */}
-                                <td className={`${footerCellClass} font-bold text-slate-700 dark:text-slate-300 ${!isComparisonMode ? separatorClass : ''}`}>
-                                    {grandTotal.aov === 0 ? '-' : (grandTotal.aov / 1000000).toFixed(1)}
-                                </td>
-                                {isComparisonMode && <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaAOV, 'currency')}</td>}
+                                {visibleColumns.includes('aov') && (
+                                    <>
+                                        <td className={`${footerCellClass} font-bold text-slate-700 dark:text-slate-300 ${!isComparisonMode ? separatorClass : ''}`}>
+                                            {grandTotal.aov === 0 ? '-' : (grandTotal.aov / 1000000).toFixed(1)}
+                                        </td>
+                                        {isComparisonMode && <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaAOV, 'currency')}</td>}
+                                    </>
+                                )}
 
                                 {/* Tra Gop */}
-                                <td className={`${footerCellClass} ${getTraGopPercentClass(grandTotal.traGopPercent, kpiTargets?.traGop || 45)} ${!isComparisonMode ? separatorClass : ''}`}>{traGopDisplayTotal}</td>
-                                {isComparisonMode && <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaTraGopPercent, 'percent')}</td>}
+                                {visibleColumns.includes('traGopPercent') && (
+                                    <>
+                                        <td className={`${footerCellClass} ${getTraGopPercentClass(grandTotal.traGopPercent, kpiTargets?.traGop || 45)} ${!isComparisonMode ? separatorClass : ''}`}>{traGopDisplayTotal}</td>
+                                        {isComparisonMode && <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaTraGopPercent, 'percent')}</td>}
+                                    </>
+                                )}
                            </tr>
                         </tfoot>
                   </table>

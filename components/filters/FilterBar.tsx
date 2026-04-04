@@ -263,10 +263,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                     <div className="flex items-center gap-2 shrink-0">
                         <button
                             onClick={onToggleAdvanced}
-                            title="Nâng cao"
+                            title="Bộ lọc nâng cao"
                             className="flex items-center justify-center p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-200 dark:shadow-none transition-all active:scale-95 group"
                         >
-                            <Icon name="sliders-horizontal" size={4.5} className="group-hover:rotate-12 transition-transform" />
+                            <Icon name="settings" size={4.5} className="group-hover:rotate-90 transition-transform duration-300" />
                         </button>
                     </div>
                 </div>

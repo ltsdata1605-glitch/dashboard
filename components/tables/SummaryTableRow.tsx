@@ -20,8 +20,7 @@ interface RecursiveRowProps {
     parentRevenue: number; // Mới thêm: Doanh thu của node cha để tính %DT Thực
     parentQuantity: number; // Mới thêm: Số lượng của node cha để tính %SL
     visibleColumns: string[]; // State điều khiển Ẩn Hiện Cột
-    currentDays?: number;
-    prevDays?: number;
+    daysCountData: { current: number; prev: number }; // Số ngày để tính Trung Bình
 }
 
 const getTraGopPercentClass = (percentage: number, target: number) => {
@@ -41,7 +40,7 @@ const ROW_TEXT_COLORS: Record<string, string> = {
 };
 
 const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({ 
-    nodeKey, currentNode, prevNode, level, parentId, expandedIds, toggleExpand, rootIndex, isComparisonMode, sortConfig, drilldownOrder, parentRevenue, parentQuantity, visibleColumns, currentDays = 1, prevDays = 1
+    nodeKey, currentNode, prevNode, level, parentId, expandedIds, toggleExpand, rootIndex, isComparisonMode, sortConfig, drilldownOrder, parentRevenue, parentQuantity, visibleColumns, daysCountData
 }) => {
     const { gtdhTargets, productConfig, kpiTargets } = useDashboardContext() || {};
     
@@ -54,6 +53,9 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     const revenueQD = currentNode?.totalRevenueQD || 0;
     const traGopRevenue = currentNode?.totalTraGop || 0;
     
+    const avgQuantity = quantity / daysCountData.current;
+    const avgRevenue = revenue / daysCountData.current;
+
     // Sort Children logic
     const currentChildrenKeys = currentNode ? Object.keys(currentNode.children) : [];
     const prevChildrenKeys = prevNode ? Object.keys(prevNode.children) : [];
@@ -68,22 +70,24 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
         const prevNodeB = prevNode?.children[b];
         
         // Helper to get value safely
-        const getVal = (node: SummaryTableNode | undefined, key: string) => {
+        const getVal = (node: SummaryTableNode | undefined, key: string, daysDivisor: number = 1) => {
             if (!node) return 0;
             if (key === 'aov') return node.totalQuantity > 0 ? node.totalRevenue / node.totalQuantity : 0;
             if (key === 'traGopPercent') return node.totalRevenue > 0 ? (node.totalTraGop / node.totalRevenue) * 100 : 0;
+            if (key === 'avgQuantity') return node.totalQuantity / daysDivisor;
+            if (key === 'avgRevenue') return node.totalRevenue / daysDivisor;
             return (node as any)[key] || 0;
         };
 
-        const currValA = getVal(nodeA, sortConfig.column);
-        const currValB = getVal(nodeB, sortConfig.column);
+        const currValA = getVal(nodeA, sortConfig.column, daysCountData.current);
+        const currValB = getVal(nodeB, sortConfig.column, daysCountData.current);
         
         let finalValA = currValA;
         let finalValB = currValB;
 
         if (sortConfig.type === 'delta') {
-            const prevValA = getVal(prevNodeA, sortConfig.column);
-            const prevValB = getVal(prevNodeB, sortConfig.column);
+            const prevValA = getVal(prevNodeA, sortConfig.column, daysCountData.prev);
+            const prevValB = getVal(prevNodeB, sortConfig.column, daysCountData.prev);
             finalValA = currValA - prevValA;
             finalValB = currValB - prevValB;
         }
@@ -123,6 +127,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     
     // Calculate Deltas
     let deltaQuantity = 0, deltaRevenue = 0, deltaRevenueQD = 0, deltaAOV = 0, deltaTraGopPercent = 0;
+    let deltaAvgQuantity = 0, deltaAvgRevenue = 0;
 
     if (isComparisonMode) {
         const prevQuantity = prevNode?.totalQuantity || 0;
@@ -132,15 +137,21 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
         
         const prevAov = prevQuantity > 0 ? prevRevenue / prevQuantity : 0;
         const prevTraGopPercent = prevRevenue > 0 ? (prevTraGopRevenue / prevRevenue) * 100 : 0;
+        
+        const prevAvgQuantity = prevQuantity / daysCountData.prev;
+        const prevAvgRevenue = prevRevenue / daysCountData.prev;
 
         deltaQuantity = quantity - prevQuantity;
         deltaRevenue = revenue - prevRevenue;
         deltaRevenueQD = revenueQD - prevRevenueQD;
         deltaAOV = aov - prevAov;
         deltaTraGopPercent = traGopPercent - prevTraGopPercent;
+        
+        deltaAvgQuantity = avgQuantity - prevAvgQuantity;
+        deltaAvgRevenue = avgRevenue - prevAvgRevenue;
     }
 
-    const renderDelta = (val: number, type: 'currency' | 'number' | 'percent') => {
+    const renderDelta = (val: number, type: 'currency' | 'number' | 'percent' | 'decimal1') => {
         if (val === 0 && (type !== 'percent' || Math.abs(val) < 0.1)) return <span className="text-slate-300 text-[10px]">-</span>;
         
         const isPositive = val > 0;
@@ -149,6 +160,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
         let formattedVal = '';
         if (type === 'currency') formattedVal = formatCurrency(Math.abs(val));
         else if (type === 'percent') formattedVal = `${Math.abs(val).toFixed(0)}%`; 
+        else if (type === 'decimal1') formattedVal = Math.abs(val).toFixed(1);
         else formattedVal = formatQuantity(Math.abs(val));
 
         const sign = isPositive ? '+' : '-';
@@ -272,33 +284,29 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                     )
                 )}
 
-                {/* Avg Qty (TRUNG BÌNH SL) */}
-                {visibleColumns.includes('avgQty') && (
+                {/* Avg Quantity (TrB SL) */}
+                {visibleColumns.includes('avgQuantity') && (
                     <>
-                        <td className={`${cellClass} font-bold text-slate-600 dark:text-slate-400 bg-orange-50/20 dark:bg-orange-500/5 ${!isComparisonMode ? separatorClass : ''}`}>
-                            {formatQuantity(quantity / currentDays)}
+                        <td className={`${cellClass} font-bold text-indigo-600 dark:text-indigo-400 ${!isComparisonMode ? separatorClass : ''}`}>
+                            {avgQuantity > 0 ? avgQuantity.toFixed(1) : '-'}
                         </td>
                         {isComparisonMode && (
-                            <td className={`${deltaCellClass} ${separatorClass} bg-orange-50/20 dark:bg-orange-500/5`}>
-                                <span className={`text-[11px] font-bold block whitespace-nowrap text-slate-600 dark:text-slate-400`}>
-                                    {formatQuantity((prevNode?.totalQuantity || 0) / prevDays)}
-                                </span>
+                            <td className={`${deltaCellClass} ${separatorClass}`}>
+                                {renderDelta(deltaAvgQuantity, 'decimal1')}
                             </td>
                         )}
                     </>
                 )}
 
-                {/* Avg Rev (TRUNG BÌNH DT) */}
-                {visibleColumns.includes('avgRev') && (
+                {/* Avg Revenue (TrB DT) */}
+                {visibleColumns.includes('avgRevenue') && (
                     <>
-                        <td className={`${cellClass} font-black text-slate-900 dark:text-white tracking-tight bg-yellow-50/20 dark:bg-yellow-500/5 ${!isComparisonMode ? separatorClass : ''}`}>
-                            {formatCurrency(revenue / currentDays)}
+                        <td className={`${cellClass} font-bold text-indigo-700 dark:text-indigo-300 tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
+                            {formatCurrency(avgRevenue)}
                         </td>
                         {isComparisonMode && (
-                            <td className={`${deltaCellClass} ${separatorClass} bg-yellow-50/20 dark:bg-yellow-500/5`}>
-                                <span className={`text-[11px] font-bold block whitespace-nowrap text-slate-600 dark:text-slate-400`}>
-                                    {formatCurrency((prevNode?.totalRevenue || 0) / prevDays)}
-                                </span>
+                            <td className={`${deltaCellClass} ${separatorClass}`}>
+                                {renderDelta(deltaAvgRevenue, 'currency')}
                             </td>
                         )}
                     </>
@@ -381,8 +389,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                     parentRevenue={revenue}
                     parentQuantity={quantity}
                     visibleColumns={visibleColumns}
-                    currentDays={currentDays}
-                    prevDays={prevDays}
+                    daysCountData={daysCountData}
                 />
             ))}
         </>

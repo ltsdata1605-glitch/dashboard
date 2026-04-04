@@ -90,8 +90,6 @@ export const useSummaryTableLogic = () => {
         prev: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal };
         title: string;
         description?: string;
-        currentDays: number;
-        prevDays: number;
     } | null>(null);
 
     const [dateDisplay, setDateDisplay] = useState({ current: '', prev: '' });
@@ -103,6 +101,7 @@ export const useSummaryTableLogic = () => {
             : HEADER_CONFIG.map(h => h.key)
     );
     const [isExporting, setIsExporting] = useState(false);
+    const [daysCountData, setDaysCountData] = useState<{ current: number, prev: number }>({ current: 1, prev: 1 });
     const tableContainerRef = useRef<HTMLDivElement>(null);
     const sortableListRef = useRef<HTMLDivElement>(null);
     
@@ -124,6 +123,22 @@ export const useSummaryTableLogic = () => {
                 product: localProductFilters
             }
         };
+
+        // Determine days count for standard mode by checking min/max of parsedDate
+        let minTime = Infinity;
+        let maxTime = -Infinity;
+        dataToUse.forEach(row => {
+            const t = row.parsedDate?.getTime();
+            if (t) {
+                if (t < minTime) minTime = t;
+                if (t > maxTime) maxTime = t;
+            }
+        });
+        const dCount = minTime === Infinity ? 1 : Math.max(1, Math.round((maxTime - minTime) / (1000 * 60 * 60 * 24)) + 1);
+        
+        // Use a microtask/setTimeout to update state outside render
+        setTimeout(() => setDaysCountData(prev => prev.current !== dCount ? { ...prev, current: dCount } : prev), 0);
+
         return processSummaryTable(dataToUse, productConfig, localFilterState);
     }, [processedData?.filteredValidSalesData, filters, productConfig, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
 
@@ -301,6 +316,10 @@ export const useSummaryTableLogic = () => {
             return;
         }
 
+        const currDays = Math.max(1, Math.round((currentEnd.getTime() - currentStart.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+        const prevDays = Math.max(1, Math.round((prevEnd.getTime() - prevStart.getTime()) / (1000 * 60 * 60 * 24)) + 1);
+        setDaysCountData({ current: currDays, prev: prevDays });
+
         setDateDisplay({
             current: formatCompactDateRange(currentStart, currentEnd),
             prev: formatCompactDateRange(prevStart, prevEnd)
@@ -331,16 +350,11 @@ export const useSummaryTableLogic = () => {
         const currentTree = processSummaryTable(currentDataRows, productConfig, mockFilters);
         const prevTree = processSummaryTable(prevDataRows, productConfig, mockFilters);
 
-        const currentDays = Math.max(1, Math.ceil((currentEnd.getTime() - currentStart.getTime() + 1) / (1000 * 3600 * 24)));
-        const prevDays = Math.max(1, Math.ceil((prevEnd.getTime() - prevStart.getTime() + 1) / (1000 * 3600 * 24)));
-
         setCompTree({
             current: currentTree,
             prev: prevTree,
             title: `SO SÁNH NGÀNH HÀNG: ${titleSuffix}`,
-            description,
-            currentDays,
-            prevDays
+            description
         });
 
     }, [isComparisonMode, compMode, selectedDate, selectedMonth, selectedWeeks, baseFilteredData, productConfig, filters.summaryTable, weeksInSelectedMonth, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, customRangeA, customRangeB]);
@@ -572,6 +586,6 @@ export const useSummaryTableLogic = () => {
         grandTotal, deltaQuantity, deltaRevenue, deltaRevenueQD, deltaAOV, deltaTraGopPercent, traGopDisplayTotal,
         handleSort, toggleExpand,
         weeksInSelectedMonth, compSortConfig,
-        expandLevel, visibleColumns, setVisibleColumns
+        expandLevel, visibleColumns, setVisibleColumns, daysCountData
     };
 };
