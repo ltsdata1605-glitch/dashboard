@@ -245,7 +245,7 @@ export default function Sidebar() {
                             transition={{ duration: 0.2 }}
                             className="flex flex-col whitespace-nowrap"
                         >
-                            <span className="font-bold text-slate-800 dark:text-white text-lg leading-tight">DMX Analytics</span>
+                            <span className="font-bold text-slate-800 dark:text-white text-[15px] leading-tight">Phân Tích Yêu Cầu Xuất</span>
                             <span className="text-[10px] font-bold text-indigo-500 dark:text-indigo-400 uppercase tracking-widest">Vibe Dashboard</span>
                         </motion.div>
                     </div>

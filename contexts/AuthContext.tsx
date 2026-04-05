@@ -151,8 +151,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setDemoMode(false); // Xóa trạng thái demo khi dăng xuất
     };
 
+    const activeUserRole = isDemoMode ? 'manager' : userRole;
+    const activeStatus = isDemoMode ? 'approved' : status;
+
     return (
-        <AuthContext.Provider value={{ user, userRole, departmentId, employeeName, expiresAt, status, isLoading, loginWithGoogle, logout, isDemoMode, setDemoMode, requestAccess }}>
+        <AuthContext.Provider value={{ user, userRole: activeUserRole, departmentId, employeeName, expiresAt, status: activeStatus, isLoading, loginWithGoogle, logout, isDemoMode, setDemoMode, requestAccess }}>
             {children}
         </AuthContext.Provider>
     );

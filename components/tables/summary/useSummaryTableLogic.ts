@@ -6,8 +6,10 @@ import { processSummaryTable } from '../../../services/summaryService';
 import { saveSummaryTableConfig } from '../../../services/dbService';
 import { exportElementAsImage } from '../../../services/uiService';
 import { getWeeksInMonth, getSafeDateInPrevMonth, toInputDate, toInputMonth, formatCompactDateRange } from './SummaryTableUtils';
+import { parseExcelDate, getRowValue } from '../../../utils/dataUtils';
+import { COL } from '../../../constants';
 
-export type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'month_same_period_year' | 'quarter_adjacent' | 'quarter_same_period_year' | 'ytd_same_period_year' | 'custom_range';
+export type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'month_same_period_year' | 'quarter_adjacent' | 'quarter_same_period_year' | 'ytd_same_period_year' | 'custom_range' | 'monthly_trend';
 
 export const useSummaryTableLogic = () => {
     const { filterState: filters, handleFilterChange: onFilterChange, baseFilteredData, processedData, productConfig } = useDashboardContext();
@@ -17,6 +19,8 @@ export const useSummaryTableLogic = () => {
     const [tableMode, setTableMode] = useState<'standard' | 'comparison' | 'cross_selling'>('standard');
     const isComparisonMode = tableMode === 'comparison';
     const isCrossSellingMode = tableMode === 'cross_selling';
+
+    const [trendSelectedMonths, setTrendSelectedMonths] = useState<string[]>([]);
 
     // --- Local State for Performance Optimization ---
     const [localDrilldownOrder, setLocalDrilldownOrder] = useState<string[]>(
@@ -90,6 +94,11 @@ export const useSummaryTableLogic = () => {
         prev: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal };
         title: string;
         description?: string;
+    } | null>(null);
+
+    const [trendData, setTrendData] = useState<{
+        months: { id: string, label: string, daysCount: number }[];
+        trees: { [month: string]: { data: { [key: string]: SummaryTableNode }, grandTotal: GrandTotal } };
     } | null>(null);
 
     const [dateDisplay, setDateDisplay] = useState({ current: '', prev: '' });
@@ -175,9 +184,60 @@ export const useSummaryTableLogic = () => {
     useEffect(() => {
         if (!isComparisonMode || !baseFilteredData.length || !productConfig) {
             setCompTree(null);
+            setTrendData(null);
             return;
         }
 
+        if (compMode === 'monthly_trend') {
+            const getValidDate = (r: any) => parseExcelDate(getRowValue(r, COL.DATE_CREATED));
+            
+            const monthsList = Array.from(new Set(baseFilteredData.map(r => {
+                const d = getValidDate(r);
+                return d ? toInputMonth(d) : null;
+            }).filter(Boolean) as string[])).sort();
+
+            const trees: any = {};
+            const monthsMeta: any[] = [];
+            
+            monthsList.forEach(m => {
+                const monthData = baseFilteredData.filter(r => {
+                    const d = getValidDate(r);
+                    return d && toInputMonth(d) === m;
+                });
+                if (monthData.length === 0) return;
+                
+                let dCount = 1;
+                const times = monthData.map(r => {
+                    const d = getValidDate(r);
+                    if (d) {
+                        d.setHours(0,0,0,0);
+                        return d.getTime();
+                    }
+                    return 0;
+                }).filter(t => t > 0);
+                
+                if (times.length > 0) {
+                    const maxT = times.reduce((max, t) => t > max ? t : max, times[0]);
+                    const minT = times.reduce((min, t) => t < min ? t : min, times[0]);
+                    dCount = Math.max(1, Math.round((maxT - minT) / 86400000) + 1);
+                }
+
+                monthsMeta.push({ id: m, label: `Tháng ${m.split('-')[1]}`, daysCount: dCount });
+                trees[m] = processSummaryTable(monthData, productConfig, filters);
+            });
+            
+            setTrendData({ months: monthsMeta, trees });
+            setTrendSelectedMonths(prev => {
+                const validIds = monthsMeta.map(m => m.id);
+                const validPrev = prev.filter(p => validIds.includes(p));
+                return validPrev.length > 0 ? validPrev : validIds;
+            });
+            setCompTree(null);
+            setDateDisplay({ current: 'Giai đoạn Pivot', prev: '' });
+            return;
+        }
+
+        setTrendData(null); // Clear trend if going back to standard comp
         let currentStart: Date, currentEnd: Date, prevStart: Date, prevEnd: Date;
         let titleSuffix = '';
         let description = '';
@@ -434,7 +494,17 @@ export const useSummaryTableLogic = () => {
                     setExpandedIds(new Set());
                 } else {
                     const newExpanded = new Set<string>();
-                    const activeData = isComparisonMode && compTree ? compTree.current.data : standardSummaryData?.data;
+                    let activeData: any = null;
+                    if (isComparisonMode) {
+                        if (compMode === 'monthly_trend' && trendData && trendData.months.length > 0) {
+                            activeData = trendData.trees[trendData.months[trendData.months.length - 1].id]?.data;
+                        } else if (compTree) {
+                            activeData = compTree.current.data;
+                        }
+                    } else {
+                        activeData = standardSummaryData?.data;
+                    }
+
                     if (activeData) {
                         const targetDepth = level === 3 ? 5 : level;
                         const expandNode = (node: { [key: string]: SummaryTableNode }, parentId: string, currentDepth: number) => {
@@ -586,6 +656,7 @@ export const useSummaryTableLogic = () => {
         grandTotal, deltaQuantity, deltaRevenue, deltaRevenueQD, deltaAOV, deltaTraGopPercent, traGopDisplayTotal,
         handleSort, toggleExpand,
         weeksInSelectedMonth, compSortConfig,
-        expandLevel, visibleColumns, setVisibleColumns, daysCountData
+        expandLevel, visibleColumns, setVisibleColumns, daysCountData, trendData,
+        trendSelectedMonths, setTrendSelectedMonths
     };
 };

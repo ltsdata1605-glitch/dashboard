@@ -49,8 +49,9 @@ export const useWarehouseLogic = ({
 
         // 1. Process "data" type columns
         dataRows.forEach(row => {
-            const khoName = getRowValue(row, COL.KHO);
-            if (!khoName) return;
+            const rawKhoName = getRowValue(row, COL.KHO);
+            if (!rawKhoName) return;
+            const khoName = String(rawKhoName);
 
             customColumns.forEach(col => {
                 if (col.type !== 'data' && (col.type !== undefined || !col.productCodes)) return;
@@ -66,7 +67,7 @@ export const useWarehouseLogic = ({
                 if (industrySet || subgroupSet || manufacturerSet || productSet || col.filters?.priceCondition) {
                     const nganhHang = getRowValue(row, COL.MA_NGANH_HANG);
                     const nhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-                    const rootIndustry = productConfig.childToParentMap[nhomHang] || nganhHang;
+                    const rootIndustry = productConfig.childToParentMap[nhomHang] || 'Khác';
 
                     if (industrySet && !industrySet.has(rootIndustry)) isMatch = false;
                     if (isMatch && subgroupSet && !subgroupSet.has(nhomHang)) isMatch = false;
@@ -96,7 +97,7 @@ export const useWarehouseLogic = ({
                     const productName = getRowValue(row, COL.PRODUCT);
                     const heso = getHeSoQuyDoi(nganhHang, nhomHang, productConfig, productName);
 
-                    const rootIndustry = productConfig.childToParentMap[nhomHang] || nganhHang;
+                    const rootIndustry = productConfig.childToParentMap[nhomHang] || 'Khác';
                     const group = productConfig.childToSubgroupMap[nhomHang] || 'Khác';
                     const isVieon = group === 'Vieon' || rootIndustry === 'Vieon' || (productName || '').toString().includes('VieON');
                     const weightedQuantity = isVieon ? (quantity * heso) : quantity;
@@ -120,7 +121,7 @@ export const useWarehouseLogic = ({
         });
 
         // Get all visible Khos from aggregated data
-        const allKhoNames = data.map(d => d.khoName);
+        const allKhoNames = data.map(d => String(d.khoName));
 
         // 2. Process "target" columns
         customColumns.forEach(col => {
@@ -135,7 +136,7 @@ export const useWarehouseLogic = ({
 
         // Helper func to resolve old metrics for calculated columns
         const getFallbackMetric = (khoName: string, colId: string) => {
-             const row = data.find(d => d.khoName === khoName);
+             const row = data.find(d => String(d.khoName) === khoName);
              if (!row) return 0;
              const targetCol = columns.find(c => c.id === colId);
              if (!targetCol) return 0;
@@ -186,7 +187,7 @@ export const useWarehouseLogic = ({
         if (column.metric) return (row as any)[column.metric];
         
         if (column.isCustom && row.khoName) {
-            const mappedVal = customProductColumnValues.get(column.id)?.get(row.khoName);
+            const mappedVal = customProductColumnValues.get(column.id)?.get(String(row.khoName));
             if (mappedVal !== undefined) return mappedVal;
         }
 

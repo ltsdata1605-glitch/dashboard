@@ -37,7 +37,7 @@ const LoginView: React.FC = () => {
                     </div>
                 </div>
                 
-                <h1 className="text-2xl font-black text-center text-slate-800 dark:text-white mb-2 uppercase tracking-tight">DMX Analytics</h1>
+                <h1 className="text-2xl font-black text-center text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Phân Tích Yêu Cầu Xuất</h1>
                 <p className="text-center text-slate-500 dark:text-slate-400 mb-8 text-sm">Đăng nhập để sử dụng nền tảng đồng bộ đám mây và kết nối dữ liệu Google Drive an toàn tuyệt đối.</p>
                 
                 {error && (
@@ -77,7 +77,7 @@ const LoginView: React.FC = () => {
                         className="w-full flex items-center justify-center gap-2 bg-transparent border border-dashed border-slate-300 dark:border-slate-600 rounded-xl py-3 px-4 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium text-slate-500 dark:text-slate-400"
                     >
                         <Icon name="glasses" size={5} />
-                        Kích hoạt Chế độ Thử Nghiệm (Offline)
+                        Kích hoạt Chế độ Dùng Thử
                     </button>
                     <p className="text-[10px] text-center text-slate-400 mt-2 px-2 leading-relaxed">
                         Phiên bản Offline sẽ không lưu được Setting hay File lên Cloud, dữ liệu chỉ xử lý ở local. 

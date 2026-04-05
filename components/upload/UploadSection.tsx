@@ -140,7 +140,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                         <input
                             id="file-upload"
                             type="file"
-                            className="sr-only"
+                            className="hidden"
                             accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                             multiple
                             onClick={(e) => (e.currentTarget.value = '')}

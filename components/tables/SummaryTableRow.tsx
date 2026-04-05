@@ -159,7 +159,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
         
         let formattedVal = '';
         if (type === 'currency') formattedVal = formatCurrency(Math.abs(val));
-        else if (type === 'percent') formattedVal = `${Math.abs(val).toFixed(0)}%`; 
+        else if (type === 'percent') formattedVal = `${Math.ceil(Math.abs(val))}%`; 
         else if (type === 'decimal1') formattedVal = Math.abs(val).toFixed(1);
         else formattedVal = formatQuantity(Math.abs(val));
 
@@ -192,7 +192,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     }
 
     const indentMargin = `${(level - 1) * 16}px`;
-    const traGopDisplay = traGopPercent === 0 ? '-' : `${traGopPercent.toFixed(0)}%`;
+    const traGopDisplay = traGopPercent === 0 ? '-' : `${Math.ceil(traGopPercent)}%`;
 
     const cellClass = "px-2 py-1.5 text-center text-[13px]"; 
     const deltaCellClass = "px-2 py-1.5 text-center bg-slate-50/30 dark:bg-white/[0.01]"; 
@@ -246,7 +246,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                         </td>
                     ) : (
                         <td className={`${cellClass} font-bold text-emerald-600 dark:text-emerald-400 ${separatorClass}`}>
-                            {slPercent > 0 ? `${slPercent.toFixed(1)}%` : '-'}
+                            {slPercent > 0 ? `${Math.ceil(slPercent)}%` : '-'}
                         </td>
                     )
                 )}
@@ -279,7 +279,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                         </td>
                     ) : (
                         <td className={`${cellClass} font-bold text-orange-600 dark:text-orange-400 ${separatorClass}`}>
-                            {dtThucPercent > 0 ? `${dtThucPercent.toFixed(1)}%` : '-'}
+                            {dtThucPercent > 0 ? `${Math.ceil(dtThucPercent)}%` : '-'}
                         </td>
                     )
                 )}

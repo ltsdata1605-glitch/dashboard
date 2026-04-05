@@ -65,7 +65,7 @@ function AppContent() {
                         <Menu size={24} />
                     </button>
                     <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-800 dark:text-white text-base tracking-tight">DMX Analytics</span>
+                        <span className="font-bold text-slate-800 dark:text-white text-base tracking-tight">Phân Tích Yêu Cầu Xuất</span>
                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(79,70,229,0.5)]"></div>
                     </div>
                     <button

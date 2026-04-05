@@ -78,25 +78,47 @@ const PendingApprovalView: React.FC = () => {
                     </div>
 
                     {status === 'pending' ? (
-                        <div className="w-full space-y-4">
-                            <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-400 p-4 rounded-xl border border-amber-200 dark:border-amber-900/40 text-sm text-center">
-                                Yêu cầu của bạn đã được ghi nhận. Vui lòng đợi QTV xét duyệt.
+                        <div className="w-full space-y-4 text-center">
+                            <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-400 p-4 rounded-xl border border-amber-200 dark:border-amber-900/40 text-sm text-center leading-relaxed">
+                                Yêu cầu của bạn đã được ghi nhận thành công.<br/>
+                                <span className="font-semibold">Vui lòng liên hệ Admin qua LINE để được duyệt nhanh nhất.</span>
                             </div>
-                            <button 
-                                onClick={() => window.location.reload()}
-                                className="w-full py-3 px-6 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <Icon name="refresh-ccw" size={4} />
-                                <span>Tải lại trạng thái</span>
-                            </button>
-                            <button 
-                                type="button" 
-                                onClick={logout} 
-                                className="w-full py-3 px-6 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-rose-500 font-semibold hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center gap-2"
-                            >
-                                <Icon name="log-out" size={4} />
-                                Đăng xuất
-                            </button>
+
+                            <div className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-indigo-200 dark:border-indigo-800/50 rounded-2xl bg-white dark:bg-slate-900 mb-4 transition-all hover:bg-slate-50 dark:hover:bg-slate-800">
+                                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Quét mã QR bằng LINE</p>
+                                <img 
+                                    src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://line.me/ti/p/VOUflskKB0&margin=10" 
+                                    alt="QR Code LINE Admin" 
+                                    className="w-32 h-32 rounded-lg shadow-sm border border-slate-100 dark:border-slate-800 mb-4 bg-white"
+                                />
+                                <a 
+                                    href="https://line.me/ti/p/VOUflskKB0" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="w-full py-2.5 px-6 rounded-xl bg-[#06C755] hover:bg-[#05b34c] text-white font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Icon name="message-circle" size={4} />
+                                    Bấm vào đây để Nhắn Tin LINE
+                                </a>
+                            </div>
+
+                            <div className="flex gap-2">
+                                <button 
+                                    onClick={() => window.location.reload()}
+                                    className="flex-1 py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 text-sm"
+                                >
+                                    <Icon name="refresh-ccw" size={4} />
+                                    Tải lại
+                                </button>
+                                <button 
+                                    type="button" 
+                                    onClick={logout} 
+                                    className="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-rose-500 font-semibold hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center gap-2 text-sm"
+                                >
+                                    <Icon name="log-out" size={4} />
+                                    Đăng xuất
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="w-full text-left">

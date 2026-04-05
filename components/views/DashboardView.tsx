@@ -164,7 +164,7 @@ export default function DashboardView() {
 
     return (
         <div className="w-full">
-            <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="w-[1200px] mx-auto p-8">
                 <DashboardContext.Provider value={logic as any}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleFileProcessing(Array.from(e.target.files))} />
                     <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
@@ -219,7 +219,7 @@ export default function DashboardView() {
                     {showDashboard && (
                         <>
                             <main id="dashboard-container" className="pb-20 md:pb-0" ref={dashboardContainerRef}>
-                                <div className="w-full space-y-6">
+                                <div className="container mx-auto px-4 py-4 space-y-6">
                                     <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} />
                                     
                                     {/* Data Coverage Indicator */}

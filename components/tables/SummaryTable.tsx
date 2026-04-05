@@ -9,6 +9,8 @@ import { useDashboardContext } from '../../contexts/DashboardContext';
 import { processSummaryTable } from '../../services/summaryService';
 import { saveSummaryTableConfig } from '../../services/dbService';
 import RecursiveRow from './SummaryTableRow';
+import { MonthlyTrendTableRow } from './MonthlyTrendTableRow';
+import { MonthlyTrendTable } from './MonthlyTrendTable';
 
 import { FilterPopover } from './summary/FilterPopover';
 import { 
@@ -53,7 +55,8 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
         grandTotal, deltaQuantity, deltaRevenue, deltaRevenueQD, deltaAOV, deltaTraGopPercent, traGopDisplayTotal,
         handleSort, toggleExpand,
         weeksInSelectedMonth, compSortConfig,
-        expandLevel, visibleColumns, setVisibleColumns, daysCountData
+        expandLevel, visibleColumns, setVisibleColumns, daysCountData, trendData,
+        trendSelectedMonths, setTrendSelectedMonths
     } = state;
 
     const columnsPopupRef = useRef<HTMLDivElement>(null);
@@ -202,7 +205,12 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                     <button onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={4}/></button>
                                                 </div>
                                                 <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
-                                                    {HEADER_CONFIG.map(col => (
+                                                    {HEADER_CONFIG.filter(col => {
+                                                        const isPivotMode = isComparisonMode && compMode === 'monthly_trend';
+                                                        const PIVOT_EXCLUDED_COLS = ['slPercent', 'dtThucPercent', 'avgQuantity', 'avgRevenue'];
+                                                        if (isPivotMode && PIVOT_EXCLUDED_COLS.includes(col.key)) return false;
+                                                        return true;
+                                                    }).map(col => (
                                                         <div key={col.key} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} className="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
                                                             <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 select-none">
                                                                 <div className={`p-1.5 rounded-lg ${col.colorClass}`}>
@@ -248,6 +256,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         <option value="week_same_period">Tuần (CK tháng trước)</option>
                                         <option value="month_adjacent">Tháng (Liền kề)</option>
                                         <option value="month_same_period_year">Tháng (Cùng kỳ năm trước)</option>
+                                        <option value="monthly_trend">Tháng (Nhiều tháng Pivot)</option>
                                         <option value="quarter_adjacent">Quý (Liền kề)</option>
                                         <option value="quarter_same_period_year">Quý (Cùng kỳ năm trước)</option>
                                         <option value="ytd_same_period_year">Lũy kế (YTD) - Cùng kỳ</option>
@@ -322,6 +331,29 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                         title={w.label}
                                                     >
                                                         {w.shortLabel}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+
+                                    {/* Pill Selector for Trend Months */}
+                                    {compMode === 'monthly_trend' && trendData && (
+                                        <div className="flex items-center gap-1 overflow-x-auto pb-1 max-w-full">
+                                            {trendData.months.map(m => {
+                                                const isSelected = trendSelectedMonths.includes(m.id);
+                                                return (
+                                                    <button
+                                                        key={m.id}
+                                                        onClick={() => setTrendSelectedMonths(prev => prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id])}
+                                                        className={`whitespace-nowrap px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full border transition-colors ${
+                                                            isSelected 
+                                                            ? 'bg-rose-600 text-white border-rose-600 shadow-sm' 
+                                                            : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
+                                                        }`}
+                                                        title={m.label}
+                                                    >
+                                                        {`T${parseInt(m.id.split('-')[1], 10)}`}
                                                     </button>
                                                 );
                                             })}
@@ -564,6 +596,19 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
               <div className="overflow-hidden border border-slate-200 dark:border-slate-700 rounded-none">
                   {isCrossSellingMode ? (
                       <CrossSellingTable tableContainerRef={tableContainerRef} />
+                  ) : compMode === 'monthly_trend' && trendData ? (
+                      <MonthlyTrendTable 
+                          trendData={{
+                              ...trendData,
+                              months: trendData.months.filter((m: any) => trendSelectedMonths.includes(m.id))
+                          }}
+                          displayKeys={displayKeys}
+                          visibleColumns={visibleColumns}
+                          expandedIds={expandedIds}
+                          toggleExpand={toggleExpand}
+                          localDrilldownOrder={localDrilldownOrder}
+                          activeSortConfig={activeSortConfig}
+                      />
                   ) : (
                   <table className="w-full table-fixed compact-export-table border-collapse" id="summary-table">
                       {/* HEADER */}
@@ -766,7 +811,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         toggleExpand={toggleExpand} 
                                         rootIndex={index} 
                                         isComparisonMode={isComparisonMode}
-                                        sortConfig={activeSortConfig}
+                                        sortConfig={isComparisonMode ? compSortConfig : activeSortConfig}
                                         drilldownOrder={localDrilldownOrder}
                                         parentRevenue={grandTotal.totalRevenue}
                                         parentQuantity={grandTotal.totalQuantity}
@@ -796,7 +841,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
 
                                     if (!isComparisonMode) {
                                         return <td className={`${footerCellClass} font-bold text-emerald-600 dark:text-emerald-400 ${separatorClass}`}>
-                                            {grandTotal.totalQuantity > 0 ? '100.0%' : '-'}
+                                            {grandTotal.totalQuantity > 0 ? '100%' : '-'}
                                         </td>;
                                     } else {
                                         const prevQty = compTree?.prev?.grandTotal?.totalQuantity || 0;
@@ -838,7 +883,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
 
                                     if (!isComparisonMode) {
                                         return <td className={`${footerCellClass} font-bold text-orange-600 dark:text-orange-400 ${separatorClass}`}>
-                                            {grandTotal.totalRevenue > 0 ? '100.0%' : '-'}
+                                            {grandTotal.totalRevenue > 0 ? '100%' : '-'}
                                         </td>;
                                     } else {
                                         const prevRev = compTree?.prev?.grandTotal?.totalRevenue || 0;
