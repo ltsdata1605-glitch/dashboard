@@ -144,6 +144,33 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         }
     }, [modalState.data]);
 
+    const handleDeleteColumnDirect = useCallback((tabId: string, tableId: string, columnId: string) => {
+        const columnDeleter = (prevTables: ContestTableConfig[]) => {
+            const newTables = [...prevTables];
+            const tableIndex = newTables.findIndex(t => t.id === tableId);
+            if (tableIndex > -1) {
+                const updatedTable = { ...newTables[tableIndex] };
+                updatedTable.columns = updatedTable.columns.filter(c => c.id !== columnId);
+                newTables[tableIndex] = updatedTable;
+            }
+            return newTables;
+        };
+
+        if (tabId === 'industryAnalysis') {
+            setIndustryAnalysisTables(columnDeleter);
+        } else {
+            setCustomTabs(prev => {
+                const newTabs = [...prev];
+                const tabIndex = newTabs.findIndex(t => t.id === tabId);
+                if (tabIndex > -1) {
+                    const updatedTab = { ...newTabs[tabIndex], tables: columnDeleter(newTabs[tabIndex].tables) };
+                    newTabs[tabIndex] = updatedTab;
+                }
+                return newTabs;
+            });
+        }
+    }, []);
+
     // --- MODAL DELETE HANDLERS ---
     const handleDeleteTab = useCallback(() => {
         if (modalState.data?.tabId) {
@@ -226,6 +253,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         handleSaveColumn,
         handleDeleteTab,
         handleDeleteTable,
-        handleConfirmDeleteColumn
+        handleConfirmDeleteColumn,
+        handleDeleteColumnDirect
     };
 };

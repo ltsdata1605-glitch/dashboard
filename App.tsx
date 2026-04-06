@@ -27,6 +27,8 @@ function AppContent() {
             } else {
                 document.body.style.fontFamily = ''; // Reset to default
             }
+        }).catch(error => {
+            console.warn("Failed to get global font, ignoring:", error);
         });
     }, []);
 

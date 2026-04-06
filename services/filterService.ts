@@ -88,7 +88,7 @@ function processDataForPeriod(
 
     const kpis = processKpis(filteredValidSalesData, unshippedOrders, periodData, productConfig);
     const trendData = processTrendData(filteredValidSalesData, productConfig);
-    const employeeData = processEmployeeData(filteredValidSalesData, periodData, productConfig, departmentMap);
+    const employeeData = processEmployeeData(filteredValidSalesData, periodData, productConfig, departmentMap, filters);
     const industryData = processIndustryData(filteredValidSalesData, productConfig, filters);
     const summaryTable = processSummaryTable(filteredValidSalesData, productConfig, filters);
     
@@ -111,7 +111,7 @@ export function applyFiltersAndProcess(
     productConfig: ProductConfig,
     filters: FilterState,
     departmentMap: DepartmentMap | null
-): { processedData: ProcessedData, baseFilteredData: DataRow[], calendarSourceData: DataRow[] } {
+): { processedData: ProcessedData, baseFilteredData: DataRow[], warehouseFilteredData: DataRow[], calendarSourceData: DataRow[] } {
     const mainStartDate = filters.startDate ? new Date(filters.startDate) : null;
     if (mainStartDate) mainStartDate.setHours(0, 0, 0, 0);
     const mainEndDate = filters.endDate ? new Date(filters.endDate) : null;
@@ -149,5 +149,5 @@ export function applyFiltersAndProcess(
         reportSubTitle: filterParts.length > 0 ? `Lọc theo: ${filterParts.join(' | ')}` : "Dữ liệu được cập nhật dựa trên các bộ lọc đã chọn."
     };
 
-    return { processedData, baseFilteredData, calendarSourceData };
+    return { processedData, baseFilteredData, warehouseFilteredData: warehousePeriodData, calendarSourceData };
 }

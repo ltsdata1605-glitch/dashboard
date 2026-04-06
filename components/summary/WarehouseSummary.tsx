@@ -19,7 +19,7 @@ interface WarehouseSummaryProps {
 
 const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) => {
     const { userRole } = useAuth();
-    const { processedData, productConfig, originalData, baseFilteredData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, filterState, handleFilterChange } = useDashboardContext();
+    const { processedData, productConfig, originalData, warehouseFilteredData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, filterState, handleFilterChange } = useDashboardContext();
     const data = processedData?.warehouseSummary ?? [];
     
     const summaryRef = useRef<HTMLDivElement>(null);
@@ -37,7 +37,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     const { sortedData, totals, customTotals, customProductColumnValues, getColumnValue } = useWarehouseLogic({
         data,
         columns,
-        originalData: baseFilteredData, // Passing baseFilteredData massively speeds up calculate loop
+        originalData: warehouseFilteredData, // Passing warehouseFilteredData respects all filters except 'kho'
         productConfig,
         sortConfig
     });

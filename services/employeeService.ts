@@ -1,5 +1,4 @@
-
-import type { DataRow, ProductConfig, Employee, EmployeeData, ExploitationData } from '../types';
+import type { DataRow, ProductConfig, Employee, EmployeeData, ExploitationData, FilterState } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
@@ -156,7 +155,8 @@ export function processEmployeeData(
     salesData: DataRow[],
     periodData: DataRow[],
     productConfig: ProductConfig,
-    departmentMap: DepartmentMap | null
+    departmentMap: DepartmentMap | null,
+    filters?: FilterState
 ): EmployeeData {
 
     const employeeStats: { [creator: string]: Partial<Employee> & { name: string, customerSet: Set<string>, totalOrders: number, doanhThuTraCham: number, slCE_ICT: number, slTraCham_CE_ICT: number, doanhThu_CE_ICT: number, doanhThuTraCham_CE_ICT: number } } = {};
@@ -295,9 +295,19 @@ export function processEmployeeData(
             const cleanId = empId.trim();
             
             if (!existingIds.has(cleanId)) {
-                // Handle the "Dept;;FullName" format to extract the proper name
                 const parts = rawVal.split(';;');
                 const dept = parts[0];
+                
+                // Block 1: Apply global filters for zero-sale employees
+                if (filters && filters.department && filters.department.length > 0) {
+                    if (!filters.department.includes(dept)) continue;
+                }
+                
+                if (filters && filters.nguoiTao && filters.nguoiTao.length > 0) {
+                    const idMatch = filters.nguoiTao.some(str => str.startsWith(`${cleanId} -`) || str === cleanId);
+                    if (!idMatch) continue;
+                }
+
                 // If FullName exists (from processShiftFile), use it.
                 // Ensure it follows "ID - Name" format if it doesn't already
                 const fullNameFromShift = parts.length > 1 ? parts[1] : cleanId;

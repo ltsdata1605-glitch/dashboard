@@ -26,6 +26,7 @@ interface EmployeeAnalysisContentProps {
     industryAnalysisTabRef: React.RefObject<HTMLDivElement | null>;
     colorThemes: any[];
     defaultTabs: any[];
+    handleDeleteColumnDirect: (tabId: string, tableId: string, columnId: string) => void;
 }
 
 const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.memo(({
@@ -45,7 +46,8 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
     exportRef,
     industryAnalysisTabRef,
     colorThemes,
-    defaultTabs
+    defaultTabs,
+    handleDeleteColumnDirect
 }) => {
     if (!isInitialTabsLoaded || !filteredEmployeeAnalysisData) return null;
 
@@ -125,7 +127,7 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                                         onDeleteTable={() => setModalState({ type: 'CONFIRM_DELETE_TABLE', data: { tabId: customTab.id, tableId: tableConfig.id, tableName: tableConfig.tableName }})}
                                         onAddColumn={() => setModalState({ type: 'CREATE_COLUMN', data: { tabId: customTab.id, tableId: tableConfig.id, existingColumns: tableConfig.columns }})}
                                         onEditColumn={(columnId) => setModalState({ type: 'EDIT_COLUMN', data: { tabId: customTab.id, tableId: tableConfig.id, existingColumns: tableConfig.columns, editingColumn: tableConfig.columns.find(c => c.id === columnId) }})}
-                                        onTriggerDeleteColumn={(columnId) => setModalState({ type: 'CONFIRM_DELETE_COLUMN', data: { tabId: customTab.id, columnId: columnId, columnName: tableConfig.columns.find(c => c.id === columnId)?.columnName }})}
+                                        onTriggerDeleteColumn={(columnId) => handleDeleteColumnDirect(customTab.id, tableConfig.id, columnId)}
                                     />
                                 ))}
                             </div>

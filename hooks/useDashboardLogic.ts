@@ -25,6 +25,7 @@ export const useDashboardLogic = () => {
     const {
         originalData, setOriginalData,
         baseFilteredData,
+        warehouseFilteredData,
         calendarSourceData,
         departmentMap, setDepartmentMap,
         productConfig, setProductConfig,
@@ -74,18 +75,9 @@ export const useDashboardLogic = () => {
         setStatus
     });
 
-    // Filter Options Setup Effect - Only overwrite if empty to avoid resetting user preferences
-    useEffect(() => {
-        if (originalData.length > 0 && isFilterLoaded) {
-            setFilterState(prev => {
-                const newState = { ...prev };
-                if (newState.trangThai.length === 0) newState.trangThai = uniqueFilterOptions.trangThai;
-                if (newState.nguoiTao.length === 0) newState.nguoiTao = uniqueFilterOptions.nguoiTao;
-                if (newState.department.length === 0) newState.department = uniqueFilterOptions.department;
-                return newState;
-            });
-        }
-    }, [originalData, uniqueFilterOptions, isFilterLoaded, setFilterState]);
+    // Removed repopulating filter state effects here because they caused 
+    // a bug where empty filters (Select All unselected) would instantly 
+    // reset to "Select All" again, blocking the user from selecting just 1 department.
     
     const openPerformanceModal = (employeeName: string) => {
         setModalData({ employeeName });
@@ -106,7 +98,7 @@ export const useDashboardLogic = () => {
 
     return {
         status, appState, isProcessing, isClearingDepartments, isExporting, fileInfo,
-        departmentMap, originalData, baseFilteredData, calendarSourceData, productConfig, processedData, employeeAnalysisData,
+        departmentMap, originalData, baseFilteredData, warehouseFilteredData, calendarSourceData, productConfig, processedData, employeeAnalysisData,
         configUrl, setConfigUrl, uniqueFilterOptions,
         filterState, handleFilterChange,
         activeModal, setActiveModal, modalData,

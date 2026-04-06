@@ -51,7 +51,8 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         handleSaveColumn,
         handleDeleteTab,
         handleDeleteTable,
-        handleConfirmDeleteColumn
+        handleConfirmDeleteColumn,
+        handleDeleteColumnDirect
     } = useEmployeeAnalysisLogic(activeTab, setActiveTab, defaultTabs);
 
     const allAvailableTabs = useMemo(() => [
@@ -251,6 +252,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                     industryAnalysisTabRef={industryAnalysisTabRef}
                     colorThemes={colorThemes}
                     defaultTabs={defaultTabs}
+                    handleDeleteColumnDirect={handleDeleteColumnDirect}
                 />
             </div>
             

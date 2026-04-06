@@ -18,8 +18,13 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     const [activeTab, setActiveTab] = useState('analysis');
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
         if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('sidebar_collapsed');
-            return saved ? JSON.parse(saved) : true;
+            try {
+                const saved = localStorage.getItem('sidebar_collapsed');
+                return saved ? JSON.parse(saved) : true;
+            } catch (e) {
+                console.warn("localStorage not available:", e);
+                return true;
+            }
         }
         return true;
     });
@@ -28,19 +33,27 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const [isDarkMode, setIsDarkMode] = useState(() => {
         if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('dark_mode');
-            if (saved !== null) return JSON.parse(saved);
+            try {
+                const saved = localStorage.getItem('dark_mode');
+                if (saved !== null) return JSON.parse(saved);
+            } catch (e) {
+                console.warn("localStorage not available for dark mode:", e);
+            }
             return window.matchMedia('(prefers-color-scheme: dark)').matches;
         }
         return false;
     });
 
     useEffect(() => {
-        localStorage.setItem('sidebar_collapsed', JSON.stringify(isSidebarCollapsed));
+        try {
+            localStorage.setItem('sidebar_collapsed', JSON.stringify(isSidebarCollapsed));
+        } catch (e) {}
     }, [isSidebarCollapsed]);
 
     useEffect(() => {
-        localStorage.setItem('dark_mode', JSON.stringify(isDarkMode));
+        try {
+            localStorage.setItem('dark_mode', JSON.stringify(isDarkMode));
+        } catch (e) {}
         if (isDarkMode) {
             document.documentElement.classList.add('dark');
         } else {

@@ -31,6 +31,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isDemoMode, setDemoMode] = useState(false);
 
     useEffect(() => {
+        // Failsafe timeout: If Firebase Auth takes more than 5 seconds to respond 
+        // (usually due to IDB blockage on iOS/Safari in-app browsers), stop loading.
+        const fallbackTimer = setTimeout(() => {
+            console.warn("Firebase Auth response timeout. Forcing app load.");
+            setIsLoading(false);
+        }, 5000);
+
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
             if (currentUser) {
@@ -114,9 +121,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setStatus('new');
             }
             setIsLoading(false);
+            clearTimeout(fallbackTimer);
         });
 
-        return () => unsubscribe();
+        return () => {
+            clearTimeout(fallbackTimer);
+            unsubscribe();
+        };
     }, []);
 
     const requestAccess = async (requestedRole: 'manager' | 'employee', deptId: string, empName?: string) => {

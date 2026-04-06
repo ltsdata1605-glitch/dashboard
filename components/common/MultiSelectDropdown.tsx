@@ -140,6 +140,14 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                 placeholder={placeholder}
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
+                                onKeyDown={e => {
+                                    if (e.key === 'Enter') {
+                                        e.preventDefault();
+                                        if (filteredOptions.length > 0) {
+                                            handleToggleOption(filteredOptions[0]);
+                                        }
+                                    }
+                                }}
                                 className="w-full text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
                                 autoFocus
                             />
@@ -172,6 +180,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                     const isSelected = selected.includes(option);
                                     return (
                                         <button
+                                            type="button"
                                             key={option}
                                             onClick={() => handleToggleOption(option)}
                                             className={`flex items-center gap-2.5 w-full text-left px-2.5 py-2 rounded-lg transition-all ${

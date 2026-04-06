@@ -237,32 +237,37 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
         }
     };
 
-    // Soft Apple-like Colors (Lighter backgrounds, cleaner text)
-    const groupColorMap: Record<string, { bg: string, text: string, indicator: string }> = {
-        'Doanh Thu': { bg: 'bg-blue-50/60 dark:bg-blue-900/10', text: 'text-blue-600 dark:text-blue-300', indicator: 'bg-blue-500' },
-        'TRAFFIC & TỶ LỆ TC/DT': { bg: 'bg-cyan-50/60 dark:bg-cyan-900/10', text: 'text-cyan-600 dark:text-cyan-300', indicator: 'bg-cyan-500' },
-        'S.PHẨM CHÍNH': { bg: 'bg-emerald-50/60 dark:bg-emerald-900/10', text: 'text-emerald-600 dark:text-emerald-300', indicator: 'bg-emerald-500' },
-        'SL BÁN KÈM': { bg: 'bg-violet-50/60 dark:bg-violet-900/10', text: 'text-violet-600 dark:text-violet-300', indicator: 'bg-violet-500' },
-        'DT THỰC NGÀNH HÀNG': { bg: 'bg-purple-50/60 dark:bg-purple-900/10', text: 'text-purple-600 dark:text-purple-300', indicator: 'bg-purple-500' },
-        'Phụ Kiện': { bg: 'bg-amber-50/60 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-300', indicator: 'bg-amber-500' },
-        'Gia Dụng': { bg: 'bg-orange-50/60 dark:bg-orange-900/10', text: 'text-orange-600 dark:text-orange-300', indicator: 'bg-orange-500' },
-        'DEFAULT': { bg: 'bg-slate-50/60 dark:bg-slate-800/30', text: 'text-slate-600 dark:text-slate-300', indicator: 'bg-slate-500' },
+    const groupColorMap: Record<string, { bg: string, text: string, indicator: string, border: string }> = {
+        'Doanh Thu': { bg: 'bg-blue-50/30 dark:bg-blue-900/10', text: 'text-blue-600 dark:text-blue-400', indicator: 'bg-blue-500', border: 'border-blue-200 dark:border-blue-800' },
+        'TRAFFIC & TỶ LỆ TC/DT': { bg: 'bg-cyan-50/30 dark:bg-cyan-900/10', text: 'text-cyan-600 dark:text-cyan-400', indicator: 'bg-cyan-500', border: 'border-cyan-200 dark:border-cyan-800' },
+        'S.PHẨM CHÍNH': { bg: 'bg-emerald-50/30 dark:bg-emerald-900/10', text: 'text-emerald-600 dark:text-emerald-400', indicator: 'bg-emerald-500', border: 'border-emerald-200 dark:border-emerald-800' },
+        'SL BÁN KÈM': { bg: 'bg-violet-50/30 dark:bg-violet-900/10', text: 'text-violet-600 dark:text-violet-400', indicator: 'bg-violet-500', border: 'border-violet-200 dark:border-violet-800' },
+        'DT THỰC NGÀNH HÀNG': { bg: 'bg-purple-50/30 dark:bg-purple-900/10', text: 'text-purple-600 dark:text-purple-400', indicator: 'bg-purple-500', border: 'border-purple-200 dark:border-purple-800' },
+        'Phụ Kiện': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
+        'Gia Dụng': { bg: 'bg-orange-50/30 dark:bg-orange-900/10', text: 'text-orange-600 dark:text-orange-400', indicator: 'bg-orange-500', border: 'border-orange-200 dark:border-orange-800' },
+        'DEFAULT': { bg: 'bg-slate-50/30 dark:bg-slate-800/20', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-700' },
     };
 
     const renderPickerView = () => (
         <>
-            <div className="flex items-center justify-between gap-3 mb-6 sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl z-20 py-3 border-b border-slate-100 dark:border-slate-800">
-                <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
-                    <button onClick={() => handleSelectAll(true)} className="px-4 py-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all shadow-sm">Hiện tất cả</button>
-                    <div className="w-px h-3 bg-slate-300 dark:bg-slate-600"></div>
-                    <button onClick={() => handleSelectAll(false)} className="px-4 py-1.5 text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-all">Ẩn tất cả</button>
+            <div className="flex items-center justify-between gap-3 mb-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm z-20">
+                <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Thao tác nhanh:</span>
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900/50 p-1 rounded-lg">
+                        <button onClick={() => handleSelectAll(true)} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-white dark:hover:bg-slate-800 rounded-md transition-all shadow-sm flex items-center gap-1.5">
+                            <Icon name="check-square" size={3.5} /> Bật tất cả
+                        </button>
+                        <button onClick={() => handleSelectAll(false)} className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-md transition-all flex items-center gap-1.5">
+                            <Icon name="square" size={3.5} /> Tắt tất cả
+                        </button>
+                    </div>
                 </div>
-                 <button onClick={() => { resetForm(false); setView('form'); }} className="flex items-center gap-2 px-5 py-2 rounded-full text-xs font-semibold text-white bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg active:scale-95">
-                    <Icon name="plus" size={3.5} /> Thêm cột
+                 <button onClick={() => { resetForm(false); setView('form'); }} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30">
+                    <Icon name="plus" size={4} /> Tạo Cột Mới
                 </button>
             </div>
             
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pb-6">
                  {groupOrder.map((mainHeader, groupIndex) => {
                     const cols = groupedColumns[mainHeader] || [];
                     if (cols.length === 0) return null;
@@ -280,46 +285,52 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             onDragEnter={handleDragEnter}
                             onDragLeave={handleDragLeave}
                             onDrop={(e) => handleDrop(e, mainHeader)}
-                            className={`group relative flex flex-col h-full rounded-[1.25rem] ${styles.bg} transition-all duration-300 hover:shadow-md ring-1 ring-black/5 dark:ring-white/5 cursor-grab active:cursor-grabbing`}
+                            className={`group relative flex flex-col h-full bg-white dark:bg-slate-800 rounded-xl border ${styles.border} shadow-sm hover:shadow-md transition-all duration-300 cursor-grab active:cursor-grabbing overflow-hidden`}
                         >
-                            <div className="px-4 py-3 flex justify-between items-center border-b border-white/20 dark:border-white/5 pointer-events-none">
+                            {/* Header Group */}
+                            <div className={`px-5 py-3.5 flex justify-between items-center border-b ${styles.border} ${styles.bg} pointer-events-none`}>
                                 <div className="flex flex-col">
-                                    {/* Typography: Light & Elegant */}
-                                    <h4 className={`text-[11px] font-bold uppercase tracking-wider ${styles.text} opacity-90 flex items-center gap-1.5`}>
-                                        <span className="bg-white/50 dark:bg-black/20 px-1.5 py-0.5 rounded-md text-[9px]">{groupIndex + 1}</span> {mainHeader}
+                                    <h4 className={`text-xs font-bold uppercase tracking-wider ${styles.text} flex items-center gap-2`}>
+                                        <Icon name="layers" size={3.5} className="opacity-70" />
+                                        {mainHeader}
                                     </h4>
-                                    <span className="text-[9px] font-medium text-slate-500 mt-0.5 tracking-wide">
-                                        Hiển thị {visibleCount}/{cols.length}
+                                    <span className="text-[10px] font-medium text-slate-500 mt-1">
+                                        Hiển thị {visibleCount}/{cols.length} cột
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-auto">
-                                    <div className="text-slate-400 p-1 cursor-grab" title="Giữ và kéo để di chuyển"><Icon name="grip-horizontal" size={3.5} /></div>
-                                    <div className="w-px h-3 bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                                    <button onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện nhóm" className="p-1.5 hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-emerald-500 rounded-full transition-colors"><Icon name="eye" size={3.5}/></button>
-                                    <button onClick={() => handleToggleGroupVisibility(mainHeader, false)} title="Ẩn nhóm" className="p-1.5 hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-slate-600 rounded-full transition-colors"><Icon name="eye-off" size={3.5}/></button>
+                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-auto">
+                                    <div className="text-slate-400 p-1.5 cursor-grab hover:text-slate-600 dark:hover:text-slate-300" title="Giữ và kéo để di chuyển nhóm"><Icon name="grip-horizontal" size={4} /></div>
+                                    <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
+                                    <button onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện tất cả trong nhóm" className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"><Icon name="eye" size={4}/></button>
+                                    <button onClick={() => handleToggleGroupVisibility(mainHeader, false)} title="Ẩn tất cả trong nhóm" className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"><Icon name="eye-off" size={4}/></button>
                                     {isCustomGroup && (
-                                        <button onClick={() => handleDeleteGroup(mainHeader)} title="Xóa nhóm" className="p-1.5 hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-red-500 rounded-full transition-colors"><Icon name="trash-2" size={3.5}/></button>
+                                        <button onClick={() => handleDeleteGroup(mainHeader)} title="Xóa toàn bộ nhóm" className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-colors ml-1"><Icon name="trash-2" size={4}/></button>
                                     )}
                                 </div>
                             </div>
                             
-                            <div className="px-4 pb-4 pt-3 flex flex-wrap content-start gap-1.5 flex-grow">
+                            {/* Columns List */}
+                            <div className="p-3 flex flex-wrap content-start gap-1.5 flex-grow">
                                 {cols.map(col => (
                                     <div 
                                         key={col.id} 
-                                        className={`relative group/item inline-flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-xl text-[11px] font-medium transition-all cursor-pointer select-none border
+                                        className={`relative group/item inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer select-none border
                                             ${col.isVisible 
-                                                ? 'bg-white dark:bg-slate-800 border-transparent text-slate-700 dark:text-slate-200 shadow-[0_2px_8px_rgba(0,0,0,0.04)]' 
-                                                : 'bg-white/40 dark:bg-slate-800/30 border-transparent text-slate-400 dark:text-slate-500'
+                                                ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' 
+                                                : 'bg-slate-50/50 dark:bg-slate-800/30 border-transparent text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
                                             }`}
                                         onClick={() => handleToggleVisibility(col.id)}
                                     >
                                         <div className={`w-1.5 h-1.5 rounded-full transition-colors ${col.isVisible ? styles.indicator : 'bg-slate-300 dark:bg-slate-600'}`}></div>
-                                        <span className="truncate max-w-[130px] tracking-tight">{col.subHeader}</span>
+                                        <span className="truncate max-w-[130px]">{col.subHeader}</span>
                                         
-                                        <div className="flex items-center ml-1 pl-1 border-l border-slate-100 dark:border-slate-700 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                            <button onClick={(e) => { e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-blue-500"><Icon name="edit-3" size={3} /></button>
-                                            <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 text-slate-400 hover:text-red-500"><Icon name="x" size={3} /></button>
+                                        <div className="flex items-center ml-0.5 pl-1.5 border-l border-slate-200 dark:border-slate-700/50 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                            <button onClick={(e) => { e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-blue-600 rounded transition-colors" title="Chỉnh sửa"><Icon name="edit-3" size={3} /></button>
+                                            {col.isCustom ? (
+                                                <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 text-slate-400 hover:text-rose-600 rounded transition-colors" title="Xóa cột"><Icon name="trash-2" size={3} /></button>
+                                            ) : (
+                                                <div className="w-[18px]"></div> /* Placeholder for alignment */
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -348,9 +359,9 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
             titleColorClass="text-slate-800 dark:text-white" 
             maxWidthClass="max-w-4xl"
         >
-            <div className="p-6 flex flex-col h-[80vh] max-h-[750px] bg-[#FAFAFA]/50 dark:bg-slate-950/50 backdrop-blur-3xl">
+            <div className="flex flex-col h-[85vh] sm:h-auto min-h-0 bg-slate-50 dark:bg-slate-900/50">
                 {view === 'picker' && (
-                    <div className="flex-grow overflow-y-auto custom-scrollbar px-1">
+                    <div className="flex-grow overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-6 sm:space-y-8 min-h-0">
                         {renderPickerView()}
                     </div>
                 )}
@@ -417,12 +428,12 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                 )}
                 
                 {view === 'picker' && (
-                    <div className="pt-6 mt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                        <button onClick={handleRestoreDefaults} className="text-[11px] font-semibold text-red-500 hover:text-red-600 transition-colors flex items-center gap-1.5">
-                            <Icon name="rotate-ccw" size={3.5} /> Khôi phục mặc định
+                    <div className="p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+                        <button onClick={handleRestoreDefaults} className="py-2.5 px-4 rounded-xl text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors flex items-center gap-2">
+                            <Icon name="rotate-ccw" size={4} /> Khôi phục mặc định
                         </button>
-                        <button onClick={handleSaveAndClose} className="px-8 py-3 rounded-full text-xs font-bold uppercase tracking-wider text-white bg-indigo-500 hover:bg-indigo-600 dark:bg-indigo-600 dark:hover:bg-indigo-700 shadow-xl transition-all hover:scale-105 active:scale-95">
-                            Hoàn tất & Đóng
+                        <button onClick={handleSaveAndClose} className="py-2.5 px-8 rounded-xl shadow-md text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-2">
+                            Hoàn tất <Icon name="check" size={4} className="ml-1"/>
                         </button>
                     </div>
                 )}

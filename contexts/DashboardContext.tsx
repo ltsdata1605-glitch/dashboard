@@ -11,6 +11,7 @@ interface DashboardContextType {
     productConfig: ProductConfig | null;
     originalData: DataRow[];
     baseFilteredData: DataRow[];
+    warehouseFilteredData: DataRow[];
     calendarSourceData: DataRow[];
     departmentMap: DepartmentMap | null;
     updateDepartmentMap: (newMap: DepartmentMap) => void;

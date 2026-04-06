@@ -17,6 +17,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const { user, userRole, departmentId, employeeName, isDemoMode } = useAuth();
     const [originalData, setOriginalData] = useState<DataRow[]>([]);
     const [baseFilteredData, setBaseFilteredData] = useState<DataRow[]>([]);
+    const [warehouseFilteredData, setWarehouseFilteredData] = useState<DataRow[]>([]);
     const [calendarSourceData, setCalendarSourceData] = useState<DataRow[]>([]);
     const [departmentMap, setDepartmentMap] = useState<DepartmentMap | null>(null);
     const [productConfig, setProductConfig] = useState<ProductConfig | null>(null);
@@ -197,11 +198,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     });
                 }
 
-                const { processedData: result, baseFilteredData: newBaseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(rbacData, productConfig, filterState, departmentMap);
+                const { processedData: result, baseFilteredData: newBaseData, warehouseFilteredData: newWarehouseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(rbacData, productConfig, filterState, departmentMap);
                 
                 startTransition(() => {
                     setProcessedData(result);
                     setBaseFilteredData(newBaseData);
+                    setWarehouseFilteredData(newWarehouseData);
                     setCalendarSourceData(newCalendarSourceData);
                     setEmployeeAnalysisData(result.employeeData);
                     setAppState('dashboard');
@@ -271,6 +273,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     return {
         originalData, setOriginalData,
         baseFilteredData,
+        warehouseFilteredData,
         calendarSourceData,
         departmentMap, setDepartmentMap,
         productConfig, setProductConfig,

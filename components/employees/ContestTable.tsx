@@ -79,7 +79,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 const industry = productConfig.childToParentMap[getRowValue(row, COL.MA_NHOM_HANG)] || '';
                 const subgroup = productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || '';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
-                const productCode = getRowValue(row, COL.MA_NHOM_HANG) || '';
+                const productNameStr = String(getRowValue(row, COL.PRODUCT) || '');
 
                 const filters = col.filters;
                 if (!filters) return true; // No filters, include all data
@@ -87,7 +87,16 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 const industryMatch = filters.selectedIndustries.length === 0 || filters.selectedIndustries.includes(industry);
                 const subgroupMatch = filters.selectedSubgroups.length === 0 || filters.selectedSubgroups.includes(subgroup);
                 const manufacturerMatch = filters.selectedManufacturers.length === 0 || filters.selectedManufacturers.includes(manufacturer);
-                const productCodeMatch = filters.productCodes.length === 0 || filters.productCodes.includes(productCode);
+                
+                let productCodeMatch = filters.productCodes.length === 0;
+                if (!productCodeMatch) {
+                    for (const code of filters.productCodes) {
+                        if (productNameStr.includes(code)) {
+                            productCodeMatch = true;
+                            break;
+                        }
+                    }
+                }
 
                 const allCategoryFiltersPass = industryMatch && subgroupMatch && manufacturerMatch && productCodeMatch;
                 if (!allCategoryFiltersPass) return false;

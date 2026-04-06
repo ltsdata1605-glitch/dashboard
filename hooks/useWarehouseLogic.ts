@@ -67,13 +67,24 @@ export const useWarehouseLogic = ({
                 if (industrySet || subgroupSet || manufacturerSet || productSet || col.filters?.priceCondition) {
                     const nganhHang = getRowValue(row, COL.MA_NGANH_HANG);
                     const nhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+                    const group = productConfig.childToSubgroupMap[nhomHang] || 'Khác';
                     const rootIndustry = productConfig.childToParentMap[nhomHang] || 'Khác';
 
                     if (industrySet && !industrySet.has(rootIndustry)) isMatch = false;
-                    if (isMatch && subgroupSet && !subgroupSet.has(nhomHang)) isMatch = false;
+                    if (isMatch && subgroupSet && !subgroupSet.has(group)) isMatch = false;
                     if (isMatch && manufacturerSet && !manufacturerSet.has(getRowValue(row, COL.MANUFACTURER))) isMatch = false;
                     
-                    if (isMatch && productSet && !productSet.has(nhomHang)) isMatch = false;
+                    if (isMatch && productSet) {
+                        const productNameStr = String(getRowValue(row, COL.PRODUCT) || '');
+                        let pMatch = false;
+                        for (const code of productSet) {
+                            if (productNameStr.includes(code)) {
+                                pMatch = true;
+                                break;
+                            }
+                        }
+                        if (!pMatch) isMatch = false;
+                    }
 
                     if (isMatch && col.filters?.priceCondition) {
                         const price = Number(getRowValue(row, col.filters.priceType === 'original' ? COL.ORIGINAL_PRICE : COL.PRICE)) || 0;
