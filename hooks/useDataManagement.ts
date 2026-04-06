@@ -181,7 +181,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 }
 
                 let rbacData = originalData;
-                if ((userRole === 'employee' || userRole === 'manager') && user?.email !== 'nguyendangkhoafit2@gmail.com') {
+                if (!isDemoMode && (userRole === 'employee' || userRole === 'manager') && user?.email !== 'nguyendangkhoafit2@gmail.com') {
                     rbacData = originalData.filter(row => {
                         const kho = String(row['Mã kho tạo'] || '').trim();
                         // 1. Manager & Employee both need Kho matching
@@ -218,7 +218,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         }, 50); // Yield UI Thread to ensure loading spinner paints before heavy calculation
 
         return () => clearTimeout(timer);
-    }, [originalData, productConfig, filterState, departmentMap, setStatus, userRole, departmentId, employeeName, user?.email]);
+    }, [originalData, productConfig, filterState, departmentMap, setStatus, userRole, departmentId, employeeName, user?.email, isDemoMode]);
 
     // Unique filter options
     const uniqueFilterOptions = useMemo(() => {

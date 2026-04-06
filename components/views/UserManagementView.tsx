@@ -86,7 +86,7 @@ const UserManagementView: React.FC = () => {
                     // Meaning users who just logged in (new) or haven't registered dept yet won't show.
                     filteredData = filteredData.filter(req => req.status === 'approved' && !!req.departmentId);
                 } else {
-                    filteredData = filteredData.filter(req => req.status === 'pending');
+                    filteredData = filteredData.filter(req => req.status === 'pending' || req.status === 'new');
                 }
             }
             else if (userRole === 'manager' && departmentId) {
