@@ -1,6 +1,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import type { Status, AppState } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
 // Import specialized hooks
 import { useExportLogic } from './useExportLogic';
@@ -11,6 +12,7 @@ import { useWarehouseTargets } from './useWarehouseTargets';
 import * as dbService from '../services/dbService';
 
 export const useDashboardLogic = () => {
+    const { user } = useAuth();
     const [status, setStatus] = useState<Status>({ message: '', type: 'info', progress: 0 });
     const [appState, setAppState] = useState<AppState>('loading');
     const [configUrl, setConfigUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRhes_lcas8n2_xYHKylsjyD3PIVbdchCiL2XDKJ4OYfgUZlVjAT7ZGWDHrYRzQVrK2w50W86Da3l48/pub?output=csv');
@@ -35,8 +37,12 @@ export const useDashboardLogic = () => {
         gtdhTargets, setGtdhTargets,
         uniqueFilterOptions,
         crossSellingConfig, setCrossSellingConfig,
+        kpiCardsConfig, setKpiCardsConfig,
+        kpiTargets, updateKpiTargets,
         isInternalProcessing,
-        fileInfo, setFileInfo
+        fileInfo, setFileInfo,
+        pendingCloudSync, setPendingCloudSync,
+        handleAcceptCloudSync
     } = useDataManagement({ filterState, configUrl, setStatus, setAppState });
 
     // 3. Warehouse Targets Management
@@ -60,7 +66,8 @@ export const useDashboardLogic = () => {
         setFileInfo,
         setAppState,
         setStatus,
-        setFilterState
+        setFilterState,
+        user
     });
 
     // 6. Export Logic
@@ -101,6 +108,7 @@ export const useDashboardLogic = () => {
         departmentMap, originalData, baseFilteredData, warehouseFilteredData, calendarSourceData, productConfig, processedData, employeeAnalysisData,
         configUrl, setConfigUrl, uniqueFilterOptions,
         filterState, handleFilterChange,
+        pendingCloudSync, setPendingCloudSync, handleAcceptCloudSync,
         activeModal, setActiveModal, modalData,
         handleClearDepartments, handleClearData, handleShiftFileProcessing, handleFileProcessing,
         openPerformanceModal, openUnshippedModal, handleExport,
@@ -127,6 +135,16 @@ export const useDashboardLogic = () => {
         updateCrossSellingConfig: async (config: any) => {
             setCrossSellingConfig(config);
             await dbService.saveCrossSellingConfig(config);
+        },
+        kpiCardsConfig,
+        updateKpiCardsConfig: async (config: import('../types').KpiCardConfig[]) => {
+            setKpiCardsConfig(config);
+            await dbService.saveKpiCardConfig(config);
+        },
+        kpiTargets,
+        updateKpiTargets: async (targets: { hieuQua: number, traGop: number, gtdh?: number }) => {
+            updateKpiTargets(targets);
+            await dbService.saveKpiTargets(targets);
         },
         updateDepartmentMap: async (map: any) => {
             setDepartmentMap(map);

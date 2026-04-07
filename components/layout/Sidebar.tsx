@@ -33,6 +33,7 @@ export default function Sidebar() {
     const { isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, activeTab, setActiveTab } = useLayout();
     const { user, userRole, logout, isDemoMode } = useAuth();
     const [isHovered, setIsHovered] = useState(false);
+    const [isTempExpanded, setIsTempExpanded] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
     const menuItems = [
@@ -56,7 +57,6 @@ export default function Sidebar() {
     ];
 
     const secondaryItems = [
-        { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' },
         ...((userRole === 'admin' || userRole === 'manager') ? [{ id: 'approval', label: 'Quản trị Truy cập', icon: Users, path: '/approval' }] : []),
         ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: Users, path: '/pending' }] : []),
         { id: 'help', label: 'Giới thiệu', icon: HelpCircle, path: '/help' },
@@ -74,7 +74,7 @@ export default function Sidebar() {
 
     const sidebarTransition: any = { duration: 0.2, ease: 'easeInOut' };
     // On mobile, never collapse if open. On desktop, follow isSidebarCollapsed state.
-    const effectiveCollapsed = isMobile ? false : (isSidebarCollapsed && !isHovered);
+    const effectiveCollapsed = isMobile ? false : (isSidebarCollapsed && !isHovered && !isTempExpanded);
 
     const [expandedMenus, setExpandedMenus] = useState<string[]>(['tools']);
 
@@ -111,40 +111,53 @@ export default function Sidebar() {
                         }
                     `}
                 >
-                    <div className={`flex items-center justify-center ${isCollapsed ? 'w-full' : 'mr-3'}`}>
-                        <item.icon size={22} className={isActive ? 'text-white' : 'group-hover:scale-110 transition-transform'} />
+                    <div className={`flex items-center justify-center min-w-[22px] transition-all duration-300 ${isCollapsed ? 'mx-auto' : ''}`}>
+                        <item.icon size={22} className={isActive ? 'text-white' : 'group-hover:scale-110 transition-transform duration-300'} />
                     </div>
                     
-                    {!isCollapsed && (
-                        <div className="flex-grow overflow-hidden flex items-center justify-between">
-                            <span className="font-medium whitespace-nowrap flex items-center gap-2">
-                                {item.label}
-                                {item.id === 'pending-approval' && (
-                                    <span className="relative flex h-2 w-2">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-                                    </span>
-                                )}
-                            </span>
-                            
-                            {hasSubItems && (
-                                <ChevronDown 
-                                    size={16} 
-                                    className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''} ${isActive ? 'text-white' : 'text-slate-400'}`} 
-                                />
+                    <motion.div 
+                        initial={false}
+                        animate={{ 
+                            opacity: isCollapsed ? 0 : 1,
+                            width: isCollapsed ? 0 : 'auto',
+                            marginLeft: isCollapsed ? 0 : 12,
+                            display: isCollapsed ? 'none' : 'flex'
+                        }}
+                        transition={{ duration: 0.2 }}
+                        className="flex-grow overflow-hidden items-center justify-between"
+                    >
+                        <span className="font-medium whitespace-nowrap flex items-center gap-2">
+                            {item.label}
+                            {item.id === 'pending-approval' && (
+                                <span className="relative flex h-2 w-2">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                                </span>
                             )}
-                        </div>
-                    )}
+                        </span>
+                        
+                        {hasSubItems && (
+                            <ChevronDown 
+                                size={16} 
+                                className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} ${isActive ? 'text-white' : 'text-slate-400'}`} 
+                            />
+                        )}
+                    </motion.div>
 
                     {isCollapsed && (
-                        <div className="absolute left-full ml-4 px-2 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 whitespace-nowrap">
+                        <div className="absolute left-full ml-4 px-2 py-1 bg-slate-900 text-white text-[11px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 z-50 whitespace-nowrap shadow-xl">
                             {item.label}
                         </div>
                     )}
                     
-                    {isActive && !isCollapsed && !hasSubItems && (
-                        <div className="absolute right-2 w-1.5 h-1.5 rounded-full bg-white" />
-                    )}
+                    <motion.div 
+                        initial={false}
+                        animate={{ 
+                            opacity: (isActive && !isCollapsed && !hasSubItems) ? 1 : 0,
+                            scale: (isActive && !isCollapsed && !hasSubItems) ? 1 : 0
+                        }}
+                        className="absolute right-2 w-1.5 h-1.5 rounded-full bg-white"
+                    />
                 </button>
 
                 {/* Sub Items */}
@@ -217,16 +230,24 @@ export default function Sidebar() {
             {/* Sidebar Container */}
             <motion.aside
                 initial={false}
-                onMouseEnter={() => !isMobile && isSidebarCollapsed && setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+                onMouseEnter={() => !isMobile && setIsHovered(true)}
+                onClick={() => {
+                    if (!isMobile && isSidebarCollapsed && !isTempExpanded) {
+                        setIsTempExpanded(true);
+                    }
+                }}
+                onMouseLeave={() => {
+                    setIsHovered(false);
+                    setIsTempExpanded(false);
+                }}
                 animate={isMobileSidebarOpen ? { x: 0, width: '85vw' } : (isMobile ? { x: '-100vw', width: '85vw' } : (effectiveCollapsed ? 'collapsed' : 'expanded'))}
                 variants={sidebarVariants}
                 transition={sidebarTransition}
                 className={`
-                    fixed lg:sticky top-0 left-0 h-screen z-[120] 
+                    fixed top-0 left-0 h-screen z-[120] 
                     bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
                     flex flex-col transition-colors duration-300
-                    ${isMobileSidebarOpen ? 'shadow-2xl' : ''}
+                    ${isMobileSidebarOpen || (!isMobile && !effectiveCollapsed) ? 'shadow-2xl' : ''}
                 `}
             >
                 {/* Logo Section */}

@@ -2,6 +2,7 @@ import { useState, useRef, startTransition } from 'react';
 // @ts-ignore: Vite virtual module alias for Web Workers
 import SalesWorker from '../services/worker?worker';
 import type { DataRow, Status, AppState, ProductConfig } from '../types';
+import type { User } from 'firebase/auth';
 import { processShiftFile, DepartmentMap } from '../services/dataService';
 import { 
     saveDepartmentMap, clearDepartmentMap, 
@@ -20,6 +21,7 @@ interface FileUploadLogicProps {
     setAppState: (state: AppState) => void;
     setStatus: (status: Status) => void;
     setFilterState?: (filters: any) => void;
+    user?: User | null;
 }
 
 export const useFileUploadLogic = ({
@@ -31,7 +33,8 @@ export const useFileUploadLogic = ({
     setFileInfo,
     setAppState,
     setStatus,
-    setFilterState
+    setFilterState,
+    user
 }: FileUploadLogicProps) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [isClearingDepartments, setIsClearingDepartments] = useState(false);
@@ -68,7 +71,8 @@ export const useFileUploadLogic = ({
     const handleClearData = async () => {
         try {
             await clearSalesData();
-            await clearCustomTabs();
+            // Không xoá các tab tuỳ chỉnh và cấu hình người dùng
+            // await clearCustomTabs();
             setOriginalData([]);
             setProcessedData(null);
             setFileInfo(null);
@@ -128,6 +132,8 @@ export const useFileUploadLogic = ({
                 
                 let uploadedCount = 0;
                 let skippedCount = 0;
+                let lastUploadedFileId: string | null = null;
+                let lastUploadedFileName: string | null = null;
 
                 for (let i = 0; i < files.length; i++) {
                     const file = files[i];
@@ -145,13 +151,23 @@ export const useFileUploadLogic = ({
                         skippedCount++;
                     } else {
                         setStatus({ message: `Đang tải lên Drive File ${i + 1}/${files.length}...`, type: 'info', progress: progressBase + 5 });
-                        await uploadFileToDrive(file, token, 'dmx_sales');
+                        const newFileId = await uploadFileToDrive(file, token, 'dmx_sales');
+                        lastUploadedFileId = newFileId;
+                        lastUploadedFileName = file.name;
                         uploadedCount++;
                     }
                 }
 
                 if (uploadedCount > 0) {
                     import('react-hot-toast').then(m => m.toast.success(`Đã đồng bộ ${uploadedCount} báo cáo lên Google Drive!`));
+                    if (user && lastUploadedFileId && lastUploadedFileName) {
+                        try {
+                            const { syncToCloud } = await import('../services/firestoreService');
+                            await syncToCloud(user, { latestDriveUpload: { fileId: lastUploadedFileId, name: lastUploadedFileName, timestamp: Date.now() } });
+                        } catch (e) {
+                            console.error("Lỗi đồng bộ metadata Drive lên Mây:", e);
+                        }
+                    }
                 }
                 if (skippedCount > 0) {
                     import('react-hot-toast').then(m => m.toast(`Bỏ qua ${skippedCount} file (đã tồn tại trên Drive)!`, { icon: '⚠️' }));

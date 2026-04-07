@@ -10,6 +10,7 @@ import EmployeeAnalysisTabs from './EmployeeAnalysisTabs';
 import EmployeeAnalysisModals from './EmployeeAnalysisModals';
 import EmployeeAnalysisContent from './EmployeeAnalysisContent';
 import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
+import { getExportFilenamePrefix } from '../../utils/dataUtils';
 
 export const ICON_OPTIONS = ['bar-chart-3', 'trophy', 'target', 'trending-up', 'star'];
 
@@ -137,7 +138,13 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
 
     const handleMainExport = async () => {
         if (exportRef.current) {
-            const filename = `phan-tich-nhan-vien-${activeTab}.png`;
+            const prefix = getExportFilenamePrefix(filterState.kho);
+            const tabName = defaultTabs.find(t => t.id === activeTab)?.label || 
+                            customTabs.find(t => t.id === activeTab)?.name || 
+                            activeTab;
+            // Xóa dấu tiếng Việt và thay khoảng trắng thành gạch ngang cho tên file
+            const safeTabName = tabName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+            const filename = `${prefix}-Phan-tich-nhan-vien-${safeTabName}.png`;
             const compactTabs = ['performanceTable', 'headToHead', 'summarySynthesis', 'industryAnalysis'];
             const isCustomTab = !defaultTabs.find(t => t.id === activeTab);
             const options = (compactTabs.includes(activeTab) || isCustomTab) ? { isCompactTable: true } : {};
@@ -147,7 +154,8 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
 
     const handleIndustryTabExport = async () => {
          if (industryAnalysisTabRef.current) {
-            const filename = `phan-tich-nhan-vien-industryAnalysis.png`;
+            const prefix = getExportFilenamePrefix(filterState.kho);
+            const filename = `${prefix}-Phan-tich-nhan-vien-Khai-thac.png`;
             await handleExport(industryAnalysisTabRef.current, filename, { isCompactTable: true });
         }
     };

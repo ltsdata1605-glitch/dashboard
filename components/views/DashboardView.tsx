@@ -25,8 +25,10 @@ import ExportLoader from '../common/ExportLoader';
 import ChangelogModal from '../modals/ChangelogModal';
 import { SectionHeader } from '../common/SectionHeader';
 import { Icon } from '../common/Icon';
+import { getExportFilenamePrefix } from '../../utils/dataUtils';
 import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } from '../common/SkeletonLoader';
 import { DebugPanel } from '../common/DebugPanel';
+import KpiCardConfigModal from '../kpis/modals/KpiCardConfigModal';
 
 const defaultVisibilityState: VisibilityState = {
     trendChart: true,
@@ -61,7 +63,8 @@ export default function DashboardView() {
         processingTime,
         handleFilterChange,
         baseFilteredData,
-        originalData
+        originalData,
+        pendingCloudSync, setPendingCloudSync, handleAcceptCloudSync
     } = logic;
     const { userRole } = useAuth();
     const { totalVisits, onlineUsers } = useSystemTraffic();
@@ -78,6 +81,7 @@ export default function DashboardView() {
     const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
     const [isDebugPanelVisible, setIsDebugPanelVisible] = useState(false);
     const [isInspectorActive, setIsInspectorActive] = useState(false);
+    const [isKpiConfigModalOpen, setIsKpiConfigModalOpen] = useState(false);
     const [debugInfo, setDebugInfo] = useState<any | null>(null);
 
     const dashboardContainerRef = useRef<HTMLDivElement>(null);
@@ -98,7 +102,8 @@ export default function DashboardView() {
 
     const handleBusinessOverviewExport = async () => {
         if (businessOverviewRef.current) {
-            await handleExport(businessOverviewRef.current, 'tong-quan-kinh-doanh.png', {
+            const prefix = getExportFilenamePrefix(filterState.kho);
+            await handleExport(businessOverviewRef.current, `${prefix}-Tong-quan-kinh-doanh.png`, {
                 captureAsDisplayed: false,
                 isCompactTable: true,
                 forcedWidth: 700, 
@@ -164,6 +169,31 @@ export default function DashboardView() {
 
     return (
         <div className="w-full">
+            {pendingCloudSync && (
+                <div className="fixed bottom-6 right-6 z-[250] bg-white dark:bg-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-indigo-100 dark:border-indigo-500/30 rounded-2xl p-5 flex flex-col gap-3 max-w-sm animate-in slide-in-from-bottom-5 fade-in duration-300">
+                    <div className="flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                                <Icon name="cloud-download" size={5} />
+                            </div>
+                            <div>
+                                <h4 className="font-bold text-slate-800 dark:text-white text-sm">Phát hiện dữ liệu mới!</h4>
+                                <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">File <strong>{pendingCloudSync.name}</strong> đã được cập nhật từ thiết bị khác.</p>
+                            </div>
+                        </div>
+                        <button onClick={() => setPendingCloudSync(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 -mr-2 -mt-2">
+                            <Icon name="x" size={4} />
+                        </button>
+                    </div>
+                    <button
+                        onClick={() => handleAcceptCloudSync(handleFileProcessing)}
+                        className="w-full mt-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm transition-colors shadow-sm active:scale-[0.98]"
+                    >
+                        <Icon name="refresh-cw" size={4} />
+                        Đồng bộ về máy này ngay
+                    </button>
+                </div>
+            )}
             <div className="w-[1200px] mx-auto p-8">
                 <DashboardContext.Provider value={logic as any}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleFileProcessing(Array.from(e.target.files))} />
@@ -176,7 +206,6 @@ export default function DashboardView() {
                     isClearingDepartments={isClearingDepartments} 
                     hasDepartmentData={!!departmentMap} 
                     showNewFileButton={appState === 'dashboard'} 
-                    onClearData={handleClearData} 
                     fileInfo={fileInfo}
                     onToggleFilters={() => setIsFilterSidebarOpen(!isFilterSidebarOpen)}
                     onSelectHistoryFile={handleFileProcessing}
@@ -184,6 +213,15 @@ export default function DashboardView() {
                 
                 {status.message && status.type === 'error' && <StatusDisplay status={status} />}
                 
+                {logic.kpiCardsConfig && (
+                    <KpiCardConfigModal 
+                        isOpen={isKpiConfigModalOpen} 
+                        onClose={() => setIsKpiConfigModalOpen(false)} 
+                        configs={logic.kpiCardsConfig} 
+                        onSave={logic.updateKpiCardsConfig} 
+                    />
+                )}
+
                 {showLanding && (
                     <LandingPageView 
                         onProcessFile={handleFileProcessing} 
@@ -298,7 +336,9 @@ export default function DashboardView() {
                                                     subtitle={processedData.reportSubTitle}
                                                 >
                                                         <div className="flex items-center gap-2 hide-on-export">
-                                                            {/* Local warehouse filter removed as it is now in the global FilterBar */}
+                                                            <button onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                                <Icon name="settings-2" size={5} />
+                                                            </button>
                                                             <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Tổng Quan" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                                 <Icon name="camera" size={5} />
                                                             </button>

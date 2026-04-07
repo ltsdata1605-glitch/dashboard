@@ -23,22 +23,42 @@ const KpiCard: React.FC<{
     const isClickable = !!onClick;
     
     // Apple-style vivid and deep pastel colors
-    const colorMap: Record<string, { icon: string, border: string }> = {
+    const colorMap: Record<string, { icon: string, bg: string, ring: string, textAccent: string }> = {
         blue: { 
-            icon: 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400', 
-            border: 'border-blue-200 dark:border-blue-500/30' 
+            icon: 'bg-blue-500 text-white shadow-md shadow-blue-500/30 dark:shadow-none', 
+            bg: 'bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-900 dark:to-blue-900/10',
+            ring: 'ring-1 ring-blue-100/50 dark:ring-blue-500/20',
+            textAccent: 'text-blue-600 dark:text-blue-400'
         },
         teal: { 
-            icon: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', 
-            border: 'border-emerald-200 dark:border-emerald-500/30' 
+            icon: 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30 dark:shadow-none', 
+            bg: 'bg-gradient-to-br from-white to-emerald-50/50 dark:from-slate-900 dark:to-emerald-900/10',
+            ring: 'ring-1 ring-emerald-100/50 dark:ring-emerald-500/20',
+            textAccent: 'text-emerald-600 dark:text-emerald-400'
         },
         pink: { 
-            icon: 'bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400', 
-            border: 'border-pink-200 dark:border-pink-500/30' 
+            icon: 'bg-pink-500 text-white shadow-md shadow-pink-500/30 dark:shadow-none', 
+            bg: 'bg-gradient-to-br from-white to-pink-50/50 dark:from-slate-900 dark:to-pink-900/10',
+            ring: 'ring-1 ring-pink-100/50 dark:ring-pink-500/20',
+            textAccent: 'text-pink-600 dark:text-pink-400'
         },
         red: { 
-            icon: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', 
-            border: 'border-rose-200 dark:border-rose-500/30' 
+            icon: 'bg-rose-500 text-white shadow-md shadow-rose-500/30 dark:shadow-none', 
+            bg: 'bg-gradient-to-br from-white to-rose-50/50 dark:from-slate-900 dark:to-rose-900/10',
+            ring: 'ring-1 ring-rose-100/50 dark:ring-rose-500/20',
+            textAccent: 'text-rose-600 dark:text-rose-400'
+        },
+        purple: { 
+            icon: 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30 dark:shadow-none', 
+            bg: 'bg-gradient-to-br from-white to-indigo-50/50 dark:from-slate-900 dark:to-indigo-900/10',
+            ring: 'ring-1 ring-indigo-100/50 dark:ring-indigo-500/20',
+            textAccent: 'text-indigo-600 dark:text-indigo-400'
+        },
+        orange: { 
+            icon: 'bg-orange-500 text-white shadow-md shadow-orange-500/30 dark:shadow-none', 
+            bg: 'bg-gradient-to-br from-white to-orange-50/50 dark:from-slate-900 dark:to-orange-900/10',
+            ring: 'ring-1 ring-orange-100/50 dark:ring-orange-500/20',
+            textAccent: 'text-orange-600 dark:text-orange-400'
         },
     };
 
@@ -47,24 +67,24 @@ const KpiCard: React.FC<{
     return (
         <div
             onClick={onClick}
-            className={`relative flex flex-col justify-between h-full bg-white dark:bg-[#1c1c1e] p-4 rounded-xl shadow-[0_2px_15px_rgba(0,0,0,0.03)] border-2 ${style.border} transition-all duration-300 group ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-700' : ''}`}
+            className={`relative flex flex-col justify-between h-full ${style.bg} p-3.5 rounded-xl shadow-sm ${style.ring} transition-all duration-300 group ${isClickable ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:ring-2' : ''}`}
         >
             <div className="flex justify-between items-start mb-2">
-                <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex-1 pr-2 mt-1">{title}</h3>
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${style.icon} shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3`}>
+                <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex-1 pr-1.5 mt-0.5 leading-snug">{title}</h3>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${style.icon} shrink-0 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6`}>
                     <Icon name={icon} size={4} />
                 </div>
             </div>
 
-            <div className="flex flex-col mt-auto">
+            <div className="flex flex-col mt-auto relative z-10">
                 <div className="flex flex-col">
                     {children}
                 </div>
 
                 {(trendLabel || trendValue) && (
-                    <div className="flex items-center justify-between gap-1 mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
+                    <div className="flex items-center justify-between gap-1 mt-3 pt-2.5 border-t border-slate-200/60 dark:border-white/10">
                         <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{trendLabel}</span>
-                        <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 text-right shrink-0">
+                        <div className={`text-[10px] font-extrabold ${style.textAccent} bg-white/50 dark:bg-black/20 px-2 py-1 rounded-md shrink-0 border border-white/20 dark:border-white/5`}>
                             {trendValue}
                         </div>
                     </div>
@@ -113,7 +133,7 @@ const KpiTargetEditor: React.FC<{
 };
 
 const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
-    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets } = useDashboardContext();
+    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig, warehouseFilteredData } = useDashboardContext();
     const kpis = processedData?.kpis;
     
     // targets fallbacks
@@ -164,86 +184,173 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         }
     }, [filterState.kho, warehouseTargets]);
 
-    if (!kpis) {
+    if (!kpis || !kpiCardsConfig) {
         return null;
     }
 
-    const hieuQuaValue = kpis.hieuQuaQD * 100;
-    const isHieuQuaGood = hieuQuaValue >= hieuQuaTarget;
-    const isTraGopGood = kpis.traGopPercent >= traGopTarget;
-    const isGtdhGood = gtdhTarget >= 1;
-    
-    // Revenue Target Logic
     const revenuePercentHT = revenueTarget > 0 ? (kpis.doanhThuQD / revenueTarget) * 100 : 0;
-    const isRevenueGood = revenuePercentHT >= 100;
+    const visibleCards = kpiCardsConfig
+        .filter(c => c.isVisible && c.id !== 'kpi-runrate' && c.id !== 'kpi-crosssell')
+        .sort((a,b) => a.order - b.order);
+
+    const computedValues = useMemo(() => {
+        const values: Record<string, number> = {};
+        
+        // Pass 1: Metric & Data
+        kpiCardsConfig.forEach(config => {
+            if (!config.type || config.type === 'metric') {
+                let raw = kpis ? (kpis as any)[config.metric as string] || 0 : 0;
+                if (config.metric === 'crossSellRate' || config.metric === 'hieuQuaQD') {
+                    raw = raw * 100;
+                }
+                values[config.id] = raw;
+            } else if (config.type === 'data') {
+                if (!warehouseFilteredData) {
+                    values[config.id] = 0;
+                    return;
+                }
+                const filters = config.dataFilters;
+                if (!filters) {
+                    values[config.id] = 0;
+                    return;
+                }
+                let val = 0;
+                for (const row of warehouseFilteredData) {
+                    const hsx = String(row['Hãng'] || row['Hãng SX'] || '');
+                    if (filters.selectedManufacturers && filters.selectedManufacturers.length > 0 && !filters.selectedManufacturers.includes(hsx)) continue;
+                    
+                    const nganh = String(row['Ngành Hàng'] || row['Ngành hàng'] || row['Nganh Hang'] || '');
+                    if (filters.selectedIndustries && filters.selectedIndustries.length > 0 && !filters.selectedIndustries.includes(nganh)) continue;
+                    
+                    const nhom = String(row['Nhóm Hàng'] || row['Nhóm hàng'] || row['Nhom Hang'] || '');
+                    if (filters.selectedSubgroups && filters.selectedSubgroups.length > 0 && !filters.selectedSubgroups.includes(nhom)) continue;
+                    
+                    if (filters.metricType === 'quantity') {
+                        val += Number(row['Số Lượng'] || row['Số lượng'] || 0);
+                    } else if (filters.metricType === 'revenueQD') {
+                        val += Number(row['Doanh Thu QĐ'] || row['Doanh Thu QD'] || row['Doanh thu QĐ'] || 0);
+                    } else { // revenue
+                        val += Number(row['Doanh Thu Thực'] || row['Doanh Thu Thuc'] || row['Doanh thu thực'] || 0);
+                    }
+                }
+                values[config.id] = val;
+            }
+        });
+
+        // Pass 2: Calculated
+        kpiCardsConfig.forEach(config => {
+            if (config.type === 'calculated') {
+                const v1 = values[config.operand1_cardId || ''] || 0;
+                const v2 = values[config.operand2_cardId || ''] || 0;
+                let res = 0;
+                if (config.operation === '+') res = v1 + v2;
+                else if (config.operation === '-') res = v1 - v2;
+                else if (config.operation === '*') res = v1 * v2;
+                else if (config.operation === '/') res = v2 !== 0 ? v1 / v2 : 0;
+                
+                if (config.format === 'percentage') res *= 100;
+                values[config.id] = res;
+            }
+        });
+
+        return values;
+    }, [kpiCardsConfig, kpis, warehouseFilteredData]);
+    
+    // Auto-adjust cols depending on length
+    const gridCols = visibleCards.length > 6 ? 6 : (visibleCards.length === 5 ? 5 : visibleCards.length);
 
     return (
-        <div className="grid grid-cols-4 gap-4 mb-6 kpi-grid-for-export">
-            
-            <KpiCard 
-                icon="wallet-cards" 
-                iconColor="blue" 
-                title="Doanh Thu QĐ"
-                // No click handler for editing here, handled in Warehouse Summary
-                trendLabel={revenueTarget > 0 ? "%HT" : "Target"}
-                trendValue={
-                    revenueTarget > 0 
-                    ? <span className={isRevenueGood ? 'text-blue-600' : 'text-slate-500'}>
-                        {formatCurrency(revenueTarget)} / {revenuePercentHT.toFixed(0)}%
-                      </span> 
-                    : <span className="text-slate-400 italic text-[10px]">Chưa có Target</span>
-                }
-            >
-                <div className="text-[22px] font-extrabold text-blue-700 dark:text-blue-400 leading-none tracking-tight">
-                    {formatCurrency(kpis.doanhThuQD)}
-                </div>
-            </KpiCard>
-            
-            {/* CARD 2: HIỆU QUẢ QUY ĐỔI */}
-            <KpiCard 
-                icon="trending-up" 
-                iconColor="teal" 
-                title="Hiệu Quả QĐ"
-                onClick={(e) => startEditing(e, 'hieuQua')}
-                trendLabel="Mục tiêu"
-                trendValue={editingState.field === 'hieuQua' ? (
-                    <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} />
-                ) : `${hieuQuaTarget}%`}
-            >
-                <div className={`text-[22px] font-extrabold leading-none tracking-tight ${isHieuQuaGood ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-600'}`}>
-                    {hieuQuaValue.toFixed(1)}%
-                </div>
-            </KpiCard>
+        <div className={`grid grid-cols-2 md:grid-cols-3 xl:grid-cols-${gridCols} gap-4 mb-6 kpi-grid-for-export`}>
+            {visibleCards.map(config => {
+                const isSpecialUnshipped = config.metric === 'doanhThuThucChoXuat';
+                
+                let rawValue = computedValues[config.id] || 0;
 
-            <KpiCard 
-                icon="receipt" 
-                iconColor="pink" 
-                title="Tỷ Lệ Trả Góp"
-                onClick={(e) => startEditing(e, 'traGop')}
-                trendLabel="Mục tiêu"
-                trendValue={editingState.field === 'traGop' ? (
-                    <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} />
-                ) : `${traGopTarget}%`}
-            >
-                <div className={`text-[22px] font-extrabold leading-none tracking-tight ${isTraGopGood ? 'text-pink-700 dark:text-pink-400' : 'text-amber-600'}`}>
-                    {kpis.traGopPercent.toFixed(1)}%
-                </div>
-            </KpiCard>
-            
-            
-            {/* CARD 5: DOANH THU CHỜ XUẤT */}
-            <KpiCard 
-                icon="archive-restore" 
-                iconColor="red" 
-                title="DT Chờ Xuất" 
-                onClick={onUnshippedClick}
-                trendLabel="Thực tế"
-                trendValue={formatCurrency(kpis.doanhThuThucChoXuat)}
-            >
-                <div className="text-[22px] font-extrabold text-rose-700 dark:text-rose-400 leading-none tracking-tight">
-                    {formatCurrency(kpis.doanhThuQDChoXuat)}
-                </div>
-            </KpiCard>
+                // Determine formatting
+                let displayValue = '';
+                if (config.format === 'currency') displayValue = formatCurrency(rawValue);
+                else if (config.format === 'percentage') displayValue = `${rawValue.toFixed(1)}%`;
+                else displayValue = rawValue.toLocaleString('vi-VN');
+
+                // Determine trend & target
+                let finalTrendLabel = config.trendLabel || '';
+                let finalTrendValue: React.ReactNode = '';
+                let isGood = true;
+
+                if (config.hasTarget && config.targetType === 'global') {
+                    if (config.targetRef === 'hieuQua') {
+                        finalTrendLabel = "Mục tiêu";
+                        if (editingState.field === 'hieuQua') {
+                            finalTrendValue = <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} />;
+                        } else {
+                            finalTrendValue = `${hieuQuaTarget}%`;
+                        }
+                        isGood = rawValue >= hieuQuaTarget;
+                    } else if (config.targetRef === 'traGop') {
+                        finalTrendLabel = "Mục tiêu";
+                        if (editingState.field === 'traGop') {
+                            finalTrendValue = <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} />;
+                        } else {
+                            finalTrendValue = `${traGopTarget}%`;
+                        }
+                        isGood = rawValue >= traGopTarget;
+                    } else if (config.metric === 'doanhThuQD') {
+                        // Custom logic for DTQD revenue global target
+                        finalTrendLabel = revenueTarget > 0 ? "%HT" : "Target";
+                        isGood = revenuePercentHT >= 100;
+                        finalTrendValue = revenueTarget > 0 
+                        ? <span className={isGood ? 'text-blue-600' : 'text-slate-500'}>
+                            {formatCurrency(revenueTarget)} / {revenuePercentHT.toFixed(0)}%
+                          </span> 
+                        : <span className="text-slate-400 italic text-[10px]">Chưa có</span>;
+                    }
+                } else if (config.hasTarget && config.targetType === 'custom') {
+                    finalTrendLabel = "Target";
+                    finalTrendValue = config.customTargetValue?.toString() || '0';
+                    isGood = rawValue >= (config.customTargetValue || 0);
+                }
+
+                // Color mappings based on 'isGood' and icon color
+                let valueColor = 'text-slate-700 dark:text-slate-300';
+                if (config.hasTarget && config.targetType !== 'none') {
+                    valueColor = isGood ? `text-emerald-700 dark:text-emerald-400` : 'text-amber-600';
+                    if (config.metric === 'doanhThuQD') valueColor = 'text-blue-700 dark:text-blue-400';
+                } else {
+                    if (config.iconColor === 'blue') valueColor = 'text-blue-700 dark:text-blue-400';
+                    else if (config.iconColor === 'emerald') valueColor = 'text-emerald-700 dark:text-emerald-400';
+                    else if (config.iconColor === 'pink') valueColor = 'text-pink-700 dark:text-pink-400';
+                    else if (config.iconColor === 'orange') valueColor = 'text-orange-700 dark:text-orange-400';
+                    else if (config.iconColor === 'purple' || config.iconColor === 'violet') valueColor = 'text-indigo-700 dark:text-indigo-400';
+                    else if (config.iconColor === 'red' || config.iconColor === 'rose') valueColor = 'text-rose-700 dark:text-rose-400';
+                    else if (config.iconColor === 'amber') valueColor = 'text-amber-700 dark:text-amber-400';
+                }
+
+                const handleClick = (e: React.MouseEvent) => {
+                    if (isSpecialUnshipped) {
+                        onUnshippedClick();
+                    } else if (config.targetRef === 'hieuQua' || config.targetRef === 'traGop') {
+                        startEditing(e, config.targetRef);
+                    }
+                };
+                
+                const isClickable = isSpecialUnshipped || config.targetRef === 'hieuQua' || config.targetRef === 'traGop';
+
+                return (
+                    <KpiCard 
+                        key={config.id}
+                        icon={config.icon} 
+                        iconColor={config.iconColor} 
+                        title={config.title}
+                        onClick={isClickable ? handleClick : undefined}
+                        trendLabel={finalTrendLabel}
+                        trendValue={finalTrendValue}
+                    >
+                        <div className={`text-2xl sm:text-3xl font-black leading-none tracking-tight ${valueColor} drop-shadow-sm`}>
+                            {displayValue}
+                        </div>
+                    </KpiCard>
+                );
+            })}
         </div>
     );
 };

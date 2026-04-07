@@ -13,6 +13,7 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@types/papaparse": "^5.5.2",
     "chart.js": "^4.4.0",
     "clsx": "^2.1.1",
     "firebase": "^12.11.0",
@@ -21,6 +22,7 @@
     "lucide-react": "^0.577.0",
     "lunar-javascript": "^1.7.7",
     "motion": "^12.38.0",
+    "papaparse": "^5.5.3",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-hot-toast": "^2.6.0",

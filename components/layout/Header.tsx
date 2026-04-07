@@ -6,6 +6,7 @@ import ModalWrapper from '../modals/ModalWrapper';
 import EmployeeManagerModal from '../modals/EmployeeManagerModal';
 import DriveHistoryModal from '../modals/DriveHistoryModal';
 import FontSelector from './FontSelector';
+import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useCloudSync } from '../../hooks/useCloudSync';
@@ -17,7 +18,6 @@ interface HeaderProps {
     isClearingDepartments: boolean;
     hasDepartmentData: boolean;
     showNewFileButton: boolean;
-    onClearData: () => void;
     fileInfo: { filename: string; savedAt: string } | null;
     onToggleFilters?: () => void;
     onSelectHistoryFile?: (files: File[]) => void;
@@ -30,22 +30,13 @@ const Header: React.FC<HeaderProps> = ({
     isClearingDepartments, 
     hasDepartmentData, 
     showNewFileButton, 
-    onClearData, 
     fileInfo, 
     onToggleFilters,
     onSelectHistoryFile 
 }) => {
     const { user, isDemoMode, userRole } = useAuth();
     const context = useDashboardContext();
-    const { syncState } = useCloudSync(
-        context.productConfig,
-        context.departmentMap,
-        context.warehouseTargets,
-        context.gtdhTargets,
-        context.crossSellingConfig
-    );
     const [deptClearSuccess, setDeptClearSuccess] = useState(false);
-    const [dataClearSuccess, setDataClearSuccess] = useState(false);
     const [showInstructionModal, setShowInstructionModal] = useState(false);
     const [showEmployeeModal, setShowEmployeeModal] = useState(false);
     const [showDriveHistory, setShowDriveHistory] = useState(false);
@@ -57,9 +48,23 @@ const Header: React.FC<HeaderProps> = ({
     useEffect(() => {
         if (user && context.appState === 'upload' && !hasPromptedDrive.current && (userRole === 'admin' || userRole === 'manager')) {
             hasPromptedDrive.current = true;
-            setTimeout(() => {
-                 setShowDriveHistory(true);
-            }, 800); // 800ms delay to let the app load first
+            
+            const token = sessionStorage.getItem('googleOAuthToken');
+            if (token) {
+                // Fetch list silently, only show auto-prompt if there are files
+                import('../../services/googleDriveService').then(({ listDriveFiles }) => {
+                    listDriveFiles(token).then(files => {
+                        if (files && files.length > 0) {
+                            setTimeout(() => {
+                                 setShowDriveHistory(true);
+                            }, 800);
+                        }
+                    }).catch(error => {
+                        console.warn('Silent check drive files failed:', error);
+                    });
+                });
+            }
+            // If no token, we just skip the auto-prompt.
         }
     }, [user, context.appState, userRole]);
 
@@ -73,23 +78,10 @@ const Header: React.FC<HeaderProps> = ({
         window.open("https://office.thegioididong.com/quan-ly-phan-ca", "_blank");
     };
 
-    useEffect(() => {
-        if (fileInfo) {
-            setDataClearSuccess(false);
-        }
-    }, [fileInfo]);
-
     const handleDeptClear = () => {
         onClearDepartments();
         setDeptClearSuccess(true);
         setTimeout(() => setDeptClearSuccess(false), 3000);
-    };
-
-    const handleDataClear = () => {
-        setDataClearSuccess(true);
-        setTimeout(() => {
-            onClearData();
-        }, 1500);
     };
     
     return (
@@ -123,11 +115,10 @@ const Header: React.FC<HeaderProps> = ({
                     <div className="flex items-center shadow-sm rounded-xl overflow-hidden border border-blue-100 dark:border-blue-900/30">
                         <button 
                             onClick={onLoadShiftFile}
-                            className="flex items-center gap-2.5 px-5 py-2.5 bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all active:scale-95"
-                            title="Tải lên file phân ca của cụm"
+                            className="flex items-center gap-2.5 px-3.5 py-2.5 bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all active:scale-95"
+                            title="Tải lên báo cáo Phân ca"
                         >
-                            <Icon name="users-round" size={4} />
-                            <span>Nhân Viên</span>
+                            <Icon name="users-round" size={5} />
                         </button>
                         
                         {hasDepartmentData && (
@@ -177,11 +168,10 @@ const Header: React.FC<HeaderProps> = ({
                             <>
                                 <button 
                                     onClick={onNewFile}
-                                    className="flex items-center gap-2.5 px-5 py-2.5 bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all active:scale-95"
-                                    title="Tải lên báo cáo YCX mới từ máy tính"
+                                    className="flex items-center gap-2.5 px-3.5 py-2.5 bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all active:scale-95"
+                                    title="Tải lên báo cáo YCX mới"
                                 >
-                                    <Icon name="file-up" size={4} />
-                                    <span>YCX</span>
+                                    <Icon name="file-up" size={5} />
                                 </button>
                                 
                                 <button 
@@ -204,35 +194,6 @@ const Header: React.FC<HeaderProps> = ({
                         </a>
 
                         <FontSelector />
-                        
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                className={`flex items-center justify-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30 transition-colors 
-                                    ${syncState === 'synced' ? 'text-emerald-500' 
-                                    : syncState === 'error' ? 'text-rose-500'
-                                    : 'text-emerald-600 dark:text-emerald-400'} 
-                                    ${(!user || isDemoMode) ? 'opacity-50' : ''}`}
-                                title={!user ? "Chưa đăng nhập" : (isDemoMode ? "Chế độ Offline" : (syncState === 'syncing' ? "Đang lưu lên Cloud..." : (syncState === 'error' ? "Lỗi lưu Cloud" : "Đã đồng bộ Cloud")))}
-                            >
-                                <Icon 
-                                    name={syncState === 'synced' ? 'cloud-snow' : (syncState === 'syncing' ? 'loader-2' : (syncState === 'error' ? 'cloud-off' : 'cloud-check'))} 
-                                    size={4} 
-                                    className={syncState === 'syncing' ? 'animate-spin text-indigo-500' : ''} 
-                                />
-                            </motion.div>
-                        </AnimatePresence>
-
-                        {userRole !== 'employee' && (
-                            <AnimatePresence mode="wait">
-                                <motion.button
-                                    onClick={handleDataClear}
-                                    className={`p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30 transition-colors ${dataClearSuccess ? 'text-emerald-600' : 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20'}`}
-                                    title="Xóa toàn bộ dữ liệu"
-                                >
-                                    <Icon name={dataClearSuccess ? 'check' : 'trash-2'} size={4} />
-                                </motion.button>
-                            </AnimatePresence>
-                        )}
                     </div>
                 </div>
             )}

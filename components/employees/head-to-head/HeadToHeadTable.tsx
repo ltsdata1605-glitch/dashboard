@@ -1,16 +1,18 @@
 
 import React, { useState } from 'react';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../../../types';
-import { abbreviateName, formatQuantity, formatRevenueForHeadToHead, toLocalISOString } from '../../../utils/dataUtils';
+import { abbreviateName, formatQuantity, formatRevenueForHeadToHead, toLocalISOString, getExportFilenamePrefix } from '../../../utils/dataUtils';
 import { Icon } from '../../common/Icon';
 import { useHeadToHeadLogic } from '../../../hooks/useHeadToHeadLogic';
 import { exportElementAsImage } from '../../../services/uiService';
+import { useDashboardContext } from '../../../contexts/DashboardContext';
 
 interface HeadToHeadTableProps {
     config: HeadToHeadTableConfig;
     baseFilteredData: DataRow[];
     productConfig: ProductConfig;
     employeeData: Employee[];
+    allConfigs: HeadToHeadTableConfig[];
     onAdd: () => void;
     onEdit: () => void;
     onDelete: () => void;
@@ -20,6 +22,7 @@ interface HeadToHeadTableProps {
 
 const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({ 
     config, 
+    allConfigs,
     baseFilteredData, 
     productConfig, 
     employeeData, 
@@ -31,11 +34,13 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
     const [sortConfig, setSortConfig] = useState<{ key: string | number; direction: 'asc' | 'desc' }>({ key: 'daysWithNoSales', direction: 'asc' });
     const [includeToday, setIncludeToday] = useState(true);
     const [isExporting, setIsExporting] = useState(false);
+    const { filterState } = useDashboardContext();
     const tableRef = React.useRef<HTMLDivElement>(null);
 
     // Use the new hook for data processing
     const { processedData, conditionalFormatData, departmentTotals } = useHeadToHeadLogic({
         config,
+        allConfigs,
         baseFilteredData,
         productConfig,
         employeeData,
@@ -53,7 +58,9 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
     const handleExport = async () => {
         if (tableRef.current) {
             setIsExporting(true);
-            await exportElementAsImage(tableRef.current, `7-ngay-${config.tableName}.png`, {
+            const prefix = getExportFilenamePrefix(filterState.kho);
+            const safeTabName = config.tableName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+            await exportElementAsImage(tableRef.current, `${prefix}-7-ngay-${safeTabName}.png`, {
                 elementsToHide: ['.hide-on-export'],
                 isCompactTable: true
             });
@@ -133,12 +140,22 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
 
     return (
         <div ref={tableRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col h-full rounded-none">
-            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 sticky top-0 z-20">
+            <div 
+                className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 sticky top-0 z-20"
+                style={{
+                    backgroundColor: config.headerColor ? config.headerColor + '30' : undefined,
+                    borderColor: config.headerColor ? config.headerColor + '50' : undefined,
+                }}
+            >
                 <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary-50 text-primary-600 shadow-sm">
+                    <div 
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary-50 text-primary-600 shadow-sm"
+                        style={{ backgroundColor: config.headerColor ? config.headerColor + '40' : undefined }}
+                    >
                         <Icon name="swords" size={5} />
                     </div>
                     <div>
+                        {config.mainHeader && <p className="text-xs font-semibold text-slate-500 mb-0.5 uppercase">{config.mainHeader}</p>}
                         <h3 className="text-sm font-black text-slate-800 dark:text-white leading-tight uppercase tracking-wide">{config.tableName}</h3>
                         <p className="text-[10px] font-bold text-slate-400 mt-0.5">{processedData.dateRangeString}</p>
                     </div>

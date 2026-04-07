@@ -32,6 +32,8 @@ interface DashboardContextType {
     updateKpiTargets: (targets: { hieuQua: number, traGop: number, gtdh?: number }) => void;
     crossSellingConfig: any;
     updateCrossSellingConfig: (config: any) => void;
+    kpiCardsConfig: import('../types').KpiCardConfig[];
+    updateKpiCardsConfig: (config: import('../types').KpiCardConfig[]) => void;
 }
 
 export const DashboardContext = React.createContext<DashboardContextType | undefined>(undefined);

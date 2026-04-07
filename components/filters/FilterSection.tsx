@@ -185,7 +185,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
 
             {/* Slide Menu Body */}
             <div className="flex-grow overflow-y-auto custom-scrollbar pb-20">
-                <div className="p-4 space-y-6">
+                <div className="p-4 space-y-4">
                     <div className="space-y-2.5 px-3">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400 shadow-sm">
@@ -201,61 +201,67 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                         />
                     </div>
 
-                    {/* Trạng Thái Xuất - Premium Segmented Control */}
-                    <div className="space-y-2.5">
+                    {/* Trạng Thái Xuất */}
+                    <div className="space-y-2.5 px-3">
                         <div className="flex items-center gap-2">
                             <div className="p-1.5 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400 shadow-sm">
                                 <Icon name="truck" size={3.5} />
                             </div>
                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Trạng Thái Xuất</label>
                         </div>
-                        <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800/50">
-                            {['all', 'Đã', 'Chưa'].map(val => (
-                                <button 
-                                    key={val} 
-                                    onClick={() => updateLocalFilter({ xuat: val })} 
-                                    className={`py-1.5 text-xs font-bold rounded-lg transition-all ${localFilters.xuat === val ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                                >
-                                    {val === 'all' ? 'Tất cả' : val}
-                                </button>
-                            ))}
-                        </div>
+                        <MultiSelectDropdown 
+                            label="Trạng Thái Xuất" 
+                            options={['Đã', 'Chưa']} 
+                            selected={localFilters.xuat === 'all' ? [] : [localFilters.xuat === 'Đã' ? 'Đã' : 'Chưa']} 
+                            onChange={(sel) => updateLocalFilter({ xuat: sel.length > 0 ? sel[sel.length - 1] : 'all' })} 
+                        />
                     </div>
 
                     {/* Dropdowns */}
-                        {options.department.length > 0 && (
-                            <>
-                                <div className="px-3 py-1">
-                                    <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 mb-2 tracking-widest ml-1">Bộ phận</label>
-                                    <MultiSelectDropdown 
-                                        label="Bộ phận" 
-                                        options={options.department} 
-                                        selected={localFilters.department} 
-                                        onChange={(sel) => updateLocalFilter({ department: sel })} 
-                                    />
+                    {options.department.length > 0 && (
+                        <div className="space-y-2.5 px-3">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1.5 bg-sky-50 dark:bg-sky-900/30 rounded-lg text-sky-600 dark:text-sky-400 shadow-sm">
+                                    <Icon name="users" size={3.5} />
                                 </div>
-                                <div className="h-px bg-slate-100 dark:bg-slate-800 mx-3" />
-                            </>
-                        )}
-                        <div className="px-3 py-1">
-                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 mb-2 tracking-widest ml-1">Người Tạo</label>
+                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em]">Bộ phận</label>
+                            </div>
                             <MultiSelectDropdown 
-                                label="Người Tạo" 
-                                options={options.nguoiTao} 
-                                selected={localFilters.nguoiTao} 
-                                onChange={(sel) => updateLocalFilter({ nguoiTao: sel })} 
+                                label="Bộ phận" 
+                                options={options.department} 
+                                selected={localFilters.department} 
+                                onChange={(sel) => updateLocalFilter({ department: sel })} 
                             />
                         </div>
-                        <div className="h-px bg-slate-100 dark:bg-slate-800 mx-3" />
-                        <div className="px-3 py-1">
-                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 mb-2 tracking-widest ml-1">Trạng thái hồ sơ</label>
-                            <MultiSelectDropdown 
-                                label="Trạng thái hồ sơ" 
-                                options={options.trangThai} 
-                                selected={localFilters.trangThai} 
-                                onChange={(sel) => updateLocalFilter({ trangThai: sel })} 
-                            />
+                    )}
+                    <div className="space-y-2.5 px-3">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400 shadow-sm">
+                                <Icon name="user" size={3.5} />
+                            </div>
+                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em]">Người Tạo</label>
                         </div>
+                        <MultiSelectDropdown 
+                            label="Người Tạo" 
+                            options={options.nguoiTao} 
+                            selected={localFilters.nguoiTao} 
+                            onChange={(sel) => updateLocalFilter({ nguoiTao: sel })} 
+                        />
+                    </div>
+                    <div className="space-y-2.5 px-3">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 bg-rose-50 dark:bg-rose-900/30 rounded-lg text-rose-600 dark:text-rose-400 shadow-sm">
+                                <Icon name="file-text" size={3.5} />
+                            </div>
+                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em]">Trạng thái hồ sơ</label>
+                        </div>
+                        <MultiSelectDropdown 
+                            label="Trạng thái hồ sơ" 
+                            options={options.trangThai} 
+                            selected={localFilters.trangThai} 
+                            onChange={(sel) => updateLocalFilter({ trangThai: sel })} 
+                        />
+                    </div>
 
                     {/* Date Selection */}
                     <div className="space-y-4 pt-1">

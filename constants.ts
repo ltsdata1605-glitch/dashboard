@@ -64,3 +64,85 @@ export const DEFAULT_WAREHOUSE_COLUMNS: WarehouseColumnConfig[] = [
     { id: 'dthh_pk', order: 15, isVisible: true, isCustom: false, categoryType: 'industry', categoryName: 'Phụ kiện', metricType: 'revenue', mainHeader: 'DT THỰC', subHeader: 'P.KIỆN' },
     { id: 'dthh_dgd', order: 16, isVisible: true, isCustom: false, categoryType: 'industry', categoryName: 'Gia dụng', metricType: 'revenue', mainHeader: 'DT THỰC', subHeader: 'ĐGD' },
 ];
+
+export const DEFAULT_INDUSTRY_COLUMNS: any[] = [
+    { id: 'dt_thuc', order: 1, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'revenue' }, mainHeader: 'Doanh Thu', subHeader: 'DT Thực' },
+    { id: 'dt_qd', order: 2, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'revenueQD' }, mainHeader: 'Doanh Thu', subHeader: 'DTQĐ' },
+    // SP Chính
+    { id: 'spc_ict', order: 3, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['ICT'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'quantity' }, mainHeader: 'SP CHÍNH', subHeader: 'SL ICT' },
+    { id: 'spc_ce', order: 4, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['CE'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'quantity' }, mainHeader: 'SP CHÍNH', subHeader: 'SL CE' },
+    { id: 'spc_dgd', order: 5, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Gia dụng'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'quantity' }, mainHeader: 'SP CHÍNH', subHeader: 'SL ĐGD' },
+    // SIM
+    { id: 'sim_sl', order: 6, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Sim'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'quantity' }, mainHeader: 'SIM', subHeader: 'S.Lượng' },
+    { id: 'sim_dt', order: 7, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Sim'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'revenue' }, mainHeader: 'SIM', subHeader: 'D.Thu' },
+    // Đồng hồ
+    { id: 'dh_sl', order: 8, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Đồng hồ', 'Wearable'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'quantity' }, mainHeader: 'ĐỒNG HỒ', subHeader: 'S.Lượng' },
+    { id: 'dh_dt', order: 9, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Đồng hồ', 'Wearable'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'revenue' }, mainHeader: 'ĐỒNG HỒ', subHeader: 'D.Thu' },
+    // Phụ Kiện
+    { id: 'pk_sl', order: 10, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Phụ kiện'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'quantity' }, mainHeader: 'PHỤ KIỆN', subHeader: 'S.Lượng' },
+    { id: 'pk_dt', order: 11, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Phụ kiện'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'revenue' }, mainHeader: 'PHỤ KIỆN', subHeader: 'D.Thu' },
+    // Gia dụng
+    { id: 'gd_sl', order: 12, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Gia dụng'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'quantity' }, mainHeader: 'GIA DỤNG', subHeader: 'S.Lượng' },
+    { id: 'gd_dt', order: 13, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Gia dụng'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'revenue' }, mainHeader: 'GIA DỤNG', subHeader: 'D.Thu' },
+    // Bảo hiểm
+    { id: 'bh_sl', order: 14, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Bảo hiểm'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'quantity' }, mainHeader: 'BẢO HIỂM', subHeader: 'S.Lượng' },
+    { id: 'bh_dt', order: 15, isVisible: true, isCustom: false, type: 'data', filters: { selectedIndustries: ['Bảo hiểm'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [], metricType: 'revenue' }, mainHeader: 'BẢO HIỂM', subHeader: 'D.Thu' }
+];
+
+export const DEFAULT_KPI_CARDS: import('./types').KpiCardConfig[] = [
+    {
+        id: 'kpi-dtqd',
+        order: 1,
+        isVisible: true,
+        title: 'Doanh Thu Q.Đổi',
+        icon: 'trending-up',
+        iconColor: 'emerald',
+        type: 'metric',
+        metric: 'doanhThuQD',
+        format: 'currency',
+        hasTarget: true,
+        targetType: 'global',
+        targetRef: 'hieuQua',
+    },
+    {
+        id: 'kpi-hieuqua',
+        order: 2,
+        isVisible: true,
+        title: 'Hiệu Quả Q.Đổi',
+        icon: 'activity',
+        iconColor: 'blue',
+        type: 'metric',
+        metric: 'hieuQuaQD',
+        format: 'percentage',
+        hasTarget: true,
+        targetType: 'global',
+        targetRef: 'hieuQua',
+    },
+    {
+        id: 'kpi-dtthuc',
+        order: 3,
+        isVisible: true,
+        title: 'Doanh Thu Thực',
+        icon: 'dollar-sign',
+        iconColor: 'slate',
+        type: 'metric',
+        metric: 'totalRevenue',
+        format: 'currency',
+        hasTarget: false,
+        targetType: 'none',
+    },
+    {
+        id: 'kpi-tragop',
+        order: 4,
+        isVisible: true,
+        title: 'Tỷ Lệ Trả Góp',
+        icon: 'credit-card',
+        iconColor: 'amber',
+        type: 'metric',
+        metric: 'traGopPercent',
+        format: 'percentage',
+        hasTarget: true,
+        targetType: 'global',
+        targetRef: 'traGop',
+    }
+];

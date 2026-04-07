@@ -3,6 +3,17 @@
 const DRIVE_UPLOAD_URL = "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart";
 const DRIVE_FILES_URL = "https://www.googleapis.com/drive/v3/files";
 
+const handleDriveError = async (response: Response, action: string) => {
+    if (response.status === 401) {
+        sessionStorage.removeItem('googleOAuthToken');
+        window.dispatchEvent(new CustomEvent('google-auth-expired'));
+        throw new Error("Phiên kết nối Google Drive đã hết hạn. Vui lòng đăng nhập lại Google.");
+    }
+    let errorText = '';
+    try { errorText = await response.text(); } catch(e) {}
+    throw new Error(`Google Drive ${action} Failed: ${response.statusText} - ${errorText}`);
+};
+
 /**
  * Uploads a given File (e.g., .xlsx) directly to Google Drive using the provided OAuth token.
  */
@@ -36,8 +47,7 @@ export const uploadFileToDrive = async (file: File, token: string, filenamePrefi
     });
 
     if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Google Drive Upload Failed: ${response.statusText} - ${errorText}`);
+        await handleDriveError(response, 'Upload');
     }
 
     const data = await response.json();
@@ -59,8 +69,7 @@ export const downloadFileFromDrive = async (fileId: string, token: string): Prom
     });
 
     if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Google Drive Download Failed: ${response.statusText} - ${errorText}`);
+        await handleDriveError(response, 'Download');
     }
 
     return await response.blob();
@@ -91,10 +100,27 @@ export const listDriveFiles = async (token: string): Promise<DriveFile[]> => {
     });
 
     if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Google Drive List Failed: ${response.statusText} - ${errorText}`);
+        await handleDriveError(response, 'List');
     }
 
     const data = await response.json();
     return data.files as DriveFile[];
+};
+
+/**
+ * Deletes a file from Google Drive using its fileId.
+ */
+export const deleteFileFromDrive = async (fileId: string, token: string): Promise<void> => {
+    if (!token) throw new Error("Missing Google OAuth Token");
+
+    const response = await fetch(`${DRIVE_FILES_URL}/${fileId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    if (!response.ok) {
+        await handleDriveError(response, 'Delete');
+    }
 };

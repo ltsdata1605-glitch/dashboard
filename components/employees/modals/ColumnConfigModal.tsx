@@ -1,8 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ModalWrapper from '../../modals/ModalWrapper';
 import { Icon } from '../../common/Icon';
-import MultiSelectDropdown from '../../common/MultiSelectDropdown';
 import type { ColumnConfig } from '../../../types';
+import { DataColumnForm } from './column-config/DataColumnForm';
+import { CalculatedColumnForm } from './column-config/CalculatedColumnForm';
+import { TargetColumnForm } from './column-config/TargetColumnForm';
+import { FormattingRulesForm } from './column-config/FormattingRulesForm';
 
 interface ColumnModalProps {
     isOpen: boolean;
@@ -196,7 +199,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
         if (columnType === 'data') {
             newColumn = {
                 id: editingColumn?.id || `col-${Date.now()}`,
-                mainHeader: mainHeader.trim().toUpperCase(),
+                mainHeader: mainHeader.trim(),
                 columnName: columnName.trim().toUpperCase(),
                 headerColor: finalHeaderColor || undefined,
                 type: 'data',
@@ -221,7 +224,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             }
             newColumn = {
                 id: editingColumn?.id || `col-${Date.now()}`,
-                mainHeader: mainHeader.trim().toUpperCase(),
+                mainHeader: mainHeader.trim(),
                 columnName: columnName.trim().toUpperCase(),
                 headerColor: finalHeaderColor || undefined,
                 type: 'target',
@@ -236,7 +239,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             }
             newColumn = {
                 id: editingColumn?.id || `col-${Date.now()}`,
-                mainHeader: mainHeader.trim().toUpperCase(),
+                mainHeader: mainHeader.trim(),
                 columnName: columnName.trim().toUpperCase(),
                 headerColor: finalHeaderColor || undefined,
                 type: 'calculated',
@@ -299,7 +302,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                         id="mainHeader" 
                                         type="text" 
                                         value={mainHeader} 
-                                        onChange={e => { setMainHeader(e.target.value.toUpperCase()); setShowHeadersList(true); }}
+                                        onChange={e => { setMainHeader(e.target.value); setShowHeadersList(true); }}
                                         onFocus={() => setShowHeadersList(true)}
                                         placeholder="Tạo nhóm mới hoặc chọn..." 
                                         className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-10 pr-10 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm dark:focus:ring-indigo-400" 
@@ -393,244 +396,44 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     {/* SECTION 2: Cấu trúc chi tiết */}
                     <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         {columnType === 'data' && (
-                            <>
-                            <div className="bg-indigo-50/50 dark:bg-indigo-900/20 px-5 py-3 border-b border-slate-200 dark:border-slate-700">
-                                <h4 className="flex items-center gap-2 font-bold text-indigo-700 dark:text-indigo-300">
-                                    <Icon name="filter" size={4} /> Chỉ định nguồn dữ liệu
-                                </h4>
-                            </div>
-                            <div className="p-5 space-y-5">
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Đơn vị đo lường</label>
-                                    <div className="inline-flex rounded-lg p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
-                                        <button type="button" onClick={() => setMetricType('quantity')} className={`flex-1 sm:flex-none py-1.5 px-6 text-sm font-bold rounded-md transition-all ${metricType === 'quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Số lượng</button>
-                                        <button type="button" onClick={() => setMetricType('revenue')} className={`flex-1 sm:flex-none py-1.5 px-6 text-sm font-bold rounded-md transition-all ${metricType === 'revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Doanh thu</button>
-                                        <button type="button" onClick={() => setMetricType('revenueQD')} className={`flex-1 sm:flex-none py-1.5 px-6 text-sm font-bold rounded-md transition-all ${metricType === 'revenueQD' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Doanh thu QĐ</button>
-                                    </div>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                     <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ngành hàng</label>
-                                        <MultiSelectDropdown options={allIndustries} selected={selectedIndustries} onChange={setSelectedIndustries} label="Ngành hàng" variant="compact"/>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nhóm hàng</label>
-                                        <MultiSelectDropdown options={allSubgroups} selected={selectedSubgroups} onChange={setSelectedSubgroups} label="Nhóm hàng" variant="compact"/>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Thương hiệu</label>
-                                        <MultiSelectDropdown options={allManufacturers} selected={selectedManufacturers} onChange={setSelectedManufacturers} label="Thương hiệu" variant="compact" />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label htmlFor="productCodes" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 text-slate-500">Hoặc truy vấn nhanh mã SP (Mỗi mã cách nhau dấu phẩy)</label>
-                                    <textarea id="productCodes" value={productCodes} onChange={(e) => setProductCodes(e.target.value)} rows={2} placeholder="Ví dụ: 2515024, 050012..." className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none font-mono"></textarea>
-                                </div>
-                                 <div className="border-t border-slate-100 dark:border-slate-700 pt-4 mt-2">
-                                    <h5 className="font-semibold text-sm text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-1.5">
-                                        <Icon name="tag" size={3.5} /> Lọc theo cấu hình giá trị bán
-                                    </h5>
-                                    <div className="flex flex-wrap items-center gap-3">
-                                        <div className="w-full sm:w-[160px]">
-                                            <select value={priceType} onChange={e => setPriceType(e.target.value as any)} className="w-full h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-medium text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                                <option value="discounted">Giá bán (Khuyến mãi)</option>
-                                                <option value="original">Giá niêm yết (Gốc)</option>
-                                            </select>
-                                        </div>
-                                        <div className="w-full sm:w-[130px]">
-                                            <select value={priceCondition} onChange={e => setPriceCondition(e.target.value as any)} className="w-full h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-medium text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                                                <option value="none" className="text-slate-500">Bỏ qua giá</option>
-                                                <option value="greater">Lớn hơn - &gt;</option>
-                                                <option value="less">Nhỏ hơn - &lt;</option>
-                                                <option value="equal">Bằng đúng - =</option>
-                                                <option value="between">Trong khoảng</option>
-                                            </select>
-                                        </div>
-                                        {priceCondition !== 'none' && (
-                                            <div className="flex-grow flex items-center gap-2">
-                                                <div className="relative flex-grow">
-                                                    <input type="number" value={priceValue1} onChange={e => setPriceValue1(e.target.value)} placeholder="0 đ" className="w-full h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-3 pr-3 text-sm focus:ring-2 focus:ring-indigo-500" />
-                                                </div>
-                                                {priceCondition === 'between' && (
-                                                    <div className="flex items-center gap-2 flex-grow">
-                                                        <span className="text-slate-400 text-sm font-medium">~</span>
-                                                        <input type="number" value={priceValue2} onChange={e => setPriceValue2(e.target.value)} placeholder="0 đ" className="w-full h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-3 pr-3 text-sm focus:ring-2 focus:ring-indigo-500" />
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                            </>
+                            <DataColumnForm 
+                                metricType={metricType} setMetricType={setMetricType}
+                                allIndustries={allIndustries} selectedIndustries={selectedIndustries} setSelectedIndustries={setSelectedIndustries}
+                                allSubgroups={allSubgroups} selectedSubgroups={selectedSubgroups} setSelectedSubgroups={setSelectedSubgroups}
+                                allManufacturers={allManufacturers} selectedManufacturers={selectedManufacturers} setSelectedManufacturers={setSelectedManufacturers}
+                                productCodes={productCodes} setProductCodes={setProductCodes}
+                                priceType={priceType} setPriceType={setPriceType}
+                                priceCondition={priceCondition} setPriceCondition={setPriceCondition}
+                                priceValue1={priceValue1} setPriceValue1={setPriceValue1}
+                                priceValue2={priceValue2} setPriceValue2={setPriceValue2}
+                            />
                         )}
                         
                         {columnType === 'target' && (
-                            <>
-                            <div className="bg-teal-50/80 dark:bg-teal-900/20 px-5 py-3 border-b border-teal-100 dark:border-teal-900">
-                                <h4 className="flex items-center gap-2 font-bold text-teal-700 dark:text-teal-300">
-                                    <Icon name="target" size={4} /> Chỉ tiêu kho (Target)
-                                </h4>
-                            </div>
-                            <div className="p-5 space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Đinh dạng chỉ tiêu</label>
-                                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
-                                            <button type="button" onClick={() => setMetricType('revenue')} className={`flex-1 py-2 px-4 text-sm font-bold rounded-md transition-all ${metricType === 'revenue' ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Tiền Tệ ($)</button>
-                                            <button type="button" onClick={() => setMetricType('quantity')} className={`flex-1 py-2 px-4 text-sm font-bold rounded-md transition-all ${metricType === 'quantity' ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Số Lượng (#)</button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Tổng Mục Tiêu *</label>
-                                        <div className="relative">
-                                            <input 
-                                                type="text" 
-                                                value={targetValue} 
-                                                onChange={(e) => {
-                                                    const raw = e.target.value.replace(/[^\d]/g, '');
-                                                    setTargetValue(raw ? Number(raw).toLocaleString('en-US') : '');
-                                                }}
-                                                placeholder="VD: 1,500,000,000" 
-                                                className="w-full bg-white dark:bg-slate-900 border-2 border-teal-200 dark:border-teal-800 rounded-lg p-3 pl-10 text-base font-black text-teal-700 dark:text-teal-300 focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition outline-none"
-                                            />
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-500">
-                                                <Icon name={metricType === 'revenue' ? "dollar-sign" : "hash"} size={5} />
-                                            </div>
-                                        </div>
-                                        <p className="mt-2.5 text-xs text-slate-500 dark:text-slate-400 flex items-start gap-1.5 font-medium">
-                                            <Icon name="info" size={3.5} className="mt-0.5 text-teal-500" />
-                                            <span>Hệ thống phân bổ tổng điểm này theo nguyên tắc trung bình công cho số lượng nhân viên thực tế làm việc.</span>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                            </>
+                            <TargetColumnForm 
+                                metricType={metricType} setMetricType={setMetricType}
+                                targetValue={targetValue} setTargetValue={setTargetValue}
+                            />
                         )}
 
                         {columnType === 'calculated' && (
-                            <>
-                            <div className="bg-amber-50/50 dark:bg-amber-900/20 px-5 py-3 border-b border-amber-100 dark:border-amber-900">
-                                <h4 className="flex items-center gap-2 font-bold text-amber-700 dark:text-amber-300">
-                                    <Icon name="sigma" size={4} /> Thuật toán ghép cột
-                                </h4>
-                            </div>
-                            <div className="p-5">
-                                <div className="flex flex-col md:flex-row items-center gap-3 w-full">
-                                    <div className="flex-1 w-full relative">
-                                        <label className="block text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-1.5">Nguồn dữ liệu 1</label>
-                                        <select value={operand1} onChange={e => setOperand1(e.target.value)} className="w-full h-12 block rounded-xl border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm pl-4 truncate pr-8 cursor-pointer">
-                                            <option value="">-- Chọn Cột --</option>
-                                            {availableOperands.map(c => <option key={c.id} value={c.id}>{c.mainHeader ? `[${c.mainHeader}] ${c.columnName}` : c.columnName}</option>)}
-                                        </select>
-                                    </div>
-                                    <div className="flex-shrink-0 relative w-16 h-12 mt-5 hidden md:flex items-center justify-center">
-                                        <select value={operation} onChange={e => setOperation(e.target.value as any)} className="absolute inset-0 z-10 opacity-0 cursor-pointer w-full h-full">
-                                            <option value="+">+</option>
-                                            <option value="-">-</option>
-                                            <option value="*">*</option>
-                                            <option value="/">/</option>
-                                        </select>
-                                        <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-lg pointer-events-none group hover:bg-indigo-200 transition-colors">
-                                            {operation === '*' ? '×' : operation === '/' ? '÷' : operation}
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 w-full relative">
-                                        <label className="block text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-1.5 md:opacity-0 hidden md:block">Nguồn dữ liệu 2</label>
-                                        <select value={operand2} onChange={e => setOperand2(e.target.value)} className="w-full h-12 block rounded-xl border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm pl-4 truncate pr-8 cursor-pointer">
-                                            <option value="">-- Chọn Cột --</option>
-                                             {availableOperands.map(c => <option key={c.id} value={c.id}>{c.mainHeader ? `[${c.mainHeader}] ${c.columnName}` : c.columnName}</option>)}
-                                        </select>
-                                    </div>
-                                </div>
-                                {operation === '/' && (
-                                     <div className="mt-5 max-w-[200px] ml-auto">
-                                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Kết quả hiển thị dưới dạng</label>
-                                        <div className="inline-flex rounded-lg p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
-                                            <button type="button" onClick={() => setDisplayAs('number')} className={`flex-1 py-1 px-3 text-sm font-semibold rounded-md transition-all ${displayAs === 'number' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Tỉ lệ</button>
-                                            <button type="button" onClick={() => setDisplayAs('percentage')} className={`flex-1 py-1 px-3 text-sm font-semibold rounded-md transition-all ${displayAs === 'percentage' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>% Phần trăm</button>
-                                        </div>
-                                    </div>
-                                )}
-                            </div>
-                            </>
+                            <CalculatedColumnForm 
+                                operation={operation} setOperation={setOperation}
+                                operand1={operand1} setOperand1={setOperand1}
+                                operand2={operand2} setOperand2={setOperand2}
+                                displayAs={displayAs} setDisplayAs={setDisplayAs}
+                                availableOperands={availableOperands}
+                            />
                         )}
                     </div>
                     
                     {/* SECTION 3: Formatting Rules */}
-                    <div>
-                        <div className="flex justify-between items-center mb-3">
-                             <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                                <Icon name="paintbrush" size={4} className="text-pink-500 dark:text-pink-400" />
-                                Định dạng hiển thị cảnh báo
-                            </h4>
-                             <button type="button" onClick={addFormattingRule} className="px-3 py-1.5 rounded-lg text-sm font-bold bg-slate-200/50 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors flex items-center gap-1">
-                                <Icon name="plus" size={4}/>Thêm luật
-                            </button>
-                        </div>
-                        {formattingRules.length === 0 ? (
-                            <div className="border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 text-center">
-                                <span className="text-slate-400 dark:text-slate-500 text-sm font-medium">Bạn có thể tạo luật đổ màu ô tự động dựa trên số liệu thực tế</span>
-                            </div>
-                        ) : (
-                            <div className="space-y-2.5">
-                                {formattingRules.map((rule) => {
-                                    const valueInputsNeeded = !['>avg', '<avg'].includes(rule.condition);
-                                    return (
-                                    <div key={rule.id} className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-end p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
-                                        <div className="sm:col-span-3">
-                                            <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">Luật kiểm tra</label>
-                                            <select value={rule.condition} onChange={e => updateFormattingRule(rule.id, 'condition', e.target.value)} className="w-full h-10 mt-1 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 text-sm">
-                                                <option value=">">&gt; Lớn hơn</option>
-                                                <option value="<">&lt; Nhỏ hơn</option>
-                                                <option value="=">= Bằng</option>
-                                                <option value="between">Trong khoảng</option>
-                                                <option value=">avg">Cao hơn T.Bình</option>
-                                                <option value="<avg">Thấp hơn T.Bình</option>
-                                            </select>
-                                        </div>
-                                        {valueInputsNeeded ? (
-                                            <>
-                                                <div className={`sm:col-span-3 ${rule.condition === 'between' ? '' : 'sm:col-span-5'}`}>
-                                                    <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase text-transparent select-none">-</label>
-                                                    <input type="number" value={rule.value1} onChange={e => updateFormattingRule(rule.id, 'value1', e.target.value)} placeholder="Nhập số" className="w-full h-10 mt-1 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 text-sm"/>
-                                                </div>
-                                                {rule.condition === 'between' && (
-                                                     <div className="sm:col-span-3">
-                                                        <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase">&amp; dưới</label>
-                                                        <input type="number" value={rule.value2} onChange={e => updateFormattingRule(rule.id, 'value2', e.target.value)} placeholder="Nhập số..." className="w-full h-10 mt-1 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-bold focus:ring-2 focus:ring-indigo-500 text-sm"/>
-                                                    </div>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <div className="sm:col-span-5 flex items-center h-10">
-                                                <div className="text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-slate-900/50 px-3 py-1.5 rounded w-full text-center border-dashed border-slate-200 border">Tự động so sánh với trung bình cột</div>
-                                            </div>
-                                        )}
-                                        <div className="sm:col-span-4 flex items-end gap-2">
-                                            <div className="flex-grow">
-                                                <label className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase text-right block w-full">Thì đổi màu</label>
-                                                <div className="flex items-center gap-1.5 mt-1 bg-slate-50 dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm h-10 overflow-hidden px-2 justify-end w-full">
-                                                    {ALERT_COLORS.map(c => (
-                                                        <button
-                                                            key={c}
-                                                            type="button"
-                                                            onClick={() => updateFormattingRule(rule.id, 'color', c)}
-                                                            className={`w-4 h-4 rounded-full transition-all flex-shrink-0 ${rule.color === c ? 'ring-2 ring-offset-2 ring-indigo-500 scale-125' : 'hover:scale-110 opacity-70 hover:opacity-100'}`}
-                                                            style={{ backgroundColor: c }}
-                                                        />
-                                                    ))}
-                                                    <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
-                                                    <input type="color" value={rule.color} onChange={e => updateFormattingRule(rule.id, 'color', e.target.value)} className="w-5 h-5 p-0 border-0 rounded cursor-pointer shrink-0 appearance-none bg-transparent"/>
-                                                </div>
-                                            </div>
-                                            <button type="button" onClick={() => removeFormattingRule(rule.id)} className="w-10 h-10 flex items-center justify-center text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors border border-transparent hover:border-red-200 dark:hover:border-red-900/50 flex-shrink-0"><Icon name="trash-2" size={4}/></button>
-                                        </div>
-                                    </div>
-                                )})}
-                            </div>
-                        )}
-                    </div>
+                    <FormattingRulesForm 
+                        formattingRules={formattingRules}
+                        addFormattingRule={addFormattingRule}
+                        updateFormattingRule={updateFormattingRule}
+                        removeFormattingRule={removeFormattingRule}
+                    />
 
                 </div>
                 

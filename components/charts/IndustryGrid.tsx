@@ -1,7 +1,7 @@
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip as RechartsTooltip } from 'recharts';
-import { formatCurrency, formatQuantity } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { exportElementAsImage } from '../../services/uiService';
@@ -146,21 +146,24 @@ const IndustryGrid: React.FC = React.memo(() => {
     const handleExportGrid = async () => {
         if (!gridRef.current) return;
         setIsExporting(true);
-        await exportElementAsImage(gridRef.current, 'the-nganh-hang.png', { elementsToHide: ['.hide-on-export'] });
+        const prefix = getExportFilenamePrefix(filters.kho);
+        await exportElementAsImage(gridRef.current, `${prefix}-The-nganh-hang.png`, { elementsToHide: ['.hide-on-export'] });
         setIsExporting(false);
     };
 
     const handleExportPie = async () => {
         if (!pieRef.current) return;
         setIsExporting(true);
-        await exportElementAsImage(pieRef.current, 'bieu-do-ty-trong.png', { elementsToHide: ['.hide-on-export'] });
+        const prefix = getExportFilenamePrefix(filters.kho);
+        await exportElementAsImage(pieRef.current, `${prefix}-Bieu-do-ty-trong.png`, { elementsToHide: ['.hide-on-export'] });
         setIsExporting(false);
     };
 
     const handleExport = async () => {
         if (!cardRef.current) return;
         setIsExporting(true);
-        await exportElementAsImage(cardRef.current, 'ty-trong-nganh-hang.png', { elementsToHide: ['.hide-on-export'] });
+        const prefix = getExportFilenamePrefix(filters.kho);
+        await exportElementAsImage(cardRef.current, `${prefix}-Ty-trong-nganh-hang.png`, { elementsToHide: ['.hide-on-export'] });
         setIsExporting(false);
     };
 

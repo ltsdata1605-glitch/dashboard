@@ -17,6 +17,8 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
     const [editingId, setEditingId] = useState<string | null>(null);
     const [editDept, setEditDept] = useState('');
     const [editName, setEditName] = useState('');
+    const [sortConfig, setSortConfig] = useState<{ key: 'id' | 'name' | 'dept', direction: 'asc' | 'desc' } | null>(null);
+    const [filterDept, setFilterDept] = useState<string>('');
 
     // Cờ báo hiệu có thay đổi để cập nhật lúc đóng
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -51,11 +53,17 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
             const [dept, name] = val.split(';;');
             return { id, dept: dept || '', name: name || '' };
         }).filter(emp => 
-            emp.id.toLowerCase().includes(deferredSearchTerm.toLowerCase()) || 
+            (!filterDept || emp.dept === filterDept) &&
+            (emp.id.toLowerCase().includes(deferredSearchTerm.toLowerCase()) || 
             emp.name.toLowerCase().includes(deferredSearchTerm.toLowerCase()) ||
-            emp.dept.toLowerCase().includes(deferredSearchTerm.toLowerCase())
-        ).sort((a, b) => a.dept.localeCompare(b.dept));
-    }, [localMap, deferredSearchTerm]);
+            emp.dept.toLowerCase().includes(deferredSearchTerm.toLowerCase()))
+        ).sort((a, b) => {
+            if (!sortConfig) return a.dept.localeCompare(b.dept);
+            const { key, direction } = sortConfig;
+            const diff = a[key].localeCompare(b[key], undefined, { numeric: true });
+            return direction === 'asc' ? diff : -diff;
+        });
+    }, [localMap, deferredSearchTerm, sortConfig, filterDept]);
 
     const departments = useMemo(() => {
         return Array.from(new Set(Object.values(localMap).map(v => {
@@ -63,6 +71,20 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
             return v.split(';;')[0];
         }).filter(Boolean))).sort();
     }, [localMap]);
+
+    const handleSort = (key: 'id' | 'name' | 'dept') => {
+        setSortConfig(prev => {
+            if (prev?.key === key) {
+                return prev.direction === 'asc' ? { key, direction: 'desc' } : null;
+            }
+            return { key, direction: 'asc' };
+        });
+    };
+
+    const renderSortIcon = (key: 'id' | 'name' | 'dept') => {
+        if (sortConfig?.key !== key) return <Icon name="chevrons-up-down" size={3.5} className="opacity-30" />;
+        return <Icon name={sortConfig.direction === 'asc' ? 'chevron-up' : 'chevron-down'} size={3.5} className="text-indigo-600" />;
+    };
 
     const handleEdit = (emp: { id: string, dept: string, name: string }) => {
         setEditingId(emp.id);
@@ -140,9 +162,31 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                     <table className="min-w-full text-sm text-left border-collapse border border-slate-200 dark:border-slate-700">
                         <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-32">Mã NV</th>
-                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700">Họ và Tên</th>
-                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-64">Bộ phận</th>
+                                <th onClick={() => handleSort('id')} className="cursor-pointer px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-32 hover:bg-slate-100 transition-colors">
+                                    <div className="flex items-center justify-between">Mã NV {renderSortIcon('id')}</div>
+                                </th>
+                                <th onClick={() => handleSort('name')} className="cursor-pointer px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors">
+                                    <div className="flex items-center justify-between">Họ và Tên {renderSortIcon('name')}</div>
+                                </th>
+                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-64 hover:bg-slate-100 transition-colors">
+                                    <div className="flex items-center justify-between cursor-pointer" onClick={() => handleSort('dept')}>
+                                        <div className="flex items-center gap-1">Bộ phận {renderSortIcon('dept')}</div>
+                                        <div className="relative" onClick={e => e.stopPropagation()}>
+                                            <select 
+                                                value={filterDept} 
+                                                onChange={e => setFilterDept(e.target.value)}
+                                                className="absolute inset-0 opacity-0 cursor-pointer w-full"
+                                                title="Lọc Bộ phận"
+                                            >
+                                                <option value="">Tất cả</option>
+                                                {departments.map(d => <option key={d} value={d}>{d}</option>)}
+                                            </select>
+                                            <button className={`p-1 rounded transition-colors ${filterDept ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:bg-slate-200'}`}>
+                                                <Icon name="filter" size={3.5} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </th>
                                 <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-24 text-center">Thao tác</th>
                             </tr>
                         </thead>
@@ -158,6 +202,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                     type="text" 
                                                     value={editName} 
                                                     onChange={e => setEditName(e.target.value)} 
+                                                    onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
                                                     className="w-full px-2 py-1 text-sm border border-indigo-300 rounded focus:ring-indigo-500 dark:bg-slate-700 dark:border-indigo-500 dark:text-white"
                                                     autoFocus
                                                 />
@@ -168,6 +213,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                     type="text" 
                                                     value={editDept} 
                                                     onChange={e => setEditDept(e.target.value)} 
+                                                    onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
                                                     className="w-full px-2 py-1 text-sm border border-indigo-300 rounded focus:ring-indigo-500 dark:bg-slate-700 dark:border-indigo-500 dark:text-white"
                                                     placeholder="Chọn hoặc nhập phòng ban..."
                                                 />

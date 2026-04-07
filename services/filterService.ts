@@ -15,9 +15,10 @@ import { processIndustryData } from './industryService';
 
 export const isXuatMatch = (row: DataRow, xuatFilter: string) => {
     if (xuatFilter === 'all') return true;
-    const xuatValue = getRowValue(row, COL.XUAT) || '';
-    const xuatStatus = xuatValue.toLowerCase().includes('đã') ? 'Đã' : 'Chưa';
-    return xuatStatus === xuatFilter;
+    const xuatValue = getRowValue(row, COL.XUAT);
+    if (!xuatValue) return xuatFilter === 'Chưa';
+    const isDa = xuatValue.indexOf('Đã') !== -1 || xuatValue.indexOf('đã') !== -1 || xuatValue.indexOf('ĐÃ') !== -1;
+    return (isDa ? 'Đã' : 'Chưa') === xuatFilter;
 };
 
 export const isTrangThaiMatch = (row: DataRow, trangThaiFilter: string[]) => {
@@ -41,11 +42,17 @@ export const isDepartmentMatch = (row: DataRow, departmentFilter: string[], depa
     const creator = getRowValue(row, COL.NGUOI_TAO);
     if (!creator) return false;
     
-    const creatorId = creator.split(' - ')[0].trim();
-    const rawDept = departmentMap[creatorId];
-    const department = rawDept ? rawDept.split(';;')[0] : "Chưa xác định";
+    const dashIdx = creator.indexOf(' - ');
+    const creatorId = dashIdx !== -1 ? creator.substring(0, dashIdx).trim() : creator.trim();
     
-    return !!department && departmentFilter.includes(department);
+    const rawDept = departmentMap[creatorId];
+    let department = "Chưa xác định";
+    if (rawDept) {
+        const sepIdx = rawDept.indexOf(';;');
+        department = sepIdx !== -1 ? rawDept.substring(0, sepIdx) : rawDept;
+    }
+    
+    return departmentFilter.includes(department);
 };
 
 export const isDateMatch = (row: DataRow, startDate: Date | null, endDate: Date | null, selectedMonths?: string[]) => {
@@ -86,7 +93,7 @@ function processDataForPeriod(
         return getRowValue(row, COL.XUAT) === 'Chưa xuất' && isRevenueEligible(row);
     });
 
-    const kpis = processKpis(filteredValidSalesData, unshippedOrders, periodData, productConfig);
+    const kpis = processKpis(filteredValidSalesData, unshippedOrders, periodData, productConfig, filters);
     const trendData = processTrendData(filteredValidSalesData, productConfig);
     const employeeData = processEmployeeData(filteredValidSalesData, periodData, productConfig, departmentMap, filters);
     const industryData = processIndustryData(filteredValidSalesData, productConfig, filters);

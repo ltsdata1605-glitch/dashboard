@@ -5,6 +5,7 @@ import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
 import { applyFiltersAndProcess } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
+import { DEFAULT_KPI_CARDS } from '../constants';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -26,10 +27,12 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [warehouseTargets, setWarehouseTargets] = useState<Record<string, number>>({});
     const [gtdhTargets, setGtdhTargets] = useState<Record<string, number>>({});
     const [kpiTargets, setKpiTargets] = useState<{ hieuQua: number, traGop: number, gtdh?: number }>({ hieuQua: 40, traGop: 45, gtdh: 1 });
+    const [kpiCardsConfig, setKpiCardsConfig] = useState<import('../types').KpiCardConfig[]>([]);
     const [crossSellingConfig, setCrossSellingConfig] = useState<any>(null);
     const [isHardProcessing, setIsHardProcessing] = useState(false);    // initial load / file upload
     const [isFilterProcessing, setIsFilterProcessing] = useState(false); // filter-only fast re-calc
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
+    const [pendingCloudSync, setPendingCloudSync] = useState<{ fileId: string; name: string; timestamp: number } | null>(null);
 
     // Initial data loading
     useEffect(() => {
@@ -110,8 +113,39 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     const savedCrossSelling = await dbService.getCrossSellingConfig();
                     if (savedCrossSelling) setCrossSellingConfig(savedCrossSelling);
                 }
+                
+                if (cloudData && cloudData.kpiCardConfig) {
+                    setKpiCardsConfig(cloudData.kpiCardConfig);
+                    await dbService.saveKpiCardConfig(cloudData.kpiCardConfig);
+                } else {
+                    const savedKpiCardConfig = await dbService.getKpiCardConfig();
+                    if (savedKpiCardConfig && savedKpiCardConfig.length > 0) {
+                        setKpiCardsConfig(savedKpiCardConfig);
+                    } else {
+                        setKpiCardsConfig(DEFAULT_KPI_CARDS);
+                        await dbService.saveKpiCardConfig(DEFAULT_KPI_CARDS);
+                    }
+                }
+                
+                if (cloudData && cloudData.settingsStoreBackup) {
+                    setStatus({ message: 'Đang nạp cấu hình Đám Mây vào máy...', type: 'info', progress: 15 });
+                    // Lưu ý: Không nạp lại những gì mình đã tự parse ở trên để tránh vòng lặp State,
+                    // Hàm saveSetting có gọi ycx-setting-changed nhưng ta đang ở initialMount (bị block bởi flag)
+                    for (const [k, v] of Object.entries(cloudData.settingsStoreBackup)) {
+                        await dbService.saveSetting(k, v);
+                    }
+                }
 
                 const savedSales = await dbService.getSalesData();
+                
+                if (cloudData && cloudData.latestDriveUpload) {
+                    const localSavedAt = savedSales ? savedSales.savedAt.getTime() : 0;
+                    // Chênh lệch > 15s để tránh vòng lặp
+                    if (cloudData.latestDriveUpload.timestamp > localSavedAt + 15000) {
+                        setPendingCloudSync(cloudData.latestDriveUpload);
+                    }
+                }
+                
                 if (savedSales && savedSales.data.length > 0) {
                     setStatus({ message: 'Đang tải dữ liệu đã lưu...', type: 'info', progress: 25 });
                     setFileInfo({ filename: savedSales.filename, savedAt: savedSales.savedAt.toLocaleString('vi-VN') });
@@ -270,6 +304,39 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         return { kho: khoOptions, trangThai: trangThaiOptions, nguoiTao: nguoiTaoOptions, department: deptOptions, hangSX: hangSXOptions };
     }, [originalData, departmentMap]);
 
+    const handleAcceptCloudSync = async (handleFileProcessing: (files: File[]) => Promise<void>) => {
+        if (!pendingCloudSync) return;
+        try {
+            setStatus({ message: `Đang kết nối Google Drive để tải ${pendingCloudSync.name}...`, type: 'info', progress: 10 });
+            setAppState('loading');
+            
+            const token = sessionStorage.getItem('googleOAuthToken');
+            if (!token) {
+                setStatus({ message: `Bắt đầu yêu cầu kết nối Google...`, type: 'info', progress: 20 });
+                const { loginWithGoogle } = await import('../services/firebase');
+                const user = await loginWithGoogle(); // Requires explicit popup action, probably should wrap in user interaction before calling this handleAcceptCloudSync
+            }
+            
+            const activeToken = sessionStorage.getItem('googleOAuthToken');
+            if (!activeToken) throw new Error('Không thể lấy phiên làm việc Google');
+
+            const { downloadFileFromDrive } = await import('../services/googleDriveService');
+            setStatus({ message: `Đang tải file ${pendingCloudSync.name}...`, type: 'info', progress: 30 });
+            const blob = await downloadFileFromDrive(pendingCloudSync.fileId, activeToken);
+            
+            const newFile = new File([blob], pendingCloudSync.name, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            // Cập nhật timestamp cho file này để trùng với timestamp trên mây (tránh bị đề nghị tải lần nữa)
+            Object.defineProperty(newFile, 'lastModified', { value: pendingCloudSync.timestamp });
+            
+            setPendingCloudSync(null); // Clear pending state
+            await handleFileProcessing([newFile]);
+        } catch (e: any) {
+            console.error("Lỗi khi tải đồng bộ:", e);
+            setStatus({ message: "Lỗi đồng bộ: " + e.message, type: 'error', progress: 0 });
+            setAppState('dashboard');
+        }
+    };
+
     return {
         originalData, setOriginalData,
         baseFilteredData,
@@ -283,9 +350,13 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         gtdhTargets, setGtdhTargets,
         kpiTargets,
         updateKpiTargets: setKpiTargets,
+        kpiCardsConfig, 
+        setKpiCardsConfig,
         crossSellingConfig, setCrossSellingConfig,
         uniqueFilterOptions,
         isInternalProcessing: isHardProcessing, // only true during file upload / initial load
-        fileInfo, setFileInfo
+        fileInfo, setFileInfo,
+        pendingCloudSync, setPendingCloudSync,
+        handleAcceptCloudSync
     };
 };

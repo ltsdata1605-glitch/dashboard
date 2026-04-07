@@ -1,69 +1,73 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { syncToCloud } from '../services/firestoreService';
+import { getAllSettings } from '../services/dbService';
 
 type SyncState = 'idle' | 'syncing' | 'synced' | 'error';
 
-export const useCloudSync = (
-    productConfig: any,
-    departmentMap: any,
-    warehouseTargets: any,
-    gtdhTargets: any,
-    crossSellingConfig: any
-) => {
+export const useCloudSync = () => {
     const { user, isDemoMode } = useAuth();
     const [syncState, setSyncState] = useState<SyncState>('idle');
     const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
-    const timeoutRef = useRef<number | null>(null);
-    const initialMount = useRef<boolean>(true);
+    const hasUnsavedChanges = useRef(false);
+
+    const forceSync = useCallback(async () => {
+        if (!user || isDemoMode) return;
+        setSyncState('syncing');
+        try {
+            const allSettings = await getAllSettings();
+            await syncToCloud(user, {
+                settingsStoreBackup: allSettings
+            });
+            hasUnsavedChanges.current = false;
+            setSyncState('synced');
+            setLastSyncTime(new Date());
+
+            setTimeout(() => setSyncState('idle'), 5000);
+        } catch (err) {
+            console.error("Lỗi Auto-Sync full state:", err);
+            setSyncState('error');
+        }
+    }, [user, isDemoMode]);
 
     useEffect(() => {
-        // Mới tải trang (Auto-Pull từ useDataManagement) đã nạp dữ liệu vào context rồi, nên không Push ngược lên mây ngay lúc đó
-        if (initialMount.current) {
-            initialMount.current = false;
-            return;
-        }
+        if (!user || isDemoMode) return;
 
-        if (!user || isDemoMode) {
-            setSyncState('idle');
-            return;
-        }
+        const handleSettingChanged = () => {
+            hasUnsavedChanges.current = true;
+        };
 
-        // Đánh dấu trạng thái đợi lưu
-        setSyncState('syncing');
-
-        // Xoá timeout cũ nếu người dùng gõ liên tục
-        if (timeoutRef.current) {
-            window.clearTimeout(timeoutRef.current);
-        }
-
-        // Tạo timeout 3 giây trước khi thực sự lưu
-        timeoutRef.current = window.setTimeout(async () => {
-            try {
-                await syncToCloud(user, {
-                    productConfig: productConfig || undefined,
-                    departmentMap: departmentMap || undefined,
-                    warehouseTargets: Object.keys(warehouseTargets || {}).length ? Object.entries(warehouseTargets).map(([kho, target]) => ({ kho, dsMucTieu: target })) as any : undefined,
-                    gtdhTargets: Object.keys(gtdhTargets || {}).length ? Object.entries(gtdhTargets).map(([nhomHang, target]) => ({ nhomHang, gtdh: target })) as any : undefined,
-                    crossSellingConfig: crossSellingConfig
-                });
-                setSyncState('synced');
-                setLastSyncTime(new Date());
-
-                // Trả về idle sau khi hiển thị báo thành công vài giây
-                setTimeout(() => setSyncState('idle'), 5000);
-            } catch (err) {
-                console.error("Lỗi Auto-Sync:", err);
-                setSyncState('error');
-            }
-        }, 3000); // 3 seconds debouncing
-
-        return () => {
-            if (timeoutRef.current) {
-                window.clearTimeout(timeoutRef.current);
+        const syncIfChanged = () => {
+            if (hasUnsavedChanges.current) {
+                forceSync();
             }
         };
-    }, [productConfig, departmentMap, warehouseTargets, gtdhTargets, crossSellingConfig, user, isDemoMode]);
 
-    return { syncState, lastSyncTime };
+        window.addEventListener('ycx-setting-changed', handleSettingChanged);
+        
+        // Auto-save when user leaves the page or hides the tab
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') {
+                syncIfChanged();
+            }
+        };
+        const handleBeforeUnload = () => {
+            syncIfChanged();
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        // Periodic check every 15 minutes to save if there are unsaved changes
+        const intervalId = window.setInterval(syncIfChanged, 15 * 60 * 1000);
+
+        return () => {
+            window.removeEventListener('ycx-setting-changed', handleSettingChanged);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.clearInterval(intervalId);
+        };
+    }, [user, isDemoMode, forceSync]);
+
+    return { syncState, lastSyncTime, forceSync };
 };

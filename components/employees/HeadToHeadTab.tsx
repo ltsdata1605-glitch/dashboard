@@ -4,6 +4,9 @@ import { Icon } from '../common/Icon';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../../types';
 import { exportElementAsImage } from '../../services/uiService';
 import { getHeadToHeadCustomTables, saveHeadToHeadCustomTables } from '../../services/dbService';
+import { useDashboardContext } from '../../contexts/DashboardContext';
+import { getExportFilenamePrefix, getRowValue } from '../../utils/dataUtils';
+import { COL } from '../../constants';
 import ModalWrapper from '../modals/ModalWrapper';
 
 // Import refactored components
@@ -27,6 +30,8 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
     const [isInitialLoad, setIsInitialLoad] = useState(true);
     const [modalState, setModalState] = useState<{ type: 'ADD' | 'EDIT' | 'DELETE' | null, data?: HeadToHeadTableConfig }>({ type: null });
     const [isBatchExporting, setIsBatchExporting] = useState(false);
+    const [activeTableId, setActiveTableId] = useState<string | null>(null);
+    const { filterState } = useDashboardContext();
     
     const tableRefs = React.useRef<(HTMLDivElement | null)[]>([]);
     
@@ -43,18 +48,28 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
         return Array.from(new Set(Object.values(productConfig.childToParentMap))).sort();
     }, [productConfig]);
 
+    const allManufacturers = useMemo(() => {
+        const m = new Set<string>();
+        props.baseFilteredData.forEach(row => {
+            const hang = getRowValue(row, COL.MANUFACTURER);
+            if (hang) m.add(hang);
+        });
+        return Array.from(m).sort();
+    }, [props.baseFilteredData]);
+
     useEffect(() => {
         const loadTables = async () => {
             let savedTables = await getHeadToHeadCustomTables();
             if (!savedTables || savedTables.length === 0) {
                 const now = Date.now();
                 savedTables = [
-                    { id: `h2h-default-${now}-1`, tableName: "7 NGÀY - DOANH THU", selectedSubgroups: [], metricType: 'revenue', totalCalculationMethod: 'sum', conditionalFormats: [] },
-                    { id: `h2h-default-${now}-2`, tableName: "7 NGÀY - DOANH THU QĐ", selectedSubgroups: [], metricType: 'revenueQD', totalCalculationMethod: 'sum', conditionalFormats: [] },
-                    { id: `h2h-default-${now}-3`, tableName: "7 NGÀY - HIỆU QUẢ QĐ", selectedSubgroups: [], metricType: 'hieuQuaQD', totalCalculationMethod: 'sum', conditionalFormats: [] }
+                    { id: `h2h-default-${now}-1`, tableName: "7 NGÀY - DOANH THU", type: 'data', metricType: 'revenue', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } },
+                    { id: `h2h-default-${now}-2`, tableName: "7 NGÀY - DOANH THU QĐ", type: 'data', metricType: 'revenueQD', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } },
+                    { id: `h2h-default-${now}-3`, tableName: "7 NGÀY - HIỆU QUẢ QĐ", type: 'data', metricType: 'hieuQuaQD', totalCalculationMethod: 'average', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } }
                 ];
             }
             setTables(savedTables);
+            if (savedTables.length > 0) setActiveTableId(savedTables[0].id);
             setIsInitialLoad(false);
         };
         loadTables();
@@ -74,17 +89,29 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                 id: `h2h-${Date.now()}`, ...config,
                 totalCalculationMethod: config.totalCalculationMethod || 'sum',
                 conditionalFormats: config.conditionalFormats || [],
-                selectedParentGroups: config.selectedParentGroups || [],
-                selectedSubgroups: config.selectedSubgroups || [],
+                type: config.type || 'data',
+                filters: config.filters,
+                targetValue: config.targetValue,
+                operation: config.operation,
+                operand1_tableId: config.operand1_tableId,
+                operand2_tableId: config.operand2_tableId,
+                displayAs: config.displayAs,
             };
             setTables(prev => [...prev, newTable]);
+            setActiveTableId(newTable.id);
         }
         setModalState({ type: null });
     };
 
     const handleDelete = () => {
         if (modalState.type === 'DELETE' && modalState.data) {
-            setTables(prev => prev.filter(t => t.id !== modalState.data!.id));
+            setTables(prev => {
+                const newTables = prev.filter(t => t.id !== modalState.data!.id);
+                if (activeTableId === modalState.data!.id) {
+                    setActiveTableId(newTables.length > 0 ? newTables[0].id : null);
+                }
+                return newTables;
+            });
         }
         setModalState({ type: null });
     };
@@ -100,7 +127,9 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             const tableElement = elements[i] as HTMLElement;
             const tableConfig = tables[i];
             if (tableElement && tableConfig) {
-                await exportElementAsImage(tableElement, `7-ngay-${tableConfig.tableName}.png`, {
+                const prefix = getExportFilenamePrefix(filterState.kho);
+                const safeTabName = tableConfig.tableName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+                await exportElementAsImage(tableElement, `${prefix}-7-ngay-${safeTabName}.png`, {
                     elementsToHide: ['.hide-on-export'],
                     isCompactTable: true
                 });
@@ -125,39 +154,59 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                         <p className="text-xs font-medium text-slate-400">Phân tích hiệu suất 7 ngày gần nhất</p>
                     </div>
                 </div>
-                <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-visible rounded-xl">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <button onClick={() => setModalState({ type: 'ADD' })} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="Tạo bảng 7 Ngày mới">
-                            <Icon name="plus" size={5} />
-                        </button>
-                        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
-                        <div className="flex items-center gap-1">
-                            {onExport && (
-                                <button onClick={onExport} disabled={isExporting} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all" title="Xuất ảnh toàn bộ tab 7 ngày">
-                                    {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
+                <div className="flex items-center gap-2 hide-on-export overflow-x-auto no-scrollbar py-1">
+                    {!isBatchExporting && tables.length > 0 && (
+                        <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                            {tables.map(t => (
+                                <button
+                                    key={`tab-${t.id}`}
+                                    onClick={() => setActiveTableId(t.id)}
+                                    className={`px-3.5 py-1.5 text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-lg transition-all ${
+                                        activeTableId === t.id
+                                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'
+                                    }`}
+                                    title={t.tableName}
+                                >
+                                    {t.tableName.replace(/7 NGÀY\s*-\s*/i, '')}
                                 </button>
-                            )}
-                            <button 
-                                onClick={handleBatchExport} 
-                                disabled={isBatchExporting || tables.length === 0}
-                                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
-                                title="Xuất hàng loạt ảnh cho từng bảng bên dưới"
-                            >
-                                {isBatchExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="images" size={5} />}
-                            </button>
+                            ))}
                         </div>
+                    )}
+                    
+                    <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-1.5 rounded-xl shrink-0 shadow-sm">
+                        <button onClick={() => setModalState({ type: 'ADD' })} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Tạo bảng 7 Ngày mới">
+                            <Icon name="plus" size={4.5} />
+                        </button>
+                        <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                        {onExport && (
+                            <button onClick={onExport} disabled={isExporting} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
+                                {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin" /> : <Icon name="camera" size={4.5} />}
+                            </button>
+                        )}
+                        <button 
+                            onClick={handleBatchExport} 
+                            disabled={isBatchExporting || tables.length === 0}
+                            className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all"
+                            title="Xuất hàng loạt ảnh toàn bộ bảng 7 ngày"
+                        >
+                            {isBatchExporting ? <Icon name="loader-2" size={4.5} className="animate-spin" /> : <Icon name="images" size={4.5} />}
+                        </button>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 gap-6">
+                
                 {tables.map((tableConfig, index) => {
+                    const isVisible = isBatchExporting || tableConfig.id === activeTableId;
                     const currentTheme = colorThemes[index % colorThemes.length];
                     return (
-                        <div key={tableConfig.id} className="h2h-table-container">
+                        <div key={tableConfig.id} className={`h2h-table-container ${!isVisible ? 'hidden' : 'block'}`}>
                             <div className="overflow-hidden">
                                 <HeadToHeadTable
                                     config={tableConfig}
+                                    allConfigs={tables}
                                     {...props}
                                     onAdd={() => setModalState({ type: 'ADD' })}
                                     onEdit={() => setModalState({ type: 'EDIT', data: tableConfig })}
@@ -175,8 +224,10 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     isOpen={true} 
                     onClose={() => setModalState({ type: null })}
                     onSave={handleSave}
+                    allIndustries={allParentGroups}
                     allSubgroups={allSubgroups}
-                    allParentGroups={allParentGroups}
+                    allManufacturers={allManufacturers}
+                    existingTables={tables}
                     editingConfig={modalState.type === 'EDIT' ? modalState.data : undefined}
                 />
             )}

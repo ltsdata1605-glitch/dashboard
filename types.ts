@@ -36,6 +36,8 @@ export interface KpiData {
     traGopCount: number;
     doanhThuThucChoXuat: number;
     doanhThuQDChoXuat: number;
+    runRateRevenue: number;
+    crossSellRate: number; // AOV/UPT: Phụ kiện / ICT
 }
 
 export interface TrendData {
@@ -339,6 +341,14 @@ export interface ColumnConfig {
     headerColor?: string;
 }
 
+export interface IndustryColumnConfig extends ColumnConfig {
+    order: number;
+    isVisible: boolean;
+    isCustom: boolean;
+    subHeader: string;
+}
+
+
 export interface ContestTableConfig {
     id: string;
     tableName: string;
@@ -364,10 +374,39 @@ export interface HeadToHeadConditionalFormatRule {
 
 export interface HeadToHeadTableConfig {
     id: string;
+    mainHeader?: string;
     tableName: string;
-    selectedSubgroups: string[];
+    headerColor?: string;
+    type?: 'data' | 'calculated' | 'target';
+    
+    // For 'data' type
+    metricType?: 'quantity' | 'revenue' | 'revenueQD' | 'hieuQuaQD';
+    
+    // Old format backward compatibility
+    selectedSubgroups?: string[];
     selectedParentGroups?: string[];
-    metricType: 'revenue' | 'quantity' | 'revenueQD' | 'hieuQuaQD';
+    
+    // New rich filters
+    filters?: {
+        selectedIndustries: string[];
+        selectedSubgroups: string[];
+        selectedManufacturers: string[];
+        productCodes: string[];
+        priceType?: 'original' | 'discounted';
+        priceCondition?: 'greater' | 'less' | 'equal' | 'between';
+        priceValue1?: number;
+        priceValue2?: number;
+    };
+    
+    // For 'calculated' type
+    operation?: '+' | '-' | '*' | '/';
+    operand1_tableId?: string;
+    operand2_tableId?: string;
+    displayAs?: 'number' | 'percentage';
+    
+    // For 'target' type
+    targetValue?: number;
+
     totalCalculationMethod?: 'sum' | 'average';
     conditionalFormats?: HeadToHeadConditionalFormatRule[];
 }
@@ -409,4 +448,51 @@ export interface CrossSellingDynamicSection {
 export interface CrossSellingConfig {
     columns: CrossSellingDynamicColumn[]; // Danh sách các Cột phân tích động
     sections: CrossSellingDynamicSection[]; // Cấu trúc Dòng nhóm theo Section
+}
+
+export type KpiMetricSource = 
+  | 'doanhThuQD' 
+  | 'totalRevenue' 
+  | 'traGopPercent' 
+  | 'runRateRevenue' 
+  | 'crossSellRate' 
+  | 'hieuQuaQD' 
+  | 'doanhThuThucChoXuat';
+
+export interface KpiCardConfig {
+  id: string;
+  order: number;
+  isVisible: boolean;
+  
+  title: string;
+  icon: string;
+  iconColor: string; 
+  format: 'currency' | 'percentage' | 'number';
+  
+  // -- NEW FIELDS FOR LEVEL 2 --
+  type?: 'metric' | 'data' | 'calculated'; 
+  
+  // For 'metric' type (Core Metrics)
+  metric?: KpiMetricSource;
+  
+  // For 'data' type (Data Custom Filtering)
+  dataFilters?: {
+      selectedIndustries?: string[];
+      selectedSubgroups?: string[];
+      selectedManufacturers?: string[];
+      productCodes?: string[];
+      metricType?: 'quantity' | 'revenue' | 'revenueQD';
+  };
+
+  // For 'calculated' type (e.g. Ratio, Differential)
+  operation?: '+' | '-' | '*' | '/';
+  operand1_cardId?: string;
+  operand2_cardId?: string;
+  
+  // Target
+  hasTarget: boolean;
+  targetType: 'global' | 'custom' | 'none'; 
+  targetRef?: string; 
+  customTargetValue?: number;
+  trendLabel?: string;
 }

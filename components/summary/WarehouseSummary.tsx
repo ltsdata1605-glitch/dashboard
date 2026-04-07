@@ -6,7 +6,7 @@ import { SectionHeader } from '../common/SectionHeader';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getWarehouseColumnConfig, saveWarehouseColumnConfig } from '../../services/dbService';
 import { COL, WAREHOUSE_HEADER_COLORS, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
-import { getRowValue, formatCurrency, formatQuantity } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
 import LoadingOverlay from '../common/LoadingOverlay';
 import WarehouseSettingsModal from './WarehouseSettingsModal';
 import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
@@ -25,7 +25,10 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     const summaryRef = useRef<HTMLDivElement>(null);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'doanhThuQD', direction: 'desc' });
     const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+    const [isFullScreen, setIsFullScreen] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
+    
+    const toggleFullScreen = () => setIsFullScreen(!isFullScreen);
     const rowsPerPage = 50;
     
     const [columns, setColumns] = useState<WarehouseColumnConfig[]>([]);
@@ -59,7 +62,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     
     const handleSingleExport = async () => {
         if (summaryRef.current) {
-            await handleExport(summaryRef.current, 'bao-cao-kho.png', {
+            const prefix = getExportFilenamePrefix(filterState.kho);
+            await handleExport(summaryRef.current, `${prefix}-Chi-tiet-theo-kho.png`, {
                 elementsToHide: ['.hide-on-export'],
                 isCompactTable: true, // Fixes columns to content width
                 scale: 2
@@ -186,7 +190,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
     return (
         <>
-            <div id="warehouse-summary-view" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden rounded-none mb-8 transition-all duration-300" ref={summaryRef}>
+            <div id="warehouse-summary-view" className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden mb-8 transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[100] m-0 w-full h-full overflow-y-auto rounded-none shadow-2xl' : 'rounded-none'}`} ref={summaryRef}>
                 {(isProcessing || isExporting) && (
                     <div className="hide-on-export">
                         <LoadingOverlay />
@@ -209,6 +213,9 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         {userRole !== 'employee' && <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>}
                         <button onClick={handleSingleExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
                             {isExporting ? <Icon name="loader-2" className="animate-spin" size={5} /> : <Icon name="camera" size={5} />}
+                        </button>
+                        <button onClick={toggleFullScreen} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title={isFullScreen ? "Thu nhỏ" : "Phóng to toàn màn hình"}>
+                            <Icon name={isFullScreen ? "minimize-2" : "maximize-2"} size={5} />
                         </button>
                         {uniqueFilterOptions.kho.length > 1 && (
                             <button onClick={onBatchExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
@@ -324,7 +331,21 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         } else if (isDTQD) {
                                             content = <span className={customColor ? "font-semibold" : "font-semibold text-indigo-700"} style={textColorStyle}>{formatRevenueForKho(value)}</span>;
                                         } else if (isPercentHT) {
-                                            content = <span className={customColor ? "font-bold" : "font-bold text-orange-500"} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
+                                            let extraIcon = null;
+                                            let classNameStr = customColor ? "font-bold" : "font-bold text-orange-500";
+                                            if (value !== undefined && value >= 120) {
+                                                extraIcon = <span title="Tuyệt đỉnh" className="ml-1 text-[13px]">🔥</span>;
+                                                if (!customColor) classNameStr = "font-black text-rose-600 drop-shadow-sm";
+                                            } else if (value !== undefined && value >= 100) {
+                                                extraIcon = <span title="Đạt Mục Tiêu" className="ml-1 text-[13px]">🏆</span>;
+                                                if (!customColor) classNameStr = "font-extrabold text-yellow-600";
+                                            }
+                                            content = (
+                                                <div className="flex items-center justify-center">
+                                                    <span className={classNameStr} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>
+                                                    {extraIcon}
+                                                </div>
+                                            );
                                         } else if (col.metric === 'traChamPercent') {
                                             content = <span className={customColor ? "font-medium" : "font-medium text-gray-500"} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                         } else if (col.type === 'calculated' && col.displayAs === 'percentage') {

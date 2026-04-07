@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
-import { formatCurrency, formatQuantity, getHeSoQuyDoi, getRowValue } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, getHeSoQuyDoi, getRowValue, getExportFilenamePrefix } from '../../utils/dataUtils';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
@@ -271,22 +271,24 @@ const TrendChart: React.FC = React.memo(() => {
 
   const handleExportDraft = async () => {
       if (draftCalendarRef.current) {
+          const prefix = getExportFilenamePrefix(filterState.kho);
           const monthLabel = calendarFilters.month ? calendarFilters.month.split('-').reverse().join('-') : 'lich';
-          await handleExport(draftCalendarRef.current, `nhap-lich-${monthLabel}.png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
+          await handleExport(draftCalendarRef.current, `${prefix}-Lich-doanh-thu-nhap-${monthLabel}.png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
       }
   };
 
   const handleExportClick = async () => {
+      const prefix = getExportFilenamePrefix(filterState.kho);
       if (displayMode === 'calendar') {
           const targets = document.querySelectorAll('.calendar-export-target');
           if (targets.length > 0) {
               for (let i = 0; i < targets.length; i++) {
-                  await handleExport(targets[i] as HTMLElement, `lich-doanh-thu-tab-${i}.png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
+                  await handleExport(targets[i] as HTMLElement, `${prefix}-Lich-doanh-thu-tab-${i}.png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
                   await new Promise(r => setTimeout(r, 1000)); // Delay between downloads
               }
           }
       } else {
-          handleExport(chartCardRef.current, 'xu-huong-doanh-thu.png', { captureAsDisplayed: true });
+          handleExport(chartCardRef.current, `${prefix}-Xu-huong-doanh-thu.png`, { captureAsDisplayed: true });
       }
   };
   
@@ -521,9 +523,9 @@ const TrendChart: React.FC = React.memo(() => {
               ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
               : 'text-slate-400 hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer'
             }`}
-            title="Xuất ảnh"
+            title={displayMode === 'calendar' ? "Xuất ảnh hàng loạt toàn bộ Bảng Lịch" : "Xuất ảnh"}
           >
-            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
+            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={5} />}
           </button>
         </div>
       </SectionHeader>
@@ -554,16 +556,18 @@ const TrendChart: React.FC = React.memo(() => {
                             data={calendarData} 
                             monthDate={new Date(`${calendarFilters.month || new Date().toISOString().substring(0,7)}-01T00:00:00`)} 
                             metricName={calendarFilters.metric === 'quantity' ? 'Số lượng' : (calendarFilters.metric === 'revenueQD' ? 'Doanh thu QĐ' : calendarFilters.metric === 'traChamPercent' ? 'Tỉ trọng Trả chậm' : 'Doanh thu')}
-                            title={Array.isArray(calendarFilters.childGroup) && calendarFilters.childGroup.length > 0
-                                ? calendarFilters.childGroup.join(' + ')
-                                : Array.isArray(calendarFilters.parentGroup) && calendarFilters.parentGroup.length > 0
-                                    ? calendarFilters.parentGroup.join(' + ')
-                                    : (
-                                        calendarFilters.metric === 'revenue' ? `TỔNG DOANH THU THỰC THÁNG ${calendarFilters.month ? calendarFilters.month.split('-')[1] + '/' + calendarFilters.month.split('-')[0] : ''}`
-                                        : calendarFilters.metric === 'revenueQD' ? 'DOANH THU QUY ĐỔI'
-                                        : calendarFilters.metric === 'traChamPercent' ? 'TỈ TRỌNG TRẢ CHẬM'
-                                        : 'TỔNG DOANH THU'
-                                    )}
+                            title={(Array.isArray(calendarFilters.parentGroup) && calendarFilters.parentGroup.length > 0) || (Array.isArray(calendarFilters.childGroup) && calendarFilters.childGroup.length > 0)
+                                ? ((Array.isArray(calendarFilters.parentGroup) && calendarFilters.parentGroup.length > 0) && (Array.isArray(calendarFilters.childGroup) && calendarFilters.childGroup.length > 0)
+                                    ? `${calendarFilters.parentGroup.join(', ')} - ${calendarFilters.childGroup.join(', ')}`
+                                    : (Array.isArray(calendarFilters.childGroup) && calendarFilters.childGroup.length > 0)
+                                        ? calendarFilters.childGroup.join(', ')
+                                        : calendarFilters.parentGroup.join(', '))
+                                : (
+                                    calendarFilters.metric === 'revenue' ? `TỔNG DOANH THU THỰC THÁNG ${calendarFilters.month ? calendarFilters.month.split('-')[1] + '/' + calendarFilters.month.split('-')[0] : ''}`
+                                    : calendarFilters.metric === 'revenueQD' ? 'DOANH THU QUY ĐỔI'
+                                    : calendarFilters.metric === 'traChamPercent' ? 'TỈ TRỌNG TRẢ CHẬM'
+                                    : 'TỔNG DOANH THU'
+                                )}
                             subtitle={
                                 (Array.isArray(filterState.kho) && filterState.kho.length > 0 && !filterState.kho.includes('all') ? `KHO: ${filterState.kho.join(', ')} • ` : (!Array.isArray(filterState.kho) && filterState.kho && filterState.kho !== 'all' ? `KHO: ${filterState.kho} • ` : '')) +
                                 (calendarFilters.metric === 'quantity' ? 'Số lượng' : (calendarFilters.metric === 'revenueQD' ? 'Doanh thu QĐ' : calendarFilters.metric === 'traChamPercent' ? 'Tỉ lệ trả chậm' : 'Doanh thu'))
@@ -580,9 +584,7 @@ const TrendChart: React.FC = React.memo(() => {
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full text-left">
                                 {savedCalendars.map(cal => {
                                     const isDefault = ['1-thuc', '2-qd', '3-tracham'].includes(cal.id);
-                                    const effectiveFilter = isDefault 
-                                        ? { ...cal, month: calendarFilters.month }
-                                        : cal;
+                                    const effectiveFilter = { ...cal, month: calendarFilters.month };
 
                                     return (
                                         <SavedCalendarCard 

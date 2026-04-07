@@ -45,6 +45,58 @@ export async function saveSetting(key: string, value: any): Promise<void> {
         const tx = db.transaction(SETTINGS_STORE, 'readwrite');
         const store = tx.objectStore(SETTINGS_STORE);
         store.put(value, key);
+        tx.oncomplete = () => {
+            if (typeof window !== 'undefined') {
+                window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+            }
+            resolve();
+        };
+        tx.onerror = () => reject(tx.error);
+    });
+}
+
+export async function getAllSettings(): Promise<Record<string, any>> {
+    const db = await getDb();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(SETTINGS_STORE, 'readonly');
+        const store = tx.objectStore(SETTINGS_STORE);
+        const request = store.getAll();
+        const keysRequest = store.getAllKeys();
+        
+        tx.oncomplete = () => {
+            const keys = keysRequest.result;
+            const values = request.result;
+            const settings: Record<string, any> = {};
+            for (let i = 0; i < keys.length; i++) {
+                settings[keys[i] as string] = values[i];
+            }
+            resolve(settings);
+        };
+        tx.onerror = () => reject(tx.error);
+    });
+}
+
+export async function clearAllSettings(): Promise<void> {
+    const db = await getDb();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+        const store = tx.objectStore(SETTINGS_STORE);
+        store.clear();
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+    });
+}
+
+export async function importAllSettings(settings: Record<string, any>): Promise<void> {
+    const db = await getDb();
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+        const store = tx.objectStore(SETTINGS_STORE);
+        // Clear first
+        store.clear();
+        for (const [key, value] of Object.entries(settings)) {
+            store.put(value, key);
+        }
         tx.oncomplete = () => resolve();
         tx.onerror = () => reject(tx.error);
     });
@@ -129,6 +181,15 @@ export async function saveKpiTargets(targets: { hieuQua: number, traGop: number,
 
 export async function getKpiTargets(): Promise<{ hieuQua: number, traGop: number, doanhThu?: number, gtdh?: number } | null> {
     return getSetting('kpiTargets');
+}
+
+// --- KPI Cards Config ---
+export async function saveKpiCardConfig(config: import('../types').KpiCardConfig[]): Promise<void> {
+    return saveSetting('kpiCardConfig', config);
+}
+
+export async function getKpiCardConfig(): Promise<import('../types').KpiCardConfig[] | null> {
+    return getSetting('kpiCardConfig');
 }
 
 // --- Warehouse Targets ---
@@ -247,16 +308,16 @@ export async function clearCustomTabs(): Promise<void> {
     const db = await getDb();
     const tx = db.transaction(SETTINGS_STORE, 'readwrite');
     tx.objectStore(SETTINGS_STORE).delete('customTabs');
-    tx.objectStore(SETTINGS_STORE).delete('industryAnalysisCustomTables');
+    tx.objectStore(SETTINGS_STORE).delete('industryAnalysisCustomTabs');
 }
 
-// --- Industry Analysis Custom Tables ---
-export async function saveIndustryAnalysisCustomTables(tables: ContestTableConfig[]): Promise<void> {
-    return saveSetting('industryAnalysisCustomTables', tables);
+// --- Industry Analysis Custom Tabs ---
+export async function saveIndustryAnalysisCustomTabs(tabs: CustomContestTab[]): Promise<void> {
+    return saveSetting('industryAnalysisCustomTabs', tabs);
 }
 
-export async function getIndustryAnalysisCustomTables(): Promise<ContestTableConfig[] | null> {
-    return getSetting('industryAnalysisCustomTables');
+export async function getIndustryAnalysisCustomTabs(): Promise<CustomContestTab[] | null> {
+    return getSetting('industryAnalysisCustomTabs');
 }
 
 // --- Industry Grid Filters ---

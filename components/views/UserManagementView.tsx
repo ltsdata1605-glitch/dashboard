@@ -146,11 +146,28 @@ const UserManagementView: React.FC = () => {
                 }
 
                 await updateDoc(userRef, updateData);
+                
+                // Thuận nước đẩy Notification
+                const { notifyUser } = await import('../../services/notificationService');
+                await notifyUser(requestId, {
+                    title: 'Phân quyền thành công',
+                    message: `Hệ thống vừa cập nhật vai trò của bạn thành: ${targetRole === 'manager' ? 'Quản Lý Kho' : targetRole === 'employee' ? 'Nhân Viên' : 'Khác'}. Bạn có thể bắt đầu sử dụng.`,
+                    type: 'success'
+                });
+                
                 toast.success(listMode === 'pending' ? `Đã CẤP QUYỀN thành công!` : `Đã CẬP NHẬT QUYỀN thành công!`);
             } else {
                 await updateDoc(userRef, {
                     status: listMode === 'pending' ? 'rejected' : 'expired'
                 });
+                
+                const { notifyUser } = await import('../../services/notificationService');
+                await notifyUser(requestId, {
+                    title: listMode === 'pending' ? 'Yêu cầu bị từ chối' : 'Thu hồi quyền truy cập',
+                    message: `Quản trị viên đã ${listMode === 'pending' ? 'từ chối yêu cầu đăng ký' : 'ngừng cấp phép sử dụng'} của bạn. Liên hệ Quản lý Vùng để biết thêm chi tiết.`,
+                    type: 'error'
+                });
+                
                 toast.success(listMode === 'pending' ? 'Đã TỪ CHỐI yêu cầu!' : 'Đã THU HỒI quyền truy cập!');
             }
             

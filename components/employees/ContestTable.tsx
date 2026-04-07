@@ -4,6 +4,7 @@ import { getRowValue, getHeSoQuyDoi, abbreviateName, formatQuantity, formatCurre
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { Icon } from '../common/Icon';
 import { exportElementAsImage } from '../../services/uiService';
+import { useDashboardContext } from '../../contexts/DashboardContext';
 
 interface ContestTableProps {
     config: ContestTableConfig;
@@ -56,6 +57,7 @@ const getConditionalStyle = (value: number | undefined, column: ColumnConfig, av
 
 
 const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmployees, baseFilteredData, productConfig, tableColorTheme, onManageColumns, onDeleteTable, onAddColumn, onEditColumn, onTriggerDeleteColumn }) => {
+    const { filterState } = useDashboardContext();
     const exportRef = useRef<HTMLDivElement>(null);
     const [isExporting, setIsExporting] = useState(false);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>(() => {
@@ -305,7 +307,9 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
     const handleExport = async () => {
         if (exportRef.current) {
             setIsExporting(true);
-            await exportElementAsImage(exportRef.current, `${config.tableName}.png`, {
+            const prefix = (Array.isArray(filterState.kho) && filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `[${filterState.kho.join('_')}]` : '[Tat-ca-khu-vuc]';
+            const safeTabName = config.tableName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+            await exportElementAsImage(exportRef.current, `${prefix}-${safeTabName}.png`, {
                 elementsToHide: ['.hide-on-export'],
                 isCompactTable: true
             });

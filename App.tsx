@@ -15,6 +15,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginView from './components/views/LoginView';
 import PendingApprovalView from './components/views/PendingApprovalView';
 import { Toaster } from 'react-hot-toast';
+import NotificationDropdown from './components/layout/NotificationDropdown';
 
 function AppContent() {
     const { activeTab, setIsMobileSidebarOpen, isDarkMode, toggleDarkMode } = useLayout();
@@ -52,13 +53,13 @@ function AppContent() {
     }
 
     return (
-        <div className="flex min-h-[100dvh] bg-slate-50 dark:bg-slate-900 transition-colors duration-500">
+        <div className="flex min-h-[100dvh] bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
             <Sidebar />
             
             <div className="flex-grow flex flex-col min-w-0 h-[100dvh] relative overflow-hidden">
 
                 {/* Mobile Top Bar - Hidden in Desktop View */}
-                <div className="hidden sticky top-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 py-3 sm:py-4 shadow-sm pt-[env(safe-area-inset-top,12px)]">
+                <div className="lg:hidden sticky top-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 py-3 sm:py-4 shadow-sm pt-[env(safe-area-inset-top,12px)]">
                     <button
                         onClick={() => setIsMobileSidebarOpen(true)}
                         className="p-3 -ml-2 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
@@ -70,16 +71,24 @@ function AppContent() {
                         <span className="font-bold text-slate-800 dark:text-white text-base tracking-tight">Phân Tích Yêu Cầu Xuất</span>
                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(79,70,229,0.5)]"></div>
                     </div>
-                    <button
-                        onClick={toggleDarkMode}
-                        className="p-3 -mr-2 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
-                        aria-label="Toggle Dark Mode"
-                    >
-                        {isDarkMode ? <Sun size={22} className="text-amber-500" /> : <Moon size={22} />}
-                    </button>
+                    <div className="flex items-center gap-1">
+                        <NotificationDropdown />
+                        <button
+                            onClick={toggleDarkMode}
+                            className="p-3 -mr-2 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
+                            aria-label="Toggle Dark Mode"
+                        >
+                            {isDarkMode ? <Sun size={22} className="text-amber-500" /> : <Moon size={22} />}
+                        </button>
+                    </div>
                 </div>
 
-                <main className="flex-grow overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-950/20">
+                <main className="flex-grow overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-950/20 relative">
+                    {/* Desktop Notification Center */}
+                    <div className="hidden lg:block absolute top-[19px] right-6 z-[200]">
+                        <NotificationDropdown />
+                    </div>
+                    
                     <div className="w-full h-full relative">
                         <Suspense fallback={
                             <div className="flex items-center justify-center h-full">

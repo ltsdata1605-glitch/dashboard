@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Icon } from '../common/Icon';
 import toast from 'react-hot-toast';
-import { listDriveFiles, downloadFileFromDrive, DriveFile } from '../../services/googleDriveService';
+import { listDriveFiles, downloadFileFromDrive, deleteFileFromDrive, DriveFile } from '../../services/googleDriveService';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface DriveHistoryModalProps {
     isOpen: boolean;
@@ -11,9 +12,13 @@ interface DriveHistoryModalProps {
 }
 
 const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, onSelectFile }) => {
+    const { loginWithGoogle } = useAuth();
+    const [needsReconnect, setNeedsReconnect] = useState(false);
     const [files, setFiles] = useState<DriveFile[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isDownloading, setIsDownloading] = useState(false);
+    const [isDeleting, setIsDeleting] = useState<string | null>(null);
+    const [isDeletingAll, setIsDeletingAll] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
     useEffect(() => {
@@ -26,15 +31,23 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
     }, [isOpen]);
 
     const fetchFiles = async () => {
+        setNeedsReconnect(false);
         setIsLoading(true);
         try {
             const token = sessionStorage.getItem('googleOAuthToken');
-            if (!token) throw new Error('Vui lòng đăng nhập Google để xem lịch sử.');
+            if (!token) {
+                setNeedsReconnect(true);
+                return;
+            }
             const data = await listDriveFiles(token);
             setFiles(data);
         } catch (error: any) {
             console.error(error);
-            toast.error(error.message || 'Không thể lấy lịch sử Drive');
+            if (error.message?.includes('Phiên kết nối') || error.message?.includes('Đăng nhập')) {
+                setNeedsReconnect(true);
+            } else {
+                toast.error(error.message || 'Không thể lấy lịch sử Drive');
+            }
         } finally {
             setIsLoading(false);
         }
@@ -46,7 +59,10 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
         const loadingToast = toast.loading(`Đang tải \${selectedIds.size} file từ mây...`);
         try {
             const token = sessionStorage.getItem('googleOAuthToken');
-            if (!token) throw new Error('Mất kết nối Google');
+            if (!token) {
+                setNeedsReconnect(true);
+                throw new Error('Mất kết nối Google, vui lòng kết nối lại.');
+            }
             
             const filesToDownload = files.filter(f => selectedIds.has(f.id));
             const downloadedFiles: File[] = [];
@@ -73,6 +89,62 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
         if (next.has(id)) next.delete(id);
         else next.add(id);
         setSelectedIds(next);
+    };
+
+    const handleDelete = async (e: React.MouseEvent, fileId: string) => {
+        e.stopPropagation();
+        if (!confirm('Bạn có chắc chắn muốn xóa báo cáo này khỏi Drive?')) return;
+        
+        setIsDeleting(fileId);
+        try {
+            const token = sessionStorage.getItem('googleOAuthToken');
+            if (!token) {
+                setNeedsReconnect(true);
+                throw new Error('Mất kết nối Google, vui lòng kết nối lại');
+            }
+            
+            await deleteFileFromDrive(fileId, token);
+            setFiles(prev => prev.filter(f => f.id !== fileId));
+            
+            const newSelection = new Set(selectedIds);
+            newSelection.delete(fileId);
+            setSelectedIds(newSelection);
+            
+            toast.success('Đã xóa báo cáo');
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error.message || 'Lỗi khi xóa báo cáo');
+        } finally {
+            setIsDeleting(null);
+        }
+    };
+
+    const handleDeleteAll = async () => {
+        if (!confirm(`Bạn có chắc chắn muốn XÓA TẤT CẢ ${files.length} báo cáo khỏi Drive?`)) return;
+        
+        setIsDeletingAll(true);
+        const loadingToast = toast.loading('Đang xóa...');
+        try {
+            const token = sessionStorage.getItem('googleOAuthToken');
+            if (!token) {
+                setNeedsReconnect(true);
+                throw new Error('Mất kết nối Google, vui lòng kết nối lại.');
+            }
+            
+            for (const file of files) {
+                await deleteFileFromDrive(file.id, token);
+            }
+            
+            setFiles([]);
+            setSelectedIds(new Set());
+            toast.success('Đã xóa toàn bộ!', { id: loadingToast });
+        } catch (error: any) {
+            console.error(error);
+            toast.error('Có lỗi xảy ra khi xóa', { id: loadingToast });
+            fetchFiles();
+        } finally {
+            setIsDeletingAll(false);
+        }
     };
 
     if (!isOpen) return null;
@@ -106,16 +178,50 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                                 <p className="text-xs text-slate-500 font-medium">Chọn các báo cáo để xử lý nhanh</p>
                             </div>
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
-                        >
-                            <Icon name="x" size={5} />
-                        </button>
+                        <div className="flex items-center gap-2">
+                            {files.length > 0 && !isLoading && (
+                                <button
+                                    onClick={handleDeleteAll}
+                                    disabled={isDeletingAll}
+                                    className="p-2 mr-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors"
+                                    title="Xóa toàn bộ dữ liệu trên Drive"
+                                >
+                                    <Icon name={isDeletingAll ? "loader-2" : "trash-2"} size={5} className={isDeletingAll ? "animate-spin" : ""} />
+                                </button>
+                            )}
+                            <button
+                                onClick={onClose}
+                                className="p-2 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                            >
+                                <Icon name="x" size={5} />
+                            </button>
+                        </div>
                     </div>
 
                     <div className="p-6 overflow-y-auto flex-1 custom-scrollbar bg-white dark:bg-slate-900">
-                        {isLoading ? (
+                        {needsReconnect ? (
+                            <div className="flex flex-col items-center justify-center py-10 text-slate-500">
+                                <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-full mb-4">
+                                    <Icon name="link-2-off" size={8} className="opacity-70 text-rose-500" />
+                                </div>
+                                <p className="font-semibold text-slate-700 dark:text-slate-300 mb-2">Chưa kết nối Google Drive</p>
+                                <p className="text-sm text-center max-w-xs mb-6 leading-relaxed">Bạn cần cấp quyền truy cập Drive (tối đa 1 giờ) để tải báo cáo Mây.</p>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            await loginWithGoogle();
+                                            fetchFiles();
+                                        } catch (e) {
+                                            toast.error("Kết nối thất bại hoặc bị hủy");
+                                        }
+                                    }}
+                                    className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-2"
+                                >
+                                    <Icon name="cloud" size={5} />
+                                    Bấm vào đây để Liên Kết Nhanh
+                                </button>
+                            </div>
+                        ) : isLoading ? (
                             <div className="flex flex-col items-center justify-center py-12 text-indigo-600 dark:text-indigo-400">
                                 <Icon name="loader-2" size={8} className="animate-spin mb-4" />
                                 <span className="font-medium">Đang quét Google Drive...</span>
@@ -153,11 +259,21 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                                             <p className={`text-sm font-semibold transition-colors truncate ${selectedIds.has(file.id) ? 'text-indigo-700 dark:text-indigo-300' : 'text-slate-700 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`}>
                                                 {file.name}
                                             </p>
-                                            <div className={`flex items-center gap-3 mt-0.5 text-[11px] font-medium whitespace-nowrap overflow-hidden text-ellipsis ${selectedIds.has(file.id) ? 'text-indigo-600/70 dark:text-indigo-400/80' : 'text-slate-500'}`}>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <div className={`flex items-center gap-3 text-[11px] font-medium whitespace-nowrap overflow-hidden text-ellipsis ${selectedIds.has(file.id) ? 'text-indigo-600/70 dark:text-indigo-400/80' : 'text-slate-500'}`}>
                                                 <span className="flex items-center gap-1"><Icon name="clock" size={3} /> {new Date(file.createdTime).toLocaleString('vi-VN')}</span>
                                                 {file.size && <span className="flex items-center gap-1"><Icon name="hard-drive" size={3} /> {(parseInt(file.size) / (1024 * 1024)).toFixed(2)} MB</span>}
                                             </div>
                                         </div>
+                                        </div>
+                                        <button
+                                            onClick={(e) => handleDelete(e, file.id)}
+                                            disabled={isDeleting === file.id}
+                                            className={`p-2 rounded-lg transition-colors ml-2 ${isDeleting === file.id ? 'text-rose-400' : 'text-slate-400 hover:text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/40'}`}
+                                            title="Xóa báo cáo này"
+                                        >
+                                            <Icon name={isDeleting === file.id ? "loader-2" : "trash-2"} size={4.5} className={isDeleting === file.id ? "animate-spin" : ""} />
+                                        </button>
                                     </motion.div>
                                 ))}
                             </div>

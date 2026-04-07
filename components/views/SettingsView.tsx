@@ -5,6 +5,9 @@ import * as dbService from '../../services/dbService';
 import { Icon } from '../common/Icon';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
+import { useCloudSync } from '../../hooks/useCloudSync';
+import { shareCloudConfig, subscribeSharedConfigs, deleteSharedConfig, type SharedConfig } from '../../services/firestoreService';
+import ModalWrapper from '../modals/ModalWrapper';
 
 type SettingsTab = 'appearance' | 'data' | 'account';
 
@@ -16,8 +19,9 @@ const FONTS = [
 ];
 
 const SettingsView: React.FC = () => {
-    const { user, userRole, departmentId, employeeName, expiresAt, logout } = useAuth();
+    const { user, userRole, departmentId, employeeName, expiresAt, logout, isDemoMode } = useAuth();
     const { isDarkMode, toggleDarkMode } = useLayout();
+    const { syncState, lastSyncTime, forceSync } = useCloudSync();
     
     const [activeTab, setActiveTab] = useState<SettingsTab>('account');
     const [font, setFont] = useState('Inter');
@@ -30,6 +34,12 @@ const SettingsView: React.FC = () => {
     const [stagedDept, setStagedDept] = useState(departmentId || '');
     const [stagedEmployee, setStagedEmployee] = useState(employeeName || '');
     const { requestAccess } = useAuth();
+    
+    // Shared Configs State
+    const [sharedConfigs, setSharedConfigs] = useState<SharedConfig[]>([]);
+    const [showShareModal, setShowShareModal] = useState(false);
+    const [shareDescription, setShareDescription] = useState('');
+    const [isSharing, setIsSharing] = useState(false);
 
     useEffect(() => {
         // Load initial settings
@@ -44,7 +54,20 @@ const SettingsView: React.FC = () => {
             if (productConfig) setConfigUrl(productConfig.url);
         };
         loadSettings();
-    }, []);
+
+        // Subscribe to shared configs
+        const unsubscribe = subscribeSharedConfigs(
+            userRole,
+            departmentId,
+            (configs) => {
+                setSharedConfigs(configs);
+            }
+        );
+
+        return () => {
+            unsubscribe();
+        };
+    }, [userRole, departmentId]);
 
     const handleFontChange = async (newFont: string) => {
         setFont(newFont);
@@ -66,16 +89,20 @@ const SettingsView: React.FC = () => {
     };
 
     const handleClearLocalData = async () => {
-        if (!confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu lịch sử trên máy không? Thao tác này sẽ yêu cầu bạn tải lại File hoặc đồng bộ lại từ Cloud.')) return;
+        if (!confirm('BÁO ĐỘNG ĐỎ: Thao tác này sẽ xoá rỗng toàn bộ dữ liệu tạm trên thiết bị cài đặt Bộ lọc / Bảng của bạn đã lưu trên Đám Mây. Bạn có chắc không?')) return;
         
         setIsClearing(true);
         try {
+            const { clearCloudSettings } = await import('../../services/firestoreService');
+            if (user) {
+                await clearCloudSettings(user);
+            }
+            await dbService.clearAllSettings();
             await dbService.clearSalesData();
-            await dbService.clearProductConfig();
-            await dbService.clearDepartmentMap();
-            toast.success('Đã dọn dẹp bộ nhớ đệm thành công!');
+            toast.success('Đã Khôi Phục Gốc cấu hình thành công!');
             setTimeout(() => window.location.reload(), 1500);
         } catch (error) {
+            console.error("Lỗi khi wipe data:", error);
             toast.error('Có lỗi xảy ra khi dọn dẹp!');
         } finally {
             setIsClearing(false);
@@ -112,6 +139,43 @@ const SettingsView: React.FC = () => {
         }
     };
 
+    const handleShareConfig = async () => {
+        if (!user || (!departmentId && userRole !== 'admin') || !userRole) return;
+        if (!shareDescription.trim()) {
+            toast.error("Vui lòng nhập tên/mô tả gợi nhớ cho mẫu cấu hình.");
+            return;
+        }
+
+        setIsSharing(true);
+        try {
+            const allSettings = await dbService.getAllSettings();
+            await shareCloudConfig(user, userRole, departmentId || '', shareDescription, allSettings);
+            toast.success("Chia sẻ cấu hình thành công!");
+            setShowShareModal(false);
+            setShareDescription('');
+        } catch (err) {
+            console.error("Lỗi chia sẻ:", err);
+            toast.error("Không thể chia sẻ cấu hình lúc này.");
+        } finally {
+            setIsSharing(false);
+        }
+    };
+
+    const handleApplyConfig = async (config: SharedConfig) => {
+        if (confirm(`Bạn có chắc muốn ghi đè cấu hình hiện tại bằng mẫu của [${config.authorName}]? Các thay đổi bộ lọc cá nhân cũ sẽ mất.`)) {
+            try {
+                const m = await import('../../services/dbService');
+                await m.clearAllSettings();
+                await m.importAllSettings(config.payload);
+                toast.success("Áp dụng mẫu cấu hình thành công! Đang tải lại...", { duration: 4000 });
+                setTimeout(() => window.location.reload(), 1500);
+            } catch (err) {
+                console.error("Lỗi áp dụng mẫu cấu hình:", err);
+                toast.error("Áp dụng mẫu cấu hình thất bại.");
+            }
+        }
+    };
+
     const tabs = [
         { id: 'account', label: 'Tài Khoản', icon: 'user' },
         { id: 'appearance', label: 'Giao Diện', icon: 'palette' },
@@ -119,7 +183,8 @@ const SettingsView: React.FC = () => {
     ];
 
     return (
-        <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 min-h-screen p-4 sm:p-6 overflow-y-auto">
+        <>
+            <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 min-h-screen p-4 sm:p-6 overflow-y-auto">
             <div className="max-w-5xl mx-auto">
                 <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-slate-100 dark:border-slate-700/50 overflow-hidden flex flex-col md:flex-row min-h-[600px]">
                     
@@ -370,6 +435,101 @@ const SettingsView: React.FC = () => {
                                             )}
                                         </div>
                                     </div>
+
+                                    {/* Cloud Sync Information */}
+                                    <div className="mt-8">
+                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Đồng Bộ Lưu Trữ Đám Mây</h3>
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                                            <div className="flex items-start gap-4">
+                                                <div className={`p-3 rounded-2xl ${syncState === 'synced' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : syncState === 'error' ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'}`}>
+                                                    <Icon name={syncState === 'synced' ? 'cloud-check' : syncState === 'error' ? 'cloud-off' : 'cloud-snow'} size={6} className={syncState === 'syncing' ? 'animate-pulse' : ''} />
+                                                </div>
+                                                <div>
+                                                    <h4 className="text-base font-bold text-slate-800 dark:text-white">Sao Lưu Toàn Diện</h4>
+                                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md">Mọi bộ lọc, bảng tự tạo, cột tuỳ chỉnh cá nhân sẽ được tự động Push lên mây khi bạn rời ứng dụng, và tự động Pull về trên thiết bị khác.</p>
+                                                    <p className="text-xs font-bold mt-2 text-slate-400 dark:text-slate-500">
+                                                        Lần cập nhật cuối: <span className="text-indigo-500">{lastSyncTime ? lastSyncTime.toLocaleTimeString('vi-VN') : 'Đang đợi thao tác Mới'}</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button 
+                                                onClick={forceSync}
+                                                disabled={syncState === 'syncing' || !user || isDemoMode}
+                                                className={`px-5 py-2.5 whitespace-nowrap rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-sm w-full md:w-auto
+                                                    ${syncState === 'syncing' ? 'bg-indigo-100 text-indigo-400 dark:bg-indigo-900/20 cursor-not-allowed' : 'bg-white border-2 border-indigo-100 text-indigo-600 hover:border-indigo-500 hover:bg-indigo-50 dark:bg-slate-800 dark:border-slate-700 dark:text-indigo-400 dark:hover:border-indigo-500'}`}
+                                            >
+                                                <Icon name={syncState === 'syncing' ? 'loader-2' : 'refresh-ccw'} size={4} className={syncState === 'syncing' ? 'animate-spin' : ''} />
+                                                {syncState === 'syncing' ? 'Đang Sao Lưu...' : 'Bắt Buộc Lưu Trữ'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Mẫu Cấu hình Dùng chung */}
+                                    <div className="mt-8">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">
+                                            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Thư Viện Cấu Hình</h3>
+                                            {(userRole === 'admin' || userRole === 'manager' || userRole === 'employee') && (
+                                                <button 
+                                                    onClick={() => setShowShareModal(true)}
+                                                    className="px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-xl font-bold flex items-center gap-2 transition-colors text-sm border border-indigo-100 dark:border-indigo-800"
+                                                >
+                                                    <Icon name="share-2" size={4} />
+                                                    Đăng Bài Chia Sẻ
+                                                </button>
+                                            )}
+                                        </div>
+                                        
+                                        {sharedConfigs.length === 0 ? (
+                                            <div className="bg-slate-50 dark:bg-slate-900/30 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center flex flex-col items-center justify-center text-slate-500">
+                                                <Icon name="layout-template" size={10} className="text-slate-300 dark:text-slate-700 mb-3" />
+                                                <p className="font-medium text-sm">Chưa có Cấu Hình nào được chia sẻ trong hệ thống của bạn.</p>
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                                                {sharedConfigs.map(config => (
+                                                    <div key={config.id} className="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
+                                                        <div>
+                                                            <div className="flex items-start justify-between gap-2 mb-3">
+                                                                <h4 className="font-bold text-slate-800 dark:text-white line-clamp-1">{config.description}</h4>
+                                                                <span className={`px-2 py-1 text-[10px] font-bold rounded-md whitespace-nowrap uppercase tracking-wider flex-shrink-0 ${config.role === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'}`}>
+                                                                    {config.role === 'admin' ? 'Super Admin' : config.role === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'}
+                                                                </span>
+                                                            </div>
+                                                            <div className="text-xs text-slate-500 dark:text-slate-400 space-y-1.5 mb-4">
+                                                                <p className="flex items-center gap-1.5"><Icon name="user" size={3.5} /> Được tạo bởi: <strong>{config.authorName}</strong></p>
+                                                                <p className="flex items-center gap-1.5"><Icon name="calendar-days" size={3.5} /> Ngày đăng: {config.createdAt?.toDate ? config.createdAt.toDate().toLocaleDateString('vi-VN') : 'Mới đây'}</p>
+                                                                {config.role !== 'admin' && <p className="flex items-center gap-1.5 text-indigo-500"><Icon name="map-pin" size={3.5} /> Phạm vi: Kho {config.departmentId}</p>}
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div className="flex items-center justify-between mt-2 pt-4 border-t border-slate-100 dark:border-slate-700/50">
+                                                            {(user?.uid === config.uid || userRole === 'admin') ? (
+                                                                <button 
+                                                                    onClick={() => {
+                                                                        if (confirm("Chắc chắn xoá bài đăng này?")) {
+                                                                            deleteSharedConfig(config.id).then(() => toast.success("Đã xoá cấu hình."));
+                                                                        }
+                                                                    }}
+                                                                    className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors tooltip"
+                                                                    title="Xoá bài đăng của bạn"
+                                                                >
+                                                                    <Icon name="trash-2" size={4} />
+                                                                </button>
+                                                            ) : <div />}
+                                                            
+                                                            <button 
+                                                                onClick={() => handleApplyConfig(config)}
+                                                                className="px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors"
+                                                            >
+                                                                <Icon name="download-cloud" size={4} />
+                                                                Đồng Bộ Về Máy
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                     
                                     <div className="pt-4 mt-8 border-t border-slate-100 dark:border-slate-700 flex justify-end">
                                         <button 
@@ -387,6 +547,52 @@ const SettingsView: React.FC = () => {
                 </div>
             </div>
         </div>
+
+            <ModalWrapper
+                isOpen={showShareModal}
+                onClose={() => setShowShareModal(false)}
+                title="Chia Sẻ Cấu Hình Hệ Thống"
+                subTitle="Đóng gói Thiết lập Bảng & Cột"
+                maxWidthClass="max-w-md"
+                titleColorClass="text-indigo-600 dark:text-indigo-400"
+            >
+                <div className="p-6">
+                    <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl text-sm text-blue-700 dark:text-blue-300">
+                        <Icon name="info" size={4} className="inline mr-2" />
+                        <strong className="font-bold">Mọi người {userRole === 'admin' ? 'trong toàn hệ thống' : `(trong nhóm Mã Kho ${departmentId})`}</strong> sẽ có thể sao chép giao diện cột, cấu hình bảng Tranh tài, Industry mà bạn đã cài đặt. Mẫu sẽ chia sẻ ẩn danh báo cáo Excel của riêng bạn.
+                    </div>
+
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tên gợi nhớ cho Cấu hình (Ví dụ: Cấu hình chuẩn Qúy 3)</label>
+                    <input 
+                        type="text" 
+                        value={shareDescription}
+                        onChange={e => setShareDescription(e.target.value)}
+                        placeholder="Nhập tên dễ hiểu..."
+                        maxLength={60}
+                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-indigo-500 mb-2 transition-all dark:text-white"
+                        autoFocus
+                    />
+                    <div className="text-right text-xs text-slate-400 mb-6">{shareDescription.length}/60</div>
+
+                    <div className="flex justify-end gap-3">
+                        <button 
+                            onClick={() => setShowShareModal(false)} 
+                            className="px-5 py-2.5 rounded-xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
+                        >
+                            Huỷ Bỏ
+                        </button>
+                        <button 
+                            onClick={handleShareConfig}
+                            disabled={isSharing || !shareDescription.trim()}
+                            className="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
+                        >
+                            {isSharing && <Icon name="loader-2" size={4} className="animate-spin" />}
+                            {isSharing ? 'Đang Đăng...' : 'Đăng Phiên Bản Của Tôi'}
+                        </button>
+                    </div>
+                </div>
+            </ModalWrapper>
+        </>
     );
 };
 

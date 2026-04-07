@@ -212,3 +212,9 @@ export const getDisplayParentGroup = (maNhomHang: string, productConfig: Product
     }
     return parentGroup;
 };
+
+export function getExportFilenamePrefix(khoFilter: string | string[]): string {
+    const khoArray = Array.isArray(khoFilter) ? khoFilter : (khoFilter ? [khoFilter] : []);
+    const khosStr = (khoArray.length > 0 && !khoArray.includes('all')) ? khoArray.join('_') : 'Tat-ca-khu-vuc';
+    return `[${khosStr.toUpperCase()}]`;
+}

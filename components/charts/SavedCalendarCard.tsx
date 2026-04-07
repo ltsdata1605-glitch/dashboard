@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import RevenueCalendar from './RevenueCalendar';
 import { Icon } from '../common/Icon';
 import { isKhoMatch } from '../../services/filterService';
-import { getRowValue, getHeSoQuyDoi } from '../../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, getExportFilenamePrefix } from '../../utils/dataUtils';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { exportElementAsImage } from '../../services/uiService';
 
@@ -27,7 +27,8 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
     const handleExport = async () => {
         if (cardRef.current) {
             setIsExporting(true);
-            await exportElementAsImage(cardRef.current, `lich-doanh-thu-${filter.parentGroup}-${filter.childGroup}.png`, { elementsToHide: ['.hide-on-export'] });
+            const prefix = getExportFilenamePrefix(filter.kho);
+            await exportElementAsImage(cardRef.current, `${prefix}-Lich-doanh-thu.png`, { elementsToHide: ['.hide-on-export'] });
             setIsExporting(false);
         }
     };
@@ -112,10 +113,12 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
     const metricName = filter.metric === 'quantity' ? 'Số lượng' : (filter.metric === 'revenueQD' ? 'Doanh thu QĐ' : filter.metric === 'traChamPercent' ? 'Tỉ trọng Trả chậm' : 'Doanh thu');
     
     let title: string;
-    if (parentGroupFilter.length > 0) {
-        title = childGroupFilter.length > 0
+    if (parentGroupFilter.length > 0 || childGroupFilter.length > 0) {
+        title = parentGroupFilter.length > 0 && childGroupFilter.length > 0
             ? `${parentGroupFilter.join(', ')} - ${childGroupFilter.join(', ')}`
-            : parentGroupFilter.join(', ');
+            : childGroupFilter.length > 0
+                ? childGroupFilter.join(', ')
+                : parentGroupFilter.join(', ');
     } else {
         // Default titles based on metric
         if (filter.metric === 'revenue') title = 'DOANH THU THỰC';

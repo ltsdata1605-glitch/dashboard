@@ -31,6 +31,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [isDemoMode, setDemoMode] = useState(false);
 
     useEffect(() => {
+        const handleAuthExpired = () => {
+            import('react-hot-toast').then(m => m.toast.error("Kết nối với Google Drive đã hết hạn. Trong lúc cần dùng Lịch sử trên Mây, bạn có thể kết nối lại.", { duration: 6000 }));
+            // Không bọc tự động ép đăng xuất nữa.
+        };
+        window.addEventListener('google-auth-expired', handleAuthExpired);
+
         // Failsafe timeout: If Firebase Auth takes more than 5 seconds to respond 
         // (usually due to IDB blockage on iOS/Safari in-app browsers), stop loading.
         const fallbackTimer = setTimeout(() => {
@@ -125,6 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         return () => {
+            window.removeEventListener('google-auth-expired', handleAuthExpired);
             clearTimeout(fallbackTimer);
             unsubscribe();
         };
@@ -147,6 +154,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setStatus('pending');
             setDepartmentId(deptId);
             setEmployeeName(empName);
+            
+            // Notification: Alert Admins and Managers of this department
+            const { notifyAdminsAndManagers } = await import('../services/notificationService');
+            await notifyAdminsAndManagers(deptId, {
+                title: 'Đăng ký vào Kho mới',
+                message: `${user.displayName} (Email: ${user.email}) vừa đăng ký truy cập mã Kho gốc: ${deptId}.`,
+                type: 'info'
+            });
         } catch (error) {
             console.error("Lỗi gửi yêu cầu truy cập:", error);
             throw error;
