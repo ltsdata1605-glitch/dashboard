@@ -24,9 +24,15 @@ export const useCloudSync = () => {
             setLastSyncTime(new Date());
 
             setTimeout(() => setSyncState('idle'), 5000);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Lỗi Auto-Sync full state:", err);
             setSyncState('error');
+            if (err?.code === 'resource-exhausted' || err?.message?.toLowerCase().includes('quota')) {
+                // Ignore gracefully without any crash.
+                import('react-hot-toast').then(({ default: toast }) => {
+                    toast.error("Máy chủ đang bảo trì. Đã lưu an toàn vào máy, sẽ đồng bộ sau!", { id: 'quota-limit' });
+                });
+            }
         }
     }, [user, isDemoMode]);
 

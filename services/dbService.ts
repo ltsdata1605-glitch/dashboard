@@ -42,16 +42,21 @@ function getDb(): Promise<IDBDatabase> {
 export async function saveSetting(key: string, value: any): Promise<void> {
     const db = await getDb();
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(SETTINGS_STORE, 'readwrite');
-        const store = tx.objectStore(SETTINGS_STORE);
-        store.put(value, key);
-        tx.oncomplete = () => {
-            if (typeof window !== 'undefined') {
-                window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
-            }
-            resolve();
-        };
-        tx.onerror = () => reject(tx.error);
+        try {
+            const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+            const store = tx.objectStore(SETTINGS_STORE);
+            store.put(value, key);
+            tx.oncomplete = () => {
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                }
+                resolve();
+            };
+            tx.onerror = () => reject(tx.error);
+        } catch (error) {
+            console.error(`IndexedDB Error while saving setting '${key}':`, error);
+            reject(error);
+        }
     });
 }
 
@@ -90,15 +95,20 @@ export async function clearAllSettings(): Promise<void> {
 export async function importAllSettings(settings: Record<string, any>): Promise<void> {
     const db = await getDb();
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(SETTINGS_STORE, 'readwrite');
-        const store = tx.objectStore(SETTINGS_STORE);
-        // Clear first
-        store.clear();
-        for (const [key, value] of Object.entries(settings)) {
-            store.put(value, key);
+        try {
+            const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+            const store = tx.objectStore(SETTINGS_STORE);
+            // Clear first
+            store.clear();
+            for (const [key, value] of Object.entries(settings)) {
+                store.put(value, key);
+            }
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        } catch (error) {
+            console.error('IndexedDB Error in importAllSettings:', error);
+            reject(error);
         }
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
     });
 }
 
@@ -118,14 +128,19 @@ export const getValue = getSetting;
 export const setValue = saveSetting;
 
 // --- Sales Data ---
-export async function saveSalesData(data: DataRow[], filename: string): Promise<void> {
-    const stored: StoredSalesData = { data, filename, savedAt: new Date() };
+export async function saveSalesData(data: DataRow[], filename: string, fileLastModified?: number): Promise<void> {
+    const stored: StoredSalesData = { data, filename, savedAt: new Date(), fileLastModified };
     const db = await getDb();
     return new Promise((resolve, reject) => {
-        const tx = db.transaction(APP_STORE, 'readwrite');
-        tx.objectStore(APP_STORE).put(stored, 'salesData');
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
+        try {
+            const tx = db.transaction(APP_STORE, 'readwrite');
+            tx.objectStore(APP_STORE).put(stored, 'salesData');
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        } catch (error) {
+            console.error('IndexedDB Error in saveSalesData:', error);
+            reject(error);
+        }
     });
 }
 
@@ -161,11 +176,26 @@ export async function clearDepartmentMap(): Promise<void> {
 
 // --- Product Config ---
 export async function saveProductConfig(config: ProductConfig, url: string): Promise<void> {
-    await saveSetting('productConfig', { config, url, fetchedAt: new Date() });
+    // Safari/WebKit embedded webviews (like Zalo/FB) might throw DataCloneError for Sets.
+    const safeConfig = { ...config, groups: {} as any };
+    if (config.groups) {
+        for (const [key, value] of Object.entries(config.groups)) {
+            safeConfig.groups[key] = value instanceof Set ? Array.from(value) : value;
+        }
+    }
+    await saveSetting('productConfig', { config: safeConfig, url, fetchedAt: new Date() });
 }
 
 export async function getProductConfig(): Promise<{ config: ProductConfig, url: string, fetchedAt: Date } | null> {
-    return getSetting('productConfig');
+    const data = await getSetting<{ config: ProductConfig, url: string, fetchedAt: Date }>('productConfig');
+    if (data && data.config && data.config.groups) {
+        const restoredGroups: { [key: string]: Set<string> } = {};
+        for (const [key, value] of Object.entries(data.config.groups)) {
+            restoredGroups[key] = new Set(value as any);
+        }
+        data.config.groups = restoredGroups;
+    }
+    return data;
 }
 
 export async function clearProductConfig(): Promise<void> {

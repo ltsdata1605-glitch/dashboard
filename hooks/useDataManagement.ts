@@ -34,125 +34,72 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
     const [pendingCloudSync, setPendingCloudSync] = useState<{ fileId: string; name: string; timestamp: number } | null>(null);
 
-    // Initial data loading
+// Initial data loading
     useEffect(() => {
         const loadInitialData = async () => {
             setAppState('loading');
             setIsHardProcessing(true);
             try {
-                // Auto-Pull from Cloud First
-                let cloudData: any = null;
-                if (user && !isDemoMode) {
+                setStatus({ message: 'Đang tải cấu hình cục bộ...', type: 'info', progress: 10 });
+                
+                // 1. Parallel Local IDB Fetch (Fast Offline First)
+                const [
+                    cachedConfigReq,
+                    savedDeptMapReq,
+                    savedTargetsReq,
+                    savedGtdhTargetsReq,
+                    savedKpiTargetsReq,
+                    savedCrossSellingReq,
+                    savedKpiCardConfigReq,
+                    savedSalesReq
+                ] = await Promise.all([
+                    dbService.getProductConfig(),
+                    dbService.getDepartmentMap(),
+                    dbService.getWarehouseTargets(),
+                    dbService.getGtdhTargets(),
+                    dbService.getKpiTargets(),
+                    dbService.getCrossSellingConfig(),
+                    dbService.getKpiCardConfig(),
+                    dbService.getSalesData()
+                ]);
+
+                let config: ProductConfig | null = cachedConfigReq ? cachedConfigReq.config : null;
+                
+                // If core config is essentially missing locally, fetch it from Sheet as ultimate fallback
+                if (!config || !config.groups || Object.keys(config.groups).length === 0) {
                     try {
-                        setStatus({ message: 'Đang tải cấu hình Đám Mây...', type: 'info', progress: 5 });
-                        const { fetchFromCloud } = await import('../services/firestoreService');
-                        cloudData = await fetchFromCloud(user);
-                    } catch (e) {
-                        console.error("Lỗi PULL Firestore:", e);
-                    }
-                }
-
-                setStatus({ message: 'Khởi tạo cấu hình hệ thống...', type: 'info', progress: 10 });
-                let config: ProductConfig;
-                if (cloudData && cloudData.productConfig) {
-                    config = cloudData.productConfig;
-                    await dbService.saveProductConfig(config, configUrl);
-                } else {
-                    const cachedConfig = await dbService.getProductConfig();
-                    if (cachedConfig) {
-                        config = cachedConfig.config;
-                    } else {
+                        setStatus({ message: 'Tải cấu hình lõi từ Sheet...', type: 'info', progress: 15 });
                         config = await loadConfigFromSheet(configUrl, () => {});
-                        await dbService.saveProductConfig(config, configUrl);
+                        dbService.saveProductConfig(config, configUrl).catch(console.error);
+                    } catch (e) {
+                         console.error("Không tải được cấu hình mạng, sử dụng dữ liệu cũ rỗng.");
                     }
                 }
-                setProductConfig(config);
+                if (config) setProductConfig(config);
 
-                if (cloudData && cloudData.departmentMap) {
-                    setDepartmentMap(cloudData.departmentMap);
-                    await dbService.saveDepartmentMap(cloudData.departmentMap);
-                } else {
-                    const savedDeptMap = await dbService.getDepartmentMap();
-                    if (savedDeptMap) setDepartmentMap(savedDeptMap);
-                }
-
-                if (cloudData && cloudData.warehouseTargets) {
-                    const targetArr = cloudData.warehouseTargets as any[];
-                    const map: Record<string, number> = {};
-                    targetArr.forEach(t => map[t.kho] = t.dsMucTieu);
-                    setWarehouseTargets(map);
-                    await dbService.saveWarehouseTargets(map);
-                } else {
-                    const savedTargets = await dbService.getWarehouseTargets();
-                    if (savedTargets) setWarehouseTargets(savedTargets);
-                }
-
-                if (cloudData && cloudData.gtdhTargets) {
-                    const targetArr = cloudData.gtdhTargets as any[];
-                    const map: Record<string, number> = {};
-                    targetArr.forEach(t => map[t.nhomHang] = t.gtdh);
-                    setGtdhTargets(map);
-                    await dbService.saveGtdhTargets(map);
-                } else {
-                    const savedGtdhTargets = await dbService.getGtdhTargets();
-                    if (savedGtdhTargets) setGtdhTargets(savedGtdhTargets);
-                }
-
-                if (cloudData && cloudData.kpiTargets) {
-                    setKpiTargets(cloudData.kpiTargets);
-                    await dbService.saveKpiTargets(cloudData.kpiTargets);
-                } else {
-                    const savedKpiTargets = await dbService.getKpiTargets();
-                    if (savedKpiTargets) setKpiTargets(savedKpiTargets);
-                }
-
-                if (cloudData && cloudData.crossSellingConfig) {
-                    setCrossSellingConfig(cloudData.crossSellingConfig);
-                    await dbService.saveCrossSellingConfig(cloudData.crossSellingConfig);
-                } else {
-                    const savedCrossSelling = await dbService.getCrossSellingConfig();
-                    if (savedCrossSelling) setCrossSellingConfig(savedCrossSelling);
-                }
+                if (savedDeptMapReq) setDepartmentMap(savedDeptMapReq);
+                if (savedTargetsReq) setWarehouseTargets(savedTargetsReq);
+                if (savedGtdhTargetsReq) setGtdhTargets(savedGtdhTargetsReq);
+                if (savedKpiTargetsReq) setKpiTargets(savedKpiTargetsReq);
+                if (savedCrossSellingReq) setCrossSellingConfig(savedCrossSellingReq);
                 
-                if (cloudData && cloudData.kpiCardConfig) {
-                    setKpiCardsConfig(cloudData.kpiCardConfig);
-                    await dbService.saveKpiCardConfig(cloudData.kpiCardConfig);
+                if (savedKpiCardConfigReq && savedKpiCardConfigReq.length > 0) {
+                    setKpiCardsConfig(savedKpiCardConfigReq);
                 } else {
-                    const savedKpiCardConfig = await dbService.getKpiCardConfig();
-                    if (savedKpiCardConfig && savedKpiCardConfig.length > 0) {
-                        setKpiCardsConfig(savedKpiCardConfig);
-                    } else {
-                        setKpiCardsConfig(DEFAULT_KPI_CARDS);
-                        await dbService.saveKpiCardConfig(DEFAULT_KPI_CARDS);
-                    }
-                }
-                
-                if (cloudData && cloudData.settingsStoreBackup) {
-                    setStatus({ message: 'Đang nạp cấu hình Đám Mây vào máy...', type: 'info', progress: 15 });
-                    // Lưu ý: Không nạp lại những gì mình đã tự parse ở trên để tránh vòng lặp State,
-                    // Hàm saveSetting có gọi ycx-setting-changed nhưng ta đang ở initialMount (bị block bởi flag)
-                    for (const [k, v] of Object.entries(cloudData.settingsStoreBackup)) {
-                        await dbService.saveSetting(k, v);
-                    }
+                    setKpiCardsConfig(DEFAULT_KPI_CARDS);
+                    dbService.saveKpiCardConfig(DEFAULT_KPI_CARDS).catch(console.error);
                 }
 
-                const savedSales = await dbService.getSalesData();
+                let isLocalDataPushed = false;
                 
-                if (cloudData && cloudData.latestDriveUpload) {
-                    const localSavedAt = savedSales ? savedSales.savedAt.getTime() : 0;
-                    // Chênh lệch > 15s để tránh vòng lặp
-                    if (cloudData.latestDriveUpload.timestamp > localSavedAt + 15000) {
-                        setPendingCloudSync(cloudData.latestDriveUpload);
-                    }
-                }
-                
-                if (savedSales && savedSales.data.length > 0) {
-                    setStatus({ message: 'Đang tải dữ liệu đã lưu...', type: 'info', progress: 25 });
-                    setFileInfo({ filename: savedSales.filename, savedAt: savedSales.savedAt.toLocaleString('vi-VN') });
+                // Mount Local Data right away
+                if (savedSalesReq && savedSalesReq.data.length > 0) {
+                    setStatus({ message: 'Nạp dữ liệu đã lưu lên bảng điều khiển...', type: 'info', progress: 25 });
+                    setFileInfo({ filename: savedSalesReq.filename, savedAt: savedSalesReq.savedAt.toLocaleString('vi-VN') });
 
                     const parseDataAndSet = () => {
                         let validCount = 0;
-                        const srcData = savedSales.data;
+                        const srcData = savedSalesReq.data;
                         const len = srcData.length;
                         for (let i = 0; i < len; i++) {
                             const row = srcData[i];
@@ -171,25 +118,98 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         });
                     };
 
-                    // Yield Main Thread before parsing dates
-                    setTimeout(parseDataAndSet, 10);
-
-                    try {
-                        const latestConfig = await loadConfigFromSheet(configUrl, () => {});
-                        if (JSON.stringify(config) !== JSON.stringify(latestConfig)) {
-                            console.log("Phát hiện cấu hình mới, đang tự động cập nhật...");
-                            await dbService.saveProductConfig(latestConfig, configUrl);
-                            setProductConfig(latestConfig);
-                        }
-                    } catch (updateError) {
-                        console.warn("Không thể kiểm tra cập nhật cấu hình tự động:", updateError);
-                    }
+                    // Yield Main Thread before array iteration
+                    setTimeout(parseDataAndSet, 5);
+                    isLocalDataPushed = true;
                 } else {
                     setAppState('upload');
                 }
+
+                // 2. Background Cloud Sync
+                if (user && !isDemoMode) {
+                    import('../services/firestoreService').then(async ({ fetchFromCloud }) => {
+                        try {
+                            const cloudData = await fetchFromCloud(user);
+                            if (!cloudData) return;
+                            
+                            // Ngầm ghi đè và Re-render (Không freeze UI)
+                            if (cloudData.productConfig) {
+                                setProductConfig(cloudData.productConfig);
+                                dbService.saveProductConfig(cloudData.productConfig, configUrl).catch(console.error);
+                            }
+                            if (cloudData.departmentMap) {
+                                setDepartmentMap(cloudData.departmentMap);
+                                dbService.saveDepartmentMap(cloudData.departmentMap).catch(console.error);
+                            }
+                            if (cloudData.warehouseTargets) {
+                                const map: Record<string, number> = {};
+                                (cloudData.warehouseTargets as any[]).forEach(t => map[t.kho] = t.dsMucTieu);
+                                setWarehouseTargets(map);
+                                dbService.saveWarehouseTargets(map).catch(console.error);
+                            }
+                            if (cloudData.gtdhTargets) {
+                                const map: Record<string, number> = {};
+                                (cloudData.gtdhTargets as any[]).forEach(t => map[t.nhomHang] = t.gtdh);
+                                setGtdhTargets(map);
+                                dbService.saveGtdhTargets(map).catch(console.error);
+                            }
+                            if (cloudData.kpiTargets) {
+                                setKpiTargets(cloudData.kpiTargets);
+                                dbService.saveKpiTargets(cloudData.kpiTargets).catch(console.error);
+                            }
+                            if (cloudData.crossSellingConfig) {
+                                setCrossSellingConfig(cloudData.crossSellingConfig);
+                                dbService.saveCrossSellingConfig(cloudData.crossSellingConfig).catch(console.error);
+                            }
+                            if (cloudData.kpiCardConfig) {
+                                setKpiCardsConfig(cloudData.kpiCardConfig);
+                                dbService.saveKpiCardConfig(cloudData.kpiCardConfig).catch(console.error);
+                            }
+                            if (cloudData.settingsStoreBackup) {
+                                Object.entries(cloudData.settingsStoreBackup).forEach(([k, v]) => {
+                                    dbService.saveSetting(k, v).catch(console.error);
+                                });
+                            }
+                            if (cloudData.latestDriveUpload) {
+                                const localSavedAt = savedSalesReq ? savedSalesReq.savedAt.getTime() : 0;
+                                const localFileTs = savedSalesReq ? savedSalesReq.fileLastModified : 0;
+                                
+                                let isExactlySameExcel = false;
+                                if (cloudData.latestDriveUpload.fileLastModified && localFileTs) {
+                                    if (cloudData.latestDriveUpload.fileLastModified === localFileTs) {
+                                        isExactlySameExcel = true;
+                                    }
+                                }
+                                
+                                if (!isExactlySameExcel && cloudData.latestDriveUpload.timestamp > localSavedAt + 15000) {
+                                    setPendingCloudSync(cloudData.latestDriveUpload);
+                                }
+                            }
+                        } catch (e) {
+                            console.error("Lỗi PULL Firestore ngầm:", e);
+                        }
+                    });
+                }
+
+                // 3. Background Sheet Check
+                if (isLocalDataPushed && config) {
+                    setTimeout(async () => {
+                        try {
+                            const latestConfig = await loadConfigFromSheet(configUrl, () => {});
+                            if (JSON.stringify(config) !== JSON.stringify(latestConfig)) {
+                                console.log("Phát hiện cấu hình ProductConfig mới tĩnh, đang tự động nạp ngầm...");
+                                dbService.saveProductConfig(latestConfig, configUrl).catch(console.error);
+                                setProductConfig(latestConfig);
+                            }
+                        } catch (updateError) {
+                            console.warn("Không thể kiểm tra Sheet tĩnh:", updateError);
+                        }
+                    }, 2000);
+                }
+
             } catch (e) {
-                console.error("Lỗi khi tải dữ liệu ban đầu:", e);
-                const msg = e instanceof Error ? e.message : 'Lỗi không xác định khi tải dữ liệu.';
+                console.error("Lỗi khi khởi chạy hệ thống dữ liệu:", e);
+                const msg = e instanceof Error ? e.message : 'Dữ liệu bộ đệm bị hỏng. Bạn hãy F5 để thử lại.';
                 setStatus({ message: msg, type: 'error', progress: 0 });
                 setAppState('upload');
                 await Promise.all([dbService.clearSalesData(), dbService.clearProductConfig()]);
@@ -304,7 +324,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         return { kho: khoOptions, trangThai: trangThaiOptions, nguoiTao: nguoiTaoOptions, department: deptOptions, hangSX: hangSXOptions };
     }, [originalData, departmentMap]);
 
-    const handleAcceptCloudSync = async (handleFileProcessing: (files: File[]) => Promise<void>) => {
+    const handleAcceptCloudSync = async (handleFileProcessing: (files: File[], isCloudSync?: boolean) => Promise<void>) => {
         if (!pendingCloudSync) return;
         try {
             setStatus({ message: `Đang kết nối Google Drive để tải ${pendingCloudSync.name}...`, type: 'info', progress: 10 });
@@ -324,12 +344,13 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
             setStatus({ message: `Đang tải file ${pendingCloudSync.name}...`, type: 'info', progress: 30 });
             const blob = await downloadFileFromDrive(pendingCloudSync.fileId, activeToken);
             
-            const newFile = new File([blob], pendingCloudSync.name, { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            // Cập nhật timestamp cho file này để trùng với timestamp trên mây (tránh bị đề nghị tải lần nữa)
-            Object.defineProperty(newFile, 'lastModified', { value: pendingCloudSync.timestamp });
+            const newFile = new File([blob], pendingCloudSync.name, { 
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                lastModified: pendingCloudSync.timestamp
+            });
             
             setPendingCloudSync(null); // Clear pending state
-            await handleFileProcessing([newFile]);
+            await handleFileProcessing([newFile], true); // Pass true to bypass redundant Drive upload loop
         } catch (e: any) {
             console.error("Lỗi khi tải đồng bộ:", e);
             setStatus({ message: "Lỗi đồng bộ: " + e.message, type: 'error', progress: 0 });

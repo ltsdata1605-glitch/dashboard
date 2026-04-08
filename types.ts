@@ -23,6 +23,7 @@ export interface StoredSalesData {
     data: DataRow[];
     filename: string;
     savedAt: Date;
+    fileLastModified?: number;
 }
 
 

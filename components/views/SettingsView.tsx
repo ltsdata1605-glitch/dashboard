@@ -6,7 +6,7 @@ import { Icon } from '../common/Icon';
 import { motion, AnimatePresence } from 'motion/react';
 import toast from 'react-hot-toast';
 import { useCloudSync } from '../../hooks/useCloudSync';
-import { shareCloudConfig, subscribeSharedConfigs, deleteSharedConfig, type SharedConfig } from '../../services/firestoreService';
+import { shareCloudConfig, fetchSharedConfigs, deleteSharedConfig, type SharedConfig } from '../../services/firestoreService';
 import ModalWrapper from '../modals/ModalWrapper';
 
 type SettingsTab = 'appearance' | 'data' | 'account';
@@ -54,20 +54,26 @@ const SettingsView: React.FC = () => {
             if (productConfig) setConfigUrl(productConfig.url);
         };
         loadSettings();
+    }, []);
 
-        // Subscribe to shared configs
-        const unsubscribe = subscribeSharedConfigs(
-            userRole,
-            departmentId,
-            (configs) => {
-                setSharedConfigs(configs);
-            }
-        );
-
+    // Only fetch configs when the activeTab === 'account'
+    useEffect(() => {
+        let isMounted = true;
+        if (activeTab === 'account' || activeTab === 'data' || activeTab === 'appearance') {
+            const loadConfigs = async () => {
+                try {
+                    const configs = await fetchSharedConfigs(userRole, departmentId);
+                    if (isMounted) setSharedConfigs(configs);
+                } catch (e) {
+                    console.error("Lấy danh sách thư viện thất bại:", e);
+                }
+            };
+            loadConfigs();
+        }
         return () => {
-            unsubscribe();
+            isMounted = false;
         };
-    }, [userRole, departmentId]);
+    }, [activeTab, userRole, departmentId]);
 
     const handleFontChange = async (newFont: string) => {
         setFont(newFont);

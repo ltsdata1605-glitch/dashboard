@@ -14,24 +14,31 @@ const NotificationDropdown = () => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
+    const fetchNotifications = async () => {
         if (!user) return;
-
+        const { getDocs } = await import('firebase/firestore');
         const q = query(
             collection(db, 'users', user.uid, 'notifications'),
             orderBy('createdAt', 'desc'),
             limit(20)
         );
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
+        try {
+            const snapshot = await getDocs(q);
             const notifs: AppNotification[] = [];
             snapshot.forEach((doc) => {
                 notifs.push({ id: doc.id, ...doc.data() } as AppNotification);
             });
             setNotifications(notifs);
-        });
+        } catch (e) {
+            console.error("Fetch notifications error: ", e);
+        }
+    };
 
-        return () => unsubscribe();
+    useEffect(() => {
+        fetchNotifications();
+        // Cập nhật lại mỗi 10 phút để tiết kiệm quota thay vì giữ WebSocket vĩnh viễn
+        const intervalId = setInterval(fetchNotifications, 10 * 60 * 1000);
+        return () => clearInterval(intervalId);
     }, [user]);
 
     useEffect(() => {
@@ -42,11 +49,13 @@ const NotificationDropdown = () => {
         };
         if (isOpen) {
             document.addEventListener('mousedown', handleClickOutside);
+            // Fetch anew immediately when opened
+            fetchNotifications();
         }
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [isOpen]);
+    }, [isOpen, user]);
 
     const unreadCount = notifications.filter(n => !n.read).length;
 

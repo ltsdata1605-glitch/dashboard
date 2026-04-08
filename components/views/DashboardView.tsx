@@ -199,26 +199,6 @@ export default function DashboardView() {
                 </div>
             )}
             
-            {/* Scrolling Marquee for Pending Approvals */}
-            {pendingRequestsCount > 0 && (
-                <div 
-                    onClick={() => setActiveTab('approval')}
-                    className="relative w-full bg-indigo-600 dark:bg-indigo-900 border-b border-indigo-500/50 cursor-pointer overflow-hidden z-20 flex items-center shadow-lg shadow-indigo-500/20 group transition-all"
-                >
-                    <div className="absolute left-0 top-0 bottom-0 z-10 w-16 bg-gradient-to-r from-indigo-600 dark:from-indigo-900 to-transparent"></div>
-                    <div className="flex whitespace-nowrap animate-marquee py-2 group-hover:pause">
-                        {Array.from({ length: 6 }).map((_, i) => (
-                            <span key={i} className="text-white font-bold text-[13px] uppercase tracking-widest px-8 flex items-center gap-2">
-                                <Icon name="bell" size={4} className="animate-wiggle" />
-                                BẠN CÓ {pendingRequestsCount} YÊU CẦU DUYỆT TRUY CẬP ĐANG CHỜ XỬ LÝ. CLICK VÀO ĐÂY ĐỂ XEM CHI TIẾT VÀ PHÊ DUYỆT NGAY! 
-                                <span className="text-indigo-300 ml-4">***</span>
-                            </span>
-                        ))}
-                    </div>
-                    <div className="absolute right-0 top-0 bottom-0 z-10 w-16 bg-gradient-to-l from-indigo-600 dark:from-indigo-900 to-transparent"></div>
-                </div>
-            )}
-
             <div className="max-w-[1280px] w-full mx-auto p-4 lg:p-8">
                 <DashboardContext.Provider value={logic as any}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleFileProcessing(Array.from(e.target.files))} />
@@ -293,11 +273,7 @@ export default function DashboardView() {
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
                                             </div>
                                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1 line-clamp-1">
-                                                Lượt Truy Cập: <span className="font-black text-slate-700 dark:text-slate-300">{totalVisits.toLocaleString('vi-VN')}</span>
-                                            </span>
-                                            <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 mx-1.5"></div>
-                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1 line-clamp-1">
-                                                <span className="animate-pulse text-emerald-500 font-bold whitespace-nowrap">Online:</span> <span className="font-black text-emerald-600 dark:text-emerald-400">{onlineUsers}</span>
+                                                Trạng Thái: <span className="font-black text-emerald-600 dark:text-emerald-400">Sẵn Sàng</span>
                                             </span>
                                         </div>
                                         

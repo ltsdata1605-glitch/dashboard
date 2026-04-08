@@ -1,46 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { collection, query, orderBy, onSnapshot, limit } from 'firebase/firestore';
-import { db } from '../../services/firebase';
+import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useLayout } from '../../contexts/LayoutContext';
-import { AppNotification } from '../../services/notificationService';
 import { Icon } from '../common/Icon';
+import { usePendingApprovalCount } from '../../hooks/usePendingApprovalCount';
 
 const PendingApprovalBanner: React.FC = () => {
     const { user, userRole } = useAuth();
     const { setActiveTab } = useLayout();
-    const [pendingNotifications, setPendingNotifications] = useState<AppNotification[]>([]);
+    const pendingCount = usePendingApprovalCount();
 
-    useEffect(() => {
-        if (!user || (userRole !== 'admin' && userRole !== 'manager')) {
-            setPendingNotifications([]);
-            return;
-        }
-
-        const q = query(
-            collection(db, 'users', user.uid, 'notifications'),
-            orderBy('createdAt', 'desc'),
-            limit(20)
-        );
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            const notifs: AppNotification[] = [];
-            snapshot.forEach((doc) => {
-                const data = { id: doc.id, ...doc.data() } as AppNotification;
-                // Lọc các thông báo CHƯA ĐỌC liên quan đến Đơn chờ duyệt
-                if (!data.read && (data.title.includes('Đăng ký') || data.title.includes('Yêu cầu') || data.title.includes('Phân quyền'))) {
-                    notifs.push(data);
-                }
-            });
-            setPendingNotifications(notifs);
-        });
-
-        return () => unsubscribe();
-    }, [user, userRole]);
-
-    if (pendingNotifications.length === 0) return null;
-
-    const notifCount = pendingNotifications.length;
+    if (!user || (userRole !== 'admin' && userRole !== 'manager')) return null;
+    if (pendingCount === 0) return null;
 
     return (
         <div 
@@ -53,7 +23,7 @@ const PendingApprovalBanner: React.FC = () => {
             
             <div className="flex-1 overflow-hidden whitespace-nowrap relative">
                 <div className="inline-block animate-marquee hover:pause pl-[100%] font-medium">
-                    Bạn có <span className="font-black text-xl px-1">{notifCount}</span> yêu cầu chờ duyệt mới! Nhấn vào đây để xem chi tiết và cấp quyền truy cập ngay.
+                    Bạn có <span className="font-black text-xl px-1">{pendingCount}</span> yêu cầu chờ duyệt mới! Nhấn vào đây để xem chi tiết và cấp quyền truy cập ngay.
                 </div>
             </div>
 

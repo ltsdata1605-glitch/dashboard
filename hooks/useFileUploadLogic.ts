@@ -113,15 +113,17 @@ export const useFileUploadLogic = ({
         }
     };
 
-    const handleFileProcessing = async (files: File[]) => {
+    const handleFileProcessing = async (files: File[], isCloudSync: boolean = false) => {
         if (!files || files.length === 0) return;
         setAppState('loading');
         setIsProcessing(true);
         startTimer();
         
+        const latestFileTime = Math.max(...files.map(f => f.lastModified));
+        
         try {
             const token = sessionStorage.getItem('googleOAuthToken');
-            if (token) {
+            if (token && !isCloudSync) {
                 const { uploadFileToDrive, listDriveFiles } = await import('../services/googleDriveService');
                 
                 setStatus({ message: `Đang kiểm tra lịch sử tải lên...`, type: 'info', progress: 5 });
@@ -151,9 +153,9 @@ export const useFileUploadLogic = ({
                         skippedCount++;
                     } else {
                         setStatus({ message: `Đang tải lên Drive File ${i + 1}/${files.length}...`, type: 'info', progress: progressBase + 5 });
-                        const newFileId = await uploadFileToDrive(file, token, 'dmx_sales');
-                        lastUploadedFileId = newFileId;
-                        lastUploadedFileName = file.name;
+                        const driveResult = await uploadFileToDrive(file, token, 'dmx_sales');
+                        lastUploadedFileId = driveResult.id;
+                        lastUploadedFileName = driveResult.name;
                         uploadedCount++;
                     }
                 }
@@ -163,7 +165,7 @@ export const useFileUploadLogic = ({
                     if (user && lastUploadedFileId && lastUploadedFileName) {
                         try {
                             const { syncToCloud } = await import('../services/firestoreService');
-                            await syncToCloud(user, { latestDriveUpload: { fileId: lastUploadedFileId, name: lastUploadedFileName, timestamp: Date.now() } });
+                            await syncToCloud(user, { latestDriveUpload: { fileId: lastUploadedFileId, name: lastUploadedFileName, timestamp: Date.now(), fileLastModified: latestFileTime } });
                         } catch (e) {
                             console.error("Lỗi đồng bộ metadata Drive lên Mây:", e);
                         }
@@ -199,9 +201,9 @@ export const useFileUploadLogic = ({
                     await new Promise(r => setTimeout(r, 50)); // nhường CPU để vẽ progress
                     
                     const mergedName = files.length === 1 ? files[0].name : `Gộp ${files.length} Báo cáo`;
-                    const latestDate = new Date(Math.max(...files.map(f => f.lastModified)));
+                    const latestDate = new Date(latestFileTime);
                     
-                    await saveSalesData(payload, mergedName);
+                    await saveSalesData(payload, mergedName, latestDate.getTime());
                     setFileInfo({ filename: mergedName, savedAt: latestDate.toLocaleString('vi-VN') });
                     
                     // Reset filters to initial state to avoid stale filters from previous data

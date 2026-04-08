@@ -17,7 +17,7 @@ const handleDriveError = async (response: Response, action: string) => {
 /**
  * Uploads a given File (e.g., .xlsx) directly to Google Drive using the provided OAuth token.
  */
-export const uploadFileToDrive = async (file: File, token: string, filenamePrefix: string = 'ycv_report'): Promise<string> => {
+export const uploadFileToDrive = async (file: File, token: string, filenamePrefix: string = 'ycv_report'): Promise<{id: string, name: string}> => {
     if (!token) throw new Error("Missing Google OAuth Token");
 
     const pad = (n: number) => n.toString().padStart(2, '0');
@@ -51,7 +51,7 @@ export const uploadFileToDrive = async (file: File, token: string, filenamePrefi
     }
 
     const data = await response.json();
-    return data.id as string; // Required fileId to download later
+    return { id: data.id as string, name: formattedName };
 };
 
 

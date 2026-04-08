@@ -130,52 +130,43 @@ export const shareCloudConfig = async (
     });
 };
 
-export const subscribeSharedConfigs = (
+export const fetchSharedConfigs = async (
     currentUserRole: string | null | undefined,
-    currentDepartmentId: string | undefined,
-    onData: (configs: SharedConfig[]) => void
-) => {
-    let activeUnsubscribe: (() => void) | null = null;
+    currentDepartmentId: string | undefined
+): Promise<SharedConfig[]> => {
+    const { collection, getDocs } = await import('firebase/firestore');
+    const snapshot = await getDocs(collection(db, 'shared_configs'));
     
-    import('firebase/firestore').then(({ collection, onSnapshot }) => {
-        const unsubscribe = onSnapshot(collection(db, 'shared_configs'), (snapshot) => {
-            let configs: SharedConfig[] = [];
-            snapshot.forEach(docSnap => {
-                const data = docSnap.data() as Omit<SharedConfig, 'id'>;
-                let isVisible = false;
-                
-                if (currentUserRole === 'admin') {
-                    isVisible = true;
-                } else if (data.role === 'admin' || data.departmentId === 'ALL (Super Admin)') {
-                    isVisible = true;
-                } else if (currentDepartmentId) {
-                    const userDepts = currentDepartmentId.split(',').map(s => s.trim().toLowerCase());
-                    const configDepts = data.departmentId.split(',').map(s => s.trim().toLowerCase());
-                    isVisible = userDepts.some(dept => configDepts.includes(dept));
-                }
+    let configs: SharedConfig[] = [];
+    snapshot.forEach(docSnap => {
+        const data = docSnap.data() as Omit<SharedConfig, 'id'>;
+        let isVisible = false;
+        
+        if (currentUserRole === 'admin') {
+            isVisible = true;
+        } else if (data.role === 'admin' || data.departmentId === 'ALL (Super Admin)') {
+            isVisible = true;
+        } else if (currentDepartmentId) {
+            const userDepts = currentDepartmentId.split(',').map(s => s.trim().toLowerCase());
+            const configDepts = data.departmentId.split(',').map(s => s.trim().toLowerCase());
+            isVisible = userDepts.some(dept => configDepts.includes(dept));
+        }
 
-                if (isVisible) {
-                    configs.push({
-                        id: docSnap.id,
-                        ...data
-                    } as SharedConfig);
-                }
-            });
-            
-            configs.sort((a, b) => {
-                const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-                const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-                return bTime - aTime;
-            });
-            
-            onData(configs);
-        });
-        activeUnsubscribe = unsubscribe;
+        if (isVisible) {
+            configs.push({
+                id: docSnap.id,
+                ...data
+            } as SharedConfig);
+        }
     });
-
-    return () => {
-        if (activeUnsubscribe) activeUnsubscribe();
-    };
+    
+    configs.sort((a, b) => {
+        const aTime = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const bTime = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return bTime - aTime;
+    });
+    
+    return configs;
 };
 
 export const deleteSharedConfig = async (configId: string) => {

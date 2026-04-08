@@ -21,44 +21,44 @@ const KpiCard: React.FC<{
     trendValue?: string | React.ReactNode;
 }> = ({ icon, iconColor, title, onClick, children, trendLabel, trendValue }) => {
     const isClickable = !!onClick;
-    
+
     // Apple-style vivid and deep pastel colors
     const colorMap: Record<string, { icon: string, border: string }> = {
-        blue: { 
-            icon: 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400', 
-            border: 'border-blue-200 dark:border-blue-500/30' 
+        blue: {
+            icon: 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
+            border: 'border-blue-200 dark:border-blue-500/30'
         },
-        teal: { 
-            icon: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', 
-            border: 'border-emerald-200 dark:border-emerald-500/30' 
+        teal: {
+            icon: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400',
+            border: 'border-emerald-200 dark:border-emerald-500/30'
         },
-        emerald: { 
-            icon: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', 
-            border: 'border-emerald-200 dark:border-emerald-500/30' 
+        emerald: {
+            icon: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400',
+            border: 'border-emerald-200 dark:border-emerald-500/30'
         },
-        pink: { 
-            icon: 'bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400', 
-            border: 'border-pink-200 dark:border-pink-500/30' 
+        pink: {
+            icon: 'bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400',
+            border: 'border-pink-200 dark:border-pink-500/30'
         },
-        red: { 
-            icon: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', 
-            border: 'border-rose-200 dark:border-rose-500/30' 
+        red: {
+            icon: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
+            border: 'border-rose-200 dark:border-rose-500/30'
         },
-        rose: { 
-            icon: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', 
-            border: 'border-rose-200 dark:border-rose-500/30' 
+        rose: {
+            icon: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400',
+            border: 'border-rose-200 dark:border-rose-500/30'
         },
-        purple: { 
-            icon: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400', 
-            border: 'border-indigo-200 dark:border-indigo-500/30' 
+        purple: {
+            icon: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400',
+            border: 'border-indigo-200 dark:border-indigo-500/30'
         },
-        orange: { 
-            icon: 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400', 
-            border: 'border-orange-200 dark:border-orange-500/30' 
+        orange: {
+            icon: 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400',
+            border: 'border-orange-200 dark:border-orange-500/30'
         },
-        amber: { 
-            icon: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400', 
-            border: 'border-amber-200 dark:border-amber-500/30' 
+        amber: {
+            icon: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400',
+            border: 'border-amber-200 dark:border-amber-500/30'
         },
     };
 
@@ -94,10 +94,10 @@ const KpiCard: React.FC<{
     );
 };
 
-const KpiTargetEditor: React.FC<{ 
-    value: string; 
-    onChange: (val: string) => void; 
-    onFinish: () => void; 
+const KpiTargetEditor: React.FC<{
+    value: string;
+    onChange: (val: string) => void;
+    onFinish: () => void;
     onCancel: () => void;
     suffix?: string;
 }> = ({ value, onChange, onFinish, onCancel, suffix = '%' }) => {
@@ -123,7 +123,7 @@ const KpiTargetEditor: React.FC<{
                 onKeyDown={(e) => {
                     if (e.key === 'Enter') onFinish();
                     if (e.key === 'Escape') onCancel();
-                    e.stopPropagation(); 
+                    e.stopPropagation();
                 }}
                 className="w-12 px-1 py-0.5 text-center text-xs font-bold text-slate-900 bg-slate-100 rounded focus:ring-2 focus:ring-blue-500 outline-none"
             />
@@ -135,7 +135,7 @@ const KpiTargetEditor: React.FC<{
 const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig, warehouseFilteredData } = useDashboardContext();
     const kpis = processedData?.kpis;
-    
+
     // targets fallbacks
     const hieuQuaTarget = kpiTargets?.hieuQua ?? 40;
     const traGopTarget = kpiTargets?.traGop ?? 45;
@@ -158,11 +158,11 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         if (!editingState.field) return;
         const newVal = parseFloat(editingState.value);
         if (!isNaN(newVal) && newVal >= 0) {
-            const newTargets = { 
-                hieuQua: hieuQuaTarget, 
-                traGop: traGopTarget, 
+            const newTargets = {
+                hieuQua: hieuQuaTarget,
+                traGop: traGopTarget,
                 gtdh: gtdhTarget,
-                [editingState.field]: newVal 
+                [editingState.field]: newVal
             };
             updateKpiTargets(newTargets);
             saveKpiTargets(newTargets).catch(console.error);
@@ -191,11 +191,11 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     const revenuePercentHT = revenueTarget > 0 ? (kpis.doanhThuQD / revenueTarget) * 100 : 0;
     const visibleCards = kpiCardsConfig
         .filter(c => c.isVisible && c.id !== 'kpi-runrate' && c.id !== 'kpi-crosssell')
-        .sort((a,b) => a.order - b.order);
+        .sort((a, b) => a.order - b.order);
 
     const computedValues = useMemo(() => {
         const values: Record<string, number> = {};
-        
+
         // Pass 1: Metric & Data
         kpiCardsConfig.forEach(config => {
             if (!config.type || config.type === 'metric') {
@@ -218,13 +218,13 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 for (const row of warehouseFilteredData) {
                     const hsx = String(row['Hãng'] || row['Hãng SX'] || '');
                     if (filters.selectedManufacturers && filters.selectedManufacturers.length > 0 && !filters.selectedManufacturers.includes(hsx)) continue;
-                    
+
                     const nganh = String(row['Ngành Hàng'] || row['Ngành hàng'] || row['Nganh Hang'] || '');
                     if (filters.selectedIndustries && filters.selectedIndustries.length > 0 && !filters.selectedIndustries.includes(nganh)) continue;
-                    
+
                     const nhom = String(row['Nhóm Hàng'] || row['Nhóm hàng'] || row['Nhom Hang'] || '');
                     if (filters.selectedSubgroups && filters.selectedSubgroups.length > 0 && !filters.selectedSubgroups.includes(nhom)) continue;
-                    
+
                     if (filters.metricType === 'quantity') {
                         val += Number(row['Số Lượng'] || row['Số lượng'] || 0);
                     } else if (filters.metricType === 'revenueQD') {
@@ -247,7 +247,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 else if (config.operation === '-') res = v1 - v2;
                 else if (config.operation === '*') res = v1 * v2;
                 else if (config.operation === '/') res = v2 !== 0 ? v1 / v2 : 0;
-                
+
                 if (config.format === 'percentage') res *= 100;
                 values[config.id] = res;
             }
@@ -255,7 +255,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
 
         return values;
     }, [kpiCardsConfig, kpis, warehouseFilteredData]);
-    
+
     // Auto-adjust cols depending on length
     const gridCols = visibleCards.length > 6 ? 6 : (visibleCards.length === 5 ? 5 : visibleCards.length);
 
@@ -263,7 +263,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         <div className={`grid grid-cols-2 md:grid-cols-3 xl:grid-cols-${gridCols} gap-4 mb-6 kpi-grid-for-export`}>
             {visibleCards.map(config => {
                 const isSpecialUnshipped = config.metric === 'doanhThuThucChoXuat';
-                
+
                 let rawValue = computedValues[config.id] || 0;
 
                 // Determine formatting
@@ -298,11 +298,11 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         // Custom logic for DTQD revenue global target
                         finalTrendLabel = revenueTarget > 0 ? "%HT" : "Target";
                         isGood = revenuePercentHT >= 100;
-                        finalTrendValue = revenueTarget > 0 
-                        ? <span className={isGood ? 'text-blue-600' : 'text-slate-500'}>
-                            {formatCurrency(revenueTarget)} / {revenuePercentHT.toFixed(0)}%
-                          </span> 
-                        : <span className="text-slate-400 italic text-[10px]">Chưa có</span>;
+                        finalTrendValue = revenueTarget > 0
+                            ? <span className={isGood ? 'text-blue-600' : 'text-slate-500'}>
+                                {formatCurrency(revenueTarget)} / {revenuePercentHT.toFixed(0)}%
+                            </span>
+                            : <span className="text-slate-400 italic text-[10px]">Chưa có</span>;
                     }
                 } else if (config.hasTarget && config.targetType === 'custom') {
                     finalTrendLabel = "Target";
@@ -332,14 +332,14 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         startEditing(e, config.targetRef);
                     }
                 };
-                
+
                 const isClickable = isSpecialUnshipped || config.targetRef === 'hieuQua' || config.targetRef === 'traGop';
 
                 return (
-                    <KpiCard 
+                    <KpiCard
                         key={config.id}
-                        icon={config.icon} 
-                        iconColor={config.iconColor} 
+                        icon={config.icon}
+                        iconColor={config.iconColor}
                         title={config.title}
                         onClick={isClickable ? handleClick : undefined}
                         trendLabel={finalTrendLabel}

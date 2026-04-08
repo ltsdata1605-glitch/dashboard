@@ -15,6 +15,19 @@ export default defineConfig(({ mode }) => {
         react(),
         tailwindcss(),
       ],
+      build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    'vendor-react': ['react', 'react-dom'],
+                    'vendor-excel': ['xlsx', 'papaparse'],
+                    'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+                    'vendor-ui': ['motion', 'framer-motion', 'lucide-react'],
+                    'vendor-charts': ['recharts', 'd3', 'chart.js']
+                }
+            }
+        }
+      },
       define: {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
