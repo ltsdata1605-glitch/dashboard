@@ -11,7 +11,7 @@ import { Switch } from '../dashboard/DashboardWidgets'; // Reusing Switch from W
 const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
     const percentage = Math.min(Math.max(value, 0), 200);
     const displayPercentage = Math.min(percentage, 100);
-    let colorClass = 'bg-primary-500';
+    let colorClass = 'bg-indigo-500';
     if (value >= 100) colorClass = 'bg-green-500';
     else if (value < 85) colorClass = 'bg-yellow-500';
     if (value < 50) colorClass = 'bg-red-500';
@@ -34,20 +34,7 @@ const PerformanceIndicator: React.FC<{ changeInfo?: { change: number; direction:
     return <div className="flex items-center gap-1 text-xs font-bold shrink-0">{icon}{percentageText}</div>;
 };
 
-const REPORT_THEMES = [
-    { headerBg: 'bg-sky-100/70 dark:bg-sky-900/40', rowBg: 'bg-sky-50/50 dark:bg-sky-900/20', text: 'text-sky-800 dark:text-sky-300', border: 'border-t border-sky-200 dark:border-sky-800', title: 'text-sky-800', bg: 'bg-sky-50' },
-    { headerBg: 'bg-emerald-100/70 dark:bg-emerald-900/40', rowBg: 'bg-emerald-50/50 dark:bg-emerald-900/20', text: 'text-emerald-800 dark:text-emerald-300', border: 'border-t border-emerald-200 dark:border-emerald-800', title: 'text-emerald-800', bg: 'bg-emerald-50' },
-    { headerBg: 'bg-rose-100/70 dark:bg-rose-900/40', rowBg: 'bg-rose-50/50 dark:bg-rose-900/20', text: 'text-rose-800 dark:text-rose-300', border: 'border-t border-rose-200 dark:border-rose-800', title: 'text-rose-800', bg: 'bg-rose-50' },
-    { headerBg: 'bg-amber-100/70 dark:bg-amber-900/40', rowBg: 'bg-amber-50/50 dark:bg-amber-900/20', text: 'text-amber-800 dark:text-amber-300', border: 'border-t border-amber-200 dark:border-amber-800', title: 'text-amber-800', bg: 'bg-amber-50' },
-    { headerBg: 'bg-violet-100/70 dark:bg-violet-900/40', rowBg: 'bg-violet-50/50 dark:bg-violet-900/20', text: 'text-violet-800 dark:text-violet-300', border: 'border-t border-violet-200 dark:border-violet-800', title: 'text-violet-800', bg: 'bg-violet-50' },
-    { headerBg: 'bg-cyan-100/70 dark:bg-cyan-900/40', rowBg: 'bg-cyan-50/50 dark:bg-cyan-900/20', text: 'text-cyan-800 dark:text-cyan-300', border: 'border-t border-cyan-200 dark:border-cyan-800', title: 'text-cyan-800', bg: 'bg-cyan-50' },
-];
 
-const CRITERIA_THEMES = [
-    { headerBg: 'bg-sky-100/70 dark:bg-sky-900/40', rowBg: 'bg-sky-50/50 dark:bg-sky-900/20', text: 'text-sky-800 dark:text-sky-300', border: 'border-t border-sky-200 dark:border-sky-800' },
-    { headerBg: 'bg-emerald-100/70 dark:bg-emerald-900/40', rowBg: 'bg-emerald-50/50 dark:bg-emerald-900/20', text: 'text-emerald-800 dark:text-emerald-300', border: 'border-t border-emerald-200 dark:border-emerald-800' },
-    { headerBg: 'bg-rose-100/70 dark:bg-rose-900/40', rowBg: 'bg-rose-50/50 dark:bg-rose-900/20', text: 'text-rose-800 dark:text-rose-300', border: 'border-t border-rose-200 dark:border-rose-800' },
-];
 
 interface IndividualCompetitionViewProps {
     allEmployees: Employee[];
@@ -89,12 +76,6 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
     const [savedColorIndex, setSavedColorIndex] = useIndexedDBState<number | null>(selectedEmployee ? `theme-color-${selectedEmployee.originalName}` : null, null);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
 
-    useEffect(() => {
-        if (selectedEmployee && savedColorIndex === null) {
-            const randomIndex = Math.floor(Math.random() * REPORT_THEMES.length);
-            setSavedColorIndex(randomIndex);
-        }
-    }, [selectedEmployee, savedColorIndex, setSavedColorIndex]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -109,7 +90,7 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const currentTheme = REPORT_THEMES[savedColorIndex || 0] || REPORT_THEMES[0];
+
 
     const groupedPerformanceData = useMemo(() => {
         if (!selectedEmployee) return {};
@@ -237,19 +218,19 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                     <div className="flex items-center gap-2 w-full md:w-auto relative" ref={employeeSelectorRef}>
                         <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Chọn nhân viên:</span>
                         <div className="relative">
-                            <button onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="flex items-center justify-between w-full md:w-64 px-3 py-2 text-sm font-medium border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                            <button onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="flex items-center justify-between w-full md:w-64 px-3 py-2 text-sm font-medium border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
                                 <span className="truncate">{selectedEmployee ? selectedEmployee.name : "Chọn nhân viên..."}</span>
                                 <ChevronDownIcon className="h-4 w-4 ml-2 text-slate-500" />
                             </button>
                             {isEmployeeSelectorOpen && (
                                 <div className="absolute top-full left-0 mt-1 w-full md:w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden flex flex-col max-h-80">
                                     <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:border-slate-800/50 sticky top-0">
-                                        <input type="text" value={employeeSearchTerm} onChange={(e) => setEmployeeSearchTerm(e.target.value)} placeholder="Tìm kiếm..." className="w-full px-3 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-slate-100" autoFocus />
+                                        <input type="text" value={employeeSearchTerm} onChange={(e) => setEmployeeSearchTerm(e.target.value)} placeholder="Tìm kiếm..." className="w-full px-3 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-slate-100" autoFocus />
                                     </div>
                                     <div className="overflow-y-auto flex-1">
                                         {filteredEmployees.length > 0 ? (
                                             filteredEmployees.map(emp => (
-                                                <button key={emp.originalName} onClick={() => { onSelectIndividual(emp); setIsEmployeeSelectorOpen(false); setEmployeeSearchTerm(''); }} className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee.originalName === emp.originalName ? 'bg-primary-5 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
+                                                <button key={emp.originalName} onClick={() => { onSelectIndividual(emp); setIsEmployeeSelectorOpen(false); setEmployeeSearchTerm(''); }} className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee.originalName === emp.originalName ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
                                                     {emp.name}
                                                 </button>
                                             ))
@@ -264,17 +245,17 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                     </div>
                     <div className="flex items-center justify-end gap-2 w-full md:w-auto">
                         <div className="relative" ref={filterRef}>
-                            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${isFilterOpen || isFiltered ? 'bg-primary-5 dark:bg-primary-900/20 text-primary-600 dark:text-primary-400 border-primary-200 dark:border-primary-800' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
+                            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-3 py-2 text-[11px] uppercase font-bold rounded-lg border transition-colors ${isFilterOpen || isFiltered ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
                                 <FilterIcon className="h-4 w-4" />
                                 <span className="hidden sm:inline">Lọc nhóm thi đua</span>
-                                {isFiltered && <span className="ml-1 px-1.5 py-0.5 bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-xs font-bold rounded-full">{activeFilterCount}</span>}
+                                {isFiltered && <span className="ml-1 px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-[10px] font-black rounded-full">{activeFilterCount}</span>}
                             </button>
                             {isFilterOpen && (
                                 <div className="absolute right-0 top-full mt-2 w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                                     <div className="p-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                                        <input type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} placeholder="Tìm kiếm nhóm thi đua..." className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-white dark:bg-slate-800 dark:text-slate-100 placeholder-slate-400" autoFocus />
+                                        <input type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} placeholder="Tìm kiếm nhóm thi đua..." className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-800 dark:text-slate-100 placeholder-slate-400" autoFocus />
                                         <div className="flex items-center justify-between mt-2">
-                                            <button onClick={handleSelectAllCompetitions} className="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline">Chọn tất cả</button>
+                                            <button onClick={handleSelectAllCompetitions} className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Chọn tất cả</button>
                                             <button onClick={handleDeselectAllCompetitions} className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline">Bỏ chọn tất cả</button>
                                         </div>
                                     </div>
@@ -313,40 +294,38 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                         </button>
                     </div>
                 </div>
-                <div className="mt-2 overflow-x-auto">
-                    <h3 className={`text-center text-3xl font-bold mb-4 uppercase leading-normal ${currentTheme.title}`}>{selectedEmployee.name} - THI ĐUA ĐẾN NGÀY {getYesterdayDateString()}</h3>
-                    <table className={`min-w-full text-[13px] border ${currentTheme.border}`}>
-                        <thead className={`${currentTheme.bg}`}>
-                            <tr className={`${currentTheme.text} text-[13px]`}>
-                                <th className="text-center font-bold px-3 py-2.5 uppercase tracking-wider w-12 border-r border-slate-400/30">#</th>
-                                <th className="text-left font-bold px-3 py-2.5 uppercase tracking-wider border-r border-slate-400/30 whitespace-nowrap"><div className="flex items-center">NHÓM THI ĐUA</div></th>
-                                <th className="text-center font-bold px-3 py-2.5 uppercase tracking-wider border-r border-slate-400/30"><div className="flex items-center justify-center">M.TIÊU</div></th>
-                                <th className="text-center font-bold px-3 py-2.5 uppercase tracking-wider border-r border-slate-400/30"><div className="flex items-center justify-center">T.Hiện</div></th>
-                                <th className="text-center font-bold px-3 py-2.5 uppercase tracking-wider w-32 border-r border-slate-400/30"><div className="flex items-center justify-center">% HT</div></th>
-                                <th className="text-center font-bold px-3 py-2.5 uppercase tracking-wider"><div className="flex items-center justify-center">Còn lại</div></th>
+                <div className="w-full overflow-x-auto border-t border-slate-200 dark:border-slate-700 lg:border-x lg:border-b lg:rounded-xl lg:m-4 overflow-hidden shadow-sm" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <h3 className="text-center text-xl font-black mb-1 mt-4 uppercase leading-normal text-indigo-700 dark:text-indigo-400 tracking-wider p-2 bg-slate-50 dark:bg-slate-900 shadow-inner export-show-border">{selectedEmployee.name} - THI ĐUA ĐẾN NGÀY {getYesterdayDateString()}</h3>
+                    <table className="w-full border-collapse compact-export-table">
+                        <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
+                            <tr>
+                                <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-12 align-middle">#</th>
+                                <th className="text-left px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 min-w-[200px] align-middle">NHÓM THI ĐUA</th>
+                                <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">MỤC TIÊU</th>
+                                <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">THỰC HIỆN</th>
+                                <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-40 align-middle">% HOÀN THÀNH</th>
+                                <th className="text-center px-3 py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">CÒN LẠI</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white dark:bg-slate-800">
+                        <tbody className="bg-white dark:bg-[#1c1c1e] divide-y divide-slate-100 dark:divide-slate-700 text-[12px]">
                            {(['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map((criterion, criterionIndex) => {
                                const items = groupedPerformanceData[criterion];
                                if (!items || items.length === 0) return null;
-                               const theme = CRITERIA_THEMES[criterionIndex % CRITERIA_THEMES.length];
                                return (
                                    <React.Fragment key={criterion}>
-                                       <tr className={`${theme.headerBg} ${theme.border}`}><td colSpan={6} className={`px-3 py-2 font-bold uppercase ${theme.text}`}>Tiêu chí: {criterion}</td></tr>
+                                       <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white shadow-inner font-extrabold border-t-[3px] border-t-slate-200"><td colSpan={6} className="px-3 py-2 text-[11px] uppercase tracking-wider">Tiêu chí: {criterion}</td></tr>
                                        {items.map((item, index) => {
-                                           const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
-                                           const rowClass = index % 2 !== 0 ? theme.rowBg : '';
+                                           const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400';
                                            return (
-                                               <tr key={`${criterion}-${item.originalTitle}`} className={`${rowClass} hover:bg-slate-100 dark:hover:bg-slate-700/50 border-t border-slate-200 dark:border-slate-700`}>
-                                                   <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 border-r border-slate-200 dark:border-slate-700">{index + 1}</td>
-                                                   <td className="px-3 py-2 font-medium text-slate-800 dark:text-slate-100 border-r border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                                               <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-all cursor-pointer">
+                                                   <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50">{index + 1}</td>
+                                                   <td className="px-3 py-2 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
                                                        {item.name}
                                                    </td>
-                                                   <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 border-r border-slate-200 dark:border-slate-700">{f.format(roundUp(item.target))}</td>
-                                                   <td className="px-3 py-2 text-center font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-200 dark:border-slate-700">{f.format(roundUp(item.actual))}</td>
-                                                   <td className="px-3 py-2 text-center w-32 border-r border-slate-200 dark:border-slate-700"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center">{roundUp(item.completion).toFixed(0)}%</span><div className="w-12 hidden sm:block"><ProgressBar value={item.completion} /></div></div></td>
-                                                   <td className={`px-3 py-2 text-center font-semibold ${remainingColor}`}>{f.format(roundUp(item.remaining))}</td>
+                                                   <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{f.format(roundUp(item.target))}</td>
+                                                   <td className="px-3 py-2 text-center font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{f.format(roundUp(item.actual))}</td>
+                                                   <td className="px-3 py-2 text-center w-40 border-r border-slate-100 dark:border-slate-700/50 tabular-nums"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-16 hidden sm:block"><ProgressBar value={item.completion} /></div></div></td>
+                                                   <td className={`px-3 py-2 text-center font-semibold ${remainingColor} tabular-nums`}>{f.format(roundUp(item.remaining))}</td>
                                                </tr>
                                            );
                                        })}

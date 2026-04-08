@@ -5,9 +5,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
 import { AppNotification, markAsRead, markAllAsRead } from '../../services/notificationService';
 import { motion, AnimatePresence } from 'motion/react';
+import { useLayout } from '../../contexts/LayoutContext';
 
 const NotificationDropdown = () => {
     const { user } = useAuth();
+    const { setActiveTab } = useLayout();
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -113,7 +115,13 @@ const NotificationDropdown = () => {
                                     {notifications.map((notif) => (
                                         <div 
                                             key={notif.id}
-                                            onClick={() => handleMarkAsRead(notif.id)}
+                                            onClick={() => {
+                                                handleMarkAsRead(notif.id);
+                                                if (notif.title.includes('Đăng ký') || notif.title.includes('Yêu cầu') || notif.title.includes('Phân quyền')) {
+                                                    setActiveTab('approval');
+                                                    setIsOpen(false);
+                                                }
+                                            }}
                                             className={`p-4 border-b border-slate-100 dark:border-slate-700/50 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-750 cursor-pointer transition-colors flex gap-3 ${!notif.read ? 'bg-indigo-50/30 dark:bg-indigo-900/10' : ''}`}
                                         >
                                             <div className="mt-0.5 flex-shrink-0">

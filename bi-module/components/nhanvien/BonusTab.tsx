@@ -383,8 +383,8 @@ export const BonusView: React.FC<{
 
     const cardTitle = (
         <div className="flex flex-col items-start leading-none py-1">
-            <span className="js-report-title text-3xl font-extrabold uppercase text-primary-700">HIỆU SUẤT LÀM VIỆC ĐẾN NGÀY {getYesterdayDateString()}</span>
-            <span className="text-sm italic text-slate-500 mt-2 font-medium">"Quản lý tốt thưởng là quản lý tốt động lực của nhân viên."</span>
+            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">HIỆU SUẤT LÀM VIỆC ĐẾN NGÀY {getYesterdayDateString()}</span>
+            <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Quản lý tốt thưởng là quản lý tốt động lực của nhân viên.</span>
         </div>
     );
 
@@ -397,9 +397,9 @@ export const BonusView: React.FC<{
                         <Switch checked={showAll} onChange={() => setShowAll(!showAll)} />
                     </div>
                     
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-950 rounded-xl p-1.5 border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <button onClick={() => setViewMode('group')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/><span>BỘ PHẬN</span></button>
-                        <button onClick={() => setViewMode('list')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/><span>DANH SÁCH</span></button>
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl p-1 shadow-inner">
+                        <button onClick={() => setViewMode('group')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><ViewGridIcon className="h-4 w-4"/><span>BỘ PHẬN</span></button>
+                        <button onClick={() => setViewMode('list')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><ViewListIcon className="h-4 w-4"/><span>DANH SÁCH</span></button>
                     </div>
 
                     <button 
@@ -416,18 +416,19 @@ export const BonusView: React.FC<{
             </div>
             <div ref={cardRef}>
                 <Card noPadding title={cardTitle}>
-                    <div className="w-full overflow-x-auto border-t border-slate-50 dark:border-slate-800">
-                        <table className="min-w-full text-[13px] border-collapse">
-                            <thead className="bg-sky-600 text-white font-bold uppercase">
+                    <div className="w-full overflow-x-auto">
+                        <div className="border-t border-slate-200 dark:border-slate-700 lg:border-x lg:border-b lg:rounded-xl lg:m-4 overflow-hidden shadow-sm">
+                        <table className="w-full border-collapse compact-export-table">
+                            <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
                                 <tr>
-                                    <th className="px-4 py-4 text-center border-r border-white/20 cursor-pointer" onClick={() => { setSortField('name'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Nhân viên</th>
-                                    <th className="px-3 py-4 text-center border-r border-white/20 cursor-pointer" onClick={() => { setSortField('dtqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>DTQĐ</th>
-                                    <th className="px-3 py-4 text-center border-r border-white/20 cursor-pointer" onClick={() => { setSortField('hqqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>HQQĐ</th>
-                                    <th className="px-3 py-4 text-center border-r border-white/20 cursor-pointer" onClick={() => { setSortField('erp'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>ERP</th>
-                                    <th className="px-3 py-4 text-center border-r border-white/20 cursor-pointer" onClick={() => { setSortField('tNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>T.NÓNG</th>
-                                    <th className="px-3 py-4 text-center border-r border-white/20 cursor-pointer" onClick={() => { setSortField('pNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>%T.NÓNG</th>
-                                    <th className="px-3 py-4 text-center border-r border-white/20 cursor-pointer" onClick={() => { setSortField('tong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>TỔNG</th>
-                                    <th className="px-3 py-4 text-center bg-sky-700/50 cursor-pointer" onClick={() => { setSortField('dKien'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>THƯỞNG DK</th>
+                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('name'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Nhân viên</th>
+                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('dtqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>DTQĐ</th>
+                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('hqqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>HQQĐ</th>
+                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('erp'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>ERP</th>
+                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('tNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>T.NÓNG</th>
+                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('pNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>%T.NÓNG</th>
+                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('tong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>TỔNG</th>
+                                    <th className="px-3 py-2 text-center border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('dKien'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>THƯỞNG DK</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700">
@@ -435,15 +436,15 @@ export const BonusView: React.FC<{
                                     if (item.type === 'department' || item.type === 'total') {
                                         const isGrandTotal = item.type === 'total';
                                         return (
-                                            <tr key={`${item.type}-${idx}`} className={`${isGrandTotal ? 'bg-sky-50 dark:bg-sky-900/50 text-slate-900 dark:text-sky-100 shadow-inner font-black' : 'bg-slate-100 dark:bg-slate-900/90 font-black text-slate-800 dark:text-slate-100'} border-y border-slate-200 dark:border-slate-700`}>
-                                                <td className={`px-4 py-2 uppercase tracking-widest border-r ${isGrandTotal ? 'border-sky-200 dark:border-sky-800 text-center' : 'border-slate-200 dark:border-slate-700'}`}>{item.name}</td>
-                                                <td className={`px-3 py-2 text-center border-r tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700'}`}>{f.format(item.sumDtqd)}</td>
-                                                <td className={`px-3 py-2 text-center border-r tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700'}`}>-</td>
-                                                <td className={`px-3 py-2 text-center border-r tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700'}`}>{f.format(Math.ceil(item.sumErp / 1000))}</td>
-                                                <td className={`px-3 py-2 text-center border-r tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700'}`}>{f.format(Math.ceil(item.sumTnong / 1000))}</td>
-                                                <td className={`px-3 py-2 text-center border-r tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700'}`}>-</td>
-                                                <td className={`px-3 py-2 text-center border-r tabular-nums font-bold ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700'}`}>{f.format(Math.ceil(item.sumTong / 1000))}</td>
-                                                <td className={`px-3 py-2 text-center tabular-nums font-black ${isGrandTotal ? 'bg-sky-100 dark:bg-sky-800 text-primary-700' : 'bg-sky-50/20 text-primary-600'}`}>{f.format(Math.ceil(item.sumDkien / 1000))}</td>
+                                            <tr key={`${item.type}-${idx}`} className={`${isGrandTotal ? 'bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white shadow-inner font-extrabold border-t-[3px] border-t-slate-200' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-y border-slate-200 dark:border-slate-700`}>
+                                                <td className={`px-3 py-2 text-[11px] uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center' : 'border-slate-200 dark:border-slate-700'}`}>{item.name}</td>
+                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(item.sumDtqd)}</td>
+                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>-</td>
+                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(Math.ceil(item.sumErp / 1000))}</td>
+                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(Math.ceil(item.sumTnong / 1000))}</td>
+                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>-</td>
+                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700`}>{f.format(Math.ceil(item.sumTong / 1000))}</td>
+                                                <td className={`px-2 py-2 text-[11px] text-center tabular-nums font-black ${isGrandTotal ? 'bg-slate-200/50 dark:bg-slate-700 text-indigo-700 dark:text-indigo-400' : 'bg-indigo-50/30 text-indigo-600 dark:text-indigo-400'}`}>{f.format(Math.ceil(item.sumDkien / 1000))}</td>
                                             </tr>
                                         );
                                     }
@@ -454,27 +455,27 @@ export const BonusView: React.FC<{
                                     const isStale = !isUpdatedToday(bonus?.updatedAt);
 
                                     return (
-                                        <tr key={item.originalName} className={`hover:bg-slate-50 transition-all cursor-pointer ${isHighlighted ? 'bg-yellow-400 text-slate-900 border-l-4 border-l-blue-600' : ''}`} onClick={() => onEmployeeClick(item)}>
-                                            <td className="px-4 py-3 border-r border-slate-100 dark:border-slate-700 flex items-center gap-3 min-w-[150px]">
+                                        <tr key={item.originalName} className={`transition-all cursor-pointer ${isHighlighted ? 'bg-indigo-50/50 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50 text-[12px]' : 'hover:bg-slate-50 dark:hover:bg-slate-750 text-[12px]'}`} onClick={() => onEmployeeClick(item)}>
+                                            <td className="px-3 py-2 border-r border-slate-100 dark:border-slate-700/50 flex items-center gap-2 min-w-[150px]">
                                                 <MedalBadge rank={item.rank} />
                                                 <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item)} />
-                                                <span className={`font-bold whitespace-normal break-words ${isHighlighted ? 'text-slate-900' : (isStale ? 'text-slate-400 dark:text-slate-600' : 'text-primary-600 dark:text-primary-400')}`}>
+                                                <span className={`font-bold whitespace-normal break-words ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : (isStale ? 'text-slate-400 dark:text-slate-600' : 'text-indigo-600 dark:text-indigo-500')}`}>
                                                     {item.name}
                                                 </span>
                                             </td>
-                                            <td className={`px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 tabular-nums font-bold ${isHighlighted ? 'text-slate-900' : getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</td>
-                                            <td className={`px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 tabular-nums font-bold ${isHighlighted ? 'text-slate-900' : getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</td>
-                                            <td className={`px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 tabular-nums font-bold ${isHighlighted ? 'text-slate-900' : getCellColor(erpVal, 'erp')}`}>
+                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</td>
+                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</td>
+                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(erpVal, 'erp')}`}>
                                                 {bonus ? f.format(Math.ceil(erpVal / 1000)) : '-'}
                                             </td>
-                                            <td className={`px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 tabular-nums font-bold ${isHighlighted ? 'text-slate-900' : getCellColor(tnongVal, 'tnong')}`}>
+                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(tnongVal, 'tnong')}`}>
                                                 {bonus ? f.format(Math.ceil(tnongVal / 1000)) : '-'}
                                             </td>
-                                            <td className={`px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 tabular-nums font-bold ${isHighlighted ? 'text-slate-900' : getCellColor(pnongVal, 'pnong')}`}>{bonus ? pnongVal.toFixed(0) + '%' : '-'}</td>
-                                            <td className={`px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 tabular-nums font-bold ${isHighlighted ? 'text-slate-900' : getCellColor(tongVal, 'tong')}`}>
+                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(pnongVal, 'pnong')}`}>{bonus ? pnongVal.toFixed(0) + '%' : '-'}</td>
+                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(tongVal, 'tong')}`}>
                                                 {bonus ? f.format(Math.ceil(tongVal / 1000)) : '-'}
                                             </td>
-                                            <td className={`px-3 py-3 text-center ${isHighlighted ? 'bg-yellow-500/30' : 'bg-sky-50/20'} tabular-nums font-black ${isHighlighted ? 'text-slate-900' : 'text-primary-600'}`}>
+                                            <td className={`px-2 py-2 text-[11px] text-center ${isHighlighted ? 'bg-indigo-100/50 dark:bg-indigo-900/30' : 'bg-slate-50/50 dark:bg-slate-800/20'} tabular-nums font-extrabold ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600'}`}>
                                                 {bonus ? f.format(Math.ceil(dkienVal / 1000)) : '-'}
                                             </td>
                                         </tr>
@@ -482,6 +483,7 @@ export const BonusView: React.FC<{
                                 })}
                             </tbody>
                         </table>
+                        </div>
                     </div>
                 </Card>
             </div>

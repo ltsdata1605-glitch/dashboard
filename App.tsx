@@ -19,6 +19,7 @@ import LoginView from './components/views/LoginView';
 import PendingApprovalView from './components/views/PendingApprovalView';
 import { Toaster } from 'react-hot-toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
+import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
 
 function AppContent() {
     const { activeTab, setActiveTab, setIsMobileSidebarOpen, isDarkMode, toggleDarkMode } = useLayout();
@@ -86,7 +87,10 @@ function AppContent() {
                     </div>
                 </div>
 
-                <main className="flex-grow overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-950/20 relative">
+                <main className="flex-grow overflow-y-auto custom-scrollbar bg-slate-50/50 dark:bg-slate-950/20 relative flex flex-col">
+                    {/* Thêm Banner thông báo Đơn chờ duyệt */}
+                    <PendingApprovalBanner />
+
                     {/* Desktop Notification Center */}
                     <div className="hidden lg:block absolute top-[19px] right-6 z-[200]">
                         <NotificationDropdown />

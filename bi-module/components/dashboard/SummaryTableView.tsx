@@ -170,7 +170,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                 
                                 if (isTotal) {
                                     return (
-                                        <div key={rIdx} className="bg-primary-600 text-white px-4 py-3 flex justify-between items-center font-black uppercase tracking-wider text-xs">
+                                        <div key={rIdx} className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white px-4 py-3 flex justify-between items-center font-extrabold uppercase tracking-wider text-xs border-t-[3px] border-t-slate-200">
                                             <span>TỔNG CỘNG</span>
                                             <div className="flex flex-col items-end">
                                                 <span>{f.format(roundUp(parseNumber(row[processedTable.allHeaders.indexOf('DTQĐ')])))} Tr</span>
@@ -181,7 +181,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                 }
 
                                 return (
-                                    <div key={rIdx} className={`p-4 flex flex-col gap-3 ${isSel ? 'bg-primary-50 dark:bg-primary-900/20' : ''}`}>
+                                    <div key={rIdx} className={`p-4 flex flex-col gap-3 ${isSel ? 'bg-indigo-50/50 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors'}`}>
                                         <div className="flex justify-between items-start">
                                             <span className="font-black text-slate-900 dark:text-white uppercase tracking-tight">{shortenSupermarketName(String(row[nameIdx])).toUpperCase()}</span>
                                             <div className="flex flex-col items-end">
@@ -200,7 +200,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 return (
                                                     <div key={h} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
                                                         <p className="text-[9px] font-bold text-slate-400 uppercase mb-1" dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}></p>
-                                                        <p className={`text-xs font-black tabular-nums ${h === 'DTQĐ' ? 'text-primary-600' : ''}`}>
+                                                        <p className={`text-xs font-black tabular-nums ${h === 'DTQĐ' ? 'text-indigo-700 dark:text-indigo-400' : ''}`}>
                                                             {cell?.isMerged ? (cell.type === 'percent' ? roundUp(val)+'%' : f.format(roundUp(val))) : (String(cell).includes('%') || h.includes('%') ? roundUp(val) + '%' : f.format(roundUp(val)))}
                                                         </p>
                                                         {cell?.isMerged && (
@@ -220,14 +220,14 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         <table className="w-full border-collapse">
                             <thead>
                                 <tr>
-                                    {orderedHeaders.map(h => visibleColumns.has(h) ? <th key={h} className={`px-1 py-3 text-[10px] font-bold text-white uppercase bg-primary-600 tracking-tighter border-r border-primary-500/50 text-center whitespace-nowrap`} dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}></th> : null)}
+                                    {orderedHeaders.map(h => visibleColumns.has(h) ? <th key={h} className={`px-1 py-3 text-[10px] font-bold text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/80 tracking-wider border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750 text-center whitespace-nowrap`} dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}></th> : null)}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-[#1c1c1e]">
                                 {processedTable.allRows.map((row, rIdx) => { 
                                     const nameIdx = processedTable.allHeaders.indexOf('Tên miền'), isTotal = row[nameIdx] === 'Tổng', isSel = !isTotal && row[nameIdx] === activeSupermarket; 
                                     return (
-                                        <tr key={rIdx} className={`${isTotal ? 'bg-primary-600 text-white' : 'bg-white dark:bg-slate-800'} ${isSel ? 'bg-primary-50 dark:bg-primary-900/40 ring-1 ring-inset ring-primary-100' : ''}`}>
+                                        <tr key={rIdx} className={`${isTotal ? 'bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white font-extrabold border-t-[3px] border-t-slate-200' : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50 dark:hover:bg-slate-750'} ${isSel ? '!bg-indigo-50/50 dark:!bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : ''}`}>
                                             {orderedHeaders.map(h => { 
                                                 if (!visibleColumns.has(h)) return null; 
                                                 const oIdx = processedTable.allHeaders.indexOf(h), cell = row[oIdx], val = parseNumber(cell?.isMerged ? cell.value : cell); 
@@ -236,7 +236,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                     if ((h.includes('%HT') || h === '%HT V.Trội') && !isNaN(val)) classes += val >= 100 ? ' text-green-600' : (val >= 85 ? ' text-yellow-600' : ' text-red-600'); 
                                                     if (h === '%HQQĐ' && !isNaN(val)) classes += val >= (supermarketTargets[row[nameIdx]]?.quyDoi ?? 40) ? ' text-green-600 font-bold' : ' text-red-600'; 
                                                     if (h === 'DTLK') classes += ' text-[#980000]'; 
-                                                    if (h === 'DTQĐ') classes += ' text-primary-600 font-bold'; 
+                                                    if (h === 'DTQĐ') classes += ' text-indigo-700 dark:text-indigo-400 font-extrabold'; 
                                                 } 
                                                 return (
                                                     <td key={h} className={classes}>

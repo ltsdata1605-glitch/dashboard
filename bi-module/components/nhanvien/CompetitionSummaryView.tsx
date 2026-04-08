@@ -137,12 +137,12 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                 <button 
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setIsFilterOpen(!isFilterOpen); }}
-                    className={`p-2 rounded-full transition-colors ${isFilterOpen || selectedTitles.length > 0 ? 'bg-primary-50 text-primary-600' : 'text-slate-400 hover:bg-slate-100'}`}
+                    className={`p-2 rounded-full transition-colors ${isFilterOpen || selectedTitles.length > 0 ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:bg-slate-100'}`}
                     title="Lọc nhóm thi đua cho bảng này"
                 >
                     <FilterIcon className="h-5 w-5 pointer-events-none" />
                     {selectedTitles.length > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-[8px] font-black px-1 rounded-full">{selectedTitles.length}</span>
+                        <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[8px] font-black px-1 rounded-full">{selectedTitles.length}</span>
                     )}
                 </button>
                 {isFilterOpen && (
@@ -153,7 +153,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                 value={filterSearch} 
                                 onChange={e => setFilterSearch(e.target.value)}
                                 placeholder="Tìm nhóm thi đua..."
-                                className="w-full px-3 py-1.5 text-xs border rounded-lg bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-primary-500"
+                                className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800 dark:text-slate-100"
                                 autoFocus
                             />
                         </div>
@@ -166,7 +166,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                         <p className="px-2 mb-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">{criterion}</p>
                                         {comps.map(comp => (
                                             <div key={comp.title} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer" onClick={() => handleToggleTitle(comp.title)}>
-                                                <span className={`text-xs ${selectedTitles.includes(comp.title) ? 'font-bold text-primary-600' : 'text-slate-600 dark:text-slate-400'}`}>{shortenName(comp.originalTitle, nameOverrides)}</span>
+                                                <span className={`text-xs ${selectedTitles.includes(comp.title) ? 'font-bold text-indigo-600' : 'text-slate-600 dark:text-slate-400'}`}>{shortenName(comp.originalTitle, nameOverrides)}</span>
                                                 <Switch checked={selectedTitles.includes(comp.title)} onChange={() => {}} />
                                             </div>
                                         ))}
@@ -180,7 +180,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
             <button 
                 type="button" 
                 onClick={(e) => { e.stopPropagation(); setIsEditingName(true); }} 
-                className="p-2 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded-full transition-colors" 
+                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors" 
                 title="Sửa tên bảng"
             >
                 <PencilIcon className="h-5 w-5 pointer-events-none" />
@@ -205,16 +205,16 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                         value={tempName} 
                         onChange={e => setTempName(e.target.value)}
                         onKeyDown={e => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
-                        className="bg-slate-50 dark:bg-slate-800 border-b-2 border-primary-500 outline-none px-2 py-1 text-lg font-black uppercase text-primary-700"
+                        className="bg-slate-50 dark:bg-slate-800 border-b-2 border-indigo-500 outline-none px-2 py-1 text-lg font-black uppercase text-indigo-700 dark:text-indigo-400"
                         autoFocus
                     />
                     <button type="button" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="text-green-600"><CheckCircleIcon className="h-6 w-6" /></button>
                     <button type="button" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="text-slate-400"><XIcon className="h-6 w-6" /></button>
                 </div>
             ) : (
-                <span className="js-report-title text-2xl font-black uppercase text-primary-700">{tableName} - ĐẾN {getYesterdayDateString()}</span>
+                <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">{tableName} - ĐẾN {getYesterdayDateString()}</span>
             )}
-            <span className="text-[10px] italic text-slate-500 mt-1 font-medium no-print">Dữ liệu thi đua được tổng hợp theo thời gian thực từ BI.</span>
+            <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold no-print">Dữ liệu thi đua được tổng hợp theo thời gian thực từ BI.</span>
         </div>
     );
 
@@ -226,24 +226,24 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                         Bấm biểu tượng lọc <FilterIcon className="inline h-4 w-4" /> để chọn các cột dữ liệu hiển thị cho bảng này.
                     </div>
                 ) : (
-                    <div className="w-full overflow-x-auto border-t border-slate-100 dark:border-slate-800 scrollbar-thin">
-                        <table className="min-w-full text-[12px] border-collapse">
-                            <thead>
-                                <tr className="bg-slate-800 text-white font-bold uppercase tracking-wider">
-                                    <th className="sticky left-0 z-20 bg-slate-800 px-4 py-4 text-left border-r border-slate-700/50 min-w-[160px]">Nhân viên</th>
-                                    <th className="px-3 py-4 text-center border-r border-slate-700/50 bg-slate-700/50">Bộ phận</th>
+                    <div className="w-full overflow-x-auto border-t border-slate-200 dark:border-slate-700 lg:border-x lg:border-b lg:rounded-xl lg:m-4 overflow-hidden shadow-sm" style={{ WebkitOverflowScrolling: 'touch' }}>
+                        <table className="w-full border-collapse compact-export-table text-[12px]">
+                            <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
+                                <tr>
+                                    <th className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800/80 px-4 py-3 text-left border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 min-w-[160px] align-middle">Nhân viên</th>
+                                    <th className="px-3 py-3 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">Bộ phận</th>
                                     {visibleHeaders.map(header => (
-                                        <th key={header.title} className="px-3 py-4 text-center border-r border-slate-700/50 min-w-[100px] leading-tight">
+                                        <th key={header.title} className="px-3 py-3 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 min-w-[100px] leading-tight align-middle">
                                             {shortenName(header.originalTitle, nameOverrides)}
-                                            <div className="text-[9px] opacity-60 font-medium mt-1">({header.metric})</div>
+                                            <div className="text-[9px] opacity-60 font-medium mt-1 tracking-normal">({header.metric})</div>
                                         </th>
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-[#1c1c1e]">
                                 {employees.map((emp) => (
-                                    <tr key={emp.originalName} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                        <td className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-4 py-3 font-bold text-primary-600 dark:text-primary-400 border-r border-slate-100 dark:border-slate-800 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                                    <tr key={emp.originalName} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
+                                        <td className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
                                             {emp.name}
                                         </td>
                                         <td className="px-3 py-3 text-center border-r border-slate-100 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px] whitespace-nowrap">

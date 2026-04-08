@@ -209,8 +209,8 @@ const RevenueView: React.FC<{
     const cardTitle = (
         <div className="flex flex-col w-full">
             <div className="flex flex-col items-start leading-none">
-                <span className="js-report-title text-3xl font-extrabold uppercase text-primary-700">DOANH THU NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
-                <span className="text-[11px] italic text-slate-500 mt-1 font-medium">"Tôi không chạy theo doanh thu — doanh thu phản ánh đẳng cấp mà Tôi tạo ra."</span>
+                <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-2">DOANH THU NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
+                <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Tôi không chạy theo doanh thu — doanh thu phản ánh đẳng cấp mà Tôi tạo ra.</span>
             </div>
             {timeProgressWidget}
         </div>
@@ -233,17 +233,17 @@ const RevenueView: React.FC<{
                         </select>
                     </div>
 
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-950 rounded-xl p-1 border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl p-1 shadow-inner">
                         <button 
                             onClick={() => setViewMode('group')} 
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                         >
                             <ViewGridIcon className="h-4 w-4"/>
                             <span className="hidden xs:inline">BỘ PHẬN</span>
                         </button>
                         <button 
                             onClick={() => setViewMode('list')} 
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}
+                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
                         >
                             <ViewListIcon className="h-4 w-4"/>
                             <span className="hidden xs:inline">DANH SÁCH</span>
@@ -351,52 +351,53 @@ const RevenueView: React.FC<{
                                 })}
                             </div>
                         ) : (
-                            <table className="min-w-full text-[13px]">
-                                <thead className="bg-sky-600 dark:bg-sky-800 text-white font-bold uppercase tracking-wider">
-                                    <tr>
-                                        <th className="px-4 py-4 text-center cursor-pointer select-none border-r border-sky-500/30" onClick={() => handleSort('name')}>Nhân viên</th>
-                                        <th className="px-3 py-4 text-center cursor-pointer select-none border-r border-sky-500/30 bg-sky-700/40" onClick={() => handleSort('dtlk')}>DT THỰC</th>
-                                        <th className="px-3 py-4 text-center cursor-pointer select-none border-r border-sky-500/30 bg-sky-700/40" onClick={() => handleSort('dtqd')}>DTQĐ</th>
-                                        <th className="px-3 py-4 text-center cursor-pointer select-none border-r border-sky-500/30 bg-sky-700/50" onClick={() => handleSort('target')}>M.TIÊU</th>
-                                        <th className="px-3 py-4 text-center cursor-pointer select-none border-r border-sky-500/30 bg-sky-700/50" onClick={() => handleSort('completion')}>%HT</th>
-                                        <th className="px-3 py-4 text-center cursor-pointer select-none border-r border-sky-500/30" onClick={() => handleSort('hqqd')}>HQQĐ</th>
-                                        <th className="px-3 py-4 text-center border-r border-sky-500/30" onClick={() => handleSort('installment')}>%T.GÓP</th>
-                                        <th className="px-3 py-4 text-center cursor-pointer select-none" onClick={() => handleSort('bankem')}>%B.KÈM</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                            <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                                <table className="w-full border-collapse compact-export-table">
+                                    <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
+                                        <tr>
+                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('name')}>Nhân viên</th>
+                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('dtlk')}>DT THỰC</th>
+                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('dtqd')}>DTQĐ</th>
+                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('target')}>M.TIÊU</th>
+                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('completion')}>%HT</th>
+                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('hqqd')}>HQQĐ</th>
+                                            <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600" onClick={() => handleSort('installment')}>%T.GÓP</th>
+                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('bankem')}>%B.KÈM</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-[#1c1c1e]">
                                     {displayList.map((row, idx) => {
                                         if (row.type === 'department' || row.type === 'total') {
                                             const isGrandTotal = row.type === 'total';
                                             const prev = row.prevCompData;
                                             return (
-                                                <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-sky-50 dark:bg-sky-900/50 text-slate-900 dark:text-sky-100 shadow-inner font-black' : 'bg-slate-100 dark:bg-slate-900/90 font-black text-slate-800 dark:text-slate-100'} border-y border-slate-200 dark:border-slate-700`}>
-                                                    <td className={`px-4 py-3 uppercase tracking-widest border-r ${isGrandTotal ? 'border-sky-200 dark:border-sky-800 text-center' : 'border-slate-200 dark:border-slate-700'}`}>{row.name}</td>
-                                                    <td className={`px-3 py-3 text-center border-r tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700'}`}>
+                                                <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white shadow-inner font-extrabold border-t-[3px] border-t-slate-200' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-y border-slate-200 dark:border-slate-700`}>
+                                                    <td className={`px-3 py-2 uppercase text-[11px] tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center text-xs' : 'border-slate-200 dark:border-slate-700'}`}>{row.name}</td>
+                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>
                                                         <div>{f.format(roundUp(row.dtlk))}</div>
                                                         <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
                                                     </td>
-                                                    <td className={`px-3 py-3 text-center border-r tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700 text-primary-600 dark:text-primary-400'}`}>
+                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700 text-indigo-700 dark:text-indigo-400 font-extrabold`}>
                                                         <div>{f.format(roundUp(row.dtqd))}</div>
                                                         <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                                                     </td>
-                                                    <td className={`px-3 py-3 text-center border-r tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800 opacity-70' : 'border-slate-200 dark:border-slate-700 text-slate-500'}`}>
+                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>
                                                         <div>{f.format(roundUp(row.calculatedTarget))}</div>
                                                         <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
                                                     </td>
-                                                    <td className={`px-3 py-3 text-center border-r tabular-nums font-black ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700'}`} style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion) }}>
+                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`} style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion) }}>
                                                         <div>{roundUp(row.calculatedCompletion)}%</div>
                                                         <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
                                                     </td>
-                                                    <td className={`px-3 py-3 text-center border-r tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700'}`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) }}>
+                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) }}>
                                                         <div>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                                                         <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
                                                     </td>
-                                                    <td className={`px-3 py-3 text-center border-r tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : 'border-slate-200 dark:border-slate-700'}`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>
+                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>
                                                         <div>{roundUp(row.calculatedInstallment)}%</div>
                                                         <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
                                                     </td>
-                                                    <td className={`px-3 py-3 text-center tabular-nums ${isGrandTotal ? 'border-sky-200 dark:border-sky-800' : ''}`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
+                                                    <td className={`px-2 py-2 text-[11px] text-center tabular-nums border-slate-200 dark:border-slate-700`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
                                                         <div>{roundUp(row.pctBillBk)}%</div>
                                                         <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
                                                     </td>
@@ -407,44 +408,44 @@ const RevenueView: React.FC<{
                                         const prev = row.prevCompData;
 
                                         return (
-                                            <tr key={row.originalName} className={`transition-all group cursor-pointer ${isHighlighted ? 'bg-amber-100 dark:bg-amber-900/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
-                                                <td className="px-4 py-3 whitespace-nowrap border-r border-slate-100 dark:border-slate-700 min-w-[150px]">
-                                                    <div className="flex items-center gap-3">
+                                            <tr key={row.originalName} className={`transition-all group cursor-pointer text-[12px] ${isHighlighted ? 'bg-indigo-50/50 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50 dark:hover:bg-slate-750'}`}>
+                                                <td className="px-3 py-2 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 min-w-[150px]">
+                                                    <div className="flex items-center gap-2">
                                                         <MedalBadge rank={row.rank} />
                                                         <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />
                                                         <div className="flex flex-col min-w-0" onClick={() => setHighlightedEmployees((prev: Set<string>) => { const n = new Set(prev); if (n.has(row.originalName!)) n.delete(row.originalName!); else n.add(row.originalName!); return n; })}>
                                                             <div className="flex items-center gap-2">
-                                                                <button onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="text-left font-bold text-primary-600 dark:text-primary-400 hover:underline whitespace-normal break-words">{row.name}</button>
+                                                                <button onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="text-left font-bold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-normal break-words">{row.name}</button>
                                                             </div>
-                                                            <span className="text-[9px] text-slate-400 uppercase font-bold tabular-nums">{row.department}</span>
+                                                            <span className="text-[10px] text-slate-400 capitalize font-medium tabular-nums">{row.department}</span>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 font-semibold" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
+                                                <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-medium" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
                                                     <div>{f.format(roundUp(row.dtlk))}</div>
                                                     <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
                                                 </td>
-                                                <td className="px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 font-bold" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) }}>
-                                                    <div>{f.format(roundUp(row.dtqd))}</div>
+                                                <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-bold" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) }}>
+                                                    <div className="text-indigo-700 dark:text-indigo-400">{f.format(roundUp(row.dtqd))}</div>
                                                     <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                                                 </td>
-                                                <td className="px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 bg-sky-50/20 italic font-bold text-slate-500 dark:text-slate-400">
+                                                <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 italic font-medium text-slate-500 dark:text-slate-400">
                                                     <div>{f.format(roundUp(row.calculatedTarget || 0))}</div>
                                                     <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
                                                 </td>
-                                                <td className="px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 bg-sky-50/20 font-black" style={{ color: getHtColor(row.calculatedCompletion) }}>
+                                                <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-bold" style={{ color: getHtColor(row.calculatedCompletion) }}>
                                                     <div>{roundUp(row.calculatedCompletion)}%</div>
                                                     <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
                                                 </td>
-                                                <td className="px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 font-bold" style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) }}>
+                                                <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-medium" style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) }}>
                                                     <div>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                                                     <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
                                                 </td>
-                                                <td className="px-3 py-3 text-center border-r border-slate-100 dark:border-slate-700 font-black" style={{ color: getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>
+                                                <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-bold" style={{ color: getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>
                                                     <div>{roundUp(row.calculatedInstallment)}%</div>
                                                     <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
                                                 </td>
-                                                <td className="px-3 py-3 text-center font-black" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
+                                                <td className="px-2 py-2 text-[11px] text-center font-bold" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
                                                     <div>{roundUp(row.pctBillBk)}%</div>
                                                     <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
                                                 </td>
@@ -453,6 +454,7 @@ const RevenueView: React.FC<{
                                     })}
                                 </tbody>
                             </table>
+                            </div>
                         )}
                     </div>
                 </Card>

@@ -21,8 +21,8 @@ const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: T
         onClick={() => setActiveTab(tab)} 
         className={`flex items-center gap-1 px-3 py-2 text-[12px] md:text-[13px] font-bold rounded-full transition-colors duration-200 whitespace-nowrap shrink-0 focus:outline-none ${
             activeTab === tab 
-                ? 'bg-primary-600 text-white shadow-sm' 
-                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-sm' 
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
         }`} 
     >
         <div className="shrink-0">{icon}</div>
@@ -406,8 +406,8 @@ export const NhanVien: React.FC = () => {
     return (
         <div className="space-y-6">
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <h1 className="text-3xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Phân tích Nhân viên</h1>
-                <div className="bg-white dark:bg-slate-900 p-1 rounded-2xl shadow-sm border border-slate-200/50 flex gap-0.5 no-print overflow-x-auto scrollbar-hide">
+                <h1 className="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight">Phân tích Nhân viên</h1>
+                <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-2xl shadow-inner border border-slate-200/50 dark:border-slate-700 flex gap-0.5 no-print overflow-x-auto scrollbar-hide">
                     <NavTabButton tab="revenue" activeTab={activeTab} setActiveTab={setActiveTab} icon={<LineChartIcon className="h-4 w-4" />}>Doanh thu</NavTabButton>
                     <NavTabButton tab="crossSelling" activeTab={activeTab} setActiveTab={setActiveTab} icon={<ArchiveBoxIcon className="h-4 w-4" />}>Bán kèm</NavTabButton>
                     <NavTabButton tab="installment" activeTab={activeTab} setActiveTab={setActiveTab} icon={<CreditCardIcon className="h-4 w-4" />}>Trả góp</NavTabButton>

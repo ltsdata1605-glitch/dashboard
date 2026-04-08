@@ -326,8 +326,8 @@ const InstallmentTab: React.FC<{
 
     const cardTitle = (
         <div className="flex flex-col items-start leading-none py-1">
-            <span className="js-report-title text-3xl font-extrabold uppercase text-primary-700">TRẢ GÓP NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
-            <span className="text-sm italic text-slate-500 mt-2 font-medium">"Khi lợi ích được đặt đúng chỗ, quyết định mua trở nên tự nhiên."</span>
+            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">TRẢ GÓP NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
+            <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Khi lợi ích được đặt đúng chỗ, quyết định mua trở nên tự nhiên.</span>
         </div>
     );
 
@@ -356,9 +356,9 @@ const InstallmentTab: React.FC<{
                             </div>
                         )}
                     </div>
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-950 rounded-xl p-1 border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <button onClick={() => setViewMode('group')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/><span className="hidden xs:inline">BỘ PHẬN</span></button>
-                        <button onClick={() => setViewMode('list')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/><span className="hidden xs:inline">DANH SÁCH</span></button>
+                    <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl p-1 shadow-inner">
+                        <button onClick={() => setViewMode('group')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}><ViewGridIcon className="h-4 w-4"/><span className="hidden xs:inline">BỘ PHẬN</span></button>
+                        <button onClick={() => setViewMode('list')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}><ViewListIcon className="h-4 w-4"/><span className="hidden xs:inline">DANH SÁCH</span></button>
                     </div>
                 </div>
                 
@@ -373,7 +373,7 @@ const InstallmentTab: React.FC<{
             </div>
             <div ref={cardRef}>
                 <Card noPadding title={cardTitle} rounded={false}>
-                    <div className="w-full overflow-x-auto border-t border-slate-100 dark:border-slate-800 shadow-sm rounded-none" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <div className="w-full overflow-x-auto border-t border-slate-200 dark:border-slate-700 lg:border-x lg:border-b lg:rounded-xl lg:m-4 overflow-hidden shadow-sm" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {isMobile ? (
                             <div className="divide-y divide-slate-100 dark:divide-slate-700">
                                 {displayList.map((row, idx) => {
@@ -440,32 +440,32 @@ const InstallmentTab: React.FC<{
                                 })}
                             </div>
                         ) : (
-                            <table className="min-w-full text-[13px] border-separate border-spacing-0">
-                                <thead>
-                                    <tr className="bg-sky-600 dark:bg-sky-800 text-white font-bold uppercase">
-                                        <th rowSpan={2} onClick={() => handleSort('name')} className="px-4 py-4 text-center border-r border-sky-500/30 cursor-pointer hover:bg-sky-700 min-w-[200px] align-middle">NHÂN VIÊN</th>
-                                        {providers.map(p => <th key={p.name} colSpan={2} className="px-1 py-2 text-center border-b border-sky-500/30 border-r border-sky-500/30 text-[11px] leading-tight align-middle">{p.shortName}</th>)}
-                                        <th rowSpan={2} onClick={() => handleSort('totalDtSieuThi')} className="px-2 py-4 text-center border-r border-sky-500/30 bg-sky-700/40 cursor-pointer hover:bg-sky-700 text-[11px] leading-tight align-middle">DT SIÊU<br/>THỊ</th>
-                                        <th rowSpan={2} onClick={() => handleSort('totalPercent')} className="px-2 py-4 text-center bg-sky-700/60 cursor-pointer hover:bg-sky-800 text-[11px] leading-tight align-middle">% TỔNG<br/>TG</th>
+                            <table className="w-full border-collapse compact-export-table">
+                                <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
+                                    <tr>
+                                        <th rowSpan={2} onClick={() => handleSort('name')} className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 min-w-[200px] align-middle">NHÂN VIÊN</th>
+                                        {providers.map(p => <th key={p.name} colSpan={2} className="px-1 py-1 text-center border-b-[1px] !border-b-slate-200 dark:!border-b-slate-700 border-r border-slate-200 dark:border-slate-700 text-[10px] leading-tight align-middle">{p.shortName}</th>)}
+                                        <th rowSpan={2} onClick={() => handleSort('totalDtSieuThi')} className="px-2 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 text-[10px] leading-tight align-middle">DT SIÊU THỊ</th>
+                                        <th rowSpan={2} onClick={() => handleSort('totalPercent')} className="px-2 py-2 text-center border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 text-[10px] leading-tight align-middle">% TỔNG TG</th>
                                     </tr>
-                                    <tr className="bg-sky-500 dark:bg-sky-900 text-white text-[10px] font-bold">
-                                        {providers.map(p => <React.Fragment key={p.name}><th className="px-1 py-1.5 border-r border-sky-400/30 border-b border-sky-400/30 text-center">DT</th><th className="px-1 py-1.5 border-r border-sky-400/30 border-b border-sky-400/30 text-center">%</th></React.Fragment>)}
+                                    <tr className="bg-slate-100 dark:bg-slate-800 uppercase text-[9px] font-bold text-slate-500 tracking-wider">
+                                        {providers.map(p => <React.Fragment key={p.name}><th className="px-1 py-1 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 text-center">DT</th><th className="px-1 py-1 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 text-center">%</th></React.Fragment>)}
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-slate-800">
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-[#1c1c1e]">
                                     {displayList.map((row, idx) => {
                                         if (row.type === 'department') {
                                             return (
-                                                <tr key={`dept-${idx}`} className="bg-slate-100 dark:bg-slate-900/90 font-black text-slate-800 dark:text-slate-100 border-y border-slate-200 dark:border-slate-700">
-                                                    <td className="px-4 py-2 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700">{row.name} (TỔNG NHÓM)</td>
+                                                <tr key={`dept-${idx}`} className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white shadow-inner font-extrabold border-t-[3px] border-t-slate-200">
+                                                    <td className="px-3 py-2 text-[11px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700">{row.name} (TỔNG)</td>
                                                     {row.providers.map((p: any, pIdx: number) => (
                                                         <React.Fragment key={pIdx}>
-                                                            <td className="px-1 py-2 text-center border-r border-slate-200 dark:border-slate-700 tabular-nums"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
-                                                            <td className={`px-1 py-2 text-center border-r border-slate-200 dark:border-slate-700 tabular-nums ${p.percent >= 40 ? 'text-green-600' : 'text-slate-400'}`}><div>{p.percent > 0 ? `${f.format(Math.ceil(p.percent))}%` : '-'}</div></td>
+                                                            <td className="px-1 py-2 text-[11px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
+                                                            <td className={`px-1 py-2 text-[11px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums ${p.percent >= 40 ? 'text-green-600' : 'text-slate-500'}`}><div>{p.percent > 0 ? `${f.format(Math.ceil(p.percent))}%` : '-'}</div></td>
                                                         </React.Fragment>
                                                     ))}
-                                                    <td className="px-2 py-2 text-center border-r border-slate-200 dark:border-slate-700 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-                                                    <td className={`px-2 py-2 text-center font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-green-600' : 'text-amber-600'}`}>{f.format(Math.ceil(row.totalPercent))}%</td>
+                                                    <td className="px-2 py-2 text-[11px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
+                                                    <td className={`px-2 py-2 text-[11px] text-center tabular-nums ${row.totalPercent >= 45 ? 'text-green-600' : 'text-amber-600'}`}>{f.format(Math.ceil(row.totalPercent))}%</td>
                                                 </tr>
                                             );
                                         }
@@ -474,14 +474,14 @@ const InstallmentTab: React.FC<{
                                         const oldRow = row.oldRow;
 
                                         return (
-                                            <tr key={row.originalName || idx} className={`transition-all cursor-pointer ${isTotal ? 'bg-sky-50 dark:bg-sky-900/50 font-black' : (isHighlighted ? 'bg-amber-100 dark:bg-amber-900/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700/40')}`}>
-                                                <td className={`px-4 py-2 whitespace-nowrap border-r border-slate-100 dark:border-slate-700 ${isTotal ? 'bg-sky-50 dark:bg-sky-900 text-center' : 'bg-transparent'}`}>
-                                                    <div className={`flex items-center ${isTotal ? 'justify-center' : 'gap-3'}`}>
+                                            <tr key={row.originalName || idx} className={`transition-all cursor-pointer text-[12px] ${isTotal ? 'bg-indigo-50 dark:bg-indigo-900/40 shadow-inner font-extrabold text-indigo-800 dark:text-indigo-200 border-t-[3px] border-t-indigo-200 dark:border-t-indigo-800' : (isHighlighted ? 'bg-indigo-50/50 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50 dark:hover:bg-slate-750')}`}>
+                                                <td className={`px-3 py-2 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 ${isTotal ? 'text-center uppercase tracking-wider' : 'bg-transparent'}`}>
+                                                    <div className={`flex items-center ${isTotal ? 'justify-center' : 'gap-2'}`}>
                                                         {!isTotal && <MedalBadge rank={row.rank} />}
                                                         {!isTotal && <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />}
-                                                        <div className="flex flex-col min-w-0">
-                                                            <span className={`font-bold ${isTotal ? 'text-sky-800 dark:text-sky-400' : 'text-slate-700 dark:text-slate-200'}`}>{row.name}</span>
-                                                            {!isTotal && <span className="text-[8px] text-slate-400 font-bold tabular-nums uppercase">{row.department}</span>}
+                                                        <div className="flex flex-col min-w-0" onClick={() => setHighlightedEmployees((prev: Set<string>) => { const n = new Set(prev); if (!row.originalName) return prev; if (n.has(row.originalName)) n.delete(row.originalName); else n.add(row.originalName); return n; })}>
+                                                            <span className={`font-bold ${isTotal ? '' : (isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-500 hover:underline')}`}>{row.name}</span>
+                                                            {!isTotal && <span className="text-[10px] text-slate-400 font-medium capitalize tabular-nums">{row.department}</span>}
                                                         </div>
                                                     </div>
                                                 </td>
@@ -489,13 +489,13 @@ const InstallmentTab: React.FC<{
                                                     const oldP = oldRow?.providers[pIdx];
                                                     return (
                                                         <React.Fragment key={pIdx}>
-                                                            <td className="px-1 py-2 text-center border-r border-slate-100 dark:border-slate-700 text-slate-500 font-normal tabular-nums"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
-                                                            <td className={`px-1 py-2 text-center border-r border-slate-100 dark:border-slate-700 font-normal tabular-nums ${p.percent >= 40 ? 'text-green-600' : 'text-slate-400'}`}><div>{p.percent > 0 ? `${f.format(Math.ceil(p.percent))}%` : '-'}</div><DeltaBadge current={p.percent} previous={oldP?.percent} /></td>
+                                                            <td className="px-1 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 text-slate-500 font-normal tabular-nums"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
+                                                            <td className={`px-1 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-normal tabular-nums ${p.percent >= 40 ? 'text-green-600' : 'text-slate-400'}`}><div>{p.percent > 0 ? `${f.format(Math.ceil(p.percent))}%` : '-'}</div><DeltaBadge current={p.percent} previous={oldP?.percent} /></td>
                                                         </React.Fragment>
                                                     )
                                                 })}
-                                                <td className="px-2 py-2 text-center border-r border-slate-100 dark:border-slate-700 font-normal text-slate-700 dark:text-slate-300 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-                                                <td className={`px-2 py-2 text-center font-bold text-sm tabular-nums ${row.totalPercent >= 45 ? 'text-green-600' : (row.totalPercent < 40 ? 'text-red-500' : 'text-amber-600')}`}><div>{f.format(Math.ceil(row.totalPercent))}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
+                                                <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-normal text-slate-700 dark:text-slate-300 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
+                                                <td className={`px-2 py-2 text-[11px] text-center font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-green-600' : (row.totalPercent < 40 ? 'text-red-500' : 'text-amber-600')}`}><div>{f.format(Math.ceil(row.totalPercent))}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
                                             </tr>
                                         );
                                     })}
