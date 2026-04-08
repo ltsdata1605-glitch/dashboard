@@ -9,9 +9,9 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Archivo+Narrow:ital,wght@0,400..700;1,400..700&family=Fjalla+One&family=Josefin+Sans:ital,wght@0,100..700;1,100..700&family=Jost:ital,wght@0,100..900;1,100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Oswald:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script type="module" crossorigin src="/assets/index-Cwtd19qK.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-DQ2Az3N2.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="/assets/index-aZzKDZci.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-Cr3fWXey.css">
 </head>
 
 <body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative min-h-screen antialiased text-slate-900 dark:text-slate-100 overflow-x-hidden">
@@ -25,6 +25,22 @@
 
     <div id="root" class="relative z-10"></div>
     <!-- Entry point for React -->
+
+    <script>
+        // Chống Refresh khi kéo xuống ngoài ý muốn trên Mobile (Pull-to-refresh)
+        let lastTouchY = 0;
+        document.addEventListener('touchstart', function(e) {
+            lastTouchY = e.touches[0].clientY;
+        }, {passive: false});
+
+        document.addEventListener('touchmove', function(e) {
+            const touchY = e.touches[0].clientY;
+            if (window.scrollY === 0 && touchY > lastTouchY) {
+                e.preventDefault();
+            }
+            lastTouchY = touchY;
+        }, {passive: false});
+    </script>
 </body>
 
 </html>
