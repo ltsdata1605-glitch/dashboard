@@ -13,10 +13,14 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@google/genai": "^1.48.0",
+    "@types/d3": "^7.4.3",
     "@types/papaparse": "^5.5.2",
     "chart.js": "^4.4.0",
     "clsx": "^2.1.1",
+    "d3": "^7.9.0",
     "firebase": "^12.11.0",
+    "framer-motion": "^12.38.0",
     "html-to-image": "^1.11.13",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.577.0",

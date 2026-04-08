@@ -11,6 +11,9 @@ const UserManagementView = lazy(() => import('./components/views/UserManagementV
 const SettingsView = lazy(() => import('./components/views/SettingsView'));
 const AboutView = lazy(() => import('./components/views/AboutView'));
 
+// BI Module Wrapper
+const BiWrapper = lazy(() => import('./bi-module/components/BiWrapper'));
+
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginView from './components/views/LoginView';
 import PendingApprovalView from './components/views/PendingApprovalView';
@@ -18,7 +21,7 @@ import { Toaster } from 'react-hot-toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
 
 function AppContent() {
-    const { activeTab, setIsMobileSidebarOpen, isDarkMode, toggleDarkMode } = useLayout();
+    const { activeTab, setActiveTab, setIsMobileSidebarOpen, isDarkMode, toggleDarkMode } = useLayout();
     const { user, userRole, isDemoMode, isLoading } = useAuth();
 
     React.useEffect(() => {
@@ -139,8 +142,12 @@ function AppContent() {
                                 <ExternalToolView url="https://kiemquy-final-487587635482.us-west1.run.app" title="Kiểm quỹ" />
                             </div>
 
+                            <div className={activeTab === 'employees' ? 'block w-full h-full' : 'hidden'}>
+                                <BiWrapper />
+                            </div>
+
                             {/* Fallback for other tabs */}
-                            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit'].includes(activeTab) && (
+                            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees'].includes(activeTab) && (
                                 <div className="flex flex-col items-center justify-center h-full text-slate-400">
                                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                                     <p className="text-sm">Vui lòng quay lại sau</p>
