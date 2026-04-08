@@ -45,7 +45,7 @@ export default function BiWrapper() {
             </div>
 
             {/* Nội dung Module Cụ thể */}
-            <main className="p-4 lg:p-8 space-y-6 max-w-[1600px] xl:max-w-7xl mx-auto w-full flex-grow">
+            <main className={`p-4 lg:p-8 space-y-6 mx-auto w-full flex-grow ${activeView === 'employee' ? 'max-w-[960px]' : 'max-w-[1600px] xl:max-w-7xl'}`}>
                 {activeView === 'dashboard' && <Dashboard onNavigateToUpdater={() => setActiveView('updater')} />}
                 {activeView === 'employee' && <NhanVien />}
                 {activeView === 'updater' && <DataUpdater />}

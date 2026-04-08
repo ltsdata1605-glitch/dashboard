@@ -23,42 +23,42 @@ const KpiCard: React.FC<{
     const isClickable = !!onClick;
     
     // Apple-style vivid and deep pastel colors
-    const colorMap: Record<string, { icon: string, bg: string, ring: string, textAccent: string }> = {
+    const colorMap: Record<string, { icon: string, border: string }> = {
         blue: { 
-            icon: 'bg-blue-500 text-white shadow-md shadow-blue-500/30 dark:shadow-none', 
-            bg: 'bg-gradient-to-br from-white to-blue-50/50 dark:from-slate-900 dark:to-blue-900/10',
-            ring: 'ring-1 ring-blue-100/50 dark:ring-blue-500/20',
-            textAccent: 'text-blue-600 dark:text-blue-400'
+            icon: 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400', 
+            border: 'border-blue-200 dark:border-blue-500/30' 
         },
         teal: { 
-            icon: 'bg-emerald-500 text-white shadow-md shadow-emerald-500/30 dark:shadow-none', 
-            bg: 'bg-gradient-to-br from-white to-emerald-50/50 dark:from-slate-900 dark:to-emerald-900/10',
-            ring: 'ring-1 ring-emerald-100/50 dark:ring-emerald-500/20',
-            textAccent: 'text-emerald-600 dark:text-emerald-400'
+            icon: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', 
+            border: 'border-emerald-200 dark:border-emerald-500/30' 
+        },
+        emerald: { 
+            icon: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400', 
+            border: 'border-emerald-200 dark:border-emerald-500/30' 
         },
         pink: { 
-            icon: 'bg-pink-500 text-white shadow-md shadow-pink-500/30 dark:shadow-none', 
-            bg: 'bg-gradient-to-br from-white to-pink-50/50 dark:from-slate-900 dark:to-pink-900/10',
-            ring: 'ring-1 ring-pink-100/50 dark:ring-pink-500/20',
-            textAccent: 'text-pink-600 dark:text-pink-400'
+            icon: 'bg-pink-100 text-pink-600 dark:bg-pink-500/20 dark:text-pink-400', 
+            border: 'border-pink-200 dark:border-pink-500/30' 
         },
         red: { 
-            icon: 'bg-rose-500 text-white shadow-md shadow-rose-500/30 dark:shadow-none', 
-            bg: 'bg-gradient-to-br from-white to-rose-50/50 dark:from-slate-900 dark:to-rose-900/10',
-            ring: 'ring-1 ring-rose-100/50 dark:ring-rose-500/20',
-            textAccent: 'text-rose-600 dark:text-rose-400'
+            icon: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', 
+            border: 'border-rose-200 dark:border-rose-500/30' 
+        },
+        rose: { 
+            icon: 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400', 
+            border: 'border-rose-200 dark:border-rose-500/30' 
         },
         purple: { 
-            icon: 'bg-indigo-500 text-white shadow-md shadow-indigo-500/30 dark:shadow-none', 
-            bg: 'bg-gradient-to-br from-white to-indigo-50/50 dark:from-slate-900 dark:to-indigo-900/10',
-            ring: 'ring-1 ring-indigo-100/50 dark:ring-indigo-500/20',
-            textAccent: 'text-indigo-600 dark:text-indigo-400'
+            icon: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400', 
+            border: 'border-indigo-200 dark:border-indigo-500/30' 
         },
         orange: { 
-            icon: 'bg-orange-500 text-white shadow-md shadow-orange-500/30 dark:shadow-none', 
-            bg: 'bg-gradient-to-br from-white to-orange-50/50 dark:from-slate-900 dark:to-orange-900/10',
-            ring: 'ring-1 ring-orange-100/50 dark:ring-orange-500/20',
-            textAccent: 'text-orange-600 dark:text-orange-400'
+            icon: 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400', 
+            border: 'border-orange-200 dark:border-orange-500/30' 
+        },
+        amber: { 
+            icon: 'bg-amber-100 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400', 
+            border: 'border-amber-200 dark:border-amber-500/30' 
         },
     };
 
@@ -67,24 +67,24 @@ const KpiCard: React.FC<{
     return (
         <div
             onClick={onClick}
-            className={`relative flex flex-col justify-between h-full ${style.bg} p-3.5 rounded-xl shadow-sm ${style.ring} transition-all duration-300 group ${isClickable ? 'cursor-pointer hover:-translate-y-0.5 hover:shadow-md hover:ring-2' : ''}`}
+            className={`relative flex flex-col justify-between h-full bg-white dark:bg-[#1c1c1e] p-4 rounded-xl shadow-[0_2px_15px_rgba(0,0,0,0.03)] border-2 ${style.border} transition-all duration-300 group ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-lg hover:border-blue-300 dark:hover:border-blue-700' : ''}`}
         >
             <div className="flex justify-between items-start mb-2">
-                <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex-1 pr-1.5 mt-0.5 leading-snug">{title}</h3>
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${style.icon} shrink-0 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6`}>
+                <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 flex-1 pr-2 mt-1">{title}</h3>
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${style.icon} shrink-0 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-3`}>
                     <Icon name={icon} size={4} />
                 </div>
             </div>
 
-            <div className="flex flex-col mt-auto relative z-10">
+            <div className="flex flex-col mt-auto">
                 <div className="flex flex-col">
                     {children}
                 </div>
 
                 {(trendLabel || trendValue) && (
-                    <div className="flex items-center justify-between gap-1 mt-3 pt-2.5 border-t border-slate-200/60 dark:border-white/10">
+                    <div className="flex items-center justify-between gap-1 mt-2 pt-2 border-t border-slate-100 dark:border-white/5">
                         <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">{trendLabel}</span>
-                        <div className={`text-[10px] font-extrabold ${style.textAccent} bg-white/50 dark:bg-black/20 px-2 py-1 rounded-md shrink-0 border border-white/20 dark:border-white/5`}>
+                        <div className="text-[11px] font-bold text-slate-700 dark:text-slate-300 text-right shrink-0">
                             {trendValue}
                         </div>
                     </div>
@@ -345,7 +345,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         trendLabel={finalTrendLabel}
                         trendValue={finalTrendValue}
                     >
-                        <div className={`text-2xl sm:text-3xl font-black leading-none tracking-tight ${valueColor} drop-shadow-sm`}>
+                        <div className={`text-[22px] font-extrabold leading-none tracking-tight ${valueColor} drop-shadow-none`}>
                             {displayValue}
                         </div>
                     </KpiCard>

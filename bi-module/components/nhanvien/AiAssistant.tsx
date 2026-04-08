@@ -115,7 +115,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ danhSachData, thiDuaData }) =
             <div className="fixed bottom-24 right-6 z-40 no-print">
                 <button
                     onClick={() => setIsAiPanelOpen(!isAiPanelOpen)}
-                    className="p-4 bg-primary-600 text-white rounded-full shadow-lg hover:bg-primary-700 focus:outline-none focus:ring-4 focus:ring-primary-300 transition-all duration-300 transform hover:scale-110 relative"
+                    className="p-4.5 bg-gradient-to-br from-indigo-500 via-fuchsia-500 to-pink-500 text-white rounded-full shadow-[0_8px_30px_rgb(217,70,239,0.4)] hover:shadow-[0_8px_30px_rgb(217,70,239,0.6)] focus:outline-none transition-all duration-300 transform hover:scale-110 relative hover:-translate-y-1"
                     title="Trợ lý AI"
                 >
                     <SparklesIcon className="h-7 w-7" />
