@@ -46,6 +46,9 @@ export async function saveSetting(key: string, value: any): Promise<void> {
             const tx = db.transaction(SETTINGS_STORE, 'readwrite');
             const store = tx.objectStore(SETTINGS_STORE);
             store.put(value, key);
+            if (key !== 'localSettingsLastModified') {
+                store.put(Date.now(), 'localSettingsLastModified');
+            }
             tx.oncomplete = () => {
                 if (typeof window !== 'undefined') {
                     window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));

@@ -23,6 +23,7 @@ export const useSummaryComparison = (
     const [selectedDate, setSelectedDate] = useState(toInputDate(new Date()));
     const [selectedMonth, setSelectedMonth] = useState(toInputMonth(new Date()));
     const [selectedWeeks, setSelectedWeeks] = useState<number[]>([1]);
+    const [compareUpToCurrentDay, setCompareUpToCurrentDay] = useState(false);
     
     const [customRangeA, setCustomRangeA] = useState({ start: toInputDate(new Date()), end: toInputDate(new Date()) });
     const [customRangeB, setCustomRangeB] = useState({ start: toInputDate(new Date()), end: toInputDate(new Date()) });
@@ -108,7 +109,7 @@ export const useSummaryComparison = (
                     dCount = Math.max(1, Math.round((maxT - minT) / 86400000) + 1);
                 }
 
-                monthsMeta.push({ id: m, label: `Tháng ${m.split('-')[1]}`, daysCount: dCount });
+                monthsMeta.push({ id: m, label: `${parseInt(m.split('-')[1], 10)}.${m.split('-')[0]}`, daysCount: dCount });
                 trees[m] = processSummaryTable(monthData, productConfig, filters);
             });
             
@@ -262,6 +263,34 @@ export const useSummaryComparison = (
             return;
         }
 
+        if (
+            compareUpToCurrentDay && 
+            ['week_same_period', 'month_adjacent', 'month_same_period_year', 'quarter_same_period_year', 'ytd_same_period_year'].includes(compMode)
+        ) {
+            let maxTime = -Infinity;
+            for (let i = 0; i < baseFilteredData.length; i++) {
+                const date = baseFilteredData[i].parsedDate;
+                if (date && date.getTime() > maxTime) {
+                    maxTime = date.getTime();
+                }
+            }
+            if (maxTime !== -Infinity) {
+                const dataMaxDate = new Date(maxTime);
+                if (dataMaxDate >= currentStart && dataMaxDate <= currentEnd) {
+                    const originalPrevEnd = prevEnd;
+                    currentEnd = new Date(dataMaxDate);
+                    currentEnd.setHours(23, 59, 59, 999);
+                    
+                    const offset = currentEnd.getTime() - currentStart.getTime();
+                    prevEnd = new Date(prevStart.getTime() + offset);
+                    if (prevEnd > originalPrevEnd) {
+                        prevEnd = originalPrevEnd;
+                    }
+                    description += ` (Đã giới hạn so sánh cùng kỳ từ đầu giai đoạn đến ngày ${dataMaxDate.toLocaleDateString('vi-VN')})`;
+                }
+            }
+        }
+
         const currDays = Math.max(1, Math.round((currentEnd.getTime() - currentStart.getTime()) / (1000 * 60 * 60 * 24)) + 1);
         const prevDays = Math.max(1, Math.round((prevEnd.getTime() - prevStart.getTime()) / (1000 * 60 * 60 * 24)) + 1);
         setDaysCountData({ current: currDays, prev: prevDays });
@@ -320,6 +349,7 @@ export const useSummaryComparison = (
         compTree, trendData,
         trendSelectedMonths, setTrendSelectedMonths,
         dateDisplay, daysCountData, setDaysCountData,
-        weeksInSelectedMonth
+        weeksInSelectedMonth,
+        compareUpToCurrentDay, setCompareUpToCurrentDay
     };
 };

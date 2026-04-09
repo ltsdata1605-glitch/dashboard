@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { CustomContestTab, ContestTableConfig, ColumnConfig } from '../types';
 import { getCustomTabs, saveCustomTabs, getIndustryAnalysisCustomTabs, saveIndustryAnalysisCustomTabs } from '../services/dbService';
 
@@ -6,6 +6,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
     const [customTabs, setCustomTabs] = useState<CustomContestTab[]>([]);
     const [industryAnalysisTabs, setIndustryAnalysisTabs] = useState<CustomContestTab[]>([]);
     const [isInitialTabsLoaded, setIsInitialTabsLoaded] = useState(false);
+    const isHydratedRef = useRef(false);
     
     // Modal state management
     const [modalState, setModalState] = useState<{
@@ -27,14 +28,19 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
             if (savedIndustryTabs) {
                 setIndustryAnalysisTabs(savedIndustryTabs);
             }
-            setIsInitialTabsLoaded(true);
+            
+            // Wait for React to apply state updates before marking as loaded and enabling saves
+            setTimeout(() => {
+                isHydratedRef.current = true;
+                setIsInitialTabsLoaded(true);
+            }, 0);
         };
         loadData();
     }, []);
 
     // Save tabs to DB on change
     useEffect(() => {
-        if (isInitialTabsLoaded) {
+        if (isInitialTabsLoaded && isHydratedRef.current) {
             saveCustomTabs(customTabs);
             saveIndustryAnalysisCustomTabs(industryAnalysisTabs);
         }

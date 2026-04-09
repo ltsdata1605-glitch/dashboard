@@ -181,21 +181,42 @@ export default function DashboardView() {
                                 <Icon name="cloud-download" size={5} />
                             </div>
                             <div>
-                                <h4 className="font-bold text-slate-800 dark:text-white text-sm">Phát hiện dữ liệu mới!</h4>
-                                <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">File <strong>{pendingCloudSync.name}</strong> đã được cập nhật từ thiết bị khác.</p>
+                                <h4 className="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
+                                    Phát hiện file Excel mới!
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
+                                        📊 Dữ liệu
+                                    </span>
+                                </h4>
+                                <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
+                                    File <strong className="text-slate-700 dark:text-slate-300">{pendingCloudSync.name}</strong> đã được tải lên từ thiết bị khác.
+                                </p>
+                                {pendingCloudSync.timestamp && (
+                                    <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                                        <Icon name="clock" size={3} />
+                                        {new Date(pendingCloudSync.timestamp).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <button onClick={() => setPendingCloudSync(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 -mr-2 -mt-2">
                             <Icon name="x" size={4} />
                         </button>
                     </div>
-                    <button
-                        onClick={() => handleAcceptCloudSync(handleFileProcessing)}
-                        className="w-full mt-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm transition-colors shadow-sm active:scale-[0.98]"
-                    >
-                        <Icon name="refresh-cw" size={4} />
-                        Đồng bộ về máy này ngay
-                    </button>
+                    <div className="flex flex-col gap-2">
+                        <button
+                            onClick={() => handleAcceptCloudSync(handleFileProcessing)}
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm transition-colors shadow-sm active:scale-[0.98]"
+                        >
+                            <Icon name="refresh-cw" size={4} />
+                            Tải & cập nhật dữ liệu mới
+                        </button>
+                        <button
+                            onClick={() => setPendingCloudSync(null)}
+                            className="w-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                        >
+                            Bỏ qua, giữ dữ liệu hiện tại
+                        </button>
+                    </div>
                 </div>
             )}
             

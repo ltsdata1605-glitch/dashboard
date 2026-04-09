@@ -15,12 +15,15 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
 };
 
 export async function exportElementAsImage(element: HTMLElement, filename: string, options: any = {}) {
-    const { elementsToHide = [], forceOpenDetails = false, scale = 2, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null } = options;
-
-    elementsToHide.forEach((s: string) => document.querySelectorAll(s).forEach((e: any) => e.style.visibility = 'hidden'));
-    document.body.classList.add('is-capturing');
+    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = 2, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null } = options;
 
     const clone = element.cloneNode(true) as HTMLElement;
+
+    elementsToHide.forEach((s: string) => {
+        clone.querySelectorAll(s).forEach((e: any) => {
+            e.style.setProperty('display', 'none', 'important');
+        });
+    });
 
     // --- RETAINED LAYOUT FIXES FOR EXPORT PRESENTATION ---
     // These are kept because they explicitly change how the data looks in the export format.
@@ -69,7 +72,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     }
 
     // 4. Warehouse Summary & Summary Table Fix
-    if (filename.startsWith('bao-cao-kho') || filename.startsWith('chi-tiet-nganh-hang')) {
+    const lowerFilename = filename.toLowerCase();
+    if (lowerFilename.includes('bao-cao-kho') || lowerFilename.includes('chi-tiet-nganh-hang')) {
         const elementsToPad = [
             ...clone.querySelectorAll('tbody > tr'),
             ...clone.querySelectorAll('tfoot')
@@ -88,9 +92,9 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             const isDark = document.documentElement.classList.contains('dark');
             let bgColor = isDark ? '#1f2937' : '#f8fafc';
             
-            if (filename.startsWith('chi-tiet-nganh-hang')) {
+            if (lowerFilename.includes('chi-tiet-nganh-hang')) {
                 bgColor = isDark ? '#1f2937' : '#eef2ff';
-            } else if (filename.startsWith('bao-cao-kho')) {
+            } else if (lowerFilename.includes('bao-cao-kho')) {
                 bgColor = isDark ? '#881337' : '#fecdd3';
             }
             
@@ -107,7 +111,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     }
 
     // 5. Compact Warehouse Summary for Export
-    if (filename.startsWith('bao-cao-kho')) {
+    if (lowerFilename.includes('bao-cao-kho')) {
         const headerContainer = clone.querySelector('.px-8.py-6');
         if (headerContainer instanceof HTMLElement) {
             headerContainer.style.setProperty('padding-top', '15px', 'important');
@@ -133,23 +137,34 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     
     // FIX FOR SCROLLABLE CONTENT (Expand scrollable tables for export)
     const scrollableContainers = clone.querySelectorAll('.overflow-x-auto, .overflow-y-auto, .custom-scrollbar, [class*="max-h-"], [class*="overflow-"]');
-    scrollableContainers.forEach((container: any) => {
-        container.style.maxHeight = 'none';
-        container.style.maxWidth = 'none';
-        container.style.overflow = 'visible';
-        container.style.overflowX = 'visible';
-        container.style.overflowY = 'visible';
-        // Force hide scrollbars in webkit
-        if (container instanceof HTMLElement) {
-            container.style.scrollbarWidth = 'none'; // Firefox
-            const style = document.createElement('style');
-            style.textContent = `
-                .clone-no-scrollbar::-webkit-scrollbar { display: none !important; }
-            `;
-            container.classList.add('clone-no-scrollbar');
-            container.appendChild(style);
-        }
-    });
+    const hideScrollbarStyle = document.createElement('style');
+    hideScrollbarStyle.textContent = `.clone-no-scrollbar::-webkit-scrollbar { display: none !important; }`;
+    clone.appendChild(hideScrollbarStyle);
+
+    if (captureAsDisplayed) {
+        // Only expand VERTICAL overflow — keep horizontal clipped to match viewport width
+        scrollableContainers.forEach((container: any) => {
+            container.style.maxHeight = 'none';
+            container.style.overflowY = 'visible';
+            if (container instanceof HTMLElement) {
+                container.style.scrollbarWidth = 'none';
+                container.classList.add('clone-no-scrollbar');
+            }
+        });
+    } else {
+        // Full expansion — expand both directions for maximum content capture
+        scrollableContainers.forEach((container: any) => {
+            container.style.maxHeight = 'none';
+            container.style.maxWidth = 'none';
+            container.style.overflow = 'visible';
+            container.style.overflowX = 'visible';
+            container.style.overflowY = 'visible';
+            if (container instanceof HTMLElement) {
+                container.style.scrollbarWidth = 'none';
+                container.classList.add('clone-no-scrollbar');
+            }
+        });
+    }
 
     // 6. FIX GOOGLE CHARTS SVG SCALING (For TrendChart / IndustryGrid)
     // Make them responsive so they scale down to the exported format perfectly
@@ -183,12 +198,14 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         clone.style.maxWidth = `${forcedWidth}px`;
         clone.style.minWidth = `${forcedWidth}px`;
     } else if (captureAsDisplayed) {
-        captureContainer.style.width = `${element.clientWidth}px`;
-        captureContainer.style.height = `${element.clientHeight}px`;
-        captureContainer.style.overflow = 'hidden';
-        clone.style.width = `${element.clientWidth}px`;
-        clone.style.height = `${element.clientHeight}px`;
-        clone.style.minWidth = `${element.clientWidth}px`;
+        // Lock width to viewport display width, but allow full content height
+        const viewportWidth = element.clientWidth;
+        captureContainer.style.width = `${viewportWidth}px`;
+        captureContainer.style.height = 'auto';
+        clone.style.width = `${viewportWidth}px`;
+        clone.style.minWidth = `${viewportWidth}px`;
+        clone.style.maxWidth = `${viewportWidth}px`;
+        clone.style.overflowX = 'hidden';
     } else {
         captureContainer.style.width = 'fit-content';
         captureContainer.style.height = 'auto';
@@ -212,20 +229,18 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         await document.fonts.ready;
         await waitForImages(clone);
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await new Promise(resolve => setTimeout(resolve, 500)); // Increased from 300 to 500ms
+        await new Promise(resolve => setTimeout(resolve, 200));
 
         console.log(`Bắt đầu chụp ảnh bằng html-to-image: ${filename}...`);
 
         // Use getBoundingClientRect for better accuracy on scaled/cloned elements
         const rect = clone.getBoundingClientRect();
         const finalWidth = captureAsDisplayed ? element.clientWidth : (rect.width || clone.scrollWidth);
-        let finalHeight = captureAsDisplayed ? element.clientHeight : (rect.height || clone.scrollHeight);
+        let finalHeight = rect.height || clone.scrollHeight;
         
         // Safety: Add padding-bottom to the clone to ensure footer is not clipped
-        if (!captureAsDisplayed) {
-            clone.style.paddingBottom = '40px';
-            finalHeight += 40;
-        }
+        clone.style.paddingBottom = '40px';
+        finalHeight += 40;
 
         let finalScale = scale;
         if (finalHeight * scale > 15000) {
@@ -235,7 +250,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
         const isDark = document.documentElement.classList.contains('dark');
         const defaultBg = isDark ? '#0f172a' : '#f8fafc';
-        const isTransparentTable = filename.startsWith('bao-cao-kho') || filename.startsWith('chi-tiet-nganh-hang');
+        const isTransparentTable = lowerFilename.includes('bao-cao-kho') || lowerFilename.includes('chi-tiet-nganh-hang');
 
         // Capture using html-to-image which is faster and natively supports modern CSS (Tailwind v4, oklch, grid)
         const blob = await htmlToImage.toBlob(clone, {
@@ -264,13 +279,12 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         
-        console.log(`Đã hoàn tất xuất ảnh: ${filename}`);
-
     } catch (error) {
         console.error(`Lỗi khi xuất ảnh: ${filename}`, error);
     } finally {
-        document.body.removeChild(captureContainer);
-        document.body.classList.remove('is-capturing');
-        elementsToHide.forEach((s: string) => document.querySelectorAll(s).forEach((e: any) => e.style.visibility = ''));
+        if (document.body.contains(captureContainer)) {
+            document.body.removeChild(captureContainer);
+        }
+
     }
 }

@@ -61,7 +61,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                                 scope="col" 
                                 className={`px-2 py-1 text-center text-[10px] font-bold uppercase border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 ${h.colorClass}`}
                             >
-                                {`T${parseInt(m.id.split('-')[1], 10)}`}
+                                {`${parseInt(m.id.split('-')[1], 10)}.${m.id.split('-')[0]}`}
                             </th>
                         ))
                     ))}
@@ -109,7 +109,7 @@ export const MonthlyTrendTable: React.FC<MonthlyTrendTableProps> = ({
                             else if (h.key === 'slPercent') valueToDisplay = totalForMonth.totalQuantity > 0 ? '100.0%' : '-';
                             else if (h.key === 'dtThucPercent') valueToDisplay = totalForMonth.totalRevenue > 0 ? '100.0%' : '-';
                             else if (h.key === 'totalRevenue') valueToDisplay = formatCurrency(totalForMonth.totalRevenue, 0);
-                            else if (h.key === 'avgQuantity') valueToDisplay = formatQuantity(totalForMonth.totalQuantity / m.daysCount);
+                            else if (h.key === 'avgQuantity') valueToDisplay = formatQuantity(Math.ceil(totalForMonth.totalQuantity / m.daysCount));
                             else if (h.key === 'avgRevenue') valueToDisplay = formatCurrency(totalForMonth.totalRevenue / m.daysCount, 0);
                             else if (h.key === 'totalRevenueQD') valueToDisplay = formatCurrency(totalForMonth.totalRevenueQD, 0);
                             else if (h.key === 'aov') valueToDisplay = totalForMonth.totalQuantity > 0 ? (totalForMonth.totalRevenue / totalForMonth.totalQuantity / 1000000).toFixed(1) : '-';

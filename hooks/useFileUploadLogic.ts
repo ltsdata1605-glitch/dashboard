@@ -121,65 +121,7 @@ export const useFileUploadLogic = ({
         
         const latestFileTime = Math.max(...files.map(f => f.lastModified));
         
-        try {
-            const token = sessionStorage.getItem('googleOAuthToken');
-            if (token && !isCloudSync) {
-                const { uploadFileToDrive, listDriveFiles } = await import('../services/googleDriveService');
-                
-                setStatus({ message: `Đang kiểm tra lịch sử tải lên...`, type: 'info', progress: 5 });
-                const existingFiles = await listDriveFiles(token);
-                
-                const pad = (n: number) => n.toString().padStart(2, '0');
-                const formatDate = (date: Date) => `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-                
-                let uploadedCount = 0;
-                let skippedCount = 0;
-                let lastUploadedFileId: string | null = null;
-                let lastUploadedFileName: string | null = null;
-
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const progressBase = 5 + (15 * (i / files.length)); // Drive gets first 20%
-                    setStatus({ message: `Kiểm tra File ${i + 1}/${files.length}: ${file.name}...`, type: 'info', progress: progressBase });
-                    
-                    const formattedCreation = formatDate(new Date(file.lastModified));
-                    const isDuplicate = existingFiles.some(f => {
-                        const nameMatches = f.name.includes(`YCX_${formattedCreation}`) || f.name.includes(`Tải file: ${formattedCreation}`);
-                        const sizeMatches = f.size ? f.size === file.size.toString() : true;
-                        return nameMatches && sizeMatches;
-                    });
-                    
-                    if (isDuplicate) {
-                        skippedCount++;
-                    } else {
-                        setStatus({ message: `Đang tải lên Drive File ${i + 1}/${files.length}...`, type: 'info', progress: progressBase + 5 });
-                        const driveResult = await uploadFileToDrive(file, token, 'dmx_sales');
-                        lastUploadedFileId = driveResult.id;
-                        lastUploadedFileName = driveResult.name;
-                        uploadedCount++;
-                    }
-                }
-
-                if (uploadedCount > 0) {
-                    import('react-hot-toast').then(m => m.toast.success(`Đã đồng bộ ${uploadedCount} báo cáo lên Google Drive!`));
-                    if (user && lastUploadedFileId && lastUploadedFileName) {
-                        try {
-                            const { syncToCloud } = await import('../services/firestoreService');
-                            await syncToCloud(user, { latestDriveUpload: { fileId: lastUploadedFileId, name: lastUploadedFileName, timestamp: Date.now(), fileLastModified: latestFileTime } });
-                        } catch (e) {
-                            console.error("Lỗi đồng bộ metadata Drive lên Mây:", e);
-                        }
-                    }
-                }
-                if (skippedCount > 0) {
-                    import('react-hot-toast').then(m => m.toast(`Bỏ qua ${skippedCount} file (đã tồn tại trên Drive)!`, { icon: '⚠️' }));
-                }
-            }
-        } catch (err: any) {
-            console.error("Lỗi Google Drive Upload:", err);
-            // Non-blocking fallback
-            setStatus({ message: `Lỗi kết nối Drive, đang tiếp tục xử lý nội bộ...`, type: 'error', progress: 20 });
-        }
+        // Google Drive Upload logic moved to background task after UI render
 
         let worker: Worker;
         try {
@@ -219,6 +161,64 @@ export const useFileUploadLogic = ({
                     startTransition(() => {
                         setAppState('processing');
                     });
+                    
+                    // Background Drive Upload (Non-blocking)
+                    if (!isCloudSync) {
+                        const token = sessionStorage.getItem('googleOAuthToken');
+                        if (token) {
+                            (async () => {
+                                try {
+                                    const { toast } = await import('react-hot-toast');
+                                    const { uploadFileToDrive, listDriveFiles } = await import('../services/googleDriveService');
+                                    
+                                    toast('Đang kiểm tra và đồng bộ ngầm lên Google Drive...', { icon: '☁️' });
+                                    const existingFiles = await listDriveFiles(token);
+                                    
+                                    const pad = (n: number) => n.toString().padStart(2, '0');
+                                    const formatDate = (date: Date) => `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+                                    
+                                    let uploadedCount = 0;
+                                    let skippedCount = 0;
+                                    let lastUploadedFileId: string | null = null;
+                                    let lastUploadedFileName: string | null = null;
+
+                                    for (let i = 0; i < files.length; i++) {
+                                        const file = files[i];
+                                        const formattedCreation = formatDate(new Date(file.lastModified));
+                                        const isDuplicate = existingFiles.some(f => {
+                                            const nameMatches = f.name.includes(`YCX_${formattedCreation}`) || f.name.includes(`Tải file: ${formattedCreation}`);
+                                            const sizeMatches = f.size ? f.size === file.size.toString() : true;
+                                            return nameMatches && sizeMatches;
+                                        });
+                                        
+                                        if (isDuplicate) {
+                                            skippedCount++;
+                                        } else {
+                                            const driveResult = await uploadFileToDrive(file, token, 'dmx_sales');
+                                            lastUploadedFileId = driveResult.id;
+                                            lastUploadedFileName = driveResult.name;
+                                            uploadedCount++;
+                                        }
+                                    }
+
+                                    if (uploadedCount > 0) {
+                                        toast.success(`Đã sao lưu ngầm ${uploadedCount} báo cáo lên Drive!`);
+                                        if (user && lastUploadedFileId && lastUploadedFileName) {
+                                            try {
+                                                const { syncToCloud } = await import('../services/firestoreService');
+                                                await syncToCloud(user, { latestDriveUpload: { fileId: lastUploadedFileId, name: lastUploadedFileName, timestamp: Date.now(), fileLastModified: latestFileTime } });
+                                            } catch (e) {
+                                                console.error("Lỗi đồng bộ metadata Drive:", e);
+                                            }
+                                        }
+                                    }
+                                } catch (err) {
+                                    console.error("Lỗi Google Drive Background Upload:", err);
+                                    import('react-hot-toast').then(m => m.toast.error("Quá trình đẩy file lên Drive gặp sự cố."));
+                                }
+                            })();
+                        }
+                    }
                 } catch (error) {
                     console.error("Lỗi lưu dữ liệu:", error);
                     setStatus({ message: 'Lỗi khi lưu vào hệ thống', type: 'error', progress: 0 });

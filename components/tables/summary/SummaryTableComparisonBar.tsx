@@ -24,13 +24,16 @@ interface SummaryTableComparisonBarProps {
     compTree: any;
     grandTotal: any;
     dateDisplay: { current: string; prev: string };
+    compareUpToCurrentDay: boolean;
+    setCompareUpToCurrentDay: (val: boolean) => void;
 }
 
 export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps> = ({
     compMode, setCompMode, selectedDate, setSelectedDate, selectedMonth, setSelectedMonth,
     weeksInSelectedMonth, selectedWeeks, handleWeekPillClick, trendData, trendSelectedMonths,
     setTrendSelectedMonths, customRangeA, setCustomRangeA, customRangeB, setCustomRangeB,
-    compTree, grandTotal, dateDisplay
+    compTree, grandTotal, dateDisplay,
+    compareUpToCurrentDay, setCompareUpToCurrentDay
 }) => {
     return (
         <div className="animate-fade-in-down px-5 py-3 border-b border-slate-200 dark:border-slate-700 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
@@ -123,6 +126,21 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                     </button>
                                 );
                             })}
+                        </div>
+                    )}
+                    
+                    {['week_same_period', 'month_adjacent', 'month_same_period_year', 'quarter_same_period_year', 'ytd_same_period_year'].includes(compMode) && (
+                        <div className="flex items-center gap-2 px-2 ml-2 border-l border-slate-300 dark:border-slate-600">
+                            <input 
+                                type="checkbox" 
+                                id="compareUpToCurrentDay" 
+                                checked={compareUpToCurrentDay}
+                                onChange={(e) => setCompareUpToCurrentDay(e.target.checked)}
+                                className="w-3.5 h-3.5 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
+                            />
+                            <label htmlFor="compareUpToCurrentDay" className="text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer hover:text-slate-800 transition-colors">
+                                Chỉ so sánh ngang tiến độ (đến ngày báo cáo mới nhất)
+                            </label>
                         </div>
                     )}
 

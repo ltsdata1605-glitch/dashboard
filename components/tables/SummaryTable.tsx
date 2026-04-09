@@ -60,7 +60,8 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
         handleSort, toggleExpand,
         weeksInSelectedMonth, compSortConfig,
         expandLevel, visibleColumns, setVisibleColumns, daysCountData, trendData,
-        trendSelectedMonths, setTrendSelectedMonths
+        trendSelectedMonths, setTrendSelectedMonths,
+        compareUpToCurrentDay, setCompareUpToCurrentDay
     } = state;
 
     const columnsPopupRef = useRef<HTMLDivElement>(null);
@@ -116,7 +117,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
 
     const fullScreenClasses = isFullScreen 
         ? "fixed inset-0 z-[1000] bg-white dark:bg-slate-900 overflow-y-auto w-full h-full p-4 custom-scrollbar" 
-        : `bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border ${displayTitle === 'CHI TIẾT NGÀNH HÀNG' ? 'border-teal-100 dark:border-teal-800/60' : 'border-sky-100 dark:border-sky-800/50'} rounded-none overflow-hidden mb-8 transition-all duration-300`;
+        : `bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border ${displayTitle === 'CHI TIẾT NGÀNH HÀNG' ? 'border-teal-100 dark:border-teal-800/60' : 'border-sky-100 dark:border-sky-800/50'} rounded-none overflow-visible mb-8 transition-all duration-300`;
 
     return (
         <>
@@ -164,6 +165,8 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                         compTree={compTree}
                         grandTotal={grandTotal}
                         dateDisplay={dateDisplay}
+                        compareUpToCurrentDay={compareUpToCurrentDay}
+                        setCompareUpToCurrentDay={setCompareUpToCurrentDay}
                     />
                 )}
 
@@ -212,7 +215,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                           activeSortConfig={activeSortConfig}
                       />
                   ) : (
-                  <table className="w-full table-fixed compact-export-table border-collapse" id="summary-table">
+                  <table className="min-w-max w-full table-auto compact-export-table border-collapse" id="summary-table">
                       {/* HEADER */}
                       <thead>
                         {isComparisonMode ? (
@@ -455,14 +458,14 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
 
                                 {/* TrB SL */}
                                 {visibleColumns.includes('avgQuantity') && (() => {
-                                    const avgQty = grandTotal.totalQuantity / daysCountData.current;
+                                    const avgQty = Math.ceil(grandTotal.totalQuantity / daysCountData.current);
                                     return (
                                         <>
                                             <td className={`${footerCellClass} font-bold text-indigo-600 dark:text-indigo-400 ${!isComparisonMode ? separatorClass : ''}`}>
-                                                {avgQty > 0 ? avgQty.toFixed(1) : '-'}
+                                                {avgQty > 0 ? formatQuantity(avgQty) : '-'}
                                             </td>
                                             {isComparisonMode && (() => {
-                                                const prevAvgQty = (compTree?.prev?.grandTotal?.totalQuantity || 0) / daysCountData.prev;
+                                                const prevAvgQty = daysCountData.prev > 0 ? Math.ceil((compTree?.prev?.grandTotal?.totalQuantity || 0) / daysCountData.prev) : 0;
                                                 const deltaAvgQty = avgQty - prevAvgQty;
                                                 return <td className={`${footerDeltaCellClass} ${separatorClass}`}>{renderDelta(deltaAvgQty, 'number')}</td>;
                                             })()}

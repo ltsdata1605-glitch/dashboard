@@ -53,7 +53,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     const revenueQD = currentNode?.totalRevenueQD || 0;
     const traGopRevenue = currentNode?.totalTraGop || 0;
     
-    const avgQuantity = quantity / daysCountData.current;
+    const avgQuantity = Math.ceil(quantity / daysCountData.current);
     const avgRevenue = revenue / daysCountData.current;
 
     // Sort Children logic
@@ -74,7 +74,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
             if (!node) return 0;
             if (key === 'aov') return node.totalQuantity > 0 ? node.totalRevenue / node.totalQuantity : 0;
             if (key === 'traGopPercent') return node.totalRevenue > 0 ? (node.totalTraGop / node.totalRevenue) * 100 : 0;
-            if (key === 'avgQuantity') return node.totalQuantity / daysDivisor;
+            if (key === 'avgQuantity') return Math.ceil(node.totalQuantity / daysDivisor);
             if (key === 'avgRevenue') return node.totalRevenue / daysDivisor;
             return (node as any)[key] || 0;
         };
@@ -138,7 +138,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
         const prevAov = prevQuantity > 0 ? prevRevenue / prevQuantity : 0;
         const prevTraGopPercent = prevRevenue > 0 ? (prevTraGopRevenue / prevRevenue) * 100 : 0;
         
-        const prevAvgQuantity = prevQuantity / daysCountData.prev;
+        const prevAvgQuantity = Math.ceil(prevQuantity / daysCountData.prev);
         const prevAvgRevenue = prevRevenue / daysCountData.prev;
 
         deltaQuantity = quantity - prevQuantity;
@@ -288,11 +288,11 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {visibleColumns.includes('avgQuantity') && (
                     <>
                         <td className={`${cellClass} font-bold text-indigo-600 dark:text-indigo-400 ${!isComparisonMode ? separatorClass : ''}`}>
-                            {avgQuantity > 0 ? avgQuantity.toFixed(1) : '-'}
+                            {avgQuantity > 0 ? formatQuantity(avgQuantity) : '-'}
                         </td>
                         {isComparisonMode && (
                             <td className={`${deltaCellClass} ${separatorClass}`}>
-                                {renderDelta(deltaAvgQuantity, 'decimal1')}
+                                {renderDelta(deltaAvgQuantity, 'number')}
                             </td>
                         )}
                     </>

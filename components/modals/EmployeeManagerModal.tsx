@@ -99,6 +99,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
             setLocalMap(newMap);
             setEditingId(null);
             setHasUnsavedChanges(true); // Đánh dấu đã thay đổi
+            if (updateDepartmentMap) updateDepartmentMap(newMap);
         }
     };
 
@@ -107,6 +108,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
         delete newMap[id];
         setLocalMap(newMap);
         setHasUnsavedChanges(true); // Đánh dấu đã thay đổi
+        if (updateDepartmentMap) updateDepartmentMap(newMap);
     };
 
     const handleRestore = async () => {
@@ -115,6 +117,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
             if (originalMap) {
                 setLocalMap(originalMap);
                 setHasUnsavedChanges(true);
+                if (updateDepartmentMap) updateDepartmentMap(originalMap);
             } else {
                 alert('Không tìm thấy bản sao lưu danh sách gôc!');
             }
@@ -133,7 +136,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
     return (
         <ModalWrapper
             isOpen={isOpen}
-            onClose={onClose}
+            onClose={handleClose}
             title="Quản Lý Danh Sách Nhân Viên"
             subTitle={`Tổng số: ${Object.keys(localMap).length} nhân viên`}
             maxWidthClass="max-w-4xl"

@@ -89,8 +89,8 @@ export const HEADER_CONFIG: HeaderConfig[] = [
     { label: '%DT', group: 'DOANH THU', key: 'dtThucPercent', showInComparison: true, singleColumnInCompare: true, compareLabel: '+/-%DT', colorClass: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', borderColor: 'border-sky-200 dark:border-sky-500/20', icon: 'trending-up' },
     
     // Thêm nhóm TRUNG BÌNH NGÀY
-    { label: 'TrB SL', group: 'TRUNG BÌNH ngày', key: 'avgQuantity', showInComparison: true, colorClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', borderColor: 'border-indigo-200 dark:border-indigo-500/20', icon: 'calculator' },
-    { label: 'TrB DT', group: 'TRUNG BÌNH ngày', key: 'avgRevenue', showInComparison: true, colorClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', borderColor: 'border-indigo-200 dark:border-indigo-500/20', icon: 'calculator' },
+    { label: 'TrB SL', group: 'TB SỐ LƯỢNG', key: 'avgQuantity', showInComparison: true, colorClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', borderColor: 'border-indigo-200 dark:border-indigo-500/20', icon: 'calculator' },
+    { label: 'TrB DT', group: 'TB DOANH THU', key: 'avgRevenue', showInComparison: true, colorClass: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', borderColor: 'border-indigo-200 dark:border-indigo-500/20', icon: 'calculator' },
     
     { label: 'DTQĐ', group: '', key: 'totalRevenueQD', showInComparison: true, colorClass: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400', borderColor: 'border-amber-200 dark:border-amber-500/20', icon: 'award' },
     { label: 'GIÁ TRỊ ĐH', group: '', key: 'aov', showInComparison: true, colorClass: 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400', borderColor: 'border-violet-200 dark:border-violet-500/20', icon: 'shopping-bag' },

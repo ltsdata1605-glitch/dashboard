@@ -63,7 +63,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                 if (!node) return 0;
                 if (key === 'aov') return node.totalQuantity > 0 ? node.totalRevenue / node.totalQuantity : 0;
                 if (key === 'traGopPercent') return node.totalRevenue > 0 ? (node.totalTraGop / node.totalRevenue) * 100 : 0;
-                if (key === 'avgQuantity') return node.totalQuantity / daysDivisor;
+                if (key === 'avgQuantity') return Math.ceil(node.totalQuantity / daysDivisor);
                 if (key === 'avgRevenue') return node.totalRevenue / daysDivisor;
                 return (node as Record<string, any>)[key] || 0;
             };
@@ -182,7 +182,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
                 {visibleColumns.includes('avgQuantity') && months.map(m => (
                     <td key={`avgqty-${m.id}`} className="px-3 py-3 text-right bg-slate-50/30 dark:bg-slate-800/30">
                         <span className="font-medium text-slate-600 dark:text-slate-300 text-xs">
-                            {formatQuantity((trendNodes[m.id]?.totalQuantity || 0) / m.daysCount)}
+                            {formatQuantity(Math.ceil((trendNodes[m.id]?.totalQuantity || 0) / m.daysCount))}
                         </span>
                     </td>
                 ))}

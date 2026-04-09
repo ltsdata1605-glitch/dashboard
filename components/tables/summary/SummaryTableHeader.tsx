@@ -56,7 +56,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                     <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
                         <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hide-on-export">
                             <button 
-                                onClick={() => React.startTransition(() => setTableMode('standard'))}
+                                onClick={() => setTableMode('standard')}
                                 className={`py-1.5 px-3 sm:px-4 text-xs font-bold rounded-lg transition-all ${
                                     tableMode === 'standard' 
                                     ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
@@ -66,7 +66,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 Tiêu chuẩn
                             </button>
                             <button 
-                                onClick={() => React.startTransition(() => setTableMode('comparison'))}
+                                onClick={() => setTableMode('comparison')}
                                 className={`py-1.5 px-3 sm:px-4 text-xs font-bold rounded-lg transition-all ${
                                     tableMode === 'comparison' 
                                     ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
@@ -76,7 +76,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                 So sánh
                             </button>
                             <button 
-                                onClick={() => React.startTransition(() => setTableMode('cross_selling'))}
+                                onClick={() => setTableMode('cross_selling')}
                                 className={`py-1.5 px-3 sm:px-4 text-xs font-bold rounded-lg transition-all ${
                                     tableMode === 'cross_selling' 
                                     ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' 

@@ -93,8 +93,13 @@ export const useDashboardLogic = () => {
 
     const openUnshippedModal = () => setActiveModal('unshipped');
 
+    // NOTE: Settings sync to Firebase is handled automatically by useCloudSync hook
+    // which listens to 'ycx-setting-changed' events dispatched by dbService.saveSetting().
+    // No need for manual triggerCloudSync calls — saving to IndexedDB triggers the event chain.
+
     const handleDeduplicationChange = (enabled: boolean) => {
         setIsDeduplicationEnabled(enabled);
+        dbService.saveDeduplicationSetting(enabled).catch(console.error);
     };
 
     const updateWarehouseTarget = (kho: string, target: number) => {

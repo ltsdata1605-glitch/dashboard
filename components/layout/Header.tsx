@@ -40,6 +40,7 @@ const Header: React.FC<HeaderProps> = ({
     const [showInstructionModal, setShowInstructionModal] = useState(false);
     const [showEmployeeModal, setShowEmployeeModal] = useState(false);
     const [showDriveHistory, setShowDriveHistory] = useState(false);
+    const { syncState, lastError } = useCloudSync();
 
     // Prevent hydration warnings
     const [mounted, setMounted] = useState(false);
@@ -86,6 +87,18 @@ const Header: React.FC<HeaderProps> = ({
     
     return (
         <>
+            {syncState === 'error' && (
+                <div 
+                    className="w-full bg-red-500 text-white text-xs font-bold py-1.5 px-4 flex items-center justify-between cursor-pointer overflow-hidden relative mb-2 rounded-lg shadow-sm"
+                    onClick={() => setShowDriveHistory(true)}
+                >
+                    <div className="flex-1 overflow-hidden whitespace-nowrap">
+                        <div className="inline-block animate-marquee pl-[100%]">
+                            ⚠️ Đồng bộ dữ liệu thất bại: {lastError || "Lỗi lưu trữ đám mây. Dữ liệu tạm thời được lưu trên máy."} - Vui lòng click để mở Lịch Sử trên Mây.
+                        </div>
+                    </div>
+                </div>
+            )}
             <header className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-5 pb-5 border-b border-slate-200/60 dark:border-slate-800/60">
             {/* Title Section with Editorial Style */}
             <div className="flex flex-col gap-1">
@@ -176,10 +189,13 @@ const Header: React.FC<HeaderProps> = ({
                                 
                                 <button 
                                     onClick={() => setShowDriveHistory(true)}
-                                    className="flex items-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 border-l border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors tooltip"
+                                    className={`flex items-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors tooltip ${syncState === 'error' ? 'text-red-500 animate-pulse' : 'text-emerald-600 dark:text-emerald-400'}`}
                                     title="Lịch sử dữ liệu (Mây)"
                                 >
-                                    <Icon name="cloud-cog" size={4} />
+                                    <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={4} className={syncState === 'error' ? "animate-bounce" : ""} />
+                                    {syncState === 'error' && (
+                                        <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900 animate-ping"></span>
+                                    )}
                                 </button>
                             </>
                         )}

@@ -131,45 +131,76 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                         try {
                             const cloudData = await fetchFromCloud(user);
                             if (!cloudData) return;
+
+                            const localLastMod = await dbService.getSetting<number>('localSettingsLastModified') || 0;
+                            const cloudLastMod = cloudData.lastSync ? new Date(cloudData.lastSync).getTime() : 0;
+
+                            // Chống ghi đè từ Cloud CŨ xuống Local MỚI (xảy ra khi F5 trước khi sync 15 phút)
+                            if (cloudLastMod < localLastMod) {
+                                console.log('[Cloud Sync] Local data is newer than Firebase. Skipping overwrite and pushing local to cloud...');
+                                window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'force_push_override' } }));
+                                return;
+                            }
                             
                             // Ngầm ghi đè và Re-render (Không freeze UI)
-                            if (cloudData.productConfig) {
-                                setProductConfig(cloudData.productConfig);
-                                dbService.saveProductConfig(cloudData.productConfig, configUrl).catch(console.error);
-                            }
-                            if (cloudData.departmentMap) {
-                                setDepartmentMap(cloudData.departmentMap);
-                                dbService.saveDepartmentMap(cloudData.departmentMap).catch(console.error);
-                            }
-                            if (cloudData.warehouseTargets) {
-                                const map: Record<string, number> = {};
-                                (cloudData.warehouseTargets as any[]).forEach(t => map[t.kho] = t.dsMucTieu);
-                                setWarehouseTargets(map);
-                                dbService.saveWarehouseTargets(map).catch(console.error);
-                            }
-                            if (cloudData.gtdhTargets) {
-                                const map: Record<string, number> = {};
-                                (cloudData.gtdhTargets as any[]).forEach(t => map[t.nhomHang] = t.gtdh);
-                                setGtdhTargets(map);
-                                dbService.saveGtdhTargets(map).catch(console.error);
-                            }
-                            if (cloudData.kpiTargets) {
-                                setKpiTargets(cloudData.kpiTargets);
-                                dbService.saveKpiTargets(cloudData.kpiTargets).catch(console.error);
-                            }
-                            if (cloudData.crossSellingConfig) {
-                                setCrossSellingConfig(cloudData.crossSellingConfig);
-                                dbService.saveCrossSellingConfig(cloudData.crossSellingConfig).catch(console.error);
-                            }
-                            if (cloudData.kpiCardConfig) {
-                                setKpiCardsConfig(cloudData.kpiCardConfig);
-                                dbService.saveKpiCardConfig(cloudData.kpiCardConfig).catch(console.error);
-                            }
                             if (cloudData.settingsStoreBackup) {
-                                Object.entries(cloudData.settingsStoreBackup).forEach(([k, v]) => {
+                                const backup = cloudData.settingsStoreBackup;
+                                // 1. Bulk save to IDB first
+                                Object.entries(backup).forEach(([k, v]) => {
                                     dbService.saveSetting(k, v).catch(console.error);
                                 });
+                                
+                                // 2. Hydrate React states safely without breaking app structure
+                                if (backup.departmentMap) setDepartmentMap(backup.departmentMap);
+                                if (backup.warehouseTargets) setWarehouseTargets(backup.warehouseTargets);
+                                if (backup.gtdhTargets) setGtdhTargets(backup.gtdhTargets);
+                                if (backup.kpiTargets) setKpiTargets(backup.kpiTargets);
+                                if (backup.crossSellingConfig) setCrossSellingConfig(backup.crossSellingConfig);
+                                if (backup.kpiCardConfig) setKpiCardsConfig(backup.kpiCardConfig);
+                                
+                                // 3. Re-hydrate product config after saving to IDB to ensure Sets are restored
+                                if (backup.productConfig) {
+                                    dbService.getProductConfig().then(res => {
+                                        if (res && res.config) setProductConfig(res.config);
+                                    }).catch(console.error);
+                                }
+                            } else {
+                                // Legacy fallback for very old accounts
+                                if (cloudData.productConfig) {
+                                    setProductConfig(cloudData.productConfig);
+                                    dbService.saveProductConfig(cloudData.productConfig, configUrl).catch(console.error);
+                                }
+                                if (cloudData.departmentMap) {
+                                    setDepartmentMap(cloudData.departmentMap);
+                                    dbService.saveDepartmentMap(cloudData.departmentMap).catch(console.error);
+                                }
+                                if (cloudData.warehouseTargets) {
+                                    const map: Record<string, number> = {};
+                                    (cloudData.warehouseTargets as any[]).forEach(t => map[t.kho] = t.dsMucTieu);
+                                    setWarehouseTargets(map);
+                                    dbService.saveWarehouseTargets(map).catch(console.error);
+                                }
+                                if (cloudData.gtdhTargets) {
+                                    const map: Record<string, number> = {};
+                                    (cloudData.gtdhTargets as any[]).forEach(t => map[t.nhomHang] = t.gtdh);
+                                    setGtdhTargets(map);
+                                    dbService.saveGtdhTargets(map).catch(console.error);
+                                }
+                                if (cloudData.kpiTargets) {
+                                    setKpiTargets(cloudData.kpiTargets);
+                                    dbService.saveKpiTargets(cloudData.kpiTargets).catch(console.error);
+                                }
+                                if (cloudData.crossSellingConfig) {
+                                    setCrossSellingConfig(cloudData.crossSellingConfig);
+                                    dbService.saveCrossSellingConfig(cloudData.crossSellingConfig).catch(console.error);
+                                }
+                                if (cloudData.kpiCardConfig) {
+                                    setKpiCardsConfig(cloudData.kpiCardConfig);
+                                    dbService.saveKpiCardConfig(cloudData.kpiCardConfig).catch(console.error);
+                                }
                             }
+
+                            // Always process latestDriveUpload because it is explicitly synced outside settingsStoreBackup
                             if (cloudData.latestDriveUpload) {
                                 const localSavedAt = savedSalesReq ? savedSalesReq.savedAt.getTime() : 0;
                                 const localFileTs = savedSalesReq ? savedSalesReq.fileLastModified : 0;
@@ -185,8 +216,14 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                                     setPendingCloudSync(cloudData.latestDriveUpload);
                                 }
                             }
-                        } catch (e) {
-                            console.error("Lỗi PULL Firestore ngầm:", e);
+                        } catch (e: any) {
+                            // Background cloud pull is non-critical — app works fully offline
+                            const errMsg = (e?.message || '').toLowerCase();
+                            if (errMsg.includes('failed to fetch') || errMsg.includes('network') || errMsg.includes('offline')) {
+                                console.info("☁️ Đồng bộ đám mây bỏ qua: không có kết nối mạng. Đang sử dụng dữ liệu cục bộ.");
+                            } else {
+                                console.warn("⚠️ Đồng bộ đám mây thất bại (không ảnh hưởng app):", e?.message || e);
+                            }
                         }
                     });
                 }
@@ -327,21 +364,21 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const handleAcceptCloudSync = async (handleFileProcessing: (files: File[], isCloudSync?: boolean) => Promise<void>) => {
         if (!pendingCloudSync) return;
         try {
-            setStatus({ message: `Đang kết nối Google Drive để tải ${pendingCloudSync.name}...`, type: 'info', progress: 10 });
+            setStatus({ message: `📊 Đang kết nối Google Drive để tải file "${pendingCloudSync.name}"...`, type: 'info', progress: 10 });
             setAppState('loading');
             
             const token = sessionStorage.getItem('googleOAuthToken');
             if (!token) {
-                setStatus({ message: `Bắt đầu yêu cầu kết nối Google...`, type: 'info', progress: 20 });
+                setStatus({ message: `🔑 Đang yêu cầu quyền truy cập Google Drive...`, type: 'info', progress: 20 });
                 const { loginWithGoogle } = await import('../services/firebase');
-                const user = await loginWithGoogle(); // Requires explicit popup action, probably should wrap in user interaction before calling this handleAcceptCloudSync
+                await loginWithGoogle();
             }
             
             const activeToken = sessionStorage.getItem('googleOAuthToken');
-            if (!activeToken) throw new Error('Không thể lấy phiên làm việc Google');
+            if (!activeToken) throw new Error('AUTH_EXPIRED');
 
             const { downloadFileFromDrive } = await import('../services/googleDriveService');
-            setStatus({ message: `Đang tải file ${pendingCloudSync.name}...`, type: 'info', progress: 30 });
+            setStatus({ message: `⬇️ Đang tải file Excel "${pendingCloudSync.name}" từ Google Drive...`, type: 'info', progress: 30 });
             const blob = await downloadFileFromDrive(pendingCloudSync.fileId, activeToken);
             
             const newFile = new File([blob], pendingCloudSync.name, { 
@@ -349,11 +386,30 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 lastModified: pendingCloudSync.timestamp
             });
             
-            setPendingCloudSync(null); // Clear pending state
-            await handleFileProcessing([newFile], true); // Pass true to bypass redundant Drive upload loop
+            setPendingCloudSync(null);
+            await handleFileProcessing([newFile], true);
         } catch (e: any) {
             console.error("Lỗi khi tải đồng bộ:", e);
-            setStatus({ message: "Lỗi đồng bộ: " + e.message, type: 'error', progress: 0 });
+            
+            // User-friendly error messages based on error type
+            let userMessage = '';
+            const errMsg = (e?.message || '').toLowerCase();
+            
+            if (errMsg.includes('failed to fetch') || errMsg.includes('networkerror') || errMsg.includes('network')) {
+                userMessage = '🌐 Không thể kết nối mạng. Vui lòng kiểm tra kết nối internet và thử lại. Dữ liệu hiện tại trên máy vẫn hoạt động bình thường.';
+            } else if (errMsg === 'auth_expired' || errMsg.includes('unauthenticated') || errMsg.includes('401')) {
+                userMessage = '🔑 Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại Google để đồng bộ file.';
+            } else if (errMsg.includes('quota') || errMsg.includes('resource-exhausted') || errMsg.includes('429')) {
+                userMessage = '⏳ Máy chủ tạm thời quá tải. Dữ liệu đã lưu an toàn trên máy, hệ thống sẽ tự đồng bộ lại sau.';
+            } else if (errMsg.includes('not found') || errMsg.includes('404')) {
+                userMessage = '📁 File trên Google Drive không còn tồn tại hoặc đã bị xoá. Vui lòng tải lên file mới.';
+            } else if (errMsg.includes('permission') || errMsg.includes('403')) {
+                userMessage = '🔒 Không có quyền truy cập file. Vui lòng kiểm tra quyền chia sẻ trên Google Drive.';
+            } else {
+                userMessage = `⚠️ Lỗi đồng bộ file dữ liệu: ${e.message}. Dữ liệu hiện tại trên máy không bị ảnh hưởng.`;
+            }
+            
+            setStatus({ message: userMessage, type: 'error', progress: 0 });
             setAppState('dashboard');
         }
     };

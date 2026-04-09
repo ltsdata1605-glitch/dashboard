@@ -3,7 +3,8 @@ import type { SummaryTableNode } from '../../../types';
 import { HEADER_CONFIG } from './SummaryTableUtils';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
 import { processSummaryTable } from '../../../services/summaryService';
-import { getExportFilenamePrefix } from '../../../utils/dataUtils';
+import { getExportFilenamePrefix, getRowValue, abbreviateName } from '../../../utils/dataUtils';
+import { COL } from '../../../constants';
 import { exportElementAsImage } from '../../../services/uiService';
 
 import { useSummaryFilters } from './hooks/useSummaryFilters';
@@ -14,9 +15,9 @@ export const useSummaryTableLogic = () => {
     const { filterState: filters, handleFilterChange: onFilterChange, baseFilteredData, processedData, productConfig } = useDashboardContext();
     const { summaryTable: summaryTableFilters } = filters;
     
-    const [tableMode, setTableMode] = useState<'standard' | 'comparison' | 'cross_selling'>('standard');
-    const isComparisonMode = tableMode === 'comparison';
-    const isCrossSellingMode = tableMode === 'cross_selling';
+    const [tableModeState, _setTableMode] = useState<'standard' | 'comparison' | 'cross_selling'>('standard');
+    const isComparisonMode = tableModeState === 'comparison';
+    const isCrossSellingMode = tableModeState === 'cross_selling';
 
     const {
         localDrilldownOrder, setLocalDrilldownOrder,
@@ -34,6 +35,10 @@ export const useSummaryTableLogic = () => {
         toggleExpand, handleExpandAll: _handleExpandAll, handleCollapseAll: _handleCollapseAll, clearExpanded
     } = useSummaryExpand(startTransition);
 
+    const setTableMode = useCallback((mode: 'standard' | 'comparison' | 'cross_selling') => {
+        _setTableMode(mode);
+    }, []);
+
     const {
         compMode, setCompMode,
         selectedDate, setSelectedDate,
@@ -44,7 +49,8 @@ export const useSummaryTableLogic = () => {
         compSortConfig, setCompSortConfig,
         compTree, trendData,
         trendSelectedMonths, setTrendSelectedMonths,
-        dateDisplay, daysCountData, setDaysCountData, weeksInSelectedMonth
+        dateDisplay, daysCountData, setDaysCountData, weeksInSelectedMonth,
+        compareUpToCurrentDay, setCompareUpToCurrentDay
     } = useSummaryComparison(
         isComparisonMode, baseFilteredData, productConfig, filters,
         localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters,
@@ -78,6 +84,45 @@ export const useSummaryTableLogic = () => {
 
         return processSummaryTable(dataToUse, productConfig, localFilterState);
     }, [processedData?.filteredValidSalesData, filters, productConfig, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
+    
+    // Calculate global filter options independent of standardSummaryData so they are available in comparison mode
+    const filterOptions = useMemo(() => {
+        if (standardSummaryData) {
+            return {
+                parent: standardSummaryData.uniqueParentGroups,
+                child: standardSummaryData.uniqueChildGroups,
+                manufacturer: standardSummaryData.uniqueManufacturers,
+                creator: standardSummaryData.uniqueCreators,
+                product: standardSummaryData.uniqueProducts
+            };
+        }
+        
+        // Fallback for comparison mode where standardSummaryData might be null
+        const parentSet = new Set<string>();
+        const childSet = new Set<string>();
+        const manufacturerSet = new Set<string>();
+        const creatorSet = new Set<string>();
+        const productSet = new Set<string>();
+        
+        if (productConfig && processedData?.filteredValidSalesData) {
+            processedData.filteredValidSalesData.forEach(row => {
+                const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+                parentSet.add(productConfig.childToParentMap[maNhomHang] || 'Không xác định');
+                childSet.add(productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định');
+                manufacturerSet.add(getRowValue(row, COL.MANUFACTURER) || 'Không rõ');
+                creatorSet.add(abbreviateName(getRowValue(row, COL.NGUOI_TAO) || 'Không xác định'));
+                productSet.add(getRowValue(row, COL.PRODUCT) || 'N/A');
+            });
+        }
+        
+        return {
+            parent: Array.from(parentSet).sort(),
+            child: Array.from(childSet).sort(),
+            manufacturer: Array.from(manufacturerSet).sort(),
+            creator: Array.from(creatorSet).sort(),
+            product: Array.from(productSet).sort()
+        };
+    }, [standardSummaryData, productConfig, processedData?.filteredValidSalesData]);
 
     useEffect(() => {
         const dataToUse = processedData?.filteredValidSalesData || [];
@@ -119,7 +164,7 @@ export const useSummaryTableLogic = () => {
         if(tableContainerRef.current) {
             setIsExporting(true);
             const prefix = getExportFilenamePrefix(filters.kho);
-            await exportElementAsImage(tableContainerRef.current, `${prefix}-Chi-tiet-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], fitContent: true });
+            await exportElementAsImage(tableContainerRef.current, `${prefix}-Chi-tiet-nganh-hang.png`, { captureAsDisplayed: true });
             setIsExporting(false);
         }
     };
@@ -211,17 +256,17 @@ export const useSummaryTableLogic = () => {
 
     const getFilterProps = (key: string) => {
         switch(key) {
-            case 'parent': return { options: standardSummaryData?.uniqueParentGroups || [], selected: localParentFilters, onChange: (s: string[]) => filterChangeWrapper('parent', s) };
-            case 'child': return { options: standardSummaryData?.uniqueChildGroups || [], selected: localChildFilters, onChange: (s: string[]) => filterChangeWrapper('child', s) };
-            case 'manufacturer': return { options: standardSummaryData?.uniqueManufacturers || [], selected: localManufacturerFilters, onChange: (s: string[]) => filterChangeWrapper('manufacturer', s) };
-            case 'creator': return { options: standardSummaryData?.uniqueCreators || [], selected: localCreatorFilters, onChange: (s: string[]) => filterChangeWrapper('creator', s) };
-            case 'product': return { options: standardSummaryData?.uniqueProducts || [], selected: localProductFilters, onChange: (s: string[]) => filterChangeWrapper('product', s) };
+            case 'parent': return { options: filterOptions.parent, selected: localParentFilters, onChange: (s: string[]) => filterChangeWrapper('parent', s) };
+            case 'child': return { options: filterOptions.child, selected: localChildFilters, onChange: (s: string[]) => filterChangeWrapper('child', s) };
+            case 'manufacturer': return { options: filterOptions.manufacturer, selected: localManufacturerFilters, onChange: (s: string[]) => filterChangeWrapper('manufacturer', s) };
+            case 'creator': return { options: filterOptions.creator, selected: localCreatorFilters, onChange: (s: string[]) => filterChangeWrapper('creator', s) };
+            case 'product': return { options: filterOptions.product, selected: localProductFilters, onChange: (s: string[]) => filterChangeWrapper('product', s) };
             default: return { options: [], selected: [], onChange: () => {} };
         }
     };
 
     return {
-        tableMode, setTableMode,
+        tableMode: tableModeState, setTableMode,
         isComparisonMode, isCrossSellingMode,
         compMode, setCompMode,
         selectedDate, setSelectedDate,
@@ -244,6 +289,7 @@ export const useSummaryTableLogic = () => {
         handleSort, toggleExpand,
         weeksInSelectedMonth, compSortConfig,
         expandLevel, visibleColumns, setVisibleColumns, daysCountData, trendData,
-        trendSelectedMonths, setTrendSelectedMonths
+        trendSelectedMonths, setTrendSelectedMonths,
+        compareUpToCurrentDay, setCompareUpToCurrentDay
     };
 };
