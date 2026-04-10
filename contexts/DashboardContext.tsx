@@ -28,8 +28,8 @@ interface DashboardContextType {
     gtdhTargets: Record<string, number>;
     updateGtdhTarget: (nhomHang: string, target: number) => void;
     deleteGtdhTarget: (nhomHang: string) => void;
-    kpiTargets: { hieuQua: number, traGop: number, gtdh?: number };
-    updateKpiTargets: (targets: { hieuQua: number, traGop: number, gtdh?: number }) => void;
+    kpiTargets: { hieuQua: number, traGop: number, gtdh?: number, doanhThuThuc?: number };
+    updateKpiTargets: (targets: { hieuQua: number, traGop: number, gtdh?: number, doanhThuThuc?: number }) => void;
     crossSellingConfig: any;
     updateCrossSellingConfig: (config: any) => void;
     kpiCardsConfig: import('../types').KpiCardConfig[];

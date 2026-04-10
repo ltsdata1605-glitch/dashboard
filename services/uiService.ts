@@ -15,7 +15,7 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
 };
 
 export async function exportElementAsImage(element: HTMLElement, filename: string, options: any = {}) {
-    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = 2, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null } = options;
+    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = 2, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false } = options;
 
     const clone = element.cloneNode(true) as HTMLElement;
 
@@ -28,12 +28,14 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     // --- RETAINED LAYOUT FIXES FOR EXPORT PRESENTATION ---
     // These are kept because they explicitly change how the data looks in the export format.
 
-    // 1. KPI Cards: Add padding AND FORCE GRID LAYOUT (2 Columns)
+    // 1. KPI Cards: Add padding AND FORCE GRID LAYOUT
     const kpiGrid = clone.querySelector('.kpi-grid-for-export');
     if (kpiGrid && kpiGrid instanceof HTMLElement) {
+        const cardCount = kpiGrid.children.length;
+        const cols = cardCount === 5 ? 5 : (cardCount >= 3 ? 3 : 2);
         kpiGrid.style.setProperty('display', 'grid', 'important');
-        kpiGrid.style.setProperty('grid-template-columns', 'repeat(2, minmax(0, 1fr))', 'important');
-        kpiGrid.style.setProperty('gap', '1rem', 'important');
+        kpiGrid.style.setProperty('grid-template-columns', `repeat(${cols}, minmax(0, 1fr))`, 'important');
+        kpiGrid.style.setProperty('gap', '0.75rem', 'important');
         kpiGrid.style.setProperty('width', '100%', 'important');
     }
 
@@ -185,6 +187,35 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             }
         }
     });
+
+    // 7. FIT CATEGORY COLUMN — shrink "DANH MỤC" to content width for export
+    if (fitCategoryColumn) {
+        // Target the header th (sticky first column) and all body/footer first-column cells
+        const stickyHeaders = clone.querySelectorAll('thead th:first-child');
+        const stickyCells = clone.querySelectorAll('tbody td:first-child, tfoot td:first-child');
+        const allFirstCols = [...Array.from(stickyHeaders), ...Array.from(stickyCells)];
+        
+        allFirstCols.forEach(el => {
+            if (el instanceof HTMLElement) {
+                // Remove Tailwind fixed-width classes
+                el.classList.forEach(cls => {
+                    if (cls.startsWith('w-[') || cls.startsWith('md:w-') || cls.startsWith('lg:w-')) {
+                        el.classList.remove(cls);
+                    }
+                });
+                el.style.setProperty('width', 'auto', 'important');
+                el.style.setProperty('min-width', '0', 'important');
+                el.style.setProperty('max-width', 'none', 'important');
+                el.style.setProperty('white-space', 'nowrap', 'important');
+            }
+        });
+
+        // Also set the table layout to auto so columns can shrink
+        const tables = clone.querySelectorAll('table');
+        tables.forEach(table => {
+            table.style.setProperty('table-layout', 'auto', 'important');
+        });
+    }
 
     const captureContainer = document.createElement('div');
     captureContainer.style.position = 'absolute';

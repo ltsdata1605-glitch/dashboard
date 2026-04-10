@@ -73,6 +73,7 @@ const TrendChart: React.FC = React.memo(() => {
 
   const [isDark, setIsDark] = useState(() => document.documentElement.classList.contains('dark'));
   const [savedCalendars, setSavedCalendars] = useState<any[]>([]);
+  const [activeCalendarTab, setActiveCalendarTab] = useState<string>('1-thuc');
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -105,6 +106,7 @@ const TrendChart: React.FC = React.memo(() => {
       const newList = [newCal, ...savedCalendars];
       setSavedCalendars(newList);
       saveCustomCalendars(newList);
+      setActiveCalendarTab(newCal.id);
       showToast('Đã lưu bảng lịch thành công!');
   };
 
@@ -112,6 +114,10 @@ const TrendChart: React.FC = React.memo(() => {
       const newList = savedCalendars.filter(c => c.id !== id);
       setSavedCalendars(newList);
       saveCustomCalendars(newList);
+      // If the removed tab was active, switch to the first remaining tab
+      if (activeCalendarTab === id && newList.length > 0) {
+          setActiveCalendarTab(newList[0].id);
+      }
   };
   
   // Handle sync between display modes
@@ -533,7 +539,7 @@ const TrendChart: React.FC = React.memo(() => {
       <div className={`p-5 md:p-6 ${displayMode === 'calendar' ? 'pb-5' : 'pb-2'}`}>
         <div className={`w-full ${displayMode === 'calendar' ? '' : 'h-[320px]'}`}>
            {displayMode === 'calendar' ? (
-                <div className="flex flex-col gap-6">
+                <div className="flex flex-col gap-4">
                     {/* Toast notification */}
                     {toastMsg && (
                         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/50 text-emerald-700 dark:text-emerald-300 text-sm font-bold shadow-lg animate-fade-in flex items-center gap-2 pointer-events-none">
@@ -541,64 +547,117 @@ const TrendChart: React.FC = React.memo(() => {
                             {toastMsg}
                         </div>
                     )}
-                    {/* Draft calendar - no rounded corners */}
-                    <div ref={draftCalendarRef} className="border border-slate-200 dark:border-slate-800 overflow-hidden relative z-10 w-full pb-2 bg-slate-50 dark:bg-[#121212] pt-6 calendar-export-target">
-                        <div className="absolute top-2 left-3 z-20 px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-500 text-[10px] uppercase font-bold rounded shadow-sm border border-amber-200 dark:border-amber-700/50 block hide-on-export">Nháp (Chưa Tải)</div>
-                        <button
-                            onClick={handleExportDraft}
-                            disabled={isExporting}
-                            className="absolute top-2 right-3 z-20 p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm hide-on-export"
-                            title="Xuất ảnh bảng Nháp"
-                        >
-                            <Icon name="camera" size={4} />
-                        </button>
-                        <RevenueCalendar 
-                            data={calendarData} 
-                            monthDate={new Date(`${calendarFilters.month || new Date().toISOString().substring(0,7)}-01T00:00:00`)} 
-                            metricName={calendarFilters.metric === 'quantity' ? 'Số lượng' : (calendarFilters.metric === 'revenueQD' ? 'Doanh thu QĐ' : calendarFilters.metric === 'traChamPercent' ? 'Tỉ trọng Trả chậm' : 'Doanh thu')}
-                            title={(Array.isArray(calendarFilters.parentGroup) && calendarFilters.parentGroup.length > 0) || (Array.isArray(calendarFilters.childGroup) && calendarFilters.childGroup.length > 0)
-                                ? ((Array.isArray(calendarFilters.parentGroup) && calendarFilters.parentGroup.length > 0) && (Array.isArray(calendarFilters.childGroup) && calendarFilters.childGroup.length > 0)
-                                    ? `${calendarFilters.parentGroup.join(', ')} - ${calendarFilters.childGroup.join(', ')}`
-                                    : (Array.isArray(calendarFilters.childGroup) && calendarFilters.childGroup.length > 0)
-                                        ? calendarFilters.childGroup.join(', ')
-                                        : calendarFilters.parentGroup.join(', '))
-                                : (
-                                    calendarFilters.metric === 'revenue' ? `TỔNG DOANH THU THỰC THÁNG ${calendarFilters.month ? calendarFilters.month.split('-')[1] + '/' + calendarFilters.month.split('-')[0] : ''}`
-                                    : calendarFilters.metric === 'revenueQD' ? 'DOANH THU QUY ĐỔI'
-                                    : calendarFilters.metric === 'traChamPercent' ? 'TỈ TRỌNG TRẢ CHẬM'
-                                    : 'TỔNG DOANH THU'
-                                )}
-                            subtitle={
-                                (Array.isArray(filterState.kho) && filterState.kho.length > 0 && !filterState.kho.includes('all') ? `KHO: ${filterState.kho.join(', ')} • ` : (!Array.isArray(filterState.kho) && filterState.kho && filterState.kho !== 'all' ? `KHO: ${filterState.kho} • ` : '')) +
-                                (calendarFilters.metric === 'quantity' ? 'Số lượng' : (calendarFilters.metric === 'revenueQD' ? 'Doanh thu QĐ' : calendarFilters.metric === 'traChamPercent' ? 'Tỉ lệ trả chậm' : 'Doanh thu'))
-                            }
-                            isDraft={true}
-                        />
-                    </div>
-                    {savedCalendars.length > 0 && (
-                        <div className="mt-2 text-left">
-                            <div className="flex items-center gap-2 mb-4 pl-1">
-                                <Icon name="grid" size={4.5} className="text-indigo-500" />
-                                <h4 className="text-sm font-extrabold text-slate-800 dark:text-slate-100 uppercase tracking-wide">Lịch Đã Lưu</h4>
-                            </div>
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full text-left">
-                                {savedCalendars.map(cal => {
-                                    const isDefault = ['1-thuc', '2-qd', '3-tracham'].includes(cal.id);
-                                    const effectiveFilter = { ...cal, month: calendarFilters.month };
 
-                                    return (
-                                        <SavedCalendarCard 
-                                            key={cal.id} 
-                                            filter={effectiveFilter} 
-                                            baseFilteredData={baseFilteredData || []} 
-                                            productConfig={productConfig} 
-                                            onRemove={handleRemoveCalendar} 
-                                        />
-                                    );
-                                })}
+                    {/* 2-Column Grid: Draft (left) | Saved Calendar (right) */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* LEFT: Draft Calendar */}
+                        <div ref={draftCalendarRef} className="border border-slate-200 dark:border-slate-800 overflow-hidden relative z-10 w-full pb-2 bg-slate-50 dark:bg-[#121212] pt-6 calendar-export-target">
+                            <div className="absolute top-2 left-3 z-20 px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-500 text-[10px] uppercase font-bold rounded shadow-sm border border-amber-200 dark:border-amber-700/50 block hide-on-export">Nháp</div>
+                            <div className="absolute top-2 right-3 z-20 flex items-center gap-1 hide-on-export">
+                                <button
+                                    onClick={handleAddCalendar}
+                                    className="p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition-colors"
+                                    title="Lưu bảng nháp thành tab mới"
+                                >
+                                    <Icon name="plus" size={3.5} />
+                                </button>
+                                <button
+                                    onClick={handleExportDraft}
+                                    disabled={isExporting}
+                                    className="p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
+                                    title="Xuất ảnh bảng Nháp"
+                                >
+                                    <Icon name="camera" size={3.5} />
+                                </button>
                             </div>
+                            <RevenueCalendar 
+                                data={calendarData} 
+                                monthDate={new Date(`${calendarFilters.month || new Date().toISOString().substring(0,7)}-01T00:00:00`)} 
+                                metricName={calendarFilters.metric === 'quantity' ? 'Số lượng' : (calendarFilters.metric === 'revenueQD' ? 'Doanh thu QĐ' : calendarFilters.metric === 'traChamPercent' ? 'Tỉ trọng Trả chậm' : 'Doanh thu')}
+                                title={(Array.isArray(calendarFilters.parentGroup) && calendarFilters.parentGroup.length > 0) || (Array.isArray(calendarFilters.childGroup) && calendarFilters.childGroup.length > 0)
+                                    ? ((Array.isArray(calendarFilters.parentGroup) && calendarFilters.parentGroup.length > 0) && (Array.isArray(calendarFilters.childGroup) && calendarFilters.childGroup.length > 0)
+                                        ? `${calendarFilters.parentGroup.join(', ')} - ${calendarFilters.childGroup.join(', ')}`
+                                        : (Array.isArray(calendarFilters.childGroup) && calendarFilters.childGroup.length > 0)
+                                            ? calendarFilters.childGroup.join(', ')
+                                            : calendarFilters.parentGroup.join(', '))
+                                    : (
+                                        calendarFilters.metric === 'revenue' ? `TỔNG DOANH THU THỰC THÁNG ${calendarFilters.month ? calendarFilters.month.split('-')[1] + '/' + calendarFilters.month.split('-')[0] : ''}`
+                                        : calendarFilters.metric === 'revenueQD' ? 'DOANH THU QUY ĐỔI'
+                                        : calendarFilters.metric === 'traChamPercent' ? 'TỈ TRỌNG TRẢ CHẬM'
+                                        : 'TỔNG DOANH THU'
+                                    )}
+                                subtitle={
+                                    (Array.isArray(filterState.kho) && filterState.kho.length > 0 && !filterState.kho.includes('all') ? `KHO: ${filterState.kho.join(', ')} • ` : (!Array.isArray(filterState.kho) && filterState.kho && filterState.kho !== 'all' ? `KHO: ${filterState.kho} • ` : '')) +
+                                    (calendarFilters.metric === 'quantity' ? 'Số lượng' : (calendarFilters.metric === 'revenueQD' ? 'Doanh thu QĐ' : calendarFilters.metric === 'traChamPercent' ? 'Tỉ lệ trả chậm' : 'Doanh thu'))
+                                }
+                                isDraft={true}
+                                compact={true}
+                            />
                         </div>
-                    )}
+
+                        {/* RIGHT: Tabs + Active Saved Calendar */}
+                        {savedCalendars.length > 0 && (
+                            <div className="flex flex-col">
+                                {/* Tab Bar */}
+                                <div className="flex items-center gap-0.5 border-b-2 border-slate-200 dark:border-slate-700 overflow-x-auto">
+                                    {savedCalendars.map(cal => {
+                                        const isActive = activeCalendarTab === cal.id;
+                                        let tabLabel = '';
+                                        const pg = Array.isArray(cal.parentGroup) ? cal.parentGroup : [];
+                                        const cg = Array.isArray(cal.childGroup) ? cal.childGroup : [];
+                                        if (pg.length > 0 || cg.length > 0) {
+                                            tabLabel = pg.length > 0 && cg.length > 0
+                                                ? `${pg.join(', ')} - ${cg.join(', ')}`
+                                                : cg.length > 0 ? cg.join(', ') : pg.join(', ');
+                                        } else {
+                                            if (cal.metric === 'revenue') tabLabel = 'DOANH THU';
+                                            else if (cal.metric === 'revenueQD') tabLabel = 'DOANH THU QĐ';
+                                            else if (cal.metric === 'traChamPercent') tabLabel = 'TRẢ CHẬM';
+                                            else if (cal.metric === 'quantity') tabLabel = 'SỐ LƯỢNG';
+                                            else tabLabel = 'LỊCH';
+                                        }
+                                        return (
+                                            <button
+                                                key={cal.id}
+                                                onClick={() => setActiveCalendarTab(cal.id)}
+                                                className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-200 border-b-2 -mb-[2px] ${
+                                                    isActive
+                                                        ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
+                                                        : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
+                                                }`}
+                                            >
+                                                {tabLabel}
+                                            </button>
+                                        );
+                                    })}
+                                    <button
+                                        onClick={handleAddCalendar}
+                                        className="px-2 py-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 border-b-2 border-transparent -mb-[2px] transition-colors"
+                                        title="Thêm bảng lịch mới từ bộ lọc hiện tại"
+                                    >
+                                        <Icon name="plus" size={3.5} />
+                                    </button>
+                                </div>
+
+                                {/* Active Tab Calendar */}
+                                <div className="mt-3 flex-1">
+                                    {savedCalendars.map(cal => {
+                                        if (cal.id !== activeCalendarTab) return null;
+                                        const effectiveFilter = { ...cal, month: calendarFilters.month };
+                                        return (
+                                            <SavedCalendarCard 
+                                                key={cal.id} 
+                                                filter={effectiveFilter} 
+                                                baseFilteredData={baseFilteredData || []} 
+                                                productConfig={productConfig} 
+                                                onRemove={handleRemoveCalendar} 
+                                            />
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </div>
             ) : renderChart()}
         </div>

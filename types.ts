@@ -454,6 +454,7 @@ export interface CrossSellingConfig {
 export type KpiMetricSource = 
   | 'doanhThuQD' 
   | 'totalRevenue' 
+  | 'doanhThuThuc'
   | 'traGopPercent' 
   | 'runRateRevenue' 
   | 'crossSellRate' 

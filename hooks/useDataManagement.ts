@@ -84,7 +84,30 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 if (savedCrossSellingReq) setCrossSellingConfig(savedCrossSellingReq);
                 
                 if (savedKpiCardConfigReq && savedKpiCardConfigReq.length > 0) {
-                    setKpiCardsConfig(savedKpiCardConfigReq);
+                    // Migration: update order & colors for core KPI cards to match new design
+                    const coreCardUpdates: Record<string, { order: number, iconColor: string }> = {
+                        'kpi-dtthuc': { order: 1, iconColor: 'emerald' },
+                        'kpi-dtqd': { order: 2, iconColor: 'blue' },
+                        'kpi-hieuqua': { order: 3, iconColor: 'purple' },
+                        'kpi-tragop': { order: 4, iconColor: 'amber' },
+                        'kpi-dtchuaxuat': { order: 5, iconColor: 'rose' },
+                    };
+                    let migratedConfig = savedKpiCardConfigReq.map(card => {
+                        const update = coreCardUpdates[card.id];
+                        if (update) {
+                            return { ...card, order: update.order, iconColor: update.iconColor };
+                        }
+                        return card;
+                    });
+                    // Migration: inject "DT Chưa Xuất" card if not present
+                    if (!migratedConfig.find(c => c.id === 'kpi-dtchuaxuat')) {
+                        const dtChuaXuatCard = DEFAULT_KPI_CARDS.find(c => c.id === 'kpi-dtchuaxuat');
+                        if (dtChuaXuatCard) {
+                            migratedConfig.push(dtChuaXuatCard);
+                        }
+                    }
+                    setKpiCardsConfig(migratedConfig);
+                    dbService.saveKpiCardConfig(migratedConfig).catch(console.error);
                 } else {
                     setKpiCardsConfig(DEFAULT_KPI_CARDS);
                     dbService.saveKpiCardConfig(DEFAULT_KPI_CARDS).catch(console.error);

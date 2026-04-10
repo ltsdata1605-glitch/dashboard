@@ -147,7 +147,7 @@ export const useDashboardLogic = () => {
             await dbService.saveKpiCardConfig(config);
         },
         kpiTargets,
-        updateKpiTargets: async (targets: { hieuQua: number, traGop: number, gtdh?: number }) => {
+        updateKpiTargets: async (targets: { hieuQua: number, traGop: number, gtdh?: number, doanhThuThuc?: number }) => {
             updateKpiTargets(targets);
             await dbService.saveKpiTargets(targets);
         },

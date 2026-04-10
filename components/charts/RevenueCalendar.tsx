@@ -105,24 +105,25 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
     }, [year, month, dataMap]);
 
     // Responsive sizing based on mode
-    // isDraft: phóng to | compact: thu nhỏ | normal: chuẩn
-    const dayNumSize  = isDraft ? 'text-[16px] md:text-[20px] lg:text-[24px]'
-                      : compact  ? 'text-[9px] md:text-[10px]'
+    // compact takes priority (used in 2-column grid for both draft + saved)
+    // isDraft only enlarges when compact is false (full-width mode)
+    const dayNumSize  = compact  ? 'text-[9px] md:text-[10px]'
+                      : isDraft  ? 'text-[16px] md:text-[20px] lg:text-[24px]'
                       :            'text-[12px] md:text-[14px]';
 
-    const lunarSize   = isDraft ? 'text-[12px] md:text-[14px]'
-                      : compact  ? 'text-[7px] md:text-[8px]'
+    const lunarSize   = compact  ? 'text-[7px] md:text-[8px]'
+                      : isDraft  ? 'text-[12px] md:text-[14px]'
                       :            'text-[9px] md:text-[10px]';
 
     // Revenue / % value size MUST be larger than day number size and completely symmetrical
-    const valueSize   = isDraft ? 'text-[18px] md:text-[22px] lg:text-[26px] xl:text-[32px]'
-                      : compact  ? 'text-[10px] md:text-[11px] lg:text-[12px] xl:text-[14px]'
+    const valueSize   = compact  ? 'text-[10px] md:text-[11px] lg:text-[12px] xl:text-[14px]'
+                      : isDraft  ? 'text-[18px] md:text-[22px] lg:text-[26px] xl:text-[32px]'
                       :            'text-[13px] md:text-[14px] lg:text-[15px] xl:text-[17px]';
 
     const cellMinH    = compact ? 'min-h-[40px] md:min-h-[48px]' : 'min-h-[55px] md:min-h-[65px] lg:min-h-[75px]';
     const cellPad     = compact ? 'p-1' : 'p-1.5 md:p-2';
     const gridGap     = compact ? 'gap-0.5 md:gap-1' : 'gap-1 md:gap-2 lg:gap-3';
-    const titleSize   = isDraft ? 'text-2xl md:text-3xl' : compact ? 'text-base md:text-lg' : 'text-xl md:text-2xl';
+    const titleSize   = compact ? 'text-base md:text-lg' : isDraft ? 'text-2xl md:text-3xl' : 'text-xl md:text-2xl';
 
     const monthStr = String(month + 1).padStart(2, '0');
     

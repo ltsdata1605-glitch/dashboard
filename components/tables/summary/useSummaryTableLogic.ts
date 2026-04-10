@@ -164,7 +164,10 @@ export const useSummaryTableLogic = () => {
         if(tableContainerRef.current) {
             setIsExporting(true);
             const prefix = getExportFilenamePrefix(filters.kho);
-            await exportElementAsImage(tableContainerRef.current, `${prefix}-Chi-tiet-nganh-hang.png`, { captureAsDisplayed: true });
+            await exportElementAsImage(tableContainerRef.current, `${prefix}-Chi-tiet-nganh-hang.png`, { 
+                captureAsDisplayed: !isComparisonMode,
+                fitCategoryColumn: true 
+            });
             setIsExporting(false);
         }
     };

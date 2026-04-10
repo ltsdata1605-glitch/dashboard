@@ -21,7 +21,8 @@ const KpiCardSkeleton: React.FC = () => (
 
 // Skeleton for the entire KPI cards section
 export const KpiCardsSkeleton: React.FC = () => (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-6">
+        <KpiCardSkeleton />
         <KpiCardSkeleton />
         <KpiCardSkeleton />
         <KpiCardSkeleton />
