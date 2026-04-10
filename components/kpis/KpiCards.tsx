@@ -366,7 +366,17 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 let editableField: NonNullable<EditableField> | null = null;
 
                 if (config.hasTarget && config.targetType === 'global') {
-                    if (config.targetRef === 'hieuQua') {
+                    if (config.metric === 'doanhThuQD') {
+                        // DTQD: target comes from warehouse summary (must check before targetRef='hieuQua')
+                        finalTrendLabel = revenueTarget > 0 ? "%HT" : "Mục tiêu";
+                        isGood = revenuePercentHT >= 100;
+                        progressPercent = revenuePercentHT;
+                        finalTrendValue = revenueTarget > 0
+                            ? <span className="cursor-pointer hover:text-blue-500 transition-colors">
+                                {formatCurrency(revenueTarget)} / {revenuePercentHT.toFixed(0)}%
+                            </span>
+                            : <span className="cursor-pointer text-slate-400 hover:text-blue-500 italic text-[10px] transition-colors">Nhấp để cài đặt</span>;
+                    } else if (config.targetRef === 'hieuQua') {
                         finalTrendLabel = "Mục tiêu";
                         editableField = 'hieuQua';
                         if (editingState.field === 'hieuQua') {
@@ -386,16 +396,6 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         }
                         isGood = rawValue >= traGopTarget;
                         progressPercent = traGopTarget > 0 ? (rawValue / traGopTarget) * 100 : 0;
-                    } else if (config.metric === 'doanhThuQD') {
-                        // Custom logic for DTQD revenue global target
-                        finalTrendLabel = revenueTarget > 0 ? "%HT" : "Target";
-                        isGood = revenuePercentHT >= 100;
-                        progressPercent = revenuePercentHT;
-                        finalTrendValue = revenueTarget > 0
-                            ? <span className={isGood ? 'text-blue-600' : 'text-slate-500'}>
-                                {formatCurrency(revenueTarget)} / {revenuePercentHT.toFixed(0)}%
-                            </span>
-                            : <span className="text-slate-400 italic text-[10px]">Chưa có</span>;
                     }
                 } else if (config.hasTarget && config.targetType === 'custom') {
                     finalTrendLabel = "Target";
@@ -459,15 +459,26 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     else if (config.iconColor === 'amber') valueColor = 'text-amber-600 dark:text-amber-400';
                 }
 
+                const isDTQDCard = config.metric === 'doanhThuQD';
+
                 const handleClick = (e: React.MouseEvent) => {
                     if (isSpecialUnshipped) {
                         onUnshippedClick();
+                    } else if (isDTQDCard) {
+                        // Scroll to warehouse summary where users can set per-kho targets
+                        const warehouseEl = document.getElementById('warehouse-summary-view');
+                        if (warehouseEl) {
+                            warehouseEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            // Flash highlight
+                            warehouseEl.classList.add('ring-2', 'ring-blue-500/50');
+                            setTimeout(() => warehouseEl.classList.remove('ring-2', 'ring-blue-500/50'), 2000);
+                        }
                     } else if (editableField) {
                         startEditing(e, editableField);
                     }
                 };
 
-                const isClickable = isSpecialUnshipped || !!editableField;
+                const isClickable = isSpecialUnshipped || isDTQDCard || !!editableField;
 
                 return (
                     <KpiCard
