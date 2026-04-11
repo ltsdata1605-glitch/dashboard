@@ -1,7 +1,8 @@
 import React, { Suspense, lazy } from 'react';
 import { LayoutProvider, useLayout } from './contexts/LayoutContext';
 import Sidebar from './components/layout/Sidebar';
-import { Menu, Moon, Sun } from 'lucide-react';
+import MobileBottomNav from './components/layout/MobileBottomNav';
+import { Moon, Sun } from 'lucide-react';
 import { getGlobalFont } from './services/dbService';
 
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
@@ -22,7 +23,7 @@ import NotificationDropdown from './components/layout/NotificationDropdown';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
 
 function AppContent() {
-    const { activeTab, setActiveTab, setIsMobileSidebarOpen, isDarkMode, toggleDarkMode } = useLayout();
+    const { activeTab, setActiveTab, isDarkMode, toggleDarkMode } = useLayout();
     const { user, userRole, isDemoMode, isLoading } = useAuth();
 
     React.useEffect(() => {
@@ -59,30 +60,25 @@ function AppContent() {
     return (
         <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
             <Sidebar />
-            
+            <MobileBottomNav />
             <div className="flex-grow flex flex-col min-w-0 w-full relative">
 
                 {/* Mobile Top Bar - Hidden in Desktop View */}
-                <div className="lg:hidden sticky top-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 py-3 sm:py-4 shadow-sm pt-[env(safe-area-inset-top,12px)]">
-                    <button
-                        onClick={() => setIsMobileSidebarOpen(true)}
-                        className="p-3 -ml-2 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
-                        aria-label="Open Menu"
-                    >
-                        <Menu size={24} />
-                    </button>
+                <div className="lg:hidden sticky top-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-4 py-2.5 shadow-sm pt-[env(safe-area-inset-top,8px)]">
                     <div className="flex items-center gap-2">
-                        <span className="font-bold text-slate-800 dark:text-white text-base tracking-tight">Phân Tích Yêu Cầu Xuất</span>
-                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(79,70,229,0.5)]"></div>
+                        <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center shadow-sm">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        </div>
+                        <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight">Báo Cáo YCX</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-0.5">
                         <NotificationDropdown />
                         <button
                             onClick={toggleDarkMode}
-                            className="p-3 -mr-2 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
+                            className="p-2.5 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
                             aria-label="Toggle Dark Mode"
                         >
-                            {isDarkMode ? <Sun size={22} className="text-amber-500" /> : <Moon size={22} />}
+                            {isDarkMode ? <Sun size={20} className="text-amber-500" /> : <Moon size={20} />}
                         </button>
                     </div>
                 </div>

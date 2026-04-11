@@ -131,12 +131,145 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
     };
 
     return (
-        <div className="w-full mb-4 z-[100] sticky top-0 hide-on-export">
+        <div className="w-full mb-4 z-[100] sticky top-0 lg:top-0 hide-on-export">
             <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-lg shadow-indigo-500/5 p-2 transition-all border-t-[3px] border-t-indigo-500">
-                <div className="flex flex-col lg:flex-row gap-3 items-center">
+
+                {/* === MOBILE LAYOUT (<lg): 2 compact rows === */}
+                <div className="lg:hidden space-y-2">
+                    {/* Row 1: Dropdowns */}
+                    <div className="flex gap-2 items-center">
+                        <div className="flex-1 min-w-0">
+                            <MultiSelectDropdown
+                                label="Kho"
+                                options={uniqueFilterOptions.kho}
+                                selected={filterState.kho}
+                                onChange={(sel) => handleFilterChange({ kho: sel })}
+                                variant="compact"
+                            />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <MultiSelectDropdown
+                                label="Tháng"
+                                options={availableMonths}
+                                selected={filterState.selectedMonths || []}
+                                onChange={(sel) => {
+                                    handleFilterChange({ 
+                                        selectedMonths: sel, 
+                                        dateRange: sel.length > 0 ? '' : 'all',
+                                        startDate: '',
+                                        endDate: '',
+                                    });
+                                }}
+                                variant="compact"
+                            />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <MultiSelectDropdown
+                                label="Bộ phận"
+                                options={uniqueFilterOptions.department}
+                                selected={filterState.department}
+                                onChange={(sel) => handleFilterChange({ department: sel })}
+                                variant="compact"
+                            />
+                        </div>
+                        <button
+                            onClick={onToggleAdvanced}
+                            title="Bộ lọc nâng cao"
+                            className="flex items-center justify-center p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-200 dark:shadow-none transition-all active:scale-95 shrink-0"
+                        >
+                            <Icon name="settings" size={4} className="group-hover:rotate-90 transition-transform duration-300" />
+                        </button>
+                    </div>
+
+                    {/* Row 2: Segments — horizontal scroll */}
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+                        {/* Date Range Segments */}
+                        <div className="flex items-center gap-0.5 bg-slate-100/50 dark:bg-slate-800/50 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                            {[
+                                { range: 'week', label: 'Tuần' },
+                                { range: 'today', label: 'H.nay' },
+                                { range: 'all', label: 'All' }
+                            ].map(({ range, label }) => (
+                                <div key={range} className="relative">
+                                    {range === 'week' && (
+                                        <select 
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                            value=""
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (!val) return;
+                                                const [yStr, wStr] = val.split('-W');
+                                                const year = parseInt(yStr, 10);
+                                                const week = parseInt(wStr, 10);
+                                                const start = new Date(year, 0, 1 + (week - 1) * 7);
+                                                const day = start.getDay();
+                                                start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
+                                                const end = new Date(start);
+                                                end.setDate(start.getDate() + 6);
+                                                handleFilterChange({ startDate: toLocalISOString(start), endDate: toLocalISOString(end), dateRange: 'week', selectedMonths: [] });
+                                            }}
+                                        >
+                                            <option value="" disabled>Chọn Tuần</option>
+                                            {availableWeeks.map(w => <option key={w.value} value={w.value}>{w.label}</option>)}
+                                        </select>
+                                    )}
+                                    <button
+                                        onClick={() => {
+                                            if (range === 'today' || range === 'all') {
+                                                handleDateRangeClick(range);
+                                            }
+                                        }}
+                                        className={`px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all relative z-0 ${
+                                            filterState.dateRange === range
+                                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                                        }`}
+                                    >
+                                        {label}
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Export Status Segments */}
+                        <div className="flex items-center gap-0.5 bg-slate-100/50 dark:bg-slate-800/50 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                            {[
+                                { val: 'all', label: 'All' },
+                                { val: 'Đã', label: 'Đã' },
+                                { val: 'Chưa', label: 'Chưa' }
+                            ].map(({ val, label }) => (
+                                <button
+                                    key={val}
+                                    onClick={() => handleFilterChange({ xuat: val })}
+                                    className={`px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all ${
+                                        filterState.xuat === val
+                                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                                    }`}
+                                >
+                                    {label}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Active Filter Chips */}
+                        {activeChips.length > 0 && activeChips.map(chip => (
+                            <FilterChip
+                                key={chip.id}
+                                label={chip.label}
+                                value={chip.value}
+                                onRemove={() => handleRemoveChip(chip.id)}
+                                color={chip.color}
+                            />
+                        ))}
+                    </div>
+                </div>
+
+                {/* === DESKTOP LAYOUT (lg+): Original horizontal row === */}
+                <div className="hidden lg:flex flex-row gap-3 items-center">
                     
                     {/* 1. Primary: Warehouse Multi-select (Compact) */}
-                    <div className="w-full lg:w-[150px] shrink-0">
+                    <div className="w-[150px] shrink-0">
                         <MultiSelectDropdown
                             label="Kho"
                             options={uniqueFilterOptions.kho}
@@ -146,8 +279,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                         />
                     </div>
 
-                    {/* NEW: Month Filter (Multi-select) */}
-                    <div className="w-full lg:w-[150px] shrink-0 transform transition-transform hover:scale-105">
+                    {/* Month Filter */}
+                    <div className="w-[150px] shrink-0 transform transition-transform hover:scale-105">
                         <MultiSelectDropdown
                             label="Tháng"
                             options={availableMonths}
@@ -164,7 +297,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                         />
                     </div>
 
-                    {/* 2. Quick Date Ranges */}
+                    {/* Quick Date Ranges */}
                     <div className="relative flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200/50 dark:border-slate-700/50 shrink-0">
                         {[
                             { range: 'week', label: 'Tuần' },
@@ -212,7 +345,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                         ))}
                     </div>
 
-                    {/* 3. Export Status (Segmented) */}
+                    {/* Export Status (Segmented) */}
                     <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200/50 dark:border-slate-700/50 shrink-0">
                         {[
                             { val: 'all', label: 'All' },
@@ -233,8 +366,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                         ))}
                     </div>
 
-                    {/* 4. Department Filter */}
-                    <div className="w-full lg:w-[160px] shrink-0">
+                    {/* Department Filter */}
+                    <div className="w-[160px] shrink-0">
                         <MultiSelectDropdown
                             label="Bộ phận"
                             options={uniqueFilterOptions.department}
@@ -244,7 +377,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                         />
                     </div>
 
-                    {/* Middle: Active Chips Scrollable Area */}
+                    {/* Active Chips */}
                     <div className="flex-grow flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
                         {activeChips.length > 0 ? (
                             activeChips.map(chip => (
@@ -259,7 +392,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                         ) : null}
                     </div>
 
-                    {/* Right: Actions */}
+                    {/* Actions */}
                     <div className="flex items-center gap-2 shrink-0">
                         <button
                             onClick={onToggleAdvanced}

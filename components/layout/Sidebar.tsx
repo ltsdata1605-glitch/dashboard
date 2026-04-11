@@ -214,20 +214,7 @@ export default function Sidebar() {
 
     return (
         <>
-            {/* Mobile Overlay */}
-            <AnimatePresence>
-                {isMobileSidebarOpen && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setIsMobileSidebarOpen(false)}
-                        className="lg:hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[110]"
-                    />
-                )}
-            </AnimatePresence>
-
-            {/* Sidebar Container */}
+            {/* Sidebar Container — Desktop Only, mobile uses MobileBottomNav */}
             <motion.aside
                 initial={false}
                 onMouseEnter={() => !isMobile && setIsHovered(true)}
@@ -240,14 +227,14 @@ export default function Sidebar() {
                     setIsHovered(false);
                     setIsTempExpanded(false);
                 }}
-                animate={isMobileSidebarOpen ? { x: 0, width: '85vw' } : (isMobile ? { x: '-100vw', width: '85vw' } : (effectiveCollapsed ? 'collapsed' : 'expanded'))}
+                animate={effectiveCollapsed ? 'collapsed' : 'expanded'}
                 variants={sidebarVariants}
                 transition={sidebarTransition}
                 className={`
-                    fixed top-0 left-0 h-screen z-[120] 
+                    hidden lg:flex fixed top-0 left-0 h-screen z-[120] 
                     bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
-                    flex flex-col transition-colors duration-300
-                    ${isMobileSidebarOpen || (!isMobile && !effectiveCollapsed) ? 'shadow-2xl' : ''}
+                    flex-col transition-colors duration-300
+                    ${!effectiveCollapsed ? 'shadow-2xl' : ''}
                 `}
             >
                 {/* Logo Section */}
@@ -325,16 +312,6 @@ export default function Sidebar() {
                         </motion.div>
                     </button>
                 </div>
-
-                {/* Mobile Close Button */}
-                {isMobileSidebarOpen && (
-                    <button 
-                        onClick={() => setIsMobileSidebarOpen(false)}
-                        className="lg:hidden absolute top-6 -right-12 p-2 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-lg shadow-xl"
-                    >
-                        <X size={20} />
-                    </button>
-                )}
             </motion.aside>
         </>
     );

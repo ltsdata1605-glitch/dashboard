@@ -126,3 +126,26 @@
 .is-capturing .hide-on-export {
   display: none !important;
 }
+
+/* Hide scrollbar for horizontal scroll strips on mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Mobile touch-friendly overrides */
+@media (max-width: 1023px) {
+  /* Ensure minimum touch targets */
+  button, a, [role="button"] {
+    min-height: 36px;
+  }
+  
+  /* Reduce container padding on mobile */
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+}

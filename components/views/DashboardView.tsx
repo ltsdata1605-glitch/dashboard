@@ -282,7 +282,7 @@ export default function DashboardView() {
                 
                     {showDashboard && (
                         <>
-                            <main id="dashboard-container" className="pb-20 md:pb-0" ref={dashboardContainerRef}>
+                            <main id="dashboard-container" className="pb-[72px] lg:pb-0" ref={dashboardContainerRef}>
                                 <div className="container mx-auto px-4 py-4 space-y-6">
                                     <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} />
                                     

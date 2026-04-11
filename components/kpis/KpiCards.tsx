@@ -121,7 +121,7 @@ const KpiCard: React.FC<{
     return (
         <div
             onClick={onClick}
-            className={`relative flex flex-col justify-between h-full bg-white dark:bg-[#1c1c1e] rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.06] transition-all duration-300 group ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl' : 'hover:shadow-lg'}`}
+            className={`relative flex flex-col justify-between h-full bg-white dark:bg-[#1c1c1e] rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.06] transition-all duration-300 group ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl' : 'hover:shadow-lg'} min-w-[160px] snap-center shrink-0 md:min-w-0 md:shrink`}
         >
             {/* Gradient accent strip */}
             <div className={`h-[3px] w-full bg-gradient-to-r ${style.gradient}`} />
@@ -373,7 +373,11 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     </span>
                 </label>
             </div>
-            <div className={`grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-8 kpi-grid-for-export`}>
+            <div className={`
+                flex overflow-x-auto snap-x snap-mandatory gap-3 pb-2 -mx-1 px-1 no-scrollbar
+                md:grid md:grid-cols-3 md:overflow-visible md:snap-none md:mx-0 md:px-0 md:pb-0
+                xl:grid-cols-5 md:gap-4 mb-8 kpi-grid-for-export
+            `}>
             {visibleCards.map(config => {
                 const isSpecialUnshipped = config.metric === 'doanhThuThucChoXuat';
 

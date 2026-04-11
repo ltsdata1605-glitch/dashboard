@@ -253,8 +253,115 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
                 {/* END: Header Section */}
 
-                {/* BEGIN: Data Table Section */}
-                <section className="overflow-x-auto custom-scrollbar p-6">
+                {/* === MOBILE CARD VIEW (<lg) === */}
+                <div className="lg:hidden px-4 py-4 space-y-3">
+                    {currentData.map((row) => {
+                        const monthlyTarget = warehouseTargets[row.khoName] || 0;
+                        const target = isLuyKe ? monthlyTarget : (monthlyTarget > 0 ? monthlyTarget / daysInMonth : 0);
+                        const percentHT = target > 0 ? ((row.doanhThuQD || 0) / target) * 100 : 0;
+                        
+                        return (
+                            <div 
+                                key={`mobile-${row.khoName}`}
+                                className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-4 space-y-3 active:scale-[0.99] transition-transform"
+                            >
+                                {/* Card Header */}
+                                <div className="flex items-center justify-between">
+                                    <button 
+                                        onClick={() => handleTargetClick(row.khoName)}
+                                        className="flex items-center gap-2"
+                                    >
+                                        <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                                            <Icon name="store" size={4} className="text-indigo-600 dark:text-indigo-400" />
+                                        </div>
+                                        <span className="font-bold text-base text-slate-900 dark:text-white">{row.khoName}</span>
+                                    </button>
+                                    {target > 0 && (
+                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                                            percentHT >= 100 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' :
+                                            percentHT >= 70 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400' :
+                                            'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'
+                                        }`}>
+                                            {Math.round(percentHT)}%
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* KPI Grid */}
+                                <div className="grid grid-cols-3 gap-x-3 gap-y-2">
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase">D.Thu Thực</p>
+                                        <p className="text-sm font-bold text-slate-900 dark:text-white">{formatRevenueForKho(row.doanhThuThuc || 0)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase">DTQĐ</p>
+                                        <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{formatRevenueForKho(row.doanhThuQD || 0)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase">Target</p>
+                                        <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{target > 0 ? formatRevenueForKho(target) : '—'}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase">HQQĐ</p>
+                                        <p className={`text-sm font-bold ${(row.hieuQuaQD || 0) >= 30 ? 'text-emerald-600' : (row.hieuQuaQD || 0) >= 20 ? 'text-amber-600' : 'text-rose-600'}`}>
+                                            {row.hieuQuaQD ? `${Math.round(row.hieuQuaQD)}%` : '—'}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase">Tiếp cận</p>
+                                        <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{formatQuantityForKho(row.slTiepCan || 0)}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase">Thu Hộ</p>
+                                        <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{formatQuantityForKho(row.slThuHo || 0)}</p>
+                                    </div>
+                                </div>
+
+                                {/* Progress Bar */}
+                                {target > 0 && (
+                                    <div className="space-y-1">
+                                        <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full rounded-full transition-all duration-500 ${
+                                                    percentHT >= 100 ? 'bg-emerald-500' :
+                                                    percentHT >= 70 ? 'bg-amber-500' : 'bg-rose-500'
+                                                }`}
+                                                style={{ width: `${Math.min(percentHT, 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+
+                    {/* Mobile Total Card */}
+                    {sortedData.length > 0 && (
+                        <div className="bg-slate-50 dark:bg-slate-800 border-2 border-slate-300 dark:border-slate-600 rounded-xl p-4">
+                            <div className="flex items-center gap-2 mb-3">
+                                <Icon name="sigma" size={4} className="text-slate-600 dark:text-slate-300" />
+                                <span className="font-bold text-sm text-slate-700 dark:text-slate-200 uppercase tracking-wider">Tổng</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-x-3 gap-y-2">
+                                <div>
+                                    <p className="text-[10px] font-semibold text-slate-400 uppercase">D.Thu Thực</p>
+                                    <p className="text-sm font-bold text-slate-900 dark:text-white">{formatRevenueForKho(totals.doanhThuThuc || 0)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-semibold text-slate-400 uppercase">DTQĐ</p>
+                                    <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400">{formatRevenueForKho(totals.doanhThuQD || 0)}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-semibold text-slate-400 uppercase">Target</p>
+                                    <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{totalTarget > 0 ? formatRevenueForKho(totalTarget) : '—'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* === DESKTOP TABLE VIEW (lg+) === */}
+                <section className="hidden lg:block overflow-x-auto custom-scrollbar p-6">
                     <table className="min-w-full text-sm text-center border-collapse border border-slate-200 dark:border-slate-700">
                         <thead>
                             {/* Top Level Group Headers */}

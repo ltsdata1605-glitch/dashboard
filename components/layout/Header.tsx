@@ -122,96 +122,123 @@ const Header: React.FC<HeaderProps> = ({
             </div>
 
             {showNewFileButton && (
-                <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto bg-slate-50/50 dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-100 dark:border-slate-800/50 backdrop-blur-sm">
-                    {/* Shift Management Group */}
-                    {(userRole === 'admin' || userRole === 'manager') && (
-                    <div className="flex items-center shadow-sm rounded-xl overflow-hidden border border-blue-100 dark:border-blue-900/30">
-                        <button 
-                            onClick={onLoadShiftFile}
-                            className="flex items-center gap-2.5 px-3.5 py-2.5 bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all active:scale-95"
-                            title="Tải lên báo cáo Phân ca"
-                        >
-                            <Icon name="users-round" size={5} />
-                        </button>
-                        
-                        {hasDepartmentData && (
+                <>
+                    {/* Desktop: Full inline toolbar */}
+                    <div className="hidden lg:flex flex-wrap items-center gap-3 w-auto bg-slate-50/50 dark:bg-slate-900/50 p-2 rounded-2xl border border-slate-100 dark:border-slate-800/50 backdrop-blur-sm">
+                        {/* Shift Management Group */}
+                        {(userRole === 'admin' || userRole === 'manager') && (
+                        <div className="flex items-center shadow-sm rounded-xl overflow-hidden border border-blue-100 dark:border-blue-900/30">
+                            <button 
+                                onClick={onLoadShiftFile}
+                                className="flex items-center gap-2.5 px-3.5 py-2.5 bg-blue-50/80 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-bold text-sm hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-all active:scale-95"
+                                title="Tải lên báo cáo Phân ca"
+                            >
+                                <Icon name="users-round" size={5} />
+                            </button>
+                            
+                            {hasDepartmentData && (
+                                <div className="flex items-center bg-blue-50/30 dark:bg-blue-900/10 border-l border-blue-100 dark:border-blue-900/30">
+                                    <button 
+                                        onClick={() => setShowEmployeeModal(true)}
+                                        className="p-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors border-r border-blue-100 dark:border-blue-900/30"
+                                        title="Quản lý danh sách nhân viên"
+                                    >
+                                        <Icon name="settings" size={4} />
+                                    </button>
+                                </div>
+                            )}
+                            
                             <div className="flex items-center bg-blue-50/30 dark:bg-blue-900/10 border-l border-blue-100 dark:border-blue-900/30">
-                                <button 
-                                    onClick={() => setShowEmployeeModal(true)}
+                                <a 
+                                    href="#" 
+                                    onClick={handleExternalLinkClick}
                                     className="p-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors border-r border-blue-100 dark:border-blue-900/30"
-                                    title="Quản lý danh sách nhân viên"
+                                    title="Mở trang quản lý phân ca"
                                 >
-                                    <Icon name="settings" size={4} />
-                                </button>
+                                    <Icon name="external-link" size={4} />
+                                </a>
+                                
+                                <AnimatePresence mode="wait">
+                                    {hasDepartmentData && (
+                                        <motion.button
+                                            initial={{ width: 0, opacity: 0 }}
+                                            animate={{ width: 'auto', opacity: 1 }}
+                                            exit={{ width: 0, opacity: 0 }}
+                                            onClick={handleDeptClear}
+                                            disabled={isClearingDepartments}
+                                            className={`p-2.5 transition-colors ${deptClearSuccess ? 'text-emerald-500' : 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20'}`}
+                                            title="Xóa dữ liệu phân ca"
+                                        >
+                                            <Icon name={deptClearSuccess ? 'check' : (isClearingDepartments ? 'loader-2' : 'trash-2')} size={4} className={isClearingDepartments ? 'animate-spin' : ''} />
+                                        </motion.button>
+                                    )}
+                                </AnimatePresence>
                             </div>
+                        </div>
                         )}
-                        
-                        <div className="flex items-center bg-blue-50/30 dark:bg-blue-900/10 border-l border-blue-100 dark:border-blue-900/30">
+
+                        {/* Data Import Group */}
+                        <div className="flex items-center shadow-sm rounded-xl overflow-hidden border border-emerald-100 dark:border-emerald-900/30">
+                            {(userRole === 'admin' || userRole === 'manager') && (
+                                <>
+                                    <button 
+                                        onClick={onNewFile}
+                                        className="flex items-center gap-2.5 px-3.5 py-2.5 bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all active:scale-95"
+                                        title="Tải lên báo cáo YCX mới"
+                                    >
+                                        <Icon name="file-up" size={5} />
+                                    </button>
+                                    
+                                    <button 
+                                        onClick={() => setShowDriveHistory(true)}
+                                        className={`flex items-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors tooltip ${syncState === 'error' ? 'text-red-500 animate-pulse' : 'text-emerald-600 dark:text-emerald-400'}`}
+                                        title="Lịch sử dữ liệu (Mây)"
+                                    >
+                                        <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={4} className={syncState === 'error' ? "animate-bounce" : ""} />
+                                        {syncState === 'error' && (
+                                            <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900 animate-ping"></span>
+                                        )}
+                                    </button>
+                                </>
+                            )}
                             <a 
-                                href="#" 
-                                onClick={handleExternalLinkClick}
-                                className="p-2.5 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors border-r border-blue-100 dark:border-blue-900/30"
-                                title="Mở trang quản lý phân ca"
+                                href="https://report.mwgroup.vn/home/dashboard/77"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 border-l border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
+                                title="Tải dữ liệu báo cáo"
                             >
                                 <Icon name="external-link" size={4} />
                             </a>
-                            
-                            <AnimatePresence mode="wait">
-                                {hasDepartmentData && (
-                                    <motion.button
-                                        initial={{ width: 0, opacity: 0 }}
-                                        animate={{ width: 'auto', opacity: 1 }}
-                                        exit={{ width: 0, opacity: 0 }}
-                                        onClick={handleDeptClear}
-                                        disabled={isClearingDepartments}
-                                        className={`p-2.5 transition-colors ${deptClearSuccess ? 'text-emerald-500' : 'text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20'}`}
-                                        title="Xóa dữ liệu phân ca"
-                                    >
-                                        <Icon name={deptClearSuccess ? 'check' : (isClearingDepartments ? 'loader-2' : 'trash-2')} size={4} className={isClearingDepartments ? 'animate-spin' : ''} />
-                                    </motion.button>
-                                )}
-                            </AnimatePresence>
+
+                            <FontSelector />
                         </div>
                     </div>
-                    )}
 
-                    {/* Data Import Group */}
-                    <div className="flex items-center shadow-sm rounded-xl overflow-hidden border border-emerald-100 dark:border-emerald-900/30">
+                    {/* Mobile: Compact action row */}
+                    <div className="lg:hidden flex items-center gap-2 w-full overflow-x-auto no-scrollbar py-1">
                         {(userRole === 'admin' || userRole === 'manager') && (
                             <>
-                                <button 
-                                    onClick={onNewFile}
-                                    className="flex items-center gap-2.5 px-3.5 py-2.5 bg-emerald-50/80 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-all active:scale-95"
-                                    title="Tải lên báo cáo YCX mới"
-                                >
-                                    <Icon name="file-up" size={5} />
+                                <button onClick={onNewFile} className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-800 text-xs font-bold shrink-0 active:scale-95">
+                                    <Icon name="file-up" size={3.5} />
+                                    <span>YCX</span>
                                 </button>
-                                
-                                <button 
-                                    onClick={() => setShowDriveHistory(true)}
-                                    className={`flex items-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors tooltip ${syncState === 'error' ? 'text-red-500 animate-pulse' : 'text-emerald-600 dark:text-emerald-400'}`}
-                                    title="Lịch sử dữ liệu (Mây)"
-                                >
-                                    <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={4} className={syncState === 'error' ? "animate-bounce" : ""} />
-                                    {syncState === 'error' && (
-                                        <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-white dark:border-slate-900 animate-ping"></span>
-                                    )}
+                                <button onClick={onLoadShiftFile} className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-100 dark:border-blue-800 text-xs font-bold shrink-0 active:scale-95">
+                                    <Icon name="users-round" size={3.5} />
+                                    <span>DS NV</span>
+                                </button>
+                                <button onClick={() => setShowDriveHistory(true)} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-bold shrink-0 active:scale-95 ${syncState === 'error' ? 'bg-red-50 text-red-600 border-red-100 animate-pulse' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'}`}>
+                                    <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={3.5} />
+                                    <span>Cloud</span>
                                 </button>
                             </>
                         )}
-                        <a 
-                            href="https://report.mwgroup.vn/home/dashboard/77"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center p-2.5 bg-emerald-50/30 dark:bg-emerald-900/10 text-emerald-600 dark:text-emerald-400 border-l border-emerald-100 dark:border-emerald-900/30 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
-                            title="Tải dữ liệu báo cáo"
-                        >
-                            <Icon name="external-link" size={4} />
+                        <a href="https://report.mwgroup.vn/home/dashboard/77" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold shrink-0">
+                            <Icon name="external-link" size={3.5} />
+                            <span>BCNB</span>
                         </a>
-
-                        <FontSelector />
                     </div>
-                </div>
+                </>
             )}
         </header>
 
