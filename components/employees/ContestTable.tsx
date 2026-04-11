@@ -74,6 +74,19 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         const validData = baseFilteredData.filter(row => !HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT)));
 
         // Step 1: Calculate all 'data' columns
+        // Build a lookup: raw creator string → display name (from allEmployees)
+        // This handles cases where the raw data "NGUOI_TAO" value differs from the displayed emp.name
+        const creatorToDisplayName = new Map<string, string>();
+        allEmployees.forEach(emp => {
+            // Match by ID prefix (e.g., "51118" matches "51118 - T.Anh")
+            const empId = emp.name.split(' - ')[0].trim();
+            creatorToDisplayName.set(emp.name, emp.name); // exact match
+            if (empId !== emp.name) {
+                // Also map from just the ID
+                creatorToDisplayName.set(empId, emp.name);
+            }
+        });
+
         config.columns.forEach(col => {
             if (col.type !== 'data') return;
 
@@ -130,8 +143,13 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
             });
 
             filteredSalesData.forEach(row => {
-                const employee = getRowValue(row, COL.NGUOI_TAO);
-                if (!employee) return;
+                const rawCreator = getRowValue(row, COL.NGUOI_TAO);
+                if (!rawCreator) return;
+
+                // Resolve raw creator to the display name used in allEmployees
+                const employee = creatorToDisplayName.get(rawCreator) || 
+                                 creatorToDisplayName.get(rawCreator.split(' - ')[0].trim()) || 
+                                 rawCreator;
 
                 if (!employeeColumnValues.has(employee)) {
                     employeeColumnValues.set(employee, new Map<string, number>());

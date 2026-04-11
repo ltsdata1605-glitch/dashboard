@@ -42,7 +42,6 @@ const SettingsView: React.FC = () => {
     const [isSharing, setIsSharing] = useState(false);
 
     useEffect(() => {
-        // Load initial settings
         const loadSettings = async () => {
             const savedFont = await dbService.getGlobalFont();
             if (savedFont) setFont(savedFont);
@@ -90,8 +89,9 @@ const SettingsView: React.FC = () => {
         const newValue = !isDeduplicationEnabled;
         setIsDeduplicationEnabled(newValue);
         await dbService.saveDeduplicationSetting(newValue);
+        // Dispatch event so DashboardView picks up the change instantly
+        window.dispatchEvent(new CustomEvent('dedup-changed', { detail: newValue }));
         toast.success(newValue ? 'Đã BẬT tính năng Gộp Chứng Từ' : 'Đã TẮT tính năng Gộp Chứng Từ');
-        toast('Vui lòng làm mới lại trang web để áp dụng bộ lọc mới.', { icon: '🔄' });
     };
 
     const handleClearLocalData = async () => {

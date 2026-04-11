@@ -25,6 +25,8 @@ interface DashboardContextType {
     uniqueFilterOptions: { kho: string[]; trangThai: string[]; nguoiTao: string[], department: string[], hangSX: string[] };
     warehouseTargets: Record<string, number>;
     updateWarehouseTarget: (kho: string, target: number) => void;
+    warehouseDTThucTargets: Record<string, number>;
+    updateWarehouseDTThucTarget: (kho: string, target: number) => void;
     gtdhTargets: Record<string, number>;
     updateGtdhTarget: (nhomHang: string, target: number) => void;
     deleteGtdhTarget: (nhomHang: string) => void;
@@ -34,6 +36,10 @@ interface DashboardContextType {
     updateCrossSellingConfig: (config: any) => void;
     kpiCardsConfig: import('../types').KpiCardConfig[];
     updateKpiCardsConfig: (config: import('../types').KpiCardConfig[]) => void;
+    isLuyKe: boolean;
+    handleLuyKeChange: (enabled: boolean) => void;
+    isDeduplicationEnabled: boolean;
+    handleDeduplicationChange: (enabled: boolean) => void;
 }
 
 export const DashboardContext = React.createContext<DashboardContextType | undefined>(undefined);

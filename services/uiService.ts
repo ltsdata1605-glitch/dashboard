@@ -51,7 +51,116 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         if (el instanceof HTMLElement) el.style.paddingBottom = '5px';
     });
 
-    // 2. Industry Grid Cards
+    // 1b. KPI Cards: Shorten titles for compact export
+    const kpiTitles = clone.querySelectorAll('.kpi-grid-for-export h3');
+    const titleShortMap: Record<string, string> = {
+        'Doanh Thu Thực': 'DT Thực',
+        'Doanh Thu Q.Đổi': 'DT Q.Đổi',
+        'Hiệu Quả Q.Đổi': 'HQ Q.Đổi',
+        'Tỷ Lệ Trả Góp': 'Trả Góp',
+        'DT Chưa Xuất': 'Chờ Xuất',
+        'Doanh Thu Thực Chờ Xuất': 'DT Chờ Xuất',
+    };
+    kpiTitles.forEach(el => {
+        if (el instanceof HTMLElement) {
+            const text = el.textContent?.trim() || '';
+            if (titleShortMap[text]) el.textContent = titleShortMap[text];
+        }
+    });
+
+    // 1d. KPI "Chờ Xuất" card: clean up trend area for export
+    // Remove "⚠ Cảnh báo" label, simplify "N đơn chờ xuất" → "N Chờ xuất"
+    const kpiCards = clone.querySelectorAll('.kpi-grid-for-export > div');
+    kpiCards.forEach(card => {
+        if (!(card instanceof HTMLElement)) return;
+        const titleEl = card.querySelector('h3');
+        const titleText = titleEl?.textContent?.trim() || '';
+        if (titleText === 'Chờ Xuất' || titleText === 'DT Chưa Xuất') {
+            // Find and simplify the trend label ("⚠ Cảnh báo" -> remove)
+            const trendLabels = card.querySelectorAll('span');
+            trendLabels.forEach(span => {
+                if (span instanceof HTMLElement) {
+                    const text = span.textContent?.trim() || '';
+                    if (text.includes('Cảnh báo')) {
+                        span.style.display = 'none';
+                    }
+                    // "N đơn chờ xuất" -> "N Chờ xuất"
+                    if (text.includes('đơn chờ xuất')) {
+                        // Find the text node containing "đơn chờ xuất" and replace
+                        const walker = document.createTreeWalker(span, NodeFilter.SHOW_TEXT);
+                        let node: Text | null;
+                        while ((node = walker.nextNode() as Text | null)) {
+                            if (node.textContent?.includes('đơn chờ xuất')) {
+                                node.textContent = node.textContent.replace('đơn chờ xuất', 'Chờ xuất');
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    // 1c. Fix overdue orders banner — change from absolute to relative so it flows in export layout
+    const overdueBanner = clone.querySelector('[class*="absolute"][class*="bg-rose-50"]');
+    if (overdueBanner && overdueBanner instanceof HTMLElement) {
+        overdueBanner.style.setProperty('position', 'relative', 'important');
+        overdueBanner.style.setProperty('border-radius', '0', 'important');
+    }
+
+    // 2. Industry Grid: Fix layout for narrow export
+    if (forcedWidth) {
+        // Convert 50:50 side-by-side layout to vertical stack at narrow widths
+        // Target the flex-row container that holds cards grid (left) and pie chart (right)
+        const industryFlexRows = clone.querySelectorAll('.flex.flex-row.gap-5.items-start');
+        industryFlexRows.forEach(row => {
+            if (row instanceof HTMLElement) {
+                row.style.setProperty('flex-direction', 'column', 'important');
+                row.style.setProperty('gap', '1rem', 'important');
+            }
+        });
+        
+        // Also fix the header row above the content (both side headers)
+        const industryHeaderRows = clone.querySelectorAll('.mb-3.flex.flex-row.items-center.gap-5');
+        industryHeaderRows.forEach(row => {
+            if (row instanceof HTMLElement) {
+                row.style.setProperty('flex-direction', 'column', 'important');
+                row.style.setProperty('gap', '0.5rem', 'important');
+                row.style.setProperty('align-items', 'flex-start', 'important');
+            }
+        });
+        
+        // Make w-1/2 children full-width (use class list check since / in selectors can be tricky)
+        clone.querySelectorAll('div').forEach(el => {
+            if (el instanceof HTMLElement && el.classList.contains('w-1/2')) {
+                el.style.setProperty('width', '100%', 'important');
+                el.style.setProperty('flex-shrink', '1', 'important');
+            }
+        });
+
+        // Constrain the pie chart <img> (converted from SVG) to fit the container
+        const pieContainers = clone.querySelectorAll('[style*="min-height: 340"]');
+        pieContainers.forEach(container => {
+            if (container instanceof HTMLElement) {
+                container.style.setProperty('min-height', 'auto', 'important');
+                // Find any img inside (our SVG-to-img conversion)
+                const pieImg = container.querySelector('img');
+                if (pieImg) {
+                    pieImg.style.setProperty('max-width', '100%', 'important');
+                    pieImg.style.setProperty('height', 'auto', 'important');
+                    pieImg.style.setProperty('margin', '0 auto', 'important');
+                }
+            }
+        });
+
+        // Also constrain the card grid from 4 columns to 3 for narrower export
+        const cardGrids = clone.querySelectorAll('.grid.grid-cols-4.gap-2');
+        cardGrids.forEach(grid => {
+            if (grid instanceof HTMLElement) {
+                grid.style.setProperty('grid-template-columns', 'repeat(3, minmax(0, 1fr))', 'important');
+            }
+        });
+    }
+
     if (filename.startsWith('ty-trong-nganh-hang') || filename.startsWith('tong-quan-kinh-doanh')) {
         const industryCardTitles = clone.querySelectorAll('.industry-cards-grid .font-bold.truncate.w-full');
         industryCardTitles.forEach(el => {
@@ -168,10 +277,12 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         });
     }
 
-    // 6. FIX GOOGLE CHARTS SVG SCALING (For TrendChart / IndustryGrid)
-    // Make them responsive so they scale down to the exported format perfectly
-    const svgs = clone.querySelectorAll('svg');
-    svgs.forEach((svg: any) => {
+    // 6. FIX CHART SVG RENDERING (convert Recharts SVGs to inline images for reliable export)
+    // html-to-image has trouble with nested SVGs in foreignObject. Convert them to <img> tags.
+    const liveSvgs = element.querySelectorAll('svg');
+    const cloneSvgs = clone.querySelectorAll('svg');
+    cloneSvgs.forEach((svg: any, idx: number) => {
+        // Handle Google Charts SVGs
         if (svg.hasAttribute('aria-label') && svg.getAttribute('aria-label') === 'A chart.') {
             const currentWidthStr = svg.getAttribute('width');
             const currentHeightStr = svg.getAttribute('height');
@@ -185,6 +296,53 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                     svg.setAttribute('height', '100%');
                 }
             }
+        }
+    });
+
+    // Convert Recharts SVGs to inline <img> for reliable export
+    // Use the LIVE element's SVGs (which have correct content) as the source
+    const liveRechartsSvgs = element.querySelectorAll('svg.recharts-surface');
+    const cloneRechartsSvgs = clone.querySelectorAll('svg.recharts-surface');
+    cloneRechartsSvgs.forEach((cloneSvg: any, idx: number) => {
+        const liveSvg = idx < liveRechartsSvgs.length ? liveRechartsSvgs[idx] : null;
+        const sourceSvg = liveSvg || cloneSvg;
+        
+        let w = parseFloat(sourceSvg.getAttribute('width') || '0');
+        let h = parseFloat(sourceSvg.getAttribute('height') || '0');
+        if (w <= 0 || h <= 0) return;
+
+        try {
+            // Clone from the live SVG to get the correct rendering
+            const svgClone = sourceSvg.cloneNode(true) as SVGElement;
+            svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+            if (!svgClone.hasAttribute('viewBox')) {
+                svgClone.setAttribute('viewBox', `0 0 ${w} ${h}`);
+            }
+            // Inline computed styles for text elements (fonts, fills) 
+            svgClone.querySelectorAll('text, tspan').forEach((textEl: any) => {
+                const computed = window.getComputedStyle(textEl);
+                textEl.style.fontFamily = computed.fontFamily;
+                textEl.style.fontSize = computed.fontSize;
+                textEl.style.fill = computed.fill;
+            });
+            const svgData = new XMLSerializer().serializeToString(svgClone);
+            const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
+            const dataUrl = `data:image/svg+xml;base64,${svgBase64}`;
+
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.style.width = `${w}px`;
+            img.style.height = `${h}px`;
+            img.style.maxWidth = '100%';
+            img.style.display = 'block';
+
+            // Replace the SVG with the img in the clone
+            const parent = cloneSvg.parentElement;
+            if (parent) {
+                parent.replaceChild(img, cloneSvg);
+            }
+        } catch (e) {
+            console.warn('Failed to convert Recharts SVG to image:', e);
         }
     });
 
@@ -217,6 +375,35 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         });
     }
 
+    // PRE-CLONE FIX: Capture Recharts dimensions BEFORE moving clone off-screen
+    // Recharts ResponsiveContainer reads dimensions from DOM. Once off-screen, it renders at 0x0.
+    // We must bake in explicit dimensions from the live element.
+    const liveRechartsContainers = element.querySelectorAll('.recharts-responsive-container');
+    const cloneRechartsContainers = clone.querySelectorAll('.recharts-responsive-container');
+    liveRechartsContainers.forEach((liveEl, idx) => {
+        const cloneEl = cloneRechartsContainers[idx] as HTMLElement;
+        if (cloneEl && liveEl instanceof HTMLElement) {
+            const liveRect = liveEl.getBoundingClientRect();
+            if (liveRect.width > 0 && liveRect.height > 0) {
+                cloneEl.style.setProperty('width', `${liveRect.width}px`, 'important');
+                cloneEl.style.setProperty('height', `${liveRect.height}px`, 'important');
+            }
+        }
+    });
+    // Also bake in Recharts wrapper dimensions
+    const liveWrappers = element.querySelectorAll('.recharts-wrapper');
+    const cloneWrappers = clone.querySelectorAll('.recharts-wrapper');
+    liveWrappers.forEach((liveEl, idx) => {
+        const cloneEl = cloneWrappers[idx] as HTMLElement;
+        if (cloneEl && liveEl instanceof HTMLElement) {
+            const liveRect = liveEl.getBoundingClientRect();
+            if (liveRect.width > 0 && liveRect.height > 0) {
+                cloneEl.style.setProperty('width', `${liveRect.width}px`, 'important');
+                cloneEl.style.setProperty('height', `${liveRect.height}px`, 'important');
+            }
+        }
+    });
+
     const captureContainer = document.createElement('div');
     captureContainer.style.position = 'absolute';
     captureContainer.style.left = '-9999px';
@@ -228,6 +415,11 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         clone.style.width = `${forcedWidth}px`;
         clone.style.maxWidth = `${forcedWidth}px`;
         clone.style.minWidth = `${forcedWidth}px`;
+        clone.style.overflow = 'hidden';
+        // Force all responsive containers to scale down to forced width
+        clone.querySelectorAll('.recharts-responsive-container, .recharts-wrapper').forEach((el: any) => {
+            el.style.setProperty('max-width', `${forcedWidth - 48}px`, 'important'); // 48px for padding
+        });
     } else if (captureAsDisplayed) {
         // Lock width to viewport display width, but allow full content height
         const viewportWidth = element.clientWidth;

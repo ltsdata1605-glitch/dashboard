@@ -14,7 +14,7 @@ import { useSummaryComparison } from './hooks/useSummaryComparison';
 export const useSummaryTableLogic = () => {
     const { filterState: filters, handleFilterChange: onFilterChange, baseFilteredData, processedData, productConfig } = useDashboardContext();
     const { summaryTable: summaryTableFilters } = filters;
-    
+
     const [tableModeState, _setTableMode] = useState<'standard' | 'comparison' | 'cross_selling'>('standard');
     const isComparisonMode = tableModeState === 'comparison';
     const isCrossSellingMode = tableModeState === 'cross_selling';
@@ -58,8 +58,8 @@ export const useSummaryTableLogic = () => {
     );
 
     const [visibleColumns, setVisibleColumns] = useState<string[]>(
-        (summaryTableFilters.visibleColumns && summaryTableFilters.visibleColumns.length > 0) 
-            ? summaryTableFilters.visibleColumns 
+        (summaryTableFilters.visibleColumns && summaryTableFilters.visibleColumns.length > 0)
+            ? summaryTableFilters.visibleColumns
             : HEADER_CONFIG.map(h => h.key)
     );
     const [isExporting, setIsExporting] = useState(false);
@@ -84,7 +84,7 @@ export const useSummaryTableLogic = () => {
 
         return processSummaryTable(dataToUse, productConfig, localFilterState);
     }, [processedData?.filteredValidSalesData, filters, productConfig, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
-    
+
     // Calculate global filter options independent of standardSummaryData so they are available in comparison mode
     const filterOptions = useMemo(() => {
         if (standardSummaryData) {
@@ -96,14 +96,14 @@ export const useSummaryTableLogic = () => {
                 product: standardSummaryData.uniqueProducts
             };
         }
-        
+
         // Fallback for comparison mode where standardSummaryData might be null
         const parentSet = new Set<string>();
         const childSet = new Set<string>();
         const manufacturerSet = new Set<string>();
         const creatorSet = new Set<string>();
         const productSet = new Set<string>();
-        
+
         if (productConfig && processedData?.filteredValidSalesData) {
             processedData.filteredValidSalesData.forEach(row => {
                 const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
@@ -114,7 +114,7 @@ export const useSummaryTableLogic = () => {
                 productSet.add(getRowValue(row, COL.PRODUCT) || 'N/A');
             });
         }
-        
+
         return {
             parent: Array.from(parentSet).sort(),
             child: Array.from(childSet).sort(),
@@ -161,19 +161,19 @@ export const useSummaryTableLogic = () => {
     const resetAllFiltersWrapper = () => handleResetAllFilters(clearExpanded);
 
     const handleExport = async () => {
-        if(tableContainerRef.current) {
+        if (tableContainerRef.current) {
             setIsExporting(true);
             const prefix = getExportFilenamePrefix(filters.kho);
-            await exportElementAsImage(tableContainerRef.current, `${prefix}-Chi-tiet-nganh-hang.png`, { 
+            await exportElementAsImage(tableContainerRef.current, `${prefix}-Chi-tiet-nganh-hang.png`, {
                 captureAsDisplayed: !isComparisonMode,
-                fitCategoryColumn: true 
+                fitCategoryColumn: true
             });
             setIsExporting(false);
         }
     };
 
     const activeSortConfig = isComparisonMode ? compSortConfig : { ...summaryTableFilters.sort, type: 'current' as const };
-    
+
     let displayKeys: string[] = [];
     if (isComparisonMode && compTree) {
         displayKeys = Array.from(new Set([...Object.keys(compTree.current.data), ...Object.keys(compTree.prev.data)]));
@@ -182,7 +182,7 @@ export const useSummaryTableLogic = () => {
             const nodeB = compTree.current.data[b];
             const prevNodeA = compTree.prev.data[a];
             const prevNodeB = compTree.prev.data[b];
-            
+
             const getVal = (node: SummaryTableNode | undefined, key: string) => {
                 if (!node) return 0;
                 if (key === 'aov') return node.totalQuantity > 0 ? node.totalRevenue / node.totalQuantity : 0;
@@ -192,7 +192,7 @@ export const useSummaryTableLogic = () => {
 
             const currValA = getVal(nodeA, activeSortConfig.column);
             const currValB = getVal(nodeB, activeSortConfig.column);
-            
+
             let finalValA = currValA;
             let finalValB = currValB;
 
@@ -202,7 +202,7 @@ export const useSummaryTableLogic = () => {
                 finalValA = currValA - prevValA;
                 finalValB = currValB - prevValB;
             }
-            
+
             if (finalValA === finalValB) return a.localeCompare(b);
             return activeSortConfig.direction === 'asc' ? finalValA - finalValB : finalValB - finalValA;
         });
@@ -243,7 +243,7 @@ export const useSummaryTableLogic = () => {
     }, [displayKeys, isComparisonMode, compTree]);
 
     const grandTotal = currentDisplayedTotal;
-    
+
     let deltaQuantity = 0, deltaRevenue = 0, deltaRevenueQD = 0, deltaAOV = 0, deltaTraGopPercent = 0;
     if (isComparisonMode && prevDisplayedTotal) {
         deltaQuantity = grandTotal.totalQuantity - prevDisplayedTotal.totalQuantity;
@@ -258,13 +258,13 @@ export const useSummaryTableLogic = () => {
     const traGopDisplayTotal = grandTotal.traGopPercent === 0 ? '-' : `${grandTotal.traGopPercent.toFixed(0)}%`;
 
     const getFilterProps = (key: string) => {
-        switch(key) {
+        switch (key) {
             case 'parent': return { options: filterOptions.parent, selected: localParentFilters, onChange: (s: string[]) => filterChangeWrapper('parent', s) };
             case 'child': return { options: filterOptions.child, selected: localChildFilters, onChange: (s: string[]) => filterChangeWrapper('child', s) };
             case 'manufacturer': return { options: filterOptions.manufacturer, selected: localManufacturerFilters, onChange: (s: string[]) => filterChangeWrapper('manufacturer', s) };
             case 'creator': return { options: filterOptions.creator, selected: localCreatorFilters, onChange: (s: string[]) => filterChangeWrapper('creator', s) };
             case 'product': return { options: filterOptions.product, selected: localProductFilters, onChange: (s: string[]) => filterChangeWrapper('product', s) };
-            default: return { options: [], selected: [], onChange: () => {} };
+            default: return { options: [], selected: [], onChange: () => { } };
         }
     };
 
@@ -278,7 +278,7 @@ export const useSummaryTableLogic = () => {
         customRangeA, setCustomRangeA,
         customRangeB, setCustomRangeB,
         dateDisplay, displayDescription, displayTitle,
-        localDrilldownOrder: activeDrilldownOrder, 
+        localDrilldownOrder: activeDrilldownOrder,
         setLocalDrilldownOrder: isCrossSellingMode ? setCrossSellingDrilldownOrder : setLocalDrilldownOrder,
         isPending, getFilterProps,
         activeFilterKey, setActiveFilterKey,

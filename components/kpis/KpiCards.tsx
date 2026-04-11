@@ -215,7 +215,7 @@ const KpiTargetEditor: React.FC<{
 type EditableField = 'hieuQua' | 'traGop' | 'gtdh' | 'doanhThuThuc' | null;
 
 const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
-    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig, warehouseFilteredData } = useDashboardContext();
+    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig, warehouseFilteredData, isLuyKe, handleLuyKeChange } = useDashboardContext();
     const kpis = processedData?.kpis;
 
     // targets fallbacks
@@ -273,11 +273,24 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         }
     }, [filterState.kho, warehouseTargets]);
 
+    // Calculate days in month for daily target
+    const daysInMonth = useMemo(() => {
+        if (filterState.selectedMonths && filterState.selectedMonths.length === 1) {
+            const match = filterState.selectedMonths[0].match(/Tháng (\d{2})\/(\d{4})/);
+            if (match) {
+                return new Date(parseInt(match[2]), parseInt(match[1]), 0).getDate();
+            }
+        }
+        // fallback: current month
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    }, [filterState.selectedMonths]);
+
     if (!kpis || !kpiCardsConfig) {
         return null;
     }
 
-    const revenuePercentHT = revenueTarget > 0 ? (kpis.doanhThuQD / revenueTarget) * 100 : 0;
+
     const visibleCards = kpiCardsConfig
         .filter(c => c.isVisible && c.id !== 'kpi-runrate' && c.id !== 'kpi-crosssell')
         .sort((a, b) => a.order - b.order);
@@ -346,7 +359,21 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     }, [kpiCardsConfig, kpis, warehouseFilteredData]);
 
     return (
-        <div className={`grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-8 kpi-grid-for-export`}>
+        <div>
+            {/* Lũy kế toggle */}
+            <div className="flex items-center justify-end mb-3 hide-on-export">
+                <label className="flex items-center gap-2 cursor-pointer select-none group">
+                    <div className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${isLuyKe ? 'bg-indigo-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+                        onClick={() => handleLuyKeChange(!isLuyKe)}
+                    >
+                        <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${isLuyKe ? 'translate-x-4' : ''}`} />
+                    </div>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">
+                        Lũy kế
+                    </span>
+                </label>
+            </div>
+            <div className={`grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-8 kpi-grid-for-export`}>
             {visibleCards.map(config => {
                 const isSpecialUnshipped = config.metric === 'doanhThuThucChoXuat';
 
@@ -367,13 +394,17 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
 
                 if (config.hasTarget && config.targetType === 'global') {
                     if (config.metric === 'doanhThuQD') {
-                        // DTQD: target comes from warehouse summary (must check before targetRef='hieuQua')
-                        finalTrendLabel = revenueTarget > 0 ? "%HT" : "Mục tiêu";
-                        isGood = revenuePercentHT >= 100;
-                        progressPercent = revenuePercentHT;
+                        // DTQD: target from warehouse summary
+                        const dailyRevTarget = revenueTarget > 0 ? revenueTarget / daysInMonth : 0;
+                        const activeTarget = isLuyKe ? revenueTarget : dailyRevTarget;
+                        const pctHT = activeTarget > 0 ? (rawValue / activeTarget) * 100 : 0;
+                        finalTrendLabel = activeTarget > 0 ? (isLuyKe ? "Lũy kế" : "Mục tiêu ngày") : "Mục tiêu";
+                        isGood = pctHT >= 100;
+                        progressPercent = pctHT;
                         finalTrendValue = revenueTarget > 0
-                            ? <span className="cursor-pointer hover:text-blue-500 transition-colors">
-                                {formatCurrency(revenueTarget)} / {revenuePercentHT.toFixed(0)}%
+                            ? <span className="cursor-pointer hover:text-blue-500 transition-colors flex flex-col items-end leading-tight">
+                                <span>{formatCurrency(activeTarget)} / {pctHT.toFixed(0)}%</span>
+                                <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyRevTarget)}` : `Tháng: ${formatCurrency(revenueTarget)}`}</span>
                             </span>
                             : <span className="cursor-pointer text-slate-400 hover:text-blue-500 italic text-[10px] transition-colors">Nhấp để cài đặt</span>;
                     } else if (config.targetRef === 'hieuQua') {
@@ -408,18 +439,24 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 const isDTThucCard = config.metric === 'totalRevenue' || config.metric === 'doanhThuThuc';
                 if (isDTThucCard) {
                     editableField = 'doanhThuThuc';
-                    finalTrendLabel = "Mục tiêu";
+                    const monthlyTarget = doanhThuThucTarget * 1000000;
+                    const dailyDTThuc = monthlyTarget > 0 ? monthlyTarget / daysInMonth : 0;
+                    const activeTarget = isLuyKe ? monthlyTarget : dailyDTThuc;
+                    finalTrendLabel = isLuyKe ? "Lũy kế" : "Mục tiêu ngày";
                     if (editingState.field === 'doanhThuThuc') {
                         finalTrendValue = <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} suffix="Tr" />;
                     } else {
                         finalTrendValue = doanhThuThucTarget > 0
-                            ? <span className="cursor-pointer hover:text-blue-500 transition-colors">{formatCurrency(doanhThuThucTarget * 1000000)}</span>
+                            ? <span className="cursor-pointer hover:text-blue-500 transition-colors flex flex-col items-end leading-tight">
+                                <span>{formatCurrency(activeTarget)}</span>
+                                <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyDTThuc)}` : `Tháng: ${formatCurrency(monthlyTarget)}`}</span>
+                            </span>
                             : <span className="cursor-pointer text-slate-400 hover:text-blue-500 italic text-[10px] transition-colors">Nhấp để nhập</span>;
                     }
                     if (doanhThuThucTarget > 0) {
-                        const doanhThuThucPercent = (rawValue / (doanhThuThucTarget * 1000000)) * 100;
-                        isGood = doanhThuThucPercent >= 100;
-                        progressPercent = doanhThuThucPercent;
+                        const pct = (rawValue / activeTarget) * 100;
+                        isGood = pct >= 100;
+                        progressPercent = pct;
                     }
                 }
 
@@ -498,6 +535,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     </KpiCard>
                 );
             })}
+        </div>
         </div>
     );
 };

@@ -117,15 +117,38 @@ export function applyFiltersAndProcess(
     allData: DataRow[],
     productConfig: ProductConfig,
     filters: FilterState,
-    departmentMap: DepartmentMap | null
+    departmentMap: DepartmentMap | null,
+    enableDeduplication: boolean = true
 ): { processedData: ProcessedData, baseFilteredData: DataRow[], warehouseFilteredData: DataRow[], calendarSourceData: DataRow[] } {
+
+    // Runtime deduplication — rows with identical content (excluding parsedDate object refs) are merged
+    let sourceData = allData;
+    if (enableDeduplication) {
+        const uniqueSet = new Set<string>();
+        const deduplicated: DataRow[] = [];
+        for (let i = 0; i < allData.length; i++) {
+            const row = allData[i];
+            let sig = '';
+            for (const key in row) {
+                if (key !== 'STT_1' && key !== 'parsedDate') {
+                    sig += row[key] + '§';
+                }
+            }
+            if (!uniqueSet.has(sig)) {
+                uniqueSet.add(sig);
+                deduplicated.push(row);
+            }
+        }
+        sourceData = deduplicated;
+    }
+
     const mainStartDate = filters.startDate ? new Date(filters.startDate) : null;
     if (mainStartDate) mainStartDate.setHours(0, 0, 0, 0);
     const mainEndDate = filters.endDate ? new Date(filters.endDate) : null;
     if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
     
     // Base data for Calendar (respects all non-kho and non-date filters)
-    const calendarSourceData = allData.filter(row => {
+    const calendarSourceData = sourceData.filter(row => {
         return isXuatMatch(row, filters.xuat) &&
                isTrangThaiMatch(row, filters.trangThai) &&
                isNguoiTaoMatch(row, filters.nguoiTao) &&
@@ -137,8 +160,11 @@ export function applyFiltersAndProcess(
 
     const mainPeriodData = baseFilteredData.filter(row => isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths));
     
-    const warehousePeriodData = calendarSourceData.filter(row => isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths));
-    const warehouseSummary = calculateWarehouseSummary(warehousePeriodData, productConfig) || [];
+    // Warehouse summary is GLOBAL — not affected by kho/department filters, but DOES respect xuat filter
+    const warehouseGlobalData = sourceData.filter(row => {
+        return isXuatMatch(row, filters.xuat) && isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths);
+    });
+    const warehouseSummary = calculateWarehouseSummary(warehouseGlobalData, productConfig) || [];
     
     const mainResult = processDataForPeriod(mainPeriodData, productConfig, filters, departmentMap);
     
@@ -156,5 +182,5 @@ export function applyFiltersAndProcess(
         reportSubTitle: filterParts.length > 0 ? `Lọc theo: ${filterParts.join(' | ')}` : "Dữ liệu được cập nhật dựa trên các bộ lọc đã chọn."
     };
 
-    return { processedData, baseFilteredData, warehouseFilteredData: warehousePeriodData, calendarSourceData };
+    return { processedData, baseFilteredData, warehouseFilteredData: warehouseGlobalData, calendarSourceData };
 }

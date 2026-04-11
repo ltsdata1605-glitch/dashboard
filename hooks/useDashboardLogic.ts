@@ -17,6 +17,7 @@ export const useDashboardLogic = () => {
     const [appState, setAppState] = useState<AppState>('loading');
     const [configUrl, setConfigUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRhes_lcas8n2_xYHKylsjyD3PIVbdchCiL2XDKJ4OYfgUZlVjAT7ZGWDHrYRzQVrK2w50W86Da3l48/pub?output=csv');
     const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(true);
+    const [isLuyKe, setIsLuyKe] = useState(false);
     const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'changelog' | null>(null);
     const [modalData, setModalData] = useState<any>(null);
 
@@ -34,6 +35,7 @@ export const useDashboardLogic = () => {
         processedData, setProcessedData,
         employeeAnalysisData,
         warehouseTargets, setWarehouseTargets,
+        warehouseDTThucTargets, setWarehouseDTThucTargets,
         gtdhTargets, setGtdhTargets,
         uniqueFilterOptions,
         crossSellingConfig, setCrossSellingConfig,
@@ -43,7 +45,7 @@ export const useDashboardLogic = () => {
         fileInfo, setFileInfo,
         pendingCloudSync, setPendingCloudSync,
         handleAcceptCloudSync
-    } = useDataManagement({ filterState, configUrl, setStatus, setAppState });
+    } = useDataManagement({ filterState, configUrl, isDeduplicationEnabled, setStatus, setAppState });
 
     // 3. Warehouse Targets Management
     const { handleSaveWarehouseTargets } = useWarehouseTargets(setWarehouseTargets);
@@ -102,8 +104,40 @@ export const useDashboardLogic = () => {
         dbService.saveDeduplicationSetting(enabled).catch(console.error);
     };
 
+    const handleLuyKeChange = (enabled: boolean) => {
+        setIsLuyKe(enabled);
+        dbService.saveSetting('kpi_luyke_mode', enabled).catch(console.error);
+    };
+
+    // Load saved settings on mount
+    useEffect(() => {
+        dbService.getSetting<boolean>('kpi_luyke_mode').then(val => {
+            if (val !== null && val !== undefined) setIsLuyKe(val);
+        }).catch(console.error);
+
+        dbService.getDeduplicationSetting().then(val => {
+            setIsDeduplicationEnabled(val);
+        }).catch(console.error);
+    }, []);
+
+    // Listen for dedup changes from SettingsView (outside DashboardContext)
+    useEffect(() => {
+        const handler = (e: Event) => {
+            const val = (e as CustomEvent).detail;
+            setIsDeduplicationEnabled(val);
+        };
+        window.addEventListener('dedup-changed', handler);
+        return () => window.removeEventListener('dedup-changed', handler);
+    }, []);
+
     const updateWarehouseTarget = (kho: string, target: number) => {
         handleSaveWarehouseTargets({ ...warehouseTargets, [kho]: target });
+    };
+
+    const updateWarehouseDTThucTarget = async (kho: string, target: number) => {
+        const newTargets = { ...warehouseDTThucTargets, [kho]: target };
+        setWarehouseDTThucTargets(newTargets);
+        await dbService.saveSetting('warehouseDTThucTargets', newTargets);
     };
     
     const isProcessing = isInternalProcessing || isFileProcessing;
@@ -121,9 +155,13 @@ export const useDashboardLogic = () => {
         handleBatchKhoExport,
         isDeduplicationEnabled,
         handleDeduplicationChange,
+        isLuyKe,
+        handleLuyKeChange,
         processingTime,
         warehouseTargets,
         updateWarehouseTarget,
+        warehouseDTThucTargets,
+        updateWarehouseDTThucTarget,
         gtdhTargets,
         updateGtdhTarget: async (nhomHang: string, target: number) => {
             const newTargets = { ...gtdhTargets, [nhomHang]: target };

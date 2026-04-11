@@ -10,11 +10,12 @@ import { DEFAULT_KPI_CARDS } from '../constants';
 interface DataManagementProps {
     filterState: FilterState;
     configUrl: string;
+    isDeduplicationEnabled: boolean;
     setStatus: (status: Status) => void;
     setAppState: (state: AppState) => void;
 }
 
-export const useDataManagement = ({ filterState, configUrl, setStatus, setAppState }: DataManagementProps) => {
+export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabled, setStatus, setAppState }: DataManagementProps) => {
     const { user, userRole, departmentId, employeeName, isDemoMode } = useAuth();
     const [originalData, setOriginalData] = useState<DataRow[]>([]);
     const [baseFilteredData, setBaseFilteredData] = useState<DataRow[]>([]);
@@ -25,6 +26,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
     const [processedData, setProcessedData] = useState<ProcessedData | null>(null);
     const [employeeAnalysisData, setEmployeeAnalysisData] = useState<ProcessedData['employeeData'] | null>(null);
     const [warehouseTargets, setWarehouseTargets] = useState<Record<string, number>>({});
+    const [warehouseDTThucTargets, setWarehouseDTThucTargets] = useState<Record<string, number>>({});
     const [gtdhTargets, setGtdhTargets] = useState<Record<string, number>>({});
     const [kpiTargets, setKpiTargets] = useState<{ hieuQua: number, traGop: number, gtdh?: number }>({ hieuQua: 40, traGop: 45, gtdh: 1 });
     const [kpiCardsConfig, setKpiCardsConfig] = useState<import('../types').KpiCardConfig[]>([]);
@@ -51,7 +53,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     savedKpiTargetsReq,
                     savedCrossSellingReq,
                     savedKpiCardConfigReq,
-                    savedSalesReq
+                    savedSalesReq,
+                    savedDTThucTargetsReq
                 ] = await Promise.all([
                     dbService.getProductConfig(),
                     dbService.getDepartmentMap(),
@@ -60,7 +63,8 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     dbService.getKpiTargets(),
                     dbService.getCrossSellingConfig(),
                     dbService.getKpiCardConfig(),
-                    dbService.getSalesData()
+                    dbService.getSalesData(),
+                    dbService.getSetting<Record<string, number>>('warehouseDTThucTargets')
                 ]);
 
                 let config: ProductConfig | null = cachedConfigReq ? cachedConfigReq.config : null;
@@ -82,6 +86,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                 if (savedGtdhTargetsReq) setGtdhTargets(savedGtdhTargetsReq);
                 if (savedKpiTargetsReq) setKpiTargets(savedKpiTargetsReq);
                 if (savedCrossSellingReq) setCrossSellingConfig(savedCrossSellingReq);
+                if (savedDTThucTargetsReq) setWarehouseDTThucTargets(savedDTThucTargetsReq);
                 
                 if (savedKpiCardConfigReq && savedKpiCardConfigReq.length > 0) {
                     // Migration: update order & colors for core KPI cards to match new design
@@ -312,7 +317,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
                     });
                 }
 
-                const { processedData: result, baseFilteredData: newBaseData, warehouseFilteredData: newWarehouseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(rbacData, productConfig, filterState, departmentMap);
+                const { processedData: result, baseFilteredData: newBaseData, warehouseFilteredData: newWarehouseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(rbacData, productConfig, filterState, departmentMap, isDeduplicationEnabled);
                 
                 startTransition(() => {
                     setProcessedData(result);
@@ -332,7 +337,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         }, 50); // Yield UI Thread to ensure loading spinner paints before heavy calculation
 
         return () => clearTimeout(timer);
-    }, [originalData, productConfig, filterState, departmentMap, setStatus, userRole, departmentId, employeeName, user?.email, isDemoMode]);
+    }, [originalData, productConfig, filterState, departmentMap, isDeduplicationEnabled, setStatus, userRole, departmentId, employeeName, user?.email, isDemoMode]);
 
     // Unique filter options
     const uniqueFilterOptions = useMemo(() => {
@@ -447,6 +452,7 @@ export const useDataManagement = ({ filterState, configUrl, setStatus, setAppSta
         processedData, setProcessedData,
         employeeAnalysisData,
         warehouseTargets, setWarehouseTargets,
+        warehouseDTThucTargets, setWarehouseDTThucTargets,
         gtdhTargets, setGtdhTargets,
         kpiTargets,
         updateKpiTargets: setKpiTargets,

@@ -41,7 +41,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
     // Use Custom Hooks
     const {
         customTabs,
-        industryAnalysisTables,
+        industryAnalysisTabs: industryAnalysisTables,
         isInitialTabsLoaded,
         modalState,
         setModalState,
@@ -230,6 +230,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
             </SectionHeader>
             {/* END: Header Section */}
             
+            <div className="hide-on-export">
             <EmployeeAnalysisTabs
                 renderedDefaultTabs={renderedDefaultTabs}
                 renderedCustomTabs={renderedCustomTabs}
@@ -240,6 +241,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                 handleToggleTabVisibility={handleToggleTabVisibility}
                 allAvailableTabs={allAvailableTabs}
             />
+            </div>
             
             <div className="flex-grow p-6">
                 <EmployeeAnalysisContent

@@ -48,6 +48,33 @@ function _buildFullEmployeeData(
         // Logic kept compatible with previous updates
     }
 
+    // Deduplicate finalEmployeeStats by `name` — multiple dict keys can map to the same display name
+    // (e.g., "51118 - T.Anh" from sales data and "51118" from dept map merge both have name "51118 - T.Anh")
+    const deduplicatedStats: typeof finalEmployeeStats = {};
+    for (const [key, emp] of Object.entries(finalEmployeeStats)) {
+        const name = emp.name;
+        if (deduplicatedStats[name]) {
+            // Merge into existing entry
+            const existing = deduplicatedStats[name];
+            existing.doanhThuThuc = (existing.doanhThuThuc || 0) + (emp.doanhThuThuc || 0);
+            existing.doanhThuQD = (existing.doanhThuQD || 0) + (emp.doanhThuQD || 0);
+            existing.slTraCham = (existing.slTraCham || 0) + (emp.slTraCham || 0);
+            existing.doanhThuTraCham = (existing.doanhThuTraCham || 0) + (emp.doanhThuTraCham || 0);
+            existing.totalOrders = (existing.totalOrders || 0) + (emp.totalOrders || 0);
+            existing.slThuHo = (existing.slThuHo || 0) + (emp.slThuHo || 0);
+            existing.slCE_ICT = (existing.slCE_ICT || 0) + (emp.slCE_ICT || 0);
+            existing.slTraCham_CE_ICT = (existing.slTraCham_CE_ICT || 0) + (emp.slTraCham_CE_ICT || 0);
+            existing.doanhThu_CE_ICT = (existing.doanhThu_CE_ICT || 0) + (emp.doanhThu_CE_ICT || 0);
+            existing.doanhThuTraCham_CE_ICT = (existing.doanhThuTraCham_CE_ICT || 0) + (emp.doanhThuTraCham_CE_ICT || 0);
+            emp.customerSet.forEach(c => existing.customerSet.add(c));
+            // Keep dept from whichever has it
+            if (!existing.department && emp.department) existing.department = emp.department;
+        } else {
+            deduplicatedStats[name] = { ...emp };
+        }
+    }
+    finalEmployeeStats = deduplicatedStats;
+
     const fullSellerArray: Employee[] = Object.values(finalEmployeeStats).map(emp => {
         const doanhThuThuc = emp.doanhThuThuc || 0;
         const doanhThuQD = emp.doanhThuQD || 0;

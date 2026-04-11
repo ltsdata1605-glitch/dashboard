@@ -19,7 +19,7 @@ interface WarehouseSummaryProps {
 
 const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) => {
     const { userRole } = useAuth();
-    const { processedData, productConfig, originalData, warehouseFilteredData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, filterState, handleFilterChange } = useDashboardContext();
+    const { processedData, productConfig, originalData, warehouseFilteredData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, warehouseDTThucTargets, updateWarehouseDTThucTarget, filterState, handleFilterChange, isLuyKe } = useDashboardContext();
     const data = processedData?.warehouseSummary ?? [];
     
     const summaryRef = useRef<HTMLDivElement>(null);
@@ -33,14 +33,28 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     
     const [columns, setColumns] = useState<WarehouseColumnConfig[]>([]);
     
-    // State for editing target
-    const [editingTargetKho, setEditingTargetKho] = useState<{ id: string, name: string, value: string } | null>(null);
+    // State for editing target — now holds both DTQD and DTThuc values
+    const [editingTargetKho, setEditingTargetKho] = useState<{ id: string, name: string, valueDTQD: string, valueDTThuc: string } | null>(null);
     const targetInputRef = useRef<HTMLInputElement>(null);
+
+    // Auto-format number with commas while preserving cursor position
+    const formatWithCommas = (value: string): string => {
+        // Strip non-numeric except dots
+        const cleaned = value.replace(/[^0-9.]/g, '');
+        const parts = cleaned.split('.');
+        // Add commas to integer part
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
+    };
+
+    const parseFormattedNumber = (value: string): number => {
+        return parseFloat(value.replace(/,/g, '')) || 0;
+    };
 
     const { sortedData, totals, customTotals, customProductColumnValues, getColumnValue } = useWarehouseLogic({
         data,
         columns,
-        originalData: warehouseFilteredData, // Passing warehouseFilteredData respects all filters except 'kho'
+        originalData: warehouseFilteredData,
         productConfig,
         sortConfig
     });
@@ -65,7 +79,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
             const prefix = getExportFilenamePrefix(filterState.kho);
             await handleExport(summaryRef.current, `${prefix}-Chi-tiet-theo-kho.png`, {
                 elementsToHide: ['.hide-on-export'],
-                isCompactTable: true, // Fixes columns to content width
+                isCompactTable: true,
                 scale: 2
             });
         }
@@ -105,27 +119,30 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     
     const handleTargetClick = (kho: string) => {
         if (userRole === 'employee') return;
-        const currentTarget = warehouseTargets[kho] || 0;
-        const targetDivided = currentTarget > 0 ? (currentTarget / 1000000) : 0;
-        const formattedValue = targetDivided > 0 ? targetDivided.toLocaleString('en-US', { maximumFractionDigits: 3 }) : '';
-        setEditingTargetKho({ id: kho, name: kho, value: formattedValue });
+        const currentDTQD = warehouseTargets[kho] || 0;
+        const currentDTThuc = warehouseDTThucTargets[kho] || 0;
+        const dtqdDivided = currentDTQD > 0 ? (currentDTQD / 1000000) : 0;
+        const dtThucDivided = currentDTThuc > 0 ? (currentDTThuc / 1000000) : 0;
+        setEditingTargetKho({ 
+            id: kho, 
+            name: kho, 
+            valueDTQD: dtqdDivided > 0 ? formatWithCommas(dtqdDivided.toString()) : '',
+            valueDTThuc: dtThucDivided > 0 ? formatWithCommas(dtThucDivided.toString()) : '',
+        });
     };
 
-    const handleTargetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        // Only allow numbers, dots, and commas
-        const rawValue = e.target.value.replace(/[^0-9.,]/g, '');
-        // Keep the input value as user typed for smooth editing (decimals!)
-        setEditingTargetKho(prev => prev ? { ...prev, value: rawValue } : null);
+    const handleTargetInputChange = (field: 'valueDTQD' | 'valueDTThuc', rawValue: string) => {
+        const formatted = formatWithCommas(rawValue);
+        setEditingTargetKho(prev => prev ? { ...prev, [field]: formatted } : null);
     };
 
     const handleTargetSave = (e?: React.FormEvent) => {
         e?.preventDefault();
         if (editingTargetKho) {
-            // Remove commas before parsing to float
-            const val = parseFloat(editingTargetKho.value.replace(/,/g, ''));
-            if (!isNaN(val)) {
-                updateWarehouseTarget(editingTargetKho.id, val * 1000000);
-            }
+            const valDTQD = parseFormattedNumber(editingTargetKho.valueDTQD);
+            const valDTThuc = parseFormattedNumber(editingTargetKho.valueDTThuc);
+            if (valDTQD > 0) updateWarehouseTarget(editingTargetKho.id, valDTQD * 1000000);
+            if (valDTThuc > 0) updateWarehouseDTThucTarget(editingTargetKho.id, valDTThuc * 1000000);
             setEditingTargetKho(null);
         }
     };
@@ -133,8 +150,6 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     useEffect(() => {
         if (editingTargetKho && targetInputRef.current) {
             targetInputRef.current.focus();
-            // Optional: Move cursor to end if needed, but select() is often good for overwriting
-            // targetInputRef.current.select(); 
         }
     }, [editingTargetKho]);
     
@@ -183,10 +198,21 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         return visibleColumns[index].mainHeader !== visibleColumns[index - 1].mainHeader;
     };
     
+    // Calculate days in month for daily target
+    const daysInMonth = useMemo(() => {
+        if (filterState.selectedMonths && filterState.selectedMonths.length === 1) {
+            const match = filterState.selectedMonths[0].match(/Tháng (\d{2})\/(\d{4})/);
+            if (match) return new Date(parseInt(match[2]), parseInt(match[1]), 0).getDate();
+        }
+        const now = new Date();
+        return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    }, [filterState.selectedMonths]);
+
     // Calculate total target for footer based on currently displayed data
     const totalTarget = useMemo(() => {
-        return data.reduce((sum, row) => sum + (warehouseTargets[row.khoName] || 0), 0);
-    }, [data, warehouseTargets]);
+        const monthlyTotal = data.reduce((sum, row) => sum + (warehouseTargets[row.khoName] || 0), 0);
+        return isLuyKe ? monthlyTotal : (monthlyTotal > 0 ? monthlyTotal / daysInMonth : 0);
+    }, [data, warehouseTargets, isLuyKe, daysInMonth]);
 
     return (
         <>
@@ -285,9 +311,11 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         let value = getColumnValue(row, col);
                                         
                                         if (col.metric === 'target') {
-                                            value = warehouseTargets[row.khoName] || 0;
+                                            const monthly = warehouseTargets[row.khoName] || 0;
+                                            value = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
                                         } else if (col.metric === 'percentHT') {
-                                            const target = warehouseTargets[row.khoName] || 0;
+                                            const monthly = warehouseTargets[row.khoName] || 0;
+                                            const target = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
                                             const dtqd = row.doanhThuQD || 0;
                                             value = target > 0 ? (dtqd / target) * 100 : 0;
                                         }
@@ -460,23 +488,79 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
             <ModalWrapper
                 isOpen={!!editingTargetKho}
                 onClose={() => setEditingTargetKho(null)}
-                title="Nhập Target"
-                subTitle={`Đặt chỉ tiêu doanh thu cho kho ${editingTargetKho?.name}`}
+                title="Nhập Target Tháng"
+                subTitle={`Đặt chỉ tiêu doanh thu tháng cho kho ${editingTargetKho?.name}`}
                 titleColorClass="text-indigo-600 dark:text-indigo-400"
-                maxWidthClass="max-w-md"
+                maxWidthClass="max-w-lg"
             >
                 <form onSubmit={handleTargetSave} className="p-6">
-                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                        Doanh thu mục tiêu (Đvt: Triệu VNĐ)
-                    </label>
-                    <input
-                        ref={targetInputRef}
-                        type="text"
-                        value={editingTargetKho?.value || ''}
-                        onChange={handleTargetChange}
-                        className="w-full p-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500 mb-6 text-lg font-semibold"
-                        placeholder="Nhập số tiền..."
-                    />
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                        {/* DT Thực */}
+                        <div>
+                            <label className="block text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-1.5 uppercase tracking-wider">
+                                Doanh Thu Thực (Tr)
+                            </label>
+                            <input
+                                ref={targetInputRef}
+                                type="text"
+                                inputMode="decimal"
+                                value={editingTargetKho?.valueDTThuc || ''}
+                                onChange={(e) => handleTargetInputChange('valueDTThuc', e.target.value)}
+                                className="w-full p-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-lg font-bold text-emerald-700 dark:text-emerald-300 transition-all"
+                                placeholder="VD: 1,500"
+                            />
+                        </div>
+                        {/* DT QĐ */}
+                        <div>
+                            <label className="block text-xs font-bold text-blue-600 dark:text-blue-400 mb-1.5 uppercase tracking-wider">
+                                Doanh Thu Q.Đổi (Tr)
+                            </label>
+                            <input
+                                type="text"
+                                inputMode="decimal"
+                                value={editingTargetKho?.valueDTQD || ''}
+                                onChange={(e) => handleTargetInputChange('valueDTQD', e.target.value)}
+                                className="w-full p-3 border-2 border-blue-200 dark:border-blue-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold text-blue-700 dark:text-blue-300 transition-all"
+                                placeholder="VD: 2,000"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Daily target preview */}
+                    {(() => {
+                        const valDTThuc = parseFormattedNumber(editingTargetKho?.valueDTThuc || '0');
+                        const valDTQD = parseFormattedNumber(editingTargetKho?.valueDTQD || '0');
+                        if (valDTThuc > 0 || valDTQD > 0) {
+                            let days = 30;
+                            if (filterState.selectedMonths && filterState.selectedMonths.length === 1) {
+                                const match = filterState.selectedMonths[0].match(/Tháng (\d{2})\/(\d{4})/);
+                                if (match) days = new Date(parseInt(match[2]), parseInt(match[1]), 0).getDate();
+                            } else {
+                                const now = new Date();
+                                days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                            }
+                            return (
+                                <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
+                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Quy đổi Target ngày ({days} ngày)</div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {valDTThuc > 0 && (
+                                            <div className="flex items-center justify-between text-sm bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-lg">
+                                                <span className="text-slate-500 dark:text-slate-400 font-medium text-xs">DT Thực/ngày</span>
+                                                <span className="font-bold text-emerald-600 dark:text-emerald-400">{(valDTThuc / days).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tr</span>
+                                            </div>
+                                        )}
+                                        {valDTQD > 0 && (
+                                            <div className="flex items-center justify-between text-sm bg-blue-50 dark:bg-blue-900/20 px-3 py-2 rounded-lg">
+                                                <span className="text-slate-500 dark:text-slate-400 font-medium text-xs">DT QĐ/ngày</span>
+                                                <span className="font-bold text-blue-600 dark:text-blue-400">{(valDTQD / days).toLocaleString('en-US', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Tr</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        }
+                        return <div className="mb-4" />;
+                    })()}
                     <div className="flex justify-end gap-3">
                         <button type="button" onClick={() => setEditingTargetKho(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Hủy</button>
                         <button type="submit" className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Lưu</button>

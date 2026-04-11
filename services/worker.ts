@@ -93,55 +93,19 @@ async function processFilesInWorker(files: File[], enableDeduplication: boolean)
             }
         }
         
-        let processedList: DataRow[] = combinedJson;
-
-        // OPTIMIZATION 2: Ultra-fast Deduplication
-        if (enableDeduplication) {
-            postStatus({ message: `Đang chạy Xoá Trùng Ngẫu Nhiên trên ${processedList.length} dòng...`, type: 'info', progress: 50 });
-            
-            const uniqueSet = new Set<string>();
-            const deduplicated: DataRow[] = [];
-            
-            // Pre-calculate column keys to avoid repeated object access overhead if possible,
-            // but for safety with dynamic excel, we iterate row keys.
-            // Using string concatenation is ~10x faster than JSON.stringify for this purpose.
-            const len = processedList.length;
-            for (let i = 0; i < len; i++) {
-                const row = processedList[i];
-                let signature = '';
-                
-                // Fast signature generation skipping 'STT_1'
-                for (const key in row) {
-                    if (key !== 'STT_1') {
-                        // Use a separator that is unlikely to be in data
-                        signature += row[key] + '§'; 
-                    }
-                }
-
-                if (!uniqueSet.has(signature)) {
-                    uniqueSet.add(signature);
-                    deduplicated.push(row);
-                }
-            }
-            if (files.length > 1) {
-                postStatus({ message: `Đã cắt giảm ${processedList.length - deduplicated.length} dòng dữ liệu bị trùng.`, type: 'info', progress: 65 });
-            }
-            processedList = deduplicated;
-            // Clear memory immediately
-            uniqueSet.clear(); 
-        } else {
-            postStatus({ message: `Bỏ qua bước xóa trùng, bắt đầu gộp ${processedList.length} dòng...`, type: 'info', progress: 60 });
-        }
+        // Deduplication is now handled at runtime in filterService.ts
+        // so that toggling the setting takes immediate effect without re-upload.
+        postStatus({ message: `Đã nạp ${combinedJson.length} dòng dữ liệu.`, type: 'info', progress: 60 });
 
         postStatus({ message: 'Đang lọc và chuẩn hóa dữ liệu...', type: 'info', progress: 80 });
 
         // OPTIMIZATION 3: Single-pass validation and mapping
         // Pre-compute lowercase check strings to avoid repetitive .toLowerCase() calls
         const validResults: DataRow[] = [];
-        const len = processedList.length;
+        const len = combinedJson.length;
 
         for (let i = 0; i < len; i++) {
-            const row = processedList[i];
+            const row = combinedJson[i];
             
             // Inline validation for speed
             const trangThaiHuy = (getRowValue(row, COL.TRANG_THAI_HUY) || '').toString();
