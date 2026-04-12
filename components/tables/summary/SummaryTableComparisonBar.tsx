@@ -36,9 +36,9 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
     compareUpToCurrentDay, setCompareUpToCurrentDay
 }) => {
     return (
-        <div className="animate-fade-in-down px-5 py-3 border-b border-slate-200 dark:border-slate-700 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div className="animate-fade-in-down px-3 sm:px-5 py-2 sm:py-3 border-b border-slate-200 dark:border-slate-700 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-3 sm:gap-4">
             <div className="flex flex-col w-full lg:w-auto">
-                <div className="flex flex-wrap items-center gap-3 hide-on-export">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3 hide-on-export">
                     <select 
                         value={compMode} 
                         onChange={(e) => setCompMode(e.target.value as ComparisonMode)} 
@@ -183,7 +183,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                         </div>
                     )}
                 </div>
-                <div className="text-[11px] text-slate-500 dark:text-slate-400 italic mt-1.5 flex items-start gap-1.5 max-w-xl line-clamp-2 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
+                <div className="hidden sm:flex text-[11px] text-slate-500 dark:text-slate-400 italic mt-1.5 items-start gap-1.5 max-w-xl line-clamp-2 leading-relaxed bg-slate-50/50 dark:bg-slate-800/30 px-2.5 py-1.5 rounded-lg border border-slate-100 dark:border-slate-700/50">
                     <Icon name="info" size={3.5} className="mt-0.5 shrink-0 text-indigo-400 dark:text-indigo-500"/>
                     <span>
                         {compMode === 'day_adjacent' ? "So sánh trực tiếp kết quả của ngày được chọn so với ngày hôm trước (VD: Thứ Ba so với Thứ Hai). Giúp theo dõi tốc độ biến động hàng ngày." :
@@ -201,7 +201,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
             </div>
 
             {compTree && (
-                <div className="flex flex-col md:flex-row items-center gap-6 relative z-10 w-full xl:w-auto mt-4 xl:mt-0 pt-4 xl:pt-0 border-t xl:border-t-0 border-teal-200/50 dark:border-teal-700/50">
+                <div className="flex flex-col md:flex-row items-center gap-3 sm:gap-6 relative z-10 w-full xl:w-auto mt-2 sm:mt-4 xl:mt-0 pt-2 sm:pt-4 xl:pt-0 border-t xl:border-t-0 border-teal-200/50 dark:border-teal-700/50">
                     <div className="flex gap-6 w-full md:w-auto">
                         {(() => {
                             const currentQty = grandTotal?.totalQuantity || 0;

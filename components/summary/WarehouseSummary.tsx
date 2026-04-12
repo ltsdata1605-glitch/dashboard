@@ -494,7 +494,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                 titleColorClass="text-indigo-600 dark:text-indigo-400"
                 maxWidthClass="max-w-lg"
             >
-                <form onSubmit={handleTargetSave} className="p-6">
+                <div className="p-4 sm:p-6">
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         {/* DT Thực */}
                         <div>
@@ -507,7 +507,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 inputMode="decimal"
                                 value={editingTargetKho?.valueDTThuc || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTThuc', e.target.value)}
-                                className="w-full p-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-lg font-bold text-emerald-700 dark:text-emerald-300 transition-all"
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
+                                className="w-full p-2.5 sm:p-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300 transition-all"
                                 placeholder="VD: 1,500"
                             />
                         </div>
@@ -521,7 +522,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 inputMode="decimal"
                                 value={editingTargetKho?.valueDTQD || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTQD', e.target.value)}
-                                className="w-full p-3 border-2 border-blue-200 dark:border-blue-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-lg font-bold text-blue-700 dark:text-blue-300 transition-all"
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
+                                className="w-full p-2.5 sm:p-3 border-2 border-blue-200 dark:border-blue-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-bold text-blue-700 dark:text-blue-300 transition-all"
                                 placeholder="VD: 2,000"
                             />
                         </div>
@@ -564,9 +566,9 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     })()}
                     <div className="flex justify-end gap-3">
                         <button type="button" onClick={() => setEditingTargetKho(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Hủy</button>
-                        <button type="submit" className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Lưu</button>
+                        <button type="button" onClick={() => handleTargetSave()} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Lưu</button>
                     </div>
-                </form>
+                </div>
             </ModalWrapper>
         </>
     );
