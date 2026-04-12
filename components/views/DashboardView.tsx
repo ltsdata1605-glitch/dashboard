@@ -334,7 +334,7 @@ export default function DashboardView() {
                                                     return (
                                                         <div 
                                                             onClick={() => setActiveModal('unshipped_overdue')}
-                                                            className="absolute top-0 right-0 left-0 bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20] pointer-events-auto"
+                                                            className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20]"
                                                         >
                                                             <div className="flex items-center gap-2 font-bold text-sm">
                                                                 <span className="relative flex h-3 w-3 mr-1">
@@ -352,7 +352,7 @@ export default function DashboardView() {
                                                 return null;
                                             })()}
                                             
-                                            <div className="relative z-10 pt-3 lg:pt-8">
+                                            <div className="relative z-10 pt-2 lg:pt-8">
                                                 <SectionHeader 
                                                     title="TỔNG QUAN DOANH THU" 
                                                     icon="bar-chart-3" 

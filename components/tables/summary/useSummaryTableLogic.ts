@@ -57,11 +57,17 @@ export const useSummaryTableLogic = () => {
         deferredDrilldownOrder
     );
 
-    const [visibleColumns, setVisibleColumns] = useState<string[]>(
-        (summaryTableFilters.visibleColumns && summaryTableFilters.visibleColumns.length > 0)
-            ? summaryTableFilters.visibleColumns
-            : HEADER_CONFIG.map(h => h.key)
-    );
+    const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
+        if (summaryTableFilters.visibleColumns && summaryTableFilters.visibleColumns.length > 0) {
+            return summaryTableFilters.visibleColumns;
+        }
+        const allCols = HEADER_CONFIG.map(h => h.key);
+        // On mobile, hide TrB SL and TrB DT by default to reduce horizontal scroll
+        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+            return allCols.filter(k => k !== 'avgQuantity' && k !== 'avgRevenue');
+        }
+        return allCols;
+    });
     const [isExporting, setIsExporting] = useState(false);
     const tableContainerRef = useRef<HTMLDivElement>(null);
     const sortableListRef = useRef<HTMLDivElement>(null);

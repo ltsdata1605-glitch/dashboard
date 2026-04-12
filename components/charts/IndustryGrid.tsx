@@ -334,7 +334,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                 <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Không có dữ liệu</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 lg:gap-2">
+                            <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 lg:gap-2">
                                 {currentView.data.map(({ name, revenue, quantity, icon, color }) => {
                                     const totalVal = metricToDisplay === 'revenue' ? currentView.totalRevenue : currentView.totalQuantity;
                                     const val = metricToDisplay === 'revenue' ? revenue : quantity;
@@ -349,7 +349,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                             onClick={isDrillable ? () => handleCardClick(name) : undefined}
                                             onKeyDown={isDrillable ? (e) => { if (e.key === 'Enter') handleCardClick(name); } : undefined}
                                             className={[
-                                                'group relative flex flex-col justify-between p-2.5',
+                                                'group relative flex flex-col justify-between p-1.5 lg:p-2.5',
                                                 'bg-white dark:bg-[#1c1c1e] border border-slate-100 dark:border-white/5',
                                                 'shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_6px_18px_rgba(0,0,0,0.07)]',
                                                 'transition-all duration-200 hover:-translate-y-0.5 rounded-xl select-none',
@@ -357,8 +357,9 @@ const IndustryGrid: React.FC = React.memo(() => {
                                             ].join(' ')}
                                         >
                                             <div className="flex justify-between items-start mb-1.5">
-                                                <div className={`w-6 h-6 rounded flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
-                                                    <Icon name={icon} size={3.5} />
+                                                <div className={`w-5 h-5 lg:w-6 lg:h-6 rounded flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
+                                                    <Icon name={icon} size={3} className="lg:hidden" />
+                                                    <Icon name={icon} size={3.5} className="hidden lg:block" />
                                                 </div>
                                                 <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter`}>
                                                     {pct.toFixed(1)}%
@@ -366,8 +367,8 @@ const IndustryGrid: React.FC = React.memo(() => {
                                             </div>
 
                                             <div className="min-w-0">
-                                                <div className={`text-[9px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5`} title={name}>{name}</div>
-                                                <div className="text-[11px] font-black tracking-tight leading-none truncate">
+                                                <div className={`text-[8px] lg:text-[9px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5`} title={name}>{name}</div>
+                                                <div className="text-[10px] lg:text-[11px] font-black tracking-tight leading-none truncate">
                                                     {metricToDisplay === 'revenue' 
                                                         ? <span className="text-slate-900 dark:text-white">{formatCurrency(revenue)}</span> 
                                                         : <span className={iClass.text}>{`${formatQuantity(quantity)} SP`}</span>
@@ -399,7 +400,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                         <div className="flex-grow bg-slate-50/70 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-white/5 p-3 flex flex-col">
                             {pieChartData.length > 0 ? (
                                 <>
-                                    <div style={{ height: 160 }} className="lg:hidden">
+                                    <div style={{ height: 320 }} className="lg:hidden">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
