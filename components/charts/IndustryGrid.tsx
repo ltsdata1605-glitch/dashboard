@@ -163,7 +163,7 @@ const IndustryGrid: React.FC = React.memo(() => {
         if (!cardRef.current) return;
         setIsExporting(true);
         const prefix = getExportFilenamePrefix(filters.kho);
-        await exportElementAsImage(cardRef.current, `${prefix}-Ty-trong-nganh-hang.png`, { elementsToHide: ['.hide-on-export'] });
+        await exportElementAsImage(cardRef.current, `${prefix}-Ty-trong-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], forcedWidth: 700 });
         setIsExporting(false);
     };
 
@@ -206,7 +206,7 @@ const IndustryGrid: React.FC = React.memo(() => {
     return (
         <div
             ref={cardRef}
-            className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden rounded-none mb-8"
+            className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden rounded-xl lg:rounded-none mb-3 lg:mb-8"
         >
             {/* ──── SECTION HEADER ──── */}
             <SectionHeader
@@ -275,9 +275,10 @@ const IndustryGrid: React.FC = React.memo(() => {
             </SectionHeader>
 
             {/* ──── BODY: 5:5 LAYOUT ──── */}
-            <div className="p-4 md:p-5">
+            <div className="p-2.5 lg:p-4 md:p-5">
                 {/* ──── Header Layout for Both Sides ──── */}
-                <div className="mb-3 flex flex-row items-center gap-5">
+                {/* Level indicator — desktop only */}
+                <div className="mb-3 hidden lg:flex flex-row items-center gap-5">
                     {/* Left Side Header (Level indicator) */}
                     <div className="w-1/2 flex items-center justify-between pr-2">
                         {currentLevelLabel && (
@@ -323,17 +324,17 @@ const IndustryGrid: React.FC = React.memo(() => {
                     </div>
                 </div>
 
-                <div className="flex flex-row gap-5 items-start">
+                <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 items-start">
 
                     {/* ══════ LEFT 50%: CARD GRID ══════ */}
-                    <div className="w-1/2 shrink-0 bg-white dark:bg-slate-900" ref={gridRef}>
+                    <div className="w-full lg:w-1/2 lg:shrink-0 bg-white dark:bg-slate-900" ref={gridRef}>
                         {currentView.data.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-14 bg-slate-50/50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
                                 <Icon name="search-x" size={8} className="text-slate-300 dark:text-slate-700 mb-3" />
                                 <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Không có dữ liệu</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-4 gap-2">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-1.5 lg:gap-2">
                                 {currentView.data.map(({ name, revenue, quantity, icon, color }) => {
                                     const totalVal = metricToDisplay === 'revenue' ? currentView.totalRevenue : currentView.totalQuantity;
                                     const val = metricToDisplay === 'revenue' ? revenue : quantity;
@@ -394,12 +395,34 @@ const IndustryGrid: React.FC = React.memo(() => {
                     </div>
 
                     {/* ══════ RIGHT 50%: PIE CHART ══════ */}
-                    <div className="w-1/2 flex flex-col bg-white dark:bg-slate-900" style={{ minHeight: 340 }} ref={pieRef}>
+                    <div className="w-full lg:w-1/2 flex flex-col bg-white dark:bg-slate-900" style={{ minHeight: 280 }} ref={pieRef}>
                         <div className="flex-grow bg-slate-50/70 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-white/5 p-3 flex flex-col">
                             {pieChartData.length > 0 ? (
                                 <>
-                                    {/* Pie area */}
-                                    <div style={{ height: 230 }}>
+                                    <div style={{ height: 160 }} className="lg:hidden">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <PieChart>
+                                                <Pie
+                                                    data={pieChartData}
+                                                    dataKey={metricToDisplay}
+                                                    nameKey="name"
+                                                    innerRadius="40%"
+                                                    outerRadius="74%"
+                                                    paddingAngle={2}
+                                                    stroke="none"
+                                                    cornerRadius={3}
+                                                    labelLine={false}
+                                                    label={renderPieLabel}
+                                                >
+                                                    {pieChartData.map((_, idx) => (
+                                                        <Cell key={`cell-m-${idx}`} fill={COLORS[idx % COLORS.length]} />
+                                                    ))}
+                                                </Pie>
+                                                <RechartsTooltip content={<CustomTooltip />} />
+                                            </PieChart>
+                                        </ResponsiveContainer>
+                                    </div>
+                                    <div style={{ height: 230 }} className="hidden lg:block">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
@@ -424,7 +447,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                     </div>
 
                                     {/* Legend grid */}
-                                    <div className="mt-3 grid grid-cols-3 gap-x-2 gap-y-2 pr-1">
+                                    <div className="mt-1.5 lg:mt-3 grid grid-cols-2 lg:grid-cols-3 gap-x-2 gap-y-1 lg:gap-y-2 pr-1">
                                         {pieChartData.map((item, idx) => {
                                             const totalVal = metricToDisplay === 'revenue' ? currentView.totalRevenue : currentView.totalQuantity;
                                             const val = metricToDisplay === 'revenue' ? item.revenue : item.quantity;

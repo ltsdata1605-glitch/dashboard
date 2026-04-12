@@ -373,7 +373,7 @@ const TrendChart: React.FC = React.memo(() => {
   return (
     <div 
       ref={chartCardRef}
-      className="bg-white dark:bg-[#1c1c1e] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-white/5 rounded-2xl mb-8 transition-all duration-300 relative z-0"
+      className="bg-white dark:bg-[#1c1c1e] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-white/5 rounded-xl lg:rounded-2xl mb-3 lg:mb-8 transition-all duration-300 relative z-0"
     >
       <SectionHeader 
         title={(
@@ -536,8 +536,8 @@ const TrendChart: React.FC = React.memo(() => {
         </div>
       </SectionHeader>
 
-      <div className={`p-5 md:p-6 ${displayMode === 'calendar' ? 'pb-5' : 'pb-2'}`}>
-        <div className={`w-full ${displayMode === 'calendar' ? '' : 'h-[320px]'}`}>
+      <div className={`p-3 lg:p-5 md:p-6 ${displayMode === 'calendar' ? 'pb-3 lg:pb-5' : 'pb-1 lg:pb-2'}`}>
+        <div className={`w-full ${displayMode === 'calendar' ? '' : 'h-[180px] lg:h-[320px]'}`}>
            {displayMode === 'calendar' ? (
                 <div className="flex flex-col gap-4">
                     {/* Toast notification */}

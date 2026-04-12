@@ -198,7 +198,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                   </div>
               )}
               {/* Thicker fresh outer border */}
-              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-none hide-scrollbar touch-pan-x">
+              <div className="overflow-x-auto border border-slate-200 dark:border-slate-700 rounded-none hide-scrollbar touch-auto">
                   {isCrossSellingMode ? (
                       <CrossSellingTable tableContainerRef={tableContainerRef} />
                   ) : compMode === 'monthly_trend' && trendData ? (

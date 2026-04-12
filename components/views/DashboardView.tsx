@@ -110,7 +110,8 @@ export default function DashboardView() {
             await handleExport(businessOverviewRef.current, `${prefix}-Tong-quan-kinh-doanh.png`, {
                 captureAsDisplayed: false,
                 isCompactTable: true,
-                forcedWidth: 700, 
+                forcedWidth: 700,
+                scale: 3,
             });
         }
     };
@@ -220,7 +221,7 @@ export default function DashboardView() {
                 </div>
             )}
             
-            <div className="max-w-[1280px] w-full mx-auto p-4 lg:p-8">
+            <div className="max-w-[1280px] w-full mx-auto p-2.5 lg:p-4 xl:p-8">
                 <DashboardContext.Provider value={logic as any}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleFileProcessing(Array.from(e.target.files))} />
                     <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
@@ -282,12 +283,12 @@ export default function DashboardView() {
                 
                     {showDashboard && (
                         <>
-                            <main id="dashboard-container" className="pb-[72px] lg:pb-0" ref={dashboardContainerRef}>
-                                <div className="container mx-auto px-4 py-4 space-y-6">
+                            <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
+                                <div className="container mx-auto px-1.5 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
                                     <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} />
                                     
                                     {/* Data Coverage Indicator */}
-                                    <div className="flex items-center justify-between px-2 mb-2">
+                                    <div className="hidden lg:flex items-center justify-between px-1 lg:px-2 mb-1 lg:mb-2">
                                         <div className="flex items-center gap-2">
                                             <div className="flex -space-x-1">
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
@@ -312,8 +313,8 @@ export default function DashboardView() {
                                         </div>
                                     )}
                                     
-                                    <div ref={businessOverviewRef} id="business-overview" className="space-y-8">
-                                        <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden relative">
+                                    <div ref={businessOverviewRef} id="business-overview" className="space-y-2 lg:space-y-8">
+                                        <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden relative rounded-xl lg:rounded-none">
                                             {/* Overdue Export Warning Banner */}
                                             {(() => {
                                                 const now = new Date();
@@ -351,13 +352,13 @@ export default function DashboardView() {
                                                 return null;
                                             })()}
                                             
-                                            <div className="relative z-10 pt-8">
+                                            <div className="relative z-10 pt-3 lg:pt-8">
                                                 <SectionHeader 
                                                     title="TỔNG QUAN DOANH THU" 
                                                     icon="bar-chart-3" 
                                                     subtitle={processedData.reportSubTitle}
                                                 >
-                                                        <div className="flex items-center gap-2 hide-on-export">
+                                                        <div className="hidden lg:flex items-center gap-2 hide-on-export">
                                                             <button onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                                 <Icon name="settings-2" size={5} />
                                                             </button>
@@ -368,7 +369,7 @@ export default function DashboardView() {
                                                 </SectionHeader>
                                             </div>
 
-                                            <div className={`p-6 transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
+                                            <div className={`p-2 lg:p-6 transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                                 <div data-debug-id="KpiCards" data-debug-info={JSON.stringify(debugInitialData.KpiCards)}>
                                                     <KpiCards onUnshippedClick={openUnshippedModal} />
                                                 </div>

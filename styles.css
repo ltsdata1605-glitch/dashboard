@@ -145,7 +145,63 @@
   
   /* Reduce container padding on mobile */
   .container {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+
+  /* Compact cards on mobile */
+  .surface-card {
+    border-radius: 0.75rem !important;
+  }
+  .chart-card {
+    border-radius: 0.75rem !important;
+    padding: 0.75rem !important;
+  }
+
+  /* Tighter section spacing */
+  .mobile-compact-section {
+    margin-bottom: 0.5rem !important;
+  }
+
+  /* Smooth native-feel scroll */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reduce Recharts label size */
+  .recharts-label, .recharts-text {
+    font-size: 9px !important;
   }
 }
+
+/* iOS rubber-band scroll fix */
+@supports (-webkit-touch-callout: none) {
+  .sticky {
+    position: -webkit-sticky;
+  }
+  
+  /* Native iOS bounce feel */
+  body {
+    overscroll-behavior-y: contain;
+  }
+}
+
+/* Snap scroll for horizontal filter strips */
+.snap-scroll-x {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+.snap-scroll-x > * {
+  scroll-snap-align: start;
+}
+
+/* Smooth fade animations */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out forwards;
+}
+

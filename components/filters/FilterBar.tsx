@@ -131,13 +131,13 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
     };
 
     return (
-        <div className="w-full mb-4 z-[100] sticky top-0 lg:top-0 hide-on-export">
-            <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-lg shadow-indigo-500/5 p-2 transition-all border-t-[3px] border-t-indigo-500">
+        <div className="w-full mb-4 z-[90] lg:z-[100] sticky top-[44px] lg:top-0 hide-on-export">
+            <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200 dark:border-slate-700/80 rounded-xl lg:rounded-2xl shadow-lg shadow-indigo-500/5 p-1.5 lg:p-2 transition-all border-t-2 lg:border-t-[3px] border-t-indigo-500">
 
                 {/* === MOBILE LAYOUT (<lg): 2 compact rows === */}
-                <div className="lg:hidden space-y-2">
+                <div className="lg:hidden space-y-1.5">
                     {/* Row 1: Dropdowns */}
-                    <div className="flex gap-2 items-center">
+                    <div className="flex gap-1.5 items-center">
                         <div className="flex-1 min-w-0">
                             <MultiSelectDropdown
                                 label="Kho"
@@ -175,14 +175,14 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                         <button
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
-                            className="flex items-center justify-center p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-200 dark:shadow-none transition-all active:scale-95 shrink-0"
+                            className="flex items-center justify-center p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md shadow-indigo-200 dark:shadow-none transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="settings" size={4} className="group-hover:rotate-90 transition-transform duration-300" />
+                            <Icon name="settings" size={3.5} className="group-hover:rotate-90 transition-transform duration-300" />
                         </button>
                     </div>
 
                     {/* Row 2: Segments — horizontal scroll */}
-                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-1 px-1">
+                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-0.5 px-0.5">
                         {/* Date Range Segments */}
                         <div className="flex items-center gap-0.5 bg-slate-100/50 dark:bg-slate-800/50 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shrink-0">
                             {[
@@ -219,7 +219,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                                                 handleDateRangeClick(range);
                                             }
                                         }}
-                                        className={`px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all relative z-0 ${
+                                        className={`px-2 py-1 text-[9px] font-black uppercase tracking-wider rounded-md transition-all relative z-0 ${
                                             filterState.dateRange === range
                                             ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
                                             : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
@@ -241,7 +241,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                                 <button
                                     key={val}
                                     onClick={() => handleFilterChange({ xuat: val })}
-                                    className={`px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all ${
+                                    className={`px-2 py-1 text-[9px] font-black uppercase tracking-wider rounded-md transition-all ${
                                         filterState.xuat === val
                                         ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
                                         : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'

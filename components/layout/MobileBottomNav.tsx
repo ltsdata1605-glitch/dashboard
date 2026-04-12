@@ -134,7 +134,7 @@ export default function MobileBottomNav() {
 
             {/* Bottom Tab Bar */}
             <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[190] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 pb-[env(safe-area-inset-bottom,0px)]">
-                <div className="flex items-stretch justify-around h-[56px]">
+                <div className="flex items-stretch justify-around h-[52px]">
                     {mainTabs.map(tab => {
                         const isActive = activeTab === tab.id;
                         return (

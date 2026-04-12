@@ -10,17 +10,19 @@ interface SectionHeaderProps {
 
 export const SectionHeader: React.FC<SectionHeaderProps> = ({ title, icon, subtitle, children }) => {
     return (
-        <div className="px-6 py-5 flex justify-between items-center border-b border-slate-100 dark:border-slate-800">
-            <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#0584c7]/10 text-[#0584c7] flex items-center justify-center">
-                    <Icon name={icon} size={5} />
+        <div className="px-3 py-2 lg:px-6 lg:py-5 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-1.5 lg:gap-0 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center gap-1.5 lg:gap-3 min-w-0">
+                <div className="w-7 h-7 lg:w-10 lg:h-10 rounded-md lg:rounded-xl bg-[#0584c7]/10 text-[#0584c7] flex items-center justify-center shrink-0">
+                    <Icon name={icon} size={3.5} className="lg:hidden" />
+                    <Icon name={icon} size={5} className="hidden lg:block" />
                 </div>
-                <div>
-                    <h2 className="text-xl font-bold text-slate-800 dark:text-white uppercase tracking-tight">{title}</h2>
-                    {subtitle && <div className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">{subtitle}</div>}
+                <div className="min-w-0">
+                    <h2 className="text-xs lg:text-xl font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate">{title}</h2>
+                    {subtitle && <div className="text-[9px] lg:text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-0 lg:mt-1 truncate">{subtitle}</div>}
                 </div>
             </div>
-            {children}
+            {children && <div className="flex items-center gap-0.5 lg:gap-2 overflow-x-auto no-scrollbar -mx-1 px-1 lg:mx-0 lg:px-0">{children}</div>}
         </div>
     );
 };
+

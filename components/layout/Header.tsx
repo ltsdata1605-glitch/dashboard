@@ -99,9 +99,9 @@ const Header: React.FC<HeaderProps> = ({
                     </div>
                 </div>
             )}
-            <header className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-5 pb-5 border-b border-slate-200/60 dark:border-slate-800/60">
-            {/* Title Section with Editorial Style */}
-            <div className="flex flex-col gap-1">
+            <header className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 lg:gap-6 mb-3 lg:mb-5 pb-3 lg:pb-5 border-b border-slate-200/60 dark:border-slate-800/60">
+            {/* Title Section — Hidden on mobile (top bar shows app name) */}
+            <div className="hidden lg:flex flex-col gap-1">
                 <div className="flex items-center gap-4">
                     <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
                     <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
@@ -120,6 +120,15 @@ const Header: React.FC<HeaderProps> = ({
                     </span>
                 </div>
             </div>
+            {/* Mobile: Compact file info line */}
+            {fileInfo && (
+                <div className="lg:hidden flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+                    <Icon name="calendar-days" size={3} className="opacity-60" />
+                    <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">
+                        Cập nhật: <span className="text-slate-600 dark:text-slate-300 font-extrabold">{fileInfo.savedAt}</span>
+                    </span>
+                </div>
+            )}
 
             {showNewFileButton && (
                 <>
@@ -215,26 +224,25 @@ const Header: React.FC<HeaderProps> = ({
                         </div>
                     </div>
 
-                    {/* Mobile: Compact action row */}
-                    <div className="lg:hidden flex items-center gap-2 w-full overflow-x-auto no-scrollbar py-1">
+                    {/* Mobile: Ultra-compact action chips */}
+                    <div className="lg:hidden flex items-center gap-1.5 w-full overflow-x-auto no-scrollbar">
                         {(userRole === 'admin' || userRole === 'manager') && (
                             <>
-                                <button onClick={onNewFile} className="flex items-center gap-1.5 px-3 py-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-800 text-xs font-bold shrink-0 active:scale-95">
-                                    <Icon name="file-up" size={3.5} />
+                                <button onClick={onNewFile} className="flex items-center gap-1 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-lg border border-emerald-100 dark:border-emerald-800 text-[10px] font-bold shrink-0 active:scale-95">
+                                    <Icon name="file-up" size={3} />
                                     <span>YCX</span>
                                 </button>
-                                <button onClick={onLoadShiftFile} className="flex items-center gap-1.5 px-3 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-100 dark:border-blue-800 text-xs font-bold shrink-0 active:scale-95">
-                                    <Icon name="users-round" size={3.5} />
-                                    <span>DS NV</span>
+                                <button onClick={onLoadShiftFile} className="flex items-center gap-1 px-2.5 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg border border-blue-100 dark:border-blue-800 text-[10px] font-bold shrink-0 active:scale-95">
+                                    <Icon name="users-round" size={3} />
+                                    <span>NV</span>
                                 </button>
-                                <button onClick={() => setShowDriveHistory(true)} className={`flex items-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-bold shrink-0 active:scale-95 ${syncState === 'error' ? 'bg-red-50 text-red-600 border-red-100 animate-pulse' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'}`}>
-                                    <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={3.5} />
-                                    <span>Cloud</span>
+                                <button onClick={() => setShowDriveHistory(true)} className={`flex items-center gap-1 px-2.5 py-1.5 rounded-lg border text-[10px] font-bold shrink-0 active:scale-95 ${syncState === 'error' ? 'bg-red-50 text-red-600 border-red-100 animate-pulse' : 'bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700'}`}>
+                                    <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={3} />
                                 </button>
                             </>
                         )}
-                        <a href="https://report.mwgroup.vn/home/dashboard/77" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold shrink-0">
-                            <Icon name="external-link" size={3.5} />
+                        <a href="https://report.mwgroup.vn/home/dashboard/77" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-lg border border-slate-200 dark:border-slate-700 text-[10px] font-bold shrink-0">
+                            <Icon name="external-link" size={3} />
                             <span>BCNB</span>
                         </a>
                     </div>
