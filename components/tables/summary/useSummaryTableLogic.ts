@@ -25,6 +25,7 @@ export const useSummaryTableLogic = () => {
         activeDrilldownOrder, deferredDrilldownOrder,
         localParentFilters, localChildFilters,
         localManufacturerFilters, localCreatorFilters, localProductFilters,
+        localWarehouseFilters,
         activeFilterKey, setActiveFilterKey,
         isPending, startTransition,
         handleLocalFilterChange, handleResetAllFilters, hasActiveFilters
@@ -53,7 +54,7 @@ export const useSummaryTableLogic = () => {
         compareUpToCurrentDay, setCompareUpToCurrentDay
     } = useSummaryComparison(
         isComparisonMode, baseFilteredData, productConfig, filters,
-        localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters,
+        localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, localWarehouseFilters,
         deferredDrilldownOrder
     );
 
@@ -84,12 +85,13 @@ export const useSummaryTableLogic = () => {
                 child: localChildFilters,
                 manufacturer: localManufacturerFilters,
                 creator: localCreatorFilters,
-                product: localProductFilters
+                product: localProductFilters,
+                warehouse: localWarehouseFilters
             }
         };
 
         return processSummaryTable(dataToUse, productConfig, localFilterState);
-    }, [processedData?.filteredValidSalesData, filters, productConfig, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
+    }, [processedData?.filteredValidSalesData, filters, productConfig, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, localWarehouseFilters, filters.summaryTable.sort]);
 
     // Calculate global filter options independent of standardSummaryData so they are available in comparison mode
     const filterOptions = useMemo(() => {
@@ -99,7 +101,8 @@ export const useSummaryTableLogic = () => {
                 child: standardSummaryData.uniqueChildGroups,
                 manufacturer: standardSummaryData.uniqueManufacturers,
                 creator: standardSummaryData.uniqueCreators,
-                product: standardSummaryData.uniqueProducts
+                product: standardSummaryData.uniqueProducts,
+                warehouse: standardSummaryData.uniqueWarehouses
             };
         }
 
@@ -109,6 +112,7 @@ export const useSummaryTableLogic = () => {
         const manufacturerSet = new Set<string>();
         const creatorSet = new Set<string>();
         const productSet = new Set<string>();
+        const warehouseSet = new Set<string>();
 
         if (productConfig && processedData?.filteredValidSalesData) {
             processedData.filteredValidSalesData.forEach(row => {
@@ -118,6 +122,7 @@ export const useSummaryTableLogic = () => {
                 manufacturerSet.add(getRowValue(row, COL.MANUFACTURER) || 'Không rõ');
                 creatorSet.add(abbreviateName(getRowValue(row, COL.NGUOI_TAO) || 'Không xác định'));
                 productSet.add(getRowValue(row, COL.PRODUCT) || 'N/A');
+                warehouseSet.add(getRowValue(row, COL.KHO) || 'Không rõ');
             });
         }
 
@@ -126,7 +131,8 @@ export const useSummaryTableLogic = () => {
             child: Array.from(childSet).sort(),
             manufacturer: Array.from(manufacturerSet).sort(),
             creator: Array.from(creatorSet).sort(),
-            product: Array.from(productSet).sort()
+            product: Array.from(productSet).sort(),
+            warehouse: Array.from(warehouseSet).sort()
         };
     }, [standardSummaryData, productConfig, processedData?.filteredValidSalesData]);
 
@@ -270,6 +276,7 @@ export const useSummaryTableLogic = () => {
             case 'manufacturer': return { options: filterOptions.manufacturer, selected: localManufacturerFilters, onChange: (s: string[]) => filterChangeWrapper('manufacturer', s) };
             case 'creator': return { options: filterOptions.creator, selected: localCreatorFilters, onChange: (s: string[]) => filterChangeWrapper('creator', s) };
             case 'product': return { options: filterOptions.product, selected: localProductFilters, onChange: (s: string[]) => filterChangeWrapper('product', s) };
+            case 'warehouse': return { options: filterOptions.warehouse, selected: localWarehouseFilters, onChange: (s: string[]) => filterChangeWrapper('warehouse', s) };
             default: return { options: [], selected: [], onChange: () => { } };
         }
     };

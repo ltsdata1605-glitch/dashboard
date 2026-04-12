@@ -23,7 +23,8 @@ export const initialFilterState: FilterState = {
         manufacturer: [],
         creator: [],
         product: [],
-        drilldownOrder: ['parent', 'child', 'creator', 'manufacturer', 'product'],
+        warehouse: [],
+        drilldownOrder: ['parent', 'child', 'creator', 'manufacturer', 'product', 'warehouse'],
         sort: { column: 'totalRevenue', direction: 'desc' }
     }
 };

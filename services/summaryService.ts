@@ -15,6 +15,7 @@ export function processSummaryTable(
     uniqueManufacturers: string[];
     uniqueCreators: string[];
     uniqueProducts: string[];
+    uniqueWarehouses: string[];
 } {
     const summaryTableData: { [key: string]: SummaryTableNode } = {};
     
@@ -24,6 +25,7 @@ export function processSummaryTable(
     const manufacturersForFilter = new Set<string>();
     const creatorsForFilter = new Set<string>();
     const productsForFilter = new Set<string>();
+    const warehousesForFilter = new Set<string>();
 
     // Mapping key codes to data extraction logic
     const valueExtractors: { [key: string]: (row: DataRow) => string } = {
@@ -31,13 +33,14 @@ export function processSummaryTable(
         'child': (row) => productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || 'Không xác định',
         'manufacturer': (row) => getRowValue(row, COL.MANUFACTURER) || 'Không rõ',
         'creator': (row) => abbreviateName(getRowValue(row, COL.NGUOI_TAO) || 'Không xác định'),
-        'product': (row) => getRowValue(row, COL.PRODUCT) || 'N/A'
+        'product': (row) => getRowValue(row, COL.PRODUCT) || 'N/A',
+        'warehouse': (row) => getRowValue(row, COL.KHO) || 'Không rõ'
     };
 
     // Default hierarchy updated to 5 levels as requested
     const drilldownOrder = (filters.summaryTable.drilldownOrder && filters.summaryTable.drilldownOrder.length > 0)
         ? filters.summaryTable.drilldownOrder
-        : ['parent', 'child', 'creator', 'manufacturer', 'product'];
+        : ['parent', 'child', 'creator', 'manufacturer', 'product', 'warehouse'];
 
     filteredValidSalesData.forEach(row => {
         // Filter out "Thu Hộ" rows to ensure revenue eligibility
@@ -49,18 +52,21 @@ export function processSummaryTable(
         const manufacturerVal = valueExtractors['manufacturer'](row);
         const creatorVal = valueExtractors['creator'](row);
         const productVal = valueExtractors['product'](row);
+        const warehouseVal = valueExtractors['warehouse'](row);
 
         parentGroupsForFilter.add(parentVal);
         childGroupsForFilter.add(childVal);
         manufacturersForFilter.add(manufacturerVal);
         creatorsForFilter.add(creatorVal);
         productsForFilter.add(productVal);
+        warehousesForFilter.add(warehouseVal);
 
         if (filters.parent?.length > 0 && !filters.parent.includes(parentVal)) return;
         if (filters.summaryTable.child?.length > 0 && !filters.summaryTable.child.includes(childVal)) return;
         if (filters.summaryTable.manufacturer?.length > 0 && !filters.summaryTable.manufacturer.includes(manufacturerVal)) return;
         if (filters.summaryTable.creator?.length > 0 && !filters.summaryTable.creator.includes(creatorVal)) return;
         if (filters.summaryTable.product?.length > 0 && !filters.summaryTable.product.includes(productVal)) return;
+        if (filters.summaryTable.warehouse?.length > 0 && !filters.summaryTable.warehouse.includes(warehouseVal)) return;
 
         const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
         const price = Number(getRowValue(row, COL.PRICE)) || 0;
@@ -125,7 +131,8 @@ export function processSummaryTable(
         uniqueChildGroups: [...childGroupsForFilter].sort(),
         uniqueManufacturers: [...manufacturersForFilter].sort(),
         uniqueCreators: [...creatorsForFilter].sort(),
-        uniqueProducts: [...productsForFilter].sort()
+        uniqueProducts: [...productsForFilter].sort(),
+        uniqueWarehouses: [...warehousesForFilter].sort()
     };
 }
 
