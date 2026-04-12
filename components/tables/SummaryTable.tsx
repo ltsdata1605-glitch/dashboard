@@ -76,6 +76,10 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [activeFilterKey, setActiveFilterKey]);
 
+    // Keep a ref to latest values so Sortable callback always uses current state
+    const drilldownOrderRef = useRef(localDrilldownOrder);
+    drilldownOrderRef.current = localDrilldownOrder;
+
     useEffect(() => {
         if (sortableListRef.current) {
             const sortable = new Sortable(sortableListRef.current, {
@@ -84,7 +88,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                 chosenClass: 'scale-105',
                 dragClass: 'opacity-100',
                 onEnd: (evt: any) => {
-                    const newOrder = [...localDrilldownOrder];
+                    const newOrder = [...drilldownOrderRef.current];
                     const [movedItem] = newOrder.splice(evt.oldIndex, 1);
                     newOrder.splice(evt.newIndex, 0, movedItem);
                     setLocalDrilldownOrder(newOrder);
@@ -93,7 +97,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
             });
             return () => sortable.destroy();
         }
-    }, [localDrilldownOrder, setLocalDrilldownOrder, setExpandedIds, sortableListRef]);
+    }, [setLocalDrilldownOrder, setExpandedIds]);
 
     if (!standardSummaryData && !compTree) return null;
 
