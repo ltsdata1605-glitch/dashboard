@@ -171,8 +171,8 @@ export const useSummaryTableLogic = () => {
             setIsExporting(true);
             const prefix = getExportFilenamePrefix(filters.kho);
             await exportElementAsImage(tableContainerRef.current, `${prefix}-Chi-tiet-nganh-hang.png`, {
-                captureAsDisplayed: !isComparisonMode,
-                fitCategoryColumn: true
+                fitCategoryColumn: true,
+                fitAllColumns: true
             });
             setIsExporting(false);
         }

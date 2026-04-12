@@ -15,7 +15,7 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
 };
 
 export async function exportElementAsImage(element: HTMLElement, filename: string, options: any = {}) {
-    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = 2, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false } = options;
+    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = 2, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false } = options;
 
     const clone = element.cloneNode(true) as HTMLElement;
 
@@ -372,6 +372,46 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         const tables = clone.querySelectorAll('table');
         tables.forEach(table => {
             table.style.setProperty('table-layout', 'auto', 'important');
+        });
+    }
+
+    // 8. FIT ALL COLUMNS — shrink every column to content width for compact export
+    if (fitAllColumns) {
+        const tables = clone.querySelectorAll('table');
+        tables.forEach(table => {
+            table.style.setProperty('table-layout', 'auto', 'important');
+            table.style.setProperty('width', 'auto', 'important');
+            // Remove w-full, min-w-max classes that force full width
+            table.classList.remove('w-full');
+            table.classList.forEach(cls => {
+                if (cls.startsWith('min-w-') || cls.startsWith('w-')) {
+                    table.classList.remove(cls);
+                }
+            });
+        });
+
+        // Make all th and td cells shrink to content
+        const allCells = clone.querySelectorAll('th, td');
+        allCells.forEach(el => {
+            if (el instanceof HTMLElement) {
+                el.style.setProperty('width', 'auto', 'important');
+                el.style.setProperty('min-width', '0', 'important');
+                el.style.setProperty('white-space', 'nowrap', 'important');
+                // Remove any fixed width classes
+                el.classList.forEach(cls => {
+                    if (cls.startsWith('w-[') || cls.startsWith('w-') || cls.startsWith('min-w-') || cls.startsWith('lg:w-') || cls.startsWith('md:w-')) {
+                        el.classList.remove(cls);
+                    }
+                });
+            }
+        });
+
+        // Remove w-full from table container divs
+        const tableContainers = clone.querySelectorAll('.overflow-x-auto');
+        tableContainers.forEach(container => {
+            if (container instanceof HTMLElement) {
+                container.style.setProperty('width', 'fit-content', 'important');
+            }
         });
     }
 
