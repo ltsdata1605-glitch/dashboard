@@ -12,7 +12,22 @@ export const useEmployeeAnalysisData = () => {
         originalData 
     } = useDashboardContext();
 
-    const [hideZeroRevenue, setHideZeroRevenue] = useState(false);
+    const [hideZeroRevenue, setHideZeroRevenueRaw] = useState(true);
+
+    // Load persisted value from IndexedDB on mount
+    useEffect(() => {
+        getSetting<boolean>('hideZeroRevenue').then(saved => {
+            if (saved !== null && saved !== undefined) {
+                setHideZeroRevenueRaw(saved);
+            }
+        }).catch(console.error);
+    }, []);
+
+    // Wrapper that persists to IndexedDB (saveSetting auto-triggers Firebase sync)
+    const setHideZeroRevenue = (value: boolean) => {
+        setHideZeroRevenueRaw(value);
+        saveSetting('hideZeroRevenue', value).catch(console.error);
+    };
 
     const { 
         allIndustries, 
