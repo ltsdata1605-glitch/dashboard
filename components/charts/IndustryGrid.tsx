@@ -349,16 +349,16 @@ const IndustryGrid: React.FC = React.memo(() => {
                                             onClick={isDrillable ? () => handleCardClick(name) : undefined}
                                             onKeyDown={isDrillable ? (e) => { if (e.key === 'Enter') handleCardClick(name); } : undefined}
                                             className={[
-                                                'group relative flex flex-col justify-between p-1.5 lg:p-2.5',
+                                                'group relative flex flex-col justify-between p-2 lg:p-2.5',
                                                 'bg-white dark:bg-[#1c1c1e] border border-slate-100 dark:border-white/5',
                                                 'shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_6px_18px_rgba(0,0,0,0.07)]',
-                                                'transition-all duration-200 hover:-translate-y-0.5 rounded-xl select-none',
+                                                'transition-all duration-200 hover:-translate-y-0.5 rounded-xl select-none premium-card-shadow',
                                                 isDrillable ? 'cursor-pointer active:scale-[0.97]' : 'cursor-default',
                                             ].join(' ')}
                                         >
                                             <div className="flex justify-between items-start mb-1.5">
-                                                <div className={`w-5 h-5 lg:w-6 lg:h-6 rounded flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
-                                                    <Icon name={icon} size={3} className="lg:hidden" />
+                                                <div className={`w-6 h-6 lg:w-6 lg:h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
+                                                    <Icon name={icon} size={3.5} className="lg:hidden" />
                                                     <Icon name={icon} size={3.5} className="hidden lg:block" />
                                                 </div>
                                                 <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter`}>
@@ -367,7 +367,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                             </div>
 
                                             <div className="min-w-0">
-                                                <div className={`text-[8px] lg:text-[9px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5`} title={name}>{name}</div>
+                                                <div className={`text-[9px] lg:text-[9px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5`} title={name}>{name}</div>
                                                 <div className="text-[10px] lg:text-[11px] font-black tracking-tight leading-none truncate">
                                                     {metricToDisplay === 'revenue' 
                                                         ? <span className="text-slate-900 dark:text-white">{formatCurrency(revenue)}</span> 
@@ -384,8 +384,8 @@ const IndustryGrid: React.FC = React.memo(() => {
                                             </div>
 
                                             {isDrillable && (
-                                                <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-70 transition-opacity">
-                                                    <Icon name="chevron-right" size={2.5} className="text-indigo-400" />
+                                                <div className="absolute bottom-1.5 right-1.5 opacity-60 lg:opacity-0 group-hover:opacity-70 transition-opacity">
+                                                    <Icon name="chevron-right" size={3} className="text-indigo-400" />
                                                 </div>
                                             )}
                                         </div>

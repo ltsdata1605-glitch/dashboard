@@ -26,6 +26,14 @@ function AppContent() {
     const { activeTab, setActiveTab, isDarkMode, toggleDarkMode } = useLayout();
     const { user, userRole, isDemoMode, isLoading } = useAuth();
 
+    // Smart greeting based on time of day
+    const greeting = React.useMemo(() => {
+        const hour = new Date().getHours();
+        if (hour < 12) return 'Chào buổi sáng \u2600\uFE0F';
+        if (hour < 18) return 'Chào buổi chiều \ud83c\udf05';
+        return 'Chào buổi tối \ud83c\udf19';
+    }, []);
+
     React.useEffect(() => {
         getGlobalFont().then(font => {
             if (font && font !== 'Inter') {
@@ -64,21 +72,24 @@ function AppContent() {
             <div className="flex-grow flex flex-col min-w-0 w-full relative">
 
                 {/* Mobile Top Bar - Hidden in Desktop View */}
-                <div className="lg:hidden sticky top-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
-                    <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-lg flex items-center justify-center shadow-sm">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                <div className="lg:hidden sticky top-0 z-[100] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-transparent topbar-gradient-border flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-md shadow-indigo-300/30 dark:shadow-indigo-900/30">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                         </div>
-                        <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight">Báo Cáo YCX</span>
+                        <div className="flex flex-col">
+                            <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none">Báo Cáo YCX</span>
+                            <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">{greeting}</span>
+                        </div>
                     </div>
                     <div className="flex items-center gap-0.5">
                         <NotificationDropdown />
                         <button
                             onClick={toggleDarkMode}
-                            className="p-2.5 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors active:scale-95"
+                            className="p-2.5 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 active:scale-95"
                             aria-label="Toggle Dark Mode"
                         >
-                            {isDarkMode ? <Sun size={20} className="text-amber-500" /> : <Moon size={20} />}
+                            {isDarkMode ? <Sun size={20} className="text-amber-500 transition-transform duration-500 rotate-0 hover:rotate-90" /> : <Moon size={20} className="transition-transform duration-500 hover:-rotate-12" />}
                         </button>
                     </div>
                 </div>

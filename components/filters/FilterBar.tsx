@@ -175,16 +175,16 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                         <button
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
-                            className="flex items-center justify-center p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md shadow-indigo-200 dark:shadow-none transition-all active:scale-95 shrink-0"
+                            className="flex items-center justify-center p-2.5 bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-xl shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
                         >
                             <Icon name="settings" size={3.5} className="group-hover:rotate-90 transition-transform duration-300" />
                         </button>
                     </div>
 
                     {/* Row 2: Segments — horizontal scroll */}
-                    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar -mx-0.5 px-0.5">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-0.5 px-0.5">
                         {/* Date Range Segments */}
-                        <div className="flex items-center gap-0.5 bg-slate-100/50 dark:bg-slate-800/50 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                        <div className="flex items-center gap-0.5 bg-slate-100/70 dark:bg-slate-800/60 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-700/50 shrink-0 shadow-sm">
                             {[
                                 { range: 'week', label: 'Tuần' },
                                 { range: 'today', label: 'H.nay' },
@@ -219,10 +219,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                                                 handleDateRangeClick(range);
                                             }
                                         }}
-                                        className={`px-2 py-1 text-[9px] font-black uppercase tracking-wider rounded-md transition-all relative z-0 ${
+                                        className={`px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-md transition-all duration-200 relative z-0 ${
                                             filterState.dateRange === range
-                                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                                            ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/30'
+                                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50'
                                         }`}
                                     >
                                         {label}
@@ -231,8 +231,11 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                             ))}
                         </div>
 
+                        {/* Divider */}
+                        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 shrink-0"></div>
+
                         {/* Export Status Segments */}
-                        <div className="flex items-center gap-0.5 bg-slate-100/50 dark:bg-slate-800/50 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                        <div className="flex items-center gap-0.5 bg-slate-100/70 dark:bg-slate-800/60 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-700/50 shrink-0 shadow-sm">
                             {[
                                 { val: 'all', label: 'All' },
                                 { val: 'Đã', label: 'Đã' },
@@ -241,10 +244,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                                 <button
                                     key={val}
                                     onClick={() => handleFilterChange({ xuat: val })}
-                                    className={`px-2 py-1 text-[9px] font-black uppercase tracking-wider rounded-md transition-all ${
+                                    className={`px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-md transition-all duration-200 ${
                                         filterState.xuat === val
-                                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                                        ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/30'
+                                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50'
                                     }`}
                                 >
                                     {label}

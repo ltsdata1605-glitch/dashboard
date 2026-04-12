@@ -205,3 +205,100 @@
   animation: slideUp 0.3s ease-out forwards;
 }
 
+/* ═══ PREMIUM MOBILE ANIMATIONS ═══ */
+
+/* Shimmer animation for progress bars */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-shimmer {
+  background-size: 200% 100%;
+  animation: shimmer 2s ease-in-out infinite;
+}
+.progress-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.progress-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s ease-in-out infinite;
+}
+
+/* Pulse glow for target-achieved icons */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 12px 4px rgba(16, 185, 129, 0.15); }
+}
+.animate-pulse-glow-green {
+  animation: pulseGlow 2.5s ease-in-out infinite;
+}
+
+@keyframes pulseGlowAmber {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 12px 4px rgba(245, 158, 11, 0.15); }
+}
+.animate-pulse-glow-amber {
+  animation: pulseGlowAmber 2.5s ease-in-out infinite;
+}
+
+/* Horizontal scroll fade indicator */
+.scroll-fade-right {
+  mask-image: linear-gradient(to right, black 85%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 85%, transparent 100%);
+}
+.scroll-fade-both {
+  mask-image: linear-gradient(to right, transparent 0%, black 5%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 90%, transparent 100%);
+}
+
+/* Touch ripple feedback */
+.touch-feedback {
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.touch-feedback:active {
+  transform: scale(0.97);
+  opacity: 0.85;
+}
+
+/* Smooth gradient border */
+.gradient-border-b {
+  border-image: linear-gradient(to right, #6366f1 0%, #0ea5e9 50%, #10b981 100%) 1;
+  border-image-slice: 1;
+}
+
+/* Gradient active pill indicator */
+.active-pill-gradient {
+  background: linear-gradient(135deg, #6366f1 0%, #818cf8 100%);
+}
+
+/* Section enter animation */
+@keyframes sectionFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-section-in {
+  animation: sectionFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Premium card shadow on mobile */
+@media (max-width: 1023px) {
+  .premium-card-shadow {
+    box-shadow: 0 2px 12px -2px rgba(0, 0, 0, 0.06), 0 1px 4px -1px rgba(0, 0, 0, 0.04);
+  }
+  .premium-card-shadow:active {
+    box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.04);
+  }
+}
+
+/* Gradient top bar border on scroll */
+.topbar-gradient-border {
+  border-bottom: 1px solid transparent;
+  border-image: linear-gradient(90deg, rgba(99, 102, 241, 0.3), rgba(14, 165, 233, 0.3), rgba(16, 185, 129, 0.2)) 1;
+}
+

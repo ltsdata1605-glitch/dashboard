@@ -243,7 +243,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
             />
             </div>
             
-            <div className="flex-grow p-6">
+            <div className="flex-grow p-2.5 lg:p-6">
                 <EmployeeAnalysisContent
                     activeTab={activeTab}
                     filteredEmployeeAnalysisData={filteredEmployeeAnalysisData}

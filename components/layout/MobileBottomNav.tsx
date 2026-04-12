@@ -85,8 +85,8 @@ export default function MobileBottomNav() {
 
                             {/* Tools section */}
                             <div className="px-4 py-3">
-                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2">Công cụ</p>
-                                <div className="grid grid-cols-4 gap-2">
+                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2.5 flex items-center gap-2"><span className="w-4 h-px bg-slate-200 dark:bg-slate-700"></span>Công cụ<span className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></span></p>
+                                <div className="grid grid-cols-4 gap-2.5">
                                     {moreTabs.filter(t => t.id.startsWith('tools-')).map(tab => (
                                         <a
                                             key={tab.id}
@@ -105,8 +105,8 @@ export default function MobileBottomNav() {
                             </div>
 
                             {/* System section */}
-                            <div className="px-4 pb-4">
-                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2">Hệ thống</p>
+                            <div className="px-4 pb-4 pt-1 border-t border-slate-100 dark:border-slate-800 mt-1">
+                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2.5 flex items-center gap-2"><span className="w-4 h-px bg-slate-200 dark:bg-slate-700"></span>Hệ thống<span className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></span></p>
                                 <div className="space-y-1">
                                     {moreTabs.filter(t => !t.id.startsWith('tools-')).map(tab => {
                                         const isActive = activeTab === tab.id;
@@ -133,8 +133,8 @@ export default function MobileBottomNav() {
             </AnimatePresence>
 
             {/* Bottom Tab Bar */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[190] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 pb-[env(safe-area-inset-bottom,0px)]">
-                <div className="flex items-stretch justify-around h-[52px]">
+            <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[190] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+                <div className="flex items-stretch justify-around h-[56px]">
                     {mainTabs.map(tab => {
                         const isActive = activeTab === tab.id;
                         return (
@@ -148,12 +148,12 @@ export default function MobileBottomNav() {
                                 {isActive && (
                                     <motion.div
                                         layoutId="mobile-tab-indicator"
-                                        className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-full bg-indigo-600 dark:bg-indigo-400"
+                                        className="absolute -top-px left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-full bg-gradient-to-r from-indigo-500 to-indigo-400 dark:from-indigo-400 dark:to-indigo-300 shadow-[0_2px_8px_rgba(99,102,241,0.4)]"
                                         transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                                     />
                                 )}
-                                <tab.icon size={20} strokeWidth={isActive ? 2.5 : 1.8} />
-                                <span className={`text-[10px] leading-tight ${isActive ? 'font-bold' : 'font-medium'}`}>{tab.label}</span>
+                                <tab.icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
+                                <span className={`text-[11px] leading-tight ${isActive ? 'font-bold' : 'font-medium'}`}>{tab.label}</span>
                             </button>
                         );
                     })}
@@ -168,12 +168,12 @@ export default function MobileBottomNav() {
                         {(isMoreActive && !isMoreOpen) && (
                             <motion.div
                                 layoutId="mobile-tab-indicator"
-                                className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] rounded-full bg-indigo-600 dark:bg-indigo-400"
+                                className="absolute -top-px left-1/2 -translate-x-1/2 w-10 h-[3px] rounded-full bg-gradient-to-r from-indigo-500 to-indigo-400 dark:from-indigo-400 dark:to-indigo-300 shadow-[0_2px_8px_rgba(99,102,241,0.4)]"
                                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                             />
                         )}
-                        <Wrench size={20} strokeWidth={isMoreActive ? 2.5 : 1.8} />
-                        <span className={`text-[10px] leading-tight ${isMoreActive ? 'font-bold' : 'font-medium'}`}>Khác</span>
+                        <Wrench size={22} strokeWidth={isMoreActive ? 2.5 : 1.8} />
+                        <span className={`text-[11px] leading-tight ${isMoreActive ? 'font-bold' : 'font-medium'}`}>Khác</span>
                     </button>
                 </div>
             </nav>

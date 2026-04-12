@@ -478,15 +478,15 @@ const TrendChart: React.FC = React.memo(() => {
                     </button>
                   </div>
 
-                  <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 ml-1">
+                  <div className="inline-flex rounded-lg shadow-sm p-0.5 lg:p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 ml-1">
                     {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
                       <button
                         key={v}
                         onClick={() => setTrendState(prev => ({ ...prev, view: v }))}
-                        className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${
+                        className={`py-1.5 px-2 lg:px-3 text-[10px] lg:text-xs font-bold rounded-lg transition-all duration-200 uppercase tracking-wider ${
                           trendState.view === v 
-                          ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
-                          : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
+                          ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/20' 
+                          : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/50 dark:hover:bg-slate-700/50'
                         }`}
                       >
                         {v === 'shift' ? 'Ca' : v === 'daily' ? 'Ngày' : v === 'weekly' ? 'Tuần' : 'Tháng'}
@@ -537,7 +537,7 @@ const TrendChart: React.FC = React.memo(() => {
       </SectionHeader>
 
       <div className={`p-3 lg:p-5 md:p-6 ${displayMode === 'calendar' ? 'pb-3 lg:pb-5' : 'pb-1 lg:pb-2'}`}>
-        <div className={`w-full ${displayMode === 'calendar' ? '' : 'h-[180px] lg:h-[320px]'}`}>
+        <div className={`w-full ${displayMode === 'calendar' ? '' : 'h-[220px] lg:h-[320px]'}`}>
            {displayMode === 'calendar' ? (
                 <div className="flex flex-col gap-4">
                     {/* Toast notification */}

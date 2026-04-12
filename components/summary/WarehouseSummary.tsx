@@ -255,7 +255,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
 
                 {/* === TABLE VIEW (all screen sizes) === */}
-                <section className="overflow-x-auto custom-scrollbar p-2 lg:p-6 touch-auto">
+                <section className="overflow-x-auto custom-scrollbar p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative">
                     <table className="min-w-max text-sm text-center border-collapse border border-slate-200 dark:border-slate-700">
                         <thead>
                             {/* Top Level Group Headers */}
