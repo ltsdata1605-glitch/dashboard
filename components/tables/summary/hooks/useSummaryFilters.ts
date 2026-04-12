@@ -9,11 +9,16 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
     // After initial sync, local state is authoritative and should NOT be overwritten by global changes.
     const isInitializedRef = useRef(false);
 
-    const [localDrilldownOrder, setLocalDrilldownOrder] = useState<string[]>(
-        (summaryTableFilters?.drilldownOrder && summaryTableFilters.drilldownOrder.length > 0)
-            ? summaryTableFilters.drilldownOrder
-            : ['parent', 'child', 'creator', 'manufacturer', 'product', 'warehouse']
-    );
+    const [localDrilldownOrder, setLocalDrilldownOrder] = useState<string[]>(() => {
+        const ALL_KEYS = ['parent', 'child', 'creator', 'manufacturer', 'product', 'warehouse'];
+        const saved = summaryTableFilters?.drilldownOrder;
+        if (saved && saved.length > 0) {
+            // Migration: append any new keys that don't exist in saved order
+            const missing = ALL_KEYS.filter(k => !saved.includes(k));
+            return missing.length > 0 ? [...saved, ...missing] : saved;
+        }
+        return ALL_KEYS;
+    });
     const [crossSellingDrilldownOrder, setCrossSellingDrilldownOrder] = useState<string[]>(['parent', 'child']);
     
     const activeDrilldownOrder = isCrossSellingMode ? crossSellingDrilldownOrder : localDrilldownOrder;
