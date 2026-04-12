@@ -28,7 +28,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
     if (isCrossSellingMode) return null;
 
     return (
-        <div className="relative z-[50] flex flex-wrap items-center justify-between gap-3 hide-on-export pt-2 border-t border-slate-100 dark:border-slate-700/50 px-5 pb-3">
+        <div className="relative z-[50] flex flex-wrap items-center justify-between gap-2 sm:gap-3 hide-on-export pt-2 border-t border-slate-100 dark:border-slate-700/50 px-3 sm:px-5 pb-3">
             <div className="flex flex-col gap-1 w-full lg:w-auto">
                 <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Cấu trúc hiển thị & Lọc (Kéo thả để sắp xếp):</span>
                 <div className={`flex flex-wrap items-center gap-2 ${isPending ? 'opacity-50 pointer-events-none' : ''}`} ref={sortableListRef}>
@@ -58,7 +58,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                     })}
                     
                     {hasActiveFilters && (
-                        <div className="flex items-center gap-1.5 hide-on-export ml-2">
+                        <div className="hidden sm:flex items-center gap-1.5 hide-on-export ml-2">
                             <button
                                 onClick={handleExpandAll}
                                 className="h-7 w-7 rounded-lg bg-teal-100 text-teal-700 hover:bg-teal-200 flex items-center justify-center transition-colors dark:bg-teal-900/40 dark:text-teal-400 dark:hover:bg-teal-800/60"
@@ -86,7 +86,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                 </div>
             </div>
             
-            <div className="flex items-center gap-3 ml-auto mt-2 lg:mt-0">
+            <div className="flex items-center gap-2 sm:gap-3 ml-auto mt-1 sm:mt-2 lg:mt-0">
                 <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 border border-slate-200 dark:border-slate-700 items-center">
                     <button
                         onClick={handleExpandAll}

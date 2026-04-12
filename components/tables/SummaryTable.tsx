@@ -188,7 +188,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                 />
 
 
-           <div className={`relative p-6 bg-white dark:bg-slate-800 transition-opacity duration-200 ${isPending || isExpanding ? 'opacity-60' : 'opacity-100'}`}>
+           <div className={`relative p-2 sm:p-6 bg-white dark:bg-slate-800 transition-opacity duration-200 ${isPending || isExpanding ? 'opacity-60' : 'opacity-100'}`}>
               {isExpanding && (
                   <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/40 dark:bg-slate-900/40 backdrop-blur-[1px]">
                       <div className="flex flex-col items-center p-5 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700">

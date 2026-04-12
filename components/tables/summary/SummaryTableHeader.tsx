@@ -31,15 +31,15 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
     setVisibleColumns, columnsPopupRef, isFullScreen, setIsFullScreen
 }) => {
     return (
-        <header className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">
-            <div className="flex flex-col gap-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-[#0584c7]/10 text-[#0584c7] flex items-center justify-center shadow-sm">
-                            <Icon name="table" size={6} />
+        <header className="px-3 sm:px-6 py-4 sm:py-5 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex flex-col gap-4 sm:gap-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#0584c7]/10 text-[#0584c7] flex items-center justify-center shadow-sm shrink-0">
+                            <Icon name="table" size={5} />
                         </div>
                         <div>
-                            <h1 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white uppercase">
+                            <h1 className="text-base sm:text-xl font-bold tracking-tight text-slate-800 dark:text-white uppercase">
                                 {displayTitle}
                             </h1>
                             <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
@@ -53,7 +53,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                         </div>
                     </div>
                     
-                    <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
                         <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hide-on-export">
                             <button 
                                 onClick={() => setTableMode('standard')}
@@ -95,7 +95,7 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                             )}
                         </div>
                         
-                        <div className="relative z-[100] hide-on-export" ref={columnsPopupRef}>
+                        <div className="relative z-[100] hide-on-export shrink-0" ref={columnsPopupRef}>
                             {isCrossSellingMode ? (
                                 <button 
                                     onClick={handleExport} 
@@ -111,18 +111,18 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                         {setIsFullScreen && (
                                             <button
                                                 onClick={() => setIsFullScreen(!isFullScreen)}
-                                                className={`p-2 rounded-md transition-colors ${isFullScreen ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
+                                                className={`p-1.5 sm:p-2 rounded-md transition-colors ${isFullScreen ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
                                                 title={isFullScreen ? "Thu nhỏ bảng" : "Phóng to toàn màn hình"}
                                             >
-                                                <Icon name={isFullScreen ? "minimize" : "maximize"} size={5}/>
+                                                <Icon name={isFullScreen ? "minimize" : "maximize"} size={4.5}/>
                                             </button>
                                         )}
                                         <button
                                             onClick={() => setActiveFilterKey(prev => prev === 'columns' ? null : 'columns')}
-                                            className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                            className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                             title="Tùy chọn hiển thị cột"
                                         >
-                                            <Icon name="settings-2" size={5}/>
+                                            <Icon name="settings-2" size={4.5}/>
                                         </button>
                                     </div>
 
