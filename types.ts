@@ -283,7 +283,6 @@ export interface FilterState {
         manufacturer: string[];
         creator: string[];
         product: string[];
-        warehouse: string[];
         drilldownOrder: string[];
         sort: {
             column: string;

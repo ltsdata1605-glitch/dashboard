@@ -187,15 +187,11 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     };
 
     const handleDelete = (id: string) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa cột tùy chỉnh này?')) {
-            setInternalColumns(prev => prev.filter(c => c.id !== id));
-        }
+        setInternalColumns(prev => prev.filter(c => c.id !== id));
     };
     
     const handleDeleteGroup = (groupName: string) => {
-        if (window.confirm(`Bạn có chắc chắn muốn xóa nhóm "${groupName}" và tất cả các cột bên trong?`)) {
-            setInternalColumns(prev => prev.filter(c => c.mainHeader !== groupName));
-        }
+        setInternalColumns(prev => prev.filter(c => c.mainHeader !== groupName));
     };
 
     const handleToggleGroupVisibility = (mainHeader: string, shouldBeVisible: boolean) => {
@@ -238,10 +234,8 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     };
 
     const handleRestoreDefaults = () => {
-        if (window.confirm('Thao tác này sẽ xóa tất cả các tùy chỉnh và khôi phục lại bố cục cột mặc định. Bạn có chắc chắn?')) {
-            setInternalColumns([...DEFAULT_WAREHOUSE_COLUMNS]);
-            resetForm();
-        }
+        setInternalColumns([...DEFAULT_WAREHOUSE_COLUMNS]);
+        resetForm();
     };
 
     const groupColorMap: Record<string, { bg: string, text: string, indicator: string, border: string }> = {

@@ -102,8 +102,7 @@ export const ORDER_LABELS: Record<string, string> = {
     'child': 'Nhóm hàng',
     'manufacturer': 'Hãng SX',
     'creator': 'Nhân viên',
-    'product': 'Tên sản phẩm',
-    'warehouse': 'Kho tạo'
+    'product': 'Tên sản phẩm'
 };
 
 export const PILL_ICONS: Record<string, string> = {
@@ -111,8 +110,7 @@ export const PILL_ICONS: Record<string, string> = {
     'child': 'layout-grid',
     'manufacturer': 'factory',
     'creator': 'user',
-    'product': 'package',
-    'warehouse': 'warehouse'
+    'product': 'package'
 };
 
 export const PILL_COLORS: Record<string, string> = {
@@ -120,6 +118,5 @@ export const PILL_COLORS: Record<string, string> = {
     'child': 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700',
     'manufacturer': 'bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-900/40 dark:text-pink-200 dark:border-pink-700',
     'creator': 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/40 dark:text-amber-200 dark:border-amber-700',
-    'product': 'bg-violet-100 text-violet-800 border-violet-300 dark:bg-violet-900/40 dark:text-violet-200 dark:border-violet-700',
-    'warehouse': 'bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-900/40 dark:text-teal-200 dark:border-teal-700'
+    'product': 'bg-violet-100 text-violet-800 border-violet-300 dark:bg-violet-900/40 dark:text-violet-200 dark:border-violet-700'
 };

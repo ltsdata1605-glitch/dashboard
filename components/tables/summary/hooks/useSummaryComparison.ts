@@ -17,7 +17,6 @@ export const useSummaryComparison = (
     localManufacturerFilters: string[],
     localCreatorFilters: string[],
     localProductFilters: string[],
-    localWarehouseFilters: string[],
     deferredDrilldownOrder: string[]
 ) => {
     const [compMode, setCompMode] = useState<ComparisonMode>('day_adjacent');
@@ -320,8 +319,7 @@ export const useSummaryComparison = (
                 child: localChildFilters,
                 manufacturer: localManufacturerFilters,
                 creator: localCreatorFilters,
-                product: localProductFilters,
-                warehouse: localWarehouseFilters
+                product: localProductFilters
             }
         }; 
         const currentTree = processSummaryTable(currentDataRows, productConfig, mockFilters);
@@ -334,7 +332,7 @@ export const useSummaryComparison = (
             description
         });
 
-    }, [isComparisonMode, compMode, selectedDate, selectedMonth, selectedWeeks, baseFilteredData, productConfig, filters.summaryTable, weeksInSelectedMonth, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, localWarehouseFilters, customRangeA, customRangeB]);
+    }, [isComparisonMode, compMode, selectedDate, selectedMonth, selectedWeeks, baseFilteredData, productConfig, filters.summaryTable, weeksInSelectedMonth, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, customRangeA, customRangeB]);
 
     const handleWeekPillClick = (weekId: number) => {
         setSelectedWeeks([weekId]);

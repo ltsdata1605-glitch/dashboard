@@ -29,7 +29,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
+        const handleClickOutside = (event: MouseEvent | TouchEvent) => {
             const isOutsideContainer = containerRef.current && !containerRef.current.contains(event.target as Node);
             const isOutsideDropdown = dropdownRef.current && !dropdownRef.current.contains(event.target as Node);
             if (isOutsideContainer && isOutsideDropdown) {
@@ -37,7 +37,11 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
+        document.addEventListener("touchstart", handleClickOutside, { passive: true });
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("touchstart", handleClickOutside);
+        };
     }, []);
 
     useEffect(() => {

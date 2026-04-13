@@ -56,8 +56,10 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         } catch (e) {}
         if (isDarkMode) {
             document.documentElement.classList.add('dark');
+            document.documentElement.classList.remove('light');
         } else {
             document.documentElement.classList.remove('dark');
+            document.documentElement.classList.add('light');
         }
     }, [isDarkMode]);
 
