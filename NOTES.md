@@ -17,6 +17,13 @@
    - Loại trực tiếp Thẻ **GTĐH Mục Tiêu**.
    - Cấu hình lại giao diện KPI sang chế độ dàn 4 cột (`grid-cols-4`).
 
+5. **Nguyên Tắc Cấu Hình Bất Biến (Luôn Ghi Nhớ):**
+   - **TẠO BỘ LỌC NGÀNH HÀNG / NHÓM HÀNG TÙY ĐỘNG**: Tuyệt đối không lấy trực tiếp dữ liệu từ file Excel tải lên cho filter Ngành Hàng hay Nhóm Hàng ở bất cứ đâu trong dự án (Vì dễ gặp lỗi khoảng trắng, chữ hoa chữ thường, không đồng nhất).
+   - *Quy tắc map (Ánh xạ)*: Bắt buộc lấy qua file Cấu Hình Google Sheet thông qua `productConfig`.
+     - Ngành hàng tương đương `NhomCha` (`childToParentMap`)
+     - Nhóm hàng tương đương `NhomCon` (`childToSubgroupMap`)
+     - Phải map giá trị cột RAW `Nhóm Hàng` (tương đương với `NhomHang` key) qua `productConfig` để lấy ra đích xác kết quả ánh xạ rồi mới đem đi so khớp (`.includes`) với bộ lọc.
+
 ---
 
 ## 📋 Công việc tiếp theo dự định (TODO)

@@ -9,17 +9,21 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
     // After initial sync, local state is authoritative and should NOT be overwritten by global changes.
     const isInitializedRef = useRef(false);
 
-    const [localDrilldownOrder, setLocalDrilldownOrder] = useState<string[]>(
-        (summaryTableFilters?.drilldownOrder && summaryTableFilters.drilldownOrder.length > 0)
-            ? summaryTableFilters.drilldownOrder
-            : ['parent', 'child', 'creator', 'manufacturer', 'product']
-    );
+    const [localDrilldownOrder, setLocalDrilldownOrder] = useState<string[]>(() => {
+        if (summaryTableFilters?.drilldownOrder && summaryTableFilters.drilldownOrder.length > 0) {
+            const saved = summaryTableFilters.drilldownOrder;
+            // Migration: inject 'kho' at position 0 if missing from saved order
+            return saved.includes('kho') ? saved : ['kho', ...saved];
+        }
+        return ['kho', 'parent', 'child', 'creator', 'manufacturer', 'product'];
+    });
     const [crossSellingDrilldownOrder, setCrossSellingDrilldownOrder] = useState<string[]>(['parent', 'child']);
     
     const activeDrilldownOrder = isCrossSellingMode ? crossSellingDrilldownOrder : localDrilldownOrder;
     const deferredDrilldownOrder = useDeferredValue(activeDrilldownOrder);
 
     const [localParentFilters, setLocalParentFilters] = useState<string[]>(globalParentFilters || []);
+    const [localKhoFilters, setLocalKhoFilters] = useState<string[]>(summaryTableFilters?.kho || []);
     const [localChildFilters, setLocalChildFilters] = useState<string[]>(summaryTableFilters?.child || []);
     const [localManufacturerFilters, setLocalManufacturerFilters] = useState<string[]>(summaryTableFilters?.manufacturer || []);
     const [localCreatorFilters, setLocalCreatorFilters] = useState<string[]>(summaryTableFilters?.creator || []);
@@ -37,13 +41,20 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
         isInitializedRef.current = true;
 
         if (globalParentFilters?.length > 0) setLocalParentFilters(globalParentFilters);
+        if (summaryTableFilters.kho?.length > 0) setLocalKhoFilters(summaryTableFilters.kho);
         if (summaryTableFilters.child?.length > 0) setLocalChildFilters(summaryTableFilters.child);
         if (summaryTableFilters.manufacturer?.length > 0) setLocalManufacturerFilters(summaryTableFilters.manufacturer);
         if (summaryTableFilters.creator?.length > 0) setLocalCreatorFilters(summaryTableFilters.creator);
         if (summaryTableFilters.product?.length > 0) setLocalProductFilters(summaryTableFilters.product);
         
         if (summaryTableFilters.drilldownOrder && summaryTableFilters.drilldownOrder.length > 0) {
-            setLocalDrilldownOrder(summaryTableFilters.drilldownOrder);
+            // Migration: inject 'kho' at position 0 if missing from saved order
+            const savedOrder = summaryTableFilters.drilldownOrder;
+            if (!savedOrder.includes('kho')) {
+                setLocalDrilldownOrder(['kho', ...savedOrder]);
+            } else {
+                setLocalDrilldownOrder(savedOrder);
+            }
         }
     }, [summaryTableFilters, globalParentFilters]);
 
@@ -55,6 +66,7 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
 
         const currentConfig = {
             parent: localParentFilters,
+            kho: localKhoFilters,
             child: localChildFilters,
             manufacturer: localManufacturerFilters,
             creator: localCreatorFilters,
@@ -71,6 +83,7 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
             }
             
             const summaryChanged = 
+                JSON.stringify(summaryTableFilters?.kho || []) !== JSON.stringify(localKhoFilters) ||
                 JSON.stringify(summaryTableFilters?.child || []) !== JSON.stringify(localChildFilters) ||
                 JSON.stringify(summaryTableFilters?.manufacturer || []) !== JSON.stringify(localManufacturerFilters) ||
                 JSON.stringify(summaryTableFilters?.creator || []) !== JSON.stringify(localCreatorFilters) ||
@@ -80,6 +93,7 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
             if (summaryChanged) {
                 updates.summaryTable = {
                     ...summaryTableFilters,
+                    kho: localKhoFilters,
                     child: localChildFilters,
                     manufacturer: localManufacturerFilters,
                     creator: localCreatorFilters,
@@ -93,11 +107,12 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
             }
         }, 500);
         return () => clearTimeout(timer);
-    }, [localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, localDrilldownOrder, summaryTableFilters, globalParentFilters, onFilterChange]);
+    }, [localParentFilters, localKhoFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, localDrilldownOrder, summaryTableFilters, globalParentFilters, onFilterChange]);
 
     const handleLocalFilterChange = useCallback((type: string, selected: string[], onClearExpanded: () => void) => {
         startTransition(() => {
-            if (type === 'parent') setLocalParentFilters(selected);
+            if (type === 'kho') setLocalKhoFilters(selected);
+            else if (type === 'parent') setLocalParentFilters(selected);
             else if (type === 'child') setLocalChildFilters(selected);
             else if (type === 'manufacturer') setLocalManufacturerFilters(selected);
             else if (type === 'creator') setLocalCreatorFilters(selected);
@@ -112,6 +127,7 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
 
     const handleResetAllFilters = useCallback((onClearExpanded: () => void) => {
         startTransition(() => {
+            setLocalKhoFilters([]);
             setLocalParentFilters([]);
             setLocalChildFilters([]);
             setLocalManufacturerFilters([]);
@@ -121,7 +137,8 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
         });
     }, []);
 
-    const hasActiveFilters = localParentFilters.length > 0 || 
+    const hasActiveFilters = localKhoFilters.length > 0 ||
+                             localParentFilters.length > 0 || 
                              localChildFilters.length > 0 || 
                              localManufacturerFilters.length > 0 || 
                              localCreatorFilters.length > 0 || 
@@ -134,6 +151,7 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
         setCrossSellingDrilldownOrder,
         activeDrilldownOrder,
         deferredDrilldownOrder,
+        localKhoFilters,
         localParentFilters,
         localChildFilters,
         localManufacturerFilters,

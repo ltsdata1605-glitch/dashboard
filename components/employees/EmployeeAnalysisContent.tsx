@@ -14,6 +14,8 @@ interface EmployeeAnalysisContentProps {
     isInitialTabsLoaded: boolean;
     industryAnalysisTables: any[];
     customTabs: any[];
+    customExploitationTabs: any[];
+    setCustomExploitationTabs: React.Dispatch<React.SetStateAction<any[]>>;
     baseFilteredData: any[];
     productConfig: any;
     isExporting: boolean;
@@ -35,6 +37,8 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
     isInitialTabsLoaded,
     industryAnalysisTables,
     customTabs,
+    customExploitationTabs,
+    setCustomExploitationTabs,
     baseFilteredData,
     productConfig,
     isExporting,
@@ -62,6 +66,22 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                     <IndustryAnalysisTab 
                         ref={industryAnalysisTabRef}
                         data={filteredEmployeeAnalysisData.exploitationData} 
+                        baseFilteredData={baseFilteredData}
+                        productConfig={productConfig}
+                        customExploitationTabs={customExploitationTabs}
+                        onManageCustomTabs={() => setModalState({ type: 'CREATE_CUSTOM_EXPLOITATION_TAB', data: {} })}
+                        onEditCustomTab={(tabId: string) => {
+                            const tab = customExploitationTabs.find(t => t.id === tabId);
+                            if (tab) {
+                                setModalState({ type: 'EDIT_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, initialName: tab.name, initialColumns: tab.columns } });
+                            }
+                        }}
+                        onDeleteCustomTab={(tabId: string) => {
+                            const tab = customExploitationTabs.find(t => t.id === tabId);
+                            if (tab) {
+                                setModalState({ type: 'CONFIRM_DELETE_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, tabName: tab.name } });
+                            }
+                        }}
                         onExport={handleIndustryTabExport} 
                         isExporting={isExporting}
                         onBatchExport={(exploitationData: ExploitationData[]) => {

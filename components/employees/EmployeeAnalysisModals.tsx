@@ -3,6 +3,7 @@ import React from 'react';
 import { TabModal, TableModal } from './modals/StructureModals';
 import ColumnConfigModal from './modals/ColumnConfigModal';
 import ModalWrapper from '../modals/ModalWrapper';
+import { CustomExploitationTabModal } from './modals/CustomExploitationTabModal';
 
 interface EmployeeAnalysisModalsProps {
     modalState: any;
@@ -13,6 +14,8 @@ interface EmployeeAnalysisModalsProps {
     handleDeleteTab: () => void;
     handleDeleteTable: () => void;
     handleConfirmDeleteColumn: () => void;
+    handleSaveCustomExploitationTab?: (tab: any) => void;
+    handleDeleteCustomExploitationTab?: () => void;
     allIndustries: string[];
     allSubgroups: string[];
     allManufacturers: string[];
@@ -28,6 +31,8 @@ const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({
     handleDeleteTab,
     handleDeleteTable,
     handleConfirmDeleteColumn,
+    handleSaveCustomExploitationTab,
+    handleDeleteCustomExploitationTab,
     allIndustries,
     allSubgroups,
     allManufacturers,
@@ -42,6 +47,18 @@ const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({
                 tabId={modalState.data?.tabId}
                 initialName={modalState.data?.initialName}
                 initialIcon={modalState.data?.initialIcon}
+            />
+
+            <CustomExploitationTabModal
+                isOpen={modalState.type === 'CREATE_CUSTOM_EXPLOITATION_TAB' || modalState.type === 'EDIT_CUSTOM_EXPLOITATION_TAB'}
+                onClose={() => setModalState({ type: null })}
+                onSave={handleSaveCustomExploitationTab || (() => {})}
+                allIndustries={allIndustries}
+                allSubgroups={allSubgroups}
+                allManufacturers={allManufacturers}
+                tabId={modalState.data?.tabId}
+                initialName={modalState.data?.initialName}
+                initialColumns={modalState.data?.initialColumns}
             />
 
             <TableModal
@@ -115,6 +132,23 @@ const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({
                 <div className="p-4 flex justify-end gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
                     <button onClick={() => setModalState({ type: null })} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
                     <button onClick={handleConfirmDeleteColumn} className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
+                </div>
+            </ModalWrapper>
+
+            <ModalWrapper
+                isOpen={modalState.type === 'CONFIRM_DELETE_CUSTOM_EXPLOITATION_TAB'}
+                onClose={() => setModalState({ type: null })}
+                title="Xác nhận Xóa Thẻ Tùy Chỉnh"
+                subTitle={`Bạn sắp xóa thẻ "${modalState.data?.tabName || ''}"`}
+                titleColorClass="text-red-600 dark:text-red-400"
+                maxWidthClass="max-w-md"
+            >
+                <div className="p-6">
+                    <p>Hành động này sẽ xóa vĩnh viễn thẻ tùy chỉnh này. Bạn có chắc chắn muốn tiếp tục?</p>
+                </div>
+                <div className="p-4 flex justify-end gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
+                    <button onClick={() => setModalState({ type: null })} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
+                    <button onClick={handleDeleteCustomExploitationTab || (() => {})} className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
                 </div>
             </ModalWrapper>
         </>

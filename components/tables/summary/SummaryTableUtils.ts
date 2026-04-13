@@ -98,6 +98,7 @@ export const HEADER_CONFIG: HeaderConfig[] = [
 ];
 
 export const ORDER_LABELS: Record<string, string> = {
+    'kho': 'Kho',
     'parent': 'Ngành hàng',
     'child': 'Nhóm hàng',
     'manufacturer': 'Hãng SX',
@@ -105,7 +106,17 @@ export const ORDER_LABELS: Record<string, string> = {
     'product': 'Tên sản phẩm'
 };
 
+export const SHORT_ORDER_LABELS: Record<string, string> = {
+    'kho': 'Kho',
+    'parent': 'Ngành',
+    'child': 'Nhóm',
+    'manufacturer': 'Hãng',
+    'creator': 'Nhân viên',
+    'product': 'Sản phẩm'
+};
+
 export const PILL_ICONS: Record<string, string> = {
+    'kho': 'warehouse',
     'parent': 'layers',
     'child': 'layout-grid',
     'manufacturer': 'factory',
@@ -114,6 +125,7 @@ export const PILL_ICONS: Record<string, string> = {
 };
 
 export const PILL_COLORS: Record<string, string> = {
+    'kho': 'bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-900/40 dark:text-teal-200 dark:border-teal-700',
     'parent': 'bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/40 dark:text-rose-200 dark:border-rose-700',
     'child': 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/40 dark:text-blue-200 dark:border-blue-700',
     'manufacturer': 'bg-pink-100 text-pink-800 border-pink-300 dark:bg-pink-900/40 dark:text-pink-200 dark:border-pink-700',

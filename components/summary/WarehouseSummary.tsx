@@ -176,16 +176,16 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     }, [sortedData, currentPage]);
 
     const groupedHeaders = useMemo(() => {
-        const groups: { name: string; colSpan: number; }[] = [];
+        const groups: { name: string; colSpan: number; startIndex: number }[] = [];
         if (visibleColumns.length === 0) return groups;
         
-        let currentGroup = { name: visibleColumns[0].mainHeader, colSpan: 1 };
+        let currentGroup = { name: visibleColumns[0].mainHeader, colSpan: 1, startIndex: 0 };
         for (let i = 1; i < visibleColumns.length; i++) {
             if (visibleColumns[i].mainHeader === currentGroup.name) {
                 currentGroup.colSpan++;
             } else {
                 groups.push(currentGroup);
-                currentGroup = { name: visibleColumns[i].mainHeader, colSpan: 1 };
+                currentGroup = { name: visibleColumns[i].mainHeader, colSpan: 1, startIndex: i };
             }
         }
         groups.push(currentGroup);
@@ -198,7 +198,6 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         return visibleColumns[index].mainHeader !== visibleColumns[index - 1].mainHeader;
     };
     
-    // Calculate days in month for daily target
     const daysInMonth = useMemo(() => {
         if (filterState.selectedMonths && filterState.selectedMonths.length === 1) {
             const match = filterState.selectedMonths[0].match(/Tháng (\d{2})\/(\d{4})/);
@@ -206,6 +205,22 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         }
         const now = new Date();
         return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+    }, [filterState.selectedMonths]);
+
+    const daysPassed = useMemo(() => {
+        const now = new Date();
+        if (filterState.selectedMonths && filterState.selectedMonths.length === 1) {
+            const match = filterState.selectedMonths[0].match(/Tháng (\d{2})\/(\d{4})/);
+            if (match) {
+                const m = parseInt(match[1], 10) - 1;
+                const y = parseInt(match[2], 10);
+                if (m === now.getMonth() && y === now.getFullYear()) {
+                    return now.getDate() || 1;
+                }
+                return new Date(y, m + 1, 0).getDate();
+            }
+        }
+        return now.getDate() || 1;
     }, [filterState.selectedMonths]);
 
     // Calculate total target for footer based on currently displayed data
@@ -260,8 +275,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         <thead>
                             {/* Top Level Group Headers */}
                             <tr className="text-[11px] font-bold uppercase tracking-wider">
-                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-4 py-3 text-left text-[11px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 h-px hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider">
-                                    <div className="flex items-center gap-1">
+                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-4 py-3 text-center text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider">
+                                    <div className="flex items-center justify-center gap-1">
                                         MÃ KHO
                                         {sortConfig.key === 'khoName' && (
                                             <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
@@ -269,9 +284,26 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                     </div>
                                 </th>
                                 {groupedHeaders.map((group, i) => {
+                                    if (!group.name || group.name.trim() === '' || group.name === '-') {
+                                        const colsInGroup = visibleColumns.slice(group.startIndex, group.startIndex + group.colSpan);
+                                        return colsInGroup.map((col, idx) => {
+                                            const styles = WAREHOUSE_HEADER_COLORS[col.mainHeader] || WAREHOUSE_HEADER_COLORS.DEFAULT;
+                                            return (
+                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-2 py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                                    <div className="flex items-center justify-center gap-1">
+                                                        {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
+                                                        {sortConfig.key === col.id && (
+                                                            <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
+                                                        )}
+                                                    </div>
+                                                </th>
+                                            );
+                                        });
+                                    }
+
                                     const styles = WAREHOUSE_HEADER_COLORS[group.name] || WAREHOUSE_HEADER_COLORS.DEFAULT;
                                     return (
-                                        <th key={i} colSpan={group.colSpan} className={`px-2 py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 h-px uppercase tracking-wider text-[11px] font-bold border-r`}>
+                                        <th key={i} colSpan={group.colSpan} className={`px-2 py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px] font-bold border-r text-center align-middle`}>
                                             {group.name}
                                         </th>
                                     );
@@ -280,11 +312,14 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                             {/* Sub-Headers */}
                             <tr>
                                 {visibleColumns.map((col, index) => {
+                                    if (!col.mainHeader || col.mainHeader.trim() === '' || col.mainHeader === '-') {
+                                        return null;
+                                    }
                                     const styles = WAREHOUSE_HEADER_COLORS[col.mainHeader] || WAREHOUSE_HEADER_COLORS.DEFAULT;
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-2 py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity h-px uppercase tracking-wider text-[11px] font-bold text-center ${styles.sub} ${styles.text}`}>
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-2 py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                             <div className="flex items-center justify-center gap-1">
-                                                {col.subHeader}
+                                                {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
                                                 {sortConfig.key === col.id && (
                                                     <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
                                                 )}
@@ -298,7 +333,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                             {currentData.map((row) => (
                                 <tr key={row.khoName} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                     <td 
-                                        className={`px-2 py-3 font-bold text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 leading-tight h-px border-r border-slate-200 dark:border-slate-700 ${userRole !== 'employee' ? 'cursor-pointer' : ''}`}
+                                        className={`px-2 py-3 font-bold text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 leading-tight border-r border-slate-200 dark:border-slate-700 text-center ${userRole !== 'employee' ? 'cursor-pointer' : ''}`}
                                         onClick={() => handleTargetClick(row.khoName)}
                                     >
                                         {row.khoName}
@@ -316,9 +351,15 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                             value = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
                                         } else if (col.metric === 'percentHT') {
                                             const monthly = warehouseTargets[row.khoName] || 0;
-                                            const target = isLuyKe ? monthly : (monthly > 0 ? monthly / daysInMonth : 0);
                                             const dtqd = row.doanhThuQD || 0;
-                                            value = target > 0 ? (dtqd / target) * 100 : 0;
+                                            if (isLuyKe) {
+                                                const target = monthly;
+                                                const projected = (dtqd / daysPassed) * daysInMonth;
+                                                value = target > 0 ? (projected / target) * 100 : 0;
+                                            } else {
+                                                const target = monthly > 0 ? monthly / daysInMonth : 0;
+                                                value = target > 0 ? (dtqd / target) * 100 : 0;
+                                            }
                                         }
 
                                         let avg: number | undefined;
@@ -397,7 +438,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         {/* Table Footer / Total Row */}
                         <tfoot className="bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
                             <tr className="font-bold text-slate-900 dark:text-slate-100">
-                                <td className="px-2 py-3 uppercase tracking-tight text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 h-px border-r border-slate-200 dark:border-slate-700">Tổng</td>
+                                <td className="px-2 py-3 uppercase tracking-tight text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center">Tổng</td>
                                 {visibleColumns.map((col, index) => {
                                     let value;
                                     if (col.isCustom) {
@@ -408,7 +449,12 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         value = totalTarget;
                                     } else if (col.metric === 'percentHT') {
                                         const totalDTQD = (totals as any).doanhThuQD || 0;
-                                        value = totalTarget > 0 ? (totalDTQD / totalTarget) * 100 : 0;
+                                        if (isLuyKe) {
+                                            const projected = (totalDTQD / daysPassed) * daysInMonth;
+                                            value = totalTarget > 0 ? (projected / totalTarget) * 100 : 0;
+                                        } else {
+                                            value = totalTarget > 0 ? (totalDTQD / totalTarget) * 100 : 0;
+                                        }
                                     } else {
                                         value = customTotals.get(col.id) || 0;
                                     }

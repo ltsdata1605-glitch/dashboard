@@ -53,7 +53,11 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         handleDeleteTab,
         handleDeleteTable,
         handleConfirmDeleteColumn,
-        handleDeleteColumnDirect
+        handleDeleteColumnDirect,
+        handleSaveCustomExploitationTab,
+        handleDeleteCustomExploitationTab,
+        customExploitationTabs,
+        setCustomExploitationTabs
     } = useEmployeeAnalysisLogic(activeTab, setActiveTab, defaultTabs);
 
     const allAvailableTabs = useMemo(() => [
@@ -250,6 +254,8 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                     isInitialTabsLoaded={isInitialTabsLoaded}
                     industryAnalysisTables={industryAnalysisTables}
                     customTabs={customTabs}
+                    customExploitationTabs={customExploitationTabs}
+                    setCustomExploitationTabs={setCustomExploitationTabs}
                     baseFilteredData={filteredEmployeeAnalysisData?.filteredBaseData || baseFilteredData}
                     productConfig={productConfig}
                     isExporting={isExporting}
@@ -275,6 +281,8 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                 handleDeleteTab={handleDeleteTab}
                 handleDeleteTable={handleDeleteTable}
                 handleConfirmDeleteColumn={handleConfirmDeleteColumn}
+                handleSaveCustomExploitationTab={handleSaveCustomExploitationTab}
+                handleDeleteCustomExploitationTab={handleDeleteCustomExploitationTab}
                 allIndustries={allIndustries}
                 allSubgroups={allSubgroups}
                 allManufacturers={allManufacturers}

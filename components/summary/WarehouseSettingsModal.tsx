@@ -201,8 +201,8 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     const handleSaveColumn = (e: React.FormEvent) => {
         e.preventDefault();
         
-        if (!mainHeader.trim() || !subHeader.trim()) {
-            alert('Vui lòng điền đầy đủ Tiêu đề chính và Tiêu đề phụ.');
+        if (!subHeader.trim()) {
+            alert('Vui lòng điền Tiêu đề phụ (Tên cột).');
             return;
         }
 
@@ -249,6 +249,17 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
         'DEFAULT': { bg: 'bg-slate-50/30 dark:bg-slate-800/20', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-700' },
     };
 
+    const itemPastelColors = [
+        { bg: 'bg-blue-50/80 dark:bg-blue-900/20', border: 'border-blue-300 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300', dot: 'bg-blue-400' },
+        { bg: 'bg-emerald-50/80 dark:bg-emerald-900/20', border: 'border-emerald-300 dark:border-emerald-800', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-400' },
+        { bg: 'bg-violet-50/80 dark:bg-violet-900/20', border: 'border-violet-300 dark:border-violet-800', text: 'text-violet-700 dark:text-violet-300', dot: 'bg-violet-400' },
+        { bg: 'bg-amber-50/80 dark:bg-amber-900/20', border: 'border-amber-300 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-400' },
+        { bg: 'bg-pink-50/80 dark:bg-pink-900/20', border: 'border-pink-300 dark:border-pink-800', text: 'text-pink-700 dark:text-pink-300', dot: 'bg-pink-400' },
+        { bg: 'bg-cyan-50/80 dark:bg-cyan-900/20', border: 'border-cyan-300 dark:border-cyan-800', text: 'text-cyan-700 dark:text-cyan-300', dot: 'bg-cyan-400' },
+        { bg: 'bg-rose-50/80 dark:bg-rose-900/20', border: 'border-rose-300 dark:border-rose-800', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-400' },
+        { bg: 'bg-orange-50/80 dark:bg-orange-900/20', border: 'border-orange-300 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', dot: 'bg-orange-400' }
+    ];
+
     const renderPickerView = () => (
         <>
             <div className="flex items-center justify-between gap-3 mb-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm z-20">
@@ -268,7 +279,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                 </button>
             </div>
             
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pb-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pb-6">
                  {groupOrder.map((mainHeader, groupIndex) => {
                     const cols = groupedColumns[mainHeader] || [];
                     if (cols.length === 0) return null;
@@ -289,7 +300,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             className={`group relative flex flex-col h-full bg-white dark:bg-slate-800 rounded-xl border ${styles.border} shadow-sm hover:shadow-md transition-all duration-300 cursor-grab active:cursor-grabbing overflow-hidden`}
                         >
                             {/* Header Group */}
-                            <div className={`px-5 py-3.5 flex justify-between items-center border-b ${styles.border} ${styles.bg} pointer-events-none`}>
+                            <div className={`px-3 py-2 flex justify-between items-center border-b ${styles.border} ${styles.bg} pointer-events-none`}>
                                 <div className="flex flex-col">
                                     <h4 className={`text-xs font-bold uppercase tracking-wider ${styles.text} flex items-center gap-2`}>
                                         <Icon name="layers" size={3.5} className="opacity-70" />
@@ -299,7 +310,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                         Hiển thị {visibleCount}/{cols.length} cột
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-2 group-hover:translate-x-0 pointer-events-auto">
+                                <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-0 md:translate-x-2 group-hover:translate-x-0 pointer-events-auto">
                                     <div className="text-slate-400 p-1.5 cursor-grab hover:text-slate-600 dark:hover:text-slate-300" title="Giữ và kéo để di chuyển nhóm"><Icon name="grip-horizontal" size={4} /></div>
                                     <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
                                     <button onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện tất cả trong nhóm" className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"><Icon name="eye" size={4}/></button>
@@ -311,30 +322,33 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             </div>
                             
                             {/* Columns List */}
-                            <div className="p-3 flex flex-wrap content-start gap-1.5 flex-grow">
-                                {cols.map(col => (
+                            <div className="p-2.5 flex flex-wrap content-start gap-1.5 flex-grow bg-slate-50/30 dark:bg-slate-900/20">
+                                {cols.map((col, colIndex) => {
+                                    const itemStyle = itemPastelColors[colIndex % itemPastelColors.length];
+                                    return (
                                     <div 
                                         key={col.id} 
-                                        className={`relative group/item inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer select-none border
+                                        className={`relative group/item inline-flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-md text-[10px] font-bold transition-all cursor-pointer select-none border shadow-sm hover:scale-[1.02]
                                             ${col.isVisible 
-                                                ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' 
-                                                : 'bg-slate-50/50 dark:bg-slate-800/30 border-transparent text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                                ? `${itemStyle.bg} ${itemStyle.border} ${itemStyle.text}` 
+                                                : 'bg-white text-slate-400 border-dashed border-slate-300 dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                                             }`}
                                         onClick={() => handleToggleVisibility(col.id)}
                                     >
-                                        <div className={`w-1.5 h-1.5 rounded-full transition-colors ${col.isVisible ? styles.indicator : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+                                        <div className={`w-1.5 h-1.5 rounded-full transition-colors ${col.isVisible ? itemStyle.dot : 'bg-slate-300 dark:bg-slate-600'}`}></div>
                                         <span className="truncate max-w-[130px]">{col.subHeader}</span>
                                         
-                                        <div className="flex items-center ml-0.5 pl-1.5 border-l border-slate-200 dark:border-slate-700/50 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                            <button onClick={(e) => { e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-blue-600 rounded transition-colors" title="Chỉnh sửa"><Icon name="edit-3" size={3} /></button>
+                                        <div className="flex items-center ml-0.5 border-l border-black/10 dark:border-white/10 opacity-100 md:opacity-0 group-hover/item:opacity-100 transition-opacity pl-1">
+                                            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(col); }} className="p-1.5 opacity-70 hover:opacity-100 transition-opacity" title="Chỉnh sửa"><Icon name="edit-3" size={3.5} /></button>
                                             {col.isCustom ? (
-                                                <button onClick={(e) => { e.stopPropagation(); handleDelete(col.id); }} className="p-0.5 text-slate-400 hover:text-rose-600 rounded transition-colors" title="Xóa cột"><Icon name="trash-2" size={3} /></button>
+                                                <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(col.id); }} className="p-1.5 text-rose-500 hover:text-rose-600 transition-colors" title="Xóa cột"><Icon name="trash-2" size={3.5} /></button>
                                             ) : (
-                                                <div className="w-[18px]"></div> /* Placeholder for alignment */
+                                                <div className="w-[20px]"></div> /* Placeholder for alignment */
                                             )}
                                         </div>
                                     </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </div>
                     )

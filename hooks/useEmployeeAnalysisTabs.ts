@@ -1,7 +1,9 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 export const useEmployeeAnalysisTabs = (allAvailableTabs: any[], isInitialTabsLoaded: boolean, activeTab: string, setActiveTab: (id: string) => void) => {
+    const prevAllIdsRef = useRef<Set<string>>(new Set());
+    
     const [visibleTabs, setVisibleTabs] = useState<Set<string>>(() => {
         try {
             const saved = localStorage.getItem('employeeAnalysis_visibleTabs');
@@ -24,24 +26,32 @@ export const useEmployeeAnalysisTabs = (allAvailableTabs: any[], isInitialTabsLo
 
             if (!savedStateExists && visibleTabs.size === 0) {
                 setVisibleTabs(allIds);
+                prevAllIdsRef.current = allIds;
             } else {
                 setVisibleTabs(prev => {
                     const newSet = new Set(prev);
                     let hasChanged = false;
-                    allIds.forEach(id => {
-                        if (!prev.has(id)) {
-                            newSet.add(id);
-                            hasChanged = true;
-                        }
-                    });
+                    
+                    // Only automatically add tabs if they are completely new (never seen before)
+                    if (prevAllIdsRef.current.size > 0) {
+                        allIds.forEach(id => {
+                            if (!prevAllIdsRef.current.has(id) && !prev.has(id)) {
+                                newSet.add(id);
+                                hasChanged = true;
+                            }
+                        });
+                    }
+
                     prev.forEach(id => {
                         if (!allIds.has(id)) {
                             newSet.delete(id);
                             hasChanged = true;
                         }
                     });
+                    
                     return hasChanged ? newSet : prev;
                 });
+                prevAllIdsRef.current = allIds;
             }
         }
     }, [isInitialTabsLoaded, allAvailableTabs]);

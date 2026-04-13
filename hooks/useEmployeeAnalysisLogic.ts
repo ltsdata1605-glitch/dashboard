@@ -1,10 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import type { CustomContestTab, ContestTableConfig, ColumnConfig } from '../types';
-import { getCustomTabs, saveCustomTabs, getIndustryAnalysisCustomTabs, saveIndustryAnalysisCustomTabs } from '../services/dbService';
+import type { CustomContestTab, ContestTableConfig, ColumnConfig, CustomExploitationTabConfig } from '../types';
+import { getCustomTabs, saveCustomTabs, getIndustryAnalysisCustomTabs, saveIndustryAnalysisCustomTabs, getSetting, saveSetting } from '../services/dbService';
+import { presetExploitationTabs } from './presetExploitationTabs';
 
 export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: string) => void, defaultTabs: any[]) => {
     const [customTabs, setCustomTabs] = useState<CustomContestTab[]>([]);
     const [industryAnalysisTabs, setIndustryAnalysisTabs] = useState<CustomContestTab[]>([]);
+    const [customExploitationTabs, setCustomExploitationTabs] = useState<CustomExploitationTabConfig[]>([]);
     const [isInitialTabsLoaded, setIsInitialTabsLoaded] = useState(false);
     const isHydratedRef = useRef(false);
     
@@ -28,6 +30,52 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
             if (savedIndustryTabs) {
                 setIndustryAnalysisTabs(savedIndustryTabs);
             }
+            const savedExploitationTabs = await getSetting<CustomExploitationTabConfig[]>('customExploitationTabs');
+            
+            let finalExploitationTabs: CustomExploitationTabConfig[] = [];
+            
+            if (savedExploitationTabs) {
+                finalExploitationTabs = savedExploitationTabs.map(tab => {
+                    if (tab.columns && Array.isArray(tab.columns)) return tab;
+                    
+                    const columns: any[] = [];
+                    const displayOpts = tab.displayOptions || { showQuantity: true, showRevenue: true, showPercentage: true };
+                    
+                    if (displayOpts.showQuantity) {
+                        columns.push({ id: `sl`, name: 'SL', type: 'quantity', filters: tab.filters });
+                    }
+                    if (displayOpts.showRevenue) {
+                        columns.push({ id: `dt`, name: 'D.THU', type: 'revenue', filters: tab.filters });
+                    }
+                    if (displayOpts.showPercentage) {
+                        columns.push({ 
+                            id: `pct`, 
+                            name: '%', 
+                            type: 'percentage', 
+                            percentageConfig: {
+                                numeratorMetric: tab.percentageConfig?.numeratorMetric || 'quantity',
+                                baseMetric: tab.percentageConfig?.baseMetric || 'quantity',
+                                numeratorFilters: tab.filters,
+                                denominatorFilters: tab.percentageConfig?.filters || { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }
+                            }
+                        });
+                    }
+                    return { ...tab, columns };
+                });
+            }
+
+            // Migration logic for preset tabs
+            const hasMigratedPresets = localStorage.getItem('presetTabsMigrated') === 'true';
+            if (!hasMigratedPresets) {
+                // Prepend preset tabs
+                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
+                localStorage.setItem('presetTabsMigrated', 'true');
+            }
+
+            if (finalExploitationTabs.length > 0) {
+                setCustomExploitationTabs(finalExploitationTabs);
+            }
+            
             
             // Wait for React to apply state updates before marking as loaded and enabling saves
             setTimeout(() => {
@@ -43,8 +91,9 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         if (isInitialTabsLoaded && isHydratedRef.current) {
             saveCustomTabs(customTabs);
             saveIndustryAnalysisCustomTabs(industryAnalysisTabs);
+            saveSetting('customExploitationTabs', customExploitationTabs);
         }
-    }, [customTabs, industryAnalysisTabs, isInitialTabsLoaded]);
+    }, [customTabs, industryAnalysisTabs, customExploitationTabs, isInitialTabsLoaded]);
 
     const getIconForTabName = (name: string): string => {
         const lowerName = name.toLowerCase();
@@ -244,6 +293,24 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         }
     }, [modalState.data]);
 
+    const handleSaveCustomExploitationTab = useCallback((tabConfig: any) => {
+        setCustomExploitationTabs(prev => {
+            if (tabConfig.id) {
+                return prev.map(t => t.id === tabConfig.id ? tabConfig : t);
+            } else {
+                return [...prev, { ...tabConfig, id: `custom-${crypto.randomUUID()}`, order: prev.length }];
+            }
+        });
+        setIsClosingModal(true);
+    }, []);
+
+    const handleDeleteCustomExploitationTab = useCallback(() => {
+        if (modalState.data?.tabId) {
+            setCustomExploitationTabs(prev => prev.filter(t => t.id !== modalState.data.tabId));
+            setIsClosingModal(true);
+        }
+    }, [modalState.data]);
+
     return {
         customTabs,
         industryAnalysisTabs,
@@ -256,8 +323,11 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         handleSaveTable,
         handleSaveColumn,
         handleDeleteTab,
-        handleDeleteTable,
         handleConfirmDeleteColumn,
-        handleDeleteColumnDirect
+        handleDeleteColumnDirect,
+        handleSaveCustomExploitationTab,
+        handleDeleteCustomExploitationTab,
+        customExploitationTabs,
+        setCustomExploitationTabs
     };
 };

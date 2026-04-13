@@ -19,11 +19,12 @@ export const initialFilterState: FilterState = {
         selectedSubgroups: [],
     },
     summaryTable: {
+        kho: [],
         child: [],
         manufacturer: [],
         creator: [],
         product: [],
-        drilldownOrder: ['parent', 'child', 'creator', 'manufacturer', 'product'],
+        drilldownOrder: ['kho', 'parent', 'child', 'creator', 'manufacturer', 'product'],
         sort: { column: 'totalRevenue', direction: 'desc' }
     }
 };

@@ -143,7 +143,7 @@ const Header: React.FC<HeaderProps> = ({
                                 title="Tải lên báo cáo Phân ca"
                             >
                                 <Icon name="users-round" size={5} />
-                                <span>DS Nhân Viên</span>
+                                <span>Nhân Viên</span>
                             </button>
                             
                             {hasDepartmentData && (
@@ -197,7 +197,7 @@ const Header: React.FC<HeaderProps> = ({
                                         title="Tải lên báo cáo YCX mới"
                                     >
                                         <Icon name="file-up" size={5} />
-                                        <span>Tải YCX Lên</span>
+                                        <span>Tải YCX</span>
                                     </button>
                                     
                                     <button 
@@ -232,11 +232,11 @@ const Header: React.FC<HeaderProps> = ({
                             <>
                                 <button onClick={onNewFile} className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-emerald-50/50 dark:from-emerald-900/20 dark:to-emerald-900/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-200/70 dark:border-emerald-800 text-xs font-bold flex-1 active:scale-95 shadow-sm touch-feedback">
                                     <Icon name="file-up" size={4} />
-                                    <span>Tải YCX Lên</span>
+                                    <span>Tải YCX</span>
                                 </button>
                                 <button onClick={onLoadShiftFile} className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-900/20 dark:to-blue-900/10 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-200/70 dark:border-blue-800 text-xs font-bold flex-1 active:scale-95 shadow-sm touch-feedback">
                                     <Icon name="users-round" size={4} />
-                                    <span>DS Nhân Viên</span>
+                                    <span>Nhân Viên</span>
                                 </button>
                                 <button onClick={() => setShowDriveHistory(true)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold shrink-0 active:scale-95 shadow-sm touch-feedback ${syncState === 'error' ? 'bg-red-50 text-red-600 border-red-200/70 animate-pulse' : 'bg-slate-50/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200/70 dark:border-slate-700'}`}>
                                     <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={3.5} />

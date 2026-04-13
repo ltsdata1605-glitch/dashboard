@@ -23,7 +23,7 @@ export const useSummaryTableLogic = () => {
         localDrilldownOrder, setLocalDrilldownOrder,
         crossSellingDrilldownOrder, setCrossSellingDrilldownOrder,
         activeDrilldownOrder, deferredDrilldownOrder,
-        localParentFilters, localChildFilters,
+        localKhoFilters, localParentFilters, localChildFilters,
         localManufacturerFilters, localCreatorFilters, localProductFilters,
         activeFilterKey, setActiveFilterKey,
         isPending, startTransition,
@@ -54,7 +54,7 @@ export const useSummaryTableLogic = () => {
     } = useSummaryComparison(
         isComparisonMode, baseFilteredData, productConfig, filters,
         localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters,
-        deferredDrilldownOrder
+        deferredDrilldownOrder, localKhoFilters
     );
 
     const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
@@ -62,11 +62,8 @@ export const useSummaryTableLogic = () => {
             return summaryTableFilters.visibleColumns;
         }
         const allCols = HEADER_CONFIG.map(h => h.key);
-        // On mobile, hide TrB SL and TrB DT by default to reduce horizontal scroll
-        if (typeof window !== 'undefined' && window.innerWidth < 1024) {
-            return allCols.filter(k => k !== 'avgQuantity' && k !== 'avgRevenue');
-        }
-        return allCols;
+        // Hide TrB SL and TrB DT by default as requested
+        return allCols.filter(k => k !== 'avgQuantity' && k !== 'avgRevenue');
     });
     const [isExporting, setIsExporting] = useState(false);
     const tableContainerRef = useRef<HTMLDivElement>(null);
@@ -81,6 +78,7 @@ export const useSummaryTableLogic = () => {
             summaryTable: {
                 ...filters.summaryTable,
                 drilldownOrder: deferredDrilldownOrder,
+                kho: localKhoFilters,
                 child: localChildFilters,
                 manufacturer: localManufacturerFilters,
                 creator: localCreatorFilters,
@@ -89,12 +87,13 @@ export const useSummaryTableLogic = () => {
         };
 
         return processSummaryTable(dataToUse, productConfig, localFilterState);
-    }, [processedData?.filteredValidSalesData, filters, productConfig, deferredDrilldownOrder, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
+    }, [processedData?.filteredValidSalesData, filters, productConfig, deferredDrilldownOrder, localKhoFilters, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
 
     // Calculate global filter options independent of standardSummaryData so they are available in comparison mode
     const filterOptions = useMemo(() => {
         if (standardSummaryData) {
             return {
+                kho: standardSummaryData.uniqueKhos,
                 parent: standardSummaryData.uniqueParentGroups,
                 child: standardSummaryData.uniqueChildGroups,
                 manufacturer: standardSummaryData.uniqueManufacturers,
@@ -104,6 +103,7 @@ export const useSummaryTableLogic = () => {
         }
 
         // Fallback for comparison mode where standardSummaryData might be null
+        const khoSet = new Set<string>();
         const parentSet = new Set<string>();
         const childSet = new Set<string>();
         const manufacturerSet = new Set<string>();
@@ -113,6 +113,7 @@ export const useSummaryTableLogic = () => {
         if (productConfig && processedData?.filteredValidSalesData) {
             processedData.filteredValidSalesData.forEach(row => {
                 const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+                khoSet.add(String(getRowValue(row, COL.KHO) || 'Không xác định'));
                 parentSet.add(productConfig.childToParentMap[maNhomHang] || 'Không xác định');
                 childSet.add(productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định');
                 manufacturerSet.add(getRowValue(row, COL.MANUFACTURER) || 'Không rõ');
@@ -122,6 +123,7 @@ export const useSummaryTableLogic = () => {
         }
 
         return {
+            kho: Array.from(khoSet).sort(),
             parent: Array.from(parentSet).sort(),
             child: Array.from(childSet).sort(),
             manufacturer: Array.from(manufacturerSet).sort(),
@@ -265,11 +267,12 @@ export const useSummaryTableLogic = () => {
 
     const getFilterProps = (key: string) => {
         switch (key) {
-            case 'parent': return { options: filterOptions.parent, selected: localParentFilters, onChange: (s: string[]) => filterChangeWrapper('parent', s) };
-            case 'child': return { options: filterOptions.child, selected: localChildFilters, onChange: (s: string[]) => filterChangeWrapper('child', s) };
-            case 'manufacturer': return { options: filterOptions.manufacturer, selected: localManufacturerFilters, onChange: (s: string[]) => filterChangeWrapper('manufacturer', s) };
-            case 'creator': return { options: filterOptions.creator, selected: localCreatorFilters, onChange: (s: string[]) => filterChangeWrapper('creator', s) };
-            case 'product': return { options: filterOptions.product, selected: localProductFilters, onChange: (s: string[]) => filterChangeWrapper('product', s) };
+            case 'kho': return { options: filterOptions.kho || [], selected: localKhoFilters, onChange: (s: string[]) => filterChangeWrapper('kho', s) };
+            case 'parent': return { options: filterOptions.parent || [], selected: localParentFilters, onChange: (s: string[]) => filterChangeWrapper('parent', s) };
+            case 'child': return { options: filterOptions.child || [], selected: localChildFilters, onChange: (s: string[]) => filterChangeWrapper('child', s) };
+            case 'manufacturer': return { options: filterOptions.manufacturer || [], selected: localManufacturerFilters, onChange: (s: string[]) => filterChangeWrapper('manufacturer', s) };
+            case 'creator': return { options: filterOptions.creator || [], selected: localCreatorFilters, onChange: (s: string[]) => filterChangeWrapper('creator', s) };
+            case 'product': return { options: filterOptions.product || [], selected: localProductFilters, onChange: (s: string[]) => filterChangeWrapper('product', s) };
             default: return { options: [], selected: [], onChange: () => { } };
         }
     };

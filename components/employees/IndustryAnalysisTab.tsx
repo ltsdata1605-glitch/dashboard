@@ -11,8 +11,14 @@ interface IndustryAnalysisTabProps {
     onExport?: () => void;
     isExporting?: boolean;
     onBatchExport: (data: ExploitationData[]) => void;
+    baseFilteredData?: any[];
+    productConfig?: any;
+    customExploitationTabs?: any[];
+    onManageCustomTabs?: () => void;
+    onEditCustomTab?: (tabId: string) => void;
+    onDeleteCustomTab?: (tabId: string) => void;
 }
-const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalysisTabProps>(({ data, onExport, isExporting, onBatchExport }, ref) => {
+const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalysisTabProps>(({ data, onExport, isExporting, onBatchExport, baseFilteredData, productConfig, customExploitationTabs, onManageCustomTabs, onEditCustomTab, onDeleteCustomTab }, ref) => {
     const {
         viewMode,
         setViewMode,
@@ -22,8 +28,10 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         handleSort,
         processedData,
         groupTotals,
-        grandTotal
-    } = useIndustryAnalysisLogic(data);
+        grandTotal,
+        dynamicQuickFilters,
+        dynamicHeaderGroups
+    } = useIndustryAnalysisLogic(data, baseFilteredData, productConfig, customExploitationTabs);
     
     const showDeptHeaders = Object.keys(processedData).length > 1 || (Object.keys(processedData).length === 1 && Object.keys(processedData)[0] !== 'Không Phân Ca');
     
@@ -33,62 +41,60 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     const boldBlueText = 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-lg';
     const warningText = 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-lg';
     
-
+    // ----------------------------
 
     const renderDetailModeCells = (rowData: any) => (
         <>
-            {visibleGroups.has('doanhThu') && <>
-                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuThuc)}</td>
-                <td className="px-3 py-2 text-center text-[13px] font-bold text-slate-800 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuQD)}</td>
-                <td className="px-3 py-2 text-center text-[13px] font-black text-indigo-600 dark:text-indigo-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatPct(rowData.hieuQuaQD)}</td>
-            </>}
-            {visibleGroups.has('spChinh') && <>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slICT)}</td>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slCE_main)}</td>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slGiaDung_main)}</td>
-                <td className="px-3 py-2 text-center text-[13px] font-black text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-800/50 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slSPChinh_Tong)}</td>
-            </>}
-            {visibleGroups.has('baoHiem') && <>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slBaoHiem)}</td>
-                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuBaoHiem)}</td>
-                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
-                    <span className={getHeatmapClass(rowData.percentBaoHiem, 40)}>{formatPct(rowData.percentBaoHiem)}</span>
-                </td>
-            </>}
-            {visibleGroups.has('sim') && <>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slSim)}</td>
-                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuSim)}</td>
-                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
-                    <span className={getHeatmapClass(rowData.percentSimKT, 30)}>{formatPct(rowData.percentSimKT)}</span>
-                </td>
-            </>}
-            {visibleGroups.has('dongHo') && <>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slDongHo)}</td>
-                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuDongHo)}</td>
-                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
-                    <span className={getHeatmapClass(rowData.percentDongHoKT, 20)}>{formatPct(rowData.percentDongHoKT)}</span>
-                </td>
-            </>}
-            {visibleGroups.has('phuKien') && <>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slCamera)}</td>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slLoa)}</td>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slPinSDP)}</td>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slTaiNgheBLT)}</td>
-                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuPhuKien)}</td>
-                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
-                    <span className={getHeatmapClass(rowData.percentPhuKienKT, 10)}>{formatPct(rowData.percentPhuKienKT)}</span>
-                </td>
-            </>}
-            {visibleGroups.has('giaDung') && <>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slMayLocNuoc)}</td>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slNoiCom)}</td>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slNoiChien)}</td>
-                <td className="px-3 py-2 text-center text-[13px] text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slQuatDien)}</td>
-                <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-600 dark:text-slate-300 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuGiaDung)}</td>
-                <td className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
-                    <span className={getHeatmapClass(rowData.percentGiaDungKT, 30)}>{formatPct(rowData.percentGiaDungKT)}</span>
-                </td>
-            </>}
+            {Array.from(visibleGroups).map(key => {
+                if (key === 'doanhThu') {
+                    return (
+                        <React.Fragment key={key}>
+                            <td className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuThuc)}</td>
+                            <td className="px-3 py-2 text-center text-[13px] font-bold text-slate-800 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuQD)}</td>
+                            <td className="px-3 py-2 text-center text-[13px] font-black text-indigo-600 dark:text-indigo-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatPct(rowData.hieuQuaQD)}</td>
+                        </React.Fragment>
+                    );
+                }
+                if (key === 'spChinh') {
+                    return (
+                        <React.Fragment key={key}>
+                            <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slICT)}</td>
+                            <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slCE_main)}</td>
+                            <td className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slGiaDung_main)}</td>
+                            <td className="px-3 py-2 text-center text-[13px] font-black text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-800/50 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slSPChinh_Tong)}</td>
+                        </React.Fragment>
+                    );
+                }
+
+                const tab = (customExploitationTabs || []).find(t => t.id === key);
+                if (tab) {
+                    const cols = tab.columns || [];
+                    
+                    if (cols.length === 0) {
+                        return <td key={tab.id} className="px-3 py-2 text-center text-slate-400 border-b border-r border-slate-200 dark:border-slate-700">-</td>;
+                    }
+
+                    return (
+                        <React.Fragment key={tab.id}>
+                            {cols.map(col => {
+                                const val = rowData[`val_${tab.id}_${col.id}`] || 0;
+                                if (col.type === 'quantity') {
+                                    return <td key={col.id} className="px-3 py-2 text-center text-[13px] text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(val)}</td>;
+                                }
+                                if (col.type === 'revenue') {
+                                    return <td key={col.id} className="px-3 py-2 text-center text-[13px] font-medium text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(val)}</td>;
+                                }
+                                return (
+                                    <td key={col.id} className="px-3 py-2 text-center text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
+                                        <span className={getHeatmapClass(val, 30)}>{formatPct(val)}</span>
+                                    </td>
+                                );
+                            })}
+                        </React.Fragment>
+                    );
+                }
+                return null;
+            })}
         </>
     );
 
@@ -145,7 +151,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                 <div className="pb-2 hide-on-export overflow-x-auto">
                     <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider mr-2">Hiển thị:</span>
-                        {detailQuickFilters.map(f => (
+                        {dynamicQuickFilters.map(f => (
                             <button 
                                 key={f.key} 
                                 onClick={() => handleToggleGroup(f.key)}
@@ -158,6 +164,16 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                 {f.label}
                             </button>
                         ))}
+                        {onManageCustomTabs && (
+                             <button 
+                                 onClick={onManageCustomTabs}
+                                 title="Tạo thẻ mới"
+                                 className="px-3 py-1 text-[10px] font-bold uppercase rounded-lg transition-all border border-dashed border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 flex items-center justify-center gap-1 min-h-[30px]"
+                             >
+                                 <Icon name="plus" size={3.5} className="inline-block" />
+                                 Thêm thẻ
+                             </button>
+                        )}
                     </div>
                 </div>
             )}
@@ -177,22 +193,35 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                             )}
                                         </div>
                                     </th>
-                                    {detailQuickFilters.filter(f => visibleGroups.has(f.key)).map((f, gIdx) => (
-                                        <th key={f.key} colSpan={detailHeaderGroups[f.key].colSpan} className={`px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px ${detailHeaderGroups[f.key].bg} ${detailHeaderGroups[f.key].text}`}>
-                                            {detailHeaderGroups[f.key].label}
+                                    {Array.from(visibleGroups).map((key, gIdx) => {
+                                        const f = dynamicQuickFilters.find(filter => filter.key === key);
+                                        if (!f) return null;
+                                        return (
+                                        <th key={f.key} colSpan={dynamicHeaderGroups[f.key]?.colSpan || 1} className={`px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider border-b border-r border-slate-200 dark:border-slate-700 h-px ${dynamicHeaderGroups[f.key]?.bg || ''} ${dynamicHeaderGroups[f.key]?.text || ''} relative group/th`}>
+                                            <div className="flex items-center justify-center gap-1">
+                                                {dynamicHeaderGroups[f.key]?.label || f.label}
+                                            </div>
+                                            {f.isCustom && (
+                                                <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
+                                                    {onEditCustomTab && <button onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key); }} className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3}/></button>}
+                                                    {onDeleteCustomTab && <button onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3}/></button>}
+                                                </div>
+                                            )}
                                         </th>
-                                    ))}
+                                    )})}
                                 </tr>
                                 <tr>
-                                    {detailQuickFilters.filter(f => visibleGroups.has(f.key)).flatMap((f, gIdx) => {
-                                        return detailHeaderGroups[f.key].subHeaders.map((subHeader, sIdx) => (
+                                    {Array.from(visibleGroups).flatMap((key, gIdx) => {
+                                        const f = dynamicQuickFilters.find(filter => filter.key === key);
+                                        if (!f) return [];
+                                        return (dynamicHeaderGroups[f.key]?.subHeaders || []).map((subHeader: any, sIdx: number) => (
                                             <HeaderCell 
                                                 key={subHeader.key} 
                                                 label={subHeader.label} 
                                                 sortKey={subHeader.key} 
                                                 onSort={handleSort} 
                                                 sortConfig={sortConfig}
-                                                colorConfig={{ bg: detailHeaderGroups[f.key].bg, text: detailHeaderGroups[f.key].text }}
+                                                colorConfig={{ bg: dynamicHeaderGroups[f.key].bg, text: dynamicHeaderGroups[f.key].text }}
                                             />
                                         ));
                                     })}

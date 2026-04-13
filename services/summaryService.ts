@@ -10,6 +10,7 @@ export function processSummaryTable(
 ): {
     data: { [key: string]: SummaryTableNode };
     grandTotal: GrandTotal;
+    uniqueKhos: string[];
     uniqueParentGroups: string[];
     uniqueChildGroups: string[];
     uniqueManufacturers: string[];
@@ -19,6 +20,7 @@ export function processSummaryTable(
     const summaryTableData: { [key: string]: SummaryTableNode } = {};
     
     // Sets to collect unique values for dropdowns
+    const khoGroupsForFilter = new Set<string>();
     const parentGroupsForFilter = new Set<string>();
     const childGroupsForFilter = new Set<string>();
     const manufacturersForFilter = new Set<string>();
@@ -27,6 +29,7 @@ export function processSummaryTable(
 
     // Mapping key codes to data extraction logic
     const valueExtractors: { [key: string]: (row: DataRow) => string } = {
+        'kho': (row) => String(getRowValue(row, COL.KHO) || 'Không xác định'),
         'parent': (row) => productConfig.childToParentMap[getRowValue(row, COL.MA_NHOM_HANG)] || 'Không xác định',
         'child': (row) => productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || 'Không xác định',
         'manufacturer': (row) => getRowValue(row, COL.MANUFACTURER) || 'Không rõ',
@@ -44,18 +47,21 @@ export function processSummaryTable(
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT);
         if (HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) return;
 
+        const khoVal = valueExtractors['kho'](row);
         const parentVal = valueExtractors['parent'](row);
         const childVal = valueExtractors['child'](row);
         const manufacturerVal = valueExtractors['manufacturer'](row);
         const creatorVal = valueExtractors['creator'](row);
         const productVal = valueExtractors['product'](row);
 
+        khoGroupsForFilter.add(khoVal);
         parentGroupsForFilter.add(parentVal);
         childGroupsForFilter.add(childVal);
         manufacturersForFilter.add(manufacturerVal);
         creatorsForFilter.add(creatorVal);
         productsForFilter.add(productVal);
 
+        if (filters.summaryTable.kho?.length > 0 && !filters.summaryTable.kho.includes(khoVal)) return;
         if (filters.parent?.length > 0 && !filters.parent.includes(parentVal)) return;
         if (filters.summaryTable.child?.length > 0 && !filters.summaryTable.child.includes(childVal)) return;
         if (filters.summaryTable.manufacturer?.length > 0 && !filters.summaryTable.manufacturer.includes(manufacturerVal)) return;
@@ -121,6 +127,7 @@ export function processSummaryTable(
     return {
         data: sortedSummaryTableData,
         grandTotal,
+        uniqueKhos: [...khoGroupsForFilter].sort(),
         uniqueParentGroups: [...parentGroupsForFilter].sort(),
         uniqueChildGroups: [...childGroupsForFilter].sort(),
         uniqueManufacturers: [...manufacturersForFilter].sort(),

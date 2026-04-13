@@ -141,7 +141,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
     return (
         <div ref={tableRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col h-full rounded-none">
             <div 
-                className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 sticky top-0 z-20"
+                className={`px-5 py-4 border-b flex justify-between items-center sticky top-0 z-20 transition-colors ${config.headerColor ? 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800' : `${tableColorTheme.header} border-b-2 ${tableColorTheme.border}`}`}
                 style={{
                     backgroundColor: config.headerColor ? config.headerColor + '30' : undefined,
                     borderColor: config.headerColor ? config.headerColor + '50' : undefined,
@@ -149,15 +149,15 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
             >
                 <div className="flex items-center gap-4">
                     <div 
-                        className="w-10 h-10 rounded-2xl flex items-center justify-center bg-primary-50 text-primary-600 shadow-sm"
+                        className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm ${config.headerColor ? 'bg-primary-50 text-primary-600' : 'bg-white/40 dark:bg-black/20 text-current'}`}
                         style={{ backgroundColor: config.headerColor ? config.headerColor + '40' : undefined }}
                     >
                         <Icon name="swords" size={5} />
                     </div>
                     <div>
-                        {config.mainHeader && <p className="text-xs font-semibold text-slate-500 mb-0.5 uppercase">{config.mainHeader}</p>}
-                        <h3 className="text-sm font-black text-slate-800 dark:text-white leading-tight uppercase tracking-wide">{config.tableName}</h3>
-                        <p className="text-[10px] font-bold text-slate-400 mt-0.5">{processedData.dateRangeString}</p>
+                        {config.mainHeader && <p className={`text-xs font-semibold mb-0.5 uppercase ${config.headerColor ? 'text-slate-500' : 'opacity-80'}`}>{config.mainHeader}</p>}
+                        <h3 className={`text-sm font-black leading-tight uppercase tracking-wide ${config.headerColor ? 'text-slate-800 dark:text-white' : 'text-current'}`}>{config.tableName}</h3>
+                        <p className={`text-[10px] font-bold mt-0.5 ${config.headerColor ? 'text-slate-400' : 'opacity-70'}`}>{processedData.dateRangeString}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-1 hide-on-export">

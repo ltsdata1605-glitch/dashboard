@@ -25,6 +25,31 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         });
     });
 
+    // Force-show elements marked with 'export-always-show' (e.g. section headers that are hidden on mobile)
+    clone.querySelectorAll('.export-always-show').forEach((e: any) => {
+        e.style.setProperty('display', 'flex', 'important');
+    });
+
+    // For industry grid/pie exports: show desktop layout, hide mobile duplicates
+    // Desktop pie chart uses 'hidden lg:block', mobile uses 'lg:hidden'
+    const allDivs = clone.querySelectorAll('div');
+    allDivs.forEach((el: any) => {
+        if (!(el instanceof HTMLElement)) return;
+        const cls = el.getAttribute('class') || '';
+        // Hide mobile-only chart containers (they have lg:hidden)
+        if (cls.includes('lg:hidden') && !cls.includes('export-always-show')) {
+            el.style.setProperty('display', 'none', 'important');
+        }
+        // Show desktop-only chart containers (they have hidden lg:block)  
+        if (cls.includes('hidden') && cls.includes('lg:block')) {
+            el.style.setProperty('display', 'block', 'important');
+        }
+        // Show desktop-only flex containers (they have hidden lg:flex)
+        if (cls.includes('hidden') && cls.includes('lg:flex')) {
+            el.style.setProperty('display', 'flex', 'important');
+        }
+    });
+
     // --- RETAINED LAYOUT FIXES FOR EXPORT PRESENTATION ---
     // These are kept because they explicitly change how the data looks in the export format.
 
@@ -160,6 +185,15 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             }
         });
     }
+
+    // 2b. Industry Grid Cards: Force desktop layout (4 cols, desktop gap) for all exports 
+    const industryCardGrids = clone.querySelectorAll('.industry-cards-grid');
+    industryCardGrids.forEach(grid => {
+        if (grid instanceof HTMLElement) {
+            grid.style.setProperty('grid-template-columns', 'repeat(4, minmax(0, 1fr))', 'important');
+            grid.style.setProperty('gap', '0.5rem', 'important');
+        }
+    });
 
     if (filename.startsWith('ty-trong-nganh-hang') || filename.startsWith('tong-quan-kinh-doanh')) {
         const industryCardTitles = clone.querySelectorAll('.industry-cards-grid .font-bold.truncate.w-full');

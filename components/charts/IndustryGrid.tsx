@@ -147,7 +147,7 @@ const IndustryGrid: React.FC = React.memo(() => {
         if (!gridRef.current) return;
         setIsExporting(true);
         const prefix = getExportFilenamePrefix(filters.kho);
-        await exportElementAsImage(gridRef.current, `${prefix}-The-nganh-hang.png`, { elementsToHide: ['.hide-on-export'] });
+        await exportElementAsImage(gridRef.current, `${prefix}-The-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], scale: 3 });
         setIsExporting(false);
     };
 
@@ -155,7 +155,7 @@ const IndustryGrid: React.FC = React.memo(() => {
         if (!pieRef.current) return;
         setIsExporting(true);
         const prefix = getExportFilenamePrefix(filters.kho);
-        await exportElementAsImage(pieRef.current, `${prefix}-Bieu-do-ty-trong.png`, { elementsToHide: ['.hide-on-export'] });
+        await exportElementAsImage(pieRef.current, `${prefix}-Bieu-do-ty-trong.png`, { elementsToHide: ['.hide-on-export'], scale: 3 });
         setIsExporting(false);
     };
 
@@ -163,7 +163,7 @@ const IndustryGrid: React.FC = React.memo(() => {
         if (!cardRef.current) return;
         setIsExporting(true);
         const prefix = getExportFilenamePrefix(filters.kho);
-        await exportElementAsImage(cardRef.current, `${prefix}-Ty-trong-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], forcedWidth: 700 });
+        await exportElementAsImage(cardRef.current, `${prefix}-Ty-trong-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], forcedWidth: 1024, scale: 3 });
         setIsExporting(false);
     };
 
@@ -276,65 +276,39 @@ const IndustryGrid: React.FC = React.memo(() => {
 
             {/* ──── BODY: 5:5 LAYOUT ──── */}
             <div className="p-2.5 lg:p-4 md:p-5">
-                {/* ──── Header Layout for Both Sides ──── */}
-                {/* Level indicator — desktop only */}
-                <div className="mb-3 hidden lg:flex flex-row items-center gap-5">
-                    {/* Left Side Header (Level indicator) */}
-                    <div className="w-1/2 flex items-center justify-between pr-2">
-                        {currentLevelLabel && (
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[10px] font-extrabold uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/40">
-                                <Icon name="layers" size={3} />
-                                {currentLevelLabel}
-                                {isDrillable && drilldownPath.length < 2 && (
-                                    <span className="ml-1 opacity-60">(Click để xem chi tiết)</span>
-                                )}
-                            </span>
-                        )}
-                        <button
-                            onClick={handleExportGrid}
-                            disabled={isExporting}
-                            className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors hide-on-export shrink-0 flex items-center gap-1"
-                            title="Tải ảnh Thẻ Ngành Hàng"
-                        >
-                            <Icon name="download" size={3} />
-                        </button>
-                    </div>
-                    
-                    {/* Right Side Header (Pie Chart Title) */}
-                    <div className="w-1/2 flex items-center justify-between pr-1">
-                        <div className="flex items-center gap-2">
-                            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-extrabold uppercase tracking-widest border border-emerald-100 dark:border-emerald-800/40">
-                                <Icon name="pie-chart" size={3} />
-                                {drilldownPath.length === 0
-                                    ? 'Tỷ trọng doanh thu'
-                                    : `Top — ${drilldownPath[drilldownPath.length - 1]}`}
-                            </span>
-                            <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
-                                {pieChartData.length} mục
-                            </span>
-                        </div>
-                        <button
-                            onClick={handleExportPie}
-                            disabled={isExporting}
-                            className="text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors hide-on-export shrink-0 flex items-center gap-1"
-                            title="Tải ảnh Biểu Đồ Tròn"
-                        >
-                            <Icon name="download" size={3} />
-                        </button>
-                    </div>
-                </div>
 
-                <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 items-start">
+                <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
 
                     {/* ══════ LEFT 50%: CARD GRID ══════ */}
-                    <div className="w-full lg:w-1/2 lg:shrink-0 bg-white dark:bg-slate-900" ref={gridRef}>
+                    <div className="w-full lg:w-1/2 lg:shrink-0 flex flex-col gap-3 bg-white dark:bg-slate-900 rounded-xl" ref={gridRef}>
+                        {/* Left Side Header (Level indicator) - always rendered for export, hidden on mobile screen only */}
+                        <div className="hidden lg:flex export-always-show items-center justify-between pr-2 pb-1 border-b border-transparent dark:border-white/5">
+                            {currentLevelLabel && (
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-extrabold uppercase tracking-widest border border-indigo-100 dark:border-indigo-800/40">
+                                    <Icon name="layers" size={3.5} />
+                                    {currentLevelLabel}
+                                    {isDrillable && drilldownPath.length < 2 && (
+                                        <span className="ml-1 opacity-60">(Click để xem chi tiết)</span>
+                                    )}
+                                </span>
+                            )}
+                            <button
+                                onClick={handleExportGrid}
+                                disabled={isExporting}
+                                className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors hide-on-export shrink-0 flex items-center gap-1"
+                                title="Tải ảnh Thẻ Ngành Hàng"
+                            >
+                                <Icon name="download" size={3.5} />
+                            </button>
+                        </div>
+
                         {currentView.data.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-14 bg-slate-50/50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
                                 <Icon name="search-x" size={8} className="text-slate-300 dark:text-slate-700 mb-3" />
                                 <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Không có dữ liệu</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 lg:gap-2">
+                            <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 lg:gap-2 industry-cards-grid">
                                 {currentView.data.map(({ name, revenue, quantity, icon, color }) => {
                                     const totalVal = metricToDisplay === 'revenue' ? currentView.totalRevenue : currentView.totalQuantity;
                                     const val = metricToDisplay === 'revenue' ? revenue : quantity;
@@ -367,7 +341,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                             </div>
 
                                             <div className="min-w-0">
-                                                <div className={`text-[9px] lg:text-[9px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5`} title={name}>{name}</div>
+                                                <div className={`text-[9px] lg:text-[9px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5 font-bold w-full`} title={name}>{name}</div>
                                                 <div className="text-[10px] lg:text-[11px] font-black tracking-tight leading-none truncate">
                                                     {metricToDisplay === 'revenue' 
                                                         ? <span className="text-slate-900 dark:text-white">{formatCurrency(revenue)}</span> 
@@ -396,8 +370,31 @@ const IndustryGrid: React.FC = React.memo(() => {
                     </div>
 
                     {/* ══════ RIGHT 50%: PIE CHART ══════ */}
-                    <div className="w-full lg:w-1/2 flex flex-col bg-white dark:bg-slate-900" style={{ minHeight: 280 }} ref={pieRef}>
-                        <div className="flex-grow bg-slate-50/70 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-white/5 p-3 flex flex-col">
+                    <div className="w-full lg:w-1/2 flex flex-col gap-3 bg-white dark:bg-slate-900 rounded-xl" ref={pieRef}>
+                        {/* Right Side Header (Pie Chart Title) - always rendered for export */}
+                        <div className="hidden lg:flex export-always-show items-center justify-between pr-1 pb-1 border-b border-transparent dark:border-white/5">
+                            <div className="flex items-center gap-2">
+                                <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-widest border border-emerald-100 dark:border-emerald-800/40">
+                                    <Icon name="pie-chart" size={3.5} />
+                                    {drilldownPath.length === 0
+                                        ? 'Tỷ trọng doanh thu'
+                                        : `Top — ${drilldownPath[drilldownPath.length - 1]}`}
+                                </span>
+                                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">
+                                    {pieChartData.length} mục
+                                </span>
+                            </div>
+                            <button
+                                onClick={handleExportPie}
+                                disabled={isExporting}
+                                className="text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors hide-on-export shrink-0 flex items-center gap-1"
+                                title="Tải ảnh Biểu Đồ Tròn"
+                            >
+                                <Icon name="download" size={3.5} />
+                            </button>
+                        </div>
+
+                        <div className="flex-grow bg-slate-50/70 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-white/5 p-3 flex flex-col" style={{ minHeight: 280 }}>
                             {pieChartData.length > 0 ? (
                                 <>
                                     <div style={{ height: 320 }} className="lg:hidden">
@@ -407,6 +404,8 @@ const IndustryGrid: React.FC = React.memo(() => {
                                                     data={pieChartData}
                                                     dataKey={metricToDisplay}
                                                     nameKey="name"
+                                                    cx="50%"
+                                                    cy="50%"
                                                     innerRadius="40%"
                                                     outerRadius="74%"
                                                     paddingAngle={2}
@@ -430,6 +429,8 @@ const IndustryGrid: React.FC = React.memo(() => {
                                                     data={pieChartData}
                                                     dataKey={metricToDisplay}
                                                     nameKey="name"
+                                                    cx="50%"
+                                                    cy="50%"
                                                     innerRadius="40%"
                                                     outerRadius="74%"
                                                     paddingAngle={2}

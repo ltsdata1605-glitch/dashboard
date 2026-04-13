@@ -1,7 +1,7 @@
 import React from 'react';
 import { Icon } from '../../common/Icon';
 import { FilterPopover } from './FilterPopover';
-import { PILL_COLORS, PILL_ICONS, ORDER_LABELS } from './SummaryTableUtils';
+import { PILL_COLORS, PILL_ICONS, ORDER_LABELS, SHORT_ORDER_LABELS } from './SummaryTableUtils';
 
 interface SummaryTableFilterBarProps {
     isCrossSellingMode: boolean;
@@ -42,7 +42,10 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                         return (
                             <div key={key} className={`flex items-center ${colorClass} border rounded-full pl-3 pr-2 py-1 cursor-move transition-transform hover:scale-105 shadow-sm select-none group relative`}>
                                 <Icon name={iconName} size={3} className="mr-1.5 opacity-70" />
-                                <span className="text-xs font-bold mr-1">{ORDER_LABELS[key]}</span>
+                                <span className="text-xs font-bold mr-1">
+                                    <span className="hidden sm:inline">{ORDER_LABELS[key]}</span>
+                                    <span className="sm:hidden">{SHORT_ORDER_LABELS[key] || ORDER_LABELS[key]}</span>
+                                </span>
                                 <FilterPopover 
                                     label={ORDER_LABELS[key]}
                                     options={options}

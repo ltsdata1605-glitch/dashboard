@@ -142,6 +142,50 @@ export interface EmployeeData {
     exploitationData: ExploitationData[];
 }
 
+export interface CustomColumnConfig {
+    id: string; // unique UUID cho cột
+    name: string; // Tên hiển thị cột (VD: SL MLN)
+    type: 'quantity' | 'revenue' | 'percentage';
+    
+    // Dành cho type = quantity | revenue
+    filters?: {
+        selectedIndustries: string[];
+        selectedSubgroups: string[];
+        selectedManufacturers: string[];
+        productCodes: string[];
+    };
+    
+    // Dành cho type = percentage
+    percentageConfig?: {
+        numeratorMetric: 'quantity' | 'revenue';
+        baseMetric: 'quantity' | 'revenue';
+        numeratorFilters: {
+            selectedIndustries: string[];
+            selectedSubgroups: string[];
+            selectedManufacturers: string[];
+            productCodes: string[];
+        };
+        denominatorFilters: {
+            selectedIndustries: string[];
+            selectedSubgroups: string[];
+            selectedManufacturers: string[];
+            productCodes: string[];
+        };
+    };
+}
+
+export interface CustomExploitationTabConfig {
+    id: string; // unique UUID
+    name: string; // Tên hiển thị tab
+    order: number;
+    columns: CustomColumnConfig[];
+    
+    // Legacy fields for backward compatibility
+    filters?: any;
+    displayOptions?: any;
+    percentageConfig?: any;
+}
+
 export interface SummaryTableNode {
     totalQuantity: number;
     totalRevenue: number;
@@ -250,6 +294,7 @@ export interface ProcessedData {
     summaryTable: {
         data: { [key: string]: SummaryTableNode };
         grandTotal: GrandTotal;
+        uniqueKhos: string[];
         uniqueParentGroups: string[];
         uniqueChildGroups: string[];
         uniqueManufacturers: string[];
@@ -279,6 +324,7 @@ export interface FilterState {
         selectedSubgroups: string[];
     };
     summaryTable: {
+        kho: string[];
         child: string[];
         manufacturer: string[];
         creator: string[];

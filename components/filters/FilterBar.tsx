@@ -8,9 +8,10 @@ import { toLocalISOString } from '../../utils/dataUtils';
 
 interface FilterBarProps {
     onToggleAdvanced: () => void;
+    onNewFile?: () => void;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
+const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) => {
     const { 
         filterState, 
         handleFilterChange, 
@@ -172,6 +173,24 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
                                 variant="compact"
                             />
                         </div>
+                        {onNewFile && (
+                            <button
+                                onClick={onNewFile}
+                                title="Tải YCX lên"
+                                className="flex items-center justify-center p-2.5 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-xl transition-all active:scale-95 shrink-0"
+                            >
+                                <Icon name="file-up" size={3.5} />
+                            </button>
+                        )}
+                        <a
+                            href="https://report.mwgroup.vn/home/dashboard/77"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Tải dữ liệu báo cáo (BCNB)"
+                            className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl transition-all active:scale-95 shrink-0"
+                        >
+                            <Icon name="external-link" size={3.5} />
+                        </a>
                         <button
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
@@ -397,6 +416,24 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced }) => {
 
                     {/* Actions */}
                     <div className="flex items-center gap-2 shrink-0">
+                        {onNewFile && (
+                            <button
+                                onClick={onNewFile}
+                                title="Tải YCX lên"
+                                className="flex items-center justify-center p-2.5 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-xl transition-all active:scale-95 group"
+                            >
+                                <Icon name="file-up" size={4.5} />
+                            </button>
+                        )}
+                        <a
+                            href="https://report.mwgroup.vn/home/dashboard/77"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Tải dữ liệu báo cáo (BCNB)"
+                            className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl transition-all active:scale-95 group"
+                        >
+                            <Icon name="external-link" size={4.5} />
+                        </a>
                         <button
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"

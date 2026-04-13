@@ -10,19 +10,10 @@ export type SortConfig = {
 export const detailQuickFilters: { key: string; label: string }[] = [
     { key: 'doanhThu', label: 'Doanh Thu' },
     { key: 'spChinh', label: 'SP Chính' },
-    { key: 'baoHiem', label: 'Bảo Hiểm' },
-    { key: 'sim', label: 'SIM' },
-    { key: 'dongHo', label: 'Đồng Hồ' },
-    { key: 'phuKien', label: 'Phụ Kiện' },
-    { key: 'giaDung', label: 'Gia Dụng' },
 ];
 
 export const groupToSortKeyMap: Record<string, SortConfig['key']> = {
-    baoHiem: 'percentBaoHiem',
-    sim: 'percentSimKT',
-    dongHo: 'percentDongHoKT',
-    phuKien: 'percentPhuKienKT',
-    giaDung: 'percentGiaDungKT',
+    baoHiem: 'percentBaoHiem', // Giữ lại cho tương thích sort cũ (hoặc xoá nếu ko cần thiết)
 };
 
 // Data structure for detail view headers
@@ -37,37 +28,6 @@ export const detailHeaderGroups: Record<string, { label: string; colSpan: number
         { label: 'CE', key: 'slCE_main' },
         { label: 'ĐGD', key: 'slGiaDung_main' },
         { label: 'Tổng', key: 'slSPChinh_Tong' }
-    ]},
-    baoHiem: { label: 'BẢO HIỂM', colSpan: 3, bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300', subHeaders: [
-        { label: 'SL', key: 'slBaoHiem' },
-        { label: 'D.Thu', key: 'doanhThuBaoHiem' },
-        { label: '%', key: 'percentBaoHiem' }
-    ]},
-    sim: { label: 'SIM', colSpan: 3, bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300', subHeaders: [
-        { label: 'SL', key: 'slSim' },
-        { label: 'D.Thu', key: 'doanhThuSim' },
-        { label: '%', key: 'percentSimKT' }
-    ]},
-    dongHo: { label: 'ĐỒNG HỒ', colSpan: 3, bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300', subHeaders: [
-        { label: 'SL', key: 'slDongHo' },
-        { label: 'D.Thu', key: 'doanhThuDongHo' },
-        { label: '%', key: 'percentDongHoKT' }
-    ]},
-    phuKien: { label: 'PHỤ KIỆN', colSpan: 6, bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-300', subHeaders: [
-        { label: 'SL Cam', key: 'slCamera' },
-        { label: 'SL Loa', key: 'slLoa' },
-        { label: 'SL Pin', key: 'slPinSDP' },
-        { label: 'SL TNghe', key: 'slTaiNgheBLT' },
-        { label: 'D.Thu', key: 'doanhThuPhuKien' },
-        { label: '%', key: 'percentPhuKienKT' }
-    ]},
-    giaDung: { label: 'GIA DỤNG', colSpan: 6, bg: 'bg-cyan-50 dark:bg-cyan-900/20', text: 'text-cyan-700 dark:text-cyan-300', subHeaders: [
-        { label: 'SL MLN', key: 'slMayLocNuoc' },
-        { label: 'SL NCơm', key: 'slNoiCom' },
-        { label: 'SL NChiên', key: 'slNoiChien' },
-        { label: 'SL Quạt', key: 'slQuatDien' },
-        { label: 'D.Thu', key: 'doanhThuGiaDung' },
-        { label: '%', key: 'percentGiaDungKT' }
     ]}
 };
 

@@ -16,8 +16,6 @@ const AVAILABLE_METRICS: { value: KpiMetricSource; label: string; format: 'curre
     { value: 'doanhThuQD', label: 'Doanh Thu QĐ', format: 'currency' },
     { value: 'totalRevenue', label: 'Doanh Thu Thực', format: 'currency' },
     { value: 'traGopPercent', label: 'Tỉ Lệ Trả Góp', format: 'percentage' },
-    { value: 'runRateRevenue', label: 'Dự Phóng RunRate', format: 'currency' },
-    { value: 'crossSellRate', label: 'Tỉ Lệ Bán Chéo', format: 'percentage' },
     { value: 'hieuQuaQD', label: 'Hiệu Quả QĐ', format: 'percentage' },
     { value: 'doanhThuThucChoXuat', label: 'Doanh Thu Chờ Xuất', format: 'currency' },
 ];
@@ -41,9 +39,11 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
         }
 
         const subgroups = new Set<string>();
-        Object.values(productConfig.subgroups).forEach(parent => {
-            Object.keys(parent).forEach(subgroup => subgroups.add(subgroup));
-        });
+        if (productConfig.subgroups) {
+            Object.values(productConfig.subgroups).forEach(parent => {
+                Object.keys(parent).forEach(subgroup => subgroups.add(subgroup));
+            });
+        }
         
         const manufacturers = new Set<string>(originalData.map(row => String(row['Hãng'] || row['Hãng SX'] || '')).filter(Boolean));
         
@@ -275,7 +275,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                     onClick={() => updateEditingCard({ metric: m.value })}
                                                     className={`px-3 py-2 text-left rounded-lg border text-sm font-medium transition-colors ${editingCard.metric === m.value ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-500/20 dark:border-indigo-500/30 dark:text-indigo-300' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'}`}
                                                 >
-                                                    {m.label} ({m.format})
+                                                    {m.label}
                                                 </button>
                                             ))}
                                         </div>
@@ -434,6 +434,32 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             ))}
                                         </div>
                                     </div>
+                                </div>
+
+                                <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/30">
+                                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={editingCard.hasTarget}
+                                            onChange={(e) => updateEditingCard({ hasTarget: e.target.checked, targetType: e.target.checked ? 'custom' : 'none', customTargetValue: editingCard.customTargetValue || 0 })}
+                                            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                        />
+                                        Kích hoạt Mục tiêu tháng (Target)
+                                    </label>
+                                    
+                                    {editingCard.hasTarget && (
+                                        <div className="mt-3 animate-fade-in pl-6 border-l-2 border-emerald-200 dark:border-emerald-800/50 ml-1.5">
+                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Chỉ tiêu Cố định ({editingCard.format === 'percentage' ? '%' : 'Con số VNĐ/Số lượng'})</label>
+                                            <input 
+                                                type="number"
+                                                value={editingCard.customTargetValue ?? ''}
+                                                onChange={(e) => updateEditingCard({ customTargetValue: e.target.value ? Number(e.target.value) : undefined })}
+                                                placeholder={editingCard.format === 'percentage' ? "Ví dụ: 80" : "Ví dụ: 10000000"}
+                                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded-lg text-sm focus:ring-1 focus:ring-indigo-500"
+                                            />
+                                            <p className="text-[10px] text-slate-400 mt-1.5 font-medium leading-relaxed">Giúp thẻ tự động hiển thị thanh tiến độ, đồng thời tự động tính % đạt và đổi màu Xanh/Đỏ trạng thái trên bảng KPI.</p>
+                                        </div>
+                                    )}
                                 </div>
 
                             </div>

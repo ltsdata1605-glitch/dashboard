@@ -90,6 +90,7 @@ export default function DashboardView() {
 
     const dashboardContainerRef = useRef<HTMLDivElement>(null);
     const businessOverviewRef = useRef<HTMLDivElement>(null);
+    const kpiCardsOnlyRef = useRef<HTMLDivElement>(null);
     const mainFileInputRef = useRef<HTMLInputElement>(null);
     const shiftFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -107,7 +108,19 @@ export default function DashboardView() {
     const handleBusinessOverviewExport = async () => {
         if (businessOverviewRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
-            await handleExport(businessOverviewRef.current, `${prefix}-Tong-quan-kinh-doanh.png`, {
+            await handleExport(businessOverviewRef.current, `${prefix}-Toan-bo-ban-tin.png`, {
+                captureAsDisplayed: false,
+                isCompactTable: true,
+                forcedWidth: 700,
+                scale: 3,
+            });
+        }
+    };
+
+    const handleKpiCardsOnlyExport = async () => {
+        if (kpiCardsOnlyRef.current) {
+            const prefix = getExportFilenamePrefix(filterState.kho);
+            await handleExport(kpiCardsOnlyRef.current, `${prefix}-Tong-quan-doanh-thu.png`, {
                 captureAsDisplayed: false,
                 isCompactTable: true,
                 forcedWidth: 700,
@@ -285,7 +298,7 @@ export default function DashboardView() {
                         <>
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
                                 <div className="container mx-auto px-1.5 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
-                                    <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} />
+                                    <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} />
                                     
                                     {/* Data Coverage Indicator */}
                                     <div className="hidden lg:flex items-center justify-between px-1 lg:px-2 mb-1 lg:mb-2">
@@ -294,8 +307,8 @@ export default function DashboardView() {
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
                                             </div>
-                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1 line-clamp-1">
-                                                Trạng Thái: <span className="font-black text-emerald-600 dark:text-emerald-400">Sẵn Sàng</span>
+                                            <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
+                                                <Icon name="users" size={3} className="text-indigo-400" /> Tổng: <span className="text-slate-600 dark:text-slate-300">{totalVisits.toLocaleString()}</span> lượt • <span className="font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> {onlineUsers} đang online</span>
                                             </span>
                                         </div>
                                         
@@ -314,16 +327,37 @@ export default function DashboardView() {
                                     )}
                                     
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-2 lg:space-y-8">
-                                        <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden relative rounded-xl lg:rounded-none">
+                                        <div ref={kpiCardsOnlyRef} className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden relative rounded-xl lg:rounded-none">
                                             {/* Overdue Export Warning Banner */}
                                             {(() => {
                                                 const now = new Date();
                                                 const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
                                                 const overdueOrders = processedData.unshippedOrders?.filter(row => {
-                                                    let scheduledDateRaw = row['TG Hẹn Giao'] || row.parsedDate;
+                                                    let scheduledDateRaw = row['Thời gian hẹn giao'] || row['TG Hẹn Giao'] || row['Thời Gian Hẹn Giao'];
                                                     if (!scheduledDateRaw) return false;
-                                                    let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
-                                                    if (!isNaN(scheduledDate.getTime())) {
+                                                    let scheduledDate: Date | null = null;
+                                                    if (scheduledDateRaw instanceof Date) {
+                                                        scheduledDate = scheduledDateRaw;
+                                                    } else {
+                                                        const str = String(scheduledDateRaw).trim();
+                                                        // Fallback check for DD/MM/YYYY
+                                                        if (str.includes('/')) {
+                                                            const parts = str.split(/[ /:-]/);
+                                                            if (parts.length >= 3) {
+                                                                const day = parseInt(parts[0], 10);
+                                                                const month = parseInt(parts[1], 10) - 1;
+                                                                const year = parseInt(parts[2], 10);
+                                                                if (day >= 1 && day <= 31 && month >= 0 && month <= 11) {
+                                                                    scheduledDate = new Date(year, month, day);
+                                                                }
+                                                            }
+                                                        }
+                                                        if (!scheduledDate || isNaN(scheduledDate.getTime())) {
+                                                            scheduledDate = new Date(str);
+                                                        }
+                                                    }
+                                                    
+                                                    if (scheduledDate && !isNaN(scheduledDate.getTime())) {
                                                         const schedTime = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate()).getTime();
                                                         return todayStart > schedTime;
                                                     }
@@ -362,7 +396,10 @@ export default function DashboardView() {
                                                             <button onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                                 <Icon name="settings-2" size={5} />
                                                             </button>
-                                                            <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Tổng Quan" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                            <button onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                                <Icon name="image" size={5} />
+                                                            </button>
+                                                            <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                                 <Icon name="camera" size={5} />
                                                             </button>
                                                         </div>

@@ -124,7 +124,7 @@ const KpiCard: React.FC<{
             className={`relative flex flex-col justify-between h-full bg-white dark:bg-[#1c1c1e] rounded-xl lg:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.06] transition-all duration-300 group touch-feedback ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
         >
             {/* Gradient accent strip */}
-            <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r ${style.gradient}`} />
+            <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />
 
             <div className="px-2.5 py-2 lg:px-4 lg:py-3.5 flex flex-col flex-1">
                 {/* Header: Icon + Title */}
@@ -216,7 +216,7 @@ const KpiTargetEditor: React.FC<{
 type EditableField = 'hieuQua' | 'traGop' | 'gtdh' | 'doanhThuThuc' | null;
 
 const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
-    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig, warehouseFilteredData, isLuyKe, handleLuyKeChange } = useDashboardContext();
+    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig, warehouseFilteredData, isLuyKe, handleLuyKeChange, productConfig } = useDashboardContext();
     const kpis = processedData?.kpis;
 
     // targets fallbacks
@@ -317,16 +317,24 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     values[config.id] = 0;
                     return;
                 }
+                const filterHsx = (filters.selectedManufacturers || []).map(s => String(s).trim().toLowerCase());
+                const filterNganh = (filters.selectedIndustries || []).map(s => String(s).trim().toLowerCase());
+                const filterNhom = (filters.selectedSubgroups || []).map(s => String(s).trim().toLowerCase());
+                const childToParentMap = productConfig?.childToParentMap || {};
+                const childToSubgroupMap = productConfig?.childToSubgroupMap || {};
+
                 let val = 0;
                 for (const row of warehouseFilteredData) {
-                    const hsx = String(row['Hãng'] || row['Hãng SX'] || '');
-                    if (filters.selectedManufacturers && filters.selectedManufacturers.length > 0 && !filters.selectedManufacturers.includes(hsx)) continue;
+                    const hsx = String(row['Hãng'] || row['Hãng SX'] || '').trim().toLowerCase();
+                    if (filterHsx.length > 0 && !filterHsx.includes(hsx)) continue;
 
-                    const nganh = String(row['Ngành Hàng'] || row['Ngành hàng'] || row['Nganh Hang'] || '');
-                    if (filters.selectedIndustries && filters.selectedIndustries.length > 0 && !filters.selectedIndustries.includes(nganh)) continue;
+                    const rawNhom = String(row['Nhóm Hàng'] || row['Nhóm hàng'] || row['Nhom Hang'] || '').trim();
+                    
+                    const nganhMapValue = String(childToParentMap[rawNhom] || row['Ngành Hàng'] || row['Ngành hàng'] || row['Nganh Hang'] || '').trim().toLowerCase();
+                    if (filterNganh.length > 0 && !filterNganh.includes(nganhMapValue)) continue;
 
-                    const nhom = String(row['Nhóm Hàng'] || row['Nhóm hàng'] || row['Nhom Hang'] || '');
-                    if (filters.selectedSubgroups && filters.selectedSubgroups.length > 0 && !filters.selectedSubgroups.includes(nhom)) continue;
+                    const nhomMapValue = String(childToSubgroupMap[rawNhom] || rawNhom).trim().toLowerCase();
+                    if (filterNhom.length > 0 && !filterNhom.includes(nhomMapValue)) continue;
 
                     if (filters.metricType === 'quantity') {
                         val += Number(row['Số Lượng'] || row['Số lượng'] || 0);
@@ -357,7 +365,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         });
 
         return values;
-    }, [kpiCardsConfig, kpis, warehouseFilteredData]);
+    }, [kpiCardsConfig, kpis, warehouseFilteredData, productConfig]);
 
     return (
         <div>
@@ -435,10 +443,38 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         progressPercent = traGopTarget > 0 ? (rawValue / traGopTarget) * 100 : 0;
                     }
                 } else if (config.hasTarget && config.targetType === 'custom') {
-                    finalTrendLabel = "Target";
-                    finalTrendValue = config.customTargetValue?.toString() || '0';
-                    isGood = rawValue >= (config.customTargetValue || 0);
-                    progressPercent = (config.customTargetValue || 0) > 0 ? (rawValue / (config.customTargetValue || 1)) * 100 : 0;
+                    const monthlyTarget = config.customTargetValue || 0;
+                    const dailyTarget = monthlyTarget > 0 ? monthlyTarget / daysInMonth : 0;
+                    const activeTarget = isLuyKe ? monthlyTarget : dailyTarget;
+                    const pctHT = activeTarget > 0 ? (rawValue / activeTarget) * 100 : 0;
+                    finalTrendLabel = activeTarget > 0 ? (isLuyKe ? "Mục tiêu luỹ kế" : "Mục tiêu ngày") : "Mục tiêu";
+                    isGood = pctHT >= 100;
+                    progressPercent = pctHT;
+                    
+                    let formattedActive = '';
+                    let formattedMonthly = '';
+                    let formattedDaily = '';
+
+                    if (config.format === 'currency') {
+                        formattedActive = formatCurrency(activeTarget);
+                        formattedMonthly = formatCurrency(monthlyTarget);
+                        formattedDaily = formatCurrency(dailyTarget);
+                    } else if (config.format === 'percentage') {
+                        formattedActive = `${Math.round(activeTarget)}%`;
+                        formattedMonthly = `${Math.round(monthlyTarget)}%`;
+                        formattedDaily = `${Math.round(dailyTarget)}%`;
+                    } else {
+                        formattedActive = Math.round(activeTarget).toLocaleString('vi-VN');
+                        formattedMonthly = Math.round(monthlyTarget).toLocaleString('vi-VN');
+                        formattedDaily = Math.round(dailyTarget).toLocaleString('vi-VN');
+                    }
+
+                    finalTrendValue = monthlyTarget > 0
+                        ? <span className="flex flex-col items-end leading-tight">
+                            <span>{formattedActive} / {pctHT.toFixed(0)}%</span>
+                            <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formattedDaily}` : `Tháng: ${formattedMonthly}`}</span>
+                          </span>
+                        : <span className="text-slate-400 italic text-[10px]">Chưa cài đặt</span>;
                 }
 
                 // "Doanh Thu Thực" — allow entering/editing target (metric can be 'totalRevenue' or 'doanhThuThuc')
