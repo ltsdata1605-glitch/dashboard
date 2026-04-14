@@ -31,6 +31,8 @@ import { getExportFilenamePrefix } from '../../utils/dataUtils';
 import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } from '../common/SkeletonLoader';
 import { DebugPanel } from '../common/DebugPanel';
 import KpiCardConfigModal from '../kpis/modals/KpiCardConfigModal';
+import ExportOptionsModal from '../common/ExportOptionsModal';
+import { canShareFiles } from '../../services/uiService';
 
 const defaultVisibilityState: VisibilityState = {
     trendChart: true,
@@ -467,6 +469,15 @@ export default function DashboardView() {
                     info={debugInfo} 
                     onClose={() => setIsDebugPanelVisible(false)} 
                     onToggleInspector={() => setIsInspectorActive(p => !p)} 
+                />
+                {/* Export Options Modal - Download or Share */}
+                <ExportOptionsModal
+                    isOpen={!!logic.pendingExport}
+                    onClose={logic.handlePendingClose}
+                    onDownload={logic.handlePendingDownload}
+                    onShare={logic.handlePendingShare}
+                    canShare={canShareFiles()}
+                    filename={logic.pendingExport?.filename || ''}
                 />
                 </DashboardContext.Provider>
             </div>

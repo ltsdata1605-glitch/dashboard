@@ -1,9 +1,15 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import type { Employee, ProcessedData, ProductConfig, FilterState } from '../types';
-import { exportElementAsImage } from '../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles } from '../services/uiService';
+import type { ExportMode } from '../services/uiService';
 import PerformanceModal from '../components/modals/PerformanceModal';
+
+export interface PendingExport {
+    blob: Blob;
+    filename: string;
+}
 
 interface ExportLogicProps {
     productConfig: ProductConfig | null;
@@ -23,19 +29,42 @@ export const useExportLogic = ({
     setStatus
 }: ExportLogicProps) => {
     const [isExporting, setIsExporting] = useState(false);
+    const [pendingExport, setPendingExport] = useState<PendingExport | null>(null);
 
     const handleExport = async (element: HTMLElement | null, filename: string, options: any = {}) => {
         if (element) {
             setIsExporting(true);
-            await new Promise(resolve => setTimeout(resolve, 150)); // Allow UI to render the loading state before blocking main thread
+            await new Promise(resolve => setTimeout(resolve, 150));
             const exportOptions = {
                 elementsToHide: ['.hide-on-export'],
+                mode: 'blob-only' as ExportMode,
                 ...options
             };
-            await exportElementAsImage(element, filename, exportOptions);
+            const blob = await exportElementAsImage(element, filename, exportOptions);
             setIsExporting(false);
+            if (blob) {
+                setPendingExport({ blob, filename });
+            }
         }
     };
+
+    const handlePendingDownload = useCallback(() => {
+        if (pendingExport) {
+            downloadBlob(pendingExport.blob, pendingExport.filename);
+            setPendingExport(null);
+        }
+    }, [pendingExport]);
+
+    const handlePendingShare = useCallback(async () => {
+        if (pendingExport) {
+            await shareBlob(pendingExport.blob, pendingExport.filename);
+            setPendingExport(null);
+        }
+    }, [pendingExport]);
+
+    const handlePendingClose = useCallback(() => {
+        setPendingExport(null);
+    }, []);
 
     const handleBatchExport = async (employeesToExport: Employee[]) => {
         if (!employeesToExport.length || !productConfig || !processedData) return;
@@ -55,7 +84,7 @@ export const useExportLogic = ({
                             fullSellerArray: processedData.employeeData.fullSellerArray,
                             validSalesData: processedData.filteredValidSalesData,
                             productConfig: productConfig,
-                            onExport: exportElementAsImage,
+                            onExport: async (el: HTMLElement, fn: string, opts?: any) => { await exportElementAsImage(el, fn, opts); },
                             isBatchExporting: true
                         })
                     );
@@ -137,6 +166,10 @@ export const useExportLogic = ({
         isExporting,
         handleExport,
         handleBatchExport,
-        handleBatchKhoExport
+        handleBatchKhoExport,
+        pendingExport,
+        handlePendingDownload,
+        handlePendingShare,
+        handlePendingClose,
     };
 };

@@ -6,6 +6,18 @@ import DataUpdater from './DataUpdater';
 import Settings from './Settings';
 import { Icon } from '../../components/common/Icon';
 
+const getTabColorClasses = (color: string, isActive: boolean) => {
+    if (!isActive) return 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800';
+    switch (color) {
+        case 'emerald': return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400';
+        case 'amber': return 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400';
+        case 'rose': return 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400';
+        case 'sky': return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
+        case 'purple': return 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400';
+        default: return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
+    }
+};
+
 export default function BiWrapper() {
     const [activeView, setActiveView] = useIndexedDBState<'dashboard' | 'employee' | 'updater' | 'settings'>('main-active-view', 'dashboard');
 
@@ -16,28 +28,23 @@ export default function BiWrapper() {
         { id: 'settings', icon: 'settings', label: 'Cấu hình BI', color: 'rose' },
     ];
 
-
     return (
         <div className="flex flex-col w-full min-h-screen">
             {/* Thanh Tab Ngang Nội Bộ giống chức năng Phân tích */}
-            <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-100 dark:border-slate-800 px-4 lg:px-8 z-40 sticky top-0 bg-[#f8fafc]/90 dark:bg-slate-950/90 backdrop-blur-md pb-0 shadow-sm relative pt-4">
-                <div className="flex items-center gap-1 overflow-x-auto flex-1 min-w-0 pb-3 pt-1 hide-scrollbar">
+            <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-100 dark:border-slate-800 px-4 md:px-6 lg:px-8 z-40 sticky top-0 bg-[#f8fafc]/90 dark:bg-slate-950/90 backdrop-blur-md pb-0 shadow-sm relative pt-4">
+                <div className="flex items-end gap-1 overflow-x-auto flex-1 min-w-0 pb-2 pt-2 hide-scrollbar">
                     {navigationLinks.map(tab => {
                         const isActive = activeView === tab.id;
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveView(tab.id as any)}
-                                className={`flex items-center gap-1 px-4 py-2 text-[13px] font-bold rounded-full transition-colors duration-200 whitespace-nowrap shrink-0 focus:outline-none ${
-                                    isActive 
-                                        ? 'bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-400 shadow-sm' 
-                                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'
-                                }`}
+                                className={`flex items-center gap-2 py-1.5 px-3.5 rounded-xl font-bold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${getTabColorClasses(tab.color, isActive)}`}
                             >
-                                <div className={`${isActive ? 'text-current' : 'text-slate-400'} shrink-0`}>
+                                <div className={`${isActive ? 'text-current' : 'text-slate-400'} shrink-0 flex items-center justify-center`}>
                                     <Icon name={tab.icon as any} size={4}/>
                                 </div>
-                                <span>{tab.label}</span>
+                                {tab.label}
                             </button>
                         );
                     })}
@@ -45,7 +52,7 @@ export default function BiWrapper() {
             </div>
 
             {/* Nội dung Module Cụ thể */}
-            <main className={`p-4 lg:p-8 space-y-6 mx-auto w-full flex-grow ${activeView === 'employee' ? 'max-w-[960px]' : 'max-w-[1600px] xl:max-w-7xl'}`}>
+            <main className="p-4 lg:p-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">
                 {activeView === 'dashboard' && <Dashboard onNavigateToUpdater={() => setActiveView('updater')} />}
                 {activeView === 'employee' && <NhanVien />}
                 {activeView === 'updater' && <DataUpdater />}

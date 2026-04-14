@@ -1,6 +1,7 @@
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import Card from '../Card';
+import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { FilterIcon, ChevronDownIcon, CameraIcon, SpinnerIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -23,16 +24,7 @@ const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
     );
 };
 
-const PerformanceIndicator: React.FC<{ changeInfo?: { change: number; direction: 'up' | 'down' } }> = ({ changeInfo }) => {
-    if (!changeInfo) return null;
-    const isPositive = changeInfo.direction === 'up';
-    const icon = isPositive ? null : <ChevronDownIcon className="h-4 w-4 text-red-500" />;
-    const percentageText = changeInfo.change !== Infinity ? (
-        <span className={isPositive ? 'text-green-600' : 'text-red-600'}>{changeInfo.change.toFixed(0)}%</span>
-    ) : null;
-    if (!icon && !percentageText) return null;
-    return <div className="flex items-center gap-1 text-xs font-bold shrink-0">{icon}{percentageText}</div>;
-};
+
 
 
 
@@ -73,7 +65,6 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterSearch, setFilterSearch] = useState('');
     const filterRef = useRef<HTMLDivElement>(null);
-    const [savedColorIndex, setSavedColorIndex] = useIndexedDBState<number | null>(selectedEmployee ? `theme-color-${selectedEmployee.originalName}` : null, null);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
 
 
@@ -119,6 +110,8 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
         return result;
     }, [selectedEmployee, allCompetitionsByCriterion, employeeDataMap, employeeCompetitionTargets, selectedCompetitions, nameOverrides]);
     
+    const { showExportOptions } = useExportOptionsContext();
+
     const handleExportPNG = async (customFilename?: string) => {
         if (!cardRef.current || !(window as any).html2canvas) return;
         const originalCard = cardRef.current;
@@ -130,6 +123,8 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
         clone.style.maxWidth = 'none';
         clone.style.boxShadow = 'none';
         clone.style.margin = '0';
+        clone.style.padding = '4px';
+        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
         if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
         const toolbar = clone.querySelector('.js-individual-view-toolbar');
         if (toolbar) (toolbar as HTMLElement).style.display = 'none';
@@ -140,11 +135,9 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
         try {
             await new Promise(resolve => setTimeout(resolve, 50));
             const canvas = await (window as any).html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff' });
-            const link = document.createElement('a');
             const nameToUse = customFilename || selectedEmployee?.name || 'NhanVien';
-            link.download = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (blob) showExportOptions(blob, `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}.png`);
         } catch (err) {
             console.error('Failed to export image', err);
         } finally {
@@ -210,6 +203,7 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
     const activeFilterCount = allRelevantHeaders.filter(c => selectedCompetitions.has(c.title)).length;
     const totalFilterCount = allRelevantHeaders.length;
     const isFiltered = activeFilterCount < totalFilterCount;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     return (
         <div ref={cardRef}>
@@ -294,47 +288,103 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                         </button>
                     </div>
                 </div>
-                <div className="w-full overflow-x-auto border-t border-slate-200 dark:border-slate-700 lg:border-x lg:border-b lg:rounded-xl lg:m-4 overflow-hidden shadow-sm" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <h3 className="text-center text-xl font-black mb-1 mt-4 uppercase leading-normal text-indigo-700 dark:text-indigo-400 tracking-wider p-2 bg-slate-50 dark:bg-slate-900 shadow-inner export-show-border">{selectedEmployee.name} - THI ĐUA ĐẾN NGÀY {getYesterdayDateString()}</h3>
-                    <table className="w-full border-collapse compact-export-table">
-                        <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
-                            <tr>
-                                <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-12 align-middle">#</th>
-                                <th className="text-left px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 min-w-[200px] align-middle">NHÓM THI ĐUA</th>
-                                <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">MỤC TIÊU</th>
-                                <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">THỰC HIỆN</th>
-                                <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-40 align-middle">% HOÀN THÀNH</th>
-                                <th className="text-center px-3 py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">CÒN LẠI</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white dark:bg-[#1c1c1e] divide-y divide-slate-100 dark:divide-slate-700 text-[12px]">
-                           {(['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map((criterion, criterionIndex) => {
-                               const items = groupedPerformanceData[criterion];
-                               if (!items || items.length === 0) return null;
-                               return (
-                                   <React.Fragment key={criterion}>
-                                       <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white shadow-inner font-extrabold border-t-[3px] border-t-slate-200"><td colSpan={6} className="px-3 py-2 text-[11px] uppercase tracking-wider">Tiêu chí: {criterion}</td></tr>
-                                       {items.map((item, index) => {
-                                           const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400';
-                                           return (
-                                               <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-all cursor-pointer">
-                                                   <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50">{index + 1}</td>
-                                                   <td className="px-3 py-2 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
-                                                       {item.name}
-                                                   </td>
-                                                   <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{f.format(roundUp(item.target))}</td>
-                                                   <td className="px-3 py-2 text-center font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{f.format(roundUp(item.actual))}</td>
-                                                   <td className="px-3 py-2 text-center w-40 border-r border-slate-100 dark:border-slate-700/50 tabular-nums"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-16 hidden sm:block"><ProgressBar value={item.completion} /></div></div></td>
-                                                   <td className={`px-3 py-2 text-center font-semibold ${remainingColor} tabular-nums`}>{f.format(roundUp(item.remaining))}</td>
-                                               </tr>
-                                           );
-                                       })}
-                                   </React.Fragment>
-                               )
-                           })}
-                           {Object.keys(groupedPerformanceData).length === 0 && (<tr><td colSpan={6} className="px-3 py-8 text-center text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">Chưa có chương trình thi đua nào được chọn từ bộ lọc hoặc không có dữ liệu cho nhân viên này.</td></tr>)}
-                        </tbody>
-                    </table>
+                <div className="w-full overflow-hidden">
+                    <div className="overflow-x-auto border-t border-slate-200 dark:border-slate-700 lg:border-x lg:border-b lg:rounded-xl lg:m-4 shadow-sm" style={{ WebkitOverflowScrolling: 'touch' }}>
+                        <h3 className="text-center text-xl font-black mb-1 mt-4 uppercase leading-normal text-indigo-700 dark:text-indigo-400 tracking-wider p-2 bg-slate-50 dark:bg-slate-900 shadow-inner export-show-border">{selectedEmployee.name} - THI ĐUA ĐẾN NGÀY {getYesterdayDateString()}</h3>
+                        
+                        {isMobile ? (
+                            <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                                {(['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map((criterion) => {
+                                    const items = groupedPerformanceData[criterion];
+                                    if (!items || items.length === 0) return null;
+                                    return (
+                                        <div key={criterion}>
+                                            <div className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800/80 border-y border-slate-200 dark:border-slate-700">
+                                                <h4 className="text-[11px] font-black uppercase text-slate-800 dark:text-white tracking-widest">Tiêu chí: {criterion}</h4>
+                                            </div>
+                                            <div className="divide-y divide-slate-50 dark:divide-slate-700/50">
+                                                {items.map((item, index) => {
+                                                    const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 shadow-inner' : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 shadow-inner border border-rose-100 dark:border-rose-900/30';
+                                                    return (
+                                                        <div key={`${criterion}-${item.originalTitle}`} className="px-4 py-3 bg-white dark:bg-slate-900">
+                                                            <div className="flex justify-between items-start mb-2 gap-2">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 w-5 h-5 flex items-center justify-center rounded-full shrink-0">{index + 1}</span>
+                                                                    <span className="font-bold text-[13px] text-indigo-700 dark:text-indigo-400 leading-tight">{item.name}</span>
+                                                                </div>
+                                                                <div className={`px-2 py-1.5 rounded-lg shrink-0 text-right min-w-[70px] ${remainingColor}`}>
+                                                                    <span className="block text-[8px] font-bold uppercase mb-0.5 opacity-80">Còn Lại</span>
+                                                                    <span className="block text-[12px] font-black tabular-nums leading-none tracking-tight">{f.format(roundUp(item.remaining))}</span>
+                                                                </div>
+                                                            </div>
+                                                            
+                                                            <div className="flex flex-col gap-1.5 bg-slate-50 dark:bg-slate-800/40 rounded-xl p-3 border border-slate-100 dark:border-slate-700/50 mt-1">
+                                                                <div className="flex justify-between items-center text-[10px]">
+                                                                    <span className="text-slate-500 font-bold uppercase">Mục Tiêu / Thực Hiện</span>
+                                                                    <span className="font-black tabular-nums tracking-wide flex items-baseline gap-1">
+                                                                        <span className="text-slate-400">{f.format(roundUp(item.target))}</span>
+                                                                        <span className="text-slate-300 dark:text-slate-600 text-[9px] mx-0.5">/</span>
+                                                                        <span className="text-indigo-600 dark:text-indigo-400 text-[11px]">{f.format(roundUp(item.actual))}</span>
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex items-center justify-between gap-3 mt-1">
+                                                                    <div className="flex-1"><ProgressBar value={item.completion} /></div>
+                                                                    <span className={`text-[13px] font-black w-14 text-right tabular-nums ${item.completion >= 100 ? 'text-green-600 dark:text-green-400' : 'text-slate-700 dark:text-slate-300'}`}>{roundUp(item.completion).toFixed(0)}%</span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                                {Object.keys(groupedPerformanceData).length === 0 && (
+                                    <div className="p-8 text-center text-slate-500 dark:text-slate-400 text-sm">Chưa có chương trình thi đua nào được chọn từ bộ lọc hoặc không có dữ liệu cho nhân viên này.</div>
+                                )}
+                            </div>
+                        ) : (
+                        <table className="w-full border-collapse compact-export-table">
+                            <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
+                                <tr>
+                                    <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-12 align-middle">#</th>
+                                    <th className="text-left px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 min-w-[200px] align-middle">NHÓM THI ĐUA</th>
+                                    <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">MỤC TIÊU</th>
+                                    <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">THỰC HIỆN</th>
+                                    <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-40 align-middle">% HOÀN THÀNH</th>
+                                    <th className="text-center px-3 py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">CÒN LẠI</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white dark:bg-[#1c1c1e] divide-y divide-slate-100 dark:divide-slate-700 text-[12px]">
+                               {(['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map((criterion, _criterionIndex) => {
+                                   const items = groupedPerformanceData[criterion];
+                                   if (!items || items.length === 0) return null;
+                                   return (
+                                       <React.Fragment key={criterion}>
+                                           <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white shadow-inner font-extrabold border-t-[3px] border-t-slate-200"><td colSpan={6} className="px-3 py-2 text-[11px] uppercase tracking-wider">Tiêu chí: {criterion}</td></tr>
+                                           {items.map((item, index) => {
+                                               const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400';
+                                               return (
+                                                   <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-all cursor-pointer">
+                                                       <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50">{index + 1}</td>
+                                                       <td className="px-3 py-2 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
+                                                           {item.name}
+                                                       </td>
+                                                       <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{f.format(roundUp(item.target))}</td>
+                                                       <td className="px-3 py-2 text-center font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{f.format(roundUp(item.actual))}</td>
+                                                       <td className="px-3 py-2 text-center w-40 border-r border-slate-100 dark:border-slate-700/50 tabular-nums"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-16 hidden sm:block"><ProgressBar value={item.completion} /></div></div></td>
+                                                       <td className={`px-3 py-2 text-center font-semibold ${remainingColor} tabular-nums`}>{f.format(roundUp(item.remaining))}</td>
+                                                   </tr>
+                                               );
+                                           })}
+                                       </React.Fragment>
+                                   )
+                               })}
+                               {Object.keys(groupedPerformanceData).length === 0 && (<tr><td colSpan={6} className="px-3 py-8 text-center text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">Chưa có chương trình thi đua nào được chọn từ bộ lọc hoặc không có dữ liệu cho nhân viên này.</td></tr>)}
+                            </tbody>
+                        </table>
+                        )}
+                    </div>
                 </div>
             </Card>
         </div>

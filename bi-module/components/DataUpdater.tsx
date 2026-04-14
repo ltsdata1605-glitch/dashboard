@@ -1,7 +1,6 @@
 
-import React, { useState, useRef, useEffect } from 'react';
-import Card from './Card';
-import { CheckCircleIcon, DownloadIcon, XIcon, AlertTriangleIcon, UploadIcon, ClockIcon, ResetIcon, TrashIcon } from './Icons';
+import React, { useState, useEffect } from 'react';
+import { CheckCircleIcon, DownloadIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon } from './Icons';
 import SupermarketConfig from './SupermarketConfig';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
@@ -38,12 +37,11 @@ const StatusTile: React.FC<{
     title: string;
     lastUpdated: string | null;
     value: string;
-    placeholder: string;
     onChange: (val: string) => void;
     onClear: (title: string) => void;
     error?: string | null;
     downloadUrl?: string;
-}> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, downloadUrl }) => {
+}> = ({ title, lastUpdated, value, onChange, onClear, error, downloadUrl }) => {
     const [isPasting, setIsPasting] = useState(false);
     const hasData = value && value.length > 0 && !error;
 
@@ -52,78 +50,84 @@ const StatusTile: React.FC<{
             <div 
                 onClick={() => !isPasting && setIsPasting(true)}
                 className={`
-                    cursor-pointer min-h-[56px] rounded-xl border transition-all duration-300 flex items-center px-4 relative overflow-hidden
-                    ${isPasting ? 'border-primary-500 bg-white dark:bg-slate-800 ring-2 ring-primary-500/10' : 
-                      hasData ? 'border-primary-100 dark:border-primary-900/30 bg-primary-50/20 dark:bg-primary-900/10 hover:border-primary-300' : 
-                      'border-dashed border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/20 hover:border-primary-400'}
+                    cursor-pointer min-h-[68px] rounded-2xl border transition-all duration-300 flex items-center px-4 relative overflow-hidden group/tile active:scale-[0.98]
+                    ${isPasting ? 'border-primary-500 bg-white dark:bg-slate-800 ring-4 ring-primary-500/20 shadow-lg' : 
+                      hasData ? 'border-primary-200 dark:border-primary-800 bg-gradient-to-br from-primary-50 to-white dark:from-primary-900/30 dark:to-slate-800 hover:border-primary-400 shadow-sm hover:shadow-md' : 
+                      'border-dashed border-2 border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:border-primary-400 hover:bg-slate-100 dark:hover:bg-slate-800'}
                 `}
             >
                 {isPasting ? (
-                    <div className="w-full flex items-center gap-2">
+                    <div className="w-full flex items-center gap-2 animate-in fade-in zoom-in-95 duration-200">
                         <textarea
                             autoFocus
-                            className="flex-1 bg-transparent border-none focus:ring-0 text-[10px] font-mono resize-none p-0 h-10 leading-tight"
-                            placeholder="Nhấn Ctrl + V để dán..."
+                            className="flex-1 bg-transparent border-none focus:ring-0 text-[11px] font-mono resize-none p-0 h-10 leading-tight text-slate-800 dark:text-slate-200 outline-none"
+                            placeholder="Nhấn Ctrl+V hoặc chạm và giữ để dán dữ liệu..."
                             onPaste={(e) => {
                                 const text = e.clipboardData.getData('text');
                                 onChange(text);
                                 setIsPasting(false);
                             }}
+                            onBlur={() => setIsPasting(false)}
                         />
-                        <button onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-700 rounded text-[9px] font-black text-slate-400">HUỶ</button>
+                        <button onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-xl text-[10px] font-black text-slate-400 transition-colors">HUỶ</button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between w-full gap-3">
-                        <div className="flex items-center gap-3 min-w-0">
-                            <div className={`p-1.5 rounded-lg shrink-0 ${hasData ? 'bg-primary-600 text-white shadow-sm' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`}>
+                        <div className="flex items-center gap-3.5 min-w-0">
+                            <div className={`p-2 rounded-xl shrink-0 transition-colors ${hasData ? 'bg-primary-600 dark:bg-primary-500 text-white shadow-md shadow-primary-500/20' : 'bg-slate-200 dark:bg-slate-700 text-slate-500 dark:text-slate-400 group-hover/tile:bg-primary-100 group-hover/tile:text-primary-600 dark:group-hover/tile:bg-primary-900/50'}`}>
                                 {hasData ? <CheckCircleIcon className="h-4 w-4" /> : <UploadIcon className="h-4 w-4" />}
                             </div>
                             <div className="min-w-0">
-                                <h4 className={`text-[12px] font-bold uppercase tracking-tight truncate ${hasData ? 'text-primary-800 dark:text-primary-300' : 'text-slate-500 dark:text-slate-400'}`}>{title}</h4>
-                                {hasData && lastUpdated && (
-                                    <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 uppercase flex items-center gap-1">
-                                        <ClockIcon className="h-2.5 w-2.5" /> {lastUpdated}
-                                    </span>
+                                <h4 className={`text-[13px] font-black uppercase tracking-tight truncate ${hasData ? 'text-primary-900 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>{title}</h4>
+                                {hasData ? (
+                                    lastUpdated && (
+                                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase flex items-center gap-1 mt-0.5">
+                                            <ClockIcon className="h-3 w-3" /> {lastUpdated}
+                                        </span>
+                                    )
+                                ) : (
+                                    <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500 mt-0.5 block">Chưa có dữ liệu</span>
                                 )}
                             </div>
                         </div>
                         
                         {!hasData && (
-                            <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity">Click & Dán</span>
+                            <span className="text-[10px] font-black text-primary-500 dark:text-primary-400 uppercase tracking-widest opacity-0 lg:group-hover/tile:opacity-100 transition-opacity bg-primary-50 dark:bg-primary-900/30 px-2.5 py-1 rounded-lg">DÁN NGAY</span>
                         )}
                     </div>
                 )}
             </div>
 
             {hasData && !isPasting && (
-                <div className="absolute top-1/2 -translate-y-1/2 right-2 flex gap-1 z-10 pl-2">
-                     <button 
-                        onClick={(e) => { 
-                            e.stopPropagation(); 
-                            onClear(title); 
-                        }} 
-                        title="Xoá dữ liệu" 
-                        className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl transition-all border border-red-100 dark:border-red-900/30 shadow-sm active:scale-90"
-                    >
-                        <TrashIcon className="h-4 w-4" />
-                    </button>
+                <div className="absolute top-1/2 -translate-y-1/2 right-2 flex gap-1.5 z-10 pl-2 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 translate-x-2 lg:group-hover:translate-x-0 cursor-default">
                     {downloadUrl && (
                          <a 
                             href={downloadUrl} 
                             target="_blank" 
                             rel="noopener noreferrer" 
                             onClick={(e) => e.stopPropagation()} 
-                            className="p-2 text-primary-600 hover:bg-primary-100 dark:hover:bg-primary-900/40 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-xl transition-all border border-primary-100 dark:border-primary-900/30 shadow-sm active:scale-90"
+                            className="p-2.5 text-primary-600 dark:text-primary-400 hover:bg-primary-100 dark:hover:bg-primary-900/60 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-xl transition-all border border-primary-100 dark:border-primary-800/50 shadow-sm active:scale-90 hover:shadow"
+                            title="Tải báo cáo gốc"
                         >
                             <DownloadIcon className="h-4 w-4" />
                         </a>
                     )}
+                     <button 
+                        onClick={(e) => { 
+                            e.stopPropagation(); 
+                            onClear(title); 
+                        }} 
+                        title="Xoá dữ liệu" 
+                        className="p-2.5 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/60 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md rounded-xl transition-all border border-red-100 dark:border-red-800/50 shadow-sm active:scale-90 hover:shadow"
+                    >
+                        <TrashIcon className="h-4 w-4" />
+                    </button>
                 </div>
             )}
             {error && (
-                <div className="mt-1 flex items-center gap-1 px-1 text-[9px] font-bold text-red-500 uppercase animate-in fade-in">
+                <div className="mt-1.5 flex items-center gap-1.5 px-2 text-[10px] font-bold text-red-500 dark:text-red-400 uppercase animate-in fade-in slide-in-from-top-1">
                     <AlertTriangleIcon className="h-3 w-3 shrink-0" />
-                    <span>Lỗi định dạng</span>
+                    <span>{error}</span>
                 </div>
             )}
         </div>
@@ -141,7 +145,7 @@ const DataUpdater: React.FC = () => {
     const [competitionRealtimeTs, setCompetitionRealtimeTs] = useIndexedDBState<string | null>('competition-realtime-ts', null);
     const [competitionLuyKeTs, setCompetitionLuyKeTs] = useIndexedDBState<string | null>('competition-luy-ke-ts', null);
 
-    const [lastUpdates, setLastUpdates] = useIndexedDBState<Update[]>('last-updates-list', []);
+    const [, setLastUpdates] = useIndexedDBState<Update[]>('last-updates-list', []);
     const [errors, setErrors] = useState<Record<string, string | null>>({});
 
     const addUpdate = (id: string, message: string, category: UpdateCategory) => {
@@ -203,7 +207,7 @@ const DataUpdater: React.FC = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto space-y-8 pb-20 px-2">
+        <div className="max-w-7xl mx-auto md:space-y-10 space-y-8 pb-24 md:px-6 px-4">
             <Toast 
                 message={toast.message} 
                 type={toast.type} 
@@ -211,23 +215,25 @@ const DataUpdater: React.FC = () => {
                 onClose={() => setToast(p => ({ ...p, isVisible: false }))} 
                 duration={toast.message.includes('Đang xoá') ? 0 : 3000}
             />
-            <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <header className="flex flex-col md:flex-row md:items-end justify-between gap-5 pt-4">
                 <div>
-                    <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-none uppercase">Cập nhật dữ liệu</h1>
-                    <p className="mt-1 text-sm text-slate-500 font-medium">Bấm vào các ô và dán dữ liệu (Ctrl+V) từ báo cáo BI.</p>
+                    <h1 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-none uppercase">DỮ LIỆU</h1>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 font-medium max-w-md leading-relaxed">
+                        Chạm vào các ô bên dưới và dán báo cáo BI tương ứng để bảng điều khiển cập nhật số liệu mới nhất.
+                    </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     {isConfirmingClear ? (
-                        <div className="flex items-center gap-2 animate-in slide-in-from-right-2 duration-300">
+                        <div className="flex items-center gap-2 animate-in slide-in-from-right-4 duration-300">
                             <button 
                                 onClick={() => setIsConfirmingClear(false)}
-                                className="px-3 py-1.5 text-[10px] font-black text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
+                                className="px-4 py-2.5 text-[11px] font-black text-slate-500 dark:text-slate-400 focus:outline-none hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all"
                             >
                                 HUỶ
                             </button>
                             <button 
                                 onClick={handleClearAllData}
-                                className="px-4 py-1.5 bg-red-600 text-white text-[10px] font-black rounded-xl hover:bg-red-700 transition-all shadow-lg shadow-red-500/20 uppercase tracking-widest"
+                                className="px-5 py-2.5 bg-red-600 dark:bg-red-500 text-white text-[11px] font-black rounded-xl hover:bg-red-700 dark:hover:bg-red-600 transition-all shadow-lg shadow-red-500/30 uppercase tracking-widest active:scale-95"
                             >
                                 XÁC NHẬN XOÁ HẾT
                             </button>
@@ -236,19 +242,22 @@ const DataUpdater: React.FC = () => {
                         <button 
                             onClick={() => setIsConfirmingClear(true)}
                             title="Xoá HẾT TẤT CẢ dữ liệu"
-                            className="p-2 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl border border-red-100 dark:border-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all active:scale-95 shadow-sm relative z-50"
+                            className="p-3 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl border border-red-100 dark:border-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/40 hover:shadow-md hover:shadow-red-500/10 transition-all active:scale-90 relative z-50 group"
                         >
-                            <TrashIcon className="h-5 w-5" />
+                            <TrashIcon className="h-5 w-5 group-hover:rotate-12 transition-transform" />
                         </button>
                     )}
-                    <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                        <span className="text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Sẵn sàng</span>
+                    <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm shrink-0">
+                        <div className="relative flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                        </div>
+                        <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest">Sẵn sàng</span>
                     </div>
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10">
                 {/* NHÓM BÁO CÁO TỔNG HỢP */}
                 <div className="space-y-3">
                     <div className="flex items-center gap-2 px-1">
@@ -260,7 +269,7 @@ const DataUpdater: React.FC = () => {
                             title="Realtime"
                             lastUpdated={summaryRealtimeTs}
                             value={summaryRealtime}
-                            placeholder={SUMMARY_REALTIME_REPORT_HEADER}
+
                             error={errors.summaryRealtime}
                             downloadUrl="https://bi.thegioididong.com/khoi-ban-hang-sub/-1"
                             onChange={(val) => {
@@ -283,7 +292,7 @@ const DataUpdater: React.FC = () => {
                             title="Luỹ kế"
                             lastUpdated={summaryLuyKeTs}
                             value={summaryLuyKe}
-                            placeholder={SUMMARY_LUYKE_REPORT_HEADER}
+
                             error={errors.summaryLuyKe}
                             downloadUrl="https://bi.thegioididong.com/khoi-ban-hang-sub/-1"
                             onChange={(val) => {
@@ -317,7 +326,7 @@ const DataUpdater: React.FC = () => {
                             title="Realtime"
                             lastUpdated={competitionRealtimeTs}
                             value={competitionRealtime}
-                            placeholder={COMPETITION_REALTIME_REPORT_HEADER}
+
                             error={errors.competitionRealtime}
                             downloadUrl="https://bi.thegioididong.com/thi-dua?id=-1&tab=1&rt=1&dm=2&mt=2"
                             onChange={(val) => {
@@ -340,7 +349,7 @@ const DataUpdater: React.FC = () => {
                             title="Luỹ kế"
                             lastUpdated={competitionLuyKeTs}
                             value={competitionLuyKe}
-                            placeholder={COMPETITION_LUYKE_REPORT_HEADER}
+
                             error={errors.competitionLuyKe}
                             downloadUrl="https://bi.thegioididong.com/thi-dua?id=-1&tab=1&rt=2&dm=2&mt=2"
                             onChange={(val) => {
@@ -364,19 +373,23 @@ const DataUpdater: React.FC = () => {
             </div>
 
             {/* PHẦN CẤU HÌNH CHI TIẾT SIÊU THỊ */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-800">
-                <div className="flex items-center justify-between mb-4 px-1">
-                    <div className="flex items-center gap-2">
-                        <div className="w-1 h-4 bg-slate-800 dark:bg-slate-400 rounded-full"></div>
-                        <h2 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình siêu thị</h2>
+            <div className="pt-8 md:pt-10 border-t border-slate-200 dark:border-slate-800/80">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+                    <div className="flex items-center gap-2.5">
+                        <div className="w-1.5 h-5 bg-slate-800 dark:bg-slate-400 rounded-full"></div>
+                        <h2 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình siêu thị chi tiết</h2>
                     </div>
                     {supermarkets.length > 0 && (
-                        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl overflow-x-auto scrollbar-hide max-w-full">
+                        <div className="flex items-center gap-2 bg-slate-100/80 dark:bg-slate-800/60 p-1.5 rounded-2xl overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch max-w-full shadow-inner ring-1 ring-inset ring-slate-200/50 dark:ring-slate-700/50">
                             {supermarkets.map((sm) => (
                                 <button
                                     key={sm}
                                     onClick={() => setActiveSupermarket(sm)}
-                                    className={`shrink-0 px-3 py-1 rounded-lg text-[10px] font-black transition-all uppercase ${activeSupermarket === sm ? 'bg-white dark:bg-slate-700 text-primary-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                    className={`shrink-0 px-4 py-2 rounded-xl text-[11px] font-black transition-all duration-300 uppercase ${
+                                        activeSupermarket === sm 
+                                            ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-sm shadow-slate-200/50 dark:shadow-none' 
+                                            : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white/50 dark:hover:bg-slate-700/50'
+                                    }`}
                                 >
                                     {sm.split(' - ').pop()}
                                 </button>
@@ -386,7 +399,7 @@ const DataUpdater: React.FC = () => {
                 </div>
                 
                 {activeSupermarket ? (
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 shadow-xl animate-in fade-in zoom-in-95 duration-300">
+                    <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-200/80 dark:border-slate-800 p-4 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] animate-in fade-in zoom-in-95 duration-500">
                         <SupermarketConfig
                             supermarketName={activeSupermarket}
                             addUpdate={addUpdate}

@@ -10,8 +10,7 @@ import {
     parseCompetitionDataBySupermarket, 
     parseIndustryRealtimeData, 
     parseIndustryLuyKeData, 
-    parseNumber,
-    shortenSupermarketName
+    parseNumber
 } from '../utils/dashboardHelpers';
 
 export const useDashboardLogic = () => {

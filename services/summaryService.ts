@@ -18,7 +18,7 @@ export function processSummaryTable(
     uniqueProducts: string[];
 } {
     const summaryTableData: { [key: string]: SummaryTableNode } = {};
-    
+
     // Sets to collect unique values for dropdowns
     const khoGroupsForFilter = new Set<string>();
     const parentGroupsForFilter = new Set<string>();
@@ -70,18 +70,18 @@ export function processSummaryTable(
 
         const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
         const price = Number(getRowValue(row, COL.PRICE)) || 0;
-        const revenue = price; 
+        const revenue = price;
         const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
         const productName = getRowValue(row, COL.PRODUCT);
-        
+
         const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
         const revenueQD = revenue * heso;
 
         // Logic trọng số số lượng Vieon
         const isVieon = childVal === 'Vieon' || parentVal === 'Vieon' || (productName || '').toString().includes('VieON');
         const weightedQuantity = isVieon ? (quantity * heso) : quantity;
-        
+
         const keys: string[] = [];
         for (const levelKey of drilldownOrder) {
             if (valueExtractors[levelKey]) {
@@ -93,12 +93,12 @@ export function processSummaryTable(
         keys.forEach(key => {
             if (!currentNode) return;
             if (!currentNode[key]) {
-                currentNode[key] = { 
-                    totalQuantity: 0, 
-                    totalRevenue: 0, 
-                    totalTraGop: 0, 
-                    totalRevenueQD: 0, 
-                    children: {} 
+                currentNode[key] = {
+                    totalQuantity: 0,
+                    totalRevenue: 0,
+                    totalTraGop: 0,
+                    totalRevenueQD: 0,
+                    children: {}
                 };
             }
             currentNode[key].totalQuantity += weightedQuantity;
@@ -160,13 +160,13 @@ export function calculateWarehouseSummary(
             },
         };
     });
-    
+
     const initMetricValues = (): MetricValues => ({ quantity: 0, revenue: 0, revenueQD: 0 });
 
     dataForWarehouseSummary.forEach(row => {
         const khoName = getRowValue(row, COL.KHO);
         if (!khoName || !summaryByKho[khoName]) return;
-        
+
         const summary = summaryByKho[khoName];
 
         if (HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
@@ -180,9 +180,9 @@ export function calculateWarehouseSummary(
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
             const productName = getRowValue(row, COL.PRODUCT);
             const customer = getRowValue(row, COL.CUSTOMER_NAME);
-            
+
             const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
-            const rowRevenue = price; 
+            const rowRevenue = price;
             const rowRevenueQD = rowRevenue * heso;
 
             // Trọng số Vieon
@@ -195,7 +195,7 @@ export function calculateWarehouseSummary(
             if (HINH_THUC_XUAT_TRA_GOP.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
                 summary.doanhThuTraCham += rowRevenue;
             }
-            
+
             const manufacturer = getRowValue(row, COL.MANUFACTURER) || 'Không rõ';
 
             // Aggregate by industry
@@ -236,19 +236,19 @@ export function calculateWarehouseSummary(
         .filter(kho => summaryByKho[kho])
         .map(khoName => {
             const summary = summaryByKho[khoName];
-            
+
             const totalMetrics = Object.values(summary.metrics.byIndustry as Record<string, MetricValues>)
                 .reduce((acc, metric) => {
                     acc.revenue += metric.revenue;
                     acc.revenueQD += metric.revenueQD;
                     return acc;
                 }, { revenue: 0, revenueQD: 0 });
-            
+
             const doanhThuThuc = totalMetrics.revenue;
             const doanhThuQD = totalMetrics.revenueQD;
             const hieuQuaQD = doanhThuThuc > 0 ? ((doanhThuQD - doanhThuThuc) / doanhThuThuc) * 100 : 0;
             const traChamPercent = doanhThuThuc > 0 ? (summary.doanhThuTraCham / doanhThuThuc) * 100 : 0;
-            
+
             return {
                 khoName,
                 doanhThuThuc,
@@ -263,5 +263,5 @@ export function calculateWarehouseSummary(
                 metrics: summary.metrics,
             };
         })
-        .sort((a,b) => b.doanhThuQD - a.doanhThuQD);
+        .sort((a, b) => b.doanhThuQD - a.doanhThuQD);
 }

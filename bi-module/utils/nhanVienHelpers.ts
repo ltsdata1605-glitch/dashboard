@@ -1,5 +1,5 @@
 
-import { RevenueRow, CompetitionHeader, Criterion, CompetitionDataForCriterion, InstallmentRow, InstallmentProvider, CrossSellingRow } from '../types/nhanVienTypes';
+import { RevenueRow, CompetitionHeader, Criterion, InstallmentRow, InstallmentProvider, CrossSellingRow } from '../types/nhanVienTypes';
 
 export const roundUp = (num: number): number => Math.ceil(num);
 

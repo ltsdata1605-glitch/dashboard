@@ -1,4 +1,5 @@
 import React, { useRef, useState, useMemo } from 'react';
+import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { ChevronDownIcon, ChevronUpIcon, CameraIcon } from '../Icons';
 import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
 import { roundUp, shortenName } from '../../utils/nhanVienHelpers';
@@ -19,7 +20,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     sortedEmployees,
     employeeDataMap,
     employeeCompetitionTargets,
-    colorScheme,
+    colorScheme: _colorScheme,
     highlightColorMap,
     viewMode = 'group'
 }) => {
@@ -44,6 +45,8 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
         return sortConfig.direction === 'asc' ? <ChevronUpIcon className="h-3 w-3 ml-0.5" /> : <ChevronDownIcon className="h-3 w-3 ml-0.5" />;
     };
     
+    const { showExportOptions } = useExportOptionsContext();
+
     const handleExportPNG = async () => {
         if (!cardRef.current || !(window as any).html2canvas) {
             alert("Thư viện xuất ảnh chưa sẵn sàng. Vui lòng thử lại sau.");
@@ -64,6 +67,8 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             clone.style.minHeight = 'auto';
             clone.style.boxShadow = 'none';
             clone.style.margin = '0';
+            clone.style.padding = '4px';
+            clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
             clone.style.borderRadius = '0';
             clone.style.display = 'inline-block';
             
@@ -87,7 +92,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                 tableInClone.style.width = 'max-content';
                 tableInClone.style.minWidth = '100%';
                 tableInClone.style.height = 'auto';
-                tableInClone.style.tableLayout = 'auto'; // Cho phép bảng tự dãn rộng theo tên nhân viên khi xuất
+                tableInClone.style.tableLayout = 'auto';
             }
 
             document.body.appendChild(clone);
@@ -118,19 +123,8 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                 logging: false
             });
 
-            canvas.toBlob((blob: Blob | null) => {
-                if (!blob) return;
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.download = `${displayTitle.replace(/[\s/]/g, '_')}.png`;
-                link.href = url;
-                document.body.appendChild(link);
-                link.click();
-                setTimeout(() => {
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                }, 100);
-            }, 'image/png');
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (blob) showExportOptions(blob, `${displayTitle.replace(/[\s/]/g, '_')}.png`);
             
             document.body.removeChild(clone);
         } catch (err) {
@@ -194,9 +188,9 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     });
     const grandTotalRemaining = grandTotalActual - grandTotalTarget;
     const grandTotalCompletion = grandTotalTarget > 0 ? (grandTotalActual / grandTotalTarget) * 100 : 0;
-    const grandTotalRemainingColor = 'text-white';
 
-    const renderEmployeeRow = (employee: Employee, index: number, bottom30Threshold: number) => {
+
+    const renderEmployeeRow = (employee: Employee, _index: number, bottom30Threshold: number) => {
         const target = employeeCompetitionTargets.get(header.originalTitle)?.get(employee.originalName) ?? 0;
         const actual = employeeDataMap.get(employee.name)?.values[header.title] ?? 0;
         const completion = target > 0 ? (actual / target) * 100 : 0;
@@ -310,7 +304,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                                 });
                                 const totalRemaining = totalActual - totalTarget;
                                 const totalCompletion = totalTarget > 0 ? (totalActual / totalTarget) * 100 : 0;
-                                const totalRemainingColor = totalRemaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+
                                 
                                 return (
                                     <React.Fragment key={deptName}>

@@ -1,14 +1,15 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Card from '../Card';
+import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { SpinnerIcon, ChevronDownIcon, UsersIcon, UploadIcon, SaveIcon, CogIcon, XIcon, ViewListIcon, ViewGridIcon, CameraIcon, ClockIcon } from '../Icons';
+import { SpinnerIcon, UsersIcon, CogIcon, XIcon, ViewListIcon, ViewGridIcon, CameraIcon, ClockIcon } from '../Icons';
 import { RevenueRow, Employee, PerformanceChange, SnapshotData, SnapshotMetadata } from '../../types/nhanVienTypes';
-import { roundUp, getYesterdayDateString, parseNumber } from '../../utils/nhanVienHelpers';
+import { roundUp, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
 import { parseRevenueData } from '../../utils/nhanVienHelpers';
-import { Switch } from '../dashboard/DashboardWidgets';
+
 
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import { AvatarUploader } from '../shared/AvatarUploader';
@@ -36,9 +37,9 @@ const RevenueView: React.FC<{
     deptEmployeeCounts: Record<string, number>;
     employeeInstallmentMap: Map<string, number>;
 }> = ({ 
-    rows, supermarketName, departmentNames, performanceChanges, onViewTrend, 
+    rows, supermarketName, departmentNames, onViewTrend, 
     highlightedEmployees, setHighlightedEmployees, snapshotId, setSnapshotId,
-    snapshots, handleSaveSnapshot, handleDeleteSnapshot,
+    snapshots,
     supermarketTarget, departmentWeights, deptEmployeeCounts, employeeInstallmentMap
 }) => {
     const [isLoading, setIsLoading] = useState(supermarketName && rows.length === 0);
@@ -119,11 +120,15 @@ const RevenueView: React.FC<{
 
     const handleSort = (key: string) => setSortConfig(p => ({ key, direction: p.key === key && p.direction === 'desc' ? 'asc' : 'desc' }));
 
+    const { showExportOptions } = useExportOptionsContext();
+
     const handleExportPNG = async (customFilename?: string) => {
         if (!cardRef.current || !(window as any).html2canvas) return;
         const original = cardRef.current;
         const clone = original.cloneNode(true) as HTMLElement;
         clone.style.position = 'absolute'; clone.style.left = '-9999px'; clone.style.width = 'max-content'; clone.style.maxWidth = 'none';
+        clone.style.padding = '4px';
+        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
         clone.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff';
         if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
         
@@ -160,10 +165,8 @@ const RevenueView: React.FC<{
             }
 
             const canvas = await (window as any).html2canvas(clone, { scale: 3, useCORS: true, backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff', width: clone.scrollWidth, height: clone.scrollHeight });
-            const link = document.createElement('a'); 
-            link.download = customFilename || `DT_NhanVien_${supermarketName}.png`; 
-            link.href = canvas.toDataURL('image/png'); 
-            link.click();
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (blob) showExportOptions(blob, customFilename || `DT_NhanVien_${supermarketName}.png`);
         } finally { document.body.removeChild(clone); }
     };
 
@@ -194,11 +197,11 @@ const RevenueView: React.FC<{
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Quỹ thời gian</span>
                         <span className="text-[10px] font-bold text-slate-400 italic">({timeProgressData.dayPassed} / {timeProgressData.daysInMonth} ngày)</span>
                     </div>
-                    <span className="text-xs font-black text-primary-600 tabular-nums leading-none">{Math.round(timeProgressData.percentage)}%</span>
+                    <span className="text-xs font-black text-sky-600 tabular-nums leading-none">{Math.round(timeProgressData.percentage)}%</span>
                 </div>
                 <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 relative overflow-hidden">
                     <div 
-                        className="h-full bg-primary-500 rounded-full transition-all duration-500"
+                        className="h-full bg-sky-500 rounded-full transition-all duration-500"
                         style={{ width: `${timeProgressData.percentage}%` }}
                     />
                 </div>
@@ -222,74 +225,65 @@ const RevenueView: React.FC<{
     const isMobile = window.innerWidth < 768;
 
     return (
-        <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white dark:bg-slate-800 rounded-2xl shadow-md border border-slate-200 dark:border-slate-700 no-print">
-                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                    <div className="flex items-center gap-2 flex-1 sm:flex-none">
-                        <UsersIcon className="h-4 w-4 text-slate-400" />
-                        <select value={snapshotId || ''} onChange={(e) => setSnapshotId(e.target.value || null)} className="flex-1 sm:flex-none pl-3 pr-8 py-2 text-sm border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 rounded-lg outline-none min-w-[140px] appearance-none cursor-pointer">
-                            <option value="">Snapshot: Hiện tại</option>
-                            {snapshots.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                        </select>
-                    </div>
-
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl p-1 shadow-inner">
-                        <button 
-                            onClick={() => setViewMode('group')} 
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                        >
-                            <ViewGridIcon className="h-4 w-4"/>
-                            <span className="hidden xs:inline">BỘ PHẬN</span>
-                        </button>
-                        <button 
-                            onClick={() => setViewMode('list')} 
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                        >
-                            <ViewListIcon className="h-4 w-4"/>
-                            <span className="hidden xs:inline">DANH SÁCH</span>
-                        </button>
-                    </div>
-                </div>
-                
-                <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    <button 
-                        onClick={() => setIsPrevMonthModalOpen(true)}
-                        className={`flex items-center gap-1.5 px-3 py-2 text-xs font-black uppercase rounded-lg border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 text-slate-600'}`}
-                    >
-                        <ClockIcon className="h-4 w-4" />
-                        <span className="hidden sm:inline">Tháng trước</span>
-                        {prevMonthRaw && (
-                            <button onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-1 p-0.5 hover:bg-emerald-200 rounded">
-                                <XIcon className="h-3 w-3" />
-                            </button>
-                        )}
-                    </button>
-                    <button 
-                        onClick={handleBatchExportByDept}
-                        disabled={isExportingByDept}
-                        className="flex items-center gap-2 px-3 py-2 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-lg border border-indigo-200 dark:border-indigo-800 hover:bg-indigo-100 transition-all active:scale-95 disabled:opacity-50"
-                    >
-                        {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}
-                        <span className="hidden sm:inline">{isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}...` : 'Xuất theo BP'}</span>
-                    </button>
-                    <button onClick={() => setIsColorModalOpen(true)} className="p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors" title="Cấu hình màu"><CogIcon className="h-4 w-4" /></button>
-                    <ExportButton onExportPNG={() => handleExportPNG()} />
-                </div>
-            </div>
-
+        <div className="space-y-0">
             <div ref={cardRef}>
-                <Card noPadding title={cardTitle} rounded={false}>
-                    <div className="w-full overflow-x-auto border-t border-slate-100 dark:border-slate-800 shadow-sm rounded-none" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <Card noPadding title={cardTitle} rounded={false} actionButton={
+                    <div className="flex flex-wrap items-center gap-1.5 no-print">
+                        <div className="flex items-center gap-1.5">
+                            <select value={snapshotId || ''} onChange={(e) => setSnapshotId(e.target.value || null)} className="pl-2 pr-6 py-1.5 text-[11px] font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md outline-none min-w-[120px] appearance-none cursor-pointer text-slate-600 dark:text-slate-300">
+                                <option value="">Hiện tại</option>
+                                {snapshots.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                            </select>
+                        </div>
+                        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-md p-0.5">
+                            <button 
+                                onClick={() => setViewMode('group')} 
+                                className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            >
+                                <ViewGridIcon className="h-3.5 w-3.5"/>
+                            </button>
+                            <button 
+                                onClick={() => setViewMode('list')} 
+                                className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                            >
+                                <ViewListIcon className="h-3.5 w-3.5"/>
+                            </button>
+                        </div>
+                        <button 
+                            onClick={() => setIsPrevMonthModalOpen(true)}
+                            className={`flex items-center gap-1 px-2 py-1.5 text-[10px] font-bold rounded-md border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
+                        >
+                            <ClockIcon className="h-3.5 w-3.5" />
+                            <span className="hidden sm:inline">T.trước</span>
+                            {prevMonthRaw && (
+                                <button onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800 rounded">
+                                    <XIcon className="h-2.5 w-2.5" />
+                                </button>
+                            )}
+                        </button>
+                        <button 
+                            onClick={handleBatchExportByDept}
+                            disabled={isExportingByDept}
+                            className="flex items-center gap-1 px-2 py-1.5 text-[10px] font-bold rounded-md border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50"
+                        >
+                            {isExportingByDept ? <SpinnerIcon className="h-3.5 w-3.5 animate-spin" /> : <CameraIcon className="h-3.5 w-3.5" />}
+                            <span className="hidden sm:inline">{isExportingByDept ? `${exportDeptProgress.current}/${exportDeptProgress.total}` : 'BP'}</span>
+                        </button>
+                        <button onClick={() => setIsColorModalOpen(true)} className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-md transition-colors" title="Cấu hình màu"><CogIcon className="h-3.5 w-3.5" /></button>
+                        <ExportButton onExportPNG={() => handleExportPNG()} />
+                    </div>
+                }>
+                    <div className="w-full overflow-x-auto shadow-sm rounded-none" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {isMobile ? (
                             <div className="divide-y divide-slate-100 dark:divide-slate-700">
                                 {displayList.map((row, idx) => {
                                     if (row.type === 'department' || row.type === 'total') {
                                         const isGrandTotal = row.type === 'total';
                                         return (
-                                            <div key={`${row.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-sky-50 dark:bg-sky-900/50 font-black' : 'bg-slate-50 dark:bg-slate-900/90 font-bold'} flex justify-between items-center`}>
+                                            <div key={`${row.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/30 font-black text-emerald-800 dark:text-emerald-300' : 'bg-slate-50 dark:bg-slate-900/90 font-bold'} flex justify-between items-center`}>
                                                 <span className="uppercase tracking-wider text-xs">{row.name}</span>
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-primary-600 dark:text-primary-400">{f.format(roundUp(row.dtqd))} Tr</span>
+                                                    <span className="text-sky-600 dark:text-sky-400">{f.format(roundUp(row.dtqd))} Tr</span>
                                                     <span className="text-[10px] opacity-60">{roundUp(row.calculatedCompletion)}% HT</span>
                                                 </div>
                                             </div>
@@ -309,7 +303,7 @@ const RevenueView: React.FC<{
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start">
                                                         <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
-                                                        <span className="text-[10px] font-black text-primary-600 bg-primary-50 dark:bg-primary-900/30 px-2 py-0.5 rounded-full">{roundUp(row.calculatedCompletion)}% HT</span>
+                                                        <span className="text-[10px] font-black text-sky-600 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 rounded-full">{roundUp(row.calculatedCompletion)}% HT</span>
                                                     </div>
                                                     <span className="text-[10px] text-slate-400 uppercase font-bold">{row.department}</span>
                                                 </div>
@@ -318,7 +312,7 @@ const RevenueView: React.FC<{
                                             <div className="grid grid-cols-3 gap-2">
                                                 <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
                                                     <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">DTQĐ</p>
-                                                    <p className="text-sm font-black text-primary-600 tabular-nums">{f.format(roundUp(row.dtqd))}</p>
+                                                    <p className="text-sm font-black text-sky-600 tabular-nums">{f.format(roundUp(row.dtqd))}</p>
                                                     <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                                                 </div>
                                                 <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
@@ -336,7 +330,7 @@ const RevenueView: React.FC<{
                                             <div className="flex justify-between items-center no-print">
                                                 <button 
                                                     onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }}
-                                                    className="text-[10px] font-bold text-primary-600 hover:underline flex items-center gap-1"
+                                                    className="text-[10px] font-bold text-sky-600 hover:underline flex items-center gap-1"
                                                 >
                                                     <UsersIcon className="h-3 w-3" />
                                                     Xem chi tiết xu hướng
@@ -351,53 +345,65 @@ const RevenueView: React.FC<{
                                 })}
                             </div>
                         ) : (
-                            <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                            <div className="border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
                                 <table className="w-full border-collapse compact-export-table">
-                                    <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
+                                    <thead className="sticky top-0 z-10">
+                                        {/* Tier 1: Group Headers */}
                                         <tr>
-                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('name')}>Nhân viên</th>
-                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('dtlk')}>DT THỰC</th>
-                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('dtqd')}>DTQĐ</th>
-                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('target')}>M.TIÊU</th>
-                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('completion')}>%HT</th>
-                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('hqqd')}>HQQĐ</th>
-                                            <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600" onClick={() => handleSort('installment')}>%T.GÓP</th>
-                                            <th className="px-3 py-2 text-center cursor-pointer select-none border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('bankem')}>%B.KÈM</th>
+                                            <th rowSpan={2} className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('name')}>
+                                                Nhân viên
+                                            </th>
+                                            <th colSpan={3} className="px-2 py-1.5 text-center text-[10px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-b border-sky-100 dark:border-sky-800/50">
+                                                Doanh thu
+                                            </th>
+                                            <th colSpan={4} className="px-2 py-1.5 text-center text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-b border-emerald-100 dark:border-emerald-800/50">
+                                                Hiệu suất
+                                            </th>
+                                        </tr>
+                                        {/* Tier 2: Column Headers */}
+                                        <tr className="bg-slate-50 dark:bg-slate-800/80">
+                                            <th className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors" onClick={() => handleSort('dtlk')}>DT Thực</th>
+                                            <th className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors" onClick={() => handleSort('dtqd')}>DTQĐ</th>
+                                            <th className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
+                                            <th className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" onClick={() => handleSort('completion')}>%HT</th>
+                                            <th className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
+                                            <th className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" onClick={() => handleSort('installment')}>%T.Góp</th>
+                                            <th className="px-2 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-slate-500 border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors" onClick={() => handleSort('bankem')}>%B.Kèm</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-[#1c1c1e]">
+                                    <tbody className="bg-white dark:bg-[#1c1c1e]">
                                     {displayList.map((row, idx) => {
                                         if (row.type === 'department' || row.type === 'total') {
                                             const isGrandTotal = row.type === 'total';
                                             const prev = row.prevCompData;
                                             return (
-                                                <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white shadow-inner font-extrabold border-t-[3px] border-t-slate-200' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-y border-slate-200 dark:border-slate-700`}>
+                                                <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-y border-slate-200 dark:border-slate-700`}>
                                                     <td className={`px-3 py-2 uppercase text-[11px] tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center text-xs' : 'border-slate-200 dark:border-slate-700'}`}>{row.name}</td>
-                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>
+                                                    <td className="px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700">
                                                         <div>{f.format(roundUp(row.dtlk))}</div>
                                                         <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
                                                     </td>
-                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700 text-indigo-700 dark:text-indigo-400 font-extrabold`}>
+                                                    <td className="px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700 text-sky-700 dark:text-sky-400 font-extrabold">
                                                         <div>{f.format(roundUp(row.dtqd))}</div>
                                                         <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                                                     </td>
-                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>
+                                                    <td className="px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700">
                                                         <div>{f.format(roundUp(row.calculatedTarget))}</div>
                                                         <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
                                                     </td>
-                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`} style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion) }}>
+                                                    <td className="px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700" style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion) }}>
                                                         <div>{roundUp(row.calculatedCompletion)}%</div>
                                                         <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
                                                     </td>
-                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) }}>
+                                                    <td className="px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700" style={{ color: isGrandTotal ? undefined : getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) }}>
                                                         <div>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                                                         <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
                                                     </td>
-                                                    <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>
+                                                    <td className="px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700" style={{ color: isGrandTotal ? undefined : getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>
                                                         <div>{roundUp(row.calculatedInstallment)}%</div>
                                                         <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
                                                     </td>
-                                                    <td className={`px-2 py-2 text-[11px] text-center tabular-nums border-slate-200 dark:border-slate-700`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
+                                                    <td className="px-2 py-2 text-[11px] text-center tabular-nums border-slate-200 dark:border-slate-700" style={{ color: isGrandTotal ? undefined : getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
                                                         <div>{roundUp(row.pctBillBk)}%</div>
                                                         <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
                                                     </td>
@@ -408,14 +414,14 @@ const RevenueView: React.FC<{
                                         const prev = row.prevCompData;
 
                                         return (
-                                            <tr key={row.originalName} className={`transition-all group cursor-pointer text-[12px] ${isHighlighted ? 'bg-indigo-50/50 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50 dark:hover:bg-slate-750'}`}>
+                                            <tr key={row.originalName} className={`transition-all group cursor-pointer text-[12px] ${isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10 ring-1 ring-inset ring-sky-200 dark:ring-sky-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-750'}`}>
                                                 <td className="px-3 py-2 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 min-w-[150px]">
                                                     <div className="flex items-center gap-2">
                                                         <MedalBadge rank={row.rank} />
                                                         <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />
                                                         <div className="flex flex-col min-w-0" onClick={() => setHighlightedEmployees((prev: Set<string>) => { const n = new Set(prev); if (n.has(row.originalName!)) n.delete(row.originalName!); else n.add(row.originalName!); return n; })}>
                                                             <div className="flex items-center gap-2">
-                                                                <button onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="text-left font-bold text-indigo-600 dark:text-indigo-400 hover:underline whitespace-normal break-words">{row.name}</button>
+                                                                <button onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="text-left font-bold text-sky-700 dark:text-sky-400 hover:underline whitespace-normal break-words">{row.name}</button>
                                                             </div>
                                                             <span className="text-[10px] text-slate-400 capitalize font-medium tabular-nums">{row.department}</span>
                                                         </div>
@@ -425,8 +431,8 @@ const RevenueView: React.FC<{
                                                     <div>{f.format(roundUp(row.dtlk))}</div>
                                                     <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
                                                 </td>
-                                                <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-bold" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) }}>
-                                                    <div className="text-indigo-700 dark:text-indigo-400">{f.format(roundUp(row.dtqd))}</div>
+                                                <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-bold">
+                                                    <div className="text-sky-700 dark:text-sky-400">{f.format(roundUp(row.dtqd))}</div>
                                                     <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                                                 </td>
                                                 <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 italic font-medium text-slate-500 dark:text-slate-400">

@@ -54,7 +54,7 @@ export const setMany = async (items: { key: string; value: any }[]): Promise<voi
     const store = transaction.objectStore(STORE_NAME);
 
     transaction.oncomplete = () => resolve();
-    transaction.onerror = (event) => {
+    transaction.onerror = (_event) => {
         console.error('Transaction error:', transaction.error);
         reject(transaction.error);
     };

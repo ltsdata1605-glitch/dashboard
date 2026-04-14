@@ -1,6 +1,7 @@
 
-import React, { useRef, useState, useMemo, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import Card from '../Card';
+import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { UsersIcon, XIcon, SpinnerIcon, CameraIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
 import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig } from '../../types/nhanVienTypes';
 import { CompetitionGroupCard } from './CompetitionGroupView';
@@ -66,7 +67,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
     onDeleteVersion,
     employeeCompetitionTargets,
     allEmployees,
-    performanceChanges,
+
     individualViewEmployees,
     selectedIndividual,
     onSelectIndividual,
@@ -74,7 +75,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
     setHighlightedEmployees,
     activeDepartments
 }) => {
-    const criteriaOrder: Criterion[] = ['DTLK', 'DTQĐ', 'SLLK'];
+
     const [newVersionName, setNewVersionName] = useState('');
     const [isBatchExporting, setIsBatchExporting] = useState(false);
     const [exportProgress, setExportProgress] = useState<{ current: number; total: number }>({ current: 0, total: 0 });
@@ -134,6 +135,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
     const handleSelectAllEmployees = () => setHighlightedEmployees(new Set(allEmployees.map(e => e.originalName)));
     const handleDeselectAllEmployees = () => setHighlightedEmployees(new Set());
 
+    const { showExportOptions } = useExportOptionsContext();
+
     const exportGroupViewToPNG = async (filename: string, refToExport = groupViewRef) => {
         if (!refToExport.current || !(window as any).html2canvas) return;
         const original = refToExport.current;
@@ -147,7 +150,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
         clone.style.height = 'auto'; 
         clone.style.minHeight = 'auto';
         clone.style.margin = '0';
-        clone.style.padding = '32px';
+        clone.style.padding = '4px';
+        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
         clone.style.display = 'block';
 
         if (document.documentElement.classList.contains('dark')) {
@@ -216,7 +220,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
                 maxCardWidth = Math.max(maxCardWidth, (card as HTMLElement).offsetWidth);
             });
             
-            const finalWidth = maxCardWidth + 64; 
+            const finalWidth = maxCardWidth + 10; 
             const finalHeight = clone.scrollHeight; 
             
             clone.style.width = `${finalWidth}px`;
@@ -245,10 +249,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
                 logging: false
             });
             
-            const link = document.createElement('a');
-            link.download = filename;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (blob) showExportOptions(blob, filename);
         } catch (err) {
             console.error("Export failed", err);
             alert("Xuất ảnh thất bại.");

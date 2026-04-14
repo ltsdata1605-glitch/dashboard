@@ -5,7 +5,7 @@ interface CsvHeader {
 
 export const exportToCsv = (filename: string, headers: CsvHeader[], data: Record<string, any>[]) => {
     // Function to handle values, ensuring null/undefined become empty strings
-    const replacer = (key: string, value: any) => value === null || value === undefined ? '' : value;
+    const replacer = (_key: string, value: any) => value === null || value === undefined ? '' : value;
 
     const headerKeys = headers.map(h => h.key);
     

@@ -1,6 +1,7 @@
 
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import Card from '../Card';
+import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { FilterIcon, TrashIcon, PencilIcon, XIcon, CheckCircleIcon } from '../Icons';
 import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienTypes';
@@ -77,6 +78,8 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
         return 'text-amber-600 dark:text-amber-400 font-bold';
     };
 
+    const { showExportOptions } = useExportOptionsContext();
+
     const handleExportPNG = async () => {
         if (!cardRef.current || !(window as any).html2canvas) return;
         const original = cardRef.current;
@@ -85,6 +88,8 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
         clone.style.left = '-9999px';
         clone.style.width = 'max-content';
         clone.style.maxWidth = 'none';
+        clone.style.padding = '4px';
+        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
         if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
         clone.classList.add('export-mode');
         clone.querySelectorAll('.no-print, .export-button-component').forEach(el => (el as HTMLElement).style.display = 'none');
@@ -104,10 +109,8 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                 useCORS: true,
                 backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff'
             });
-            const link = document.createElement('a');
-            link.download = `ThiDua_${tableName.replace(/\s+/g, '_')}_${supermarketName}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (blob) showExportOptions(blob, `ThiDua_${tableName.replace(/\s+/g, '_')}_${supermarketName}.png`);
         } finally {
             document.body.removeChild(clone);
         }

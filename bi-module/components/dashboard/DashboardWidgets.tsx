@@ -11,8 +11,8 @@ export const Switch: React.FC<{ checked: boolean; onChange: () => void; id?: str
       id={id}
       onClick={onChange}
       className={`${
-        checked ? 'bg-primary-600' : 'bg-slate-300 dark:bg-slate-600'
-      } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2`}
+        checked ? 'bg-sky-500 shadow-inner' : 'bg-slate-300 dark:bg-slate-600'
+      } relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-offset-2`}
     >
       <span
         aria-hidden="true"
@@ -183,8 +183,8 @@ export const SupermarketNavBar: React.FC<{
                         className={`
                             shrink-0 px-5 py-2 text-xs font-semibold rounded-full transition-all duration-300 border
                             ${activeSupermarket === sm
-                                ? 'bg-primary-600 text-white shadow-lg shadow-primary-500/30 border-primary-500'
-                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-primary-400 dark:hover:border-primary-500 border-slate-200 dark:border-slate-700'}
+                                ? 'bg-slate-800 dark:bg-slate-700 text-white shadow-lg shadow-slate-500/30 border-slate-800 dark:border-slate-700'
+                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-500 border-slate-200 dark:border-slate-700'}
                         `}
                     >
                         {sm === 'Tổng' ? 'CỤM' : shortenSupermarketName(sm).toUpperCase()}

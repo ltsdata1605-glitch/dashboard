@@ -1,11 +1,12 @@
 
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import Card from '../Card';
+import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { CrossSellingRow } from '../../types/nhanVienTypes';
-import { getYesterdayDateString, parseCrossSellingData, roundUp } from '../../utils/nhanVienHelpers';
+import { getYesterdayDateString, parseCrossSellingData } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { UsersIcon, UploadIcon, ChevronDownIcon, ClockIcon, XIcon, ViewGridIcon, ViewListIcon, CameraIcon, SpinnerIcon, CheckCircleIcon, DownloadIcon } from '../Icons';
+import { UsersIcon, UploadIcon, ClockIcon, XIcon, ViewGridIcon, ViewListIcon, CameraIcon, SpinnerIcon, DownloadIcon } from '../Icons';
 import { Switch } from '../dashboard/DashboardWidgets';
 
 const MedalBadge: React.FC<{ rank?: number }> = ({ rank }) => {
@@ -102,7 +103,7 @@ const CrossSellingTab: React.FC<{
 }> = ({ rows, supermarketName, activeDepartments, highlightedEmployees, setHighlightedEmployees }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const highlightRef = useRef<HTMLDivElement>(null);
-    const importFileRef = useRef<HTMLInputElement>(null);
+
 
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'pctBillBk', direction: 'desc' });
     const [isHighlightFilterOpen, setIsHighlightFilterOpen] = useState(false);
@@ -264,11 +265,15 @@ const CrossSellingTab: React.FC<{
         return finalOutput;
     }, [rows, activeDepartments, sortConfig, viewMode, exportDeptFilter, prevMonthRows]);
 
+    const { showExportOptions } = useExportOptionsContext();
+
     const handleExportPNG = async (customFilename?: string) => {
         if (!cardRef.current || !(window as any).html2canvas) return;
         const original = cardRef.current;
         const clone = original.cloneNode(true) as HTMLElement;
         clone.style.position = 'absolute'; clone.style.left = '-9999px'; clone.style.width = 'max-content'; clone.style.maxWidth = 'none';
+        clone.style.padding = '4px';
+        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
         clone.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff';
         if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
         clone.querySelectorAll('.no-print, .export-button-component').forEach(el => (el as HTMLElement).style.display = 'none');
@@ -281,9 +286,8 @@ const CrossSellingTab: React.FC<{
         try {
             await new Promise(resolve => setTimeout(resolve, 200));
             const canvas = await (window as any).html2canvas(clone, { scale: 2.5, useCORS: true, backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff', width: clone.scrollWidth, height: clone.scrollHeight });
-            const link = document.createElement('a'); 
-            link.download = customFilename || `CrossSelling_${supermarketName}.png`; 
-            link.href = canvas.toDataURL('image/png'); link.click();
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (blob) showExportOptions(blob, customFilename || `CrossSelling_${supermarketName}.png`);
         } finally { document.body.removeChild(clone); }
     };
 

@@ -2,6 +2,7 @@
 import React from 'react';
 import type { ProcessedData, FilterState, ProductConfig, DataRow, Employee, EmployeeData } from '../types';
 import { DepartmentMap } from '../services/dataService';
+import type { PendingExport } from '../hooks/useExportLogic';
 
 interface DashboardContextType {
     appState: 'upload' | 'processing' | 'dashboard' | 'loading';
@@ -22,6 +23,10 @@ interface DashboardContextType {
     handleExport: (element: HTMLElement | null, filename: string, options?: any) => Promise<void>;
     isProcessing: boolean;
     isExporting: boolean;
+    pendingExport: PendingExport | null;
+    handlePendingDownload: () => void;
+    handlePendingShare: () => Promise<void>;
+    handlePendingClose: () => void;
     uniqueFilterOptions: { kho: string[]; trangThai: string[]; nguoiTao: string[], department: string[], hangSX: string[] };
     warehouseTargets: Record<string, number>;
     updateWarehouseTarget: (kho: string, target: number) => void;

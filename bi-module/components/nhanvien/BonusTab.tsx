@@ -1,8 +1,9 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import Card from '../Card';
+import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { XIcon, UsersIcon, UploadIcon, ChevronDownIcon, CheckCircleIcon, SparklesIcon, LinkIcon, ClockIcon, ViewListIcon, ViewGridIcon, FilterIcon, CameraIcon, SpinnerIcon, ChevronUpIcon, DownloadIcon } from '../Icons';
+import { XIcon, UsersIcon, UploadIcon, ClockIcon, ViewListIcon, ViewGridIcon } from '../Icons';
 import { Employee, BonusMetrics } from '../../types/nhanVienTypes';
 import { parseNumber, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { Switch } from '../dashboard/DashboardWidgets';
@@ -61,72 +62,15 @@ const MedalBadge: React.FC<{ rank: number }> = ({ rank }) => {
     return <span className="text-slate-400 font-bold w-7 text-center text-xs tabular-nums">#{rank}</span>;
 };
 
-const DeltaBadge: React.FC<{ current: number, previous?: number }> = ({ current, previous }) => {
-    if (previous === undefined || previous === 0) return null;
-    const diff = current - previous;
-    if (Math.abs(diff) < 1000) return null; 
 
-    const isPositive = diff > 0;
-    const colorClass = isPositive ? 'text-emerald-500' : 'text-rose-500';
-    const icon = isPositive ? '▲' : '▼';
-    
-    return (
-        <div className={`text-[8px] font-black leading-none mt-0.5 flex items-center justify-center gap-0.5 ${colorClass}`}>
-            <span>{icon}</span>
-            <span>{new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.abs(Math.ceil(diff/1000)))}k</span>
-        </div>
-    );
-};
-
-const BonusHistoryModal: React.FC<{ employee: Employee; supermarketName: string; onClose: () => void }> = ({ employee, supermarketName, onClose }) => {
-    const [history, setHistory] = useState<any[]>([]);
-    const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
-
-    useEffect(() => {
-        const loadHistory = async () => {
-            const data = await db.get(`bonus-history-${supermarketName}-${employee.originalName}`);
-            if (data && Array.isArray(data)) setHistory(data.reverse());
-        };
-        loadHistory();
-    }, [employee, supermarketName]);
-
-    return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[250] flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl p-6 w-full max-w-xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-                <div className="flex justify-between items-center mb-6">
-                    <h3 className="text-xl font-black uppercase text-slate-800 dark:text-white tracking-tight">Lịch sử thưởng: <span className="text-primary-600">{employee.name}</span></h3>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full transition-colors"><XIcon className="h-6 w-6" /></button>
-                </div>
-                <div className="max-h-[60vh] overflow-y-auto space-y-3 pr-2 scrollbar-thin">
-                    {history.length > 0 ? history.map((item, idx) => (
-                        <div key={idx} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                            <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase mb-1 flex items-center gap-1"><ClockIcon className="h-3 w-3" /> {item.updatedAt}</p>
-                                <div className="flex gap-4">
-                                    <div className="text-xs">ERP: <span className="font-bold">{f.format(Math.ceil(item.erp/1000))}k</span></div>
-                                    <div className="text-xs">Nóng: <span className="font-bold text-rose-600">{f.format(Math.ceil(item.tNong/1000))}k</span></div>
-                                </div>
-                            </div>
-                            <div className="text-right">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase">Dự kiến</p>
-                                <p className="text-lg font-black text-primary-600 tabular-nums">{f.format(Math.ceil(item.dKien/1000))}k</p>
-                            </div>
-                        </div>
-                    )) : <p className="text-center py-10 text-slate-400 italic">Chưa có lịch sử cập nhật.</p>}
-                </div>
-            </div>
-        </div>
-    );
-};
 
 export const BonusDataModal: React.FC<{ 
     employee: Employee; 
     supermarketName: string;
     onClose: (reason: 'save' | 'skip' | 'stop') => void; 
     onSave: (name: string, metrics: BonusMetrics) => void; 
-    currentBonus?: any;
     remainingInBatch?: number;
-}> = ({ employee, supermarketName, onClose, onSave, currentBonus, remainingInBatch }) => {
+}> = ({ employee, supermarketName, onClose, onSave, remainingInBatch }) => {
     const [pastedData, setPastedData] = useState('');
     const [error, setError] = useState<string | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -249,11 +193,10 @@ export const BonusView: React.FC<{
     onEmployeeClick: (emp: Employee) => void; 
     onBatchUpdate: () => void;
     highlightedEmployees: Set<string>; 
-    setHighlightedEmployees: React.Dispatch<React.SetStateAction<Set<string>>>;
     activeDepartments: string[];
 }> = ({ 
     employees, bonusData, revenueRows, supermarketName, onEmployeeClick, onBatchUpdate,
-    highlightedEmployees, setHighlightedEmployees, activeDepartments
+    highlightedEmployees, activeDepartments
 }) => {
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
     const cardRef = useRef<HTMLDivElement>(null);
@@ -363,11 +306,15 @@ export const BonusView: React.FC<{
         return 'text-slate-700 dark:text-slate-300';
     };
 
+    const { showExportOptions } = useExportOptionsContext();
+
     const handleExportPNG = async () => {
         if (!cardRef.current || !(window as any).html2canvas) return;
         const original = cardRef.current;
         const clone = original.cloneNode(true) as HTMLElement;
         clone.style.position = 'absolute'; clone.style.left = '-9999px'; clone.style.width = 'max-content';
+        clone.style.padding = '4px';
+        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
         clone.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff';
         if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
         clone.querySelectorAll('.no-print, .export-button-component').forEach(el => (el as HTMLElement).style.display = 'none');
@@ -376,8 +323,8 @@ export const BonusView: React.FC<{
         try {
             await new Promise(resolve => setTimeout(resolve, 300));
             const canvas = await (window as any).html2canvas(clone, { scale: 3, useCORS: true, backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff' });
-            const link = document.createElement('a');
-            link.download = `Bonus_Report_${supermarketName}.png`; link.href = canvas.toDataURL('image/png'); link.click();
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (blob) showExportOptions(blob, `Bonus_Report_${supermarketName}.png`);
         } finally { document.body.removeChild(clone); }
     };
 
@@ -387,6 +334,8 @@ export const BonusView: React.FC<{
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Quản lý tốt thưởng là quản lý tốt động lực của nhân viên.</span>
         </div>
     );
+
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     return (
         <div className="space-y-4">
@@ -416,35 +365,123 @@ export const BonusView: React.FC<{
             </div>
             <div ref={cardRef}>
                 <Card noPadding title={cardTitle}>
-                    <div className="w-full overflow-x-auto">
-                        <div className="border-t border-slate-200 dark:border-slate-700 lg:border-x lg:border-b lg:rounded-xl lg:m-4 overflow-hidden shadow-sm">
-                        <table className="w-full border-collapse compact-export-table">
-                            <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
-                                <tr>
-                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('name'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Nhân viên</th>
-                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('dtqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>DTQĐ</th>
-                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('hqqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>HQQĐ</th>
-                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('erp'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>ERP</th>
-                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('tNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>T.NÓNG</th>
-                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('pNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>%T.NÓNG</th>
-                                    <th className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('tong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>TỔNG</th>
-                                    <th className="px-3 py-2 text-center border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100" onClick={() => { setSortField('dKien'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>THƯỞNG DK</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-100 dark:divide-slate-700">
+                    <div className="w-full overflow-hidden">
+                        <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch lg:border-x lg:border-b lg:border-slate-200 dark:lg:border-slate-700 lg:rounded-xl lg:m-4 shadow-sm border-t border-slate-200 dark:border-slate-700/60">
+                        {isMobile ? (
+                            <div className="divide-y divide-slate-100 dark:divide-slate-700">
                                 {displayList.map((item, idx) => {
                                     if (item.type === 'department' || item.type === 'total') {
                                         const isGrandTotal = item.type === 'total';
                                         return (
-                                            <tr key={`${item.type}-${idx}`} className={`${isGrandTotal ? 'bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white shadow-inner font-extrabold border-t-[3px] border-t-slate-200' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-y border-slate-200 dark:border-slate-700`}>
-                                                <td className={`px-3 py-2 text-[11px] uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center' : 'border-slate-200 dark:border-slate-700'}`}>{item.name}</td>
-                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(item.sumDtqd)}</td>
-                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>-</td>
-                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(Math.ceil(item.sumErp / 1000))}</td>
-                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(Math.ceil(item.sumTnong / 1000))}</td>
-                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>-</td>
-                                                <td className={`px-2 py-2 text-[11px] text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700`}>{f.format(Math.ceil(item.sumTong / 1000))}</td>
-                                                <td className={`px-2 py-2 text-[11px] text-center tabular-nums font-black ${isGrandTotal ? 'bg-slate-200/50 dark:bg-slate-700 text-indigo-700 dark:text-indigo-400' : 'bg-indigo-50/30 text-indigo-600 dark:text-indigo-400'}`}>{f.format(Math.ceil(item.sumDkien / 1000))}</td>
+                                            <div key={`${item.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-slate-100 dark:bg-slate-800/80 border-t-2 border-slate-300 dark:border-slate-600' : 'bg-slate-50 dark:bg-slate-900/40'}`}>
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <span className={`text-xs font-black uppercase tracking-wider ${isGrandTotal ? 'text-slate-800 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>{item.name}</span>
+                                                    <div className="text-right">
+                                                        <span className="text-[9px] text-slate-400 font-bold uppercase block mb-0.5">Dự Kiến</span>
+                                                        <span className={`text-sm font-black tabular-nums leading-none ${isGrandTotal ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-500'}`}>{f.format(Math.ceil(item.sumDkien / 1000))}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="grid grid-cols-4 gap-1.5 mt-2">
+                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">DTQĐ</p>
+                                                        <p className="text-[11px] font-black tabular-nums">{f.format(item.sumDtqd)}</p>
+                                                    </div>
+                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">ERP</p>
+                                                        <p className="text-[11px] font-black tabular-nums">{f.format(Math.ceil(item.sumErp / 1000))}</p>
+                                                    </div>
+                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">T.Nóng</p>
+                                                        <p className="text-[11px] font-black tabular-nums">{f.format(Math.ceil(item.sumTnong / 1000))}</p>
+                                                    </div>
+                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">Tổng</p>
+                                                        <p className="text-[11px] font-black tabular-nums">{f.format(Math.ceil(item.sumTong / 1000))}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                    
+                                    const isHighlighted = highlightedEmployees.has(item.originalName);
+                                    const bonus = bonusData[item.originalName], rev = revenueMap.get(item.originalName);
+                                    const dtqdVal = rev?.dtqd || 0, hqqdVal = rev ? (rev.hieuQuaQD * 100) : 0, erpVal = bonus?.erp || 0, tnongVal = bonus?.tNong || 0, pnongVal = bonus?.pNong || 0, tongVal = bonus?.tong || 0, dkienVal = bonus?.dKien || 0;
+                                    const isStale = !isUpdatedToday(bonus?.updatedAt);
+
+                                    return (
+                                        <div key={item.originalName} onClick={() => onEmployeeClick(item)} className={`px-4 py-3 cursor-pointer transition-colors ${isHighlighted ? 'bg-indigo-50/60 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'}`}>
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                    <MedalBadge rank={item.rank} />
+                                                    <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item)} />
+                                                    <span className={`font-black uppercase tracking-tight truncate text-xs ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : (isStale ? 'text-slate-400 dark:text-slate-500' : 'text-indigo-600 dark:text-indigo-400')}`}>
+                                                        {item.name}
+                                                    </span>
+                                                </div>
+                                                <div className="flex flex-col items-end shrink-0 pl-2">
+                                                    <span className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Dự Kiến</span>
+                                                    <div className="flex items-baseline gap-0.5">
+                                                        <span className={`text-lg font-black tabular-nums leading-none tracking-tight ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                                                            {bonus ? f.format(Math.ceil(dkienVal / 1000)) : '-'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="grid grid-cols-5 gap-1.5 mt-2">
+                                                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">DTQĐ</p>
+                                                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</p>
+                                                </div>
+                                                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">HQQĐ</p>
+                                                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</p>
+                                                </div>
+                                                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">ERP</p>
+                                                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(erpVal, 'erp')}`}>{bonus ? f.format(Math.ceil(erpVal / 1000)) : '-'}</p>
+                                                </div>
+                                                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">T.Nóng</p>
+                                                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(tnongVal, 'tnong')}`}>{bonus ? f.format(Math.ceil(tnongVal / 1000)) : '-'}</p>
+                                                </div>
+                                                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">Tổng</p>
+                                                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(tongVal, 'tong')}`}>{bonus ? f.format(Math.ceil(tongVal / 1000)) : '-'}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                        <table className="w-full border-collapse compact-export-table">
+                            <thead className="bg-slate-50 dark:bg-slate-800/90 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
+                                <tr>
+                                    <th className="px-3 py-2.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-2 border-b-slate-300 dark:border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 font-black z-10 sticky left-0 min-w-[200px]" onClick={() => { setSortField('name'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Nhân viên</th>
+                                    <th className="px-3 py-2.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-2 border-b-slate-300 dark:border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 font-black" onClick={() => { setSortField('dtqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>DTQĐ</th>
+                                    <th className="px-3 py-2.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-2 border-b-slate-300 dark:border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 font-black" onClick={() => { setSortField('hqqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>HQQĐ</th>
+                                    <th className="px-3 py-2.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-2 border-b-slate-300 dark:border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 font-black" onClick={() => { setSortField('erp'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>ERP</th>
+                                    <th className="px-3 py-2.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-2 border-b-slate-300 dark:border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 font-black" onClick={() => { setSortField('tNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>T.NÓNG</th>
+                                    <th className="px-3 py-2.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-2 border-b-slate-300 dark:border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 font-black" onClick={() => { setSortField('pNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>%T.NÓNG</th>
+                                    <th className="px-3 py-2.5 text-center border-r border-slate-200 dark:border-slate-700 border-b-2 border-b-slate-300 dark:border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 font-black" onClick={() => { setSortField('tong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>TỔNG</th>
+                                    <th className="px-3 py-2.5 text-center border-b-2 border-b-slate-300 dark:border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 font-black text-indigo-700 dark:text-indigo-400" onClick={() => { setSortField('dKien'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>THƯỞNG DK</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white dark:bg-[#1c1c1e] divide-y divide-slate-100 dark:divide-slate-700/60">
+                                {displayList.map((item, idx) => {
+                                    if (item.type === 'department' || item.type === 'total') {
+                                        const isGrandTotal = item.type === 'total';
+                                        return (
+                                            <tr key={`${item.type}-${idx}`} className={`${isGrandTotal ? 'bg-slate-100 dark:bg-slate-800/70 text-slate-800 dark:text-white font-extrabold border-t-2 border-t-slate-300 dark:border-t-slate-600' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'}`}>
+                                                <td className={`px-3 py-2.5 text-[11px] uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700/50 text-center sticky left-0 z-10 bg-inherit' : 'border-slate-200 dark:border-slate-700/50 sticky left-0 z-10 bg-inherit'}`}>{item.name}</td>
+                                                <td className={`px-2 py-2.5 text-[11px] text-center border-r tabular-nums border-slate-100 dark:border-slate-700/50`}>{f.format(item.sumDtqd)}</td>
+                                                <td className={`px-2 py-2.5 text-[11px] text-center border-r tabular-nums border-slate-100 dark:border-slate-700/50`}>-</td>
+                                                <td className={`px-2 py-2.5 text-[11px] text-center border-r tabular-nums border-slate-100 dark:border-slate-700/50`}>{f.format(Math.ceil(item.sumErp / 1000))}</td>
+                                                <td className={`px-2 py-2.5 text-[11px] text-center border-r tabular-nums border-slate-100 dark:border-slate-700/50`}>{f.format(Math.ceil(item.sumTnong / 1000))}</td>
+                                                <td className={`px-2 py-2.5 text-[11px] text-center border-r tabular-nums border-slate-100 dark:border-slate-700/50`}>-</td>
+                                                <td className={`px-2 py-2.5 text-[11px] text-center border-r tabular-nums font-black border-slate-100 dark:border-slate-700/50 text-slate-900 dark:text-white`}>{f.format(Math.ceil(item.sumTong / 1000))}</td>
+                                                <td className={`px-2 py-2.5 text-[11px] text-center tabular-nums font-black ${isGrandTotal ? 'bg-indigo-50/50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-400 text-sm' : 'bg-indigo-50/30 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 text-[12px]'}`}>{f.format(Math.ceil(item.sumDkien / 1000))}</td>
                                             </tr>
                                         );
                                     }
@@ -455,27 +492,27 @@ export const BonusView: React.FC<{
                                     const isStale = !isUpdatedToday(bonus?.updatedAt);
 
                                     return (
-                                        <tr key={item.originalName} className={`transition-all cursor-pointer ${isHighlighted ? 'bg-indigo-50/50 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50 text-[12px]' : 'hover:bg-slate-50 dark:hover:bg-slate-750 text-[12px]'}`} onClick={() => onEmployeeClick(item)}>
-                                            <td className="px-3 py-2 border-r border-slate-100 dark:border-slate-700/50 flex items-center gap-2 min-w-[150px]">
+                                        <tr key={item.originalName} className={`transition-colors duration-100 cursor-pointer ${isHighlighted ? 'bg-indigo-50/60 dark:bg-indigo-900/20 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50 text-[12px]' : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50 dark:hover:bg-slate-800/40 text-[12px]'}`} onClick={() => onEmployeeClick(item)}>
+                                            <td className="px-3 py-2.5 border-r border-slate-100 dark:border-slate-700/50 flex items-center gap-2 min-w-[200px] sticky left-0 z-10 bg-inherit">
                                                 <MedalBadge rank={item.rank} />
                                                 <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item)} />
-                                                <span className={`font-bold whitespace-normal break-words ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : (isStale ? 'text-slate-400 dark:text-slate-600' : 'text-indigo-600 dark:text-indigo-500')}`}>
+                                                <span className={`font-bold whitespace-normal break-words tracking-tight ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : (isStale ? 'text-slate-400 dark:text-slate-500' : 'text-slate-800 dark:text-slate-200')}`}>
                                                     {item.name}
                                                 </span>
                                             </td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(erpVal, 'erp')}`}>
+                                            <td className={`px-2 py-2.5 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${isHighlighted ? 'font-black text-indigo-700 dark:text-indigo-400' : 'font-semibold ' + getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</td>
+                                            <td className={`px-2 py-2.5 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${isHighlighted ? 'font-black text-indigo-700 dark:text-indigo-400' : 'font-semibold ' + getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</td>
+                                            <td className={`px-2 py-2.5 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${isHighlighted ? 'font-black text-indigo-700 dark:text-indigo-400' : 'font-semibold ' + getCellColor(erpVal, 'erp')}`}>
                                                 {bonus ? f.format(Math.ceil(erpVal / 1000)) : '-'}
                                             </td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(tnongVal, 'tnong')}`}>
+                                            <td className={`px-2 py-2.5 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${isHighlighted ? 'font-black text-indigo-700 dark:text-indigo-400' : 'font-semibold ' + getCellColor(tnongVal, 'tnong')}`}>
                                                 {bonus ? f.format(Math.ceil(tnongVal / 1000)) : '-'}
                                             </td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(pnongVal, 'pnong')}`}>{bonus ? pnongVal.toFixed(0) + '%' : '-'}</td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${isHighlighted ? 'text-indigo-700' : getCellColor(tongVal, 'tong')}`}>
+                                            <td className={`px-2 py-2.5 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${isHighlighted ? 'font-black text-indigo-700 dark:text-indigo-400' : 'font-semibold ' + getCellColor(pnongVal, 'pnong')}`}>{bonus ? pnongVal.toFixed(0) + '%' : '-'}</td>
+                                            <td className={`px-2 py-2.5 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums ${isHighlighted ? 'font-black text-indigo-700 dark:text-indigo-400' : 'font-black ' + getCellColor(tongVal, 'tong')}`}>
                                                 {bonus ? f.format(Math.ceil(tongVal / 1000)) : '-'}
                                             </td>
-                                            <td className={`px-2 py-2 text-[11px] text-center ${isHighlighted ? 'bg-indigo-100/50 dark:bg-indigo-900/30' : 'bg-slate-50/50 dark:bg-slate-800/20'} tabular-nums font-extrabold ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600'}`}>
+                                            <td className={`px-2 py-2.5 text-[12px] text-center ${isHighlighted ? 'bg-indigo-100/50 dark:bg-indigo-900/30' : 'bg-slate-50/50 dark:bg-slate-800/20'} tabular-nums font-black ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
                                                 {bonus ? f.format(Math.ceil(dkienVal / 1000)) : '-'}
                                             </td>
                                         </tr>
@@ -483,6 +520,7 @@ export const BonusView: React.FC<{
                                 })}
                             </tbody>
                         </table>
+                        )}
                         </div>
                     </div>
                 </Card>

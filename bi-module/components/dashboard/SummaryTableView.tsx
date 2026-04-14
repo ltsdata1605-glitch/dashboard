@@ -7,6 +7,33 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { parseSummaryData, roundUp, shortenSupermarketName, parseNumber } from '../../utils/dashboardHelpers';
 import { Switch } from './DashboardWidgets';
 
+// --- COLUMN GROUPS FOR ANALYSIS STYLE ---
+const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
+    'Tên miền': { label: 'DANH MỤC', bg: 'bg-slate-50', text: 'text-slate-700' },
+    'DTLK': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    'DTQĐ': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    'Target (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    'Target(QĐ) V.Trội': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    '%HT V.Trội': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    '%HT TARGET(QĐ) V.Trội': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    'DT Dự Kiến': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    'DT Dự Kiến (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    '% HT Target Dự Kiến (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    '% HT Target (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    '% HT Target Ngày (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    '%HQQĐ': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    'Lượt Khách LK': { label: 'TRAFFIC & TỶ LỆ', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' },
+    'Lượt Bill Bán Hàng': { label: 'TRAFFIC & TỶ LỆ', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' },
+    'Lượt bill': { label: 'TRAFFIC & TỶ LỆ', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' },
+    'TLPVTC LK': { label: 'TRAFFIC & TỶ LỆ', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' },
+    'Lượt Bill Thu Hộ': { label: 'TRAFFIC & TỶ LỆ', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' },
+    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
+    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
+    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
+    'Số lượng': { label: 'SỐ LƯỢNG', bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-400' },
+};
+
 // --- Helpers ---
 const getYesterdayDateString = () => {
     const today = new Date();
@@ -29,12 +56,12 @@ interface SummaryTableViewProps {
 }
 
 const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>((props, ref) => {
-    const { data, isCumulative = false, supermarketDailyTargets, supermarketMonthlyTargets, activeSupermarket, onExport, updateTimestamp, supermarketTargets } = props;
+    const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, onExport, updateTimestamp, supermarketTargets } = props;
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const selectorRef = useRef<HTMLDivElement>(null);
     const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>(`hidden-cols-summary-${isCumulative ? 'luyke' : 'realtime'}`, []);
     const [columnOrder, setColumnOrder] = useIndexedDBState<string[]>(`summary-col-order-${isCumulative ? 'luyke' : 'realtime'}`, []);
-    const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
+
 
     const headerMapping: Record<string, string> = {
         'Tên miền': 'SIÊU THỊ', 'DTLK': 'DT<br/>THỰC', 'DTQĐ': 'DTQĐ', 'Target (QĐ)': 'M.TIÊU<br/>QĐ', 'Target(QĐ) V.Trội': 'M.TIÊU<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>VT', '%HT TARGET(QĐ) V.Trội': '%HT<br/>VT', 'Lượt Khách LK': 'KHÁCH', 'Lượt Bill Bán Hàng': 'BILL', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%T.CHẬM', 'DT TRẢ GÓP': 'DT T.CHẬM', 'DT Trả Góp': 'DT T.CHẬM', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'DTDK', 'DT Dự Kiến (QĐ)': 'DTQĐ<br/>DK', '+/- DTCK Tháng (QĐ)': '+/-QĐ<br/>CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- Tỷ Trọng Trả Góp': '+/-T.C', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HTQĐ', '% HT Target Ngày (QĐ)': '%HTQĐ', '%HQQĐ': '%HQQĐ',
@@ -141,6 +168,21 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     const orderedHeaders = useMemo(() => columnOrder.filter(h => processedTable.allHeaders.includes(h)), [columnOrder, processedTable.allHeaders]);
     const visibleColumns = useMemo(() => new Set(orderedHeaders.filter(h => !new Set(userHiddenColumns).has(h))), [orderedHeaders, userHiddenColumns]);
 
+    const headerGroups = useMemo(() => {
+        const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean }[] = [];
+        orderedHeaders.filter(h => visibleColumns.has(h)).forEach(h => {
+            const defaultGroup = { label: 'KHÁC', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' };
+            const g = COLUMN_GROUPS[h] || defaultGroup;
+            const isSticky = h === 'Tên miền';
+            if (groups.length > 0 && groups[groups.length - 1].label === g.label && !isSticky && !groups[groups.length - 1].isSticky) {
+                groups[groups.length - 1].colspan += 1;
+            } else {
+                groups.push({ ...g, colspan: 1, isSticky });
+            }
+        });
+        return groups;
+    }, [orderedHeaders, visibleColumns]);
+
     const cardTitle = (
         <div className="card-title-text flex flex-col items-center justify-center w-full">
             <span className="text-xl font-black uppercase text-primary-700 dark:text-primary-400 text-center leading-none tracking-tight">
@@ -155,57 +197,165 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         </div>
     );
 
-    const isMobile = window.innerWidth < 768;
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
+    // Helper: lấy % HT key tuỳ loại báo cáo
+    const getHtKey = () => isCumulative
+        ? (processedTable.allHeaders.includes('%HT TARGET(QĐ) V.Trội') ? '%HT TARGET(QĐ) V.Trội' : '% HT Target Dự Kiến (QĐ)')
+        : (processedTable.allHeaders.includes('%HT V.Trội') ? '%HT V.Trội' : '% HT Target (QĐ)');
+
+    const htKey = getHtKey();
+
+    const getHtColor = (pct: number) => {
+        if (pct >= 100) return { bg: 'bg-emerald-500', text: 'text-white', badge: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' };
+        if (pct >= 85) return { bg: 'bg-amber-400', text: 'text-white', badge: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' };
+        return { bg: 'bg-red-500', text: 'text-white', badge: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400' };
+    };
 
     return (
         <div className="js-summary-table-container relative z-10">
-            <Card ref={ref} title={cardTitle} actionButton={<div className="flex items-center gap-1.5 no-print"><ExportButton onExportPNG={onExport} /><div className="relative" ref={selectorRef}><button onClick={() => setIsColumnSelectorOpen(!isColumnSelectorOpen)} className="p-1 rounded-full text-slate-500 hover:bg-slate-200"><CogIcon className="h-4 w-4" /></button>{isColumnSelectorOpen && <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border p-2 z-[100] max-h-80 overflow-y-auto"><div className="grid gap-1">{orderedHeaders.map(h => <div key={h} className="flex items-center justify-between p-2 rounded hover:bg-slate-50"><label className="text-xs text-slate-700 flex-grow" dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }} /><Switch checked={visibleColumns.has(h)} onChange={() => setUserHiddenColumns(prev => { const nH = new Set(prev); if (nH.has(h)) nH.delete(h); else nH.add(h); return Array.from(nH); })} /></div>)}</div></div>}</div></div>} rounded={false} noPadding>
-                <div className="overflow-x-auto scrollbar-hide">
+            <Card ref={ref} title={cardTitle}
+                actionButton={
+                    <div className="flex items-center gap-1.5 no-print">
+                        <ExportButton onExportPNG={onExport} />
+                        <div className="relative" ref={selectorRef}>
+                            <button
+                                onClick={() => setIsColumnSelectorOpen(!isColumnSelectorOpen)}
+                                className={`p-1.5 rounded-lg transition-colors ${
+                                    isColumnSelectorOpen
+                                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600'
+                                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                }`}
+                                title="Tuỳ chỉnh cột"
+                            >
+                                <CogIcon className="h-4 w-4" />
+                            </button>
+                            {isColumnSelectorOpen && (
+                                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-80 overflow-y-auto">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Hiển thị cột</p>
+                                    <div className="grid gap-0.5">
+                                        {orderedHeaders.map(h => (
+                                            <div key={h} className="flex items-center justify-between px-2 py-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                                <label
+                                                    className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer"
+                                                    dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
+                                                />
+                                                <Switch
+                                                    checked={visibleColumns.has(h)}
+                                                    onChange={() => setUserHiddenColumns(prev => {
+                                                        const nH = new Set(prev);
+                                                        if (nH.has(h)) nH.delete(h); else nH.add(h);
+                                                        return Array.from(nH);
+                                                    })}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                }
+                rounded={false} noPadding
+            >
+                <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
                     {isMobile ? (
+                        /* ─── MOBILE CARD VIEW ─── */
                         <div className="divide-y divide-slate-100 dark:divide-slate-700">
                             {processedTable.allRows.map((row, rIdx) => {
                                 const nameIdx = processedTable.allHeaders.indexOf('Tên miền');
                                 const isTotal = row[nameIdx] === 'Tổng';
                                 const isSel = !isTotal && row[nameIdx] === activeSupermarket;
-                                
+                                const htIdx = processedTable.allHeaders.indexOf(htKey);
+                                const htPct = htIdx !== -1 ? roundUp(parseNumber(row[htIdx])) : 0;
+                                const htColors = getHtColor(htPct);
+                                const dtqdIdx = processedTable.allHeaders.indexOf('DTQĐ');
+                                const dtqdVal = dtqdIdx !== -1 ? roundUp(parseNumber(row[dtqdIdx])) : 0;
+
+                                /* Hàng TỔNG */
                                 if (isTotal) {
                                     return (
-                                        <div key={rIdx} className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white px-4 py-3 flex justify-between items-center font-extrabold uppercase tracking-wider text-xs border-t-[3px] border-t-slate-200">
-                                            <span>TỔNG CỘNG</span>
-                                            <div className="flex flex-col items-end">
-                                                <span>{f.format(roundUp(parseNumber(row[processedTable.allHeaders.indexOf('DTQĐ')])))} Tr</span>
-                                                <span className="text-[10px] opacity-80">{roundUp(parseNumber(row[processedTable.allHeaders.indexOf('% HT Target (QĐ)')]))}% HT</span>
+                                        <div key={rIdx} className="bg-slate-100 dark:bg-slate-800/80 px-4 py-3 flex items-center justify-between border-t-2 border-slate-300 dark:border-slate-600">
+                                            <span className="text-xs font-black text-slate-700 dark:text-white uppercase tracking-wider">Tổng cụm</span>
+                                            <div className="flex items-center gap-3">
+                                                <div className="text-right">
+                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">DTQĐ</p>
+                                                    <p className="text-sm font-black text-primary-600 dark:text-primary-400 tabular-nums">{f.format(dtqdVal)}</p>
+                                                </div>
+                                                <span className={`text-xs font-black px-2.5 py-1 rounded-full ${htColors.badge}`}>
+                                                    {htPct}%
+                                                </span>
                                             </div>
                                         </div>
                                     );
                                 }
 
+                                /* Hàng siêu thị */
                                 return (
-                                    <div key={rIdx} className={`p-4 flex flex-col gap-3 ${isSel ? 'bg-indigo-50/50 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors'}`}>
-                                        <div className="flex justify-between items-start">
-                                            <span className="font-black text-slate-900 dark:text-white uppercase tracking-tight">{shortenSupermarketName(String(row[nameIdx])).toUpperCase()}</span>
-                                            <div className="flex flex-col items-end">
-                                                <span className={`text-xs font-black px-2 py-0.5 rounded-full ${parseNumber(row[processedTable.allHeaders.indexOf('% HT Target (QĐ)')]) >= 100 ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                                                    {roundUp(parseNumber(row[processedTable.allHeaders.indexOf('% HT Target (QĐ)')]))}% HT
-                                                </span>
+                                    <div key={rIdx} className={`px-4 py-3 ${
+                                        isSel ? 'bg-primary-50/60 dark:bg-primary-900/10' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
+                                    } transition-colors`}>
+                                        {/* Header row: tên + % HT badge */}
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                                {shortenSupermarketName(String(row[nameIdx])).toUpperCase()}
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                {/* Progress pill */}
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                        <div
+                                                            className={`h-full rounded-full ${htColors.bg} transition-all duration-500`}
+                                                            style={{ width: `${Math.min(htPct, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${htColors.badge}`}>
+                                                        {htPct}%
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        
-                                        <div className="grid grid-cols-3 gap-2">
-                                            {orderedHeaders.slice(1, 7).map(h => {
+
+                                        {/* Hero: DTQĐ */}
+                                        <div className="flex items-baseline gap-2 mb-2.5">
+                                            <span className="text-[1.6rem] font-black text-primary-600 dark:text-primary-400 tabular-nums leading-none">
+                                                {f.format(dtqdVal)}
+                                            </span>
+                                            <span className="text-[10px] font-bold text-slate-400">triệu QĐ</span>
+                                            {/* DT Thực */}
+                                            {processedTable.allHeaders.indexOf('DTLK') !== -1 && (
+                                                <span className="ml-auto text-xs font-bold text-[#b91c1c] dark:text-red-400 tabular-nums">
+                                                    {f.format(roundUp(parseNumber(row[processedTable.allHeaders.indexOf('DTLK')])))}
+                                                    <span className="text-[9px] font-medium text-slate-400 ml-0.5">thực</span>
+                                                </span>
+                                            )}
+                                        </div>
+
+                                        {/* Mini grid: các chỉ số khác */}
+                                        <div className="grid grid-cols-3 gap-1.5">
+                                            {orderedHeaders.filter(h => !['Tên miền', 'DTLK', 'DTQĐ'].includes(h)).slice(0, 6).map(h => {
                                                 if (!visibleColumns.has(h)) return null;
                                                 const oIdx = processedTable.allHeaders.indexOf(h);
+                                                if (oIdx === -1) return null;
                                                 const cell = row[oIdx];
                                                 const val = parseNumber(cell?.isMerged ? cell.value : cell);
+                                                const isHtCol = h.includes('%HT') || h === '%HT V.Trội';
+                                                const htC = isHtCol ? getHtColor(val) : null;
                                                 return (
-                                                    <div key={h} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1" dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}></p>
-                                                        <p className={`text-xs font-black tabular-nums ${h === 'DTQĐ' ? 'text-indigo-700 dark:text-indigo-400' : ''}`}>
-                                                            {cell?.isMerged ? (cell.type === 'percent' ? roundUp(val)+'%' : f.format(roundUp(val))) : (String(cell).includes('%') || h.includes('%') ? roundUp(val) + '%' : f.format(roundUp(val)))}
+                                                    <div key={h} className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
+                                                        <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5"
+                                                            dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
+                                                        />
+                                                        <p className={`text-[11px] font-black tabular-nums leading-none ${
+                                                            htC ? htC.badge.split(' ').filter(c => c.startsWith('text-')).join(' ') : ''
+                                                        }`}>
+                                                            {cell?.isMerged
+                                                                ? (cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val)))
+                                                                : (String(cell).includes('%') || h.includes('%') ? roundUp(val) + '%' : f.format(roundUp(val)))}
                                                         </p>
                                                         {cell?.isMerged && (
-                                                            <p className={`text-[8px] font-bold ${parseNumber(cell.growth) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                                                ({(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth)) + '%'})
+                                                            <p className={`text-[7px] font-bold mt-0.5 ${parseNumber(cell.growth) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                                                                {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
                                                             </p>
                                                         )}
                                                     </div>
@@ -217,45 +367,126 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                             })}
                         </div>
                     ) : (
-                        <table className="w-full border-collapse">
-                            <thead>
-                                <tr>
-                                    {orderedHeaders.map(h => visibleColumns.has(h) ? <th key={h} className={`px-1 py-3 text-[10px] font-bold text-slate-500 uppercase bg-slate-50 dark:bg-slate-800/80 tracking-wider border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 hover:bg-slate-100 dark:hover:bg-slate-750 text-center whitespace-nowrap`} dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}></th> : null)}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-[#1c1c1e]">
-                                {processedTable.allRows.map((row, rIdx) => { 
-                                    const nameIdx = processedTable.allHeaders.indexOf('Tên miền'), isTotal = row[nameIdx] === 'Tổng', isSel = !isTotal && row[nameIdx] === activeSupermarket; 
-                                    return (
-                                        <tr key={rIdx} className={`${isTotal ? 'bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white font-extrabold border-t-[3px] border-t-slate-200' : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50 dark:hover:bg-slate-750'} ${isSel ? '!bg-indigo-50/50 dark:!bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : ''}`}>
-                                            {orderedHeaders.map(h => { 
-                                                if (!visibleColumns.has(h)) return null; 
-                                                const oIdx = processedTable.allHeaders.indexOf(h), cell = row[oIdx], val = parseNumber(cell?.isMerged ? cell.value : cell); 
-                                                let classes = `px-1 py-2.5 whitespace-nowrap text-[10px] border-r border-slate-100 dark:border-slate-700 last:border-r-0 tabular-nums ${isTotal ? 'font-bold' : 'font-normal'} ${h === 'Tên miền' ? 'text-left font-medium' : 'text-center'}`; 
-                                                if (!isTotal) { 
-                                                    if ((h.includes('%HT') || h === '%HT V.Trội') && !isNaN(val)) classes += val >= 100 ? ' text-green-600' : (val >= 85 ? ' text-yellow-600' : ' text-red-600'); 
-                                                    if (h === '%HQQĐ' && !isNaN(val)) classes += val >= (supermarketTargets[row[nameIdx]]?.quyDoi ?? 40) ? ' text-green-600 font-bold' : ' text-red-600'; 
-                                                    if (h === 'DTLK') classes += ' text-[#980000]'; 
-                                                    if (h === 'DTQĐ') classes += ' text-indigo-700 dark:text-indigo-400 font-extrabold'; 
-                                                } 
-                                                return (
-                                                    <td key={h} className={classes}>
-                                                        {cell?.isMerged ? (
-                                                            <div className="flex flex-col items-center leading-none">
-                                                                <span className="font-normal">{cell.type === 'percent' ? roundUp(val)+'%' : f.format(roundUp(val))}</span>
-                                                                <span className={`text-[7px] font-medium ${isTotal ? 'text-white' : (parseNumber(cell.growth) >= 0 ? 'text-green-600' : 'text-red-600')}`}>({(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth)) + '%'})</span>
-                                                            </div>
-                                                        ) : (
-                                                            h === 'Tên miền' ? (isTotal ? 'TỔNG' : shortenSupermarketName(String(cell)).toUpperCase()) : (String(cell).includes('%') || h.includes('%') ? roundUp(val) + '%' : f.format(roundUp(val)))
-                                                        )}
-                                                    </td>
-                                                ); 
-                                            })}
-                                        </tr>
-                                    ); 
-                                })}
-                            </tbody>
-                        </table>
+                        /* ─── DESKTOP TABLE VIEW ─── */
+                        <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden shadow-sm m-4 mb-6">
+                            <table className="w-full border-collapse compact-export-table">
+                                <thead>
+                                    {/* TIER 1: GROUP HEADERS */}
+                                    <tr>
+                                        {headerGroups.map((g, idx) => (
+                                            <th
+                                                key={`group-${idx}`}
+                                                colSpan={g.colspan}
+                                                className={`
+                                                    py-2 px-2 text-[11px] font-black uppercase tracking-widest text-center border-r border-b border-white dark:border-slate-800
+                                                    ${g.bg} ${g.text}
+                                                    ${g.isSticky ? 'sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.02)]' : ''}
+                                                `}
+                                            >
+                                                {g.label}
+                                            </th>
+                                        ))}
+                                    </tr>
+
+                                    {/* TIER 2: COLUMN HEADERS */}
+                                    <tr className="bg-white dark:bg-[#1c1c1e] shadow-sm">
+                                        {orderedHeaders.map(h => {
+                                            if (!visibleColumns.has(h)) return null;
+                                            const g = COLUMN_GROUPS[h] || { text: 'text-slate-600 dark:text-slate-300' };
+                                            return (
+                                                <th
+                                                    key={h}
+                                                    className={`
+                                                        px-2 py-3 text-[10px] font-bold uppercase
+                                                        tracking-wider border-r border-slate-200 dark:border-slate-700/80
+                                                        border-b border-b-slate-300 dark:border-b-slate-600
+                                                        text-center align-middle whitespace-nowrap
+                                                        hover:bg-slate-50 dark:hover:bg-slate-800/50 select-none
+                                                        ${g.text}
+                                                        ${h === 'Tên miền' ? 'text-left sticky left-0 z-10 min-w-[150px] bg-white dark:bg-[#1c1c1e] shadow-[2px_0_4px_rgba(0,0,0,0.02)]' : ''}
+                                                    `}
+                                                    dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
+                                                />
+                                            );
+                                        })}
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white dark:bg-[#1c1c1e]">
+                                    {processedTable.allRows.map((row, rIdx) => {
+                                        const nameIdx = processedTable.allHeaders.indexOf('Tên miền');
+                                        const isTotal = row[nameIdx] === 'Tổng';
+                                        const isSel = !isTotal && row[nameIdx] === activeSupermarket;
+                                        return (
+                                            <tr
+                                                key={rIdx}
+                                                className={`
+                                                    transition-colors duration-100 group
+                                                    ${isTotal
+                                                        ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-y !border-y-emerald-200 dark:!border-y-emerald-800/50'
+                                                        : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50/50 dark:hover:bg-slate-800/30'}
+                                                    ${isSel ? '!bg-indigo-50/50 dark:!bg-indigo-900/30 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800' : ''}
+                                                `}
+                                            >
+                                                {orderedHeaders.map(h => {
+                                                    if (!visibleColumns.has(h)) return null;
+                                                    const oIdx = processedTable.allHeaders.indexOf(h);
+                                                    const cell = row[oIdx];
+                                                    const val = parseNumber(cell?.isMerged ? cell.value : cell);
+                                                    const isHtCol = (h.includes('%HT') || h === '%HT V.Trội') && !isNaN(val);
+                                                    const isHqqd = h === '%HQQĐ' && !isNaN(val);
+                                                    const smKey = row[nameIdx];
+    
+                                                    let colorCls = '';
+                                                    if (!isTotal) {
+                                                        if (isHtCol) colorCls = val >= 100 ? ' text-emerald-600 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-600 dark:text-amber-400 font-bold' : ' text-red-600 dark:text-red-400 font-bold';
+                                                        if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-emerald-600 dark:text-emerald-400 font-bold' : ' text-red-600 dark:text-red-400 font-bold';
+                                                        if (h === 'DTLK') colorCls = ' text-[#b91c1c] dark:text-red-400 font-bold';
+                                                    }
+    
+                                                    return (
+                                                        <td
+                                                            key={h}
+                                                            className={`
+                                                                px-2 py-2.5 whitespace-nowrap text-[11px]
+                                                                border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0
+                                                                tabular-nums align-middle
+                                                                ${isTotal ? 'font-black text-emerald-800 dark:text-emerald-400' : 'font-semibold text-slate-600 dark:text-slate-300'}
+                                                                ${h === 'Tên miền' ? `text-left font-bold sticky left-0 z-[5] ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-[#1c1c1e]'}` : 'text-center'}
+                                                                ${colorCls}
+                                                            `}
+                                                        >
+                                                            {cell?.isMerged ? (
+                                                                <div className="flex flex-col items-center leading-tight justify-center">
+                                                                    <span className={h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)' ? 'text-indigo-700 dark:text-indigo-400 font-extrabold text-[12px]' : ''}>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
+                                                                    <span className={`text-[8px] font-black ${
+                                                                        isTotal ? 'opacity-70' : parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
+                                                                    }`}>
+                                                                        {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
+                                                                    </span>
+                                                                </div>
+                                                            ) : (
+                                                                h === 'Tên miền'
+                                                                    ? (isTotal ? 'TỔNG CỤM' : shortenSupermarketName(String(cell)).toUpperCase())
+                                                                    : (isHtCol || isHqqd) && !isTotal
+                                                                        ? (
+                                                                            <div className="flex justify-center items-center">
+                                                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${val >= 100 ? (isHqqd && val < (supermarketTargets[smKey]?.quyDoi ?? 40) ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400') : val >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                                                                                    {roundUp(val)}%
+                                                                                </span>
+                                                                            </div>
+                                                                        )
+                                                                    : h === 'DTQĐ' && !isTotal ? <span className="text-indigo-700 dark:text-indigo-400 font-black text-[12px]">{f.format(roundUp(val))}</span>
+                                                                    : (String(cell).includes('%') || h.includes('%') ? roundUp(val) + '%' : f.format(roundUp(val)))
+                                                            )}
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     )}
                 </div>
             </Card>

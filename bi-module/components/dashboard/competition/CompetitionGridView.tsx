@@ -31,7 +31,7 @@ const CRITERIA_CARD_THEMES = {
   }
 };
 
-const CompetitionGridView: React.FC<CompetitionGridViewProps> = ({ groupedAndSortedPrograms, headers, hiddenColumns, isRealtime }) => {
+const CompetitionGridView: React.FC<CompetitionGridViewProps> = ({ groupedAndSortedPrograms, headers, hiddenColumns: _hiddenColumns, isRealtime }) => {
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     
     const getColumnKey = (possibleKeys: string[]) => headers.find(h => possibleKeys.includes(h));

@@ -1,11 +1,10 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import Card from './Card';
-import { LineChartIcon, ArchiveBoxIcon, UsersIcon, XIcon, BuildingStorefrontIcon, ChevronDownIcon, CheckCircleIcon, FilterIcon, CreditCardIcon, SparklesIcon, PlusIcon } from './Icons';
+import { LineChartIcon, ArchiveBoxIcon, BuildingStorefrontIcon, ChevronDownIcon, FilterIcon, CreditCardIcon, SparklesIcon } from './Icons';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
-import TrendChart, { TrendDataPoint } from './TrendChart';
+
 import * as db from '../utils/db';
-import { RevenueRow, Employee, BonusMetrics, SnapshotMetadata, SnapshotData, Tab, CompetitionDataForCriterion, Criterion, ManualDeptMapping, CompetitionHeader, Version } from '../types/nhanVienTypes';
+import { RevenueRow, Employee, BonusMetrics, Tab, Criterion, ManualDeptMapping, Version } from '../types/nhanVienTypes';
 import { parseRevenueData, parseCompetitionData, formatEmployeeName, parseInstallmentData, parseNumber, parseCrossSellingData } from '../utils/nhanVienHelpers';
 import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
@@ -16,17 +15,18 @@ import CrossSellingTab from './nhanvien/CrossSellingTab';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { Switch } from './dashboard/DashboardWidgets';
 
-const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: Tab; setActiveTab: (t: Tab) => void; icon: React.ReactNode; }> = ({ tab, children, activeTab, setActiveTab, icon }) => (
+const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: Tab; setActiveTab: (t: Tab) => void; icon?: React.ReactNode; }> = ({ tab, children, activeTab, setActiveTab }) => (
     <button 
         onClick={() => setActiveTab(tab)} 
-        className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-bold rounded-full transition-all duration-300 whitespace-nowrap shrink-0 group focus:outline-none ${
-            activeTab === tab 
-                ? 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_4px_12px_rgba(79,70,229,0.3)] shadow-indigo-500/30 -translate-y-0.5' 
-                : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/50 hover:shadow-sm'
-        }`} 
+        className={`
+            flex-1 sm:flex-none px-5 py-1.5 text-[12px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap rounded-md
+            ${activeTab === tab 
+                ? 'font-black text-sky-600 dark:text-sky-400 bg-white dark:bg-slate-700 shadow-[0_1px_3px_rgba(0,0,0,0.1)]' 
+                : 'font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+            }
+        `} 
     >
-        <div className={`shrink-0 transition-transform duration-300 ${activeTab === tab ? 'scale-110' : 'group-hover:scale-110'}`}>{icon}</div>
-        <span>{children}</span>
+        {children}
     </button>
 );
 
@@ -404,98 +404,93 @@ export const NhanVien: React.FC = () => {
     };
 
     return (
-        <div className="space-y-8 relative">
-            <div className="absolute inset-0 pointer-events-none grid-pattern opacity-50 [mask-image:linear-gradient(to_bottom,white,transparent)] -z-10 -mx-4 lg:-mx-8"></div>
-            
-            <header className="flex flex-col xl:flex-row xl:items-end justify-between gap-6 relative z-10 pt-2 pb-4">
-                <div className="flex flex-col gap-1.5">
-                    <h1 className="text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-violet-600 to-indigo-600 animate-[blob_7s_infinite] bg-[length:200%_auto]">
-                        Phân tích Nhân viên
-                    </h1>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-xl">
-                        Bảng điều khiển hiệu suất & kinh doanh cá nhân thời gian thực dành cho siêu thị. Đồng bộ tự động từ Dashboard.
-                    </p>
+        <div className="space-y-6 relative">
+            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative z-10 pb-2 w-full">
+                {/* Title + Icon */}
+                <div className="flex items-center gap-3 min-w-0">
+                    <div className="p-2 sm:p-2.5 bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 rounded-2xl flex-shrink-0 border border-violet-100 dark:border-violet-800">
+                        <SparklesIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                    </div>
+                    <div className="min-w-0 flex flex-col justify-center">
+                        <h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-none truncate">
+                            Phân tích Nhân viên
+                        </h1>
+                        <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase mt-1 tracking-wider leading-none">
+                            Hiệu suất & Kinh doanh cá nhân
+                        </p>
+                    </div>
                 </div>
-                <div className="glass-card bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-[2rem] flex gap-1 no-print overflow-x-auto hide-scrollbar sm:w-max w-full shadow-[0_8px_30px_rgb(0,0,0,0.04)] ring-1 ring-white/50 dark:ring-white/5">
-                    <NavTabButton tab="revenue" activeTab={activeTab} setActiveTab={setActiveTab} icon={<LineChartIcon className="h-4.5 w-4.5" />}>Doanh thu</NavTabButton>
-                    <NavTabButton tab="crossSelling" activeTab={activeTab} setActiveTab={setActiveTab} icon={<ArchiveBoxIcon className="h-4.5 w-4.5" />}>Bán kèm</NavTabButton>
-                    <NavTabButton tab="installment" activeTab={activeTab} setActiveTab={setActiveTab} icon={<CreditCardIcon className="h-4.5 w-4.5" />}>Trả góp</NavTabButton>
-                    <NavTabButton tab="competition" activeTab={activeTab} setActiveTab={setActiveTab} icon={<SparklesIcon className="h-4.5 w-4.5" />}>Thi đua</NavTabButton>
-                    <NavTabButton tab="bonus" activeTab={activeTab} setActiveTab={setActiveTab} icon={<ArchiveBoxIcon className="h-4.5 w-4.5" />}>Thưởng</NavTabButton>
-                </div>
+
+                {/* Nav Tabs */}
+                <nav className="inline-flex items-center bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm no-print overflow-x-auto hide-scrollbar w-full sm:w-auto flex-shrink-0">
+                    <NavTabButton tab="revenue" activeTab={activeTab} setActiveTab={setActiveTab}>Doanh thu</NavTabButton>
+                    <NavTabButton tab="crossSelling" activeTab={activeTab} setActiveTab={setActiveTab}>Bán kèm</NavTabButton>
+                    <NavTabButton tab="installment" activeTab={activeTab} setActiveTab={setActiveTab}>Trả góp</NavTabButton>
+                    <NavTabButton tab="competition" activeTab={activeTab} setActiveTab={setActiveTab}>Thi đua</NavTabButton>
+                    <NavTabButton tab="bonus" activeTab={activeTab} setActiveTab={setActiveTab}>Thưởng</NavTabButton>
+                </nav>
             </header>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 z-20 relative">
-                <div className="surface-card p-5 group flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/40 dark:to-indigo-500/20 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                                <BuildingStorefrontIcon className="h-5 w-5" />
-                            </div>
-                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Lọc Siêu thị</h3>
-                         </div>
-                         <div className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-black text-slate-500 dark:text-slate-400 shadow-inner">
-                            {activeSupermarkets.length} đã chọn
-                         </div>
-                    </div>
-                    <div className="relative" ref={smRef}>
-                        <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full flex items-center justify-between px-4 py-3 bg-slate-50/50 dark:bg-[#252528] border border-slate-200/60 dark:border-slate-700/60 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all focus:ring-4 focus:ring-indigo-100 dark:focus:ring-indigo-900/40 outline-none hover:shadow-sm">
-                            <span className="truncate flex-1 text-left">{activeSupermarkets.length === supermarkets.length ? 'TẤT CẢ SIÊU THỊ' : activeSupermarkets.map(s => shortenSupermarketName(s)).join(', ')}</span>
-                            <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-300 ${isSmFilterOpen ? 'rotate-180 text-indigo-500' : ''}`} />
-                        </button>
-                        {isSmFilterOpen && (
-                            <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] z-[60] p-2 max-h-80 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="space-y-1">
-                                    <div onClick={() => toggleSupermarket('all')} className="flex items-center justify-between p-2.5 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <span className="text-xs font-black text-indigo-600 dark:text-indigo-400 tracking-wide">CHỌN TẤT CẢ</span>
-                                        <Switch checked={activeSupermarkets.length === supermarkets.length} onChange={() => {}} />
-                                    </div>
-                                    {supermarkets.map(sm => (
-                                        <div key={sm} onClick={() => toggleSupermarket(sm)} className="flex items-center justify-between p-2.5 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{shortenSupermarketName(sm)}</span>
-                                            <Switch checked={activeSupermarkets.includes(sm)} onChange={() => {}} />
-                                        </div>
-                                    ))}
+            {/* Compact Filter Bar */}
+            <div className="flex flex-col sm:flex-row gap-3 z-20 relative">
+                {/* Supermarket Filter */}
+                <div className="relative flex-1 min-w-0" ref={smRef}>
+                    <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700 transition-all outline-none shadow-sm">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <BuildingStorefrontIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
+                            <span className="truncate">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : activeSupermarkets.map(s => shortenSupermarketName(s)).join(', ')}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 rounded-full">{activeSupermarkets.length}</span>
+                            <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isSmFilterOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                    </button>
+                    {isSmFilterOpen && (
+                        <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-[60] p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="space-y-0.5">
+                                <div onClick={() => toggleSupermarket('all')} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <span className="text-xs font-black text-sky-600 dark:text-sky-400">Chọn tất cả</span>
+                                    <Switch checked={activeSupermarkets.length === supermarkets.length} onChange={() => {}} />
                                 </div>
+                                {supermarkets.map(sm => (
+                                    <div key={sm} onClick={() => toggleSupermarket(sm)} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{shortenSupermarketName(sm)}</span>
+                                        <Switch checked={activeSupermarkets.includes(sm)} onChange={() => {}} />
+                                    </div>
+                                ))}
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
 
-                <div className="surface-card p-5 group flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
-                         <div className="flex items-center gap-3">
-                            <div className="p-2.5 rounded-xl bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/40 dark:to-violet-500/20 text-violet-600 dark:text-violet-400 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
-                                <FilterIcon className="h-5 w-5" />
-                            </div>
-                            <h3 className="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">Lọc Bộ phận</h3>
-                         </div>
-                         <div className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-black text-slate-500 dark:text-slate-400 shadow-inner">
-                            {activeDepartments.includes('all') ? 'Tất cả' : `${activeDepartments.length} bộ phận`}
-                         </div>
-                    </div>
-                    <div className="relative" ref={deptRef}>
-                        <button onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full flex items-center justify-between px-4 py-3 bg-slate-50/50 dark:bg-[#252528] border border-slate-200/60 dark:border-slate-700/60 rounded-xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-violet-300 dark:hover:border-violet-700 transition-all focus:ring-4 focus:ring-violet-100 dark:focus:ring-violet-900/40 outline-none hover:shadow-sm">
-                            <span className="truncate flex-1 text-left">{activeDepartments.includes('all') ? 'TẤT CẢ BỘ PHẬN' : activeDepartments.join(', ')}</span>
-                            <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-300 ${isDeptFilterOpen ? 'rotate-180 text-violet-500' : ''}`} />
-                        </button>
-                        {isDeptFilterOpen && (
-                            <div className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] z-[60] p-2 max-h-80 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-200">
-                                <div className="space-y-1">
-                                    <div className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors" onClick={() => toggleDepartment('all')}>
-                                        <span className="text-xs font-black text-violet-600 dark:text-violet-400 tracking-wide">TẤT CẢ</span>
-                                        <Switch checked={activeDepartments.includes('all')} onChange={() => {}} />
-                                    </div>
-                                    {departmentOptions.map(dept => (
-                                        <div key={dept} className="flex items-center justify-between p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors" onClick={() => toggleDepartment(dept)}>
-                                            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{dept}</span>
-                                            <Switch checked={activeDepartments.includes(dept) && !activeDepartments.includes('all')} onChange={() => {}} />
-                                        </div>
-                                    ))}
+                {/* Department Filter */}
+                <div className="relative flex-1 min-w-0" ref={deptRef}>
+                    <button onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-violet-300 dark:hover:border-violet-700 transition-all outline-none shadow-sm">
+                        <div className="flex items-center gap-2 min-w-0">
+                            <FilterIcon className="h-4 w-4 text-violet-500 flex-shrink-0" />
+                            <span className="truncate">{activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}</span>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="text-[10px] font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-2 py-0.5 rounded-full">{activeDepartments.includes('all') ? 'All' : activeDepartments.length}</span>
+                            <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isDeptFilterOpen ? 'rotate-180' : ''}`} />
+                        </div>
+                    </button>
+                    {isDeptFilterOpen && (
+                        <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-[60] p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
+                            <div className="space-y-0.5">
+                                <div className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-violet-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors" onClick={() => toggleDepartment('all')}>
+                                    <span className="text-xs font-black text-violet-600 dark:text-violet-400">Tất cả</span>
+                                    <Switch checked={activeDepartments.includes('all')} onChange={() => {}} />
                                 </div>
+                                {departmentOptions.map(dept => (
+                                    <div key={dept} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors" onClick={() => toggleDepartment(dept)}>
+                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{dept}</span>
+                                        <Switch checked={activeDepartments.includes(dept) && !activeDepartments.includes('all')} onChange={() => {}} />
+                                    </div>
+                                ))}
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -514,7 +509,6 @@ export const NhanVien: React.FC = () => {
                             onEmployeeClick={(emp) => setEditingBonusEmployee(emp)} 
                             onBatchUpdate={startBatchBonusUpdate}
                             highlightedEmployees={highlightedEmployees} 
-                            setHighlightedEmployees={setHighlightedEmployees} 
                             activeDepartments={activeDepartments} 
                         />
                         {editingBonusEmployee && (

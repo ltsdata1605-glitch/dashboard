@@ -19,7 +19,7 @@ interface CompetitionViewProps {
 }
 
 const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((props, ref) => {
-    const { data, isRealtime, activeSupermarket, setActiveSupermarket, updateTimestamp, onExport } = props;
+    const { data, isRealtime, activeSupermarket, updateTimestamp, onExport } = props;
     
     const [viewMode, setViewMode] = useIndexedDBState<'grid' | 'list'>('competition_view_mode', 'list');
     const [programFilterSearch, setProgramFilterSearch] = useState('');

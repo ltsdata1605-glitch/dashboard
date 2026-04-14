@@ -1,5 +1,5 @@
-import { useMemo, useState, useCallback, useRef } from 'react';
-import { Criterion, CompetitionHeader, Employee } from '../types/nhanVienTypes';
+import { useMemo, useCallback } from 'react';
+import { Criterion, CompetitionHeader } from '../types/nhanVienTypes';
 
 const HIGHLIGHT_COLORS = [
     { dot: 'bg-teal-500', row: 'bg-teal-200 dark:bg-teal-900/60' },

@@ -11,6 +11,9 @@ import DashboardToolbar from './dashboard/DashboardToolbar';
 import KpiOverview from './dashboard/KpiOverview';
 import { SupermarketNavBar } from './dashboard/DashboardWidgets';
 import * as db from '../utils/db';
+import { useExportOptions } from '../../hooks/useExportOptions';
+import ExportOptionsModal from '../../components/common/ExportOptionsModal';
+import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 
 interface DashboardProps {
     onNavigateToUpdater: () => void;
@@ -68,6 +71,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     const industryTableRef = useRef<HTMLDivElement>(null);
     const competitionViewRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const exportOptions = useExportOptions();
 
     // --- Restore Logic ---
     const handleRestoreClick = () => {
@@ -167,7 +171,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
         clone.style.display = 'flex';
         clone.style.flexDirection = 'column';
         clone.style.gap = '0px'; 
-        clone.style.padding = '8px'; // GIẢM PADDING 4 BÊN XUỐNG TỐI THIỂU
+        clone.style.padding = '4px'; // GIẢM PADDING 4 BÊN XUỐNG TỐI THIỂU
         clone.style.border = `1px solid ${borderColor}`; 
 
         // Loại bỏ các thành phần không cần thiết
@@ -250,14 +254,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                 windowHeight: clone.scrollHeight
             });
             
-            const url = canvas.toDataURL('image/png');
-            const link = document.createElement('a');
-            const safeName = filenamePart.replace(/[^a-zA-Z0-9]/g, '_');
-            link.download = `BI_PRO_${safeName}_${new Date().toISOString().slice(0,10)}.png`;
-            link.href = url;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
+            if (blob) {
+                const safeName = filenamePart.replace(/[^a-zA-Z0-9]/g, '_');
+                const filename = `BI_PRO_${safeName}_${new Date().toISOString().slice(0,10)}.png`;
+                exportOptions.showExportOptions(blob, filename);
+            }
         } catch (err) {
             console.error('Export error', err);
         } finally {
@@ -318,6 +320,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     }
 
     return (
+        <ExportOptionsProvider value={{ showExportOptions: exportOptions.showExportOptions }}>
         <div className="space-y-6">
             <DashboardHeader title="Tổng quan Siêu thị" activeMainTab={activeMainTab} setActiveMainTab={setActiveMainTab} />
             
@@ -392,7 +395,16 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                 </div>
             </div>
             <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
+            <ExportOptionsModal
+                isOpen={!!exportOptions.pendingExport}
+                onClose={exportOptions.handleClose}
+                onDownload={exportOptions.handleDownload}
+                onShare={exportOptions.handleShare}
+                canShare={exportOptions.canShare}
+                filename={exportOptions.pendingExport?.filename || ''}
+            />
         </div>
+        </ExportOptionsProvider>
     );
 };
 

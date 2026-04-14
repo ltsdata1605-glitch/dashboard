@@ -1,5 +1,55 @@
 import * as htmlToImage from 'html-to-image';
 
+export type ExportMode = 'download' | 'share' | 'blob-only';
+
+/** Download a blob as a file */
+export function downloadBlob(blob: Blob, filename: string) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = url;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+/** Check if Web Share API with file sharing is available */
+export function canShareFiles(): boolean {
+    if (!navigator.share || !navigator.canShare) return false;
+    try {
+        const testFile = new File(['test'], 'test.png', { type: 'image/png' });
+        return navigator.canShare({ files: [testFile] });
+    } catch {
+        return false;
+    }
+}
+
+/** Share a blob via Web Share API (LINE, Zalo, Telegram, etc.) */
+export async function shareBlob(blob: Blob, filename: string): Promise<boolean> {
+    try {
+        const file = new File([blob], filename, { type: 'image/png' });
+        const shareData = { files: [file], title: filename.replace('.png', '') };
+        
+        if (navigator.canShare && navigator.canShare(shareData)) {
+            await navigator.share(shareData);
+            return true;
+        } else {
+            console.warn('Web Share API không hỗ trợ chia sẻ file trên trình duyệt này.');
+            // Fallback: download instead
+            downloadBlob(blob, filename);
+            return false;
+        }
+    } catch (error: any) {
+        // User cancelled share — not an error
+        if (error?.name === 'AbortError') return false;
+        console.error('Lỗi khi chia sẻ:', error);
+        // Fallback: download
+        downloadBlob(blob, filename);
+        return false;
+    }
+}
+
 const waitForImages = (element: HTMLElement): Promise<void[]> => {
     const images = Array.from(element.querySelectorAll('img'));
     const promises = images.map(img => {
@@ -14,8 +64,8 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
     return Promise.all(promises);
 };
 
-export async function exportElementAsImage(element: HTMLElement, filename: string, options: any = {}) {
-    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = 2, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false } = options;
+export async function exportElementAsImage(element: HTMLElement, filename: string, options: any = {}): Promise<Blob | null> {
+    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = 2, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode } = options;
 
     const clone = element.cloneNode(true) as HTMLElement;
 
@@ -522,6 +572,48 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     // Clean scripts
     clone.querySelectorAll('script').forEach(s => s.remove());
 
+    // ═══════════════════════════════════════════════════════════════════════
+    // EXPORT PADDING OPTIMIZATION: Strip excessive inner padding for thin borders
+    // ═══════════════════════════════════════════════════════════════════════
+    const isDarkForBorder = document.documentElement.classList.contains('dark');
+    const borderColor = isDarkForBorder ? '#334155' : '#e2e8f0';
+
+    // Add thin border around the entire exported image
+    clone.style.border = `1px solid ${borderColor}`;
+    clone.style.borderRadius = '0';
+
+    // Strip padding from .chart-card elements (they have p-6 = 24px by default)
+    clone.querySelectorAll('.chart-card').forEach((el: any) => {
+        if (el instanceof HTMLElement) {
+            el.style.setProperty('padding', '4px', 'important');
+            el.style.setProperty('border-radius', '0', 'important');
+            el.style.setProperty('border', 'none', 'important');
+            el.style.setProperty('box-shadow', 'none', 'important');
+        }
+    });
+
+    // Strip padding from .surface-card elements 
+    clone.querySelectorAll('.surface-card').forEach((el: any) => {
+        if (el instanceof HTMLElement) {
+            el.style.setProperty('padding', '4px', 'important');
+            el.style.setProperty('border-radius', '0', 'important');
+            el.style.setProperty('box-shadow', 'none', 'important');
+        }
+    });
+
+    // Strip large padding from content containers (p-6, p-2.5, lg:p-6, etc.)
+    clone.querySelectorAll('div').forEach((el: any) => {
+        if (!(el instanceof HTMLElement)) return;
+        const cls = el.getAttribute('class') || '';
+        // Target divs that have explicit padding classes like p-6, p-5, p-4 but NOT table cells
+        if ((cls.includes('p-6') || cls.includes('lg:p-6') || cls.includes('p-5')) && !cls.includes('kpi-grid')) {
+            el.style.setProperty('padding', '4px', 'important');
+        }
+    });
+
+    // Strip border-radius from the clone root itself
+    clone.style.borderRadius = '0';
+
     try {
         await document.fonts.ready;
         await waitForImages(clone);
@@ -535,9 +627,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         const finalWidth = captureAsDisplayed ? element.clientWidth : (rect.width || clone.scrollWidth);
         let finalHeight = rect.height || clone.scrollHeight;
         
-        // Safety: Add padding-bottom to the clone to ensure footer is not clipped
-        clone.style.paddingBottom = '40px';
-        finalHeight += 40;
+        // Safety: small padding to prevent content clipping at edges
+        finalHeight += 4;
 
         let finalScale = scale;
         if (finalHeight * scale > 15000) {
@@ -557,7 +648,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             height: finalHeight,
             style: {
                 margin: '0',
-                padding: '0',
+                padding: '4px',
             }
         });
 
@@ -565,23 +656,26 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             throw new Error("Không thể tạo ảnh từ DOM (kết quả trả về trống).");
         }
 
-        console.log(`Đã tạo ảnh gốc. Đang tải xuống...`);
+        console.log(`Đã tạo ảnh gốc. Mode: ${mode}`);
 
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.download = filename;
-        link.href = url;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        // Handle based on export mode
+        if (mode === 'blob-only') {
+            return blob;
+        } else if (mode === 'share') {
+            await shareBlob(blob, filename);
+            return blob;
+        } else {
+            // Default: download
+            downloadBlob(blob, filename);
+            return blob;
+        }
         
     } catch (error) {
         console.error(`Lỗi khi xuất ảnh: ${filename}`, error);
+        return null;
     } finally {
         if (document.body.contains(captureContainer)) {
             document.body.removeChild(captureContainer);
         }
-
     }
 }

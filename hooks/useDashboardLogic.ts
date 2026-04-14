@@ -74,7 +74,8 @@ export const useDashboardLogic = () => {
 
     // 6. Export Logic
     const {
-        isExporting, handleExport, handleBatchExport, handleBatchKhoExport
+        isExporting, handleExport, handleBatchExport, handleBatchKhoExport,
+        pendingExport, handlePendingDownload, handlePendingShare, handlePendingClose
     } = useExportLogic({
         productConfig,
         processedData,
@@ -153,6 +154,10 @@ export const useDashboardLogic = () => {
         openPerformanceModal, openUnshippedModal, handleExport,
         handleBatchExport,
         handleBatchKhoExport,
+        pendingExport,
+        handlePendingDownload,
+        handlePendingShare,
+        handlePendingClose,
         isDeduplicationEnabled,
         handleDeduplicationChange,
         isLuyKe,
