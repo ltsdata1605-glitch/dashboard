@@ -39,7 +39,7 @@ export default function Sidebar() {
     const menuItems = [
         { id: 'analysis', label: 'Phân tích', icon: BarChart3, path: '/analysis' },
         { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard, path: '/' },
-        { id: 'employees', label: 'Nhân viên BI', icon: Users, path: '/employees' },
+        { id: 'employees', label: 'Report BI', icon: Users, path: '/employees' },
         { id: 'inventory', label: 'Kho hàng', icon: Package, path: '/inventory' },
         { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports' },
         { 

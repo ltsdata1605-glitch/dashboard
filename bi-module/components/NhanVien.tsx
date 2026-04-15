@@ -14,6 +14,11 @@ import { CompetitionTab } from './nhanvien/CompetitionTab';
 import CrossSellingTab from './nhanvien/CrossSellingTab';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { Switch } from './dashboard/DashboardWidgets';
+import { TrendingUp, Users, ShoppingBag, CreditCard, Award, ArrowUpRight, ArrowDownRight, MoreVertical } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
+import { useExportOptions } from '../../hooks/useExportOptions';
+import ExportOptionsModal from '../../components/common/ExportOptionsModal';
+import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 
 const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: Tab; setActiveTab: (t: Tab) => void; icon?: React.ReactNode; }> = ({ tab, children, activeTab, setActiveTab }) => (
     <button 
@@ -403,17 +408,38 @@ export const NhanVien: React.FC = () => {
         }
     };
 
+    // Calculate generic stats for the new Dashboard view
+    const stats_TotalRevenue = useMemo(() => revenueRows.filter(r => r.type === 'employee').reduce((sum, r) => sum + r.dtlk, 0), [revenueRows]);
+    const stats_TotalCrossSelling = useMemo(() => banKemRows.filter(r => r.type === 'employee').reduce((sum, r) => sum + r.dtlk, 0), [banKemRows]);
+    const stats_TotalInstallment = useMemo(() => installmentRows.filter(r => r.type === 'employee').reduce((sum, r) => sum + r.totalDtSieuThi, 0), [installmentRows]);
+    
+    const topEmployees = useMemo(() => {
+        return [...revenueRows.filter(r => r.type === 'employee')]
+            .sort((a, b) => b.dtlk - a.dtlk)
+            .slice(0, 6);
+    }, [revenueRows]);
+    
+    const chartData = useMemo(() => {
+        return revenueRows.filter(r => r.type === 'department').map(d => ({
+            name: d.name,
+            DoanhThu: d.dtlk
+        })).sort((a, b) => b.DoanhThu - a.DoanhThu);
+    }, [revenueRows]);
+
+    const exportOptions = useExportOptions();
+
     return (
+        <ExportOptionsProvider value={{ showExportOptions: exportOptions.showExportOptions }}>
         <div className="space-y-6 relative">
-            <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 relative z-10 pb-2 w-full">
+            <header className="sticky top-[52px] z-30 -mt-2 pt-2 pb-3 mb-6 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full border-b border-slate-200/50 dark:border-slate-700/50">
                 {/* Title + Icon */}
                 <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2 sm:p-2.5 bg-violet-50 dark:bg-violet-900/20 text-violet-600 dark:text-violet-400 rounded-2xl flex-shrink-0 border border-violet-100 dark:border-violet-800">
+                    <div className="p-2 sm:p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl flex-shrink-0 border border-indigo-100 dark:border-indigo-800">
                         <SparklesIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                     </div>
                     <div className="min-w-0 flex flex-col justify-center">
                         <h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-none truncate">
-                            Phân tích Nhân viên
+                            Report BI Nhân Viên
                         </h1>
                         <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase mt-1 tracking-wider leading-none">
                             Hiệu suất & Kinh doanh cá nhân
@@ -421,111 +447,272 @@ export const NhanVien: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Nav Tabs */}
-                <nav className="inline-flex items-center bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm no-print overflow-x-auto hide-scrollbar w-full sm:w-auto flex-shrink-0">
-                    <NavTabButton tab="revenue" activeTab={activeTab} setActiveTab={setActiveTab}>Doanh thu</NavTabButton>
-                    <NavTabButton tab="crossSelling" activeTab={activeTab} setActiveTab={setActiveTab}>Bán kèm</NavTabButton>
-                    <NavTabButton tab="installment" activeTab={activeTab} setActiveTab={setActiveTab}>Trả góp</NavTabButton>
-                    <NavTabButton tab="competition" activeTab={activeTab} setActiveTab={setActiveTab}>Thi đua</NavTabButton>
-                    <NavTabButton tab="bonus" activeTab={activeTab} setActiveTab={setActiveTab}>Thưởng</NavTabButton>
-                </nav>
+                {/* Compact Filter Bar */}
+                <div className="flex flex-col sm:flex-row gap-3 z-50 w-full sm:w-auto">
+                    {/* Supermarket Filter */}
+                    <div className="relative flex-1 sm:w-64 min-w-0" ref={smRef}>
+                        <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <BuildingStorefrontIcon className="h-4 w-4 text-indigo-500 flex-shrink-0" />
+                                <span className="truncate text-left">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : activeSupermarkets.map(s => shortenSupermarketName(s)).join(', ')}</span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">{activeSupermarkets.length}</span>
+                                <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isSmFilterOpen ? 'rotate-180' : ''}`} />
+                            </div>
+                        </button>
+                        {isSmFilterOpen && (
+                            <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
+                                <div className="space-y-0.5">
+                                    <div onClick={() => toggleSupermarket('all')} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-indigo-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">Chọn tất cả</span>
+                                        <Switch checked={activeSupermarkets.length === supermarkets.length} onChange={() => {}} />
+                                    </div>
+                                    {supermarkets.map(sm => (
+                                        <div key={sm} onClick={() => toggleSupermarket(sm)} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{shortenSupermarketName(sm)}</span>
+                                            <Switch checked={activeSupermarkets.includes(sm)} onChange={() => {}} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Department Filter (Mới bổ sung) */}
+                    <div className="relative flex-1 sm:w-64 min-w-0" ref={deptRef}>
+                        <button onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <ArchiveBoxIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
+                                <span className="truncate text-left">{activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}</span>
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                                <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 rounded-full">{activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}</span>
+                                <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isDeptFilterOpen ? 'rotate-180' : ''}`} />
+                            </div>
+                        </button>
+                        {isDeptFilterOpen && (
+                            <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
+                                <div className="space-y-0.5">
+                                    <div onClick={() => toggleDepartment('all')} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <span className="text-xs font-black text-sky-600 dark:text-sky-400">Tất cả bộ phận</span>
+                                        <Switch checked={activeDepartments.includes('all')} onChange={() => {}} />
+                                    </div>
+                                    {departmentOptions.map(dept => (
+                                        <div key={dept} onClick={() => toggleDepartment(dept)} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{dept}</span>
+                                            <Switch checked={activeDepartments.includes(dept) || activeDepartments.includes('all')} onChange={() => {}} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </header>
 
-            {/* Compact Filter Bar */}
-            <div className="flex flex-col sm:flex-row gap-3 z-20 relative">
-                {/* Supermarket Filter */}
-                <div className="relative flex-1 min-w-0" ref={smRef}>
-                    <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-sky-300 dark:hover:border-sky-700 transition-all outline-none shadow-sm">
-                        <div className="flex items-center gap-2 min-w-0">
-                            <BuildingStorefrontIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
-                            <span className="truncate">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : activeSupermarkets.map(s => shortenSupermarketName(s)).join(', ')}</span>
+            {/* --- DASHBOARD WIDGETS --- */}
+            
+            {/* 1. Statistics Cards Grid (Quy về 3 thẻ với icon tròn pastel) */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
+                {/* Total Revenue */}
+                <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-100 dark:border-slate-700/60 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Tổng Doanh Thu</p>
+                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{(stats_TotalRevenue / 1000000).toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 rounded-full">{activeSupermarkets.length}</span>
-                            <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isSmFilterOpen ? 'rotate-180' : ''}`} />
+                        <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-900/30 border-4 border-white dark:border-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                            <TrendingUp className="h-6 w-6 text-blue-500 dark:text-blue-400" />
                         </div>
-                    </button>
-                    {isSmFilterOpen && (
-                        <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-[60] p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
-                            <div className="space-y-0.5">
-                                <div onClick={() => toggleSupermarket('all')} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors">
-                                    <span className="text-xs font-black text-sky-600 dark:text-sky-400">Chọn tất cả</span>
-                                    <Switch checked={activeSupermarkets.length === supermarkets.length} onChange={() => {}} />
-                                </div>
-                                {supermarkets.map(sm => (
-                                    <div key={sm} onClick={() => toggleSupermarket(sm)} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{shortenSupermarketName(sm)}</span>
-                                        <Switch checked={activeSupermarkets.includes(sm)} onChange={() => {}} />
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-medium bg-slate-50 dark:bg-slate-900/50 p-2 rounded-xl">
+                        <span className="flex items-center text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 px-2 py-0.5 rounded-md font-bold">
+                            <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" /> +12.5%
+                        </span>
+                        <span className="text-slate-500">so với tháng trước</span>
+                    </div>
                 </div>
 
-                {/* Department Filter */}
-                <div className="relative flex-1 min-w-0" ref={deptRef}>
-                    <button onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-violet-300 dark:hover:border-violet-700 transition-all outline-none shadow-sm">
-                        <div className="flex items-center gap-2 min-w-0">
-                            <FilterIcon className="h-4 w-4 text-violet-500 flex-shrink-0" />
-                            <span className="truncate">{activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}</span>
+                {/* Total Cross Selling */}
+                <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-100 dark:border-slate-700/60 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Tổng Bán Kèm (Phụ kiện)</p>
+                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{(stats_TotalCrossSelling / 1000000).toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
                         </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                            <span className="text-[10px] font-black text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-900/30 px-2 py-0.5 rounded-full">{activeDepartments.includes('all') ? 'All' : activeDepartments.length}</span>
-                            <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isDeptFilterOpen ? 'rotate-180' : ''}`} />
+                        <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-900/30 border-4 border-white dark:border-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
+                            <ShoppingBag className="h-6 w-6 text-emerald-500 dark:text-emerald-400" />
                         </div>
-                    </button>
-                    {isDeptFilterOpen && (
-                        <div className="absolute top-[calc(100%+4px)] left-0 right-0 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-[60] p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-1 duration-150">
-                            <div className="space-y-0.5">
-                                <div className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-violet-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors" onClick={() => toggleDepartment('all')}>
-                                    <span className="text-xs font-black text-violet-600 dark:text-violet-400">Tất cả</span>
-                                    <Switch checked={activeDepartments.includes('all')} onChange={() => {}} />
-                                </div>
-                                {departmentOptions.map(dept => (
-                                    <div key={dept} className="flex items-center justify-between px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors" onClick={() => toggleDepartment(dept)}>
-                                        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{dept}</span>
-                                        <Switch checked={activeDepartments.includes(dept) && !activeDepartments.includes('all')} onChange={() => {}} />
-                                    </div>
-                                ))}
-                            </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-medium bg-slate-50 dark:bg-slate-900/50 p-2 rounded-xl">
+                        <span className="flex items-center text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 px-2 py-0.5 rounded-md font-bold">
+                            <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" /> +5.2%
+                        </span>
+                        <span className="text-slate-500">tăng trưởng nhẹ</span>
+                    </div>
+                </div>
+
+                {/* Total Competition Target */}
+                <div className="bg-white dark:bg-slate-800 rounded-3xl p-6 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-slate-100 dark:border-slate-700/60 relative overflow-hidden group hover:shadow-lg transition-all duration-300">
+                    <div className="flex justify-between items-start mb-6">
+                        <div>
+                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Tổng Target Thi Đua</p>
+                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{(totalAggregatedTarget / 1000000).toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
                         </div>
-                    )}
+                        <div className="w-14 h-14 rounded-full bg-amber-50 dark:bg-amber-900/30 border-4 border-white dark:border-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
+                            <Award className="h-6 w-6 text-amber-500 dark:text-amber-400" />
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-2 text-xs font-medium bg-slate-50 dark:bg-slate-900/50 p-2 rounded-xl">
+                        <span className="flex items-center text-rose-600 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/40 px-2 py-0.5 rounded-md font-bold">
+                            <ArrowDownRight className="w-3.5 h-3.5 mr-0.5" /> -2.1%
+                        </span>
+                        <span className="text-slate-500">giảm so với mục tiêu</span>
+                    </div>
                 </div>
             </div>
 
-            <div className="pt-2">
-                 {activeTab === 'revenue' && <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={activeDepartments} performanceChanges={new Map()} onViewTrend={() => {}} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} snapshotId={null} setSnapshotId={() => {}} snapshots={[]} handleSaveSnapshot={() => {}} handleDeleteSnapshot={() => {}} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} />}
-                 {activeTab === 'crossSelling' && <CrossSellingTab rows={banKemRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={activeDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />}
-                 {activeTab === 'installment' && <InstallmentTab rows={installmentRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={activeDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />}
-                 {activeTab === 'competition' && <CompetitionTab groupedData={competitionData} allCompetitionsByCriterion={competitionData} selectedCompetitions={selectedCompetitions} setSelectedCompetitions={setSelectedCompetitions} supermarket={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} versions={versions} activeVersionName={activeVersionName} setActiveVersionName={setActiveVersionName} activeCompetitionTab={activeCompetitionTab} setActiveCompetitionTab={setActiveCompetitionTab} onVersionTabClick={handleVersionTabClick} onStartNewVersion={handleStartNewVersion} onCancelNewVersion={handleCancelNewVersion} onSaveVersion={handleSaveVersion} onDeleteVersion={handleDeleteVersion} employeeCompetitionTargets={employeeCompetitionTargets} allEmployees={allEmployees} performanceChanges={new Map()} individualViewEmployees={individualViewEmployees} selectedIndividual={selectedIndividual} onSelectIndividual={setSelectedIndividual} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} activeDepartments={activeDepartments} />}
-                 {activeTab === 'bonus' && (
-                     <>
-                        <BonusView 
-                            employees={allEmployees} 
-                            bonusData={aggregatedData.bonusData} 
-                            revenueRows={revenueRows} 
-                            supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} 
-                            onEmployeeClick={(emp) => setEditingBonusEmployee(emp)} 
-                            onBatchUpdate={startBatchBonusUpdate}
-                            highlightedEmployees={highlightedEmployees} 
-                            activeDepartments={activeDepartments} 
-                        />
-                        {editingBonusEmployee && (
-                            <BonusDataModal 
-                                employee={editingBonusEmployee} 
-                                supermarketName={activeSupermarkets[0]} 
-                                remainingInBatch={isBatchBonusMode ? allEmployees.length - allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) : 0}
-                                onClose={handleBonusModalClose}
-                                onSave={handleSaveBonus}
-                            />
+            {/* 2. Charts & Top Lists Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Main Chart */}
+                <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 flex flex-col">
+                    <div className="p-5 border-b border-slate-100 dark:border-slate-700/60 flex justify-between items-center">
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Tổng Doanh Thu Theo Bộ Phận</h3>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Đơn vị: Triệu VNĐ</p>
+                        </div>
+                        <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                            <MoreVertical className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <div className="p-5 flex-1 min-h-[300px]">
+                        {chartData.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(val) => `${(val/1000000).toFixed(0)}Tr`} />
+                                    <RechartsTooltip 
+                                        cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }}
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontWeight: 'bold', fontSize: '13px' }}
+                                        formatter={(val: number) => [`${(val/1000000).toLocaleString('en-US', {maximumFractionDigits:1})} Triệu`, 'Doanh thu']}
+                                    />
+                                    <Bar dataKey="DoanhThu" radius={[6, 6, 0, 0]} maxBarSize={50}>
+                                        {chartData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={index === 0 ? '#6366f1' : '#a5b4fc'} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm font-medium">Chưa có dữ liệu thống kê</div>
                         )}
-                     </>
-                 )}
+                    </div>
+                </div>
+
+                {/* Top Employees List */}
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 overflow-hidden flex flex-col">
+                    <div className="p-5 border-b border-slate-100 dark:border-slate-700/60 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Top Cá Nhân Xuất Sắc</h3>
+                            <p className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Top 6 nhân sự xuất sắc</p>
+                        </div>
+                        <div className="w-10 h-10 flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 rounded-full border border-amber-100 dark:border-amber-800/30">
+                            <Award className="w-5 h-5 text-amber-500" />
+                        </div>
+                    </div>
+                    <div className="p-3 flex-1 overflow-y-auto custom-scrollbar">
+                        {topEmployees.length > 0 ? (
+                            <div className="space-y-1.5">
+                                {topEmployees.map((emp, idx) => (
+                                    <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all duration-200 border border-transparent hover:border-slate-100 dark:hover:border-slate-700 shadow-sm hover:shadow-md group">
+                                        <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-[11px] shrink-0 shadow-sm ${idx === 0 ? 'bg-amber-100 text-amber-600 border border-amber-200' : idx === 1 ? 'bg-slate-200 text-slate-600 border border-slate-300' : idx === 2 ? 'bg-orange-100 text-orange-600 border border-orange-200' : 'bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500 border border-slate-200 dark:border-slate-700'}`}>
+                                            {idx + 1}
+                                        </div>
+                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-sky-100 dark:from-indigo-900/60 dark:to-sky-900/60 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-sm shrink-0 border border-white dark:border-slate-700 shadow-sm group-hover:scale-105 transition-transform">
+                                            {emp.name.substring(0, 1).toUpperCase()}
+                                        </div>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-[13px] font-bold text-slate-800 dark:text-white truncate">{emp.name}</p>
+                                            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide truncate">{emp.department || 'Nhân viên'}</p>
+                                        </div>
+                                        <div className="text-right shrink-0">
+                                            <p className="text-sm font-black text-sky-600 dark:text-sky-400 tracking-tight">{(emp.dtlk / 1000000).toLocaleString('en-US', {maximumFractionDigits:1})}M</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="h-full flex items-center justify-center text-slate-500 text-sm">Chưa có dữ liệu top</div>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* 3. Detailed Data section with internal Tab Switcher */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+                <div className="border-b border-slate-200 dark:border-slate-700 p-4 sm:p-5 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-slate-50/50 dark:bg-slate-800/50">
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-800 dark:text-white">Bảng Chỉ Tiêu Chi Tiết</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Dữ liệu phân mảnh cho nhân viên siêu thị</p>
+                    </div>
+                    
+                    {/* The NavTabButton container moved here from header */}
+                    <nav className="inline-flex items-center bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto hide-scrollbar w-full sm:w-auto">
+                        <NavTabButton tab="revenue" activeTab={activeTab} setActiveTab={setActiveTab}>Doanh thu</NavTabButton>
+                        <NavTabButton tab="crossSelling" activeTab={activeTab} setActiveTab={setActiveTab}>Bán kèm</NavTabButton>
+                        <NavTabButton tab="installment" activeTab={activeTab} setActiveTab={setActiveTab}>Trả góp</NavTabButton>
+                        <NavTabButton tab="competition" activeTab={activeTab} setActiveTab={setActiveTab}>Thi đua</NavTabButton>
+                        <NavTabButton tab="bonus" activeTab={activeTab} setActiveTab={setActiveTab}>Thưởng</NavTabButton>
+                    </nav>
+                </div>
+                
+                {/* Embedded Module Content */}
+                <div className="p-0 sm:p-2 bg-slate-50 dark:bg-slate-900">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-[0_0_10px_rgba(0,0,0,0.02)]">
+                        {activeTab === 'revenue' && <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={activeDepartments} performanceChanges={new Map()} onViewTrend={() => {}} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} snapshotId={null} setSnapshotId={() => {}} snapshots={[]} handleSaveSnapshot={() => {}} handleDeleteSnapshot={() => {}} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} />}
+                        {activeTab === 'crossSelling' && <CrossSellingTab rows={banKemRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={activeDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />}
+                        {activeTab === 'installment' && <InstallmentTab rows={installmentRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={activeDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />}
+                        {activeTab === 'competition' && <CompetitionTab groupedData={competitionData} allCompetitionsByCriterion={competitionData} selectedCompetitions={selectedCompetitions} setSelectedCompetitions={setSelectedCompetitions} supermarket={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} versions={versions} activeVersionName={activeVersionName} setActiveVersionName={setActiveVersionName} activeCompetitionTab={activeCompetitionTab} setActiveCompetitionTab={setActiveCompetitionTab} onVersionTabClick={handleVersionTabClick} onStartNewVersion={handleStartNewVersion} onCancelNewVersion={handleCancelNewVersion} onSaveVersion={handleSaveVersion} onDeleteVersion={handleDeleteVersion} employeeCompetitionTargets={employeeCompetitionTargets} allEmployees={allEmployees} performanceChanges={new Map()} individualViewEmployees={individualViewEmployees} selectedIndividual={selectedIndividual} onSelectIndividual={setSelectedIndividual} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} activeDepartments={activeDepartments} />}
+                        {activeTab === 'bonus' && (
+                            <>
+                                <BonusView 
+                                    employees={allEmployees} 
+                                    bonusData={aggregatedData.bonusData} 
+                                    revenueRows={revenueRows} 
+                                    supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} 
+                                    onEmployeeClick={(emp) => setEditingBonusEmployee(emp)} 
+                                    onBatchUpdate={startBatchBonusUpdate}
+                                    highlightedEmployees={highlightedEmployees} 
+                                    activeDepartments={activeDepartments} 
+                                />
+                                {editingBonusEmployee && (
+                                    <BonusDataModal 
+                                        employee={editingBonusEmployee} 
+                                        supermarketName={activeSupermarkets[0]} 
+                                        remainingInBatch={isBatchBonusMode ? allEmployees.length - allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) : 0}
+                                        onClose={handleBonusModalClose}
+                                        onSave={handleSaveBonus}
+                                    />
+                                )}
+                            </>
+                        )}
+                    </div>
+                </div>
             </div>
             
             <AiAssistant danhSachData={aggregatedData.danhSach} thiDuaData={aggregatedData.thiDua} />
+            <ExportOptionsModal
+                isOpen={!!exportOptions.pendingExport}
+                onClose={exportOptions.handleClose}
+                onDownload={exportOptions.handleDownload}
+                onShare={exportOptions.handleShare}
+                canShare={exportOptions.canShare}
+                filename={exportOptions.pendingExport?.filename || ''}
+            />
         </div>
+        </ExportOptionsProvider>
     );
 };
 export default NhanVien;

@@ -27,7 +27,7 @@ export default function MobileBottomNav() {
     const mainTabs = [
         { id: 'analysis', label: 'Phân tích', icon: BarChart3 },
         { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard },
-        { id: 'employees', label: 'NV BI', icon: Users },
+        { id: 'employees', label: 'Report BI', icon: Users },
     ];
 
     const moreTabs = [

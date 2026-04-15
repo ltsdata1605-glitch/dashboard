@@ -23,7 +23,7 @@ export default function BiWrapper() {
 
     const navigationLinks = [
         { id: 'dashboard', icon: 'pie-chart', label: 'Tổng quan BI', color: 'sky' },
-        { id: 'employee', icon: 'users', label: 'Nhân viên BI', color: 'emerald' },
+        { id: 'employee', icon: 'users', label: 'Nhân viên', color: 'emerald' },
         { id: 'updater', icon: 'upload-cloud', label: 'Cập nhật Dữ liệu', color: 'amber' },
         { id: 'settings', icon: 'settings', label: 'Cấu hình BI', color: 'rose' },
     ];

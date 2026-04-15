@@ -444,31 +444,33 @@ const InstallmentTab: React.FC<{
                             </div>
                         ) : (
                             <table className="w-full border-collapse compact-export-table">
-                                <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
+                                <thead className="sticky top-0 z-10">
+                                    {/* Tier 1: Group Headers */}
                                     <tr>
-                                        <th rowSpan={2} onClick={() => handleSort('name')} className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 min-w-[200px] align-middle">NHÂN VIÊN</th>
-                                        {providers.map(p => <th key={p.name} colSpan={2} className="px-1 py-1 text-center border-b-[1px] !border-b-slate-200 dark:!border-b-slate-700 border-r border-slate-200 dark:border-slate-700 text-[10px] leading-tight align-middle">{p.shortName}</th>)}
-                                        <th rowSpan={2} onClick={() => handleSort('totalDtSieuThi')} className="px-2 py-2 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 text-[10px] leading-tight align-middle">DT SIÊU THỊ</th>
-                                        <th rowSpan={2} onClick={() => handleSort('totalPercent')} className="px-2 py-2 text-center border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 text-[10px] leading-tight align-middle">% TỔNG TG</th>
+                                        <th rowSpan={2} onClick={() => handleSort('name')} className="px-3 py-2 text-center text-[10px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 min-w-[200px] align-middle">NHÂN VIÊN</th>
+                                        {providers.map(p => <th key={p.name} colSpan={2} className="px-1 py-1.5 text-center text-[10px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-b border-sky-100 dark:border-sky-800/50 leading-tight align-middle">{p.shortName}</th>)}
+                                        <th rowSpan={2} onClick={() => handleSort('totalDtSieuThi')} className="px-2 py-2 text-center text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-r border-b border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/40 leading-tight align-middle">DT SIÊU THỊ</th>
+                                        <th rowSpan={2} onClick={() => handleSort('totalPercent')} className="px-2 py-2 text-center text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-b border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/40 leading-tight align-middle">% TỔNG TG</th>
                                     </tr>
-                                    <tr className="bg-slate-100 dark:bg-slate-800 uppercase text-[9px] font-bold text-slate-500 tracking-wider">
-                                        {providers.map(p => <React.Fragment key={p.name}><th className="px-1 py-1 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 text-center">DT</th><th className="px-1 py-1 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 text-center">%</th></React.Fragment>)}
+                                    {/* Tier 2: Column Headers */}
+                                    <tr className="bg-slate-50 dark:bg-slate-800/80">
+                                        {providers.map(p => <React.Fragment key={p.name}><th className="px-1 py-1.5 text-center text-[9px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-50 transition-colors">DT</th><th className="px-1 py-1.5 text-center text-[9px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-50 transition-colors">%</th></React.Fragment>)}
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-[#1c1c1e]">
                                     {displayList.map((row, idx) => {
                                         if (row.type === 'department') {
                                             return (
-                                                <tr key={`dept-${idx}`} className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white shadow-inner font-extrabold border-t-[3px] border-t-slate-200">
+                                                <tr key={`dept-${idx}`} className="bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300 border-y border-slate-200 dark:border-slate-700">
                                                     <td className="px-3 py-2 text-[11px] uppercase tracking-wider border-r border-slate-200 dark:border-slate-700">{row.name} (TỔNG)</td>
                                                     {row.providers.map((p: any, pIdx: number) => (
                                                         <React.Fragment key={pIdx}>
                                                             <td className="px-1 py-2 text-[11px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
-                                                            <td className={`px-1 py-2 text-[11px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums ${p.percent >= 40 ? 'text-green-600' : 'text-slate-500'}`}><div>{p.percent > 0 ? `${f.format(Math.ceil(p.percent))}%` : '-'}</div></td>
+                                                            <td className={`px-1 py-2 text-[11px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-500'}`}><div>{p.percent > 0 ? `${f.format(Math.ceil(p.percent))}%` : '-'}</div></td>
                                                         </React.Fragment>
                                                     ))}
                                                     <td className="px-2 py-2 text-[11px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-                                                    <td className={`px-2 py-2 text-[11px] text-center tabular-nums ${row.totalPercent >= 45 ? 'text-green-600' : 'text-amber-600'}`}>{f.format(Math.ceil(row.totalPercent))}%</td>
+                                                    <td className={`px-2 py-2 text-[11px] text-center tabular-nums font-extrabold ${row.totalPercent >= 45 ? 'text-emerald-600' : 'text-amber-600'}`}>{f.format(Math.ceil(row.totalPercent))}%</td>
                                                 </tr>
                                             );
                                         }
@@ -477,13 +479,13 @@ const InstallmentTab: React.FC<{
                                         const oldRow = row.oldRow;
 
                                         return (
-                                            <tr key={row.originalName || idx} className={`transition-all cursor-pointer text-[12px] ${isTotal ? 'bg-indigo-50 dark:bg-indigo-900/40 shadow-inner font-extrabold text-indigo-800 dark:text-indigo-200 border-t-[3px] border-t-indigo-200 dark:border-t-indigo-800' : (isHighlighted ? 'bg-indigo-50/50 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50 dark:hover:bg-slate-750')}`}>
-                                                <td className={`px-3 py-2 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 ${isTotal ? 'text-center uppercase tracking-wider' : 'bg-transparent'}`}>
+                                            <tr key={row.originalName || idx} className={`transition-all cursor-pointer text-[12px] ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-200 border-t-2 border-emerald-200 dark:border-emerald-800' : (isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10 ring-1 ring-inset ring-sky-200 dark:ring-sky-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-750')}`}>
+                                                <td className={`px-3 py-2 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 ${isTotal ? 'text-center uppercase tracking-wider text-[11px]' : 'bg-transparent'}`}>
                                                     <div className={`flex items-center ${isTotal ? 'justify-center' : 'gap-2'}`}>
                                                         {!isTotal && <MedalBadge rank={row.rank} />}
                                                         {!isTotal && <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />}
                                                         <div className="flex flex-col min-w-0" onClick={() => setHighlightedEmployees((prev: Set<string>) => { const n = new Set(prev); if (!row.originalName) return prev; if (n.has(row.originalName)) n.delete(row.originalName); else n.add(row.originalName); return n; })}>
-                                                            <span className={`font-bold ${isTotal ? '' : (isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-500 hover:underline')}`}>{row.name}</span>
+                                                            <span className={`font-bold ${isTotal ? '' : 'text-sky-700 dark:text-sky-400 hover:underline whitespace-normal break-words'}`}>{row.name}</span>
                                                             {!isTotal && <span className="text-[10px] text-slate-400 font-medium capitalize tabular-nums">{row.department}</span>}
                                                         </div>
                                                     </div>
@@ -493,12 +495,12 @@ const InstallmentTab: React.FC<{
                                                     return (
                                                         <React.Fragment key={pIdx}>
                                                             <td className="px-1 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 text-slate-500 font-normal tabular-nums"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
-                                                            <td className={`px-1 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-normal tabular-nums ${p.percent >= 40 ? 'text-green-600' : 'text-slate-400'}`}><div>{p.percent > 0 ? `${f.format(Math.ceil(p.percent))}%` : '-'}</div><DeltaBadge current={p.percent} previous={oldP?.percent} /></td>
+                                                            <td className={`px-1 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-normal tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-400'}`}><div>{p.percent > 0 ? `${f.format(Math.ceil(p.percent))}%` : '-'}</div><DeltaBadge current={p.percent} previous={oldP?.percent} /></td>
                                                         </React.Fragment>
                                                     )
                                                 })}
                                                 <td className="px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 font-normal text-slate-700 dark:text-slate-300 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-                                                <td className={`px-2 py-2 text-[11px] text-center font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-green-600' : (row.totalPercent < 40 ? 'text-red-500' : 'text-amber-600')}`}><div>{f.format(Math.ceil(row.totalPercent))}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
+                                                <td className={`px-2 py-2 text-[11px] text-center font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-emerald-600' : (row.totalPercent < 40 ? 'text-rose-500' : 'text-amber-600')}`}><div>{f.format(Math.ceil(row.totalPercent))}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
                                             </tr>
                                         );
                                     })}
