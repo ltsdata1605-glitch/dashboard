@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { Icon } from '../common/Icon';
 
@@ -24,6 +24,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
     maxWidthClass = 'max-w-6xl'
 }) => {
     const modalContentRef = useRef<HTMLDivElement>(null);
+    const overlayRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleEscape = (event: KeyboardEvent) => {
@@ -34,13 +35,24 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
         document.addEventListener('keydown', handleEscape);
         return () => document.removeEventListener('keydown', handleEscape);
     }, [onClose]);
+
+    // Use onMouseDown on the overlay to prevent keyboard-induced dismissal on mobile.
+    // When the virtual keyboard opens/closes, the viewport resizes and can cause
+    // spurious click events. By checking the event target explicitly, we ensure
+    // only intentional backdrop taps close the modal.
+    const handleOverlayMouseDown = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+        if (e.target === overlayRef.current) {
+            onClose();
+        }
+    }, [onClose]);
     
     if (!isOpen) return null;
 
     return ReactDOM.createPortal(
         <div 
+            ref={overlayRef}
             className="modal-overlay fixed inset-0 bg-slate-800/60 backdrop-blur-md z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-100"
-            onClick={onClose}
+            onMouseDown={handleOverlayMouseDown}
         >
             <div
                 ref={modalContentRef}
