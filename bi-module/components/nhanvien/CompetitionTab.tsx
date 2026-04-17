@@ -10,6 +10,7 @@ import CompetitionSummaryView from './CompetitionSummaryView';
 import { getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services/uiService';
 
 const PALETTE = [
   { main: 'bg-sky-600', light: 'bg-sky-100', text: 'text-sky-800', hover: 'hover:bg-sky-50', zebra: 'bg-sky-50/50', footer: 'bg-sky-800' },
@@ -137,125 +138,63 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
 
     const { showExportOptions } = useExportOptionsContext();
 
-    const exportGroupViewToPNG = async (filename: string, refToExport = groupViewRef) => {
-        if (!refToExport.current || !(window as any).html2canvas) return;
+    const exportGroupViewToPNG = async (filename: string, refToExport = groupViewRef, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
+        if (!refToExport.current) return null;
         const original = refToExport.current;
-        const clone = original.cloneNode(true) as HTMLElement;
-        
-        clone.style.position = 'absolute';
-        clone.style.left = '-9999px';
-        clone.style.top = '0';
-        clone.style.width = 'max-content';
-        clone.style.maxWidth = 'none';
-        clone.style.height = 'auto'; 
-        clone.style.minHeight = 'auto';
-        clone.style.margin = '0';
-        clone.style.padding = '4px';
-        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
-        clone.style.display = 'block';
-
-        if (document.documentElement.classList.contains('dark')) {
-            clone.classList.add('dark');
-            clone.style.backgroundColor = '#1e293b'; 
-        } else {
-            clone.style.backgroundColor = '#ffffff';
-        }
-        clone.classList.add('export-mode');
-
-        const forceAutoHeight = (el: HTMLElement) => {
-            el.style.height = 'auto';
-            el.style.minHeight = 'auto';
-            el.classList.remove('h-full', 'h-screen');
-        };
-
-        forceAutoHeight(clone);
-
-        const exportButtons = clone.querySelectorAll('.export-button-component');
-        exportButtons.forEach(btn => (btn as HTMLElement).style.display = 'none');
-
-        const containers = clone.querySelectorAll('.overflow-x-auto, .grid, .competition-group-card');
-        containers.forEach(el => {
-            const htmlEl = el as HTMLElement;
-            htmlEl.style.overflow = 'visible';
-            htmlEl.style.height = 'auto';
-            htmlEl.style.minHeight = 'auto';
-            if (htmlEl.classList.contains('competition-group-card')) {
-                htmlEl.classList.remove('h-full');
-            }
-        });
-
-        const tables = clone.querySelectorAll('table');
-        tables.forEach(table => {
-            const htmlTable = table as HTMLElement;
-            htmlTable.style.width = 'max-content';
-            htmlTable.style.minWidth = '100%';
-            htmlTable.style.height = 'auto';
-            htmlTable.style.tableLayout = 'auto'; 
-            
-            htmlTable.querySelectorAll('td').forEach(td => {
-                const htmlTd = td as HTMLElement;
-                if (htmlTd.innerText && htmlTd.innerText.length > 0) {
-                   htmlTd.style.whiteSpace = 'nowrap';
-                }
-            });
-        });
-
-        const gridContainer = clone.querySelector('.grid');
-        if (gridContainer) {
-            (gridContainer as HTMLElement).style.display = 'flex';
-            (gridContainer as HTMLElement).style.flexDirection = 'column';
-            (gridContainer as HTMLElement).style.alignItems = 'center';
-            (gridContainer as HTMLElement).style.gap = '32px';
-            (gridContainer as HTMLElement).style.width = '100%';
-            (gridContainer as HTMLElement).style.height = 'auto';
-        }
-
-        document.body.appendChild(clone);
         try {
-            await new Promise(resolve => setTimeout(resolve, 300));
-            
-            let maxCardWidth = 0;
-            const cards = clone.querySelectorAll('.competition-group-card');
-            cards.forEach(card => {
-                maxCardWidth = Math.max(maxCardWidth, (card as HTMLElement).offsetWidth);
+            const blob = await exportElementAsImage(original, filename, {
+                elementsToHide: ['.export-button-component'],
+                preprocessClone: (clone) => {
+                    const containers = clone.querySelectorAll('.overflow-x-auto, .grid, .competition-group-card');
+                    containers.forEach(el => {
+                        const htmlEl = el as HTMLElement;
+                        htmlEl.style.overflow = 'visible';
+                        htmlEl.style.height = 'auto';
+                        htmlEl.style.minHeight = 'auto';
+                        if (htmlEl.classList.contains('competition-group-card')) {
+                            htmlEl.classList.remove('h-full');
+                        }
+                    });
+
+                    const gridContainer = clone.querySelector('.grid');
+                    if (gridContainer) {
+                        (gridContainer as HTMLElement).style.display = 'flex';
+                        (gridContainer as HTMLElement).style.flexDirection = 'column';
+                        (gridContainer as HTMLElement).style.alignItems = 'center';
+                        (gridContainer as HTMLElement).style.gap = '32px';
+                        (gridContainer as HTMLElement).style.width = '100%';
+                    }
+                    
+                    const titleContainer = clone.querySelector('.export-show-border');
+                    if (titleContainer) {
+                        (titleContainer as HTMLElement).style.width = '100%';
+                        (titleContainer as HTMLElement).style.display = 'flex';
+                        (titleContainer as HTMLElement).style.justifyContent = 'center';
+                        const h3 = titleContainer.querySelector('h3');
+                        if (h3) {
+                            h3.style.width = '100%';
+                            h3.style.fontSize = '24px';
+                            h3.style.fontWeight = '700';
+                        }
+                    }
+                }
             });
-            
-            const finalWidth = maxCardWidth + 10; 
-            const finalHeight = clone.scrollHeight; 
-            
-            clone.style.width = `${finalWidth}px`;
-            
-            const titleContainer = clone.querySelector('.export-show-border');
-            if (titleContainer) {
-                (titleContainer as HTMLElement).style.width = '100%';
-                (titleContainer as HTMLElement).style.display = 'flex';
-                (titleContainer as HTMLElement).style.justifyContent = 'center';
-                const h3 = titleContainer.querySelector('h3');
-                if (h3) {
-                    h3.style.width = '100%';
-                    h3.style.fontSize = '24px';
-                    h3.style.fontWeight = '700';
+            if (blob) {
+                if (autoAction === 'download') {
+                    downloadBlob(blob, filename);
+                    return 'download';
+                } else if (autoAction === 'share') {
+                    await shareBlob(blob, filename);
+                    return 'share';
+                } else {
+                    return await showExportOptions(blob, filename);
                 }
             }
-
-            const canvas = await (window as any).html2canvas(clone, { 
-                scale: 2, 
-                useCORS: true, 
-                backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                width: finalWidth,
-                height: finalHeight,
-                windowWidth: finalWidth,
-                windowHeight: finalHeight,
-                logging: false
-            });
-            
-            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-            if (blob) showExportOptions(blob, filename);
+            return null;
         } catch (err) {
-            console.error("Export failed", err);
-            alert("Xuất ảnh thất bại.");
-        } finally {
-            document.body.removeChild(clone);
+             console.error("Export failed", err);
+             alert("Xuất ảnh thất bại.");
+             return null;
         }
     };
 
@@ -268,6 +207,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
         const targets = Array.from(highlightedEmployees);
         setExportProgress({ current: 0, total: targets.length });
 
+        let autoAction: 'download' | 'share' | 'cancel' | null = null;
+
         try {
             for (let i = 0; i < targets.length; i++) {
                 const empId = targets[i];
@@ -277,7 +218,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
                 setExportTitleOverride(`${empName} - NHÓM HÀNG THI ĐUA ĐẾN NGÀY ${getYesterdayDateString()}`);
                 await new Promise(resolve => setTimeout(resolve, 800));
                 const safeName = `${empName.replace(/[\s/]/g, '_')}_Highlight.png`;
-                await exportGroupViewToPNG(safeName);
+                const action = await exportGroupViewToPNG(safeName, groupViewRef, autoAction);
+                if (action === 'cancel') break;
+                autoAction = action;
                 setExportProgress(prev => ({ ...prev, current: i + 1 }));
             }
         } catch (err) {
@@ -292,13 +235,17 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
     };
 
     const handleGroupBatchExport = async () => {
-        if (!groupViewRef.current || !(window as any).html2canvas) return;
+        if (!groupViewRef.current) return;
         setIsBatchExporting(true);
         const cards = groupViewRef.current.querySelectorAll('.competition-group-card');
         setExportProgress({ current: 0, total: cards.length + 1 });
 
+        let autoAction: 'download' | 'share' | 'cancel' | null = null;
+
         try {
-            await exportGroupViewToPNG(`TongHop_NhomThiDua_${supermarket || 'SieuThi'}.png`);
+            const action1 = await exportGroupViewToPNG(`TongHop_NhomThiDua_${supermarket || 'SieuThi'}.png`, groupViewRef, autoAction);
+            if (action1 === 'cancel') throw new Error('cancelled');
+            autoAction = action1;
             setExportProgress(prev => ({ ...prev, current: prev.current + 1 }));
             await new Promise(resolve => setTimeout(resolve, 600)); 
             
@@ -307,73 +254,40 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
                 const titleElement = card.querySelector('h4');
                 const title = titleElement ? titleElement.innerText : `Nhom_${i}`;
                 
-                const clone = card.cloneNode(true) as HTMLElement;
-                clone.style.position = 'absolute';
-                clone.style.left = '-9999px';
-                clone.style.top = '0';
-                clone.style.width = 'max-content';
-                clone.style.maxWidth = 'none';
-                clone.style.height = 'auto'; 
-                clone.style.minHeight = 'auto';
-                clone.style.margin = '0';
-                clone.style.borderRadius = '0';
-                clone.style.display = 'inline-block';
-                clone.classList.remove('h-full');
-
-                const tableContainer = clone.querySelector('.overflow-x-auto') as HTMLElement;
-                if (tableContainer) {
-                    tableContainer.style.overflow = 'visible';
-                    tableContainer.style.width = 'max-content';
-                    tableContainer.style.height = 'auto';
-                }
-
-                const tableInClone = clone.querySelector('table') as HTMLElement | null;
-                if (tableInClone) {
-                    tableInClone.style.width = 'max-content';
-                    tableInClone.style.height = 'auto';
-                    tableInClone.style.tableLayout = 'auto'; 
-                    tableInClone.querySelectorAll('td').forEach(td => (td as HTMLElement).style.whiteSpace = 'nowrap');
-                }
-
-                if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
-                clone.classList.add('export-mode');
-                const btn = clone.querySelector('.export-button-component');
-                if(btn) (btn as HTMLElement).style.display = 'none';
-                
-                document.body.appendChild(clone);
-                await new Promise(resolve => setTimeout(resolve, 200));
-                
-                const finalCardWidth = clone.offsetWidth;
-                const finalCardHeight = clone.scrollHeight;
-                
-                const headerDiv = clone.querySelector('div:first-child') as HTMLElement;
-                if (headerDiv) {
-                    headerDiv.style.width = '100%';
-                    const h4 = headerDiv.querySelector('h4');
-                    if (h4) { h4.style.paddingLeft = '15px'; h4.style.paddingRight = '15px'; }
-                }
-
-                const cardCanvas = await (window as any).html2canvas(clone, { 
-                    scale: 2, 
-                    useCORS: true, 
-                    backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                    width: finalCardWidth,
-                    height: finalCardHeight,
-                    windowWidth: finalCardWidth,
-                    windowHeight: finalCardHeight,
-                    logging: false
+                const safeName = `${title.replace(/[\s/]/g, '_')}.png`;
+                const blob = await exportElementAsImage(card, safeName, {
+                    elementsToHide: ['.export-button-component'],
+                    preprocessClone: (clone) => {
+                        const headerDiv = clone.querySelector('div:first-child') as HTMLElement;
+                        if (headerDiv) {
+                            headerDiv.style.width = '100%';
+                            const h4 = headerDiv.querySelector('h4');
+                            if (h4) { h4.style.paddingLeft = '15px'; h4.style.paddingRight = '15px'; }
+                        }
+                        clone.classList.remove('h-full');
+                    }
                 });
-                const cardLink = document.createElement('a');
-                cardLink.download = `${title.replace(/[\s/]/g, '_')}.png`;
-                cardLink.href = cardCanvas.toDataURL('image/png');
-                cardLink.click();
-                document.body.removeChild(clone);
+                
+                if (blob) {
+                    if (autoAction === 'download') {
+                        downloadBlob(blob, safeName);
+                    } else if (autoAction === 'share') {
+                        await shareBlob(blob, safeName);
+                    } else {
+                        const action = await showExportOptions(blob, safeName);
+                        if (action === 'cancel') break;
+                        autoAction = action;
+                    }
+                }
+                
                 setExportProgress(prev => ({ ...prev, current: prev.current + 1 }));
                 await new Promise(resolve => setTimeout(resolve, 300));
             }
-        } catch (error) {
-            console.error("Batch export failed", error);
-            alert("Xuất hàng loạt thất bại.");
+        } catch (error: any) {
+            if (error.message !== 'cancelled') {
+                console.error("Batch export failed", error);
+                alert("Xuất hàng loạt thất bại.");
+            }
         } finally {
             setIsBatchExporting(false);
             setExportProgress({ current: 0, total: 0 });

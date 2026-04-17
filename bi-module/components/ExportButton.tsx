@@ -12,8 +12,13 @@ const ExportButton: React.FC<ExportButtonProps> = ({ onExportPNG, disabled = fal
   const handleExport = async () => {
     if (disabled || isLoading) return;
     setIsLoading(true);
-    await onExportPNG();
-    setIsLoading(false);
+    try {
+      await onExportPNG();
+    } catch (e) {
+      console.error('Lỗi xuất ảnh:', e);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -77,11 +77,16 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     // Format display text or tags
     const renderContent = () => {
         const labelText = variant === 'compact' ? label : label;
-        if (selected.length === 0) return <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[10px] tracking-wider">{label}</span>;
-        if (selected.length === options.length) return <span className="text-indigo-600 dark:text-indigo-400 font-bold text-[10px] uppercase tracking-wider">Tất cả</span>;
+        if (selected.length === 0) return <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[10px] tracking-wider whitespace-nowrap">{label}</span>;
+        
+        if (selected.length === options.length) {
+            return <span className="text-indigo-600 dark:text-indigo-400 font-bold text-[10px] uppercase tracking-wider whitespace-nowrap">
+                {variant === 'compact' ? 'ALL' : `Tất cả ${label}`}
+            </span>;
+        }
         
         if (variant === 'compact') {
-            return <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-wider">{label} ({selected.length})</span>;
+            return <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-wider whitespace-nowrap">{label}</span>;
         }
 
         if (selected.length <= 2) {
@@ -96,7 +101,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             );
         }
         
-        return <span className="text-indigo-600 dark:text-indigo-400 font-bold">{selected.length} {label}</span>;
+        return <span className="text-indigo-600 dark:text-indigo-400 font-bold whitespace-nowrap">{selected.length} {label}</span>;
     };
 
     return (
@@ -116,7 +121,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     {renderContent()}
                 </div>
                 <div className="flex items-center gap-1.5 ml-2">
-                    {selected.length > 0 && (
+                    {selected.length > 0 && !(variant === 'compact' && selected.length === options.length) && (
                         <div className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200">
                             {selected.length}
                         </div>

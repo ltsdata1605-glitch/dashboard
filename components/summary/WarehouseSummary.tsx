@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useMemo, startTransition } from 'react';
 import type { WarehouseColumnConfig, WarehouseMetricType } from '../../types';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
@@ -32,6 +32,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     const rowsPerPage = 50;
     
     const [columns, setColumns] = useState<WarehouseColumnConfig[]>([]);
+    const [columnsLoaded, setColumnsLoaded] = useState(false);
     
     // State for editing target — now holds both DTQD and DTThuc values
     const [editingTargetKho, setEditingTargetKho] = useState<{ id: string, name: string, valueDTQD: string, valueDTThuc: string } | null>(null);
@@ -107,7 +108,10 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                 config = [...DEFAULT_WAREHOUSE_COLUMNS];
                 await saveWarehouseColumnConfig(config);
             }
-            setColumns(config);
+            startTransition(() => {
+                setColumns(config);
+                setColumnsLoaded(true);
+            });
         };
         loadConfig();
     }, [allIndustries, allGroups]);
@@ -151,9 +155,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         if (editingTargetKho && targetInputRef.current) {
             targetInputRef.current.focus();
         }
-    }, [editingTargetKho]);
-    
-    if (!data || data.length === 0) return null;
+    }, [editingTargetKho?.id]);
 
     const handleSort = (columnId: string) => {
         setSortConfig(prev => ({ key: columnId, direction: (prev?.key === columnId && prev.direction === 'desc') ? 'asc' : 'desc' }));
@@ -228,6 +230,25 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         const monthlyTotal = data.reduce((sum, row) => sum + (warehouseTargets[row.khoName] || 0), 0);
         return isLuyKe ? monthlyTotal : (monthlyTotal > 0 ? monthlyTotal / daysInMonth : 0);
     }, [data, warehouseTargets, isLuyKe, daysInMonth]);
+
+    // Early returns AFTER all hooks
+    if (!data || data.length === 0) return null;
+
+    // Show skeleton while waiting for column config to load from IndexedDB
+    if (!columnsLoaded) {
+        return (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden mb-2 lg:mb-8 rounded-xl lg:rounded-none">
+                <SectionHeader title="Chi Tiết Theo Kho" icon="layout-grid" subtitle="Phân tích hiệu suất từng siêu thị" />
+                <div className="p-4 lg:p-6 space-y-3">
+                    <div className="h-8 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
+                    {data.slice(0, 3).map((_, i) => (
+                        <div key={i} className="h-10 bg-slate-50 dark:bg-slate-800/60 rounded-lg animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+                    ))}
+                    <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -553,7 +574,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 inputMode="decimal"
                                 value={editingTargetKho?.valueDTThuc || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTThuc', e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleTargetSave(); } }}
                                 className="w-full p-2.5 sm:p-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300 transition-all"
                                 placeholder="VD: 1,500"
                             />
@@ -568,7 +589,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 inputMode="decimal"
                                 value={editingTargetKho?.valueDTQD || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTQD', e.target.value)}
-                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); (e.target as HTMLInputElement).blur(); } }}
+                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleTargetSave(); } }}
                                 className="w-full p-2.5 sm:p-3 border-2 border-blue-200 dark:border-blue-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-bold text-blue-700 dark:text-blue-300 transition-all"
                                 placeholder="VD: 2,000"
                             />

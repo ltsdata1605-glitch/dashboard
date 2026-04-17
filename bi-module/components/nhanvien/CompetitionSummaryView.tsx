@@ -8,6 +8,7 @@ import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienType
 import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Switch } from '../dashboard/DashboardWidgets';
+import { exportElementAsImage } from '../../../services/uiService';
 
 interface CompetitionSummaryViewProps {
     employees: Employee[];
@@ -81,38 +82,16 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
     const { showExportOptions } = useExportOptionsContext();
 
     const handleExportPNG = async () => {
-        if (!cardRef.current || !(window as any).html2canvas) return;
+        if (!cardRef.current) return;
         const original = cardRef.current;
-        const clone = original.cloneNode(true) as HTMLElement;
-        clone.style.position = 'absolute';
-        clone.style.left = '-9999px';
-        clone.style.width = 'max-content';
-        clone.style.maxWidth = 'none';
-        clone.style.padding = '4px';
-        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
-        if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
-        clone.classList.add('export-mode');
-        clone.querySelectorAll('.no-print, .export-button-component').forEach(el => (el as HTMLElement).style.display = 'none');
-        const table = clone.querySelector('table');
-        if (table) {
-            table.style.width = 'max-content';
-            table.querySelectorAll('th, td').forEach(cell => {
-                (cell as HTMLElement).style.whiteSpace = 'nowrap';
-                (cell as HTMLElement).style.padding = '12px 10px';
-            });
-        }
-        document.body.appendChild(clone);
         try {
-            await new Promise(resolve => setTimeout(resolve, 200));
-            const canvas = await (window as any).html2canvas(clone, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff'
+            const filename = `ThiDua_${tableName.replace(/\s+/g, '_')}_${supermarketName}.png`;
+            const blob = await exportElementAsImage(original, filename, {
+                elementsToHide: ['.no-print', '.export-button-component']
             });
-            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-            if (blob) showExportOptions(blob, `ThiDua_${tableName.replace(/\s+/g, '_')}_${supermarketName}.png`);
-        } finally {
-            document.body.removeChild(clone);
+            if (blob) showExportOptions(blob, filename);
+        } catch (err) {
+            console.error('Failed to export image', err);
         }
     };
 

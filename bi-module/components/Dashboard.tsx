@@ -14,6 +14,7 @@ import * as db from '../utils/db';
 import { useExportOptions } from '../../hooks/useExportOptions';
 import ExportOptionsModal from '../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 
 interface DashboardProps {
     onNavigateToUpdater: () => void;
@@ -141,129 +142,33 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     };
 
     // --- Export Logic Tối Ưu Tuyệt Đối Cho Bảng Báo Cáo ---
-    const handleExportPNG = async (targetRef: React.RefObject<HTMLDivElement | null>, filenamePart: string) => {
+    const handleExportPNG = async (targetRef: React.RefObject<HTMLDivElement | null>, filenamePart: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
         const original = targetRef.current;
-        if (!original || !(window as any).html2canvas) return;
-        
-        const isCompetitionExport = activeSubTab === 'competition';
-        const clone = original.cloneNode(true) as HTMLElement;
-        
-        // Cấu hình virtual container cho Export - Ưu tiên thu gọn tối đa
-        clone.style.position = 'absolute';
-        clone.style.left = '-9999px';
-        clone.style.top = '0';
-        clone.style.width = 'max-content'; // Cho phép bảng co giãn theo nội dung
-        clone.style.minWidth = '600px'; 
-        clone.style.maxWidth = 'none';
-        clone.style.height = 'auto';
-        clone.style.transform = 'none';
-        
-        const isDarkMode = document.documentElement.classList.contains('dark');
-        const bgColor = isDarkMode ? '#0f172a' : '#ffffff';
-        const borderColor = isDarkMode ? '#1e293b' : '#e2e8f0';
-
-        clone.style.backgroundColor = bgColor;
-        if (isDarkMode) clone.classList.add('dark');
-        clone.classList.add('export-mode');
-
-        // BÓC TÁCH VÀ TRIỆT TIÊU KHOẢNG CÁCH
-        clone.classList.remove('space-y-4', 'space-y-6', 'space-y-8');
-        clone.style.display = 'flex';
-        clone.style.flexDirection = 'column';
-        clone.style.gap = '0px'; 
-        clone.style.padding = '4px'; // GIẢM PADDING 4 BÊN XUỐNG TỐI THIỂU
-        clone.style.border = `1px solid ${borderColor}`; 
-
-        // Loại bỏ các thành phần không cần thiết
-        clone.querySelectorAll('.no-print, .export-button-component, .column-customizer, .industry-view-controls, #competition-view-controls, .js-individual-view-toolbar').forEach(el => (el as HTMLElement).style.display = 'none');
-        
-        // Tối ưu hóa bảng trong clone
-        const tables = clone.querySelectorAll('table');
-        tables.forEach(table => {
-            const htmlTable = table as HTMLElement;
-            htmlTable.style.width = 'max-content'; // Fix độ rộng vừa nội dung
-            htmlTable.style.minWidth = '100%';
-            htmlTable.style.tableLayout = 'auto';
-            
-            // Ép font chữ lớn hơn một chút để dễ đọc trên Mobile khi thu nhỏ
-            htmlTable.querySelectorAll('th, td').forEach(cell => {
-                const htmlCell = cell as HTMLElement;
-                htmlCell.style.fontSize = '12px';
-                htmlCell.style.padding = '8px 6px';
-                htmlCell.style.whiteSpace = 'nowrap';
-                htmlCell.style.minWidth = 'auto';
-                htmlCell.style.width = 'auto';
-            });
-        });
-
-        // Loại bỏ bo góc và shadow để tạo khối phẳng chuyên nghiệp
-        clone.querySelectorAll('.bg-white, .dark\\:bg-slate-800, .bg-slate-900').forEach(el => {
-            const htmlEl = el as HTMLElement;
-            htmlEl.style.borderRadius = '0px';
-            htmlEl.style.border = 'none';
-            htmlEl.style.boxShadow = 'none';
-            htmlEl.style.marginBottom = '0px';
-        });
-
-        document.body.appendChild(clone);
+        if (!original) return null;
         
         try {
-            await new Promise(resolve => setTimeout(resolve, 300));
+            const safeName = filenamePart.replace(/[^a-zA-Z0-9]/g, '_');
+            const filename = `BI_PRO_${safeName}_${new Date().toISOString().slice(0,10)}.png`;
             
-            // Xử lý tiêu đề cho bảng Doanh Thu
-            if (!isCompetitionExport) {
-                const titleElements = clone.querySelectorAll('.card-title-text');
-                titleElements.forEach(titleElement => {
-                    const htmlTitle = titleElement as HTMLElement;
-                    htmlTitle.style.display = 'block'; 
-                    htmlTitle.style.width = '100%';
-                    htmlTitle.style.textAlign = 'center';
-                    htmlTitle.style.padding = '8px 0'; // Giảm padding dọc tiêu đề
-                    
-                    const mainSpan = htmlTitle.querySelector('span') as HTMLElement;
-                    if (mainSpan) {
-                        mainSpan.style.fontSize = '28px';
-                        mainSpan.style.fontWeight = '900';
-                        mainSpan.style.color = isDarkMode ? '#38bdf8' : '#0369a1';
-                        mainSpan.style.lineHeight = '1.1';
-                        mainSpan.style.letterSpacing = '-0.02em';
-                    }
-                });
-
-                // Ẩn thanh header xám thừa
-                clone.querySelectorAll('.card-header-container').forEach(el => {
-                    const container = el as HTMLElement;
-                    if (!container.querySelector('.card-title-text')) {
-                        container.style.display = 'none';
-                    } else {
-                        container.style.border = 'none';
-                        container.style.backgroundColor = 'transparent';
-                        container.style.padding = '0';
-                    }
-                });
-            }
-
-            const canvas = await (window as any).html2canvas(clone, { 
-                scale: 3, // Độ nét cực cao cho mobile
-                useCORS: true, 
-                backgroundColor: bgColor,
-                width: clone.scrollWidth,
-                height: clone.scrollHeight,
-                logging: false,
-                windowWidth: clone.scrollWidth,
-                windowHeight: clone.scrollHeight
+            const blob = await exportElementAsImage(original, filename, {
+                elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '.industry-view-controls', '#competition-view-controls', '.js-individual-view-toolbar']
             });
             
-            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
             if (blob) {
-                const safeName = filenamePart.replace(/[^a-zA-Z0-9]/g, '_');
-                const filename = `BI_PRO_${safeName}_${new Date().toISOString().slice(0,10)}.png`;
-                exportOptions.showExportOptions(blob, filename);
+                if (autoAction === 'download') {
+                    downloadBlob(blob, filename);
+                    return 'download';
+                } else if (autoAction === 'share') {
+                    await shareBlob(blob, filename);
+                    return 'share';
+                } else {
+                    return await exportOptions.showExportOptions(blob, filename);
+                }
             }
+            return null;
         } catch (err) {
             console.error('Export error', err);
-        } finally {
-            document.body.removeChild(clone);
+            return null;
         }
     };
 
@@ -273,13 +178,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
         const originalSm = activeSupermarket;
         const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
         
+        let autoAction: 'download' | 'share' | 'cancel' | null = null;
+        
         try {
             for (const sm of ['Tổng', ...supermarkets]) {
                 setActiveSupermarket(sm);
                 await sleep(1500);
                 const targetRef = mode === 'competition' ? competitionViewRef : printableRef;
                 const prefix = mode === 'competition' ? `ThiDua_${activeMainTab}` : (mode === 'realtime' ? 'DoanhThu' : 'DoanhThu_LuyKe');
-                await handleExportPNG(targetRef, `${prefix}_${sm}`);
+                const action = await handleExportPNG(targetRef, `${prefix}_${sm}`, autoAction);
+                if (action === 'cancel') break;
+                autoAction = action;
             }
             alert('✅ Đã hoàn tất xuất hàng loạt cho tất cả siêu thị!');
         } catch (e) {

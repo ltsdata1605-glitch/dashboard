@@ -8,6 +8,7 @@ import { getYesterdayDateString, parseInstallmentData } from '../../utils/nhanVi
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { UsersIcon, UploadIcon, ChevronDownIcon, ViewListIcon, ViewGridIcon, CameraIcon, SpinnerIcon, ClockIcon, XIcon, CheckCircleIcon } from '../Icons';
 import { Switch } from '../dashboard/DashboardWidgets';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services/uiService';
 
 const MedalBadge: React.FC<{ rank?: number }> = ({ rank }) => {
     if (!rank) return <div className="w-7" />;
@@ -210,70 +211,30 @@ const InstallmentTab: React.FC<{
 
     const { showExportOptions } = useExportOptionsContext();
 
-    const handleExportPNG = async (customFilename?: string) => {
-        if (!cardRef.current || !(window as any).html2canvas) return;
+    const handleExportPNG = async (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
+        if (!cardRef.current) return null;
         const original = cardRef.current;
-        const clone = original.cloneNode(true) as HTMLElement;
-        clone.style.position = 'absolute'; clone.style.left = '-9999px'; clone.style.width = 'max-content'; clone.style.maxWidth = 'none';
-        clone.style.padding = '4px';
-        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
-        clone.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff';
-        if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
-        clone.querySelectorAll('.no-print, .export-button-component').forEach(el => (el as HTMLElement).style.display = 'none');
-        
-        const table = clone.querySelector('table');
-        if (table) {
-            table.style.width = 'max-content'; table.style.fontSize = '12px'; table.style.borderRadius = '0';
-            table.style.borderCollapse = 'separate';
-            table.style.borderSpacing = '0';
-            
-            const rowsInHeader = table.querySelectorAll('thead tr');
-            rowsInHeader.forEach(row => (row as HTMLElement).style.backgroundColor = 'transparent');
-
-            table.querySelectorAll('thead th').forEach(el => {
-                const htmlTh = el as HTMLElement;
-                if (htmlTh.parentElement === rowsInHeader[0]) {
-                    htmlTh.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#075985' : '#0284c7';
-                } else {
-                    htmlTh.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#0c4a6e' : '#0ea5e9';
-                }
-
-                if (htmlTh.hasAttribute('rowspan')) {
-                    htmlTh.style.verticalAlign = 'middle';
-                    htmlTh.style.textAlign = 'center';
-                    htmlTh.style.height = '100%';
-                    htmlTh.style.padding = '12px 10px';
-                    htmlTh.style.zIndex = '50';
-                    htmlTh.style.position = 'relative';
-                } else {
-                    htmlTh.style.padding = '8px 10px';
-                }
-                htmlTh.style.whiteSpace = 'nowrap';
-                htmlTh.style.color = 'white';
-            });
-
-            table.querySelectorAll('tbody td').forEach(el => { 
-                const htmlEl = el as HTMLElement;
-                htmlEl.style.padding = '12px 10px'; 
-                htmlEl.style.whiteSpace = 'nowrap'; 
-            });
-        }
-
-        document.body.appendChild(clone);
         try {
-            await new Promise(resolve => setTimeout(resolve, 400));
-            const canvas = await (window as any).html2canvas(clone, { 
-                scale: 3, 
-                useCORS: true, 
-                backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff', 
-                width: clone.scrollWidth, 
-                height: clone.scrollHeight,
-                logging: false,
-                removeContainer: true
+            const safeName = customFilename || `Installment_${supermarketName}.png`;
+            const blob = await exportElementAsImage(original, safeName, {
+                elementsToHide: ['.no-print', '.export-button-component']
             });
-            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-            if (blob) showExportOptions(blob, customFilename || `Installment_${supermarketName}.png`);
-        } finally { document.body.removeChild(clone); }
+            if (blob) {
+                if (autoAction === 'download') {
+                    downloadBlob(blob, safeName);
+                    return 'download';
+                } else if (autoAction === 'share') {
+                    await shareBlob(blob, safeName);
+                    return 'share';
+                } else {
+                    return await showExportOptions(blob, safeName);
+                }
+            }
+            return null;
+        } catch (err) {
+            console.error('Failed to export image', err);
+            return null;
+        }
     };
 
     const handleBatchExportByDept = async () => {
@@ -281,13 +242,17 @@ const InstallmentTab: React.FC<{
         if (allDepts.length === 0) return;
         setIsExportingByDept(true);
         setExportDeptProgress({ current: 0, total: allDepts.length });
+        let autoAction: 'download' | 'share' | 'cancel' | null = null;
+        
         for (let i = 0; i < allDepts.length; i++) {
             const dept = allDepts[i] as string;
             setExportDeptFilter(dept);
             setExportDeptProgress({ current: i + 1, total: allDepts.length });
             await new Promise(r => setTimeout(r, 400));
             const safeDeptName = dept.replace(/\//g, '_').replace(/\s+/g, '_');
-            await handleExportPNG(`TG_BP_${safeDeptName}_${supermarketName}.png`);
+            const action = await handleExportPNG(`TG_BP_${safeDeptName}_${supermarketName}.png`, autoAction);
+            if (action === 'cancel') break;
+            autoAction = action;
         }
         setExportDeptFilter(null);
         setIsExportingByDept(false);

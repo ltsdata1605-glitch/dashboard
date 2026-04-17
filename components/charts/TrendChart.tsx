@@ -401,7 +401,7 @@ const TrendChart: React.FC = React.memo(() => {
                   {/* Cụm 1: Thời gian & Kho */}
                   <div className="flex flex-none items-center gap-1 pr-1.5 sm:pr-2 border-r border-slate-200 dark:border-slate-700">
                       <select
-                          className="text-[10px] sm:text-[11px] font-black bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-sm transition-all uppercase tracking-wider h-8"
+                          className="text-[10px] sm:text-[11px] font-black bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-sm transition-all uppercase tracking-wider min-h-[32px]"
                           value={calendarFilters.month}
                           onChange={(e) => setCalendarFilters(prev => ({ ...prev, month: e.target.value }))}
                       >
@@ -411,7 +411,7 @@ const TrendChart: React.FC = React.memo(() => {
 
                   {/* Cụm 2: Phân nhóm */}
                   <div className="flex flex-none items-center gap-1 px-1.5 sm:px-2 border-r border-slate-200 dark:border-slate-700">
-                      <div className="w-[100px] xl:w-[120px]">
+                      <div className="w-auto">
                           <MultiSelectDropdown
                               label="Ngành"
                               options={uniqueParentGroups}
@@ -420,7 +420,7 @@ const TrendChart: React.FC = React.memo(() => {
                               variant="compact"
                           />
                       </div>
-                      <div className="w-[100px] xl:w-[120px]">
+                      <div className="w-auto">
                           <MultiSelectDropdown
                               label="Nhóm"
                               options={uniqueChildGroups}
@@ -434,7 +434,8 @@ const TrendChart: React.FC = React.memo(() => {
                   {/* Cụm 3: Chỉ số & Hành động */}
                   <div className="flex flex-none items-center gap-1 pl-1.5 sm:pl-2">
                        <select
-                          className="text-[10px] sm:text-[11px] font-black w-[90px] sm:w-[115px] text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-700 border border-rose-100 dark:border-rose-900/30 rounded-lg px-1.5 sm:px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 cursor-pointer shadow-sm transition-all uppercase tracking-wider h-8"
+                          className="text-[10px] sm:text-[11px] font-black text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-700 border border-rose-100 dark:border-rose-900/30 rounded-xl px-1.5 sm:px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 cursor-pointer shadow-sm transition-all uppercase tracking-wider min-h-[32px]"
+                          style={{ width: calendarFilters.metric === 'quantity' ? '92px' : calendarFilters.metric === 'revenueQD' ? '122px' : calendarFilters.metric === 'traChamPercent' ? '96px' : '104px' }}
                           value={calendarFilters.metric}
                           onChange={(e) => setCalendarFilters(prev => ({ ...prev, metric: e.target.value }))}
                       >
@@ -446,7 +447,7 @@ const TrendChart: React.FC = React.memo(() => {
 
                       <button 
                           onClick={handleAddCalendar}
-                          className="w-8 h-8 flex-shrink-0 flex justify-center items-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-md shadow-indigo-100 dark:shadow-none transition-all active:scale-90"
+                          className="w-auto px-2.5 min-h-[32px] flex-shrink-0 flex justify-center items-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-100 dark:shadow-none transition-all active:scale-90"
                           title="Lưu cấu hình này"
                       >
                           <Icon name="plus" size={4} />

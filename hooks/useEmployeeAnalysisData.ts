@@ -3,13 +3,15 @@ import { useDashboardContext } from '../contexts/DashboardContext';
 import { getRowValue } from '../utils/dataUtils';
 import { COL } from '../constants';
 import { saveSetting, getSetting } from '../services/dbService';
+import { isDateMatch } from '../services/filterService';
 
 export const useEmployeeAnalysisData = () => {
     const { 
         employeeAnalysisData, 
         baseFilteredData, 
         productConfig, 
-        originalData 
+        originalData,
+        filterState
     } = useDashboardContext();
 
     const [hideZeroRevenue, setHideZeroRevenueRaw] = useState(true);
@@ -72,8 +74,16 @@ export const useEmployeeAnalysisData = () => {
         const filteredFullSellerArray = employeeAnalysisData.fullSellerArray.filter(filterEmployee);
         const filteredExploitationData = employeeAnalysisData.exploitationData.filter(filterEmployee);
         
+        const mainStartDate = filterState.startDate ? new Date(filterState.startDate) : null;
+        if (mainStartDate) mainStartDate.setHours(0, 0, 0, 0);
+        const mainEndDate = filterState.endDate ? new Date(filterState.endDate) : null;
+        if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
+
         // Filter baseFilteredData as well
         const filteredBaseData = baseFilteredData.filter(row => {
+            // Apply Date Filter!
+            if (!isDateMatch(row, mainStartDate, mainEndDate, filterState.selectedMonths)) return false;
+
             const empName = getRowValue(row, COL.NGUOI_TAO);
             const empObj = empName ? employeeAnalysisData.fullSellerArray.find(e => e.name === empName) : null;
             if (!empObj) return !hideZeroRevenue; // If name not found, usually means 0 revenue info in this context, but follow filter
@@ -86,7 +96,7 @@ export const useEmployeeAnalysisData = () => {
             exploitationData: filteredExploitationData,
             filteredBaseData
         } as any;
-    }, [employeeAnalysisData, baseFilteredData, hideZeroRevenue]);
+    }, [employeeAnalysisData, baseFilteredData, hideZeroRevenue, filterState]);
 
     return {
         allIndustries,

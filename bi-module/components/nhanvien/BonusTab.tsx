@@ -9,6 +9,7 @@ import { parseNumber, getYesterdayDateString } from '../../utils/nhanVienHelpers
 import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
+import { exportElementAsImage } from '../../../services/uiService';
 
 const AvatarDisplay: React.FC<{ employeeName: string; supermarketName: string; isHidden?: boolean; onClick?: () => void }> = ({ employeeName, supermarketName, isHidden, onClick }) => {
     const dbKey = `avatar-${supermarketName}-${employeeName}`;
@@ -308,24 +309,19 @@ export const BonusView: React.FC<{
 
     const { showExportOptions } = useExportOptionsContext();
 
-    const handleExportPNG = async () => {
-        if (!cardRef.current || !(window as any).html2canvas) return;
+    const handleExportPNG = async (customFilename?: string) => {
+        if (!cardRef.current) return;
         const original = cardRef.current;
-        const clone = original.cloneNode(true) as HTMLElement;
-        clone.style.position = 'absolute'; clone.style.left = '-9999px'; clone.style.width = 'max-content';
-        clone.style.padding = '4px';
-        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
-        clone.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff';
-        if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
-        clone.querySelectorAll('.no-print, .export-button-component').forEach(el => (el as HTMLElement).style.display = 'none');
         
-        document.body.appendChild(clone);
         try {
-            await new Promise(resolve => setTimeout(resolve, 300));
-            const canvas = await (window as any).html2canvas(clone, { scale: 3, useCORS: true, backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff' });
-            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-            if (blob) showExportOptions(blob, `Bonus_Report_${supermarketName}.png`);
-        } finally { document.body.removeChild(clone); }
+            const safeName = customFilename || `Bonus_Report_${supermarketName}.png`;
+            const blob = await exportElementAsImage(original, safeName, {
+                elementsToHide: ['.no-print', '.export-button-component']
+            });
+            if (blob) showExportOptions(blob, safeName);
+        } catch (err) {
+            console.error('Export error', err);
+        }
     };
 
     const cardTitle = (

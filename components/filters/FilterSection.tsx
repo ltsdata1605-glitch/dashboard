@@ -46,18 +46,18 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
     return (
         <label
             htmlFor={`switch-${label}`}
-            className={`flex items-center cursor-pointer justify-between w-full p-2.5 rounded-2xl ${classes.bg} transition-all duration-200`}
+            className={`flex items-center cursor-pointer justify-between w-full px-3 py-2 rounded-xl ${classes.bg} transition-all duration-200 hover:brightness-95`}
         >
             <div className="flex items-center gap-2">
-                <div className={`p-1.5 rounded-xl transition-colors ${classes.iconBg}`}>
-                    <Icon name={icon} size={4.5} className={`transition-colors ${classes.iconColor}`}/>
+                <div className={`p-1 rounded-lg transition-colors ${classes.iconBg}`}>
+                    <Icon name={icon} size={3.5} className={`transition-colors ${classes.iconColor}`}/>
                 </div>
-                <span className={`font-bold text-xs transition-colors ${classes.textColor}`}>{label}</span>
+                <span className={`font-bold text-[11px] transition-colors ${classes.textColor}`}>{label}</span>
             </div>
             <div className="relative">
                 <input id={`switch-${label}`} type="checkbox" className="sr-only" checked={isActive} onChange={onToggle} />
-                <div className={`block w-10 h-5 rounded-full transition-colors ${classes.switchBg}`}></div>
-                <div className={`dot absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform duration-200 ease-in-out ${isActive ? 'translate-x-5' : ''}`}></div>
+                <div className={`block w-9 h-5 rounded-full transition-colors ${classes.switchBg}`}></div>
+                <div className={`dot absolute left-[3px] top-[3px] bg-white w-3.5 h-3.5 rounded-full transition-transform duration-200 ease-in-out ${isActive ? 'translate-x-[16px]' : ''}`}></div>
             </div>
         </label>
     );
@@ -185,88 +185,93 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
 
             {/* Slide Menu Body */}
             <div className="flex-grow overflow-y-auto custom-scrollbar pb-20">
-                <div className="p-4 space-y-4">
-                    <div className="space-y-2.5 px-3">
+                <div className="p-3 space-y-3">
+                    <div className="space-y-1.5 px-1">
                         <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg text-indigo-600 dark:text-indigo-400 shadow-sm">
+                            <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 rounded-md text-indigo-600 dark:text-indigo-400 shadow-sm">
                                 <Icon name="warehouse" size={3.5} />
                             </div>
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Kho Tạo</label>
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kho Tạo</label>
                         </div>
                         <MultiSelectDropdown 
                             label="Kho Tạo" 
                             options={options.kho} 
                             selected={localFilters.kho} 
                             onChange={(sel) => updateLocalFilter({ kho: sel })} 
+                            variant="compact"
                         />
                     </div>
 
                     {/* Trạng Thái Xuất */}
-                    <div className="space-y-2.5 px-3">
+                    <div className="space-y-1.5 px-1">
                         <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-emerald-50 dark:bg-emerald-900/30 rounded-lg text-emerald-600 dark:text-emerald-400 shadow-sm">
+                            <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/30 rounded-md text-emerald-600 dark:text-emerald-400 shadow-sm">
                                 <Icon name="truck" size={3.5} />
                             </div>
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Trạng Thái Xuất</label>
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Trạng Thái Xuất</label>
                         </div>
                         <MultiSelectDropdown 
                             label="Trạng Thái Xuất" 
                             options={['Đã', 'Chưa']} 
                             selected={localFilters.xuat === 'all' ? [] : [localFilters.xuat === 'Đã' ? 'Đã' : 'Chưa']} 
                             onChange={(sel) => updateLocalFilter({ xuat: sel.length > 0 ? sel[sel.length - 1] : 'all' })} 
+                            variant="compact"
                         />
                     </div>
 
                     {/* Dropdowns */}
                     {options.department.length > 0 && (
-                        <div className="space-y-2.5 px-3">
+                        <div className="space-y-1.5 px-1">
                             <div className="flex items-center gap-2">
-                                <div className="p-1.5 bg-sky-50 dark:bg-sky-900/30 rounded-lg text-sky-600 dark:text-sky-400 shadow-sm">
+                                <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-sky-50 dark:bg-sky-900/30 rounded-md text-sky-600 dark:text-sky-400 shadow-sm">
                                     <Icon name="users" size={3.5} />
                                 </div>
-                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em]">Bộ phận</label>
+                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Bộ phận</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="Bộ phận" 
                                 options={options.department} 
                                 selected={localFilters.department} 
                                 onChange={(sel) => updateLocalFilter({ department: sel })} 
+                                variant="compact"
                             />
                         </div>
                     )}
-                    <div className="space-y-2.5 px-3">
+                    <div className="space-y-1.5 px-1">
                         <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-amber-50 dark:bg-amber-900/30 rounded-lg text-amber-600 dark:text-amber-400 shadow-sm">
+                            <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 rounded-md text-amber-600 dark:text-amber-400 shadow-sm">
                                 <Icon name="user" size={3.5} />
                             </div>
-                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em]">Người Tạo</label>
+                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Người Tạo</label>
                         </div>
                         <MultiSelectDropdown 
                             label="Người Tạo" 
                             options={options.nguoiTao} 
                             selected={localFilters.nguoiTao} 
                             onChange={(sel) => updateLocalFilter({ nguoiTao: sel })} 
+                            variant="compact"
                         />
                     </div>
-                    <div className="space-y-2.5 px-3">
+                    <div className="space-y-1.5 px-1">
                         <div className="flex items-center gap-2">
-                            <div className="p-1.5 bg-rose-50 dark:bg-rose-900/30 rounded-lg text-rose-600 dark:text-rose-400 shadow-sm">
+                            <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-rose-50 dark:bg-rose-900/30 rounded-md text-rose-600 dark:text-rose-400 shadow-sm">
                                 <Icon name="file-text" size={3.5} />
                             </div>
-                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-[0.2em]">Trạng thái hồ sơ</label>
+                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Trạng thái hồ sơ</label>
                         </div>
                         <MultiSelectDropdown 
                             label="Trạng thái hồ sơ" 
                             options={options.trangThai} 
                             selected={localFilters.trangThai} 
                             onChange={(sel) => updateLocalFilter({ trangThai: sel })} 
+                            variant="compact"
                         />
                     </div>
 
                     {/* Date Selection */}
-                    <div className="space-y-4 pt-1">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Khoảng Thời Gian Nhanh</label>
+                    <div className="space-y-3 pt-1 px-1">
+                        <div className="space-y-1.5">
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Khoảng Thời Gian Nhanh</label>
                             <div className="grid grid-cols-3 gap-1.5">
                                 {[
                                     { range: 'today', label: 'Hôm nay' }, { range: 'yesterday', label: 'Hôm qua' },
@@ -276,7 +281,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     <button 
                                         key={range} 
                                         onClick={() => handleDateRangeClick(range)} 
-                                        className={`py-1.5 text-[11px] font-bold rounded-lg transition-all border ${localFilters.dateRange === range ? 'bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200 dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-indigo-300'}`}
+                                        className={`py-1 text-[10px] font-bold rounded-md transition-all border ${localFilters.dateRange === range ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-indigo-300'}`}
                                     >
                                         {label}
                                     </button>
@@ -284,32 +289,32 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                             </div>
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-3">
-                            <div className="space-y-1.5">
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Từ ngày</label>
                                 <input 
                                     type="date" 
                                     value={localFilters.startDate} 
                                     onChange={e => handleDateChange('startDate', e.target.value)} 
-                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold p-2 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none shadow-sm" 
+                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[12px] font-bold px-2 py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm" 
                                 />
                             </div>
-                            <div className="space-y-1.5">
+                            <div className="space-y-1">
                                 <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Đến ngày</label>
                                 <input 
                                     type="date" 
                                     value={localFilters.endDate} 
                                     onChange={e => handleDateChange('endDate', e.target.value)} 
-                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold p-2 focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-500 transition-all outline-none shadow-sm" 
+                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[12px] font-bold px-2 py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm" 
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Section Visibility */}
-                    <div className="space-y-4 pt-2">
-                        <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Hiển Thị Các Khu Vực</label>
-                        <div className="space-y-3">
+                    <div className="space-y-2 pt-2 px-1">
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hiển Thị Các Khu Vực</label>
+                        <div className="space-y-1.5">
                             {visibilityOptions.map(opt => (
                                 <ModernSwitch
                                     key={opt.key}
@@ -324,22 +329,22 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                     </div>
 
                     {/* GTĐH Settings */}
-                    <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-slate-800 pb-8">
-                        <label className="text-[11px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">Cấu Hình GTĐH Mục Tiêu</label>
+                    <div className="space-y-2.5 pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 pb-6 px-1">
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cấu Hình GTĐH Mục Tiêu</label>
                         <button
                             onClick={() => setGtdhModalOpen(true)}
-                            className="w-full flex items-center justify-between p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-md transition-all group"
+                            className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-all group"
                         >
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/60 transition-colors">
-                                    <Icon name="settings-2" size={5} />
+                            <div className="flex items-center gap-2.5">
+                                <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/60 transition-colors">
+                                    <Icon name="settings-2" size={4} />
                                 </div>
-                                <div className="flex flex-col items-start">
-                                    <span className="text-sm font-bold text-slate-800 dark:text-slate-200">Quản lý GTĐH Target</span>
-                                    <span className="text-[10px] whitespace-nowrap font-medium text-slate-500 dark:text-slate-400 mt-0.5">Thêm/Sửa/Xóa Mục Tiêu AOV</span>
+                                <div className="flex flex-col items-start leading-tight">
+                                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-200">Quản lý GTĐH Target</span>
+                                    <span className="text-[9px] whitespace-nowrap font-medium text-slate-500 dark:text-slate-400 mt-[1px]">Thêm/Sửa/Xóa Mục Tiêu AOV</span>
                                 </div>
                             </div>
-                            <Icon name="chevron-right" size={5} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
+                            <Icon name="chevron-right" size={4} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
                         </button>
                     </div>
                 </div>

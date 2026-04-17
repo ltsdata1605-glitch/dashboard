@@ -7,7 +7,8 @@ import { FilterIcon, ChevronDownIcon, CameraIcon, SpinnerIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Employee, Criterion, CompetitionHeader } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
-import { Switch } from '../dashboard/DashboardWidgets'; // Reusing Switch from Widgets or define local if simpler
+import { Switch } from '../dashboard/DashboardWidgets';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services/uiService';
 
 const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
     const percentage = Math.min(Math.max(value, 0), 200);
@@ -112,36 +113,30 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
     
     const { showExportOptions } = useExportOptionsContext();
 
-    const handleExportPNG = async (customFilename?: string) => {
-        if (!cardRef.current || !(window as any).html2canvas) return;
+    const handleExportPNG = async (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
+        if (!cardRef.current) return null;
         const originalCard = cardRef.current;
-        const clone = originalCard.cloneNode(true) as HTMLElement;
-        clone.style.position = 'absolute';
-        clone.style.left = '-9999px';
-        clone.style.top = '0';
-        clone.style.width = 'fit-content';
-        clone.style.maxWidth = 'none';
-        clone.style.boxShadow = 'none';
-        clone.style.margin = '0';
-        clone.style.padding = '4px';
-        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
-        if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
-        const toolbar = clone.querySelector('.js-individual-view-toolbar');
-        if (toolbar) (toolbar as HTMLElement).style.display = 'none';
-        clone.classList.add('export-mode');
-        const tableElementInClone = clone.querySelector('table');
-        if (tableElementInClone) tableElementInClone.classList.add('compact-export-table');
-        document.body.appendChild(clone);
         try {
-            await new Promise(resolve => setTimeout(resolve, 50));
-            const canvas = await (window as any).html2canvas(clone, { scale: 2, useCORS: true, backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff' });
             const nameToUse = customFilename || selectedEmployee?.name || 'NhanVien';
-            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-            if (blob) showExportOptions(blob, `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}.png`);
+            const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}.png`;
+            const blob = await exportElementAsImage(originalCard, filename, {
+                elementsToHide: ['.js-individual-view-toolbar', '.export-button-component', '.no-print']
+            });
+            if (blob) {
+                if (autoAction === 'download') {
+                    downloadBlob(blob, filename);
+                    return 'download';
+                } else if (autoAction === 'share') {
+                    await shareBlob(blob, filename);
+                    return 'share';
+                } else {
+                    return await showExportOptions(blob, filename);
+                }
+            }
+            return null;
         } catch (err) {
             console.error('Failed to export image', err);
-        } finally {
-            document.body.removeChild(clone);
+            return null;
         }
     };
     
@@ -151,11 +146,16 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
         const employeesToExport = allEmployees;
         setExportProgress({ current: 0, total: employeesToExport.length });
         const originalSelection = selectedEmployee;
+        
+        let autoAction: 'download' | 'share' | 'cancel' | null = null;
+        
         try {
             for (const [index, emp] of employeesToExport.entries()) {
                 onSelectIndividual(emp);
                 await new Promise(resolve => setTimeout(resolve, 300));
-                await handleExportPNG(emp.name);
+                const action = await handleExportPNG(emp.name, autoAction);
+                if (action === 'cancel') break;
+                autoAction = action;
                 setExportProgress({ current: index + 1, total: employeesToExport.length });
             }
         } finally {

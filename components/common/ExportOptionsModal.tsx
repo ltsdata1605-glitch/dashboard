@@ -1,4 +1,5 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ExportOptionsModalProps {
     isOpen: boolean;
@@ -21,12 +22,15 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
         return () => { document.body.style.overflow = ''; };
     }, [isOpen]);
 
-    if (!isOpen) return null;
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => setMounted(true), []);
 
-    return (
+    if (!isOpen || !mounted) return null;
+
+    return createPortal(
         <div
             ref={backdropRef}
-            className="fixed inset-0 z-[9999] flex items-end sm:items-center justify-center"
+            className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center"
             onClick={(e) => { if (e.target === backdropRef.current) onClose(); }}
         >
             {/* Backdrop */}
@@ -100,7 +104,8 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
 

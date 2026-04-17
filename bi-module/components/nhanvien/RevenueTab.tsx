@@ -16,6 +16,7 @@ import { AvatarUploader } from '../shared/AvatarUploader';
 import { ColorSettingsModal, ColorSettings, DEFAULT_COLOR_SETTINGS, CriterionConfig } from './revenue/ColorSettingsModal';
 import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
 import { useRevenueData } from '../../hooks/useRevenueData';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services/uiService';
 
 
 
@@ -122,52 +123,31 @@ const RevenueView: React.FC<{
 
     const { showExportOptions } = useExportOptionsContext();
 
-    const handleExportPNG = async (customFilename?: string) => {
-        if (!cardRef.current || !(window as any).html2canvas) return;
+    const handleExportPNG = async (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
+        if (!cardRef.current) return null;
         const original = cardRef.current;
-        const clone = original.cloneNode(true) as HTMLElement;
-        clone.style.position = 'absolute'; clone.style.left = '-9999px'; clone.style.width = 'max-content'; clone.style.maxWidth = 'none';
-        clone.style.padding = '4px';
-        clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
-        clone.style.backgroundColor = document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff';
-        if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
         
-        clone.querySelectorAll('.no-print, .export-button-component').forEach(el => (el as HTMLElement).style.display = 'none');
-        
-        const table = clone.querySelector('table');
-        if (table) {
-            table.style.width = 'max-content'; table.style.borderRadius = '0';
-            table.querySelectorAll('th, td').forEach(el => { (el as HTMLElement).style.padding = '12px 10px'; (el as HTMLElement).style.whiteSpace = 'nowrap'; });
-        }
-        document.body.appendChild(clone);
         try {
-            await new Promise(resolve => setTimeout(resolve, 150));
-            
-            const headerFlex = clone.querySelector('.card-header-container') as HTMLElement;
-            if (headerFlex) {
-                headerFlex.style.flexDirection = 'column';
-                headerFlex.style.alignItems = 'flex-start';
-                headerFlex.style.gap = '8px';
+            const safeName = customFilename || `DT_NhanVien_${supermarketName}.png`;
+            const blob = await exportElementAsImage(original, safeName, {
+                elementsToHide: ['.no-print', '.export-button-component']
+            });
+            if (blob) {
+                if (autoAction === 'download') {
+                    downloadBlob(blob, safeName);
+                    return 'download';
+                } else if (autoAction === 'share') {
+                    await shareBlob(blob, safeName);
+                    return 'share';
+                } else {
+                    return await showExportOptions(blob, safeName);
+                }
             }
-
-            const titleElement = clone.querySelector('.js-report-title') as HTMLElement;
-            if (titleElement) {
-                titleElement.style.fontSize = '32px'; 
-                titleElement.style.fontWeight = '900'; 
-                titleElement.style.display = 'block'; 
-                titleElement.style.textAlign = 'left';
-            }
-
-            const widget = clone.querySelector('.js-time-progress-widget') as HTMLElement;
-            if (widget) {
-                widget.style.width = '100%';
-                widget.style.marginTop = '4px';
-            }
-
-            const canvas = await (window as any).html2canvas(clone, { scale: 3, useCORS: true, backgroundColor: document.documentElement.classList.contains('dark') ? '#0f172a' : '#ffffff', width: clone.scrollWidth, height: clone.scrollHeight });
-            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-            if (blob) showExportOptions(blob, customFilename || `DT_NhanVien_${supermarketName}.png`);
-        } finally { document.body.removeChild(clone); }
+            return null;
+        } catch (err) {
+            console.error('Export error', err);
+            return null;
+        }
     };
 
     const handleBatchExportByDept = async () => {
@@ -177,13 +157,17 @@ const RevenueView: React.FC<{
         setIsExportingByDept(true);
         setExportDeptProgress({ current: 0, total: allDepts.length });
 
+        let autoAction: 'download' | 'share' | 'cancel' | null = null;
+
         for (let i = 0; i < allDepts.length; i++) {
             const dept = allDepts[i] as string;
             setExportDeptFilter(dept);
             setExportDeptProgress({ current: i + 1, total: allDepts.length });
             await new Promise(r => setTimeout(r, 400));
             const safeDeptName = dept.replace(/\//g, '_').replace(/\s+/g, '_');
-            await handleExportPNG(`DT_BP_${safeDeptName}_${supermarketName}.png`);
+            const action = await handleExportPNG(`DT_BP_${safeDeptName}_${supermarketName}.png`, autoAction);
+            if (action === 'cancel') break;
+            autoAction = action;
         }
         setExportDeptFilter(null);
         setIsExportingByDept(false);

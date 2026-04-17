@@ -31,89 +31,90 @@ export const useWarehouseLogic = ({
 
         customColumns.forEach(c => results.set(c.id, new Map<string, number>()));
 
-        const industrySets = new Map<string, Set<string>>();
-        const subgroupSets = new Map<string, Set<string>>();
-        const manufacturerSets = new Map<string, Set<string>>();
-        const productSets = new Map<string, Set<string>>();
+        // Separate data columns from non-data columns upfront
+        const dataColumns = customColumns.filter(col => col.type === 'data' || (!col.type && col.productCodes));
 
-        customColumns.forEach(col => {
-            if (col.type === 'data' || (!col.type && col.productCodes)) {
-                if (col.filters?.selectedIndustries?.length) industrySets.set(col.id, new Set(col.filters.selectedIndustries));
-                if (col.filters?.selectedSubgroups?.length) subgroupSets.set(col.id, new Set(col.filters.selectedSubgroups));
-                if (col.filters?.selectedManufacturers?.length) manufacturerSets.set(col.id, new Set(col.filters.selectedManufacturers));
-                
-                const productCodes = col.filters?.productCodes || col.productCodes;
-                if (productCodes?.length) productSets.set(col.id, new Set(productCodes));
-            }
+        // Pre-compute filter sets once
+        const colFilterCache = dataColumns.map(col => {
+            const industrySet = col.filters?.selectedIndustries?.length ? new Set(col.filters.selectedIndustries) : null;
+            const subgroupSet = col.filters?.selectedSubgroups?.length ? new Set(col.filters.selectedSubgroups) : null;
+            const manufacturerSet = col.filters?.selectedManufacturers?.length ? new Set(col.filters.selectedManufacturers) : null;
+            const productCodes = col.filters?.productCodes || col.productCodes;
+            const productSet = productCodes?.length ? new Set(productCodes) : null;
+            const hasAnyFilter = !!(industrySet || subgroupSet || manufacturerSet || productSet || col.filters?.priceCondition);
+            return { col, industrySet, subgroupSet, manufacturerSet, productSet, hasAnyFilter };
         });
 
-        // 1. Process "data" type columns
-        dataRows.forEach(row => {
-            const rawKhoName = getRowValue(row, COL.KHO);
-            if (!rawKhoName) return;
-            const khoName = String(rawKhoName);
+        if (dataColumns.length === 0) {
+            // Skip the data row loop entirely if there are no data columns
+        } else {
+            // 1. Process "data" type columns — single pass over all rows
+            const colCount = colFilterCache.length;
+            for (let ri = 0, rLen = dataRows.length; ri < rLen; ri++) {
+                const row = dataRows[ri];
+                const rawKhoName = getRowValue(row, COL.KHO);
+                if (!rawKhoName) continue;
+                const khoName = String(rawKhoName);
 
-            customColumns.forEach(col => {
-                if (col.type !== 'data' && (col.type !== undefined || !col.productCodes)) return;
+                // Extract row-level fields once (shared across all column evaluations)
+                const nganhHang = getRowValue(row, COL.MA_NGANH_HANG);
+                const nhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+                const productName = getRowValue(row, COL.PRODUCT);
+                const group = productConfig.childToSubgroupMap[nhomHang] || 'Khác';
+                const rootIndustry = productConfig.childToParentMap[nhomHang] || 'Khác';
+                const manufacturer = getRowValue(row, COL.MANUFACTURER);
+                const productNameStr = String(productName || '');
 
-                const industrySet = industrySets.get(col.id);
-                const subgroupSet = subgroupSets.get(col.id);
-                const manufacturerSet = manufacturerSets.get(col.id);
-                const productSet = productSets.get(col.id);
+                // Lazy-computed values (only computed once per-row if needed by any column)
+                let heso: number | null = null;
+                let price: number | null = null;
+                let quantity: number | null = null;
 
-                let isMatch = true;
-                
-                // If it has ANY filter, evaluate it
-                if (industrySet || subgroupSet || manufacturerSet || productSet || col.filters?.priceCondition) {
-                    const nganhHang = getRowValue(row, COL.MA_NGANH_HANG);
-                    const nhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-                    const group = productConfig.childToSubgroupMap[nhomHang] || 'Khác';
-                    const rootIndustry = productConfig.childToParentMap[nhomHang] || 'Khác';
+                for (let ci = 0; ci < colCount; ci++) {
+                    const { col, industrySet, subgroupSet, manufacturerSet, productSet, hasAnyFilter } = colFilterCache[ci];
 
-                    if (industrySet && !industrySet.has(rootIndustry)) isMatch = false;
-                    if (isMatch && subgroupSet && !subgroupSet.has(group)) isMatch = false;
-                    if (isMatch && manufacturerSet && !manufacturerSet.has(getRowValue(row, COL.MANUFACTURER))) isMatch = false;
-                    
-                    if (isMatch && productSet) {
-                        const productNameStr = String(getRowValue(row, COL.PRODUCT) || '');
-                        let pMatch = false;
-                        for (const code of productSet) {
-                            if (productNameStr.includes(code)) {
-                                pMatch = true;
-                                break;
+                    let isMatch = true;
+
+                    if (hasAnyFilter) {
+                        if (industrySet && !industrySet.has(rootIndustry)) continue;
+                        if (subgroupSet && !subgroupSet.has(group)) continue;
+                        if (manufacturerSet && !manufacturerSet.has(manufacturer)) continue;
+
+                        if (productSet) {
+                            let pMatch = false;
+                            for (const code of productSet) {
+                                if (productNameStr.includes(code)) {
+                                    pMatch = true;
+                                    break;
+                                }
                             }
+                            if (!pMatch) continue;
                         }
-                        if (!pMatch) isMatch = false;
+
+                        if (col.filters?.priceCondition) {
+                            const priceVal = Number(getRowValue(row, col.filters.priceType === 'original' ? COL.ORIGINAL_PRICE : COL.PRICE)) || 0;
+                            const v1 = col.filters.priceValue1 || 0;
+                            const v2 = col.filters.priceValue2 || 0;
+                            switch (col.filters.priceCondition) {
+                                case 'greater': if (priceVal <= v1) isMatch = false; break;
+                                case 'less': if (priceVal >= v1) isMatch = false; break;
+                                case 'equal': if (priceVal !== v1) isMatch = false; break;
+                                case 'between': if (priceVal < v1 || priceVal > v2) isMatch = false; break;
+                            }
+                            if (!isMatch) continue;
+                        }
                     }
 
-                    if (isMatch && col.filters?.priceCondition) {
-                        const price = Number(getRowValue(row, col.filters.priceType === 'original' ? COL.ORIGINAL_PRICE : COL.PRICE)) || 0;
-                        const v1 = col.filters.priceValue1 || 0;
-                        const v2 = col.filters.priceValue2 || 0;
-                        switch (col.filters.priceCondition) {
-                            case 'greater': if (price <= v1) isMatch = false; break;
-                            case 'less': if (price >= v1) isMatch = false; break;
-                            case 'equal': if (price !== v1) isMatch = false; break;
-                            case 'between': if (price < v1 || price > v2) isMatch = false; break;
-                        }
+                    // Lazy-compute expensive row values only when first column matches
+                    if (heso === null) {
+                        heso = getHeSoQuyDoi(nganhHang, nhomHang, productConfig, productName);
+                        price = Number(getRowValue(row, COL.PRICE)) || 0;
+                        quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
                     }
-                }
 
-                if (isMatch) {
-                    const price = Number(getRowValue(row, COL.PRICE)) || 0;
-                    const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
-                    
-                    const nganhHang = getRowValue(row, COL.MA_NGANH_HANG);
-                    const nhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-                    const productName = getRowValue(row, COL.PRODUCT);
-                    const heso = getHeSoQuyDoi(nganhHang, nhomHang, productConfig, productName);
-
-                    const rootIndustry = productConfig.childToParentMap[nhomHang] || 'Khác';
-                    const group = productConfig.childToSubgroupMap[nhomHang] || 'Khác';
-                    const isVieon = group === 'Vieon' || rootIndustry === 'Vieon' || (productName || '').toString().includes('VieON');
-                    const weightedQuantity = isVieon ? (quantity * heso) : quantity;
-
-                    const rowRevenue = price;
+                    const isVieon = group === 'Vieon' || rootIndustry === 'Vieon' || productNameStr.includes('VieON');
+                    const weightedQuantity = isVieon ? (quantity! * heso) : quantity!;
+                    const rowRevenue = price!;
                     const metricType = col.metricType || 'quantity';
 
                     let value = 0;
@@ -128,8 +129,8 @@ export const useWarehouseLogic = ({
                     const khoMap = results.get(col.id)!;
                     khoMap.set(khoName, (khoMap.get(khoName) || 0) + value);
                 }
-            });
-        });
+            }
+        }
 
         // Get all visible Khos from aggregated data
         const allKhoNames = data.map(d => String(d.khoName));

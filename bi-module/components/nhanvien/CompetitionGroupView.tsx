@@ -4,6 +4,7 @@ import { ChevronDownIcon, ChevronUpIcon, CameraIcon } from '../Icons';
 import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
 import { roundUp, shortenName } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { exportElementAsImage } from '../../../services/uiService';
 
 interface CompetitionGroupCardProps {
     header: CompetitionHeader;
@@ -48,85 +49,18 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
     const { showExportOptions } = useExportOptionsContext();
 
     const handleExportPNG = async () => {
-        if (!cardRef.current || !(window as any).html2canvas) {
-            alert("Thư viện xuất ảnh chưa sẵn sàng. Vui lòng thử lại sau.");
+        if (!cardRef.current) {
+            alert("Không tìm thấy thành phần cần xuất ảnh.");
             return;
         }
         
         try {
             const originalCard = cardRef.current;
-            const clone = originalCard.cloneNode(true) as HTMLElement;
-            
-            clone.style.position = 'absolute';
-            clone.style.left = '-9999px';
-            clone.style.top = '0';
-            clone.style.width = 'max-content';
-            clone.style.minWidth = 'max-content';
-            clone.style.maxWidth = 'none';
-            clone.style.height = 'auto'; 
-            clone.style.minHeight = 'auto';
-            clone.style.boxShadow = 'none';
-            clone.style.margin = '0';
-            clone.style.padding = '4px';
-            clone.style.border = `1px solid ${document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0'}`;
-            clone.style.borderRadius = '0';
-            clone.style.display = 'inline-block';
-            
-            clone.classList.remove('h-full');
-            
-            if (document.documentElement.classList.contains('dark')) clone.classList.add('dark');
-            clone.classList.add('export-mode');
-            
-            const exportButton = clone.querySelector('.export-button-component') as HTMLElement | null;
-            if (exportButton) exportButton.remove();
-            
-            const tableContainer = clone.querySelector('.overflow-x-auto') as HTMLElement | null;
-            if (tableContainer) {
-                tableContainer.style.overflow = 'visible';
-                tableContainer.style.height = 'auto';
-                tableContainer.style.width = 'max-content';
-            }
-
-            const tableInClone = clone.querySelector('table') as HTMLElement | null;
-            if (tableInClone) {
-                tableInClone.style.width = 'max-content';
-                tableInClone.style.minWidth = '100%';
-                tableInClone.style.height = 'auto';
-                tableInClone.style.tableLayout = 'auto';
-            }
-
-            document.body.appendChild(clone);
-            await new Promise(resolve => setTimeout(resolve, 200));
-            
-            const finalWidth = clone.offsetWidth;
-            const finalHeight = clone.offsetHeight;
-            
-            const headerDiv = clone.querySelector('div:first-child') as HTMLElement;
-            if (headerDiv) {
-                headerDiv.style.width = '100%';
-                const h4 = headerDiv.querySelector('h4');
-                if (h4) {
-                    h4.style.paddingLeft = '15px';
-                    h4.style.paddingRight = '15px';
-                    h4.style.width = '100%';
-                }
-            }
-
-            const canvas = await (window as any).html2canvas(clone, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: document.documentElement.classList.contains('dark') ? '#1e293b' : '#ffffff',
-                width: finalWidth,
-                height: finalHeight,
-                windowWidth: finalWidth,
-                windowHeight: finalHeight,
-                logging: false
+            const filename = `${displayTitle.replace(/[\s/]/g, '_')}.png`;
+            const blob = await exportElementAsImage(originalCard, filename, {
+                elementsToHide: ['.export-button-component']
             });
-
-            const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-            if (blob) showExportOptions(blob, `${displayTitle.replace(/[\s/]/g, '_')}.png`);
-            
-            document.body.removeChild(clone);
+            if (blob) showExportOptions(blob, filename);
         } catch (err) {
             console.error('Failed to export image', err);
             alert('Đã xảy ra lỗi khi xuất ảnh. Vui lòng thử lại.');

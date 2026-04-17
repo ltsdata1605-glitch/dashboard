@@ -291,7 +291,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                 <div className="hidden lg:flex flex-row gap-3 items-center">
                     
                     {/* 1. Primary: Warehouse Multi-select (Compact) */}
-                    <div className="w-[150px] shrink-0">
+                    <div className="w-auto shrink-0">
                         <MultiSelectDropdown
                             label="Kho"
                             options={uniqueFilterOptions.kho}
@@ -302,7 +302,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                     </div>
 
                     {/* Month Filter */}
-                    <div className="w-[150px] shrink-0 transform transition-transform hover:scale-105">
+                    <div className="w-auto shrink-0 transform transition-transform hover:scale-105">
                         <MultiSelectDropdown
                             label="Tháng"
                             options={availableMonths}
@@ -389,7 +389,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                     </div>
 
                     {/* Department Filter */}
-                    <div className="w-[160px] shrink-0">
+                    <div className="w-auto shrink-0">
                         <MultiSelectDropdown
                             label="Bộ phận"
                             options={uniqueFilterOptions.department}

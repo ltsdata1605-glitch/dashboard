@@ -51,15 +51,15 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
     return ReactDOM.createPortal(
         <div 
             ref={overlayRef}
-            className="modal-overlay fixed inset-0 bg-slate-800/60 backdrop-blur-md z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4 transition-opacity duration-300 opacity-100"
+            className="modal-overlay fixed inset-0 bg-slate-800/60 backdrop-blur-md z-[200] flex items-center justify-center p-4 transition-opacity duration-300 opacity-100"
             onMouseDown={handleOverlayMouseDown}
         >
             <div
                 ref={modalContentRef}
                 onClick={(e) => e.stopPropagation()}
-                className={`modal-content opacity-100 scale-100 bg-slate-50 dark:bg-slate-900 rounded-t-2xl sm:rounded-xl shadow-[0_0_40px_-10px_rgba(0,0,0,0.5)] w-full ${maxWidthClass} max-h-[85vh] sm:max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700 transition-transform duration-300`}
+                className={`modal-content opacity-100 scale-100 bg-slate-50 dark:bg-slate-900 rounded-2xl shadow-[0_0_40px_-10px_rgba(0,0,0,0.5)] w-full ${maxWidthClass} max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700 transition-transform duration-300`}
             >
-                <div className="flex justify-between items-center p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-t-2xl sm:rounded-t-xl flex-shrink-0">
+                <div className="flex justify-between items-center p-3 sm:p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-t-2xl flex-shrink-0">
                     <div>
                         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">{subTitle}</p>
                         <h3 className={`text-lg sm:text-2xl font-bold ${titleColorClass}`}>{title}</h3>

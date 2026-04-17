@@ -10,6 +10,87 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- html2canvas for image export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // Patch html2canvas: chuyển đổi màu oklch() sang rgb/hex vì html2canvas v1.4.1 không hỗ trợ oklch
+        (function() {
+            if (!window.html2canvas) return;
+            var _original = window.html2canvas;
+            var _cvs = document.createElement('canvas');
+            _cvs.width = 1; _cvs.height = 1;
+            var _ctx = _cvs.getContext('2d');
+
+            // Dùng Canvas 2D context để chuyển oklch → hex/rgb
+            function resolveOklch(val) {
+                if (!val || typeof val !== 'string' || val.indexOf('oklch') === -1) return null;
+                try {
+                    _ctx.clearRect(0, 0, 1, 1);
+                    _ctx.fillStyle = '#000000';
+                    _ctx.fillStyle = val;
+                    var resolved = _ctx.fillStyle;
+                    // Trả về nếu chuyển đổi thành công (không phải fallback #000000)
+                    if (resolved !== '#000000' || val.indexOf('0, 0, 0') !== -1 || val.indexOf('0%') !== -1) {
+                        return resolved;
+                    }
+                    // Nếu canvas không parse được oklch, dùng regex để extract và chuyển thủ công
+                    _ctx.fillRect(0, 0, 1, 1);
+                    var px = _ctx.getImageData(0, 0, 1, 1).data;
+                    if (px[3] > 0) return 'rgba(' + px[0] + ',' + px[1] + ',' + px[2] + ',' + (px[3]/255).toFixed(2) + ')';
+                    return null;
+                } catch(e) { return null; }
+            }
+
+            // Duyệt tất cả phần tử và chuyển màu oklch → rgb
+            function fixOklchColors(root) {
+                var els = [root];
+                var children = root.querySelectorAll('*');
+                for (var i = 0; i < children.length; i++) els.push(children[i]);
+
+                var colorProps = [
+                    ['color', 'color'],
+                    ['backgroundColor', 'background-color'],
+                    ['borderColor', 'border-color'],
+                    ['borderTopColor', 'border-top-color'],
+                    ['borderRightColor', 'border-right-color'],
+                    ['borderBottomColor', 'border-bottom-color'],
+                    ['borderLeftColor', 'border-left-color'],
+                    ['outlineColor', 'outline-color'],
+                    ['textDecorationColor', 'text-decoration-color'],
+                    ['caretColor', 'caret-color']
+                ];
+
+                for (var i = 0; i < els.length; i++) {
+                    var el = els[i];
+                    if (!(el instanceof HTMLElement)) continue;
+                    try {
+                        var cs = getComputedStyle(el);
+                        for (var j = 0; j < colorProps.length; j++) {
+                            var val = cs[colorProps[j][0]];
+                            if (val && val.indexOf('oklch') !== -1) {
+                                var rgb = resolveOklch(val);
+                                if (rgb) el.style.setProperty(colorProps[j][1], rgb, 'important');
+                            }
+                        }
+                        // Xử lý box-shadow chứa oklch
+                        var shadow = cs.boxShadow;
+                        if (shadow && shadow.indexOf('oklch') !== -1) {
+                            var fixed = shadow.replace(/oklch\([^)]+\)/g, function(match) {
+                                return resolveOklch(match) || 'transparent';
+                            });
+                            el.style.setProperty('box-shadow', fixed, 'important');
+                        }
+                    } catch(e) { /* bỏ qua lỗi trên từng phần tử */ }
+                }
+            }
+
+            // Wrap html2canvas gốc
+            window.html2canvas = function(element, options) {
+                try { fixOklchColors(element); } catch(e) { console.warn('fixOklchColors error:', e); }
+                return _original.call(this, element, options);
+            };
+        })();
+    </script>
 </head>
 
 <body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative min-h-screen antialiased text-slate-900 dark:text-slate-100 overflow-x-hidden">

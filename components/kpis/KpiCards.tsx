@@ -216,7 +216,7 @@ const KpiTargetEditor: React.FC<{
 type EditableField = 'hieuQua' | 'traGop' | 'gtdh' | 'doanhThuThuc' | null;
 
 const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
-    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig, warehouseFilteredData, isLuyKe, handleLuyKeChange, productConfig } = useDashboardContext();
+    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig, warehouseFilteredData, isLuyKe, handleLuyKeChange, productConfig, warehouseDTThucTargets } = useDashboardContext();
     const kpis = processedData?.kpis;
 
     // targets fallbacks
@@ -273,6 +273,15 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
             return Object.values(warehouseTargets).reduce((acc: number, val: number) => acc + (val || 0), 0);
         }
     }, [filterState.kho, warehouseTargets]);
+
+    const dtThucTarget = useMemo(() => {
+        const targets = warehouseDTThucTargets || {};
+        if (filterState.kho && filterState.kho.length > 0 && !filterState.kho.includes('all')) {
+            return filterState.kho.reduce((acc, k) => acc + (targets[k] || 0), 0);
+        } else {
+            return Object.values(targets).reduce((acc: number, val: number) => acc + (val || 0), 0);
+        }
+    }, [filterState.kho, warehouseDTThucTargets]);
 
     // Calculate days in month for daily target
     const daysInMonth = useMemo(() => {
@@ -480,23 +489,20 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 // "Doanh Thu Thực" — allow entering/editing target (metric can be 'totalRevenue' or 'doanhThuThuc')
                 const isDTThucCard = config.metric === 'totalRevenue' || config.metric === 'doanhThuThuc';
                 if (isDTThucCard) {
-                    editableField = 'doanhThuThuc';
-                    const monthlyTarget = doanhThuThucTarget * 1000000;
+                    const monthlyTarget = dtThucTarget;
                     const dailyDTThuc = monthlyTarget > 0 ? monthlyTarget / daysInMonth : 0;
                     const activeTarget = isLuyKe ? monthlyTarget : dailyDTThuc;
-                    finalTrendLabel = isLuyKe ? "Lũy kế" : "Mục tiêu ngày";
-                    if (editingState.field === 'doanhThuThuc') {
-                        finalTrendValue = <KpiTargetEditor value={editingState.value} onChange={handleEditChange} onFinish={submitEditing} onCancel={cancelEditing} suffix="Tr" />;
-                    } else {
-                        finalTrendValue = doanhThuThucTarget > 0
-                            ? <span className="cursor-pointer hover:text-blue-500 transition-colors flex flex-col items-end leading-tight">
-                                <span>{formatCurrency(activeTarget)}</span>
-                                <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyDTThuc)}` : `Tháng: ${formatCurrency(monthlyTarget)}`}</span>
-                            </span>
-                            : <span className="cursor-pointer text-slate-400 hover:text-blue-500 italic text-[10px] transition-colors">Nhấp để nhập</span>;
-                    }
-                    if (doanhThuThucTarget > 0) {
-                        const pct = (rawValue / activeTarget) * 100;
+                    finalTrendLabel = activeTarget > 0 ? (isLuyKe ? "Lũy kế" : "Mục tiêu ngày") : "Mục tiêu";
+                    
+                    finalTrendValue = monthlyTarget > 0
+                        ? <span className="cursor-pointer hover:text-blue-500 transition-colors flex flex-col items-end leading-tight">
+                            <span>{formatCurrency(activeTarget)}</span>
+                            <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyDTThuc)}` : `Tháng: ${formatCurrency(monthlyTarget)}`}</span>
+                        </span>
+                        : <span className="cursor-pointer text-slate-400 hover:text-blue-500 italic text-[10px] transition-colors">Chưa cài đặt</span>;
+                        
+                    if (monthlyTarget > 0) {
+                        const pct = activeTarget > 0 ? (rawValue / activeTarget) * 100 : 0;
                         isGood = pct >= 100;
                         progressPercent = pct;
                     }
@@ -523,7 +529,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
 
                 // Color mappings based on 'isGood' and icon color
                 let valueColor = 'text-slate-800 dark:text-slate-200';
-                if ((config.hasTarget && config.targetType !== 'none') || (isDTThucCard && doanhThuThucTarget > 0)) {
+                if ((config.hasTarget && config.targetType !== 'none') || (isDTThucCard && dtThucTarget > 0)) {
                     valueColor = isGood ? `text-emerald-600 dark:text-emerald-400` : 'text-amber-600 dark:text-amber-400';
                     if (config.metric === 'doanhThuQD') valueColor = 'text-blue-600 dark:text-blue-400';
                 } else if (isSpecialUnshipped) {
@@ -543,7 +549,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 const handleClick = (e: React.MouseEvent) => {
                     if (isSpecialUnshipped) {
                         onUnshippedClick();
-                    } else if (isDTQDCard) {
+                    } else if (isDTQDCard || isDTThucCard) {
                         // Scroll to warehouse summary where users can set per-kho targets
                         const warehouseEl = document.getElementById('warehouse-summary-view');
                         if (warehouseEl) {
@@ -557,7 +563,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     }
                 };
 
-                const isClickable = isSpecialUnshipped || isDTQDCard || !!editableField;
+                const isClickable = isSpecialUnshipped || isDTQDCard || isDTThucCard || !!editableField;
 
                 return (
                     <KpiCard
