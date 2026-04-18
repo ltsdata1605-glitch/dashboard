@@ -378,20 +378,6 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
 
     return (
         <div>
-            {/* Lũy kế toggle */}
-            <div className="flex items-center justify-end mb-3 hide-on-export">
-                <label className="flex items-center gap-2 cursor-pointer select-none group bg-slate-50 dark:bg-slate-800/50 rounded-lg px-2.5 py-1.5 border border-slate-200/60 dark:border-slate-700/50 transition-all hover:border-indigo-300 dark:hover:border-indigo-600">
-                    <Icon name="layers" size={3.5} className="text-slate-400 dark:text-slate-500" />
-                    <div className={`relative w-9 h-5 rounded-full transition-colors duration-200 ${isLuyKe ? 'bg-indigo-500' : 'bg-slate-300 dark:bg-slate-600'}`}
-                        onClick={() => handleLuyKeChange(!isLuyKe)}
-                    >
-                        <div className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-transform duration-200 ${isLuyKe ? 'translate-x-4' : ''}`} />
-                    </div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors">
-                        Lũy kế
-                    </span>
-                </label>
-            </div>
             <div className={`
                 grid grid-cols-2 gap-2 pb-1
                 md:grid-cols-3 md:gap-3

@@ -21,25 +21,28 @@ interface DashboardProps {
 }
 
 const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; message?: string }> = ({ onNavigate, onRestore, message }) => (
-    <Card title="Chưa có dữ liệu">
-        <div className="mt-4 text-center py-10">
-            <UploadIcon className="h-12 w-12 text-slate-300 dark:text-slate-600 mx-auto" />
-            <p className="mt-4 text-slate-600 dark:text-slate-300">{message || "Hãy bắt đầu bằng cách cập nhật báo cáo mới nhất."}</p>
+    <Card title="CHƯA CÓ DỮ LIỆU">
+        <div className="mt-4 text-center py-12 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="bg-sky-50 dark:bg-sky-900/20 p-4 rounded-full mb-4">
+                <UploadIcon className="h-10 w-10 text-sky-500 dark:text-sky-400" />
+            </div>
+            <p className="text-slate-600 dark:text-slate-300 font-medium">{message || "Hãy bắt đầu bằng cách cập nhật báo cáo mới nhất."}</p>
+            <p className="text-sm text-slate-400 mt-1 mb-8">Bạn có thể dán dữ liệu copy từ BI hoặc khôi phục từ file backup JSON.</p>
             
-            <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-sm px-4">
                 <button 
                     onClick={onNavigate} 
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-transparent text-sm font-semibold rounded-full shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
+                    className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-transparent text-sm font-bold rounded-lg shadow-sm shadow-blue-500/20 text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-all active:scale-95"
                 >
-                    <UploadIcon className="h-5 w-5" />
-                    <span>Đi đến trang cập nhật</span>
+                    <span>Cập nhật</span>
                 </button>
+                <div className="text-slate-300 dark:text-slate-600 hidden sm:block">hoặc</div>
                 <button 
                     onClick={onRestore}
-                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-300 border-slate-600 text-sm font-semibold rounded-full shadow-sm text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all"
+                    className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-200 dark:border-slate-700 text-sm font-bold rounded-lg shadow-sm text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none transition-all active:scale-95 hover:border-slate-300 dark:hover:border-slate-600"
                 >
-                    <UploadIcon className="h-5 w-5" />
-                    <span>Khôi phục từ File</span>
+                    <UploadIcon className="h-4 w-4" />
+                    <span>Khôi phục</span>
                 </button>
             </div>
         </div>
@@ -151,7 +154,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
             const filename = `BI_PRO_${safeName}_${new Date().toISOString().slice(0,10)}.png`;
             
             const blob = await exportElementAsImage(original, filename, {
-                elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '.industry-view-controls', '#competition-view-controls', '.js-individual-view-toolbar']
+                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '.industry-view-controls', '#competition-view-controls', '.js-individual-view-toolbar']
             });
             
             if (blob) {

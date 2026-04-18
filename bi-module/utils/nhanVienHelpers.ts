@@ -5,8 +5,20 @@ export const roundUp = (num: number): number => Math.ceil(num);
 
 export const parseNumber = (str: string | undefined): number => {
     if (!str) return 0;
-    // Xử lý dấu phẩy hàng ngàn và phần trăm
-    const cleaned = String(str).replace(/,/g, '').replace('%', '').trim();
+    
+    // First, remove spaces and % signs completely
+    let cleaned = String(str).replace(/[\s%]/g, '');
+    
+    // If it's a typical Vietnamese formatted number like "1.000.000" or "1.000"
+    // And NOT a decimal (like "15.5" where dot is followed by 1 or 2 digits)
+    // A dot followed by 3 digits -> thousand separator
+    if (/\.\d{3}($|\.)/.test(cleaned) || cleaned.split('.').length > 2) {
+        cleaned = cleaned.replace(/\./g, '');
+    }
+    
+    // Fallback: Remove all commas as they are also often used as thousand separators
+    cleaned = cleaned.replace(/,/g, '');
+    
     return parseFloat(cleaned) || 0;
 };
 

@@ -19,7 +19,7 @@ interface WarehouseSummaryProps {
 
 const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) => {
     const { userRole } = useAuth();
-    const { processedData, productConfig, originalData, warehouseFilteredData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, warehouseDTThucTargets, updateWarehouseDTThucTarget, filterState, handleFilterChange, isLuyKe } = useDashboardContext();
+    const { processedData, productConfig, originalData, warehouseFilteredData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, warehouseDTThucTargets, updateWarehouseDTThucTarget, filterState, handleFilterChange, isLuyKe, handleLuyKeChange } = useDashboardContext();
     const data = processedData?.warehouseSummary ?? [];
     
     const summaryRef = useRef<HTMLDivElement>(null);
@@ -265,17 +265,25 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     icon="layout-grid" 
                     subtitle="Phân tích hiệu suất từng siêu thị"
                 >
-                    <div className="flex items-center space-x-2 hide-on-export">
+                    <div className="flex items-center space-x-1 lg:space-x-2 hide-on-export">
+                        {/* Lũy kế button */}
+                        <button 
+                            onClick={() => handleLuyKeChange(!isLuyKe)}
+                            className={`flex items-center gap-1.5 p-2 rounded-md transition-colors ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
+                        >
+                            <Icon name="layers" size={5} />
+                            <span className="text-[11px] font-bold uppercase tracking-wider mt-0.5">Lũy kế</span>
+                        </button>
+
+                        {/* Divider */}
+                        <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
                         {userRole !== 'employee' && (
                             <button onClick={() => setIsSettingsModalOpen(true)} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
                                 <Icon name="settings-2" size={5} />
                             </button>
                         )}
-                        {/* Divider */}
-                        {userRole !== 'employee' && <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>}
-                        <button onClick={handleSingleExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
-                            {isExporting ? <Icon name="loader-2" className="animate-spin" size={5} /> : <Icon name="camera" size={5} />}
-                        </button>
                         <button onClick={toggleFullScreen} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title={isFullScreen ? "Thu nhỏ" : "Phóng to toàn màn hình"}>
                             <Icon name={isFullScreen ? "minimize-2" : "maximize-2"} size={5} />
                         </button>
@@ -284,6 +292,9 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 <Icon name="images" size={5} />
                             </button>
                         )}
+                        <button onClick={handleSingleExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
+                            {isExporting ? <Icon name="loader-2" className="animate-spin" size={5} /> : <Icon name="camera" size={5} />}
+                        </button>
                     </div>
                 </SectionHeader>
 
@@ -439,10 +450,20 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                             );
                                         } else if (col.metric === 'traChamPercent') {
                                             content = <span className={customColor ? "font-medium" : "font-medium text-gray-500"} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
-                                        } else if (col.type === 'calculated' && col.displayAs === 'percentage') {
-                                            content = <span className={customColor ? "font-bold" : "font-bold text-slate-700 dark:text-slate-300"} style={textColorStyle}>{value !== undefined && value !== 0 ? `${Math.round(value * 100)}%` : '0%'}</span>;
-                                        } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.metric === 'doanhThuThuc' || col.metric === 'target' || col.type === 'target') {
+                                        } else if (col.type === 'calculated') {
+                                            const decimals = col.decimalPlaces ?? 0;
+                                            if (col.displayAs === 'percentage') {
+                                                const pctVal = (value || 0) * 100;
+                                                const formatted = value !== undefined && value !== 0 ? pctVal.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : '0';
+                                                content = <span className={customColor ? "font-bold" : "font-bold text-slate-700 dark:text-slate-300"} style={textColorStyle}>{`${formatted}%`}</span>;
+                                            } else {
+                                                const formatted = (value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+                                                content = <span className={customColor ? "font-bold text-indigo-600" : "font-semibold text-indigo-700 dark:text-indigo-400"} style={textColorStyle}>{formatted}</span>;
+                                            }
+                                        } else if (col.metric === 'doanhThuThuc' || col.metric === 'doanhThuQD' || col.metric === 'target') {
                                             content = <span style={textColorStyle}>{formatRevenueForKho(value)}</span>;
+                                        } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.type === 'target') {
+                                            content = <span style={textColorStyle}>{Math.round(value || 0).toLocaleString('vi-VN')}</span>;
                                         } else {
                                             content = <span style={textColorStyle}>{formatQuantityForKho(value)}</span>;
                                         }
@@ -494,10 +515,20 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         content = <span className="text-orange-500">{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
                                     } else if (col.metric === 'traChamPercent') {
                                         content = <span>{value !== undefined && value !== 0 ? `${Math.round(value)}%` : '0%'}</span>;
-                                    } else if (col.type === 'calculated' && col.displayAs === 'percentage') {
-                                        content = <span className="font-bold text-slate-700 dark:text-slate-300">{value !== undefined && value !== 0 ? `${Math.round(value * 100)}%` : '0%'}</span>;
-                                    } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.metric === 'doanhThuThuc' || col.metric === 'target' || col.type === 'target') {
+                                    } else if (col.type === 'calculated') {
+                                        const decimals = col.decimalPlaces ?? 0;
+                                        if (col.displayAs === 'percentage') {
+                                            const pctVal = (value || 0) * 100;
+                                            const formatted = value !== undefined && value !== 0 ? pctVal.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) : '0';
+                                            content = <span className="font-bold text-slate-700 dark:text-slate-300">{`${formatted}%`}</span>;
+                                        } else {
+                                            const formatted = (value || 0).toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+                                            content = <span className="font-bold text-indigo-700 dark:text-indigo-400">{formatted}</span>;
+                                        }
+                                    } else if (col.metric === 'doanhThuThuc' || col.metric === 'doanhThuQD' || col.metric === 'target') {
                                         content = <span>{formatRevenueForKho(value)}</span>;
+                                    } else if (col.metricType === 'revenue' || col.metricType === 'revenueQD' || col.type === 'target') {
+                                        content = <span>{Math.round(value || 0).toLocaleString('vi-VN')}</span>;
                                     } else {
                                         content = <span>{formatQuantityForKho(value)}</span>;
                                     }

@@ -8,16 +8,21 @@ interface ExportButtonProps {
 
 const ExportButton: React.FC<ExportButtonProps> = ({ onExportPNG, disabled = false }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const isProcessingRef = React.useRef(false);
 
   const handleExport = async () => {
-    if (disabled || isLoading) return;
+    if (disabled || isLoading || isProcessingRef.current) return;
+    
+    isProcessingRef.current = true;
     setIsLoading(true);
+    
     try {
       await onExportPNG();
     } catch (e) {
       console.error('Lỗi xuất ảnh:', e);
     } finally {
       setIsLoading(false);
+      isProcessingRef.current = false;
     }
   };
 

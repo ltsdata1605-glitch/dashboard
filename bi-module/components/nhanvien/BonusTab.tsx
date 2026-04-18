@@ -114,34 +114,33 @@ export const BonusDataModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => onClose('stop')}>
-            <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-2xl p-8 w-full max-w-2xl border border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
-                <div className="absolute -top-24 -right-24 w-48 h-48 bg-rose-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-                <div className="flex justify-between items-start mb-6 relative z-10">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => onClose('stop')}>
+            <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6 w-full max-w-2xl border border-slate-100 dark:border-slate-800 relative focus:outline-none flex flex-col gap-5 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+                {/* Header */}
+                <div className="flex justify-between items-start">
                     <div>
-                        <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tight">
-                                Cập nhật thưởng: <span className="text-rose-600 dark:text-rose-400 drop-shadow-md">{employee.name}</span>
+                        <div className="flex items-center gap-3 mb-1">
+                            <h3 className="text-xl font-bold text-slate-800 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                                <span className="text-slate-500">Cập nhật:</span>
+                                <span className="text-indigo-600 dark:text-indigo-400">{employee.name}</span>
                             </h3>
                             {remainingInBatch && remainingInBatch > 0 ? (
-                                <span className="px-3 py-1 bg-rose-600 text-white text-[10px] font-black rounded-full animate-pulse shadow-lg shadow-rose-500/30 uppercase">Batch Mode</span>
+                                <span className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-200 text-[10px] font-bold rounded-lg uppercase whitespace-nowrap">Batch Mode</span>
                             ) : null}
                         </div>
-                        <div className="text-sm text-slate-500 font-medium flex flex-col gap-1">
-                            <span>Dán dữ liệu HRM &gt; Quản lý điểm thưởng &gt; Điểm thưởng nhân viên.</span>
-                        </div>
+                        <p className="text-xs text-slate-500 font-medium">Dán dữ liệu HRM &gt; Quản lý điểm thưởng &gt; Điểm thưởng nhân viên</p>
                     </div>
                     <button 
                         onClick={() => onClose('skip')} 
-                        className="p-2.5 hover:bg-rose-50 dark:hover:rose-900/20 text-slate-400 hover:text-rose-600 rounded-full transition-all group"
+                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
                         title="Bỏ qua nhân viên này"
                     >
-                        <XIcon className="h-7 w-7 transition-transform group-hover:rotate-90" />
+                        <XIcon className="h-5 w-5" />
                     </button>
                 </div>
 
-                <div className="relative z-10">
+                {/* Body Content */}
+                <div className="flex-1 w-full">
                     <textarea 
                         ref={textareaRef} 
                         value={pastedData} 
@@ -150,32 +149,36 @@ export const BonusDataModal: React.FC<{
                             const text = e.clipboardData.getData('text'); 
                             if (await processAndSave(text)) onClose('save'); 
                         }} 
-                        placeholder="Click vào đây rồi nhấn Ctrl + V để dán bảng dữ liệu HRM..." 
-                        className="w-full h-64 p-8 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl bg-slate-50/30 dark:bg-slate-950/50 font-mono text-xs focus:border-primary-500 focus:ring-4 focus:ring-primary-500/5 outline-none transition-all resize-none shadow-inner" 
+                        placeholder="Click vào đây hoặc nhấn tự động dán (Ctrl + V)..." 
+                        className="w-full h-48 py-3 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors resize-none placeholder-slate-400" 
                     />
-                    {error && <p className="mt-2 text-xs font-bold text-red-500 uppercase tracking-tighter">{error}</p>}
+                    {error && <p className="mt-2 text-xs font-semibold text-rose-500">{error}</p>}
                 </div>
 
-                <div className="mt-8 flex flex-col sm:flex-row justify-between items-center gap-6 relative z-10">
-                    {remainingInBatch && remainingInBatch > 0 ? (
-                        <div className="flex flex-col items-center sm:items-start">
-                            <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1">Duyệt danh sách</span>
-                            <div className="flex items-baseline gap-2">
-                                 <span className="text-4xl font-black text-rose-600 tabular-nums leading-none drop-shadow-sm">{remainingInBatch}</span>
-                                 <span className="text-xs font-bold text-slate-500 uppercase tracking-tighter italic">Nhân viên chưa duyệt</span>
+                {/* Footer */}
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-2 border-t border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                        {remainingInBatch && remainingInBatch > 0 ? (
+                            <div className="flex flex-col">
+                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">Chờ duyệt</span>
+                                <div className="flex items-end gap-1.5">
+                                     <span className="text-2xl font-black text-rose-600 tabular-nums leading-none">{remainingInBatch}</span>
+                                     <span className="text-[10px] font-semibold text-slate-500">nhân viên</span>
+                                </div>
                             </div>
-                        </div>
-                    ) : <div></div>}
-                    <div className="flex gap-4 w-full sm:w-auto">
+                        ) : <div />}
+                    </div>
+                    
+                    <div className="flex gap-3 w-full sm:w-auto">
                         <button 
                             onClick={() => onClose('stop')} 
-                            className="flex-1 sm:flex-none px-10 py-4 text-sm font-black text-slate-600 dark:text-slate-400 border-2 border-slate-100 dark:border-slate-800 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all uppercase tracking-wider active:scale-95"
+                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
                             Dừng lại
                         </button>
                         <button 
                             onClick={async () => (await processAndSave(pastedData)) && onClose('save')} 
-                            className="flex-1 sm:flex-none px-12 py-4 text-sm font-black bg-primary-600 text-white rounded-2xl shadow-xl shadow-primary-500/30 hover:bg-primary-700 hover:shadow-primary-500/40 active:scale-95 transition-all uppercase tracking-wider"
+                            className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-indigo-600 border border-transparent rounded-xl hover:bg-indigo-700 shadow-sm transition-colors"
                         >
                             Lưu & Tiếp tục
                         </button>
@@ -316,7 +319,7 @@ export const BonusView: React.FC<{
         try {
             const safeName = customFilename || `Bonus_Report_${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
-                elementsToHide: ['.no-print', '.export-button-component']
+                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
             });
             if (blob) showExportOptions(blob, safeName);
         } catch (err) {

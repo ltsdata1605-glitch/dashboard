@@ -43,7 +43,12 @@ export const useExportLogic = ({
             const blob = await exportElementAsImage(element, filename, exportOptions);
             setIsExporting(false);
             if (blob) {
-                setPendingExport({ blob, filename });
+                const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+                if (!isMobile) {
+                    downloadBlob(blob, filename);
+                } else {
+                    setPendingExport({ blob, filename });
+                }
             }
         }
     };

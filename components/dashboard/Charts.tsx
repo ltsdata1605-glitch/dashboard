@@ -49,7 +49,7 @@ const COLORS = ['#6366f1', '#818cf8', '#a5b4fc', '#c7d2fe'];
 export function RevenueChart() {
   return (
     <div className="h-[400px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <AreaChart data={areaData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -95,7 +95,7 @@ export function RevenueChart() {
 export function CategoryPieChart() {
   return (
     <div className="h-[300px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <PieChart>
           <Pie
             data={pieData}
@@ -133,7 +133,7 @@ export function CategoryPieChart() {
 export function ActivityBarChart() {
   return (
     <div className="h-[300px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <BarChart data={barData}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
           <XAxis 

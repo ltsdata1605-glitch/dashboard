@@ -262,6 +262,7 @@ export interface WarehouseColumnConfig {
   operand1_columnId?: string;
   operand2_columnId?: string;
   displayAs?: 'number' | 'percentage';
+  decimalPlaces?: 0 | 1 | 2;
 
   // For 'target' type
   targetValue?: number;
@@ -378,6 +379,7 @@ export interface ColumnConfig {
     operand1_columnId?: string;
     operand2_columnId?: string;
     displayAs?: 'number' | 'percentage';
+    decimalPlaces?: 0 | 1 | 2;
     
     conditionalFormatting?: {
         condition: '>' | '<' | '=' | 'between' | '>avg' | '<avg';
@@ -450,6 +452,7 @@ export interface HeadToHeadTableConfig {
     operand1_tableId?: string;
     operand2_tableId?: string;
     displayAs?: 'number' | 'percentage';
+    decimalPlaces?: 0 | 1 | 2;
     
     // For 'target' type
     targetValue?: number;

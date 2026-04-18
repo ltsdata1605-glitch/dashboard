@@ -8,12 +8,9 @@ import ExportButton from '../../ExportButton';
 interface CompetitionControlBarProps {
     viewMode: 'grid' | 'list';
     setViewMode: (mode: 'grid' | 'list') => void;
-    programFilterSearch: string;
-    setProgramFilterSearch: (val: string) => void;
     selectedPrograms: string[];
     setSelectedPrograms: React.Dispatch<React.SetStateAction<string[]>>;
     allProgramNames: string[];
-    filteredProgramNames: string[];
     hiddenColumns: string[];
     setHiddenColumns: React.Dispatch<React.SetStateAction<string[]>>;
     headers: string[];
@@ -23,17 +20,15 @@ interface CompetitionControlBarProps {
 const CompetitionControlBar: React.FC<CompetitionControlBarProps> = ({
     viewMode,
     setViewMode,
-    programFilterSearch,
-    setProgramFilterSearch,
     selectedPrograms,
     setSelectedPrograms,
     allProgramNames,
-    filteredProgramNames,
     hiddenColumns,
     setHiddenColumns,
     headers,
     onExport
 }) => {
+    const [programFilterSearch, setProgramFilterSearch] = useState('');
     const [isProgramFilterOpen, setIsProgramFilterOpen] = useState(false);
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const programFilterRef = useRef<HTMLDivElement>(null);
@@ -51,6 +46,13 @@ const CompetitionControlBar: React.FC<CompetitionControlBarProps> = ({
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
+
+    const filteredProgramNames = React.useMemo(() => {
+        if (!programFilterSearch) return allProgramNames;
+        return allProgramNames.filter(name =>
+            name.toLowerCase().includes(programFilterSearch.toLowerCase())
+        );
+    }, [allProgramNames, programFilterSearch]);
 
     const toggleProgram = (name: string) => {
         setSelectedPrograms(prev => {

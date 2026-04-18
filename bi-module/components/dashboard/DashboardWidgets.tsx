@@ -181,10 +181,10 @@ export const SupermarketNavBar: React.FC<{
                         key={sm}
                         onClick={() => setActiveSupermarket(sm)}
                         className={`
-                            shrink-0 px-5 py-2 text-xs font-semibold rounded-full transition-all duration-300 border
+                            shrink-0 px-5 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 border
                             ${activeSupermarket === sm
-                                ? 'bg-slate-800 dark:bg-slate-700 text-white shadow-lg shadow-slate-500/30 border-slate-800 dark:border-slate-700'
-                                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:border-slate-400 dark:hover:border-slate-500 border-slate-200 dark:border-slate-700'}
+                                ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-800 shadow-sm'
+                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-700 border-slate-200 dark:border-slate-700'}
                         `}
                     >
                         {sm === 'Tổng' ? 'CỤM' : shortenSupermarketName(sm).toUpperCase()}
@@ -194,7 +194,7 @@ export const SupermarketNavBar: React.FC<{
             <button
                 onClick={onBatchExport}
                 disabled={isBatchExporting}
-                className="flex items-center gap-2 text-xs font-semibold text-white bg-slate-800 dark:bg-slate-700 hover:bg-slate-900 dark:hover:bg-slate-600 transition-all duration-300 px-5 py-2.5 rounded-full disabled:opacity-50 disabled:cursor-wait ml-auto sm:ml-0 shadow-md active:scale-95"
+                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 transition-all duration-300 px-5 py-2 rounded-xl disabled:opacity-50 disabled:cursor-wait ml-auto sm:ml-0 shadow-sm active:scale-95"
                 title="Xuất hàng loạt ảnh cho tất cả siêu thị"
             >
                 {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}

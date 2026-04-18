@@ -309,7 +309,7 @@ const TrendChart: React.FC = React.memo(() => {
 
     if (trendState.view === 'daily') {
         return (
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <AreaChart data={chartData} margin={{ top: 20, right: 10, left: 10, bottom: 0 }}>
                     <defs>
                         <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
@@ -340,7 +340,7 @@ const TrendChart: React.FC = React.memo(() => {
     }
 
     return (
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
             <BarChart data={chartData} margin={{ top: 30, right: 10, left: 10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={gridColor} />
                 <XAxis dataKey="label" tick={{ fill: textColor, fontSize: 11, fontWeight: 600 }} axisLine={false} tickLine={false} dy={10} />

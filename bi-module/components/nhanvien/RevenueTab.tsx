@@ -130,7 +130,7 @@ const RevenueView: React.FC<{
         try {
             const safeName = customFilename || `DT_NhanVien_${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
-                elementsToHide: ['.no-print', '.export-button-component']
+                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
             });
             if (blob) {
                 if (autoAction === 'download') {

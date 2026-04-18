@@ -15,7 +15,7 @@ import CrossSellingTab from './nhanvien/CrossSellingTab';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { Switch } from './dashboard/DashboardWidgets';
 import { TrendingUp, Users, ShoppingBag, CreditCard, Award, ArrowUpRight, ArrowDownRight, MoreVertical } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, CartesianGrid, Legend } from 'recharts';
 import { useExportOptions } from '../../hooks/useExportOptions';
 import ExportOptionsModal from '../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
@@ -177,9 +177,12 @@ export const NhanVien: React.FC = () => {
             const deptEmps = mappedRows.filter(r => r.type === 'employee' && r.department === deptName);
             if (deptEmps.length > 0) {
                 const deptBkRow = banKemRows.find(r => r.type === 'department' && r.originalName === deptName);
+                const origDeptRow = mappedRows.find(r => r.type === 'department' && r.name === deptName);
                 finalRows.push({ 
                     type: 'department', name: deptName, 
-                    dtlk: 0, dtqd: 0, hieuQuaQD: 0,
+                    dtlk: deptEmps.reduce((s, e) => s + (e.dtlk || 0), 0), 
+                    dtqd: deptEmps.reduce((s, e) => s + (e.dtqd || 0), 0), 
+                    hieuQuaQD: origDeptRow ? origDeptRow.hieuQuaQD : 0,
                     pctBillBk: deptBkRow ? deptBkRow.pctBillBk : 0
                 });
                 finalRows.push(...deptEmps);
@@ -409,29 +412,30 @@ export const NhanVien: React.FC = () => {
     };
 
     // Calculate generic stats for the new Dashboard view
-    const stats_TotalRevenue = useMemo(() => revenueRows.filter(r => r.type === 'employee').reduce((sum, r) => sum + r.dtlk, 0), [revenueRows]);
-    const stats_TotalCrossSelling = useMemo(() => banKemRows.filter(r => r.type === 'employee').reduce((sum, r) => sum + r.dtlk, 0), [banKemRows]);
-    const stats_TotalInstallment = useMemo(() => installmentRows.filter(r => r.type === 'employee').reduce((sum, r) => sum + r.totalDtSieuThi, 0), [installmentRows]);
+    const stats_TotalRevenue = useMemo(() => revenueRows.filter(r => r.type === 'employee' && (activeDepartments.includes('all') || activeDepartments.includes(r.department!))).reduce((sum, r) => sum + r.dtlk, 0), [revenueRows, activeDepartments]);
+    const stats_TotalCrossSelling = useMemo(() => banKemRows.filter(r => r.type === 'employee' && (activeDepartments.includes('all') || activeDepartments.includes(r.department!))).reduce((sum, r) => sum + r.dtlk, 0), [banKemRows, activeDepartments]);
+    const stats_TotalInstallment = useMemo(() => installmentRows.filter(r => r.type === 'employee' && (activeDepartments.includes('all') || activeDepartments.includes(r.department!))).reduce((sum, r) => sum + r.totalDtSieuThi, 0), [installmentRows, activeDepartments]);
     
     const topEmployees = useMemo(() => {
-        return [...revenueRows.filter(r => r.type === 'employee')]
-            .sort((a, b) => b.dtlk - a.dtlk)
+        return [...revenueRows.filter(r => r.type === 'employee' && (activeDepartments.includes('all') || activeDepartments.includes(r.department!)))]
+            .sort((a, b) => b.dtqd - a.dtqd)
             .slice(0, 6);
-    }, [revenueRows]);
+    }, [revenueRows, activeDepartments]);
     
     const chartData = useMemo(() => {
-        return revenueRows.filter(r => r.type === 'department').map(d => ({
+        return revenueRows.filter(r => r.type === 'department' && (activeDepartments.includes('all') || activeDepartments.includes(r.name))).map(d => ({
             name: d.name,
-            DoanhThu: d.dtlk
+            DoanhThu: d.dtlk,
+            DoanhThuQD: d.dtqd
         })).sort((a, b) => b.DoanhThu - a.DoanhThu);
-    }, [revenueRows]);
+    }, [revenueRows, activeDepartments]);
 
     const exportOptions = useExportOptions();
 
     return (
         <ExportOptionsProvider value={{ showExportOptions: exportOptions.showExportOptions }}>
         <div className="space-y-6 relative">
-            <header className="sticky top-[52px] z-30 -mt-2 pt-2 pb-3 mb-6 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full border-b border-slate-200/50 dark:border-slate-700/50">
+            <header className="sticky top-[66px] z-50 pt-2 pb-3 mb-6 bg-slate-50/90 dark:bg-[#0f172a]/90 backdrop-blur-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full border-b border-slate-200/50 dark:border-slate-700/50 transition-all">
                 {/* Title + Icon */}
                 <div className="flex items-center gap-3 min-w-0">
                     <div className="p-2 sm:p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl flex-shrink-0 border border-indigo-100 dark:border-indigo-800">
@@ -450,13 +454,13 @@ export const NhanVien: React.FC = () => {
                 {/* Compact Filter Bar */}
                 <div className="flex flex-col sm:flex-row gap-3 z-50 w-full sm:w-auto">
                     {/* Supermarket Filter */}
-                    <div className="relative flex-1 sm:w-64 min-w-0" ref={smRef}>
-                        <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm">
+                    <div className="relative w-full sm:w-auto min-w-0" ref={smRef}>
+                        <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full h-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm whitespace-nowrap">
                             <div className="flex items-center gap-2 min-w-0">
                                 <BuildingStorefrontIcon className="h-4 w-4 text-indigo-500 flex-shrink-0" />
-                                <span className="truncate text-left">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : activeSupermarkets.map(s => shortenSupermarketName(s)).join(', ')}</span>
+                                <span className="truncate text-left max-w-[160px]">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : activeSupermarkets.map(s => shortenSupermarketName(s)).join(', ')}</span>
                             </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                 <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">{activeSupermarkets.length}</span>
                                 <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isSmFilterOpen ? 'rotate-180' : ''}`} />
                             </div>
@@ -480,13 +484,13 @@ export const NhanVien: React.FC = () => {
                     </div>
 
                     {/* Department Filter (Mới bổ sung) */}
-                    <div className="relative flex-1 sm:w-64 min-w-0" ref={deptRef}>
-                        <button onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm">
+                    <div className="relative w-full sm:w-auto min-w-0" ref={deptRef}>
+                        <button onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full h-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm whitespace-nowrap">
                             <div className="flex items-center gap-2 min-w-0">
                                 <ArchiveBoxIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
-                                <span className="truncate text-left">{activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}</span>
+                                <span className="truncate text-left max-w-[160px]">{activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}</span>
                             </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                 <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 rounded-full">{activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}</span>
                                 <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isDeptFilterOpen ? 'rotate-180' : ''}`} />
                             </div>
@@ -520,7 +524,7 @@ export const NhanVien: React.FC = () => {
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Tổng Doanh Thu</p>
-                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{(stats_TotalRevenue / 1000000).toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
+                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{stats_TotalRevenue.toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
                         </div>
                         <div className="w-14 h-14 rounded-full bg-blue-50 dark:bg-blue-900/30 border-4 border-white dark:border-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                             <TrendingUp className="h-6 w-6 text-blue-500 dark:text-blue-400" />
@@ -539,7 +543,7 @@ export const NhanVien: React.FC = () => {
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Tổng Bán Kèm (Phụ kiện)</p>
-                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{(stats_TotalCrossSelling / 1000000).toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
+                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{stats_TotalCrossSelling.toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
                         </div>
                         <div className="w-14 h-14 rounded-full bg-emerald-50 dark:bg-emerald-900/30 border-4 border-white dark:border-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
                             <ShoppingBag className="h-6 w-6 text-emerald-500 dark:text-emerald-400" />
@@ -558,7 +562,7 @@ export const NhanVien: React.FC = () => {
                     <div className="flex justify-between items-start mb-6">
                         <div>
                             <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Tổng Target Thi Đua</p>
-                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{(totalAggregatedTarget / 1000000).toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
+                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{totalAggregatedTarget.toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
                         </div>
                         <div className="w-14 h-14 rounded-full bg-amber-50 dark:bg-amber-900/30 border-4 border-white dark:border-slate-800 shadow-sm flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
                             <Award className="h-6 w-6 text-amber-500 dark:text-amber-400" />
@@ -574,9 +578,9 @@ export const NhanVien: React.FC = () => {
             </div>
 
             {/* 2. Charts & Top Lists Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Main Chart */}
-                <div className="lg:col-span-2 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 flex flex-col">
+                <div className="lg:col-span-7 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 flex flex-col">
                     <div className="p-5 border-b border-slate-100 dark:border-slate-700/60 flex justify-between items-center">
                         <div>
                             <h3 className="text-lg font-bold text-slate-800 dark:text-white">Tổng Doanh Thu Theo Bộ Phận</h3>
@@ -589,20 +593,18 @@ export const NhanVien: React.FC = () => {
                     <div className="p-5 flex-1 min-h-[300px]">
                         {chartData.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
                                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} dy={10} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(val) => `${(val/1000000).toFixed(0)}Tr`} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} tickFormatter={(val) => `${val.toLocaleString('en-US')}Tr`} />
                                     <RechartsTooltip 
                                         cursor={{ fill: 'rgba(99, 102, 241, 0.05)' }}
                                         contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', fontWeight: 'bold', fontSize: '13px' }}
-                                        formatter={(val: number) => [`${(val/1000000).toLocaleString('en-US', {maximumFractionDigits:1})} Triệu`, 'Doanh thu']}
+                                        formatter={(val: number, name: string) => [`${val.toLocaleString('en-US', {maximumFractionDigits:1})} Triệu`, name === 'DoanhThu' ? 'Doanh thu' : 'Doanh thu QĐ']}
                                     />
-                                    <Bar dataKey="DoanhThu" radius={[6, 6, 0, 0]} maxBarSize={50}>
-                                        {chartData.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={index === 0 ? '#6366f1' : '#a5b4fc'} />
-                                        ))}
-                                    </Bar>
+                                    <Legend wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingTop: '10px' }} iconType="circle" />
+                                    <Bar dataKey="DoanhThu" name="Doanh thu" fill="#6366f1" radius={[4, 4, 0, 0]} maxBarSize={30} isAnimationActive={false} />
+                                    <Bar dataKey="DoanhThuQD" name="Doanh thu QĐ" fill="#0ea5e9" radius={[4, 4, 0, 0]} maxBarSize={30} isAnimationActive={false} />
                                 </BarChart>
                             </ResponsiveContainer>
                         ) : (
@@ -612,7 +614,7 @@ export const NhanVien: React.FC = () => {
                 </div>
 
                 {/* Top Employees List */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 overflow-hidden flex flex-col">
+                <div className="lg:col-span-5 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 overflow-hidden flex flex-col">
                     <div className="p-5 border-b border-slate-100 dark:border-slate-700/60 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
                         <div>
                             <h3 className="text-lg font-bold text-slate-800 dark:text-white">Top Cá Nhân Xuất Sắc</h3>
@@ -630,15 +632,12 @@ export const NhanVien: React.FC = () => {
                                         <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-[11px] shrink-0 shadow-sm ${idx === 0 ? 'bg-amber-100 text-amber-600 border border-amber-200' : idx === 1 ? 'bg-slate-200 text-slate-600 border border-slate-300' : idx === 2 ? 'bg-orange-100 text-orange-600 border border-orange-200' : 'bg-slate-50 text-slate-400 dark:bg-slate-800 dark:text-slate-500 border border-slate-200 dark:border-slate-700'}`}>
                                             {idx + 1}
                                         </div>
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-100 to-sky-100 dark:from-indigo-900/60 dark:to-sky-900/60 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-sm shrink-0 border border-white dark:border-slate-700 shadow-sm group-hover:scale-105 transition-transform">
-                                            {emp.name.substring(0, 1).toUpperCase()}
-                                        </div>
-                                        <div className="min-w-0 flex-1">
+                                        <div className="min-w-0 flex-1 ml-1">
                                             <p className="text-[13px] font-bold text-slate-800 dark:text-white truncate">{emp.name}</p>
                                             <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide truncate">{emp.department || 'Nhân viên'}</p>
                                         </div>
                                         <div className="text-right shrink-0">
-                                            <p className="text-sm font-black text-sky-600 dark:text-sky-400 tracking-tight">{(emp.dtlk / 1000000).toLocaleString('en-US', {maximumFractionDigits:1})}M</p>
+                                            <p className="text-sm font-black text-sky-600 dark:text-sky-400 tracking-tight">{Math.round(emp.dtqd).toLocaleString('en-US')}M</p>
                                         </div>
                                     </div>
                                 ))}

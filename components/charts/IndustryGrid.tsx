@@ -398,7 +398,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                             {pieChartData.length > 0 ? (
                                 <>
                                     <div style={{ height: 320 }} className="lg:hidden">
-                                        <ResponsiveContainer width="100%" height="100%">
+                                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                             <PieChart>
                                                 <Pie
                                                     data={pieChartData}
@@ -423,7 +423,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                         </ResponsiveContainer>
                                     </div>
                                     <div style={{ height: 230 }} className="hidden lg:block">
-                                        <ResponsiveContainer width="100%" height="100%">
+                                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                             <PieChart>
                                                 <Pie
                                                     data={pieChartData}

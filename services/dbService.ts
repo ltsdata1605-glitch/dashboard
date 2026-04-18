@@ -374,7 +374,7 @@ export async function getEmployeeAnalysisFilters(): Promise<{ warehouses: string
 // --- Deduplication Setting ---
 export async function getDeduplicationSetting(): Promise<boolean> {
     const value = await getSetting<boolean>(DEDUPLICATION_SETTING_KEY);
-    return value !== null ? value : true;
+    return value !== null ? value : false;
 }
 
 export async function saveDeduplicationSetting(enabled: boolean): Promise<void> {

@@ -16,7 +16,7 @@ export const useDashboardLogic = () => {
     const [status, setStatus] = useState<Status>({ message: '', type: 'info', progress: 0 });
     const [appState, setAppState] = useState<AppState>('loading');
     const [configUrl, setConfigUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRhes_lcas8n2_xYHKylsjyD3PIVbdchCiL2XDKJ4OYfgUZlVjAT7ZGWDHrYRzQVrK2w50W86Da3l48/pub?output=csv');
-    const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(true);
+    const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(false);
     const [isLuyKe, setIsLuyKe] = useState(false);
     const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'changelog' | null>(null);
     const [modalData, setModalData] = useState<any>(null);

@@ -121,9 +121,9 @@ export const useWarehouseLogic = ({
                     if (metricType === 'quantity') {
                         value = weightedQuantity;
                     } else if (metricType === 'revenue') {
-                        value = rowRevenue;
+                        value = rowRevenue / 1000000;
                     } else if (metricType === 'revenueQD') {
-                        value = rowRevenue * heso;
+                        value = (rowRevenue * heso) / 1000000;
                     }
 
                     const khoMap = results.get(col.id)!;
@@ -211,10 +211,18 @@ export const useWarehouseLogic = ({
 
             if (column.manufacturerName) {
                 const primaryKey = column.categoryType === 'industry' ? 'byIndustryAndManufacturer' : 'byGroupAndManufacturer';
-                return metrics[primaryKey]?.[column.categoryName!]?.[column.manufacturerName]?.[column.metricType];
+                let val = metrics[primaryKey]?.[column.categoryName!]?.[column.manufacturerName]?.[column.metricType];
+                if (val !== undefined && (column.metricType === 'revenue' || column.metricType === 'revenueQD')) {
+                    val = val / 1000000;
+                }
+                return val;
             } else {
                 const primaryKey = column.categoryType === 'industry' ? 'byIndustry' : column.categoryType === 'group' ? 'byGroup' : 'byManufacturer';
-                return metrics[primaryKey]?.[column.categoryName!]?.[column.metricType];
+                let val = metrics[primaryKey]?.[column.categoryName!]?.[column.metricType];
+                if (val !== undefined && (column.metricType === 'revenue' || column.metricType === 'revenueQD')) {
+                    val = val / 1000000;
+                }
+                return val;
             }
         }
         return 0;

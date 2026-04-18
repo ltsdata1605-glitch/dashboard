@@ -143,7 +143,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
         const original = refToExport.current;
         try {
             const blob = await exportElementAsImage(original, filename, {
-                elementsToHide: ['.export-button-component'],
+                mode: 'blob-only', elementsToHide: ['.export-button-component'],
                 preprocessClone: (clone) => {
                     const containers = clone.querySelectorAll('.overflow-x-auto, .grid, .competition-group-card');
                     containers.forEach(el => {
@@ -256,7 +256,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
                 
                 const safeName = `${title.replace(/[\s/]/g, '_')}.png`;
                 const blob = await exportElementAsImage(card, safeName, {
-                    elementsToHide: ['.export-button-component'],
+                    mode: 'blob-only', elementsToHide: ['.export-button-component'],
                     preprocessClone: (clone) => {
                         const headerDiv = clone.querySelector('div:first-child') as HTMLElement;
                         if (headerDiv) {

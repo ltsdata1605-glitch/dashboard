@@ -39,6 +39,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
     const [operand1, setOperand1] = useState('');
     const [operand2, setOperand2] = useState('');
     const [displayAs, setDisplayAs] = useState<'number' | 'percentage'>('number');
+    const [decimalPlaces, setDecimalPlaces] = useState<0 | 1 | 2>(0);
 
     // Target column state
     const [targetValue, setTargetValue] = useState('');
@@ -93,6 +94,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
         setOperand1('');
         setOperand2('');
         setDisplayAs('number');
+        setDecimalPlaces(0);
         setTargetValue('');
         setFormattingRules([]);
     };
@@ -133,6 +135,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     setOperand1(editingColumn.operand1_columnId || '');
                     setOperand2(editingColumn.operand2_columnId || '');
                     setDisplayAs(editingColumn.displayAs || 'number');
+                    setDecimalPlaces(editingColumn.decimalPlaces ?? 0);
                 }
             } else {
                 resetForm();
@@ -247,6 +250,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                 operand1_columnId: operand1,
                 operand2_columnId: operand2,
                 displayAs,
+                decimalPlaces,
                 conditionalFormatting: finalRules.length > 0 ? finalRules : undefined,
             };
         }
@@ -422,6 +426,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                 operand1={operand1} setOperand1={setOperand1}
                                 operand2={operand2} setOperand2={setOperand2}
                                 displayAs={displayAs} setDisplayAs={setDisplayAs}
+                                decimalPlaces={decimalPlaces} setDecimalPlaces={setDecimalPlaces}
                                 availableOperands={availableOperands}
                             />
                         )}

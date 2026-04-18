@@ -18,7 +18,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ title, activeMainTab,
                     <SparklesIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <div className="min-w-0 flex flex-col justify-center">
-                    <h1 id="dashboard-title" className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-none truncate">
+                    <h1 id="dashboard-title" className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-tight truncate px-1">
                         {title}
                     </h1>
                     <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase mt-1 tracking-wider leading-none">
@@ -30,7 +30,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ title, activeMainTab,
             {/* Main Tab Switcher */}
             <div
                 id="main-tabs-container"
-                className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 mr-2 flex-shrink-0"
+                className="inline-flex rounded-xl shadow-sm p-1.5 bg-sky-50/50 dark:bg-slate-800/50 border border-sky-100/50 dark:border-slate-700 mr-2 flex-shrink-0"
             >
                 {([
                     { tab: 'realtime' as MainTab, label: 'Realtime' },
@@ -41,11 +41,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ title, activeMainTab,
                         <button
                             key={tab}
                             onClick={() => setActiveMainTab(tab)}
-                            className={`py-1.5 px-4 sm:px-6 text-[10px] md:text-sm font-bold rounded-lg transition-all uppercase tracking-wider ${isActive ? 'bg-white dark:bg-slate-700 text-sky-600 shadow-sm relative' : 'text-slate-500 hover:text-sky-600 dark:hover:text-sky-400'}`}
+                            className={`py-1.5 px-4 sm:px-5 text-[10px] sm:text-[11px] font-black rounded-lg transition-all uppercase tracking-widest ${isActive ? 'bg-white dark:bg-slate-700 text-sky-600 shadow-sm border border-sky-100/50 relative' : 'text-slate-500 hover:text-sky-600 dark:hover:text-sky-400'}`}
                         >
                             {label}
                             {isActive && (
-                                <span className="absolute -top-1 -right-1.5 w-1.5 h-1.5 rounded-full bg-sky-500" />
+                                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-sky-400 shadow-sm shadow-sky-400/50 border-2 border-white" />
                             )}
                         </button>
                     );

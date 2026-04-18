@@ -19,7 +19,7 @@ export const ProportionChart: React.FC = () => {
         <h1 className="text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight">Tỷ trọng doanh thu theo ngành hàng</h1>
       </header>
       <div className="p-6 h-[400px]">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
           <PieChart>
             <Pie
               data={data}

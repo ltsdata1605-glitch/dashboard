@@ -64,7 +64,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                     {(['DTLK', 'DTQĐ', 'SLLK'] as const).map(criterion => {
                         const programs = groupedAndSortedPrograms[criterion];
                         if (!programs || programs.length === 0) return null;
-                        const theme = CRITERIA_THEMES[criterion];
+                        const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-indigo-500', light: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-100' };
 
                         return (
                             <div key={criterion}>
@@ -128,9 +128,9 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
             ) : (
                 <table className="min-w-full text-[14px] border-collapse">
                     <thead>
-                        <tr className="bg-slate-800 dark:bg-slate-950 text-white font-semibold uppercase tracking-tight">
-                            <th className="px-4 py-4 text-center border-r border-slate-700/50 w-12 text-[11px]">#</th>
-                            <th className="px-4 py-4 text-left cursor-pointer hover:bg-slate-700 transition-colors border-r border-slate-700/50 min-w-[220px] text-[11px]" onClick={() => handleSort(-1)}>
+                        <tr className="bg-sky-50 dark:bg-slate-800 text-sky-900 dark:text-sky-100 font-bold uppercase tracking-tight border-b-2 border-sky-200 dark:border-slate-700 shadow-sm">
+                            <th className="px-4 py-4 text-center border-r border-sky-100 dark:border-slate-700/50 w-12 text-[11px]">#</th>
+                            <th className="px-4 py-4 text-left cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors border-r border-sky-100 dark:border-slate-700/50 min-w-[220px] text-[11px]" onClick={() => handleSort(-1)}>
                                 NHÓM THI ĐUA
                             </th>
                             {headers.map((header, index) => {
@@ -139,7 +139,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                     <th 
                                         key={index} 
                                         onClick={() => handleSort(index)}
-                                        className="px-2 py-4 text-center whitespace-nowrap cursor-pointer hover:bg-slate-700 transition-colors border-r border-slate-700/50 last:border-r-0 text-[11px] align-middle"
+                                        className="px-2 py-4 text-center whitespace-nowrap cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors border-r border-sky-100 dark:border-slate-700/50 last:border-r-0 text-[11px] align-middle"
                                         dangerouslySetInnerHTML={{ __html: getFormattedHeader(header) }}
                                     />
                                 )
@@ -148,16 +148,16 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                             { !hiddenColumns.includes('Còn Lại') && (
                                     <th 
                                     onClick={() => handleSort('conLai')}
-                                    className="px-4 py-4 text-center whitespace-nowrap cursor-pointer hover:bg-slate-700 transition-colors text-[11px] align-middle"
+                                    className="px-4 py-4 text-center whitespace-nowrap cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors text-[11px] align-middle"
                                     dangerouslySetInnerHTML={{ __html: getFormattedHeader('Còn Lại') }}
                                 />
                             )}
                         </tr>
                     </thead>
-                    {(['DTLK', 'DTQĐ', 'SLLK'] as const).map(criterion => {
-                        const programs = groupedAndSortedPrograms[criterion];
+                    {(Object.keys(groupedAndSortedPrograms)).map(criterion => {
+                        const programs = groupedAndSortedPrograms[criterion as Criterion];
                         if (!programs || programs.length === 0) return null;
-                        const theme = CRITERIA_THEMES[criterion];
+                        const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-indigo-500', light: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-100' };
             
                         return (
                             <tbody key={criterion} className="divide-y divide-slate-100 dark:divide-slate-800">

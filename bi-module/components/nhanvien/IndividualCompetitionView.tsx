@@ -120,7 +120,7 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
             const nameToUse = customFilename || selectedEmployee?.name || 'NhanVien';
             const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}.png`;
             const blob = await exportElementAsImage(originalCard, filename, {
-                elementsToHide: ['.js-individual-view-toolbar', '.export-button-component', '.no-print']
+                mode: 'blob-only', elementsToHide: ['.js-individual-view-toolbar', '.export-button-component', '.no-print']
             });
             if (blob) {
                 if (autoAction === 'download') {

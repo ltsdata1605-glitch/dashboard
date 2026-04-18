@@ -11,6 +11,13 @@ export function useExportOptions() {
     const [pendingExport, setPendingExport] = useState<PendingExport | null>(null);
 
     const showExportOptions = useCallback((blob: Blob, filename: string): Promise<'download' | 'share' | 'cancel'> => {
+        // Bypass modal on desktop and directly download. Check for touch/mobile specifically.
+        const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+        if (!isMobile) {
+            downloadBlob(blob, filename);
+            return Promise.resolve('download');
+        }
+
         return new Promise((resolve) => {
             setPendingExport({ blob, filename, resolve });
         });

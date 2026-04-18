@@ -11,6 +11,8 @@ interface CalculatedColumnFormProps {
     setOperand2: (val: string) => void;
     displayAs: 'number' | 'percentage';
     setDisplayAs: (val: 'number' | 'percentage') => void;
+    decimalPlaces?: 0 | 1 | 2;
+    setDecimalPlaces: (val: 0 | 1 | 2) => void;
     availableOperands: ColumnConfig[];
 }
 
@@ -19,6 +21,7 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
     operand1, setOperand1,
     operand2, setOperand2,
     displayAs, setDisplayAs,
+    decimalPlaces = 0, setDecimalPlaces,
     availableOperands
 }) => {
     return (
@@ -56,15 +59,25 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
                         </select>
                     </div>
                 </div>
-                {operation === '/' && (
-                        <div className="mt-5 max-w-[200px] ml-auto">
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Kết quả hiển thị dưới dạng</label>
-                        <div className="inline-flex rounded-lg p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
-                            <button type="button" onClick={() => setDisplayAs('number')} className={`flex-1 py-1 px-3 text-sm font-semibold rounded-md transition-all ${displayAs === 'number' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Tỉ lệ</button>
-                            <button type="button" onClick={() => setDisplayAs('percentage')} className={`flex-1 py-1 px-3 text-sm font-semibold rounded-md transition-all ${displayAs === 'percentage' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>% Phần trăm</button>
+                <div className="mt-5 flex flex-wrap justify-end gap-5">
+                    <div className="w-[200px]">
+                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Làm tròn số</label>
+                        <div className="flex rounded-lg p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
+                            <button type="button" onClick={() => setDecimalPlaces(0)} className={`flex-1 py-1 px-1 text-xs font-semibold rounded-md transition-all ${decimalPlaces === 0 ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Bỏ số lẻ</button>
+                            <button type="button" onClick={() => setDecimalPlaces(1)} className={`flex-1 py-1 px-1 text-xs font-semibold rounded-md transition-all ${decimalPlaces === 1 ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>1 chữ số</button>
+                            <button type="button" onClick={() => setDecimalPlaces(2)} className={`flex-1 py-1 px-1 text-xs font-semibold rounded-md transition-all ${decimalPlaces === 2 ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>2 chữ số</button>
                         </div>
                     </div>
-                )}
+                    {operation === '/' && (
+                        <div className="w-[120px]">
+                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Định dạng</label>
+                            <div className="flex rounded-lg p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
+                                <button type="button" onClick={() => setDisplayAs('number')} className={`flex-1 py-1 px-2 text-sm font-semibold rounded-md transition-all ${displayAs === 'number' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Số</button>
+                                <button type="button" onClick={() => setDisplayAs('percentage')} className={`flex-1 py-1 px-2 text-sm font-semibold rounded-md transition-all ${displayAs === 'percentage' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>%</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

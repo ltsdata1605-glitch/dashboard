@@ -45,6 +45,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
     const [operand1, setOperand1] = useState('');
     const [operand2, setOperand2] = useState('');
     const [displayAs, setDisplayAs] = useState<'number' | 'percentage'>('number');
+    const [decimalPlaces, setDecimalPlaces] = useState<0 | 1 | 2>(0);
 
     // Target column state
     const [targetValue, setTargetValue] = useState('');
@@ -97,6 +98,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
         setOperand1('');
         setOperand2('');
         setDisplayAs('number');
+        setDecimalPlaces(0);
         
         setTargetValue('');
         setFormattingRules([]);
@@ -148,6 +150,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                     setOperand1(editingConfig.operand1_tableId || '');
                     setOperand2(editingConfig.operand2_tableId || '');
                     setDisplayAs(editingConfig.displayAs || 'number');
+                    setDecimalPlaces(editingConfig.decimalPlaces ?? 0);
                 }
             } else {
                 resetForm();
@@ -266,6 +269,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
             newConfig.operand1_tableId = operand1;
             newConfig.operand2_tableId = operand2;
             newConfig.displayAs = displayAs;
+            newConfig.decimalPlaces = decimalPlaces;
         }
         
         onSave(newConfig);
@@ -442,6 +446,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                                 operand1={operand1} setOperand1={setOperand1}
                                 operand2={operand2} setOperand2={setOperand2}
                                 displayAs={displayAs} setDisplayAs={setDisplayAs}
+                                decimalPlaces={decimalPlaces} setDecimalPlaces={setDecimalPlaces}
                                 availableOperands={availableOperands as any}
                             />
                         )}

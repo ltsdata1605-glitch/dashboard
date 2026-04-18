@@ -14,60 +14,87 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
 
     return (
         <div className="fixed inset-0 z-[1000] flex items-center justify-center p-4 animate-fade-in">
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-slate-900/20 backdrop-blur-md"></div>
+            {/* Elegant darker backdrop with high blur for focus */}
+            <div className="absolute inset-0 bg-slate-900/50 dark:bg-slate-950/80 backdrop-blur-xl transition-all duration-500"></div>
 
-            {/* Compact Floating Card */}
-            <div className="relative w-full max-w-[300px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border border-white dark:border-slate-800 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.2)] rounded-[2rem] p-5 flex flex-col items-center text-center overflow-hidden">
+            {/* Premium Glassmorphism Card */}
+            <div className="relative w-full max-w-[400px] bg-white/90 dark:bg-slate-900/80 backdrop-blur-3xl border border-white/60 dark:border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] rounded-3xl p-8 flex flex-col items-center overflow-hidden">
                 
-                {/* Aura AI Mini - Compact */}
-                <div className="relative mb-3 h-14 w-14 flex items-center justify-center">
-                    <div className="absolute inset-0 bg-indigo-500/20 rounded-full animate-ping" style={{ animationDuration: '3s' }}></div>
-                    <div className="absolute inset-1.5 bg-indigo-500/10 rounded-full animate-pulse" style={{ animationDuration: '2s' }}></div>
-                    <div className="relative h-9 w-9 bg-indigo-600 shadow-lg rounded-xl flex items-center justify-center text-white">
-                        <Icon name="sparkles" className="w-5 h-5 animate-pulse" />
+                {/* Subtle top glare/gradient accent */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-60"></div>
+                <div className="absolute -top-24 -left-24 w-48 h-48 bg-indigo-500/20 rounded-full blur-[40px] pointer-events-none"></div>
+                <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/20 rounded-full blur-[40px] pointer-events-none"></div>
+
+                {/* Modern Loader Icon */}
+                <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
+                    {/* Rotating outer ring */}
+                    <div className="absolute inset-0 rounded-full border-[3px] border-indigo-100 dark:border-slate-800"></div>
+                    <div className="absolute inset-0 rounded-full border-[3px] border-indigo-600 dark:border-indigo-400 border-t-transparent border-r-transparent animate-spin" style={{ animationDuration: '1.2s' }}></div>
+                    
+                    {/* Inner glowing icon block */}
+                    <div className="relative bg-gradient-to-br from-indigo-500 to-purple-600 w-12 h-12 rounded-xl shadow-lg shadow-indigo-500/40 flex items-center justify-center text-white transform rotate-3">
+                        <Icon name="cpu" size={5.5} className="animate-pulse" />
                     </div>
                 </div>
 
-                {/* Status Info - Tightened */}
-                <div className="space-y-1 mb-3">
-                    <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 text-[8px] font-black uppercase tracking-widest shadow-sm">
-                        <span className="relative flex h-1 w-1">
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-1 w-1 bg-indigo-600"></span>
+                {/* Badge & Status Text */}
+                <div className="flex flex-col items-center mb-8 w-full text-center relative z-10">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 mb-3 shadow-inner">
+                        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></div>
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300">
+                            AI Engine Processing
                         </span>
-                        AI Engine
                     </div>
-                    <h3 className="text-base font-black text-slate-800 dark:text-white leading-tight uppercase tracking-tight">
-                        {status.message || "Đang xử lý"}
+                    <h3 className="text-[17px] font-semibold text-slate-800 dark:text-white leading-snug px-2">
+                        {status.message || "Đang tổng hợp dữ liệu báo cáo..."}
                     </h3>
                 </div>
 
-                {/* Stopwatch - Resized */}
-                <div className="flex items-baseline gap-1 mb-4">
-                    <span className="text-4xl font-black text-slate-900 dark:text-white font-mono tabular-nums tracking-tighter leading-none">
-                        {seconds}
-                    </span>
-                    <span className="text-sm font-black text-indigo-500 italic lowercase leading-none">s</span>
-                </div>
+                {/* Progress & Time Section */}
+                <div className="w-full space-y-3 relative z-10">
+                    <div className="flex items-end justify-between px-1">
+                        <div className="flex items-baseline mb-0.5">
+                            <span className="text-3xl font-mono tabular-nums font-light tracking-tight text-indigo-600 dark:text-indigo-400 leading-none">
+                                {seconds}
+                            </span>
+                            <span className="text-sm font-medium text-slate-400 dark:text-slate-500 ml-1 leading-none uppercase tracking-widest">
+                                s
+                            </span>
+                        </div>
+                        <div className="flex items-baseline mb-0.5">
+                            <span className="text-2xl font-bold text-slate-800 dark:text-slate-100 leading-none">
+                                {Math.round(status.progress)}
+                            </span>
+                            <span className="text-sm font-bold text-slate-400 dark:text-slate-500 leading-none">
+                                %
+                            </span>
+                        </div>
+                    </div>
 
-                {/* Progress Bar - Compact */}
-                <div className="w-full space-y-1.5">
-                    <div className="h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                    {/* Minimalist Premium Progress Bar */}
+                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-800/80 rounded-full overflow-hidden shadow-inner relative">
                         <div 
-                            className="h-full bg-gradient-to-r from-indigo-600 to-purple-500 transition-all duration-700 ease-out"
-                            style={{ width: `${status.progress > 0 ? status.progress : 15}%` }}
-                        ></div>
-                    </div>
-                    <div className="flex justify-between items-center px-0.5">
-                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Tiến độ</span>
-                        <span className="text-[9px] font-black text-indigo-600 dark:text-indigo-400">{Math.round(status.progress)}%</span>
+                            className="absolute top-0 left-0 h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 transition-all duration-300 ease-out rounded-full"
+                            style={{ 
+                                width: `${status.progress > 0 ? status.progress : 5}%`,
+                                backgroundSize: '200% 100%',
+                                animation: 'gradientMove 2s linear infinite'
+                            }}
+                        >
+                            {/* Little glowing head */}
+                            <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-r from-transparent to-white/60 blur-[1px]"></div>
+                        </div>
                     </div>
                 </div>
-
-                {/* Decorative Bottom blob */}
-                <div className="absolute -bottom-8 -right-8 w-24 h-24 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none"></div>
             </div>
+
+            {/* Custom Keyframes for gradient move */}
+            <style dangerouslySetInnerHTML={{__html: `
+                @keyframes gradientMove {
+                    0% { background-position: 100% 0; }
+                    100% { background-position: -100% 0; }
+                }
+            `}} />
         </div>
     );
 };

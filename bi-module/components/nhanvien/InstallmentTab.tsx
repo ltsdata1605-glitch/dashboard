@@ -217,7 +217,7 @@ const InstallmentTab: React.FC<{
         try {
             const safeName = customFilename || `Installment_${supermarketName}.png`;
             const blob = await exportElementAsImage(original, safeName, {
-                elementsToHide: ['.no-print', '.export-button-component']
+                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
             });
             if (blob) {
                 if (autoAction === 'download') {

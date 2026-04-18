@@ -164,12 +164,12 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 if (col.metricType === 'quantity') {
                     value = quantity;
                 } else if (col.metricType === 'revenue') {
-                    value = revenue;
+                    value = revenue / 1000000;
                 } else if (col.metricType === 'revenueQD') {
                     const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
                     const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
                     const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig);
-                    value = revenue * heso;
+                    value = (revenue * heso) / 1000000;
                 }
                 
                 employeeValues.set(col.id, (employeeValues.get(col.id) || 0) + value);
@@ -339,10 +339,11 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         if (value == null || isNaN(value)) return '-';
 
         if (column.type === 'calculated') {
+            const decimals = column.decimalPlaces ?? 0;
             if (column.displayAs === 'percentage') {
-                return `${value.toFixed(1)}%`;
+                return value.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + '%';
             }
-            return formatCurrency(value, 1);
+            return value.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
         }
         
         const metricType = column.metricType;

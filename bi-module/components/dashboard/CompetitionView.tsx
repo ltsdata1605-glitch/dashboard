@@ -22,7 +22,6 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const { data, isRealtime, activeSupermarket, updateTimestamp, onExport } = props;
     
     const [viewMode, setViewMode] = useIndexedDBState<'grid' | 'list'>('competition_view_mode', 'list');
-    const [programFilterSearch, setProgramFilterSearch] = useState('');
     const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>('global-selected-competitions', []);
     const [sortConfig, setSortConfig] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${isRealtime ? 'rt' : 'lk'}`, null);
     const [hiddenColumns, setHiddenColumns] = useIndexedDBState<string[]>(`competition_view_hidden_columns_${isRealtime ? 'rt' : 'lk'}`, []);
@@ -47,14 +46,6 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         });
         return Array.from(names).sort();
     }, [data]);
-
-    const filteredProgramNames = useMemo(() => {
-        if (!programFilterSearch) return allProgramNames;
-        return allProgramNames.filter(name =>
-            name.toLowerCase().includes(programFilterSearch.toLowerCase())
-        );
-    }, [allProgramNames, programFilterSearch]);
-    
     const supermarketData = data[activeSupermarket];
 
     const processedSupermarketData = useMemo(() => {
@@ -145,7 +136,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     );
     
     return (
-        <Card title={cardTitle} actionButton={<CompetitionControlBar viewMode={viewMode} setViewMode={setViewMode} programFilterSearch={programFilterSearch} setProgramFilterSearch={setProgramFilterSearch} selectedPrograms={selectedPrograms} setSelectedPrograms={setSelectedPrograms} allProgramNames={allProgramNames} filteredProgramNames={filteredProgramNames} hiddenColumns={hiddenColumns} setHiddenColumns={setHiddenColumns} headers={processedSupermarketData?.headers || []} onExport={onExport} />} ref={ref} rounded={false}>
+        <Card title={cardTitle} actionButton={<CompetitionControlBar viewMode={viewMode} setViewMode={setViewMode} selectedPrograms={selectedPrograms} setSelectedPrograms={setSelectedPrograms} allProgramNames={allProgramNames} hiddenColumns={hiddenColumns} setHiddenColumns={setHiddenColumns} headers={processedSupermarketData?.headers || []} onExport={onExport} />} ref={ref} rounded={false}>
             <div className="mt-4">
                 {processedSupermarketData && sortedPrograms.length > 0 ? (
                     viewMode === 'grid' ? <CompetitionGridView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} /> 

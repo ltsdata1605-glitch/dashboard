@@ -87,7 +87,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
         try {
             const filename = `ThiDua_${tableName.replace(/\s+/g, '_')}_${supermarketName}.png`;
             const blob = await exportElementAsImage(original, filename, {
-                elementsToHide: ['.no-print', '.export-button-component']
+                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
             });
             if (blob) showExportOptions(blob, filename);
         } catch (err) {

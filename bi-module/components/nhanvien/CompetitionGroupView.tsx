@@ -58,7 +58,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             const originalCard = cardRef.current;
             const filename = `${displayTitle.replace(/[\s/]/g, '_')}.png`;
             const blob = await exportElementAsImage(originalCard, filename, {
-                elementsToHide: ['.export-button-component']
+                mode: 'blob-only', elementsToHide: ['.export-button-component']
             });
             if (blob) showExportOptions(blob, filename);
         } catch (err) {
