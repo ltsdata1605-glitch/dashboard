@@ -374,7 +374,7 @@ export const NhanVien: React.FC = () => {
         } else setSelectedIndividual(null);
     }, [individualViewEmployees]);
 
-    const [versions, setVersions] = useIndexedDBState<Version[]>('nhanvien-competition-versions', []);
+    const [versions, setVersions] = useState<Version[]>([]);
     const [activeVersionName, setActiveVersionName] = useState<string | 'new' | null>(null);
 
     const handleVersionTabClick = (version: Version) => {
@@ -434,31 +434,32 @@ export const NhanVien: React.FC = () => {
 
     return (
         <ExportOptionsProvider value={{ showExportOptions: exportOptions.showExportOptions }}>
-        <div className="space-y-6 relative">
-            <header className="sticky top-[66px] z-50 pt-2 pb-3 mb-6 bg-slate-50/90 dark:bg-[#0f172a]/90 backdrop-blur-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 w-full border-b border-slate-200/50 dark:border-slate-700/50 transition-all">
-                {/* Title + Icon */}
-                <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2 sm:p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl flex-shrink-0 border border-indigo-100 dark:border-indigo-800">
-                        <SparklesIcon className="h-5 w-5 sm:h-6 sm:w-6" />
-                    </div>
-                    <div className="min-w-0 flex flex-col justify-center">
-                        <h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-none truncate">
-                            Report BI Nhân Viên
-                        </h1>
-                        <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase mt-1 tracking-wider leading-none">
-                            Hiệu suất & Kinh doanh cá nhân
-                        </p>
-                    </div>
+        <div className="space-y-4 sm:space-y-6 relative">
+            {/* Title - Non Sticky */}
+            <div className="flex items-center gap-3 min-w-0 pt-2 pb-2">
+                <div className="p-2 sm:p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl flex-shrink-0 border border-indigo-100 dark:border-indigo-800">
+                    <SparklesIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
+                <div className="min-w-0 flex flex-col justify-center">
+                    <h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-none truncate">
+                        Report BI Nhân Viên
+                    </h1>
+                    <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase mt-1 tracking-wider leading-none">
+                        Hiệu suất & Kinh doanh cá nhân
+                    </p>
+                </div>
+            </div>
 
-                {/* Compact Filter Bar */}
-                <div className="flex flex-col sm:flex-row gap-3 z-50 w-full sm:w-auto">
+            {/* Sticky Filter Bar */}
+            <div className="sticky top-[66px] z-50 pb-3 mb-6 bg-slate-50/90 dark:bg-[#0f172a]/90 backdrop-blur-md flex items-center justify-between gap-4 w-full border-b border-slate-200/50 dark:border-slate-700/50 transition-all -mx-4 px-4 sm:mx-0 sm:px-0">
+                <div className="hidden sm:block text-sm font-bold text-slate-400 uppercase tracking-wider">Bộ Lọc Dữ Liệu</div>
+                <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3 z-50 w-full sm:w-auto">
                     {/* Supermarket Filter */}
                     <div className="relative w-full sm:w-auto min-w-0" ref={smRef}>
-                        <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full h-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm whitespace-nowrap">
-                            <div className="flex items-center gap-2 min-w-0">
+                        <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                                 <BuildingStorefrontIcon className="h-4 w-4 text-indigo-500 flex-shrink-0" />
-                                <span className="truncate text-left max-w-[160px]">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : activeSupermarkets.map(s => shortenSupermarketName(s)).join(', ')}</span>
+                                <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : activeSupermarkets.map(s => shortenSupermarketName(s)).join(', ')}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                 <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">{activeSupermarkets.length}</span>
@@ -485,10 +486,10 @@ export const NhanVien: React.FC = () => {
 
                     {/* Department Filter (Mới bổ sung) */}
                     <div className="relative w-full sm:w-auto min-w-0" ref={deptRef}>
-                        <button onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full h-full flex items-center justify-between gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm whitespace-nowrap">
-                            <div className="flex items-center gap-2 min-w-0">
+                        <button onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                                 <ArchiveBoxIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
-                                <span className="truncate text-left max-w-[160px]">{activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}</span>
+                                <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                 <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 rounded-full">{activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}</span>
@@ -513,7 +514,7 @@ export const NhanVien: React.FC = () => {
                         )}
                     </div>
                 </div>
-            </header>
+            </div>
 
             {/* --- DASHBOARD WIDGETS --- */}
             

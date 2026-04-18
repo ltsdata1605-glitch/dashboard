@@ -2,7 +2,6 @@ import React, { Suspense, lazy } from 'react';
 import { LayoutProvider, useLayout } from './contexts/LayoutContext';
 import Sidebar from './components/layout/Sidebar';
 import MobileBottomNav from './components/layout/MobileBottomNav';
-import { Moon, Sun } from 'lucide-react';
 import { getGlobalFont } from './services/dbService';
 
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
@@ -84,13 +83,6 @@ function AppContent() {
                     </div>
                     <div className="flex items-center gap-0.5">
                         <NotificationDropdown />
-                        <button
-                            onClick={toggleDarkMode}
-                            className="p-2.5 text-slate-500 dark:text-slate-400 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-300 active:scale-95"
-                            aria-label="Toggle Dark Mode"
-                        >
-                            {isDarkMode ? <Sun size={20} className="text-amber-500 transition-transform duration-500 rotate-0 hover:rotate-90" /> : <Moon size={20} className="transition-transform duration-500 hover:-rotate-12" />}
-                        </button>
                     </div>
                 </div>
 
