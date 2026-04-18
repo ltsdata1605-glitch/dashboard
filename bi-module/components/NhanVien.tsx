@@ -374,7 +374,7 @@ export const NhanVien: React.FC = () => {
         } else setSelectedIndividual(null);
     }, [individualViewEmployees]);
 
-    const [versions, setVersions] = useState<Version[]>([]);
+    const [versions, setVersions] = useIndexedDBState<Version[]>('nhanvien-competition-versions', []);
     const [activeVersionName, setActiveVersionName] = useState<string | 'new' | null>(null);
 
     const handleVersionTabClick = (version: Version) => {

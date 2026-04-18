@@ -28,14 +28,16 @@ export const useEmployeeAnalysisTabs = (allAvailableTabs: any[], isInitialTabsLo
                 setVisibleTabs(allIds);
                 prevAllIdsRef.current = allIds;
             } else {
+                const currentPrevIds = new Set(prevAllIdsRef.current);
+                
                 setVisibleTabs(prev => {
                     const newSet = new Set(prev);
                     let hasChanged = false;
                     
                     // Only automatically add tabs if they are completely new (never seen before)
-                    if (prevAllIdsRef.current.size > 0) {
+                    if (currentPrevIds.size > 0) {
                         allIds.forEach(id => {
-                            if (!prevAllIdsRef.current.has(id) && !prev.has(id)) {
+                            if (!currentPrevIds.has(id) && !prev.has(id)) {
                                 newSet.add(id);
                                 hasChanged = true;
                             }
