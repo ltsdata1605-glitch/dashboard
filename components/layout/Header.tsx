@@ -127,7 +127,9 @@ const Header: React.FC<HeaderProps> = ({
                     <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">
                         Cập nhật: <span className="text-slate-600 dark:text-slate-300 font-extrabold">{fileInfo.savedAt}</span>
                     </span>
-                </div>                    {/* Desktop: Full inline toolbar */}
+                </div>
+            )}
+            {/* Desktop: Full inline toolbar */}
                     <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
                         {/* Shift Management Group */}
                         {(userRole === 'admin' || userRole === 'manager') && (
