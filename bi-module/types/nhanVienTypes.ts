@@ -1,5 +1,5 @@
 
-export type Tab = 'revenue' | 'installment' | 'competition' | 'bonus' | 'crossSelling';
+export type Tab = 'revenue' | 'installment' | 'competition' | 'bonus' | 'crossSelling' | 'detail';
 export type Criterion = 'DTLK' | 'DTQĐ' | 'SLLK';
 
 export interface CompetitionHeader {

@@ -10,6 +10,9 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        watch: {
+          ignored: ['**/backup_temp/**', '**/dashboardycx_backup_*/**'],
+        },
       },
       plugins: [
         react(),
@@ -22,8 +25,8 @@ export default defineConfig(({ mode }) => {
                     'vendor-react': ['react', 'react-dom'],
                     'vendor-excel': ['xlsx', 'papaparse'],
                     'vendor-firebase': ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
-                    'vendor-ui': ['motion', 'framer-motion', 'lucide-react'],
-                    'vendor-charts': ['recharts', 'd3', 'chart.js']
+                    'vendor-ui': ['motion', 'lucide-react'],
+                    'vendor-charts': ['recharts']
                 }
             }
         }

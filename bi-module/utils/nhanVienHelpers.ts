@@ -1,54 +1,6 @@
 
 import { RevenueRow, CompetitionHeader, Criterion, InstallmentRow, InstallmentProvider, CrossSellingRow } from '../types/nhanVienTypes';
-
-export const roundUp = (num: number): number => Math.ceil(num);
-
-export const parseNumber = (str: string | undefined): number => {
-    if (!str) return 0;
-    
-    // First, remove spaces and % signs completely
-    let cleaned = String(str).replace(/[\s%]/g, '');
-    
-    // If it's a typical Vietnamese formatted number like "1.000.000" or "1.000"
-    // And NOT a decimal (like "15.5" where dot is followed by 1 or 2 digits)
-    // A dot followed by 3 digits -> thousand separator
-    if (/\.\d{3}($|\.)/.test(cleaned) || cleaned.split('.').length > 2) {
-        cleaned = cleaned.replace(/\./g, '');
-    }
-    
-    // Fallback: Remove all commas as they are also often used as thousand separators
-    cleaned = cleaned.replace(/,/g, '');
-    
-    return parseFloat(cleaned) || 0;
-};
-
-export const normalizeText = (text: string): string => {
-    return text ? text.normalize("NFC").trim() : "";
-};
-
-export const shortenName = (name: string, overrides: Record<string, string> = {}): string => {
-    if (overrides && overrides[name]) return overrides[name];
-    const rules: { [key: string]: string } = {
-        'Thi đua Iphone 17 series': 'IPHONE 17',
-        'BÁN HÀNG PANASONIC': 'Panasonic',
-        'Tủ lạnh, tủ đông, tủ mát': 'Tủ lạnh/đông/mát',
-        'BÁN HÀNG ĐIỆN TỬ & ĐIỆN LẠNH HÃNG SAMSUNG': 'Samsung ĐT/ĐL',
-        'NH MÁY GIẶT, SẤY': 'Máy giặt/sấy',
-        'TRẢ CHẬM FECREDIT, TPBANK EVO': 'FE/TPB',
-        'PHỤ KIỆN - ĐỒNG HỒ': 'PK - Đồng hồ',
-        'ĐIỆN THOẠI & TABLET ANDROID TRÊN 7 TRIỆU': 'Android > 7Tr',
-        'NẠP RÚT TIỀN TÀI KHOẢN NGÂN HÀNG': 'Nạp/Rút NH',
-        'Thi đua Vivo': 'Vivo',
-        'Thi đua Realme': 'Realme',
-        'Đồng hồ thời trang': 'ĐH thời trang',
-        'VÍ TRẢ SAU': 'Ví',
-        'HOMECREDIT': 'HC',
-        'TIỀN MẶT CAKE': 'Cake',
-    };
-    if (rules[name]) return rules[name];
-    if (name.startsWith('BÁN HÀNG ')) return name.replace('BÁN HÀNG ', '').split(' ')[0];
-    return name;
-};
+export { roundUp, parseNumber, normalizeText, shortenName } from '../../utils/dataUtils';
 
 export const formatEmployeeName = (fullName: string): string => {
     const nameParts = fullName.split(' - ');
@@ -105,12 +57,24 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Map<s
     const rows: CrossSellingRow[] = [];
     const lines = String(data).split('\n');
 
+    // O(1) Lookup Cache
+    const normalizedEmployeeMap = new Map<string, string>();
+    for (const fullName of employeeDepartmentMap.keys()) {
+        const norm = normalizeText(fullName);
+        normalizedEmployeeMap.set(norm, fullName);
+    }
+
     const findFullName = (shortName: string) => {
         const normalizedShort = normalizeText(shortName);
         if (!normalizedShort) return null;
-        for (const fullName of employeeDepartmentMap.keys()) {
-            const normalizedFull = normalizeText(fullName);
-            if (normalizedFull === normalizedShort || normalizedFull.startsWith(normalizedShort + " - ")) return fullName;
+        
+        // Exact O(1) match
+        const exactMatch = normalizedEmployeeMap.get(normalizedShort);
+        if (exactMatch) return exactMatch;
+        
+        // O(N) Fallback for startsWith only runs if exact match fails
+        for (const [normFull, fullName] of normalizedEmployeeMap.entries()) {
+            if (normFull.startsWith(normalizedShort + " - ")) return fullName;
         }
         return null;
     };
@@ -200,12 +164,22 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         return { name: fullName, short };
     });
 
+    // O(1) Lookup Cache
+    const normalizedEmployeeMap = new Map<string, string>();
+    for (const fullName of employeeDepartmentMap.keys()) {
+        const norm = normalizeText(fullName);
+        normalizedEmployeeMap.set(norm, fullName);
+    }
+
     const findFullName = (shortName: string) => {
         const normalizedShort = normalizeText(shortName);
         if (!normalizedShort) return null;
-        for (const fullName of employeeDepartmentMap.keys()) {
-            const normalizedFull = normalizeText(fullName);
-            if (normalizedFull === normalizedShort || normalizedFull.startsWith(normalizedShort + " - ")) return fullName;
+        
+        const exactMatch = normalizedEmployeeMap.get(normalizedShort);
+        if (exactMatch) return exactMatch;
+
+        for (const [normFull, fullName] of normalizedEmployeeMap.entries()) {
+            if (normFull.startsWith(normalizedShort + " - ")) return fullName;
         }
         return null;
     };
@@ -282,6 +256,12 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
     
     let currentDeptFallback = 'BP Khác';
 
+        // O(1) Cache cho bảng thi đua
+    const fastDeptMap = new Map<string, {orig: string, dept: string}>();
+    for (const [fullName, dept] of employeeDepartmentMap.entries()) {
+        fastDeptMap.set(normalizeText(fullName), {orig: fullName, dept});
+    }
+
     for (const line of lines.slice(metricsRowIndex + 1)) {
         const parts = line.split('\t');
         const namePart = parts[0]?.trim();
@@ -296,13 +276,11 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
         let matchedOriginalName = "";
         let department = "";
         
-        // 1. Tìm trong map doanh thu (độ chính xác cao nhất)
-        for (const [fullName, dept] of employeeDepartmentMap.entries()) { 
-            if (normalizeText(fullName) === normalizedName) { 
-                matchedOriginalName = fullName; 
-                department = dept; 
-                break; 
-            } 
+        // 1. Tìm O(1) trong map doanh thu
+        const match = fastDeptMap.get(normalizedName);
+        if (match) {
+            matchedOriginalName = match.orig;
+            department = match.dept;
         }
 
         // 2. Nếu không có trong map nhưng là dòng nhân viên (có dấu -), dùng bộ phận fallback vừa quét được

@@ -83,7 +83,13 @@ export function processKpis(
         return acc;
     }, { doanhThuThucChoXuat: 0, doanhThuQDChoXuat: 0 });
 
-    const soLuongThuHo = allPeriodData.filter(row => HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT))).length;
+    let soLuongThuHo = 0;
+    for (let i = 0, len = allPeriodData.length; i < len; i++) {
+        const hinhThucXuat = getRowValue(allPeriodData[i], COL.HINH_THUC_XUAT);
+        if (hinhThucXuat && HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) {
+            soLuongThuHo++;
+        }
+    }
 
     return {
         doanhThuQD,

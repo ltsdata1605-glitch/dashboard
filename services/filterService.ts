@@ -9,6 +9,9 @@ import { processEmployeeData } from './employeeService';
 import { processSummaryTable, calculateWarehouseSummary } from './summaryService';
 import { processIndustryData } from './industryService';
 
+/** WeakMap cache for deduplication — keyed by allData array reference, auto-GC'd when data changes */
+const _dedupCache = new WeakMap<DataRow[], DataRow[]>();
+
 /**
  * PREDICATES (Centralized Filtering Logic)
  */
@@ -121,25 +124,33 @@ export function applyFiltersAndProcess(
     enableDeduplication: boolean = true
 ): { processedData: ProcessedData, baseFilteredData: DataRow[], warehouseFilteredData: DataRow[], calendarSourceData: DataRow[] } {
 
-    // Runtime deduplication — rows with identical content (excluding parsedDate object refs) are merged
+    // Runtime deduplication — cached per allData reference to avoid recalculating on filter changes
     let sourceData = allData;
     if (enableDeduplication) {
-        const uniqueSet = new Set<string>();
-        const deduplicated: DataRow[] = [];
-        for (let i = 0; i < allData.length; i++) {
-            const row = allData[i];
-            let sig = '';
-            for (const key in row) {
-                if (key !== 'STT_1' && key !== 'parsedDate') {
-                    sig += row[key] + '§';
+        const cached = _dedupCache.get(allData);
+        if (cached) {
+            sourceData = cached;
+        } else {
+            const uniqueSet = new Set<string>();
+            const deduplicated: DataRow[] = [];
+            // Use Object.keys once, cache key list
+            const sampleRow = allData[0];
+            const keysToCheck = sampleRow ? Object.keys(sampleRow).filter(k => k !== 'STT_1' && k !== 'parsedDate') : [];
+            for (let i = 0; i < allData.length; i++) {
+                const row = allData[i];
+                const parts: string[] = [];
+                for (let j = 0; j < keysToCheck.length; j++) {
+                    parts.push(row[keysToCheck[j]] as string);
+                }
+                const sig = parts.join('§');
+                if (!uniqueSet.has(sig)) {
+                    uniqueSet.add(sig);
+                    deduplicated.push(row);
                 }
             }
-            if (!uniqueSet.has(sig)) {
-                uniqueSet.add(sig);
-                deduplicated.push(row);
-            }
+            sourceData = deduplicated;
+            _dedupCache.set(allData, deduplicated);
         }
-        sourceData = deduplicated;
     }
 
     const mainStartDate = filters.startDate ? new Date(filters.startDate) : null;
@@ -147,23 +158,37 @@ export function applyFiltersAndProcess(
     const mainEndDate = filters.endDate ? new Date(filters.endDate) : null;
     if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
     
-    // Base data for Calendar (respects all non-kho and non-date filters)
-    const calendarSourceData = sourceData.filter(row => {
-        return isXuatMatch(row, filters.xuat) &&
-               isTrangThaiMatch(row, filters.trangThai) &&
-               isNguoiTaoMatch(row, filters.nguoiTao) &&
-               isDepartmentMatch(row, filters.department, departmentMap);
-    });
+    const calendarSourceData: DataRow[] = [];
+    const baseFilteredData: DataRow[] = [];
+    const mainPeriodData: DataRow[] = [];
+    const warehouseGlobalData: DataRow[] = [];
 
-    // Base data for the main dashboard (respects all filters including kho)
-    const baseFilteredData = calendarSourceData.filter(row => isKhoMatch(row, filters.kho));
+    for (let i = 0, len = sourceData.length; i < len; i++) {
+        const row = sourceData[i];
+        
+        if (!isXuatMatch(row, filters.xuat)) continue;
+        
+        const mDate = isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths);
+        
+        if (mDate) {
+            warehouseGlobalData.push(row);
+        }
 
-    const mainPeriodData = baseFilteredData.filter(row => isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths));
-    
-    // Warehouse summary is GLOBAL — not affected by kho/department filters, but DOES respect xuat filter
-    const warehouseGlobalData = sourceData.filter(row => {
-        return isXuatMatch(row, filters.xuat) && isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths);
-    });
+        if (!isTrangThaiMatch(row, filters.trangThai)) continue;
+        if (!isNguoiTaoMatch(row, filters.nguoiTao)) continue;
+        if (!isDepartmentMatch(row, filters.department, departmentMap)) continue;
+        
+        calendarSourceData.push(row);
+        
+        if (!isKhoMatch(row, filters.kho)) continue;
+
+        baseFilteredData.push(row);
+
+        if (mDate) {
+            mainPeriodData.push(row);
+        }
+    }
+
     const warehouseSummary = calculateWarehouseSummary(warehouseGlobalData, productConfig) || [];
     
     const mainResult = processDataForPeriod(mainPeriodData, productConfig, filters, departmentMap);

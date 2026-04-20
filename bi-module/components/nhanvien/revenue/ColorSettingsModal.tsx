@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CogIcon, XIcon } from '../../Icons';
+import ModalWrapper from '../../../../components/modals/ModalWrapper';
 
 // --- Vivid/Hot Color Palette ---
 export const VIVID_COLORS = [
@@ -127,13 +128,15 @@ export const ColorSettingsModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-5 w-full max-w-lg border border-slate-200 dark:border-slate-700 animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[85vh]">
-                <div className="flex justify-between items-center mb-4 flex-shrink-0">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2"><CogIcon className="h-5 w-5 text-primary-500" />Cấu hình màu hiển thị</h3>
-                    <button onClick={onClose} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-full"><XIcon className="h-5 w-5 text-slate-500" /></button>
-                </div>
-                <div className="overflow-y-auto pr-2 flex-1 scrollbar-thin">
+        <ModalWrapper
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Cấu Hình Màu Hiển Thị"
+            subTitle="Tùy chỉnh ngưỡng phần trăm"
+            maxWidthClass="max-w-lg"
+        >
+            <div className="flex flex-col max-h-[85vh] bg-white dark:bg-slate-800 rounded-b-2xl">
+                <div className="overflow-y-auto pr-2 flex-1 scrollbar-thin p-5">
                     {renderRow("% Hoàn thành", "ht")}
                     {renderRow("Hiệu quả quy đổi", "hqqd")}
                     {renderRow("% Trả góp", "tragop")}
@@ -141,11 +144,11 @@ export const ColorSettingsModal: React.FC<{
                     {renderRow("Doanh thu quy đổi", "dtqd", true)}
                     {renderRow("Doanh thu thực", "dtthuc", true)}
                 </div>
-                <div className="mt-5 flex gap-3 flex-shrink-0">
-                    <button onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="px-4 py-2 text-xs font-bold border border-slate-300 rounded-lg hover:bg-slate-50">Mặc định</button>
-                    <button onClick={() => { onSave(temp); onClose(); }} className="flex-1 py-2 bg-primary-600 text-white text-xs font-bold rounded-lg hover:bg-primary-700 active:scale-95 transition-all">Lưu cấu hình</button>
+                <div className="flex gap-3 flex-shrink-0 p-5 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 rounded-b-2xl">
+                    <button onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="px-5 py-2 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-white transition-colors">Mặc định</button>
+                    <button onClick={() => { onSave(temp); onClose(); }} className="flex-1 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-xl hover:bg-primary-700 active:scale-95 transition-all shadow-md shadow-primary-500/20">Lưu cấu hình</button>
                 </div>
             </div>
-        </div>
+        </ModalWrapper>
     );
 };

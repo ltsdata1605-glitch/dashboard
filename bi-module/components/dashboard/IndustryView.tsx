@@ -1,10 +1,9 @@
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Card from '../Card';
 import { FilterIcon, CogIcon } from '../Icons';
-import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, roundUp, shortenSupermarketName } from '../../utils/dashboardHelpers';
+import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, roundUp } from '../../utils/dashboardHelpers';
 import { Switch } from './DashboardWidgets';
+import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 
 interface IndustryViewProps {
     realtimeData: ReturnType<typeof parseIndustryRealtimeData>;
@@ -19,11 +18,13 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'SL Realtime': { label: 'SỐ LƯỢNG', bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-400' },
     'Số lượng': { label: 'SỐ LƯỢNG', bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-400' },
     'DT Realtime (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    'DTQĐ': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     'Target Ngày (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     '% HT Target Ngày (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     'Target (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     '% HT Target (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
     '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
+    'Lãi gộp QĐ': { label: 'LÃI GỘP', bg: 'bg-violet-50 dark:bg-violet-900/20', text: 'text-violet-700 dark:text-violet-400' },
     'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
     'DT Trả Gộp': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
     'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
@@ -38,73 +39,34 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const selectorRef = useRef<HTMLDivElement>(null);
-    const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>(`hidden-cols-industry-${isRealtime ? 'realtime' : 'luyke'}`, []);
-
     const [isIndustryFilterOpen, setIsIndustryFilterOpen] = useState(false);
     const industryFilterRef = useRef<HTMLDivElement>(null);
-    const [hiddenIndustries, setHiddenIndustries] = useIndexedDBState<string[]>(`hidden-industries-${isRealtime ? 'realtime' : 'luyke'}`, []);
     const [industryFilterSearch, setIndustryFilterSearch] = useState('');
 
-    // --- Logic sắp xếp thứ tự cột ---
-    const [columnOrder, setColumnOrder] = useIndexedDBState<string[]>(`industry-col-order-${isRealtime ? 'realtime' : 'luyke'}`, []);
-    const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
+    const logic = useIndustryViewLogic(realtimeData, luykeData, isRealtime);
+    const {
+        allIndustries,
+        processedTable,
+        treeDisplayRows,
+        hasTreeData,
+        hasAnyExpanded,
+        orderedHeaders,
+        visibleColumns,
+        draggedColumn,
+        hiddenIndustries,
+        setHiddenIndustries,
+        toggleRow,
+        expandAll,
+        collapseAll,
+        toggleColumn,
+        handleDragStart,
+        handleDragOver,
+        handleDrop,
+        setDraggedColumn
+    } = logic;
 
     const data = isRealtime ? realtimeData : luykeData.table;
     const { headers, rows } = data;
-
-    const allIndustries = useMemo(() => {
-        const sourceRows = isRealtime ? realtimeData.rows : luykeData.table.rows;
-        return (sourceRows || [])
-            .map(row => row[0])
-            .filter(name => name && name !== 'Tổng');
-    }, [realtimeData.rows, luykeData.table.rows, isRealtime]);
-
-    const processedTable = useMemo(() => {
-        if (!headers || headers.length === 0 || !rows || rows.length === 0) {
-            return { headers: [], rows: [] };
-        }
-        
-        let totalRow = rows.find(r => r[0] === 'Tổng');
-        let otherRows = rows.filter(r => r[0] !== 'Tổng');
-
-        const hiddenIndustriesSet = new Set(hiddenIndustries);
-        otherRows = otherRows.filter(row => 
-            row[0] && !hiddenIndustriesSet.has(row[0])
-        );
-
-        const htTargetIndex = headers.indexOf(isRealtime ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)');
-        if (htTargetIndex !== -1) {
-            otherRows.sort((a, b) => parseNumber(b[htTargetIndex]) - parseNumber(a[htTargetIndex]));
-        }
-        
-        const finalRows = totalRow ? [...otherRows, totalRow] : otherRows;
-
-        return { headers, rows: finalRows };
-    }, [rows, headers, isRealtime, hiddenIndustries]);
-    
-    // --- Cập nhật danh sách sắp xếp khi có cột mới ---
-    useEffect(() => {
-        if (processedTable.headers.length > 0) {
-            const currentHeaders = processedTable.headers;
-            const newOrder = [...columnOrder];
-            const filteredOrder = newOrder.filter(h => currentHeaders.includes(h));
-            const missingHeaders = currentHeaders.filter(h => !filteredOrder.includes(h));
-            
-            if (missingHeaders.length > 0 || filteredOrder.length !== newOrder.length) {
-                setColumnOrder([...filteredOrder, ...missingHeaders]);
-            }
-        }
-    }, [processedTable.headers, columnOrder, setColumnOrder]);
-
-    const orderedHeaders = useMemo(() => {
-        if (columnOrder.length === 0) return processedTable.headers;
-        return columnOrder.filter(h => processedTable.headers.includes(h));
-    }, [columnOrder, processedTable.headers]);
-
-    const visibleColumns = useMemo(() => {
-        const hiddenSet = new Set(userHiddenColumns);
-        return new Set(orderedHeaders.filter(h => !hiddenSet.has(h)));
-    }, [orderedHeaders, userHiddenColumns]);
 
     const headerGroups = useMemo(() => {
         const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean }[] = [];
@@ -133,9 +95,11 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         'DTTRẢGÓP': 'DT T.CHẬM',
         'Tỷ Trọng Trả Góp': '%T.CHẬM',
         'Số lượng': 'SL',
+        'DTQĐ': 'DTQĐ',
         'Target (QĐ)': 'M.TIÊU<br/>QĐ',
         '% HT Target (QĐ)': '%HTQĐ',
         '+/- DTCK Tháng (QĐ)': '+/-QĐ CK',
+        'Lãi gộp QĐ': 'L.GỘP<br/>QĐ',
         'Đơn giá': 'GTĐH',
         'ĐƠN GIÁ': 'GTĐH',
     };
@@ -153,42 +117,28 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    const toggleColumn = (header: string) => {
-        setUserHiddenColumns(prev => {
-            const newHidden = new Set(prev);
-            if (newHidden.has(header)) newHidden.delete(header);
-            else newHidden.add(header);
-            return Array.from(newHidden);
-        });
-    };
-
-    // --- Drag & Drop Handlers ---
-    const handleDragStart = (e: React.DragEvent, header: string) => {
-        setDraggedColumn(header);
-        e.dataTransfer.effectAllowed = 'move';
-    };
-
-    const handleDragOver = (e: React.DragEvent, header: string) => {
-        e.preventDefault();
-        if (draggedColumn === null || draggedColumn === header) return;
-
-        const newOrder = [...columnOrder];
-        const oldIdx = newOrder.indexOf(draggedColumn);
-        const newIdx = newOrder.indexOf(header);
-
-        if (oldIdx !== -1 && newIdx !== -1) {
-            newOrder.splice(oldIdx, 1);
-            newOrder.splice(newIdx, 0, draggedColumn);
-            setColumnOrder(newOrder);
-        }
-    };
-
-    const handleDrop = (_e: React.DragEvent) => {
-        setDraggedColumn(null);
-    };
-
     const actionButton = (
         <div className="industry-view-controls flex items-center gap-1.5 no-print">
+             {/* Expand/Collapse buttons for tree mode */}
+             {hasTreeData && (
+                <div className="flex items-center gap-0.5 mr-1">
+                    <button
+                        onClick={expandAll}
+                        className="p-1 rounded-full text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-colors"
+                        title="Mở rộng tất cả"
+                    >
+                        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                    </button>
+                    <button
+                        onClick={collapseAll}
+                        className={`p-1 rounded-full transition-colors ${hasAnyExpanded ? 'text-slate-500 hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-400' : 'text-slate-300 cursor-not-allowed'}`}
+                        title="Thu gọn tất cả"
+                        disabled={!hasAnyExpanded}
+                    >
+                        <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z" clipRule="evenodd" /></svg>
+                    </button>
+                </div>
+             )}
              <div className="relative" ref={industryFilterRef}>
                 <button
                     onClick={() => setIsIndustryFilterOpen(prev => !prev)}
@@ -268,6 +218,109 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         if (pct >= 100) return { bg: 'bg-emerald-500', text: 'text-white', badge: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' };
         if (pct >= 85) return { bg: 'bg-amber-400', text: 'text-white', badge: 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' };
         return { bg: 'bg-red-500', text: 'text-white', badge: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400' };
+    };
+
+    // --- Shared cell rendering logic ---
+    const renderCell = (cell: any, headerName: string, originalCellIndex: number, isTotalRow: boolean, level: number, rowKey: string, hasChildren: boolean, isExpanded: boolean) => {
+        const numericValue = parseNumber(cell);
+        const isPercentCol = headerName.includes('%') || headerName === 'Tỷ Trọng Trả Góp' || headerName === 'DT Trả Gộp' || headerName === 'DT TRẢ GÓP' || headerName === 'DT Trả Góp' || headerName === 'DTTRẢGÓP';
+        const isNumericCol = !isNaN(numericValue) && !String(cell).includes('%') && originalCellIndex > 0;
+        const isQdCkCol = headerName === '+/- DTCK Tháng (QĐ)';
+        const isHtCol = headerName.includes('% HT');
+        const isDtqdCol = (headerName === 'DT Realtime (QĐ)' || headerName === 'DTQĐ');
+        const isNNH = level === 0;
+        const isNhomHang = level === 1;
+        const isHang = level === 2;
+
+        const cellContent = () => {
+            if (headerName === 'Nhóm ngành hàng') {
+                const displayName = isTotalRow ? 'TỔNG CỘNG' 
+                    : isNNH ? String(cell).replace('NNH ', '').toUpperCase()
+                    : String(cell || '');
+                
+                const indent = isNhomHang ? 20 : isHang ? 40 : 0;
+                
+                return (
+                    <div className="flex items-center" style={{ paddingLeft: indent }}>
+                        {hasChildren && (
+                            <button 
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); toggleRow(rowKey); }}
+                                onTouchEnd={(e) => { e.preventDefault(); toggleRow(rowKey); }}
+                                className="mr-1 w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 shrink-0 transition-transform duration-150"
+                                style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
+                            >
+                                <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
+                            </button>
+                        )}
+                        {!hasChildren && level > 0 && (
+                            <span className="mr-1 w-4 h-4 flex items-center justify-center text-slate-300 dark:text-slate-600 shrink-0">
+                                <span className="text-[5px]">●</span>
+                            </span>
+                        )}
+                        <span className={
+                            isTotalRow ? 'font-extrabold' 
+                            : isNNH ? 'font-black' 
+                            : isNhomHang ? 'font-semibold' 
+                            : 'font-normal'
+                        }>
+                            {displayName}
+                        </span>
+                    </div>
+                );
+            }
+            if (isTotalRow && (isPercentCol || isNumericCol)) return isPercentCol ? `${roundUp(numericValue)}%` : new Intl.NumberFormat('vi-VN').format(roundUp(numericValue));
+            if (isHtCol) {
+                return (
+                    <div className="flex justify-center items-center">
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${numericValue >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : numericValue >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                            {roundUp(numericValue)}%
+                        </span>
+                    </div>
+                );
+            }
+            if (isDtqdCol) return <span className="text-indigo-700 dark:text-indigo-400 font-black text-[12px]">{new Intl.NumberFormat('vi-VN').format(roundUp(numericValue))}</span>;
+            if (isPercentCol && isNumericCol && numericValue === 0) return '-';
+            if (isPercentCol) return `${roundUp(numericValue)}%`;
+            if (isNumericCol) return new Intl.NumberFormat('vi-VN').format(roundUp(numericValue));
+            return cell;
+        };
+
+        let cellClasses = `
+            px-2 whitespace-nowrap 
+            border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0 
+            tabular-nums align-middle
+            ${originalCellIndex > 0 ? 'text-center' : `text-left sticky left-0 z-[5] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : isNNH ? 'bg-white dark:bg-[#1c1c1e]' : isNhomHang ? 'bg-slate-50/80 dark:bg-slate-800/40' : 'bg-white dark:bg-[#1c1c1e]'}`}
+            ${isHang ? 'py-1.5 text-[10px]' : 'py-2.5 text-[11px]'}
+        `;
+        
+        if (isTotalRow) {
+            cellClasses += ' text-emerald-800 dark:text-emerald-400 font-black';
+        } else if (isHang) {
+            cellClasses += originalCellIndex === 0 ? ' text-slate-500 dark:text-slate-400' : ' font-medium text-slate-500 dark:text-slate-400';
+            if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
+                if (numericValue >= 100) cellClasses += ' !text-emerald-500 dark:!text-emerald-500';
+                else if (numericValue >= 85) cellClasses += ' !text-amber-500 dark:!text-amber-500';
+                else if (numericValue > 0) cellClasses += ' !text-red-500 dark:!text-red-500';
+            }
+        } else {
+            cellClasses += originalCellIndex === 0 ? ' font-semibold text-slate-700 dark:text-slate-300' : ' font-semibold';
+
+            if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
+                if (numericValue >= 100) cellClasses += ' text-emerald-600 dark:text-emerald-400 font-bold';
+                else if (numericValue >= 85) cellClasses += ' text-amber-600 dark:text-amber-400 font-bold';
+                else if (numericValue > 0) cellClasses += ' text-red-600 dark:text-red-400 font-bold';
+                else cellClasses += ' text-slate-700 dark:text-slate-300';
+            } else if (isQdCkCol && !isNaN(numericValue)) {
+                if (numericValue > 20) cellClasses += ' text-emerald-600 dark:text-emerald-400 font-bold';
+                else if (numericValue < 0) cellClasses += ' text-red-600 dark:text-red-400 font-bold';
+                else cellClasses += ' text-slate-700 dark:text-slate-300';
+            } else if (!isDtqdCol) {
+                cellClasses += ' text-slate-700 dark:text-slate-300';
+            }
+        }
+
+        return <td key={headerName} className={`${cellClasses} ${draggedColumn === headerName ? 'bg-slate-50 dark:bg-slate-800' : ''}`}>{cellContent()}</td>;
     };
 
     return (
@@ -414,80 +467,61 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-[#1c1c1e]">
-                                        {processedTable.rows.map((row, rIdx) => {
-                                            const isTotalRow = row[0] === 'Tổng';
-                                            return (
-                                                <tr 
-                                                    key={rIdx} 
-                                                    className={`
-                                                        transition-colors duration-100 group
-                                                        ${isTotalRow 
-                                                            ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-y !border-y-emerald-200 dark:!border-y-emerald-800/50' 
-                                                            : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
-                                                        }
-                                                    `}
-                                                >
-                                                    {orderedHeaders.map((headerName) => {
-                                                        if (!visibleColumns.has(headerName)) return null;
-    
-                                                        const originalCellIndex = processedTable.headers.indexOf(headerName);
-                                                        const cell = row[originalCellIndex];
-                                                        const numericValue = parseNumber(cell);
-                                                        const isPercentCol = headerName.includes('%') || headerName === 'Tỷ Trọng Trả Góp' || headerName === 'DT Trả Gộp' || headerName === 'DT TRẢ GÓP' || headerName === 'DT Trả Góp' || headerName === 'DTTRẢGÓP';
-                                                        const isNumericCol = !isNaN(numericValue) && !String(cell).includes('%') && originalCellIndex > 0;
-                                                        const isQdCkCol = headerName === '+/- DTCK Tháng (QĐ)';
-                                                        const isHtCol = headerName.includes('% HT');
-                                                        const isDtqdCol = (headerName === 'DT Realtime (QĐ)' || headerName === 'DTQĐ');
-    
-                                                        const cellContent = () => {
-                                                            if (headerName === 'Nhóm ngành hàng') return isTotalRow ? 'TỔNG CỘNG' : String(cell).replace('NNH ', '').toUpperCase();
-                                                            if (isTotalRow && (isPercentCol || isNumericCol)) return isPercentCol ? `${roundUp(numericValue)}%` : new Intl.NumberFormat('vi-VN').format(roundUp(numericValue));
-                                                            if (isHtCol) {
-                                                                return (
-                                                                    <div className="flex justify-center items-center">
-                                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${numericValue >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : numericValue >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
-                                                                            {roundUp(numericValue)}%
-                                                                        </span>
-                                                                    </div>
-                                                                );
+                                        {treeDisplayRows ? (
+                                            /* ─── TREE TABLE ROWS (luyke mode with hierarchy) ─── */
+                                            treeDisplayRows.map((flatRow) => {
+                                                const isTotalRow = flatRow.level === -1;
+                                                const isNNH = flatRow.level === 0;
+                                                const isNhomHang = flatRow.level === 1;
+                                                const isHang = flatRow.level === 2;
+
+                                                return (
+                                                    <tr 
+                                                        key={flatRow.rowKey} 
+                                                        className={`
+                                                            transition-colors duration-100 group
+                                                            ${isTotalRow 
+                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-y !border-y-emerald-200 dark:!border-y-emerald-800/50' 
+                                                                : isNNH ? 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
+                                                                : isNhomHang ? 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
+                                                                : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50/30 dark:hover:bg-slate-800/10'
                                                             }
-                                                            if (isDtqdCol) return <span className="text-indigo-700 dark:text-indigo-400 font-black text-[12px]">{new Intl.NumberFormat('vi-VN').format(roundUp(numericValue))}</span>;
-                                                            if (isPercentCol && isNumericCol && numericValue === 0) return '-';
-                                                            if (isPercentCol) return `${roundUp(numericValue)}%`;
-                                                            if (isNumericCol) return new Intl.NumberFormat('vi-VN').format(roundUp(numericValue));
-                                                            return cell;
-                                                        };
-    
-                                                        let cellClasses = `
-                                                            px-2 py-2.5 whitespace-nowrap text-[11px] 
-                                                            border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0 
-                                                            tabular-nums align-middle
-                                                            ${originalCellIndex > 0 ? 'text-center' : `text-left font-bold sticky left-0 z-[5] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-[#1c1c1e]'}`}
-                                                        `;
-                                                        
-                                                        if (isTotalRow) {
-                                                            cellClasses += ' text-emerald-800 dark:text-emerald-400 font-black';
-                                                        } else {
-                                                            cellClasses += originalCellIndex === 0 ? ' font-semibold text-slate-700 dark:text-slate-300' : ' font-semibold';
-    
-                                                            if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
-                                                                if (numericValue >= 100) cellClasses += ' text-emerald-600 dark:text-emerald-400 font-bold';
-                                                                else if (numericValue >= 85) cellClasses += ' text-amber-600 dark:text-amber-400 font-bold';
-                                                                else if (numericValue > 0) cellClasses += ' text-red-600 dark:text-red-400 font-bold';
-                                                                else cellClasses += ' text-slate-700 dark:text-slate-300';
-                                                            } else if (isQdCkCol && !isNaN(numericValue)) {
-                                                                if (numericValue > 20) cellClasses += ' text-emerald-600 dark:text-emerald-400 font-bold';
-                                                                else if (numericValue < 0) cellClasses += ' text-red-600 dark:text-red-400 font-bold';
-                                                                else cellClasses += ' text-slate-700 dark:text-slate-300';
-                                                            } else if (!isDtqdCol) {
-                                                                cellClasses += ' text-slate-700 dark:text-slate-300';
+                                                        `}
+                                                    >
+                                                        {orderedHeaders.map((headerName) => {
+                                                            if (!visibleColumns.has(headerName)) return null;
+                                                            const originalCellIndex = processedTable.headers.indexOf(headerName);
+                                                            const cell = flatRow.values[originalCellIndex];
+                                                            return renderCell(cell, headerName, originalCellIndex, isTotalRow, flatRow.level, flatRow.rowKey, flatRow.hasChildren, flatRow.isExpanded);
+                                                        })}
+                                                    </tr>
+                                                );
+                                            })
+                                        ) : (
+                                            /* ─── FLAT TABLE ROWS (realtime / fallback) ─── */
+                                            processedTable.rows.map((row, rIdx) => {
+                                                const isTotalRow = row[0] === 'Tổng';
+                                                return (
+                                                    <tr 
+                                                        key={rIdx} 
+                                                        className={`
+                                                            transition-colors duration-100 group
+                                                            ${isTotalRow 
+                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-y !border-y-emerald-200 dark:!border-y-emerald-800/50' 
+                                                                : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
                                                             }
-                                                        }
-                                                        return <td key={headerName} className={`${cellClasses} ${draggedColumn === headerName ? 'bg-slate-50 dark:bg-slate-800' : ''}`}>{cellContent()}</td>;
-                                                    })}
-                                                </tr>
-                                            );
-                                        })}
+                                                        `}
+                                                    >
+                                                        {orderedHeaders.map((headerName) => {
+                                                            if (!visibleColumns.has(headerName)) return null;
+                                                            const originalCellIndex = processedTable.headers.indexOf(headerName);
+                                                            const cell = row[originalCellIndex];
+                                                            return renderCell(cell, headerName, originalCellIndex, isTotalRow, 0, `flat-${rIdx}`, false, false);
+                                                        })}
+                                                    </tr>
+                                                );
+                                            })
+                                        )}
                                     </tbody>
                                 </table>
                             </div>

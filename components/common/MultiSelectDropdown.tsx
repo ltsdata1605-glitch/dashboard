@@ -143,7 +143,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                         top: containerRef.current ? containerRef.current.getBoundingClientRect().bottom + 6 : 0,
                         left: containerRef.current ? Math.min(containerRef.current.getBoundingClientRect().left, window.innerWidth - 260) : 0,
                     }}
-                    className="z-[9999] overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-black/40 border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm w-max max-w-[90vw]"
+                    className="z-[999999] overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-black/40 border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm w-max max-w-[90vw]"
                 >
                     {/* Search Field */}
                     <div className="p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">

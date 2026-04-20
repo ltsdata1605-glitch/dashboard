@@ -96,8 +96,8 @@ const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({
                     <p>Hành động này không thể hoàn tác. Toàn bộ các bảng thi đua bên trong tab này cũng sẽ bị xóa vĩnh viễn.</p>
                 </div>
                 <div className="p-4 flex justify-end gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <button onClick={() => setModalState({ type: null })} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                    <button onClick={handleDeleteTab} className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
+                    <button type="button" onClick={() => setModalState({ type: null })} onTouchEnd={(e) => { e.preventDefault(); setModalState({ type: null }); }} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
+                    <button type="button" onClick={handleDeleteTab} onTouchEnd={(e) => { e.preventDefault(); handleDeleteTab(); }} className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
                 </div>
             </ModalWrapper>
             
@@ -113,8 +113,8 @@ const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({
                     <p>Hành động này sẽ xóa vĩnh viễn bảng thi đua này. Bạn có chắc chắn muốn tiếp tục?</p>
                 </div>
                 <div className="p-4 flex justify-end gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <button onClick={() => setModalState({ type: null })} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                    <button onClick={handleDeleteTable} className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
+                    <button type="button" onClick={() => setModalState({ type: null })} onTouchEnd={(e) => { e.preventDefault(); setModalState({ type: null }); }} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
+                    <button type="button" onClick={handleDeleteTable} onTouchEnd={(e) => { e.preventDefault(); handleDeleteTable(); }} className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
                 </div>
             </ModalWrapper>
 
@@ -130,8 +130,8 @@ const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({
                     <p>Hành động này sẽ xóa vĩnh viễn cột này khỏi bảng. Bạn có chắc chắn muốn tiếp tục?</p>
                 </div>
                 <div className="p-4 flex justify-end gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <button onClick={() => setModalState({ type: null })} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                    <button onClick={handleConfirmDeleteColumn} className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
+                    <button type="button" onClick={() => setModalState({ type: null })} onTouchEnd={(e) => { e.preventDefault(); setModalState({ type: null }); }} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
+                    <button type="button" onClick={handleConfirmDeleteColumn} onTouchEnd={(e) => { e.preventDefault(); handleConfirmDeleteColumn(); }} className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
                 </div>
             </ModalWrapper>
 
@@ -147,8 +147,8 @@ const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({
                     <p>Hành động này sẽ xóa vĩnh viễn thẻ tùy chỉnh này. Bạn có chắc chắn muốn tiếp tục?</p>
                 </div>
                 <div className="p-4 flex justify-end gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <button onClick={() => setModalState({ type: null })} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                    <button onClick={handleDeleteCustomExploitationTab || (() => {})} className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
+                    <button type="button" onClick={() => setModalState({ type: null })} onTouchEnd={(e) => { e.preventDefault(); setModalState({ type: null }); }} className="py-2 px-4 rounded-lg shadow-sm text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
+                    <button type="button" onClick={handleDeleteCustomExploitationTab} onTouchEnd={(e) => { e.preventDefault(); handleDeleteCustomExploitationTab && handleDeleteCustomExploitationTab(); }} className="py-2 px-6 rounded-lg shadow-sm text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
                 </div>
             </ModalWrapper>
         </>

@@ -34,10 +34,19 @@ export const useHeadToHeadLogic = ({
         endDate.setHours(23, 59, 59, 999);
         const dateRangeString = `${startDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${endDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
         
-        const isValidSale = (row: DataRow): boolean => 
-            (getRowValue(row, COL.TRANG_THAI_HUY) || '').toString().trim().toLowerCase() === 'chưa hủy' && 
-            (getRowValue(row, COL.TINH_TRANG_NHAP_TRA) || '').toString().trim().toLowerCase() === 'chưa trả' && 
-            (getRowValue(row, COL.TRANG_THAI_THU_TIEN) || '').toString().trim().toLowerCase() === 'đã thu';
+        const isValidSale = (row: DataRow): boolean => {
+            const getStr = (col: string) => String(getRowValue(row, col) || '').trim();
+            const huy = getStr(COL.TRANG_THAI_HUY);
+            if (huy !== 'Chưa hủy' && huy.toLowerCase() !== 'chưa hủy') return false;
+            
+            const tra = getStr(COL.TINH_TRANG_NHAP_TRA);
+            if (tra !== 'Chưa trả' && tra.toLowerCase() !== 'chưa trả') return false;
+            
+            const thu = getStr(COL.TRANG_THAI_THU_TIEN);
+            if (thu !== 'Đã thu' && thu.toLowerCase() !== 'đã thu') return false;
+            
+            return true;
+        };
 
         const dataForTab = baseFilteredData.filter(row => !HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT)) && isValidSale(row));
         

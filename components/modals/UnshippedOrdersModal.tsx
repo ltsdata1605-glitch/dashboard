@@ -50,7 +50,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
     const { processedData, productConfig } = useDashboardContext();
     
     const salesData = useMemo(() => {
-        let data = processedData?.unshippedOrders ?? [];
+        let data = (processedData?.unshippedOrders ?? []).filter(row => (Number(getRowValue(row, COL.PRICE)) || 0) > 0);
         if (onlyOverdue) {
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
@@ -309,13 +309,14 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             titleColorClass="text-red-600 dark:text-red-400"
             controls={controls}
             maxWidthClass="max-w-7xl"
+            noRounded={true}
         >
-            <div className="p-6 overflow-y-auto bg-slate-100 dark:bg-slate-950" ref={modalBodyRef}>
+            <div className="p-4 sm:p-8 overflow-y-auto bg-white dark:bg-slate-900" ref={modalBodyRef}>
                 {creatorData.length > 0 ? (
                     <div className="space-y-4">
-                        <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
-                            <h4 className="font-bold text-lg text-slate-800 dark:text-slate-100 mb-4 text-center">TỶ TRỌNG NGÀNH HÀNG CHƯA XUẤT</h4>
-                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                        <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 sm:p-5">
+                            <h4 className="font-black text-xl sm:text-2xl text-blue-800 dark:text-blue-400 mb-5 text-center tracking-tight">TỶ TRỌNG NGÀNH HÀNG CHƯA XUẤT</h4>
+                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                                 {industryDataForDisplay.map(item => {
                                     const percentage = totalUnshippedRevenue > 0 ? (item.revenue / totalUnshippedRevenue * 100) : 0;
                                     const color = industryColors[item.name] || 'slate';
@@ -324,24 +325,28 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                                     return (
                                         <div
                                             key={item.name}
-                                            className={`bg-slate-50 dark:bg-slate-800/50 p-3 rounded-lg border-l-4 border-${color}-500 text-center transition-all duration-300 ease-in-out transform hover:shadow-lg hover:-translate-y-1`}
+                                            className={`bg-slate-50 dark:bg-slate-900/50 p-2 sm:p-2.5 rounded-lg border-l-4 border-${color}-500 flex items-center gap-2.5 sm:gap-3 transition-all duration-300 ease-in-out transform hover:shadow-md hover:-translate-y-0.5`}
                                         >
-                                           <div className={`mx-auto w-10 h-10 rounded-full bg-${color}-100 dark:bg-${color}-900/50 flex items-center justify-center text-${color}-600 dark:text-${color}-400 mb-2`}>
-                                                <Icon name={icon} size={5} />
+                                           <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-${color}-100 dark:bg-${color}-900/50 flex flex-shrink-0 items-center justify-center text-${color}-600 dark:text-${color}-400`}>
+                                                <Icon name={icon} size={4.5} />
                                             </div>
-                                            <p className="font-semibold text-sm text-slate-700 dark:text-slate-200 truncate" title={item.name}>{item.name}</p>
-                                            <p className={`font-bold text-lg text-${color}-600 dark:text-${color}-400`}>{formatCurrency(item.revenue)}</p>
-                                            <p className="text-xs text-slate-500 dark:text-slate-400">{percentage.toFixed(1)}%</p>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200 truncate leading-tight mb-0.5" title={item.name}>{item.name}</p>
+                                                <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                    <p className={`font-black text-sm sm:text-base text-${color}-600 dark:text-${color}-400 leading-none`}>{formatCurrency(item.revenue)}</p>
+                                                    <p className="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 leading-none">({percentage.toFixed(1)}%)</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     );
                                 })}
                             </div>
                         </div>
-                        <div className="mt-6 space-y-3">
+                        <div className="mt-4">
                             {creatorData.map(creator => (
-                                <details key={creator.name} ref={el => { creatorRefs.current[creator.name] = el; }} className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-none overflow-hidden transition-shadow">
-                                    <summary className="p-4 cursor-pointer flex justify-between items-center list-none">
-                                        <p className="font-bold text-lg text-slate-800 dark:text-slate-200">{creator.name}</p>
+                                <details key={creator.name} ref={el => { creatorRefs.current[creator.name] = el; }} className="bg-white dark:bg-slate-900 overflow-hidden" open>
+                                    <summary className="py-2.5 px-3 cursor-pointer flex justify-between items-center list-none bg-cyan-50/80 hover:bg-cyan-100/80 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-cyan-400">
+                                        <p className="font-bold text-[17px] text-cyan-950 dark:text-cyan-100 pl-1">{creator.name}</p>
                                         <div className="flex items-center gap-x-4 gap-y-1 flex-wrap justify-end text-sm font-semibold">
                                             <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(creator.totalRevenue)}</span></span>
                                             <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(creator.totalRevenueQD)}</span></span>
@@ -355,9 +360,9 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                                         </div>
                                     </summary>
                                     {creator.customers.map(customer => (
-                                        <details key={customer.name} className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700">
-                                            <summary className="px-6 py-3 cursor-pointer flex justify-between items-center list-none">
-                                                <p className="font-semibold text-slate-800 dark:text-slate-200">{customer.name.toUpperCase()}</p>
+                                        <details key={customer.name} className="bg-white dark:bg-slate-900 ml-2 pl-2 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800">
+                                            <summary className="py-2 cursor-pointer flex justify-between items-center list-none hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors pr-2">
+                                                <p className="font-semibold text-slate-700 dark:text-slate-300">{customer.name.toUpperCase()}</p>
                                                 <div className="flex items-center gap-x-3 gap-y-1 flex-wrap justify-end text-xs font-semibold">
                                                     <span className="text-slate-600 dark:text-slate-300">Hẹn giao: <span className="font-bold text-slate-800 dark:text-slate-100">{customer.scheduledDate}</span></span>
                                                     <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
@@ -367,25 +372,32 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                                                     </div>
                                                 </div>
                                             </summary>
-                                            <div className="border-t border-slate-200 dark:border-slate-700">
-                                                <table className="w-full text-sm table-auto compact-export-table border-collapse border border-slate-200 dark:border-slate-700">
-                                                    <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 text-xs">
+                                            <div className="mt-1 pb-3">
+                                                <table className="w-full text-sm table-fixed compact-export-table border-collapse">
+                                                    <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs border-b border-t border-slate-100 dark:border-slate-800">
                                                         <tr>
-                                                            <th className="p-2 text-left font-semibold border-b border-r border-slate-200 dark:border-slate-700">Mã ĐH</th>
-                                                            <th className="p-2 text-left font-semibold border-b border-r border-slate-200 dark:border-slate-700">Sản phẩm</th>
-                                                            <th className="p-2 text-center font-semibold border-b border-r border-slate-200 dark:border-slate-700">SL</th>
-                                                            <th className="p-2 text-right font-semibold whitespace-nowrap border-b border-slate-200 dark:border-slate-700">Doanh Thu</th>
+                                                            <th className="py-2.5 px-2 text-left font-semibold w-[20%] lg:w-[15%]">Mã ĐH</th>
+                                                            <th className="py-2.5 px-2 text-left font-semibold w-[40%] lg:w-[45%]">Sản phẩm</th>
+                                                            <th className="py-2.5 px-2 text-center font-semibold w-[10%]">SL</th>
+                                                            <th className="py-2.5 px-2 text-right font-semibold w-[15%] whitespace-nowrap">Doanh Thu</th>
+                                                            <th className="py-2.5 px-2 text-right font-semibold w-[15%] whitespace-nowrap">DTQĐ</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                                                         {customer.orders.map((order, index) => {
                                                             const price = Number(getRowValue(order, COL.PRICE)) || 0;
+                                                            const maNganhHang = getRowValue(order, COL.MA_NGANH_HANG);
+                                                            const maNhomHang = getRowValue(order, COL.MA_NHOM_HANG);
+                                                            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig);
+                                                            const priceQD = price * heso;
+
                                                             return (
-                                                                <tr key={getRowValue(order, COL.ID) || index} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                                                                    <td className="p-2 text-left text-xs text-slate-500 dark:text-slate-400 border-r border-slate-200 dark:border-slate-700">{getRowValue(order, COL.ID)}</td>
-                                                                    <td className="p-2 text-left text-slate-800 dark:text-slate-200 allow-wrap border-r border-slate-200 dark:border-slate-700">{getRowValue(order, COL.PRODUCT)}</td>
-                                                                    <td className="p-2 text-center text-slate-600 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
-                                                                    <td className="p-2 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap">{formatCurrency(price)}</td>
+                                                                <tr key={getRowValue(order, COL.ID) || index} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
+                                                                    <td className="py-2.5 px-2 text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 truncate w-full" title={getRowValue(order, COL.ID) as string}>{getRowValue(order, COL.ID)}</td>
+                                                                    <td className="py-2.5 px-2 text-left text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/50 truncate w-full" title={getRowValue(order, COL.PRODUCT) as string}>{getRowValue(order, COL.PRODUCT)}</td>
+                                                                    <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
+                                                                    <td className="py-2.5 px-2 text-right font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(price)}</td>
+                                                                    <td className="py-2.5 px-2 text-right font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(priceQD)}</td>
                                                                 </tr>
                                                             );
                                                         })}

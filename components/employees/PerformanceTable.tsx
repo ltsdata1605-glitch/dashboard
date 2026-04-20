@@ -26,14 +26,14 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: SortDirection }>({ key: 'doanhThuQD', direction: 'desc' });
     const [targetPerEmployee, setTargetPerEmployee] = useState(150_000_000);
     const [isEditingTarget, setIsEditingTarget] = useState(false);
-    const [tempTarget, setTempTarget] = useState('150000000');
+    const [tempTarget, setTempTarget] = useState('150');
     const [showSortArrow, setShowSortArrow] = useState(true);
     const targetInputRef = useRef<HTMLInputElement>(null);
     const sortTimerRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         getDailyTarget().then(t => {
-            if (t) { setTargetPerEmployee(t); setTempTarget(String(t)); }
+            if (t) { setTargetPerEmployee(t); setTempTarget(String(Math.round(t / 1_000_000))); }
         });
         return () => {
             if (sortTimerRef.current) clearTimeout(sortTimerRef.current);
@@ -55,9 +55,16 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
     };
 
     const handleSaveTarget = () => {
-        const val = parseInt(tempTarget.replace(/\D/g, ''), 10);
-        if (!isNaN(val) && val > 0) { setTargetPerEmployee(val); saveDailyTarget(val); }
-        else setTempTarget(String(targetPerEmployee));
+        const raw = tempTarget.replace(/[^\d.]/g, '');
+        const shortVal = parseFloat(raw);
+        if (!isNaN(shortVal) && shortVal > 0) {
+            const fullVal = Math.round(shortVal * 1_000_000);
+            setTargetPerEmployee(fullVal);
+            saveDailyTarget(fullVal);
+            setTempTarget(String(Math.round(shortVal)));
+        } else {
+            setTempTarget(String(Math.round(targetPerEmployee / 1_000_000)));
+        }
         setIsEditingTarget(false);
     };
 

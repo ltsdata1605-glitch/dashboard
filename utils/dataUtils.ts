@@ -218,3 +218,82 @@ export function getExportFilenamePrefix(khoFilter: string | string[]): string {
     const khosStr = (khoArray.length > 0 && !khoArray.includes('all')) ? khoArray.join('_') : 'Tat-ca-khu-vuc';
     return `[${khosStr.toUpperCase()}]`;
 }
+
+export const roundUp = (num: number): number => {
+    if (num > -1e-9 && num < 0) {
+        return 0;
+    }
+    return Math.ceil(num);
+};
+
+export const parseNumber = (str: any): number => {
+    if (str === null || str === undefined || str === '') return 0;
+    if (typeof str === 'number') return str;
+    
+    let cleaned = String(str).replace(/[\s%,\+]/g, '');
+    
+    // Xử lý dấu phẩy ngàn (chuẩn VN): nếu có chấm phân cách phần ngàn
+    if (cleaned.indexOf('.') !== cleaned.lastIndexOf('.') || /\.\d{3}($|\.)/.test(cleaned)) {
+        cleaned = cleaned.replace(/\./g, '');
+    }
+    
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+};
+
+export const normalizeText = (text: string): string => {
+    return text ? text.normalize("NFC").trim() : "";
+};
+
+export const shortenName = (name: string, overrides: Record<string, string> = {}): string => {
+    if (!name) return '';
+    if (overrides && overrides[name]) return overrides[name];
+    
+    const rules: { [key: string]: string } = {
+        'Thi đua Iphone 17 series': 'IPHONE 17',
+        'BÁN HÀNG PANASONIC': 'Panasonic',
+        'Tủ lạnh, tủ đông, tủ mát': 'Tủ lạnh/đông/mát',
+        'BÁN HÀNG ĐIỆN TỬ & ĐIỆN LẠNH HÃNG SAMSUNG': 'Samsung ĐT/ĐL',
+        'NH MÁY GIẶT, SẤY': 'Máy giặt/sấy',
+        'TRẢ CHẬM FECREDIT, TPBANK EVO': 'FE/TPB',
+        'PHỤ KIỆN - ĐỒNG HỒ': 'PK - Đồng hồ',
+        'ĐIỆN THOẠI & TABLET ANDROID TRÊN 7 TRIỆU': 'Android > 7Tr',
+        'NẠP RÚT TIỀN TÀI KHOẢN NGÂN HÀNG': 'Nạp/Rút NH',
+        'Thi đua Vivo': 'Vivo',
+        'Thi đua Realme': 'Realme',
+        'Đồng hồ thời trang': 'ĐH thời trang',
+        'VÍ TRẢ SAU': 'Ví',
+        'HOMECREDIT': 'HC',
+        'TIỀN MẶT CAKE': 'Cake',
+        'Bảo hiểm': 'Bảo hiểm',
+        'Gia dụng': 'Gia dụng',
+        'Smartphone & Tablet Android': 'Android',
+        'Doanh thu đồng hồ': 'DT Đồng hồ',
+        'Máy giặt & Máy giặt đặc quyền': 'Máy giặt',
+        'Điện thoại Vivo': 'Vivo',
+        'Điện thoại Realme': 'Realme',
+        'Máy Lạnh': 'Máy Lạnh',
+        'Ví trả sau': 'Ví trả sau',
+        'Bếp các loại': 'Bếp',
+        'Nồi cơm': 'Nồi cơm',
+        'Máy lọc nước': 'Máy lọc nước',
+        'Camera': 'Camera',
+    };
+    
+    if (rules[name]) return rules[name];
+    if (name.toUpperCase().startsWith('BÁN HÀNG ')) {
+        return name.replace(/BÁN HÀNG /i, '').split(' ')[0];
+    }
+    if (name.toUpperCase().includes('TRẢ CHẬM')) {
+        return name.toUpperCase().replace('TRẢ CHẬM', '').trim();
+    }
+    return name;
+};
+
+export const shortenSupermarketName = (name: string): string => {
+    if (!name || !name.includes(' - ')) return name;
+    let shortName = name.split(' - ').pop()?.trim() || '';
+    shortName = shortName.replace(/^(Thửa\s*)?\d+\s*/, '').replace(/Thử/g, '').trim();
+    return shortName;
+};
+

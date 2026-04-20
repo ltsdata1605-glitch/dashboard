@@ -52,7 +52,14 @@ export const useEmployeeAnalysisData = () => {
             Object.keys(parent).forEach(subgroup => subgroups.add(subgroup));
         });
         const manufacturers = new Set<string>(originalData.map(row => String(getRowValue(row, COL.MANUFACTURER) || '')).filter(Boolean));
-        const depts = new Set<string>(employeeAnalysisData.fullSellerArray.map(emp => String(emp.department || '')).filter(Boolean));
+        const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
+        const depts = new Set<string>();
+        employeeAnalysisData.fullSellerArray.forEach(emp => {
+            const dept = String(emp.department || '');
+            if (dept && !excludedKeywords.some(keyword => dept.toLowerCase().includes(keyword))) {
+                depts.add(dept);
+            }
+        });
         
         return { 
             allIndustries: Array.from(industries).sort(), 
@@ -66,6 +73,12 @@ export const useEmployeeAnalysisData = () => {
         if (!employeeAnalysisData) return null;
 
         const filterEmployee = (emp: any) => {
+            if (emp.department) {
+                const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
+                if (excludedKeywords.some(keyword => emp.department.toLowerCase().includes(keyword))) {
+                    return false;
+                }
+            }
             // Check Zero Revenue
             if (hideZeroRevenue && (emp.doanhThuThuc || 0) === 0) return false;
             return true;

@@ -9,76 +9,7 @@ export type MainTab = 'realtime' | 'cumulative';
 export type SubTab = 'revenue' | 'competition';
 export type Criterion = 'DTLK' | 'DTQĐ' | 'SLLK';
 
-// --- HELPER FUNCTIONS ---
-export const roundUp = (num: number): number => {
-    if (num > -1e-9 && num < 0) {
-        return 0;
-    }
-    return Math.ceil(num);
-};
-
-// Cải tiến: shortenName hỗ trợ lookup từ nameOverrides nếu được cung cấp
-export const shortenName = (name: string, overrides: Record<string, string> = {}): string => {
-    // 1. Kiểm tra ưu tiên tên tùy chỉnh từ người dùng
-    if (overrides && overrides[name]) {
-        return overrides[name];
-    }
-
-    // 2. Quy tắc rút gọn mặc định
-    const rules: { [key: string]: string } = {
-        'Thi đua Iphone 17 series': 'IPHONE 17',
-        'BÁN HÀNG PANASONIC': 'Panasonic',
-        'Tủ lạnh, tủ đông, tủ mát': 'Tủ lạnh/đông/mát',
-        'BÁN HÀNG ĐIỆN TỬ & ĐIỆN LẠNH HÃNG SAMSUNG': 'Samsung ĐT/ĐL',
-        'NH MÁY GIẶT, SẤY': 'Máy giặt/sấy',
-        'TRẢ CHẬM FECREDIT, TPBANK EVO': 'FE/TPB',
-        'PHỤ KIỆN - ĐỒNG HỒ': 'PK - Đồng hồ',
-        'ĐIỆN THOẠI & TABLET ANDROID TRÊN 7 TRIỆU': 'Android > 7Tr',
-        'NẠP RÚT TIỀN TÀI KHOẢN NGÂN HÀNG': 'Nạp/Rút NH',
-        'Thi đua Vivo': 'Vivo',
-        'Thi đua Realme': 'Realme',
-        'Đồng hồ thời trang': 'ĐH thời trang',
-        'VÍ TRẢ SAU': 'Ví',
-        'HOMECREDIT': 'HC',
-        'TIỀN MẶT CAKE': 'Cake',
-        'Bảo hiểm': 'Bảo hiểm',
-        'Gia dụng': 'Gia dụng',
-        'Smartphone & Tablet Android': 'Android',
-        'Doanh thu đồng hồ': 'DT Đồng hồ',
-        'Máy giặt & Máy giặt đặc quyền': 'Máy giặt',
-        'Điện thoại Vivo': 'Vivo',
-        'Điện thoại Realme': 'Realme',
-        'Máy Lạnh': 'Máy Lạnh',
-        'Ví trả sau': 'Ví trả sau',
-        'Bếp các loại': 'Bếp',
-        'Nồi cơm': 'Nồi cơm',
-        'Máy lọc nước': 'Máy lọc nước',
-        'Camera': 'Camera',
-    };
-    
-    if (rules[name]) return rules[name];
-    if (name.toUpperCase().startsWith('BÁN HÀNG ')) {
-        return name.replace(/BÁN HÀNG /i, '').split(' ')[0];
-    }
-    if (name.toUpperCase().includes('TRẢ CHẬM')) {
-        return name.toUpperCase().replace('TRẢ CHẬM', '').trim();
-    }
-    return name;
-};
-
-export const shortenSupermarketName = (name: string): string => {
-    if (!name || !name.includes(' - ')) return name;
-    let shortName = name.split(' - ').pop()?.trim() || '';
-    shortName = shortName.replace(/^(Thửa\s*)?\d+\s*/, '').replace(/Thử/g, '').trim();
-    return shortName;
-};
-
-export const parseNumber = (str: any): number => {
-    if (str === null || str === undefined) return 0;
-    if (typeof str === 'number') return str;
-    const num = parseFloat(String(str).replace(/,/g, '').replace('%', '').replace('+', ''));
-    return isNaN(num) ? 0 : num;
-};
+export { roundUp, parseNumber, shortenName, shortenSupermarketName } from '../../utils/dataUtils';
 
 // --- DATA PARSERS ---
 
@@ -113,19 +44,19 @@ export const parseSummaryData = (text: string) => {
         if (match && match[1]) kpis[key] = match[1];
     }
     
-    let headerIndex = lines.findIndex(line => line.trim().startsWith('Tên miền	'));
+    let headerIndex = lines.findIndex(line => line.trim().startsWith('Tên miền\t'));
     if (headerIndex === -1) return { kpis, table: { headers: [], rows: [] } };
     
-    const headers = lines[headerIndex].trim().split('	');
+    const headers = lines[headerIndex].trim().split('\t');
     const rows: string[][] = [];
-    const secondHeaderIndex = lines.findIndex((line, index) => index > headerIndex && line.trim().startsWith('Tên miền	'));
+    const secondHeaderIndex = lines.findIndex((line, index) => index > headerIndex && line.trim().startsWith('Tên miền\t'));
     const endIndex = secondHeaderIndex !== -1 ? secondHeaderIndex : lines.length;
 
     for (let i = headerIndex + 1; i < endIndex; i++) {
         const line = lines[i].trim();
         if (!line) continue;
         
-        const parts = line.split('	');
+        const parts = line.split('\t');
         const firstCol = parts[0]?.trim() || '';
 
         // LOẠI BỎ CÁC DÒNG RÁC:
@@ -158,7 +89,7 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
     for (const line of lines) {
         const trimmedLine = line.trim();
         if (!trimmedLine) { currentCompetition = null; continue; }
-        const parts = trimmedLine.split('	');
+        const parts = trimmedLine.split('\t');
         const firstCol = parts[0]?.trim() || '';
 
         // Loại bỏ rác
@@ -195,29 +126,123 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
 export const parseIndustryRealtimeData = (text: string): { headers: string[], rows: string[][] } => {
     if (!text) return { headers: [], rows: [] };
     const lines = text.split('\n');
-    const headerIndex = lines.findIndex(line => line.trim().startsWith('Nhóm ngành hàng	SL Realtime'));
+    const headerIndex = lines.findIndex(line => line.trim().startsWith('Nhóm ngành hàng\tSL Realtime'));
     if (headerIndex === -1) return { headers: [], rows: [] };
-    const headers = lines[headerIndex].trim().split('	');
-    const rows = lines.slice(headerIndex + 1).map(l => l.trim()).filter(l => l.startsWith('NNH ') || l.startsWith('Tổng')).map(l => l.split('	'));
+    const headers = lines[headerIndex].trim().split('\t');
+    const rows = lines.slice(headerIndex + 1).map(l => l.trim()).filter(l => l.startsWith('NNH ') || l.startsWith('Tổng')).map(l => l.split('\t'));
     return { headers, rows };
 };
 
+// --- INDUSTRY TREE TYPES ---
+export interface IndustryTreeNode {
+    name: string;
+    values: string[];
+    children: IndustryTreeNode[];
+    level: number; // 0=Ngành hàng (NNH), 1=Nhóm hàng, 2=Hãng
+}
+
 export const parseIndustryLuyKeData = (text: string) => {
-    const result = { kpis: { laiGopQDDuKien: 'N/A', chiPhi: 'N/A', targetLNTT: 'N/A', htTargetDuKienLNTT: 'N/A' }, table: { headers: [] as string[], rows: [] as string[][] } };
+    const result: {
+        kpis: { laiGopQDDuKien: string; chiPhi: string; targetLNTT: string; htTargetDuKienLNTT: string };
+        table: { headers: string[]; rows: string[][] };
+        tree: IndustryTreeNode[];
+        totalRow: string[] | null;
+    } = {
+        kpis: { laiGopQDDuKien: 'N/A', chiPhi: 'N/A', targetLNTT: 'N/A', htTargetDuKienLNTT: 'N/A' },
+        table: { headers: [], rows: [] },
+        tree: [],
+        totalRow: null
+    };
     if (!text) return result;
     const lines = text.split('\n');
     const kpiBlock = lines.join('\n');
     const laiGopMatch = kpiBlock.match(/Lãi gộp QĐ Dự kiến\s+([\d,.]+)/);
-    if(laiGopMatch) result.kpis.laiGopQDDuKien = laiGopMatch[1];
+    if (laiGopMatch) result.kpis.laiGopQDDuKien = laiGopMatch[1];
     const chiPhiMatch = kpiBlock.match(/Chi phí\s+([\d,.]+)/);
-    if(chiPhiMatch) result.kpis.chiPhi = chiPhiMatch[1];
+    if (chiPhiMatch) result.kpis.chiPhi = chiPhiMatch[1];
     const targetLNTTMatch = kpiBlock.match(/Target LNTT\s+([\d,.]+)/);
-    if(targetLNTTMatch) result.kpis.targetLNTT = targetLNTTMatch[1];
+    if (targetLNTTMatch) result.kpis.targetLNTT = targetLNTTMatch[1];
     const htTargetMatch = kpiBlock.match(/%HT Target Dự kiến \(LNTT\)\s+([\d,.]+%)/);
-    if(htTargetMatch) result.kpis.htTargetDuKienLNTT = htTargetMatch[1];
-    const headerIndex = lines.findIndex(line => line.trim().startsWith('Nhóm ngành hàng	Số lượng	DTQĐ'));
+    if (htTargetMatch) result.kpis.htTargetDuKienLNTT = htTargetMatch[1];
+    const headerIndex = lines.findIndex(line => line.trim().startsWith('Nhóm ngành hàng\tSố lượng\tDTQĐ'));
     if (headerIndex === -1) return result;
-    result.table.headers = lines[headerIndex].trim().split('	');
-    result.table.rows = lines.slice(headerIndex + 1).map(l => l.trim()).filter(l => l.startsWith('NNH ') || l.startsWith('Tổng')).map(l => l.split('	'));
+    result.table.headers = lines[headerIndex].trim().split('\t');
+
+    // Parse ALL data rows (not just NNH/Tổng)
+    const allDataRows: string[][] = [];
+    for (let i = headerIndex + 1; i < lines.length; i++) {
+        const trimmed = lines[i].trim();
+        if (!trimmed) continue;
+        if (trimmed.toLowerCase().includes('hỗ trợ bi')) break;
+        const parts = trimmed.split('\t');
+        if (parts.length >= 2) {
+            allDataRows.push(parts);
+        }
+    }
+
+    // Keep backward-compatible flat rows (only NNH + Tổng)
+    result.table.rows = allDataRows.filter(r => (r[0] || '').startsWith('NNH ') || r[0] === 'Tổng');
+
+    // --- Build 3-level tree: NNH > Nhóm hàng > Hãng ---
+    const targetIndex = result.table.headers.indexOf('Target (QĐ)');
+    const laiGopIndex = result.table.headers.indexOf('Lãi gộp QĐ');
+
+    let currentNNH: IndustryTreeNode | null = null;
+    let currentNhomHang: IndustryTreeNode | null = null;
+
+    const flushNhomHang = () => {
+        if (currentNhomHang && currentNNH) {
+            currentNNH.children.push(currentNhomHang);
+            currentNhomHang = null;
+        }
+    };
+
+    const flushNNH = () => {
+        flushNhomHang();
+        if (currentNNH) {
+            result.tree.push(currentNNH);
+            currentNNH = null;
+        }
+    };
+
+    for (const row of allDataRows) {
+        const name = (row[0] || '').trim();
+
+        if (name === 'Tổng') {
+            result.totalRow = row;
+            continue;
+        }
+
+        if (name.startsWith('NNH ')) {
+            flushNNH();
+            currentNNH = { name, values: row, children: [], level: 0 };
+            continue;
+        }
+
+        if (!currentNNH) continue;
+
+        // Determine if this row is Nhóm hàng (Level 1) or Hãng (Level 2)
+        // Nhóm hàng: has Target > 0 OR Lãi gộp > 0
+        // Hãng: Target = 0 AND Lãi gộp = 0
+        const targetVal = targetIndex >= 0 && row[targetIndex] ? parseNumber(row[targetIndex]) : 0;
+        const laiGopVal = laiGopIndex >= 0 && row[laiGopIndex] ? parseNumber(row[laiGopIndex]) : 0;
+
+        if (targetVal > 0.001 || laiGopVal > 0.001) {
+            // Definitely a Nhóm hàng (Level 1)
+            flushNhomHang();
+            currentNhomHang = { name, values: row, children: [], level: 1 };
+        } else {
+            // Target = 0 and Lãi gộp = 0 → Hãng (Level 2) if inside a Nhóm hàng
+            if (currentNhomHang) {
+                currentNhomHang.children.push({ name, values: row, children: [], level: 2 });
+            } else {
+                // No active Nhóm hàng → treat as orphan Nhóm hàng leaf
+                currentNNH.children.push({ name, values: row, children: [], level: 1 });
+            }
+        }
+    }
+
+    flushNNH();
+
     return result;
 };

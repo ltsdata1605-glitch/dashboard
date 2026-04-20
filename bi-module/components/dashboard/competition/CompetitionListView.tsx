@@ -14,16 +14,16 @@ interface CompetitionListViewProps {
 
 const CRITERIA_THEMES = {
   'DTLK': { 
-    main: 'bg-primary-600', 
-    light: 'bg-primary-50 dark:bg-primary-900/20', 
-    text: 'text-primary-700 dark:text-primary-300',
-    border: 'border-primary-100 dark:border-primary-800'
+    main: 'bg-sky-600', 
+    light: 'bg-sky-50 dark:bg-sky-900/20', 
+    text: 'text-sky-700 dark:text-sky-300',
+    border: 'border-sky-100 dark:border-sky-800'
   },
   'DTQĐ': { 
-    main: 'bg-teal-600', 
-    light: 'bg-teal-50 dark:bg-teal-900/20', 
-    text: 'text-teal-700 dark:text-teal-300',
-    border: 'border-teal-100 dark:border-teal-800'
+    main: 'bg-emerald-600', 
+    light: 'bg-emerald-50 dark:bg-emerald-900/20', 
+    text: 'text-emerald-700 dark:text-emerald-300',
+    border: 'border-emerald-100 dark:border-emerald-800'
   },
   'SLLK': { 
     main: 'bg-rose-600', 
@@ -64,7 +64,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                     {(['DTLK', 'DTQĐ', 'SLLK'] as const).map(criterion => {
                         const programs = groupedAndSortedPrograms[criterion];
                         if (!programs || programs.length === 0) return null;
-                        const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-indigo-500', light: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-100' };
+                        const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-slate-600', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100' };
 
                         return (
                             <div key={criterion}>
@@ -157,7 +157,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                     {(Object.keys(groupedAndSortedPrograms)).map(criterion => {
                         const programs = groupedAndSortedPrograms[criterion as Criterion];
                         if (!programs || programs.length === 0) return null;
-                        const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-indigo-500', light: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-100' };
+                        const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-slate-600', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100' };
             
                         return (
                             <tbody key={criterion} className="divide-y divide-slate-100 dark:divide-slate-800">

@@ -93,13 +93,16 @@ export const useExportLogic = ({
                             isBatchExporting: true
                         })
                     );
-                    setTimeout(resolve, 1000);
+                    setTimeout(resolve, 800);
                 });
                 const modalContent = offscreenContainer.querySelector('.modal-content');
                 if (modalContent) {
                     const filename = `phan-tich-hieu-qua-${employee.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
                     await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true });
                 }
+                // Memory pressure relief: clear render + yield to GC between exports
+                root.render(null);
+                await new Promise(resolve => setTimeout(resolve, 200));
             }
         } finally {
             setIsExporting(false);

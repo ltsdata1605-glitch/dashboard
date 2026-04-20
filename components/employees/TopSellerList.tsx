@@ -69,9 +69,9 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
     return (
         <div ref={ref}>
             <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-amber-100 text-amber-600">
-                        <Icon name="trophy" size={6} />
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-100 text-amber-600">
+                        <Icon name="trophy" size={5} />
                     </div>
                     <div>
                         <h3 className="text-lg font-black text-slate-800 dark:text-white leading-tight">Top Nhân Viên</h3>
@@ -109,9 +109,14 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         return (
                             <div key={dept}>
                                 {showHeader && (
-                                    <h3 className="text-md font-bold text-indigo-700 dark:text-indigo-400 mb-2 border-b-2 border-indigo-200 dark:border-indigo-800 pb-1 flex items-center gap-2">
-                                        <Icon name="users-round" size={4} /> {dept}
-                                    </h3>
+                                    <div className="flex items-center gap-2.5 bg-gradient-to-r from-sky-50 to-indigo-50/40 dark:from-sky-900/40 dark:to-indigo-900/20 px-3 py-2.5 border-l-4 border-sky-400 dark:border-sky-500 rounded-r-lg shadow-sm border-t border-r border-b border-white dark:border-slate-800 mb-3 ml-0.5">
+                                        <div className="text-sky-600 dark:text-sky-400">
+                                            <Icon name="users-round" size={4.5} />
+                                        </div>
+                                        <h3 className="text-[15px] font-bold text-sky-900 dark:text-sky-100 uppercase tracking-wide translate-y-[0.5px]">
+                                            {dept}
+                                        </h3>
+                                    </div>
                                 )}
                                 <div className="space-y-2">
                                     {groupedSellers[dept].map((seller) => {

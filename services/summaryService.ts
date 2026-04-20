@@ -47,12 +47,18 @@ export function processSummaryTable(
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT);
         if (HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) return;
 
-        const khoVal = valueExtractors['kho'](row);
-        const parentVal = valueExtractors['parent'](row);
-        const childVal = valueExtractors['child'](row);
-        const manufacturerVal = valueExtractors['manufacturer'](row);
-        const creatorVal = valueExtractors['creator'](row);
-        const productVal = valueExtractors['product'](row);
+        // Compute all values ONCE per row (eliminating double computation)
+        const allValues: Record<string, string> = {};
+        for (const key in valueExtractors) {
+            allValues[key] = valueExtractors[key](row);
+        }
+
+        const khoVal = allValues['kho'];
+        const parentVal = allValues['parent'];
+        const childVal = allValues['child'];
+        const manufacturerVal = allValues['manufacturer'];
+        const creatorVal = allValues['creator'];
+        const productVal = allValues['product'];
 
         khoGroupsForFilter.add(khoVal);
         parentGroupsForFilter.add(parentVal);
@@ -79,13 +85,14 @@ export function processSummaryTable(
         const revenueQD = revenue * heso;
 
         // Logic trọng số số lượng Vieon
-        const isVieon = childVal === 'Vieon' || parentVal === 'Vieon' || (productName || '').toString().includes('VieON');
+        const isVieon = childVal === 'Vieon' || parentVal === 'Vieon' || (productName || '').includes('VieON');
         const weightedQuantity = isVieon ? (quantity * heso) : quantity;
 
+        // Reuse already-computed allValues for keys
         const keys: string[] = [];
         for (const levelKey of drilldownOrder) {
-            if (valueExtractors[levelKey]) {
-                keys.push(valueExtractors[levelKey](row));
+            if (allValues[levelKey] !== undefined) {
+                keys.push(allValues[levelKey]);
             }
         }
 

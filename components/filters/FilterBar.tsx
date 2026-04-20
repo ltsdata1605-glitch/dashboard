@@ -132,8 +132,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
     };
 
     return (
-        <div className="w-full mb-4 z-[90] lg:z-[100] sticky top-[44px] lg:top-0 hide-on-export">
-            <div className="bg-white/85 dark:bg-slate-900/85 backdrop-blur-xl border border-slate-200 dark:border-slate-700/80 rounded-xl lg:rounded-2xl shadow-lg shadow-indigo-500/5 p-1.5 lg:p-2 transition-all border-t-2 lg:border-t-[3px] border-t-indigo-500">
+        <div className="w-full mb-4 z-[90] lg:z-[100] sticky top-[44px] lg:top-1.5 hide-on-export">
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/80 dark:border-slate-700/60 rounded-xl lg:rounded-full shadow-sm p-1.5 lg:px-3 lg:py-2 transition-all">
 
                 {/* === MOBILE LAYOUT (<lg): 2 compact rows === */}
                 <div className="lg:hidden space-y-1.5">
@@ -207,6 +207,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             {[
                                 { range: 'week', label: 'Tuần' },
                                 { range: 'today', label: 'H.nay' },
+                                { range: 'yesterday', label: 'H.qua' },
                                 { range: 'all', label: 'All' }
                             ].map(({ range, label }) => (
                                 <div key={range} className="relative">
@@ -234,7 +235,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                                     )}
                                     <button
                                         onClick={() => {
-                                            if (range === 'today' || range === 'all') {
+                                            if (range === 'today' || range === 'yesterday' || range === 'all') {
                                                 handleDateRangeClick(range);
                                             }
                                         }}
@@ -320,10 +321,11 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                     </div>
 
                     {/* Quick Date Ranges */}
-                    <div className="relative flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                    <div className="relative flex items-center gap-1 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 shrink-0">
                         {[
                             { range: 'week', label: 'Tuần' },
                             { range: 'today', label: 'Hôm nay' },
+                            { range: 'yesterday', label: 'Hôm qua' },
                             { range: 'all', label: 'All' }
                         ].map(({ range, label }) => (
                             <div key={range} className="relative">
@@ -351,13 +353,13 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                                 )}
                                 <button
                                     onClick={() => {
-                                        if (range === 'today' || range === 'all') {
+                                        if (range === 'today' || range === 'yesterday' || range === 'all') {
                                             handleDateRangeClick(range);
                                         }
                                     }}
-                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all relative z-0 ${
+                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-full transition-all relative z-0 ${
                                         filterState.dateRange === range
-                                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-slate-600/50'
                                         : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                                     }`}
                                 >
@@ -368,7 +370,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                     </div>
 
                     {/* Export Status (Segmented) */}
-                    <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                    <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 shrink-0">
                         {[
                             { val: 'all', label: 'All' },
                             { val: 'Đã', label: 'Đã xuất' },
@@ -377,9 +379,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             <button
                                 key={val}
                                 onClick={() => handleFilterChange({ xuat: val })}
-                                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${
+                                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-full transition-all ${
                                     filterState.xuat === val
-                                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-slate-600/50'
                                     : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
                                 }`}
                             >
@@ -420,7 +422,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             <button
                                 onClick={onNewFile}
                                 title="Tải YCX lên"
-                                className="flex items-center justify-center p-2.5 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-xl transition-all active:scale-95 group"
+                                className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-full transition-all active:scale-95 group"
                             >
                                 <Icon name="file-up" size={4.5} />
                             </button>
@@ -430,14 +432,14 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             target="_blank"
                             rel="noopener noreferrer"
                             title="Tải dữ liệu báo cáo (BCNB)"
-                            className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl transition-all active:scale-95 group"
+                            className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-full transition-all active:scale-95 group"
                         >
                             <Icon name="external-link" size={4.5} />
                         </a>
                         <button
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
-                            className="flex items-center justify-center p-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-200 dark:shadow-none transition-all active:scale-95 group"
+                            className="flex items-center justify-center p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-sm transition-all active:scale-95 group"
                         >
                             <Icon name="settings" size={4.5} className="group-hover:rotate-90 transition-transform duration-300" />
                         </button>

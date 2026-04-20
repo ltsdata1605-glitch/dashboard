@@ -22,7 +22,10 @@ export function processTrendData(
 
         const dateCreated: Date = row.parsedDate;
         if (dateCreated && !isNaN(dateCreated.getTime())) {
-             const dayKey = dateCreated.toISOString().split('T')[0];
+            const y = dateCreated.getFullYear();
+            const m = dateCreated.getMonth() + 1;
+            const d = dateCreated.getDate();
+            const dayKey = `${y}-${m < 10 ? '0' : ''}${m}-${d < 10 ? '0' : ''}${d}`;
             if (!daily[dayKey]) daily[dayKey] = { revenue: 0, revenueQD: 0, date: dateCreated };
             daily[dayKey].revenue += revenue;
             daily[dayKey].revenueQD += revenueQD;

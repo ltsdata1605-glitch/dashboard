@@ -21,7 +21,7 @@ export function processIndustryData(
         const displayParentGroup = getDisplayParentGroup(maNhomHang, productConfig);
         
         const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
-        const isVieon = childGroup === 'Vieon' || displayParentGroup === 'Vieon' || (productName || '').toString().includes('VieON');
+        const isVieon = childGroup === 'Vieon' || displayParentGroup === 'Vieon' || (productName || '').includes('VieON');
         const weightedQuantity = isVieon ? (quantity * heso) : quantity;
 
         const isSubgroupSelected = filters.industryGrid.selectedSubgroups.length === 0 || (childGroup && filters.industryGrid.selectedSubgroups.includes(childGroup));

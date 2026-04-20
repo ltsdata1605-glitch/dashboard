@@ -65,7 +65,9 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
 };
 
 export async function exportElementAsImage(element: HTMLElement, filename: string, options: any = {}): Promise<Blob | null> {
-    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = 2, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode } = options;
+    const isMobileDevice = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+    const defaultScale = isMobileDevice ? 1.5 : 2; // Giảm scale mobile → tiết kiệm ~44% CPU/memory
+    const { elementsToHide = ['.hide-on-export'], forceOpenDetails = false, scale = defaultScale, isCompactTable = false, captureAsDisplayed = false, forcedWidth = null, fitCategoryColumn = false, fitAllColumns = false, mode = 'download' as ExportMode } = options;
 
     const clone = element.cloneNode(true) as HTMLElement;
 

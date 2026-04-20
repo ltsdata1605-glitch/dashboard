@@ -248,26 +248,36 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     <th
                                         key={h.key}
                                         onClick={() => isTarget
-                                            ? (setTempTarget(String(targetPerEmployee)), setIsEditingTarget(true))
+                                            ? (setTempTarget(new Intl.NumberFormat('vi-VN').format(Math.round(targetPerEmployee / 1_000_000))), setIsEditingTarget(true))
                                             : onSort(h.key)
                                         }
                                         className={`relative px-4 py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity group/th
                                             ${h.colorClass} ${h.textColor} ${h.align === 'right' ? 'text-right' : h.align === 'center' ? 'text-center' : 'text-left'} h-px`}
                                     >
                                         {isTarget && isEditingTarget ? (
-                                            <input
-                                                ref={targetInputRef}
-                                                type="number"
-                                                value={tempTarget}
-                                                onChange={e => setTempTarget(e.target.value)}
-                                                onBlur={handleSaveTarget}
-                                                className="w-full px-2 py-0.5 text-xs text-center border rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-indigo-400 dark:border-indigo-50 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
-                                                autoFocus
-                                                onKeyDown={e => {
-                                                    if (e.key === 'Enter') handleSaveTarget();
-                                                    if (e.key === 'Escape') setIsEditingTarget(false);
-                                                }}
-                                            />
+                                            <div className="flex items-center gap-1">
+                                                <input
+                                                    ref={targetInputRef}
+                                                    type="text"
+                                                    inputMode="numeric"
+                                                    value={tempTarget}
+                                                    onChange={e => {
+                                                        const raw = e.target.value.replace(/[^\d]/g, '');
+                                                        if (raw === '') { setTempTarget(''); return; }
+                                                        const num = parseInt(raw, 10);
+                                                        if (!isNaN(num)) setTempTarget(new Intl.NumberFormat('vi-VN').format(num));
+                                                    }}
+                                                    onBlur={handleSaveTarget}
+                                                    className="w-20 px-2 py-0.5 text-xs text-center border rounded-lg bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border-indigo-400 dark:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                                    autoFocus
+                                                    placeholder="VD: 100"
+                                                    onKeyDown={e => {
+                                                        if (e.key === 'Enter') handleSaveTarget();
+                                                        if (e.key === 'Escape') setIsEditingTarget(false);
+                                                    }}
+                                                />
+                                                <span className="text-[9px] font-bold text-violet-500 dark:text-violet-400 whitespace-nowrap">Tr</span>
+                                            </div>
                                         ) : (
                                             <div className={`flex items-center gap-1 ${h.align === 'center' ? 'justify-center' : h.align === 'right' ? 'justify-end' : 'justify-start'}`}>
                                                 {h.sos ? <Icon name="alert-triangle" size={3} /> : null}

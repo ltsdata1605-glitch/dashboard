@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { XIcon } from '../../Icons';
+import ModalWrapper from '../../../../components/modals/ModalWrapper';
 
 export const ImportPrevMonthModal: React.FC<{
     isOpen: boolean;
@@ -7,27 +8,30 @@ export const ImportPrevMonthModal: React.FC<{
     onSave: (data: string) => void;
 }> = ({ isOpen, onClose, onSave }) => {
     const [pastedData, setPastedData] = useState('');
-    if (!isOpen) return null;
+    
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-6 w-full max-w-xl animate-in zoom-in-95 duration-200">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white uppercase">Nhập dữ liệu tháng trước</h3>
-                    <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-full"><XIcon className="h-5 w-5" /></button>
+        <ModalWrapper
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Nhập dữ liệu tháng trước"
+            maxWidthClass="max-w-xl"
+        >
+            <div className="flex flex-col bg-white dark:bg-slate-900 rounded-b-2xl">
+                <div className="p-6">
+                    <p className="text-xs text-slate-500 mb-4">Dán dữ liệu báo cáo "Doanh thu nhân viên" của tháng trước vào đây để so sánh tăng trưởng.</p>
+                    <textarea
+                        autoFocus
+                        value={pastedData}
+                        onChange={e => setPastedData(e.target.value)}
+                        placeholder="Nhấn Ctrl + V để dán..."
+                        className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl font-mono text-[10px] focus:ring-2 focus:ring-primary-500 outline-none"
+                    />
                 </div>
-                <p className="text-xs text-slate-500 mb-4">Dán dữ liệu báo cáo "Doanh thu nhân viên" của tháng trước vào đây để so sánh tăng trưởng.</p>
-                <textarea
-                    autoFocus
-                    value={pastedData}
-                    onChange={e => setPastedData(e.target.value)}
-                    placeholder="Nhấn Ctrl + V để dán..."
-                    className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border rounded-xl font-mono text-[10px] focus:ring-2 focus:ring-primary-500 outline-none"
-                />
-                <div className="mt-6 flex gap-3">
-                    <button onClick={onClose} className="flex-1 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl">Huỷ</button>
-                    <button onClick={() => { onSave(pastedData); onClose(); }} className="flex-[2] py-2 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-lg">Lưu dữ liệu</button>
+                <div className="px-6 pb-6 pt-2 flex gap-3">
+                    <button onClick={onClose} className="flex-1 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Huỷ</button>
+                    <button onClick={() => { onSave(pastedData); onClose(); }} className="flex-[2] py-2 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-primary-700 active:scale-95 transition-all">Lưu dữ liệu</button>
                 </div>
             </div>
-        </div>
+        </ModalWrapper>
     );
 };

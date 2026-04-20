@@ -12,10 +12,22 @@ function _buildFullEmployeeData(
     departmentMap: DepartmentMap | null
 ): EmployeeData {
 
+    // Pre-aggregate ThuHo counts in O(M) instead of O(N×M)
+    const thuHoCountByCreator = new Map<string, number>();
+    for (let i = 0; i < periodData.length; i++) {
+        const row = periodData[i];
+        if (HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
+            const creator = getRowValue(row, COL.NGUOI_TAO);
+            if (creator) {
+                thuHoCountByCreator.set(creator, (thuHoCountByCreator.get(creator) || 0) + 1);
+            }
+        }
+    }
+
     const allCreatorsInPeriod = new Set(periodData.map(r => getRowValue(r, COL.NGUOI_TAO)).filter(Boolean));
 
     allCreatorsInPeriod.forEach(creator => {
-        const creatorThuHoCount = periodData.filter(r => getRowValue(r, COL.NGUOI_TAO) === creator && HINH_THUC_XUAT_THU_HO.has(getRowValue(r, COL.HINH_THUC_XUAT))).length;
+        const creatorThuHoCount = thuHoCountByCreator.get(creator) || 0;
         
         if (employeeStats[creator]) {
              employeeStats[creator].slThuHo = (employeeStats[creator].slThuHo || 0) + creatorThuHoCount;
@@ -75,7 +87,9 @@ function _buildFullEmployeeData(
     }
     finalEmployeeStats = deduplicatedStats;
 
-    const fullSellerArray: Employee[] = Object.values(finalEmployeeStats).map(emp => {
+    const fullSellerArray: Employee[] = Object.values(finalEmployeeStats)
+        .filter(emp => !emp.name.toLowerCase().includes('online'))
+        .map(emp => {
         const doanhThuThuc = emp.doanhThuThuc || 0;
         const doanhThuQD = emp.doanhThuQD || 0;
         const slTraCham = emp.slTraCham || 0;
@@ -116,7 +130,7 @@ function _buildFullEmployeeData(
     });
 
     const exploitationData: ExploitationData[] = Object.values(finalExploitationStats)
-        .filter(ex => ex.name)
+        .filter(ex => ex.name && !ex.name.toLowerCase().includes('online'))
         .map(ex => {
             const doanhThuThuc = ex.doanhThuThuc || 0;
             const doanhThuQD = ex.doanhThuQD || 0;
