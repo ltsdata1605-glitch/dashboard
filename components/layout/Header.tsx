@@ -122,14 +122,14 @@ const Header: React.FC<HeaderProps> = ({
             </div>
             {/* Mobile: Compact file info line */}
             {fileInfo && (
+                <>
                 <div className="lg:hidden flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
                     <Icon name="calendar-days" size={3} className="opacity-60" />
                     <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">
                         Cập nhật: <span className="text-slate-600 dark:text-slate-300 font-extrabold">{fileInfo.savedAt}</span>
                     </span>
                 </div>
-            )}
-            {/* Desktop: Full inline toolbar */}
+                    {/* Desktop: Full inline toolbar */}
                     <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
                         {/* Shift Management Group */}
                         {(userRole === 'admin' || userRole === 'manager') && (
