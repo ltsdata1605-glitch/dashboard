@@ -253,10 +253,30 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                 });
 
                 const customerHieuQuaQD = totalCustomerRevenue !== 0 ? ((totalCustomerRevenueQD - totalCustomerRevenue) / Math.abs(totalCustomerRevenue)) * 100 : 0;
-                const firstOrder = customerOrders[0];
-                const scheduledDateRaw = getRowValue(firstOrder, ['TG Hẹn Giao']) || firstOrder.parsedDate;
-                const scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
-                const formattedScheduledDate = !isNaN(scheduledDate.getTime()) ? scheduledDate.toLocaleDateString('vi-VN', {day: 'numeric', month: 'numeric'}).replace(/\./g, '/') : 'N/A';
+                let scheduledDateRaw = getRowValue(firstOrder, ['Thời gian hẹn giao', 'Thoi gian hen giao', 'TG Hẹn Giao', '__EMPTY_24', 'Column25']);
+                if (scheduledDateRaw === undefined || scheduledDateRaw === null || scheduledDateRaw === '') {
+                    const keys = Object.keys(firstOrder);
+                    if (keys.length > 24) scheduledDateRaw = firstOrder[keys[24]];
+                }
+                
+                let formattedScheduledDate = 'N/A';
+                if (scheduledDateRaw) {
+                    if (scheduledDateRaw instanceof Date && !isNaN(scheduledDateRaw.getTime())) {
+                        formattedScheduledDate = scheduledDateRaw.toLocaleDateString('vi-VN', {day: 'numeric', month: 'numeric'}).replace(/\./g, '/');
+                    } else if (typeof scheduledDateRaw === 'number') {
+                        const dt = new Date((scheduledDateRaw - 25569) * 86400 * 1000);
+                        formattedScheduledDate = !isNaN(dt.getTime()) ? dt.toLocaleDateString('vi-VN', {day: 'numeric', month: 'numeric'}).replace(/\./g, '/') : String(scheduledDateRaw);
+                    } else {
+                        const strDate = String(scheduledDateRaw);
+                        if (strDate.includes('T')) {
+                           const dt = new Date(strDate);
+                           if (!isNaN(dt.getTime())) formattedScheduledDate = dt.toLocaleDateString('vi-VN', {day: 'numeric', month: 'numeric'}).replace(/\./g, '/');
+                           else formattedScheduledDate = strDate;
+                        } else {
+                           formattedScheduledDate = strDate.substring(0, 5); // Fallback string (like 21/04)
+                        }
+                    }
+                }
                 
                 return { name: customerName, orders: customerOrders, totalRevenue: totalCustomerRevenue, totalRevenueQD: totalCustomerRevenueQD, hieuQuaQD: customerHieuQuaQD, scheduledDate: formattedScheduledDate };
             });
