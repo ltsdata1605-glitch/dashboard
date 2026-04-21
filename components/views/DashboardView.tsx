@@ -111,10 +111,7 @@ export default function DashboardView() {
         if (businessOverviewRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
             await handleExport(businessOverviewRef.current, `${prefix}-Toan-bo-ban-tin.png`, {
-                captureAsDisplayed: false,
-                isCompactTable: true,
-                forcedWidth: 700,
-                scale: 3,
+                captureAsDisplayed: true,
             });
         }
     };
@@ -123,10 +120,7 @@ export default function DashboardView() {
         if (kpiCardsOnlyRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
             await handleExport(kpiCardsOnlyRef.current, `${prefix}-Tong-quan-doanh-thu.png`, {
-                captureAsDisplayed: false,
-                isCompactTable: true,
-                forcedWidth: 700,
-                scale: 3,
+                captureAsDisplayed: true,
             });
         }
     };

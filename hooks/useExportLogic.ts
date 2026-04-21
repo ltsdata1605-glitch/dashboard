@@ -143,9 +143,7 @@ export const useExportLogic = ({
                 // Export #1: Business Overview
                 await exportElementAsImage(overviewElement, `tong-quan-kinh-doanh-${kho}.png`, {
                     elementsToHide: ['.hide-on-export'],
-                    captureAsDisplayed: false,
-                    isCompactTable: true,
-                    forcedWidth: 700,
+                    captureAsDisplayed: true,
                 });
 
                 await new Promise(resolve => setTimeout(resolve, 800));
