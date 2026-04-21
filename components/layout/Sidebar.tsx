@@ -57,7 +57,6 @@ export default function Sidebar() {
     ];
 
     const secondaryItems = [
-        ...((userRole === 'admin' || userRole === 'manager') ? [{ id: 'approval', label: 'Quản trị Truy cập', icon: Users, path: '/approval' }] : []),
         ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: Users, path: '/pending' }] : []),
         { id: 'help', label: 'Giới thiệu', icon: HelpCircle, path: '/help' },
     ];

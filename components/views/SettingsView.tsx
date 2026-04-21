@@ -20,7 +20,7 @@ const FONTS = [
 
 const SettingsView: React.FC = () => {
     const { user, userRole, departmentId, employeeName, expiresAt, logout, isDemoMode } = useAuth();
-    const { isDarkMode, toggleDarkMode } = useLayout();
+    const { isDarkMode, toggleDarkMode, setActiveTab: setLayoutTab } = useLayout();
     const { syncState, lastSyncTime, forceSync } = useCloudSync();
     
     const [activeTab, setActiveTab] = useState<SettingsTab>('account');
@@ -441,6 +441,30 @@ const SettingsView: React.FC = () => {
                                             )}
                                         </div>
                                     </div>
+
+                                    {/* Quản Trị Hệ Thống / Phân Quyền */}
+                                    {(userRole === 'admin' || userRole === 'manager') && (
+                                        <div className="mt-8">
+                                            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Quản Trị Truy Cập</h3>
+                                            <div 
+                                                onClick={() => setLayoutTab('approval')}
+                                                className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group cursor-pointer"
+                                            >
+                                                <div className="flex items-start gap-4">
+                                                    <div className="p-3 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 group-hover:bg-indigo-500 group-hover:text-white transition-all shadow-sm">
+                                                        <Icon name="shield-check" size={6} />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-base font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Xét Duyệt & Phân Quyền</h4>
+                                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md">Cấp quyền truy cập, tra cứu thông tin Quản lý chưa nhập kho và xét duyệt hồ sơ nhân sự.</p>
+                                                    </div>
+                                                </div>
+                                                <button className="px-5 py-2.5 whitespace-nowrap rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-sm w-full md:w-auto bg-white border-2 border-slate-200 text-slate-700 group-hover:border-indigo-500 group-hover:bg-indigo-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:group-hover:text-indigo-400 dark:group-hover:border-indigo-500">
+                                                    Truy Vấn Ngay <Icon name="chevron-right" size={4} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
 
                                     {/* Cloud Sync Information */}
                                     <div className="mt-8">
