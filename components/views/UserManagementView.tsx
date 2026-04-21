@@ -28,6 +28,7 @@ const UserManagementView: React.FC = () => {
     const [editDepartments, setEditDepartments] = useState<Record<string, string>>({});
     const [editNames, setEditNames] = useState<Record<string, string>>({});
     const [listMode, setListMode] = useState<'pending' | 'active'>('pending');
+    const [searchQuery, setSearchQuery] = useState('');
     const [editRoles, setEditRoles] = useState<Record<string, string>>({});
 
     const fetchRequests = async () => {
@@ -82,9 +83,8 @@ const UserManagementView: React.FC = () => {
             
             if (userRole === 'admin') {
                 if (listMode === 'active') {
-                    // Rule 1: Must be explicitly approved AND must have a departmentId.
-                    // Meaning users who just logged in (new) or haven't registered dept yet won't show.
-                    filteredData = filteredData.filter(req => req.status === 'approved' && !!req.departmentId);
+                    // Rule 1: Must be explicitly approved. No longer requiring !!req.departmentId.
+                    filteredData = filteredData.filter(req => req.status === 'approved');
                 } else {
                     filteredData = filteredData.filter(req => req.status === 'pending' || req.status === 'new');
                 }
@@ -100,8 +100,14 @@ const UserManagementView: React.FC = () => {
                 filteredData = filteredData.filter(req => allowedKhos.includes(req.departmentId));
             }
             
-            // Sort client side by requestDate descending
+            // Sort client side by requestDate descending, but put "chưa cập nhật mã Kho" first if active
             filteredData.sort((a, b) => {
+                if (listMode === 'active') {
+                    const aNoDept = !a.departmentId;
+                    const bNoDept = !b.departmentId;
+                    if (aNoDept && !bNoDept) return -1;
+                    if (!aNoDept && bNoDept) return 1;
+                }
                 const dateA = a.requestDate?.toMillis() || 0;
                 const dateB = b.requestDate?.toMillis() || 0;
                 return dateB - dateA;
@@ -118,6 +124,14 @@ const UserManagementView: React.FC = () => {
 
     useEffect(() => {
         fetchRequests();
+
+        // Listen for refresh events (e.g. from banner click)
+        const handleRefresh = () => fetchRequests();
+        window.addEventListener('refresh-user-management', handleRefresh);
+        
+        return () => {
+            window.removeEventListener('refresh-user-management', handleRefresh);
+        };
     }, [userRole, departmentId, listMode]);
 
     const handleApproval = async (requestId: string, isApproved: boolean) => {
@@ -222,20 +236,35 @@ const UserManagementView: React.FC = () => {
                     </button>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl w-fit">
-                    <button 
-                        onClick={() => setListMode('pending')}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${listMode === 'pending' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                    >
-                        Đơn Chờ Duyệt
-                    </button>
-                    <button 
-                        onClick={() => setListMode('active')}
-                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${listMode === 'active' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                    >
-                        Người Dùng Hoạt Động
-                    </button>
+                {/* Tabs & Search */}
+                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                    <div className="flex bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl w-fit">
+                        <button 
+                            onClick={() => setListMode('pending')}
+                            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${listMode === 'pending' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                        >
+                            Đơn Chờ Duyệt
+                        </button>
+                        <button 
+                            onClick={() => setListMode('active')}
+                            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${listMode === 'active' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
+                        >
+                            Người Dùng Hoạt Động
+                        </button>
+                    </div>
+
+                    <div className="relative w-full sm:w-64">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <Icon name="search" size={4} />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Tìm kiếm Email, Mã Kho, User..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 block w-full pl-10 pr-3 py-2 text-sm rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm text-slate-700 dark:text-slate-200"
+                        />
+                    </div>
                 </div>
 
                 {/* Modern Card Grid Layout */}
@@ -263,16 +292,30 @@ const UserManagementView: React.FC = () => {
                             </motion.div>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {requests.map((req) => (
+                                {requests.filter(req => {
+                                    if (!searchQuery) return true;
+                                    const q = searchQuery.toLowerCase();
+                                    return (req.email?.toLowerCase().includes(q) || 
+                                            req.employeeName?.toLowerCase().includes(q) || 
+                                            req.departmentId?.toLowerCase().includes(q) || 
+                                            req.displayName?.toLowerCase().includes(q) ||
+                                            editDepartments[req.id]?.toLowerCase().includes(q) ||
+                                            editNames[req.id]?.toLowerCase().includes(q));
+                                }).map((req) => (
                                     <motion.div 
                                         key={req.id}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         exit={{ opacity: 0, scale: 0.95 }}
-                                        className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-sm hover:shadow-md transition-all flex flex-col overflow-hidden group"
+                                        className={`bg-white dark:bg-slate-800 rounded-2xl border ${!req.departmentId && listMode === 'active' ? 'border-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.1)]' : 'border-slate-200 dark:border-slate-700/50 hover:shadow-md'} shadow-sm transition-all flex flex-col overflow-hidden group`}
                                     >
                                         {/* Row Header: User Profile */}
-                                        <div className="p-5 flex items-center gap-4 bg-slate-50/50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700/50">
+                                        <div className="p-5 flex items-center gap-4 bg-slate-50/50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700/50 relative">
+                                            {!req.departmentId && listMode === 'active' && (
+                                                <div className="absolute top-0 right-0 bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">
+                                                    CHƯA CÓ MÃ KHO
+                                                </div>
+                                            )}
                                             <div className="relative">
                                                 <img src={req.photoURL} alt="" className="w-14 h-14 rounded-2xl shadow-sm object-cover" />
                                                 <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-800 ${req.status === 'approved' ? 'bg-emerald-500' : req.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'}`}></div>
@@ -316,7 +359,7 @@ const UserManagementView: React.FC = () => {
                                                 {/* Department Code Field */}
                                                 <div className="flex flex-col gap-2">
                                                     <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> Mã Kho (ID)</span>
-                                                    {listMode === 'active' ? (
+                                                    {userRole === 'admin' ? (
                                                         <input
                                                             type="text"
                                                             value={editDepartments[req.id] || ''}
@@ -333,18 +376,18 @@ const UserManagementView: React.FC = () => {
 
                                                 {/* Report Matching Name */}
                                                 <div className="flex flex-col gap-2 col-span-2">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> Khớp tên báo cáo doanh thu</span>
-                                                    {listMode === 'active' || userRole === 'admin' ? (
+                                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> User (Mã Nhân Viên)</span>
+                                                    {userRole === 'admin' ? (
                                                         <input
                                                             type="text"
                                                             value={editNames[req.id] || ''}
                                                             onChange={e => setEditNames(prev => ({...prev, [req.id]: e.target.value}))}
-                                                            placeholder="VD: Lê Thị A..."
+                                                            placeholder="VD: 58614"
                                                             className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:bg-white text-slate-800 dark:text-slate-200 w-full transition-all"
                                                         />
                                                     ) : (
                                                         <div className="font-bold text-amber-600 dark:text-amber-400 italic text-sm px-1">
-                                                            {req.employeeName || 'Chưa thiết lập'}
+                                                            {req.employeeName || 'Chưa cập nhật User'}
                                                         </div>
                                                     )}
                                                 </div>

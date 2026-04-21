@@ -17,8 +17,12 @@ const PendingApprovalView: React.FC = () => {
             toast.error('Vui lòng nhập đầy đủ thông tin mã kho.');
             return;
         }
-        if (selectedRole === 'employee' && !empName) {
-            toast.error('Vui lòng nhập tên nhân viên.');
+        if (!empName) {
+            toast.error('Vui lòng nhập User (Mã nhân viên).');
+            return;
+        }
+        if (!/^\d+$/.test(empName.trim())) {
+            toast.error('User chỉ được chứa chữ số! Vui lòng kiểm tra lại.');
             return;
         }
 
@@ -156,8 +160,8 @@ const PendingApprovalView: React.FC = () => {
                                         required
                                     />
                                     {selectedRole === 'manager' ? (
-                                        <p className="text-[11px] text-slate-500 mt-1 italic">
-                                            Quản lý có thể nhập <strong>nhiều mã kho</strong>, ngăn cách bằng dấu phẩy (,).
+                                        <p className="text-[12px] font-bold text-rose-500 mt-2">
+                                            Hãy nhập 2 mã kho nếu bạn quản lý 2 shop (ngăn cách bằng dấu phẩy).
                                         </p>
                                     ) : (
                                         <p className="text-[11px] text-slate-500 mt-1 italic">
@@ -166,20 +170,23 @@ const PendingApprovalView: React.FC = () => {
                                     )}
                                 </div>
 
-                                {selectedRole === 'employee' && (
-                                    <div>
-                                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tên Nhân Viên (Trong Báo Cáo):</label>
-                                        <input 
-                                            type="text" 
-                                            value={empName}
-                                            onChange={(e) => setEmpName(e.target.value)}
-                                            placeholder="VD: 58614 - Trương Hoàng Phúc" 
-                                            className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 outline-none transition-all"
-                                            required={selectedRole === 'employee'}
-                                        />
-                                        <p className="text-[11px] text-slate-500 mt-1 italic">Vui lòng nhập <strong className="font-bold text-slate-700 dark:text-slate-300">đúng Cú pháp: [Mã NV] - [Họ Tên]</strong>. Tính năng này yêu cầu định dạng phải chuẩn xác để tự động lọc dữ liệu.</p>
-                                    </div>
-                                )}
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">User (Chỉ nhập số):</label>
+                                    <input 
+                                        type="text" 
+                                        value={empName}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            if (val === '' || /^\d+$/.test(val)) {
+                                                setEmpName(val);
+                                            }
+                                        }}
+                                        placeholder="VD: 58614" 
+                                        className="w-full px-4 py-2.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-teal-500 outline-none transition-all"
+                                        required
+                                    />
+                                    <p className="text-[11px] text-slate-500 mt-1 italic">Vui lòng nhập <strong className="font-bold text-slate-700 dark:text-slate-300">đúng User ID (mã nhân viên phần số)</strong>. Hệ thống sẽ tự động map dữ liệu.</p>
+                                </div>
                                 {selectedRole && (
                                     <div className="pt-4 flex gap-3">
                                         <button 

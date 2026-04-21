@@ -14,7 +14,10 @@ const PendingApprovalBanner: React.FC = () => {
 
     return (
         <div 
-            onClick={() => setActiveTab('approval')}
+            onClick={() => {
+                setActiveTab('approval');
+                window.dispatchEvent(new Event('refresh-user-management'));
+            }}
             className="w-full bg-gradient-to-r from-amber-500 to-orange-500 text-white overflow-hidden flex items-center cursor-pointer shadow-md z-[100] relative py-2 px-4 group"
         >
             <div className="flex-shrink-0 mr-3 animate-pulse bg-white/20 p-1.5 rounded-full">
