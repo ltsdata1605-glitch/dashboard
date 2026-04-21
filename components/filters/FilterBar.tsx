@@ -104,9 +104,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
         //     chips.push({ id: 'kho', label: 'Kho', value: filterState.kho, color: 'indigo' });
         // }
 
-        if (filterState.trangThai.length > 0 && filterState.trangThai.length < uniqueFilterOptions.trangThai.length) {
-            chips.push({ id: 'trangThai', label: 'Trạng thái', value: filterState.trangThai, color: 'violet' });
-        }
+        // We don't show Trạng thái chip because it's now in the main bar.
+        // if (filterState.trangThai.length > 0 && filterState.trangThai.length < uniqueFilterOptions.trangThai.length) {
+        //     chips.push({ id: 'trangThai', label: 'Trạng thái', value: filterState.trangThai, color: 'violet' });
+        // }
 
         if (filterState.nguoiTao.length > 0 && filterState.nguoiTao.length < uniqueFilterOptions.nguoiTao.length) {
             chips.push({ id: 'nguoiTao', label: 'Người tạo', value: filterState.nguoiTao, color: 'rose' });
