@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
 import { LayoutProvider, useLayout } from './contexts/LayoutContext';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
 import MobileBottomNav from './components/layout/MobileBottomNav';
 import { getGlobalFont } from './services/dbService';
@@ -96,67 +97,69 @@ function AppContent() {
                     </div>
                     
                     <div className="w-full relative">
-                        <Suspense fallback={
-                            <div className="flex items-center justify-center min-h-[50vh]">
-                                <div className="flex flex-col items-center gap-4">
-                                    <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                                    <p className="text-sm font-medium text-slate-500 animate-pulse">Đang tải biểu mẫu phân tích...</p>
+                        <ErrorBoundary name="MainContent">
+                            <Suspense fallback={
+                                <div className="flex items-center justify-center min-h-[50vh]">
+                                    <div className="flex flex-col items-center gap-4">
+                                        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                                        <p className="text-sm font-medium text-slate-500 animate-pulse">Đang tải biểu mẫu phân tích...</p>
+                                    </div>
                                 </div>
-                            </div>
-                        }>
-                            {/* Persistent Views to avoid re-loading data */}
-                            <div className={activeTab === 'analysis' ? 'block' : 'hidden'}>
-                                <DashboardView />
-                            </div>
-
-                            <div className={activeTab === 'approval' ? 'block w-full' : 'hidden'}>
-                                <UserManagementView />
-                            </div>
-
-                            <div className={activeTab === 'settings' ? 'block w-full' : 'hidden'}>
-                                <SettingsView />
-                            </div>
-
-                            <div className={activeTab === 'pending-approval' ? 'block w-full' : 'hidden'}>
-                                <PendingApprovalView />
-                            </div>
-
-                            <div className={activeTab === 'help' ? 'block w-full' : 'hidden'}>
-                                <AboutView />
-                            </div>
-                            
-                            <div className={activeTab === 'check-thuong' ? 'block' : 'hidden'}>
-                                <CheckThuongView />
-                            </div>
-
-                            <div className={activeTab === 'tools-coupon' ? 'block' : 'hidden'}>
-                                <ExternalToolView url="https://chuy-n-i-coupon-487587635482.us-west1.run.app" title="Chuyển đổi Coupon" />
-                            </div>
-
-                            <div className={activeTab === 'tools-tax' ? 'block' : 'hidden'}>
-                                <ExternalToolView url="https://tinhthue-netify-487587635482.us-west1.run.app" title="Tính thuế nhận thưởng" />
-                            </div>
-
-                            <div className={activeTab === 'tools-sticker' ? 'block' : 'hidden'}>
-                                <ExternalToolView url="https://stickerevent-final-487587635482.us-west1.run.app" title="Sticker Event" />
-                            </div>
-
-                            <div className={activeTab === 'tools-audit' ? 'block' : 'hidden'}>
-                                <ExternalToolView url="https://kiemquy-final-487587635482.us-west1.run.app" title="Kiểm quỹ" />
-                            </div>
-
-                            <div className={activeTab === 'employees' ? 'block w-full' : 'hidden'}>
-                                <BiWrapper />
-                            </div>
-
-                            {/* Fallback for other tabs */}
-                            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees'].includes(activeTab) && (
-                                <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
-                                    <p className="text-lg font-medium">Tính năng đang được phát triển</p>
-                                    <p className="text-sm">Vui lòng quay lại sau</p>
+                            }>
+                                {/* Persistent Views to avoid re-loading data */}
+                                <div className={activeTab === 'analysis' ? 'block' : 'hidden'}>
+                                    <DashboardView />
                                 </div>
-                            )}
-                        </Suspense>
+
+                                <div className={activeTab === 'approval' ? 'block w-full' : 'hidden'}>
+                                    <UserManagementView />
+                                </div>
+
+                                <div className={activeTab === 'settings' ? 'block w-full' : 'hidden'}>
+                                    <SettingsView />
+                                </div>
+
+                                <div className={activeTab === 'pending-approval' ? 'block w-full' : 'hidden'}>
+                                    <PendingApprovalView />
+                                </div>
+
+                                <div className={activeTab === 'help' ? 'block w-full' : 'hidden'}>
+                                    <AboutView />
+                                </div>
+                                
+                                <div className={activeTab === 'check-thuong' ? 'block' : 'hidden'}>
+                                    <CheckThuongView />
+                                </div>
+
+                                <div className={activeTab === 'tools-coupon' ? 'block' : 'hidden'}>
+                                    <ExternalToolView url="https://chuy-n-i-coupon-487587635482.us-west1.run.app" title="Chuyển đổi Coupon" />
+                                </div>
+
+                                <div className={activeTab === 'tools-tax' ? 'block' : 'hidden'}>
+                                    <ExternalToolView url="https://tinhthue-netify-487587635482.us-west1.run.app" title="Tính thuế nhận thưởng" />
+                                </div>
+
+                                <div className={activeTab === 'tools-sticker' ? 'block' : 'hidden'}>
+                                    <ExternalToolView url="https://stickerevent-final-487587635482.us-west1.run.app" title="Sticker Event" />
+                                </div>
+
+                                <div className={activeTab === 'tools-audit' ? 'block' : 'hidden'}>
+                                    <ExternalToolView url="https://kiemquy-final-487587635482.us-west1.run.app" title="Kiểm quỹ" />
+                                </div>
+
+                                <div className={activeTab === 'employees' ? 'block w-full' : 'hidden'}>
+                                    <BiWrapper />
+                                </div>
+
+                                {/* Fallback for other tabs */}
+                                {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees'].includes(activeTab) && (
+                                    <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
+                                        <p className="text-lg font-medium">Tính năng đang được phát triển</p>
+                                        <p className="text-sm">Vui lòng quay lại sau</p>
+                                    </div>
+                                )}
+                            </Suspense>
+                        </ErrorBoundary>
                     </div>
                 </main>
             </div>
@@ -168,8 +171,10 @@ export default function App() {
     return (
         <AuthProvider>
             <LayoutProvider>
-                <AppContent />
-                <Toaster position="bottom-right" />
+                <ErrorBoundary name="App_Root">
+                    <AppContent />
+                    <Toaster position="bottom-right" />
+                </ErrorBoundary>
             </LayoutProvider>
         </AuthProvider>
     );
