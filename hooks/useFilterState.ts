@@ -9,7 +9,7 @@ const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart
 export const initialFilterState: FilterState = {
     kho: [],
     xuat: 'all',
-    trangThai: ['Mới'],
+    trangThai: ['1 - Mới'],
     nguoiTao: [],
     department: [],
     parent: [],
