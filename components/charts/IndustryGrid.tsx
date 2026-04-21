@@ -147,7 +147,7 @@ const IndustryGrid: React.FC = React.memo(() => {
         if (!gridRef.current) return;
         setIsExporting(true);
         const prefix = getExportFilenamePrefix(filters.kho);
-        await exportElementAsImage(gridRef.current, `${prefix}-The-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], scale: 3 });
+        await exportElementAsImage(gridRef.current, `${prefix}-The-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], captureAsDisplayed: true, scale: 3 });
         setIsExporting(false);
     };
 
@@ -155,7 +155,7 @@ const IndustryGrid: React.FC = React.memo(() => {
         if (!pieRef.current) return;
         setIsExporting(true);
         const prefix = getExportFilenamePrefix(filters.kho);
-        await exportElementAsImage(pieRef.current, `${prefix}-Bieu-do-ty-trong.png`, { elementsToHide: ['.hide-on-export'], scale: 3 });
+        await exportElementAsImage(pieRef.current, `${prefix}-Bieu-do-ty-trong.png`, { elementsToHide: ['.hide-on-export'], captureAsDisplayed: true, scale: 3 });
         setIsExporting(false);
     };
 
@@ -163,7 +163,7 @@ const IndustryGrid: React.FC = React.memo(() => {
         if (!cardRef.current) return;
         setIsExporting(true);
         const prefix = getExportFilenamePrefix(filters.kho);
-        await exportElementAsImage(cardRef.current, `${prefix}-Ty-trong-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], forcedWidth: 1024, scale: 3 });
+        await exportElementAsImage(cardRef.current, `${prefix}-Ty-trong-nganh-hang.png`, { elementsToHide: ['.hide-on-export'], captureAsDisplayed: true, scale: 3 });
         setIsExporting(false);
     };
 
