@@ -167,7 +167,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                         </div>
                         <div className="flex-1 min-w-0">
                             <MultiSelectDropdown
-                                label="Trạng thái HD"
+                                label="Trạng thái"
                                 options={uniqueFilterOptions.trangThai}
                                 selected={filterState.trangThai}
                                 onChange={(sel) => handleFilterChange({ trangThai: sel })}
@@ -391,7 +391,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                     {/* Hoso Status Filter */}
                     <div className="w-auto shrink-0">
                         <MultiSelectDropdown
-                            label="Trạng thái HD"
+                            label="Trạng thái"
                             options={uniqueFilterOptions.trangThai}
                             selected={filterState.trangThai}
                             onChange={(sel) => handleFilterChange({ trangThai: sel })}

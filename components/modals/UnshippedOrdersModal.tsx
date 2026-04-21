@@ -360,7 +360,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                                         </div>
                                     </summary>
                                     {creator.customers.map(customer => (
-                                        <details key={customer.name} className="bg-white dark:bg-slate-900 ml-2 pl-2 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800">
+                                        <details key={customer.name} className="bg-white dark:bg-slate-900 ml-2 pl-2 sm:ml-4 sm:pl-4 border-l-2 border-slate-100 dark:border-slate-800 border-b border-dashed border-slate-300 dark:border-slate-700 pb-2 mb-2 last:border-b-0">
                                             <summary className="py-2 cursor-pointer flex justify-between items-center list-none hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors pr-2">
                                                 <p className="font-semibold text-slate-700 dark:text-slate-300">{customer.name.toUpperCase()}</p>
                                                 <div className="flex items-center gap-x-3 gap-y-1 flex-wrap justify-end text-xs font-semibold">
@@ -376,9 +376,10 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                                                 <table className="w-full text-sm table-fixed compact-export-table border-collapse">
                                                     <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs border-b border-t border-slate-100 dark:border-slate-800">
                                                         <tr>
-                                                            <th className="py-2.5 px-2 text-left font-semibold w-[20%] lg:w-[15%]">Mã ĐH</th>
-                                                            <th className="py-2.5 px-2 text-left font-semibold w-[40%] lg:w-[45%]">Sản phẩm</th>
-                                                            <th className="py-2.5 px-2 text-center font-semibold w-[10%]">SL</th>
+                                                            <th className="py-2.5 px-2 text-left font-semibold w-[18%] lg:w-[15%]">Mã ĐH</th>
+                                                            <th className="py-2.5 px-2 text-left font-semibold w-[32%] lg:w-[35%]">Sản phẩm</th>
+                                                            <th className="py-2.5 px-2 text-center font-semibold w-[8%]">SL</th>
+                                                            <th className="py-2.5 px-2 text-left font-semibold w-[12%] whitespace-nowrap">Ngày Xuất</th>
                                                             <th className="py-2.5 px-2 text-right font-semibold w-[15%] whitespace-nowrap">Doanh Thu</th>
                                                             <th className="py-2.5 px-2 text-right font-semibold w-[15%] whitespace-nowrap">DTQĐ</th>
                                                         </tr>
@@ -390,12 +391,31 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                                                             const maNhomHang = getRowValue(order, COL.MA_NHOM_HANG);
                                                             const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig);
                                                             const priceQD = price * heso;
+                                                            
+                                                            let exportDate = getRowValue(order, ['Ngày xuất', 'Ngay xuat', 'Ngày Xuất']) as string | Date | number;
+                                                            if (!exportDate && exportDate !== 0) {
+                                                                const keys = Object.keys(order);
+                                                                if (keys.length > 24) exportDate = order[keys[24]] as string | Date | number;
+                                                            }
+                                                            
+                                                            let formattedDate = '';
+                                                            if (exportDate) {
+                                                                if (exportDate instanceof Date && !isNaN(exportDate.getTime())) {
+                                                                    formattedDate = exportDate.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'});
+                                                                } else if (typeof exportDate === 'number') {
+                                                                    const dt = new Date((exportDate - 25569) * 86400 * 1000);
+                                                                    formattedDate = !isNaN(dt.getTime()) ? dt.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'}) : String(exportDate);
+                                                                } else {
+                                                                    formattedDate = String(exportDate);
+                                                                }
+                                                            }
 
                                                             return (
                                                                 <tr key={getRowValue(order, COL.ID) || index} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
                                                                     <td className="py-2.5 px-2 text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 truncate w-full" title={getRowValue(order, COL.ID) as string}>{getRowValue(order, COL.ID)}</td>
                                                                     <td className="py-2.5 px-2 text-left text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/50 truncate w-full" title={getRowValue(order, COL.PRODUCT) as string}>{getRowValue(order, COL.PRODUCT)}</td>
                                                                     <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
+                                                                    <td className="py-2.5 px-2 text-left text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 whitespace-nowrap text-xs">{formattedDate}</td>
                                                                     <td className="py-2.5 px-2 text-right font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(price)}</td>
                                                                     <td className="py-2.5 px-2 text-right font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(priceQD)}</td>
                                                                 </tr>
