@@ -231,6 +231,7 @@ export function useNhanVienData() {
         toggleSupermarket,
         toggleDepartment,
         handleSaveBonus,
-        setAggregatedData
+        setAggregatedData,
+        dataVersion
     };
 }

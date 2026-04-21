@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { Icon } from '../common/Icon';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
+import SingleSelectDropdown from '../common/SingleSelectDropdown';
 import FilterChip from '../common/FilterChip';
 import { toLocalISOString } from '../../utils/dataUtils';
 
@@ -166,6 +167,15 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                         </div>
                         <div className="flex-1 min-w-0">
                             <MultiSelectDropdown
+                                label="Trạng thái HD"
+                                options={uniqueFilterOptions.trangThai}
+                                selected={filterState.trangThai}
+                                onChange={(sel) => handleFilterChange({ trangThai: sel })}
+                                variant="compact"
+                            />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                            <MultiSelectDropdown
                                 label="Bộ phận"
                                 options={uniqueFilterOptions.department}
                                 selected={filterState.department}
@@ -255,24 +265,18 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                         <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 shrink-0"></div>
 
                         {/* Export Status Segments */}
-                        <div className="flex items-center gap-0.5 bg-slate-100/70 dark:bg-slate-800/60 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-700/50 shrink-0 shadow-sm">
-                            {[
-                                { val: 'all', label: 'All' },
-                                { val: 'Đã', label: 'Đã' },
-                                { val: 'Chưa', label: 'Chưa' }
-                            ].map(({ val, label }) => (
-                                <button
-                                    key={val}
-                                    onClick={() => handleFilterChange({ xuat: val })}
-                                    className={`px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-md transition-all duration-200 ${
-                                        filterState.xuat === val
-                                        ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/30'
-                                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50'
-                                    }`}
-                                >
-                                    {label}
-                                </button>
-                            ))}
+                        <div className="w-auto min-w-[125px] shrink-0">
+                            <SingleSelectDropdown
+                                label="Trạng thái xuất"
+                                options={[
+                                    { value: 'all', label: 'Tất cả' },
+                                    { value: 'Đã', label: 'Đã xuất' },
+                                    { value: 'Chưa', label: 'Chưa xuất' }
+                                ]}
+                                selected={filterState.xuat}
+                                onChange={(val) => handleFilterChange({ xuat: val })}
+                                variant="compact"
+                            />
                         </div>
 
                         {/* Active Filter Chips */}
@@ -370,24 +374,29 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                     </div>
 
                     {/* Export Status (Segmented) */}
-                    <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 shrink-0">
-                        {[
-                            { val: 'all', label: 'All' },
-                            { val: 'Đã', label: 'Đã xuất' },
-                            { val: 'Chưa', label: 'Chưa xuất' }
-                        ].map(({ val, label }) => (
-                            <button
-                                key={val}
-                                onClick={() => handleFilterChange({ xuat: val })}
-                                className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-full transition-all ${
-                                    filterState.xuat === val
-                                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-slate-600/50'
-                                    : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
-                                }`}
-                            >
-                                {label}
-                            </button>
-                        ))}
+                    <div className="w-auto shrink-0 transition-transform hover:scale-105">
+                        <SingleSelectDropdown
+                            label="Trạng thái xuất"
+                            options={[
+                                { value: 'all', label: 'Tất cả' },
+                                { value: 'Đã', label: 'Đã xuất' },
+                                { value: 'Chưa', label: 'Chưa xuất' }
+                            ]}
+                            selected={filterState.xuat}
+                            onChange={(val) => handleFilterChange({ xuat: val })}
+                            variant="compact"
+                        />
+                    </div>
+                    
+                    {/* Hoso Status Filter */}
+                    <div className="w-auto shrink-0">
+                        <MultiSelectDropdown
+                            label="Trạng thái HD"
+                            options={uniqueFilterOptions.trangThai}
+                            selected={filterState.trangThai}
+                            onChange={(sel) => handleFilterChange({ trangThai: sel })}
+                            variant="compact"
+                        />
                     </div>
 
                     {/* Department Filter */}

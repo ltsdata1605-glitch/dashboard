@@ -15,7 +15,8 @@ import { useExportOptions } from '../../hooks/useExportOptions';
 import ExportOptionsModal from '../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { useNhanVienData } from '../hooks/useNhanVienData';
-
+import { useIndexedDBState } from '../hooks/useIndexedDBState';
+import { parseCompetitionData } from '../utils/nhanVienHelpers';
 const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: Tab; setActiveTab: (t: Tab) => void; icon?: React.ReactNode; }> = React.memo(({ tab, children, activeTab, setActiveTab }) => (
     <button 
         onClick={() => setActiveTab(tab)} 
@@ -58,7 +59,8 @@ export const NhanVien: React.FC = () => {
         deptEmployeeCounts,
         toggleSupermarket,
         toggleDepartment,
-        handleSaveBonus
+        handleSaveBonus,
+        dataVersion
     } = data;
 
     const [isDeptFilterOpen, setIsDeptFilterOpen] = useState(false);

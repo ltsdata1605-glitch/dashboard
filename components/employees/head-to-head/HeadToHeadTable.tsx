@@ -213,6 +213,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50 bg-white dark:bg-slate-900">
                         {processedData.sortedDepartments.map((department, deptIndex) => {
                             const rows = processedData.groupedRows[department];
+                            const deptTotalData = departmentTotals.get(department);
                             const pastelBg = getPastelColor(deptIndex);
                             return(
                                 <React.Fragment key={department}>
@@ -263,18 +264,18 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
                                         );
                                     })}
                                     {deptTotalData && processedData.sortedDepartments.length > 1 && (
-                                        <tr className="bg-slate-50 dark:bg-slate-800/50 font-semibold text-slate-700 dark:text-slate-200">
-                                            <td className="px-3 py-2 text-left text-xs uppercase font-bold text-slate-500 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10 border-b border-r border-slate-200 dark:border-slate-700">Tổng Nhóm</td>
+                                        <tr className="bg-slate-50/80 dark:bg-slate-800/50 font-semibold text-slate-700 dark:text-slate-200 shadow-sm relative z-10">
+                                            <td className="px-4 py-3 text-left text-[11px] uppercase font-black text-slate-400 dark:text-slate-500 sticky left-0 bg-slate-50/80 dark:bg-slate-800/50 z-10 border-b-2 border-slate-200/50 dark:border-slate-700/50 shadow-[inset_-1px_0_0_0_#f1f5f9] dark:shadow-[inset_-1px_0_0_0_#334155] backdrop-blur-sm">TỔNG NHÓM {department}</td>
                                             {processedData.dateHeaders.map(date => {
                                                 const dateKey = toLocalISOString(date);
                                                 return (
-                                                    <td key={dateKey} className={`px-2 py-2 text-center text-[13px] font-bold border-b border-r border-slate-200 dark:border-slate-700 ${metricColor.bg}`}>
+                                                    <td key={dateKey} className={`px-2 py-3 text-center text-[13px] font-black tracking-wide border-b-2 border-slate-200/50 dark:border-slate-700/50 ${metricColor.text} ${metricColor.bg}`}>
                                                         {formatValue(deptTotalData.daily.get(dateKey) || 0)}
                                                     </td>
                                                 );
                                             })}
-                                            <td className="px-3 py-2 text-center text-[13px] font-black text-indigo-700 dark:text-indigo-300 border-b border-r border-slate-200 dark:border-slate-700 bg-indigo-50/30">{formatValue(deptTotalData.total)}</td>
-                                            <td className="px-3 py-2 text-center text-[13px] font-bold text-slate-500 border-b border-r border-slate-200 dark:border-slate-700 bg-rose-50/30">
+                                            <td className="px-3 py-3 text-center text-[13px] font-black text-indigo-700 dark:text-indigo-400 border-b-2 border-slate-200/50 dark:border-slate-700/50 bg-indigo-50/40 dark:bg-indigo-900/40 tracking-wider shadow-sm">{formatValue(deptTotalData.total)}</td>
+                                            <td className="px-3 py-3 text-center text-[13px] font-black text-rose-500 dark:text-rose-400 border-b-2 border-slate-200/50 dark:border-slate-700/50 bg-rose-50/40 dark:bg-rose-900/40 shadow-sm">
                                                 {deptTotalData.daysWithNoSales > 0 ? deptTotalData.daysWithNoSales.toFixed(1) : '-'}
                                             </td>
                                         </tr>
