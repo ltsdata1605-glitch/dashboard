@@ -121,7 +121,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
 
     const fullScreenClasses = isFullScreen 
         ? "fixed inset-0 z-[1000] bg-white dark:bg-slate-900 overflow-y-auto w-full h-full p-4 custom-scrollbar" 
-        : `bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border ${displayTitle === 'CHI TIẾT NGÀNH HÀNG' ? 'border-teal-100 dark:border-teal-800/60' : 'border-sky-100 dark:border-sky-800/50'} rounded-none overflow-visible mb-8 transition-all duration-300`;
+        : `bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border ${displayTitle === 'CHI TIẾT NGÀNH HÀNG' ? 'border-teal-100 dark:border-teal-800/60' : 'border-sky-100 dark:border-sky-800/50'} rounded-none overflow-visible mb-8 transition-all duration-300`;
 
     return (
         <>

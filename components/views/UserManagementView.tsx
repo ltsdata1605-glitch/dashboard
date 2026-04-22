@@ -20,7 +20,11 @@ interface AccessRequest {
     requestDate: any;
 }
 
-const UserManagementView: React.FC = () => {
+interface UserManagementViewProps {
+    isEmbedded?: boolean;
+}
+
+const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) => {
     const { user, userRole, departmentId } = useAuth();
     const [requests, setRequests] = useState<AccessRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -205,7 +209,7 @@ const UserManagementView: React.FC = () => {
     }
 
     return (
-        <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 min-h-screen p-6 overflow-y-auto">
+        <div className={`flex-1 overflow-y-auto ${isEmbedded ? 'p-0 sm:p-2' : 'bg-slate-50 dark:bg-slate-900/50 min-h-screen p-6'}`}>
             <div className="max-w-5xl mx-auto space-y-6">
                 
                 {/* Header */}

@@ -172,7 +172,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         : undefined;
 
     return (
-        <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 rounded-none mb-8 flex flex-col flex-grow transition-all duration-300">
+        <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-slate-800 rounded-none mb-8 flex flex-col flex-grow transition-all duration-300">
             {/* BEGIN: Header Section */}
             <SectionHeader
                 title={(

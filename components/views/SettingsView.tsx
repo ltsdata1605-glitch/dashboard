@@ -8,8 +8,9 @@ import toast from 'react-hot-toast';
 import { useCloudSync } from '../../hooks/useCloudSync';
 import { shareCloudConfig, fetchSharedConfigs, deleteSharedConfig, type SharedConfig } from '../../services/firestoreService';
 import ModalWrapper from '../modals/ModalWrapper';
+import UserManagementView from './UserManagementView';
 
-type SettingsTab = 'appearance' | 'data' | 'account';
+type SettingsTab = 'appearance' | 'data' | 'account' | 'approval_link';
 
 const FONTS = [
     { id: 'Inter', name: 'Inter (Khuyên dùng)' },
@@ -184,6 +185,7 @@ const SettingsView: React.FC = () => {
 
     const tabs = [
         { id: 'account', label: 'Tài Khoản', icon: 'user' },
+        ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'approval_link', label: 'Phân Quyền', icon: 'shield-check' }] : []),
         { id: 'appearance', label: 'Giao Diện', icon: 'palette' },
         ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'data', label: 'Lọc Dữ Liệu', icon: 'server' }] : [])
     ];
@@ -221,6 +223,21 @@ const SettingsView: React.FC = () => {
                     {/* Settings Content */}
                     <div className="flex-1 p-6 sm:p-8 bg-white dark:bg-slate-800">
                         <AnimatePresence mode="wait">
+                            {/* APPROVAL / PHÂN QUYỀN */}
+                            {activeTab === 'approval_link' && (userRole === 'admin' || userRole === 'manager') && (
+                                <motion.div 
+                                    key="approval_link"
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    className="w-full"
+                                >
+                                    <div className="-m-6 sm:-m-8">
+                                        <UserManagementView isEmbedded={true} />
+                                    </div>
+                                </motion.div>
+                            )}
+
                             {/* APPEARANCE */}
                             {activeTab === 'appearance' && (
                                 <motion.div 
@@ -441,30 +458,6 @@ const SettingsView: React.FC = () => {
                                             )}
                                         </div>
                                     </div>
-
-                                    {/* Quản Trị Hệ Thống / Phân Quyền */}
-                                    {(userRole === 'admin' || userRole === 'manager') && (
-                                        <div className="mt-8">
-                                            <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Quản Trị Truy Cập</h3>
-                                            <div 
-                                                onClick={() => setLayoutTab('approval')}
-                                                className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all group cursor-pointer"
-                                            >
-                                                <div className="flex items-start gap-4">
-                                                    <div className="p-3 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 group-hover:scale-110 group-hover:bg-indigo-500 group-hover:text-white transition-all shadow-sm">
-                                                        <Icon name="shield-check" size={6} />
-                                                    </div>
-                                                    <div>
-                                                        <h4 className="text-base font-bold text-slate-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">Xét Duyệt & Phân Quyền</h4>
-                                                        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md">Cấp quyền truy cập, tra cứu thông tin Quản lý chưa nhập kho và xét duyệt hồ sơ nhân sự.</p>
-                                                    </div>
-                                                </div>
-                                                <button className="px-5 py-2.5 whitespace-nowrap rounded-xl font-bold flex items-center justify-center gap-2 transition-all shadow-sm w-full md:w-auto bg-white border-2 border-slate-200 text-slate-700 group-hover:border-indigo-500 group-hover:bg-indigo-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300 dark:group-hover:text-indigo-400 dark:group-hover:border-indigo-500">
-                                                    Truy Vấn Ngay <Icon name="chevron-right" size={4} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
 
                                     {/* Cloud Sync Information */}
                                     <div className="mt-8">

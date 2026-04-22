@@ -252,7 +252,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
     return (
         <>
-            <div id="warehouse-summary-view" className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden mb-2 lg:mb-8 transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[100] m-0 w-full h-full overflow-y-auto rounded-none shadow-2xl' : 'rounded-xl lg:rounded-none'}`} ref={summaryRef}>
+            <div id="warehouse-summary-view" className={`bg-white dark:bg-slate-900 border-y sm:border border-slate-200 dark:border-slate-700 overflow-hidden mb-2 lg:mb-8 transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[100] m-0 w-full h-full overflow-y-auto rounded-none shadow-2xl' : 'rounded-none sm:rounded-xl lg:rounded-none'}`} ref={summaryRef}>
                 {(isProcessing || isExporting) && (
                     <div className="hide-on-export">
                         <LoadingOverlay />

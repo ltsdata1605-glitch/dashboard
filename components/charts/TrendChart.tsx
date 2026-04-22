@@ -373,7 +373,7 @@ const TrendChart: React.FC = React.memo(() => {
   return (
     <div 
       ref={chartCardRef}
-      className="bg-white dark:bg-[#1c1c1e] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-white/5 rounded-xl lg:rounded-2xl mb-3 lg:mb-8 transition-all duration-300 relative z-0"
+      className="bg-white dark:bg-[#1c1c1e] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-white/5 rounded-none sm:rounded-xl lg:rounded-2xl mb-3 lg:mb-8 transition-all duration-300 relative z-0"
     >
       <SectionHeader 
         title={(

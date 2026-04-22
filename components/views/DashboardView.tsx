@@ -230,7 +230,7 @@ export default function DashboardView() {
                 </div>
             )}
             
-            <div className="max-w-[1280px] w-full mx-auto p-0 sm:p-2.5 lg:p-4 xl:p-8">
+            <div className="w-full mx-auto p-0 sm:p-2.5 lg:p-4 xl:p-8">
                 <DashboardContext.Provider value={logic as any}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleFileProcessing(Array.from(e.target.files))} />
                     <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
@@ -293,7 +293,7 @@ export default function DashboardView() {
                     {showDashboard && (
                         <>
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
-                                <div className="container mx-auto px-1.5 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
+                                <div className="max-w-[1280px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
                                     <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} />
                                     
                                     {/* Data Coverage Indicator */}
@@ -323,7 +323,7 @@ export default function DashboardView() {
                                     )}
                                     
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-2 lg:space-y-8">
-                                        <div ref={kpiCardsOnlyRef} className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden relative rounded-xl lg:rounded-none">
+                                        <div ref={kpiCardsOnlyRef} className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-slate-800 overflow-hidden relative rounded-none sm:rounded-xl lg:rounded-none">
                                             {/* Overdue Export Warning Banner */}
                                             {(() => {
                                                 const now = new Date();
