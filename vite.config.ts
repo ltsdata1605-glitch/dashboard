@@ -8,8 +8,8 @@ export default defineConfig(({ mode }) => {
     return {
       base: '/',
       server: {
-        port: 3000,
-        host: '0.0.0.0',
+        host: '127.0.0.1',
+        open: true,
         watch: {
           ignored: ['**/backup_temp/**', '**/dashboardycx_backup_*/**'],
         },
