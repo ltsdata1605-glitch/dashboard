@@ -3,8 +3,7 @@ import { useState, useCallback, useEffect, startTransition } from 'react';
 import type { FilterState } from '../types';
 import * as dbService from '../services/dbService';
 
-const now = new Date();
-const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
 
 export const initialFilterState: FilterState = {
     kho: [],
@@ -16,7 +15,7 @@ export const initialFilterState: FilterState = {
     startDate: '',
     endDate: '',
     dateRange: 'all',
-    selectedMonths: [defaultMonth],
+    selectedMonths: [],
     industryGrid: {
         selectedGroups: [],
         selectedSubgroups: [],
