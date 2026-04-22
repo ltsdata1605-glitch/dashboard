@@ -123,11 +123,31 @@ const Header: React.FC<HeaderProps> = ({
             {/* Mobile: Compact file info line */}
             {fileInfo && (
                 <>
-                <div className="lg:hidden flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
-                    <Icon name="calendar-days" size={3} className="opacity-60" />
-                    <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">
-                        Cập nhật: <span className="text-slate-600 dark:text-slate-300 font-extrabold">{fileInfo.savedAt}</span>
-                    </span>
+                <div className="lg:hidden flex items-center justify-between w-full">
+                    <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+                        <Icon name="calendar-days" size={3} className="opacity-60" />
+                        <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">
+                            Cập nhật: <span className="text-slate-600 dark:text-slate-300 font-extrabold">{fileInfo.savedAt}</span>
+                        </span>
+                    </div>
+                    {(userRole === 'admin' || userRole === 'manager') && (
+                        <div className="flex items-center gap-1">
+                            <button
+                                onClick={onLoadShiftFile}
+                                className="flex items-center justify-center p-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg transition-all active:scale-95"
+                                title="Tải DS Nhân viên"
+                            >
+                                <Icon name="users-round" size={3.5} />
+                            </button>
+                            <button
+                                onClick={() => setShowDriveHistory(true)}
+                                className={`flex items-center justify-center p-1.5 rounded-lg transition-all active:scale-95 ${syncState === 'error' ? 'bg-red-50 text-red-500 dark:bg-red-900/20 animate-pulse' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
+                                title="Lịch sử đám mây"
+                            >
+                                <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={3.5} />
+                            </button>
+                        </div>
+                    )}
                 </div>
                     {/* Desktop: Full inline toolbar */}
                     <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
@@ -225,28 +245,7 @@ const Header: React.FC<HeaderProps> = ({
                         </div>
                     </div>
 
-                    {/* Mobile: Premium compact action chips */}
-                    <div className="lg:hidden flex items-center gap-1.5 w-full overflow-x-auto no-scrollbar py-0.5">
-                        {(userRole === 'admin' || userRole === 'manager') && (
-                            <>
-                                <button onClick={onNewFile} className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-emerald-50/50 dark:from-emerald-900/20 dark:to-emerald-900/10 text-emerald-600 dark:text-emerald-400 rounded-xl border border-emerald-200/70 dark:border-emerald-800 text-xs font-bold flex-1 active:scale-95 shadow-sm touch-feedback">
-                                    <Icon name="file-up" size={4} />
-                                    <span>Tải YCX</span>
-                                </button>
-                                <button onClick={onLoadShiftFile} className="flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-50/50 dark:from-blue-900/20 dark:to-blue-900/10 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-200/70 dark:border-blue-800 text-xs font-bold flex-1 active:scale-95 shadow-sm touch-feedback">
-                                    <Icon name="users-round" size={4} />
-                                    <span>Nhân Viên</span>
-                                </button>
-                                <button onClick={() => setShowDriveHistory(true)} className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-[10px] font-bold shrink-0 active:scale-95 shadow-sm touch-feedback ${syncState === 'error' ? 'bg-red-50 text-red-600 border-red-200/70 animate-pulse' : 'bg-slate-50/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200/70 dark:border-slate-700'}`}>
-                                    <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={3.5} />
-                                </button>
-                            </>
-                        )}
-                        <a href="https://report.mwgroup.vn/home/dashboard/77" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 px-3 py-2 bg-slate-50/80 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl border border-slate-200/70 dark:border-slate-700 text-[10px] font-bold shrink-0 shadow-sm touch-feedback">
-                            <Icon name="external-link" size={3.5} />
-                            <span>BCNB</span>
-                        </a>
-                    </div>
+
                 </>
             )}
         </header>
