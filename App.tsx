@@ -61,9 +61,17 @@ function AppContent() {
     }
 
     // Hiển thị màn hình thông tin chờ duyệt hoặc form đăng ký cho user mới
-    if (user && userRole === 'pending' && !isDemoMode) {
+    if (user?.status === 'pending') {
         return <PendingApprovalView />;
     }
+
+    const memoDashboardView = React.useMemo(() => <DashboardView />, []);
+    const memoUserManagementView = React.useMemo(() => <UserManagementView />, []);
+    const memoSettingsView = React.useMemo(() => <SettingsView />, []);
+    const memoPendingApprovalView = React.useMemo(() => <PendingApprovalView />, []);
+    const memoAboutView = React.useMemo(() => <AboutView />, []);
+    const memoCheckThuongView = React.useMemo(() => <CheckThuongView />, []);
+    const memoBiWrapper = React.useMemo(() => <BiWrapper />, []);
 
     return (
         <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
@@ -108,27 +116,27 @@ function AppContent() {
                             }>
                                 {/* Persistent Views to avoid re-loading data */}
                                 <div className={activeTab === 'analysis' ? 'block' : 'hidden'}>
-                                    <DashboardView />
+                                    {memoDashboardView}
                                 </div>
 
                                 <div className={activeTab === 'approval' ? 'block w-full' : 'hidden'}>
-                                    <UserManagementView />
+                                    {memoUserManagementView}
                                 </div>
 
                                 <div className={activeTab === 'settings' ? 'block w-full' : 'hidden'}>
-                                    <SettingsView />
+                                    {memoSettingsView}
                                 </div>
 
                                 <div className={activeTab === 'pending-approval' ? 'block w-full' : 'hidden'}>
-                                    <PendingApprovalView />
+                                    {memoPendingApprovalView}
                                 </div>
 
                                 <div className={activeTab === 'help' ? 'block w-full' : 'hidden'}>
-                                    <AboutView />
+                                    {memoAboutView}
                                 </div>
                                 
                                 <div className={activeTab === 'check-thuong' ? 'block' : 'hidden'}>
-                                    <CheckThuongView />
+                                    {memoCheckThuongView}
                                 </div>
 
                                 <div className={activeTab === 'tools-coupon' ? 'block' : 'hidden'}>
@@ -148,7 +156,7 @@ function AppContent() {
                                 </div>
 
                                 <div className={activeTab === 'employees' ? 'block w-full' : 'hidden'}>
-                                    <BiWrapper />
+                                    {memoBiWrapper}
                                 </div>
 
                                 {/* Fallback for other tabs */}

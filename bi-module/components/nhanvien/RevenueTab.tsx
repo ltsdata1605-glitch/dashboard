@@ -15,6 +15,8 @@ import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import { AvatarUploader } from '../shared/AvatarUploader';
 import { ColorSettingsModal, ColorSettings, DEFAULT_COLOR_SETTINGS, CriterionConfig } from './revenue/ColorSettingsModal';
 import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
+import { RevenueMobileCard } from './revenue/RevenueMobileCard';
+import { RevenueDesktopRow } from './revenue/RevenueDesktopRow';
 import { useRevenueData } from '../../hooks/useRevenueData';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services/uiService';
 
@@ -120,6 +122,15 @@ const RevenueView: React.FC<{
     });
 
     const handleSort = (key: string) => setSortConfig(p => ({ key, direction: p.key === key && p.direction === 'desc' ? 'asc' : 'desc' }));
+
+    const handleHighlightToggle = React.useCallback((originalName: string) => {
+        setHighlightedEmployees((prev: Set<string>) => { 
+            const n = new Set(prev); 
+            if (n.has(originalName)) n.delete(originalName); 
+            else n.add(originalName); 
+            return n; 
+        });
+    }, [setHighlightedEmployees]);
 
     const { showExportOptions } = useExportOptionsContext();
 
@@ -274,57 +285,19 @@ const RevenueView: React.FC<{
                                         );
                                     }
                                     const isHighlighted = highlightedEmployees.has(row.originalName || '');
-                                    const prev = row.prevCompData;
                                     return (
-                                        <div 
-                                            key={row.originalName} 
-                                            className={`p-4 flex flex-col gap-3 transition-all ${isHighlighted ? 'bg-amber-50 dark:bg-amber-900/20' : 'active:bg-slate-50'}`}
-                                            onClick={() => setHighlightedEmployees((prev: Set<string>) => { const n = new Set(prev); if (n.has(row.originalName!)) n.delete(row.originalName!); else n.add(row.originalName!); return n; })}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                <MedalBadge rank={row.rank} />
-                                                <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex justify-between items-start">
-                                                        <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
-                                                        <span className="text-[10px] font-black text-sky-600 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 rounded-full">{roundUp(row.calculatedCompletion)}% HT</span>
-                                                    </div>
-                                                    <span className="text-[10px] text-slate-400 uppercase font-bold">{row.department}</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="grid grid-cols-3 gap-2">
-                                                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">DTQĐ</p>
-                                                    <p className="text-sm font-black text-sky-600 tabular-nums">{f.format(roundUp(row.dtqd))}</p>
-                                                    <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
-                                                </div>
-                                                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">HQQĐ</p>
-                                                    <p className="text-sm font-black tabular-nums" style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) }}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</p>
-                                                    <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
-                                                </div>
-                                                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Trả góp</p>
-                                                    <p className="text-sm font-black tabular-nums" style={{ color: getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>{roundUp(row.calculatedInstallment)}%</p>
-                                                    <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="flex justify-between items-center no-print">
-                                                <button 
-                                                    onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }}
-                                                    className="text-[10px] font-bold text-sky-600 hover:underline flex items-center gap-1"
-                                                >
-                                                    <UsersIcon className="h-3 w-3" />
-                                                    Xem chi tiết xu hướng
-                                                </button>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase">Bán kèm:</span>
-                                                    <span className="text-[10px] font-black" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>{roundUp(row.pctBillBk)}%</span>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <RevenueMobileCard
+                                            key={row.originalName}
+                                            row={row}
+                                            isHighlighted={isHighlighted}
+                                            onHighlightToggle={handleHighlightToggle}
+                                            onViewTrend={onViewTrend}
+                                            supermarketName={supermarketName}
+                                            colorSettings={colorSettings}
+                                            getHtColor={getHtColor}
+                                            getDynamicColor={getDynamicColor}
+                                            timeProgressPercentage={timeProgressData.percentage}
+                                        />
                                     );
                                 })}
                             </div>
@@ -407,58 +380,19 @@ const RevenueView: React.FC<{
                                             );
                                         }
                                         const isHighlighted = highlightedEmployees.has(row.originalName || '');
-                                        const prev = row.prevCompData;
 
                                         return (
-                                            <tr key={row.originalName} className={`transition-all group cursor-pointer text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
-                                                <td className="px-4 py-2 whitespace-nowrap min-w-[180px] border-r border-slate-100 dark:border-slate-800/60">
-                                                    <div className="flex items-center gap-3">
-                                                        <MedalBadge rank={row.rank} />
-                                                        <div className="relative">
-                                                            <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />
-                                                            {isHighlighted && <div className="absolute inset-0 rounded-full border-2 border-sky-400"></div>}
-                                                        </div>
-                                                        <div className="flex flex-col min-w-0" onClick={() => setHighlightedEmployees((prev: Set<string>) => { const n = new Set(prev); if (n.has(row.originalName!)) n.delete(row.originalName!); else n.add(row.originalName!); return n; })}>
-                                                            <div className="flex items-center gap-2">
-                                                                <button onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="text-left font-bold text-slate-800 dark:text-slate-100 text-[14px] group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors whitespace-normal break-words">{row.name}</button>
-                                                            </div>
-                                                            <span className="text-[11px] text-slate-400 capitalize font-medium tabular-nums mt-0.5">{row.department}</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-3 py-2 text-[13px] text-center font-medium border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
-                                                    <div>{f.format(roundUp(row.dtlk))}</div>
-                                                    <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
-                                                </td>
-                                                <td className="px-3 py-2 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60">
-                                                    <div className={`inline-flex items-center justify-center px-2 py-0.5 rounded-lg text-white shadow-sm`} style={{ backgroundColor: getHtColor(row.calculatedCompletion) }}>
-                                                        {f.format(roundUp(row.dtqd))}
-                                                    </div>
-                                                    <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
-                                                </td>
-                                                <td className="px-3 py-2 text-[12px] text-center italic font-medium text-slate-400 dark:text-slate-500 border-r border-slate-100 dark:border-slate-800/60">
-                                                    <div>{f.format(roundUp(row.calculatedTarget || 0))}</div>
-                                                    <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
-                                                </td>
-                                                <td className="px-3 py-2 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60" style={{ color: getHtColor(row.calculatedCompletion) }}>
-                                                    <div>{roundUp(row.calculatedCompletion)}%</div>
-                                                    <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
-                                                </td>
-                                                <td className="px-3 py-2 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60">
-                                                    <div className={`inline-flex items-center justify-center px-2 py-0.5 rounded-lg text-white shadow-sm`} style={{ backgroundColor: getHtColor(row.calculatedCompletion) }}>
-                                                        {isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%
-                                                    </div>
-                                                    <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
-                                                </td>
-                                                <td className="px-3 py-2 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60">
-                                                    <div className="inline-block px-2 py-1 rounded text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800" style={{ color: getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>{roundUp(row.calculatedInstallment)}%</div>
-                                                    <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
-                                                </td>
-                                                <td className="px-3 py-2 text-[13px] text-center font-black" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
-                                                    <div>{roundUp(row.pctBillBk)}%</div>
-                                                    <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
-                                                </td>
-                                            </tr>
+                                            <RevenueDesktopRow
+                                                key={row.originalName}
+                                                row={row}
+                                                isHighlighted={isHighlighted}
+                                                onHighlightToggle={handleHighlightToggle}
+                                                onViewTrend={onViewTrend}
+                                                supermarketName={supermarketName}
+                                                colorSettings={colorSettings}
+                                                getHtColor={getHtColor}
+                                                getDynamicColor={getDynamicColor}
+                                            />
                                         );
                                     })}
                                 </tbody>

@@ -230,7 +230,7 @@ export default function DashboardView() {
                 </div>
             )}
             
-            <div className="max-w-[1280px] w-full mx-auto p-2.5 lg:p-4 xl:p-8">
+            <div className="max-w-[1280px] w-full mx-auto p-0 sm:p-2.5 lg:p-4 xl:p-8">
                 <DashboardContext.Provider value={logic as any}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleFileProcessing(Array.from(e.target.files))} />
                     <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
