@@ -9,7 +9,8 @@ export type MainTab = 'realtime' | 'cumulative';
 export type SubTab = 'revenue' | 'competition';
 export type Criterion = 'DTLK' | 'DTQĐ' | 'SLLK';
 
-export { roundUp, parseNumber, shortenName, shortenSupermarketName } from '../../utils/dataUtils';
+import { roundUp, parseNumber, shortenName, shortenSupermarketName } from '../../utils/dataUtils';
+export { roundUp, parseNumber, shortenName, shortenSupermarketName };
 
 // --- DATA PARSERS ---
 

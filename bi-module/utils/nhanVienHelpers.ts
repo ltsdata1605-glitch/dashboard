@@ -1,6 +1,7 @@
 
 import { RevenueRow, CompetitionHeader, Criterion, InstallmentRow, InstallmentProvider, CrossSellingRow } from '../types/nhanVienTypes';
-export { roundUp, parseNumber, normalizeText, shortenName } from '../../utils/dataUtils';
+import { roundUp, parseNumber, normalizeText, shortenName } from '../../utils/dataUtils';
+export { roundUp, parseNumber, normalizeText, shortenName };
 
 export const formatEmployeeName = (fullName: string): string => {
     const nameParts = fullName.split(' - ');
