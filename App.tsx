@@ -22,8 +22,83 @@ import { Toaster } from 'react-hot-toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
 
+/**
+ * TabContent — Isolated component that handles tab switching.
+ * Only this component re-renders when activeTab changes,
+ * keeping the top bar / bottom nav responsive.
+ */
+const TabContent = React.memo(() => {
+    const { activeTab } = useLayout();
+
+    const memoDashboardView = React.useMemo(() => <DashboardView />, []);
+    const memoUserManagementView = React.useMemo(() => <UserManagementView />, []);
+    const memoSettingsView = React.useMemo(() => <SettingsView />, []);
+    const memoPendingApprovalView = React.useMemo(() => <PendingApprovalView />, []);
+    const memoAboutView = React.useMemo(() => <AboutView />, []);
+    const memoCheckThuongView = React.useMemo(() => <CheckThuongView />, []);
+    const memoBiWrapper = React.useMemo(() => <BiWrapper />, []);
+
+    return (
+        <>
+            {/* Persistent Views to avoid re-loading data */}
+            <div className={activeTab === 'analysis' ? 'block' : 'hidden'}>
+                {memoDashboardView}
+            </div>
+
+            <div className={activeTab === 'approval' ? 'block w-full' : 'hidden'}>
+                {memoUserManagementView}
+            </div>
+
+            <div className={activeTab === 'settings' ? 'block w-full' : 'hidden'}>
+                {memoSettingsView}
+            </div>
+
+            <div className={activeTab === 'pending-approval' ? 'block w-full' : 'hidden'}>
+                {memoPendingApprovalView}
+            </div>
+
+            <div className={activeTab === 'help' ? 'block w-full' : 'hidden'}>
+                {memoAboutView}
+            </div>
+            
+            <div className={activeTab === 'check-thuong' ? 'block' : 'hidden'}>
+                {memoCheckThuongView}
+            </div>
+
+            <div className={activeTab === 'tools-coupon' ? 'block' : 'hidden'}>
+                <ExternalToolView url="https://chuy-n-i-coupon-487587635482.us-west1.run.app" title="Chuyển đổi Coupon" />
+            </div>
+
+            <div className={activeTab === 'tools-tax' ? 'block' : 'hidden'}>
+                <ExternalToolView url="https://tinhthue-netify-487587635482.us-west1.run.app" title="Tính thuế nhận thưởng" />
+            </div>
+
+            <div className={activeTab === 'tools-sticker' ? 'block' : 'hidden'}>
+                <ExternalToolView url="https://stickerevent-final-487587635482.us-west1.run.app" title="Sticker Event" />
+            </div>
+
+            <div className={activeTab === 'tools-audit' ? 'block' : 'hidden'}>
+                <ExternalToolView url="https://kiemquy-final-487587635482.us-west1.run.app" title="Kiểm quỹ" />
+            </div>
+
+            <div className={activeTab === 'employees' ? 'block w-full' : 'hidden'}>
+                {memoBiWrapper}
+            </div>
+
+            {/* Fallback for other tabs */}
+            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees'].includes(activeTab) && (
+                <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
+                    <p className="text-lg font-medium">Tính năng đang được phát triển</p>
+                    <p className="text-sm">Vui lòng quay lại sau</p>
+                </div>
+            )}
+        </>
+    );
+});
+TabContent.displayName = 'TabContent';
+
 function AppContent() {
-    const { activeTab, setActiveTab, isDarkMode, toggleDarkMode } = useLayout();
+    const { isDarkMode, toggleDarkMode } = useLayout();
     const { user, userRole, isDemoMode, isLoading } = useAuth();
 
     // Smart greeting based on time of day
@@ -45,14 +120,6 @@ function AppContent() {
             console.warn("Failed to get global font, ignoring:", error);
         });
     }, []);
-
-    const memoDashboardView = React.useMemo(() => <DashboardView />, []);
-    const memoUserManagementView = React.useMemo(() => <UserManagementView />, []);
-    const memoSettingsView = React.useMemo(() => <SettingsView />, []);
-    const memoPendingApprovalView = React.useMemo(() => <PendingApprovalView />, []);
-    const memoAboutView = React.useMemo(() => <AboutView />, []);
-    const memoCheckThuongView = React.useMemo(() => <CheckThuongView />, []);
-    const memoBiWrapper = React.useMemo(() => <BiWrapper />, []);
 
     // Hiển thị màn hình Loading nếu Firebase Auth đang kiểm tra phiên làm việc
     if (isLoading) {
@@ -114,58 +181,7 @@ function AppContent() {
                                     </div>
                                 </div>
                             }>
-                                {/* Persistent Views to avoid re-loading data */}
-                                <div className={activeTab === 'analysis' ? 'block' : 'hidden'}>
-                                    {memoDashboardView}
-                                </div>
-
-                                <div className={activeTab === 'approval' ? 'block w-full' : 'hidden'}>
-                                    {memoUserManagementView}
-                                </div>
-
-                                <div className={activeTab === 'settings' ? 'block w-full' : 'hidden'}>
-                                    {memoSettingsView}
-                                </div>
-
-                                <div className={activeTab === 'pending-approval' ? 'block w-full' : 'hidden'}>
-                                    {memoPendingApprovalView}
-                                </div>
-
-                                <div className={activeTab === 'help' ? 'block w-full' : 'hidden'}>
-                                    {memoAboutView}
-                                </div>
-                                
-                                <div className={activeTab === 'check-thuong' ? 'block' : 'hidden'}>
-                                    {memoCheckThuongView}
-                                </div>
-
-                                <div className={activeTab === 'tools-coupon' ? 'block' : 'hidden'}>
-                                    <ExternalToolView url="https://chuy-n-i-coupon-487587635482.us-west1.run.app" title="Chuyển đổi Coupon" />
-                                </div>
-
-                                <div className={activeTab === 'tools-tax' ? 'block' : 'hidden'}>
-                                    <ExternalToolView url="https://tinhthue-netify-487587635482.us-west1.run.app" title="Tính thuế nhận thưởng" />
-                                </div>
-
-                                <div className={activeTab === 'tools-sticker' ? 'block' : 'hidden'}>
-                                    <ExternalToolView url="https://stickerevent-final-487587635482.us-west1.run.app" title="Sticker Event" />
-                                </div>
-
-                                <div className={activeTab === 'tools-audit' ? 'block' : 'hidden'}>
-                                    <ExternalToolView url="https://kiemquy-final-487587635482.us-west1.run.app" title="Kiểm quỹ" />
-                                </div>
-
-                                <div className={activeTab === 'employees' ? 'block w-full' : 'hidden'}>
-                                    {memoBiWrapper}
-                                </div>
-
-                                {/* Fallback for other tabs */}
-                                {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees'].includes(activeTab) && (
-                                    <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
-                                        <p className="text-lg font-medium">Tính năng đang được phát triển</p>
-                                        <p className="text-sm">Vui lòng quay lại sau</p>
-                                    </div>
-                                )}
+                                <TabContent />
                             </Suspense>
                         </ErrorBoundary>
                     </div>

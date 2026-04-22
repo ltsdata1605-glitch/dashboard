@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
     BarChart3, 
@@ -19,7 +19,7 @@ import {
 import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
 
-export default function MobileBottomNav() {
+const MobileBottomNav: React.FC = React.memo(() => {
     const { activeTab, setActiveTab } = useLayout();
     const { userRole } = useAuth();
     const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -39,10 +39,10 @@ export default function MobileBottomNav() {
         { id: 'help', label: 'Giới thiệu', icon: HelpCircle },
     ];
 
-    const handleTabClick = (id: string) => {
+    const handleTabClick = useCallback((id: string) => {
         setActiveTab(id);
         setIsMoreOpen(false);
-    };
+    }, [setActiveTab]);
 
     const isMoreActive = moreTabs.some(t => activeTab === t.id) || activeTab.startsWith('tools-');
 
@@ -178,4 +178,7 @@ export default function MobileBottomNav() {
             </nav>
         </>
     );
-}
+});
+
+MobileBottomNav.displayName = 'MobileBottomNav';
+export default MobileBottomNav;

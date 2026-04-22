@@ -1,5 +1,11 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, startTransition, useMemo } from 'react';
+
+// --- Separate context for activeTab to avoid cascading re-renders ---
+interface TabContextType {
+    activeTab: string;
+    setActiveTab: (tab: string) => void;
+}
 
 interface LayoutContextType {
     isSidebarCollapsed: boolean;
@@ -12,10 +18,11 @@ interface LayoutContextType {
     setActiveTab: (tab: string) => void;
 }
 
+const TabContext = createContext<TabContextType | undefined>(undefined);
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
 export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [activeTab, setActiveTab] = useState('analysis');
+    const [activeTab, setActiveTabRaw] = useState('analysis');
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
         if (typeof window !== 'undefined') {
             try {
@@ -44,6 +51,14 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return false;
     });
 
+    // Wrap tab switch in startTransition so the bottom nav stays responsive
+    // while heavy views render in background
+    const setActiveTab = useCallback((tab: string) => {
+        startTransition(() => {
+            setActiveTabRaw(tab);
+        });
+    }, []);
+
     useEffect(() => {
         try {
             localStorage.setItem('sidebar_collapsed', JSON.stringify(isSidebarCollapsed));
@@ -65,19 +80,30 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 
+    // Memoize tab context to prevent re-renders of tab consumers when layout state changes
+    const tabContextValue = useMemo(() => ({
+        activeTab,
+        setActiveTab
+    }), [activeTab, setActiveTab]);
+
+    // Memoize layout context (includes tab for backward compatibility with useLayout)
+    const layoutContextValue = useMemo(() => ({
+        isSidebarCollapsed, 
+        setIsSidebarCollapsed, 
+        isMobileSidebarOpen,
+        setIsMobileSidebarOpen,
+        isDarkMode, 
+        toggleDarkMode,
+        activeTab,
+        setActiveTab
+    }), [isSidebarCollapsed, isMobileSidebarOpen, isDarkMode, activeTab, setActiveTab]);
+
     return (
-        <LayoutContext.Provider value={{ 
-            isSidebarCollapsed, 
-            setIsSidebarCollapsed, 
-            isMobileSidebarOpen,
-            setIsMobileSidebarOpen,
-            isDarkMode, 
-            toggleDarkMode,
-            activeTab,
-            setActiveTab
-        }}>
-            {children}
-        </LayoutContext.Provider>
+        <TabContext.Provider value={tabContextValue}>
+            <LayoutContext.Provider value={layoutContextValue}>
+                {children}
+            </LayoutContext.Provider>
+        </TabContext.Provider>
     );
 };
 
@@ -85,6 +111,19 @@ export const useLayout = () => {
     const context = useContext(LayoutContext);
     if (context === undefined) {
         throw new Error('useLayout must be used within a LayoutProvider');
+    }
+    return context;
+};
+
+/**
+ * Lightweight hook that only subscribes to tab changes.
+ * Use this in components that only need activeTab/setActiveTab
+ * to avoid re-rendering when sidebar/darkMode state changes.
+ */
+export const useActiveTab = () => {
+    const context = useContext(TabContext);
+    if (context === undefined) {
+        throw new Error('useActiveTab must be used within a LayoutProvider');
     }
     return context;
 };
