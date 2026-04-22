@@ -42,9 +42,17 @@ export const useFilterState = () => {
                 const fullSavedFilters = await dbService.getSetting<FilterState>('dashboard_global_filters_v2');
                 if (fullSavedFilters) {
                     // Safe merge with initial state to ensure no missing/null arrays
+                    let loadedSelectedMonths = fullSavedFilters.selectedMonths || [];
+                    if (Array.isArray(loadedSelectedMonths)) {
+                        loadedSelectedMonths = loadedSelectedMonths.filter(m => typeof m === 'string' && m.startsWith('Tháng '));
+                    } else {
+                        loadedSelectedMonths = [];
+                    }
+
                     setFilterState({
                         ...initialFilterState,
                         ...fullSavedFilters,
+                        selectedMonths: loadedSelectedMonths,
                         kho: Array.isArray(fullSavedFilters.kho) ? fullSavedFilters.kho : (fullSavedFilters.kho ? [fullSavedFilters.kho as any] : []),
                         trangThai: fullSavedFilters.trangThai || [],
                         nguoiTao: fullSavedFilters.nguoiTao || [],

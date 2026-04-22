@@ -65,21 +65,29 @@ const TabContent = React.memo(() => {
                 {memoCheckThuongView}
             </div>
 
-            <div className={activeTab === 'tools-coupon' ? 'block' : 'hidden'}>
-                <ExternalToolView url="https://chuy-n-i-coupon-487587635482.us-west1.run.app" title="Chuyển đổi Coupon" />
-            </div>
+            {activeTab === 'tools-coupon' && (
+                <div className="block">
+                    <ExternalToolView url="https://chuy-n-i-coupon-487587635482.us-west1.run.app" title="Chuyển đổi Coupon" />
+                </div>
+            )}
 
-            <div className={activeTab === 'tools-tax' ? 'block' : 'hidden'}>
-                <ExternalToolView url="https://tinhthue-netify-487587635482.us-west1.run.app" title="Tính thuế nhận thưởng" />
-            </div>
+            {activeTab === 'tools-tax' && (
+                <div className="block">
+                    <ExternalToolView url="https://tinhthue-netify-487587635482.us-west1.run.app" title="Tính thuế nhận thưởng" />
+                </div>
+            )}
 
-            <div className={activeTab === 'tools-sticker' ? 'block' : 'hidden'}>
-                <ExternalToolView url="https://stickerevent-final-487587635482.us-west1.run.app" title="Sticker Event" />
-            </div>
+            {activeTab === 'tools-sticker' && (
+                <div className="block">
+                    <ExternalToolView url="https://stickerevent-final-487587635482.us-west1.run.app" title="Sticker Event" />
+                </div>
+            )}
 
-            <div className={activeTab === 'tools-audit' ? 'block' : 'hidden'}>
-                <ExternalToolView url="https://kiemquy-final-487587635482.us-west1.run.app" title="Kiểm quỹ" />
-            </div>
+            {activeTab === 'tools-audit' && (
+                <div className="block">
+                    <ExternalToolView url="https://kiemquy-final-487587635482.us-west1.run.app" title="Kiểm quỹ" />
+                </div>
+            )}
 
             <div className={activeTab === 'employees' ? 'block w-full' : 'hidden'}>
                 {memoBiWrapper}
