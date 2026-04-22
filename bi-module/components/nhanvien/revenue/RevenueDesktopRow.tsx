@@ -1,6 +1,6 @@
 import React from 'react';
-import { RevenueRow, Employee } from '../../../../types/nhanVienTypes';
-import { roundUp } from '../../../../utils/nhanVienHelpers';
+import { RevenueRow, Employee } from '../../../types/nhanVienTypes';
+import { roundUp } from '../../../utils/nhanVienHelpers';
 import { MedalBadge, DeltaBadge } from '../../shared/Badges';
 import { AvatarUploader } from '../../shared/AvatarUploader';
 import { ColorSettings, CriterionConfig } from './ColorSettingsModal';
