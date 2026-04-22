@@ -7,7 +7,7 @@ import { BonusView, BonusDataModal } from './nhanvien/BonusTab';
 import { CompetitionTab } from './nhanvien/CompetitionTab';
 import CrossSellingTab from './nhanvien/CrossSellingTab';
 import DetailTab from './nhanvien/DetailTab';
-import { shortenSupermarketName } from '../utils/dashboardHelpers';
+import { shortenSupermarketName, parseNumber } from '../utils/dashboardHelpers';
 import { Switch } from './dashboard/DashboardWidgets';
 import { TrendingUp, Users, ShoppingBag, CreditCard, Award, ArrowUpRight, ArrowDownRight, MoreVertical } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, CartesianGrid, Legend } from 'recharts';
