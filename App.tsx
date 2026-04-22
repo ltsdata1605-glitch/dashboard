@@ -46,6 +46,14 @@ function AppContent() {
         });
     }, []);
 
+    const memoDashboardView = React.useMemo(() => <DashboardView />, []);
+    const memoUserManagementView = React.useMemo(() => <UserManagementView />, []);
+    const memoSettingsView = React.useMemo(() => <SettingsView />, []);
+    const memoPendingApprovalView = React.useMemo(() => <PendingApprovalView />, []);
+    const memoAboutView = React.useMemo(() => <AboutView />, []);
+    const memoCheckThuongView = React.useMemo(() => <CheckThuongView />, []);
+    const memoBiWrapper = React.useMemo(() => <BiWrapper />, []);
+
     // Hiển thị màn hình Loading nếu Firebase Auth đang kiểm tra phiên làm việc
     if (isLoading) {
          return (
@@ -64,14 +72,6 @@ function AppContent() {
     if (user?.status === 'pending') {
         return <PendingApprovalView />;
     }
-
-    const memoDashboardView = React.useMemo(() => <DashboardView />, []);
-    const memoUserManagementView = React.useMemo(() => <UserManagementView />, []);
-    const memoSettingsView = React.useMemo(() => <SettingsView />, []);
-    const memoPendingApprovalView = React.useMemo(() => <PendingApprovalView />, []);
-    const memoAboutView = React.useMemo(() => <AboutView />, []);
-    const memoCheckThuongView = React.useMemo(() => <CheckThuongView />, []);
-    const memoBiWrapper = React.useMemo(() => <BiWrapper />, []);
 
     return (
         <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
