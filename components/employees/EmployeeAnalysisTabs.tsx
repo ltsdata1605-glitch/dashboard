@@ -46,47 +46,51 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
 }) => {
     return (
         <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-100 dark:border-slate-800 px-4 md:px-6 z-50 relative pb-0">
-            <div className="flex items-end gap-1 overflow-x-auto flex-1 min-w-0 pb-2 pt-2 hide-scrollbar">
-                {renderedDefaultTabs.map(tab => (
-                    <button 
-                        key={tab.id} 
-                        onClick={() => setActiveTab(tab.id)} 
-                        className={`flex items-center gap-2 py-1.5 px-3.5 rounded-xl font-bold text-[13px] transition-all whitespace-nowrap ${getTabColorClasses((tab as any).color || 'sky', activeTab === tab.id)}`}
-                    >
-                        <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
-                            <Icon name={tab.icon} size={4}/> 
-                        </div>
-                        {tab.label}
-                    </button>
-                ))}
-                
-                {renderedCustomTabs.length > 0 && (
-                    <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
-                )}
-                
-                {renderedCustomTabs.map(tab => {
-                    const colors = ['cyan', 'purple', 'rose', 'amber', 'emerald'];
-                    const customColor = colors[tab.id.length % colors.length];
-                    return (
+            <div className="relative flex-1 min-w-0">
+                <div className="flex items-end gap-1 overflow-x-auto flex-1 min-w-0 pb-2 pt-2 hide-scrollbar">
+                    {renderedDefaultTabs.map(tab => (
                         <button 
-                            key={tab.id}
+                            key={tab.id} 
                             onClick={() => setActiveTab(tab.id)} 
-                            className={`flex items-center gap-2 py-1.5 px-3.5 rounded-xl font-bold text-[13px] transition-all whitespace-nowrap ${getTabColorClasses(customColor, activeTab === tab.id)}`}
+                            className={`flex items-center gap-1.5 py-1.5 px-2.5 md:px-3.5 rounded-xl font-bold text-[12px] md:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses((tab as any).color || 'sky', activeTab === tab.id)}`}
                         >
                             <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
                                 <Icon name={tab.icon} size={4}/> 
                             </div>
-                            {tab.name}
+                            {tab.label}
                         </button>
-                    )
-                })}
-                <button 
-                    onClick={() => setModalState({type: 'CREATE_TAB'})} 
-                    title="Tạo tab thi đua mới" 
-                    className="ml-2 p-1.5 text-slate-400 hover:text-sky-600 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center shrink-0"
-                >
-                    <Icon name="plus-circle" size={5} />
-                </button>
+                    ))}
+                    
+                    {renderedCustomTabs.length > 0 && (
+                        <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
+                    )}
+                    
+                    {renderedCustomTabs.map(tab => {
+                        const colors = ['cyan', 'purple', 'rose', 'amber', 'emerald'];
+                        const customColor = colors[tab.id.length % colors.length];
+                        return (
+                            <button 
+                                key={tab.id}
+                                onClick={() => setActiveTab(tab.id)} 
+                                className={`flex items-center gap-1.5 py-1.5 px-2.5 md:px-3.5 rounded-xl font-bold text-[12px] md:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses(customColor, activeTab === tab.id)}`}
+                            >
+                                <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
+                                    <Icon name={tab.icon} size={4}/> 
+                                </div>
+                                {tab.name}
+                            </button>
+                        )
+                    })}
+                    <button 
+                        onClick={() => setModalState({type: 'CREATE_TAB'})} 
+                        title="Tạo tab thi đua mới" 
+                        className="ml-2 p-1.5 text-slate-400 hover:text-sky-600 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center shrink-0"
+                    >
+                        <Icon name="plus-circle" size={5} />
+                    </button>
+                </div>
+                {/* Scroll fade indicator */}
+                <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none lg:hidden" />
             </div>
         </div>
     );

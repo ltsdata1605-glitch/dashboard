@@ -116,7 +116,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     return (
         <div ref={ref} className="overflow-hidden flex flex-col h-full bg-transparent">
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3 mb-6">
                 <div className="flex items-center gap-4">
                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400`}>
                         <Icon name="gantt-chart-square" size={6} />
@@ -126,20 +126,20 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                         <p className="text-xs font-medium text-slate-400">Chi tiết sản phẩm & hiệu quả bán kèm</p>
                     </div>
                 </div>
-                <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                            <button onClick={() => setViewMode('detail')} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${viewMode === 'detail' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Chi tiết</button>
-                            <button onClick={() => setViewMode('efficiency')} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${viewMode === 'efficiency' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Hiệu quả %</button>
-                            <button onClick={() => setViewMode('efficiency_dt_sl')} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${viewMode === 'efficiency_dt_sl' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Doanh thu</button>
-                            <button onClick={() => setViewMode('efficiency_quantity')} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${viewMode === 'efficiency_quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Số lượng</button>
+                <div className="px-3 lg:px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
+                    <div className="flex items-center gap-2">
+                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 shrink-0">
+                            <button onClick={() => setViewMode('detail')} className={`py-1.5 px-2 lg:px-3 text-[10px] lg:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${viewMode === 'detail' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Chi tiết</button>
+                            <button onClick={() => setViewMode('efficiency')} className={`py-1.5 px-2 lg:px-3 text-[10px] lg:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Hiệu quả %</button>
+                            <button onClick={() => setViewMode('efficiency_dt_sl')} className={`py-1.5 px-2 lg:px-3 text-[10px] lg:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency_dt_sl' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Doanh thu</button>
+                            <button onClick={() => setViewMode('efficiency_quantity')} className={`py-1.5 px-2 lg:px-3 text-[10px] lg:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency_quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Số lượng</button>
                         </div>
-                        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
-                         <button onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all">
+                        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1 shrink-0"></div>
+                         <button onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all shrink-0">
                             <Icon name="switch-camera" size={5} />
                         </button>
                         {onExport && (
-                            <button onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                            <button onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all shrink-0">
                                 {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
                             </button>
                         )}

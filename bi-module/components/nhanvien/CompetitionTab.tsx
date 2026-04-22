@@ -50,7 +50,7 @@ interface CompetitionTabProps {
     activeDepartments: string[];
 }
 
-export const CompetitionTab: React.FC<CompetitionTabProps> = ({
+export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     groupedData,
     allCompetitionsByCriterion,
     selectedCompetitions,
@@ -561,4 +561,4 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = ({
             </div>
         </Card>
     );
-};
+});

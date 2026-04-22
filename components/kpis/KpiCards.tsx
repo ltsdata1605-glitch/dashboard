@@ -478,20 +478,18 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     const monthlyTarget = dtThucTarget;
                     const dailyDTThuc = monthlyTarget > 0 ? monthlyTarget / daysInMonth : 0;
                     const activeTarget = isLuyKe ? monthlyTarget : dailyDTThuc;
+                    const pct = activeTarget > 0 ? (rawValue / activeTarget) * 100 : 0;
                     finalTrendLabel = activeTarget > 0 ? (isLuyKe ? "Lũy kế" : "Mục tiêu ngày") : "Mục tiêu";
                     
+                    isGood = pct >= 100;
+                    progressPercent = pct;
+
                     finalTrendValue = monthlyTarget > 0
                         ? <span className="cursor-pointer hover:text-blue-500 transition-colors flex flex-col items-end leading-tight">
                             <span>{formatCurrency(activeTarget)}</span>
                             <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyDTThuc)}` : `Tháng: ${formatCurrency(monthlyTarget)}`}</span>
                         </span>
                         : <span className="cursor-pointer text-slate-400 hover:text-blue-500 italic text-[10px] transition-colors">Chưa cài đặt</span>;
-                        
-                    if (monthlyTarget > 0) {
-                        const pct = activeTarget > 0 ? (rawValue / activeTarget) * 100 : 0;
-                        isGood = pct >= 100;
-                        progressPercent = pct;
-                    }
                 }
 
                 // "DT Chưa Xuất" — show unshipped order count with progress bar

@@ -68,7 +68,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
 
     return (
         <div ref={ref}>
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3 mb-6">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-100 text-amber-600">
                         <Icon name="trophy" size={5} />
@@ -78,8 +78,8 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         <p className="text-xs font-medium text-slate-400">{isExpanded ? 'Toàn bộ danh sách' : 'Top & Bot 20%'}</p>
                     </div>
                 </div>
-                <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
-                    <div className="flex items-center gap-2 flex-wrap">
+                <div className="px-3 lg:px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
+                    <div className="flex items-center gap-2">
                         <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                             <button onClick={() => setIsExpanded(false)} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${!isExpanded ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Top & Bot 20%</button>
                             <button onClick={() => setIsExpanded(true)} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${isExpanded ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Toàn bộ</button>

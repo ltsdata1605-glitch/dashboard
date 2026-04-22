@@ -188,9 +188,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             <button
                                 onClick={onNewFile}
                                 title="Tải YCX lên"
-                                className="flex items-center justify-center p-2.5 bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-xl transition-all active:scale-95 shrink-0"
+                                className="flex items-center justify-center w-[44px] h-[44px] bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-xl transition-all active:scale-95 shrink-0"
                             >
-                                <Icon name="file-up" size={3.5} />
+                                <Icon name="file-up" size={4} />
                             </button>
                         )}
                         <a
@@ -198,16 +198,16 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             target="_blank"
                             rel="noopener noreferrer"
                             title="Tải dữ liệu báo cáo (BCNB)"
-                            className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl transition-all active:scale-95 shrink-0"
+                            className="hidden sm:flex items-center justify-center w-[44px] h-[44px] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="external-link" size={3.5} />
+                            <Icon name="external-link" size={4} />
                         </a>
                         <button
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
-                            className="flex items-center justify-center p-2.5 bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-xl shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
+                            className="flex items-center justify-center w-[44px] h-[44px] bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-xl shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="settings" size={3.5} className="group-hover:rotate-90 transition-transform duration-300" />
+                            <Icon name="settings" size={4} className="group-hover:rotate-90 transition-transform duration-300" />
                         </button>
                     </div>
 

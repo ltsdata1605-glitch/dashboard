@@ -131,20 +131,20 @@ const Header: React.FC<HeaderProps> = ({
                         </span>
                     </div>
                     {(userRole === 'admin' || userRole === 'manager') && (
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-2">
                             <button
                                 onClick={onLoadShiftFile}
-                                className="flex items-center justify-center p-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg transition-all active:scale-95"
+                                className="flex items-center justify-center w-9 h-9 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg transition-all active:scale-95"
                                 title="Tải DS Nhân viên"
                             >
-                                <Icon name="users-round" size={3.5} />
+                                <Icon name="users-round" size={4} />
                             </button>
                             <button
                                 onClick={() => setShowDriveHistory(true)}
-                                className={`flex items-center justify-center p-1.5 rounded-lg transition-all active:scale-95 ${syncState === 'error' ? 'bg-red-50 text-red-500 dark:bg-red-900/20 animate-pulse' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
+                                className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all active:scale-95 ${syncState === 'error' ? 'bg-red-50 text-red-500 dark:bg-red-900/20 animate-pulse' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
                                 title="Lịch sử đám mây"
                             >
-                                <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={3.5} />
+                                <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={4} />
                             </button>
                         </div>
                     )}
