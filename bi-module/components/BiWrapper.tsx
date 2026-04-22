@@ -42,7 +42,7 @@ export default function BiWrapper() {
                                 className={`flex items-center justify-center gap-2 py-1.5 ${tab.label ? 'px-3.5' : 'px-2 w-[34px]'} rounded-xl font-bold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${getTabColorClasses(tab.color, isActive)}`}
                             >
                                 <div className={`${isActive ? 'text-current' : 'text-slate-400'} shrink-0 flex items-center justify-center`}>
-                                    <Icon name={tab.icon as any} size={4}/>
+                                    <Icon name={tab.icon as any} size={4} />
                                 </div>
                                 {tab.label && <span>{tab.label}</span>}
                             </button>

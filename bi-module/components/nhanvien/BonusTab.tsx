@@ -10,6 +10,8 @@ import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
 import { exportElementAsImage } from '../../../services/uiService';
+import { BonusMobileCard } from './bonus/BonusMobileCard';
+import { BonusDesktopRow } from './bonus/BonusDesktopRow';
 
 const AvatarDisplay: React.FC<{ employeeName: string; supermarketName: string; isHidden?: boolean; onClick?: () => void }> = ({ employeeName, supermarketName, isHidden, onClick }) => {
     const dbKey = `avatar-${supermarketName}-${employeeName}`;
@@ -408,48 +410,24 @@ export const BonusView: React.FC<{
                                     const isStale = !isUpdatedToday(bonus?.updatedAt);
 
                                     return (
-                                        <div key={item.originalName} onClick={() => onEmployeeClick(item)} className={`px-4 py-3 cursor-pointer transition-colors ${isHighlighted ? 'bg-indigo-50/60 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'}`}>
-                                            <div className="flex items-center justify-between mb-3">
-                                                <div className="flex items-center gap-2.5 min-w-0">
-                                                    <MedalBadge rank={item.rank} />
-                                                    <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item)} />
-                                                    <span className={`font-black uppercase tracking-tight truncate text-xs ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : (isStale ? 'text-slate-400 dark:text-slate-500' : 'text-indigo-600 dark:text-indigo-400')}`}>
-                                                        {item.name}
-                                                    </span>
-                                                </div>
-                                                <div className="flex flex-col items-end shrink-0 pl-2">
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Dự Kiến</span>
-                                                    <div className="flex items-baseline gap-0.5">
-                                                        <span className={`text-lg font-black tabular-nums leading-none tracking-tight ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
-                                                            {bonus ? f.format(Math.ceil(dkienVal / 1000)) : '-'}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="grid grid-cols-5 gap-1.5 mt-2">
-                                                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                                                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">DTQĐ</p>
-                                                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</p>
-                                                </div>
-                                                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                                                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">HQQĐ</p>
-                                                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</p>
-                                                </div>
-                                                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                                                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">ERP</p>
-                                                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(erpVal, 'erp')}`}>{bonus ? f.format(Math.ceil(erpVal / 1000)) : '-'}</p>
-                                                </div>
-                                                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                                                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">T.Nóng</p>
-                                                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(tnongVal, 'tnong')}`}>{bonus ? f.format(Math.ceil(tnongVal / 1000)) : '-'}</p>
-                                                </div>
-                                                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                                                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">Tổng</p>
-                                                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(tongVal, 'tong')}`}>{bonus ? f.format(Math.ceil(tongVal / 1000)) : '-'}</p>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        <BonusMobileCard
+                                            key={item.originalName}
+                                            item={item}
+                                            isHighlighted={isHighlighted}
+                                            isStale={isStale}
+                                            dtqdVal={dtqdVal}
+                                            hqqdVal={hqqdVal}
+                                            erpVal={erpVal}
+                                            tnongVal={tnongVal}
+                                            pnongVal={pnongVal}
+                                            tongVal={tongVal}
+                                            dkienVal={dkienVal}
+                                            onEmployeeClick={onEmployeeClick}
+                                            getCellColor={getCellColor}
+                                            f={f}
+                                            avatarElement={<AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item)} />}
+                                            medalElement={<MedalBadge rank={item.rank} />}
+                                        />
                                     );
                                 })}
                             </div>
@@ -497,35 +475,24 @@ export const BonusView: React.FC<{
                                     const isStale = !isUpdatedToday(bonus?.updatedAt);
 
                                     return (
-                                        <tr key={item.originalName} className={`transition-all cursor-pointer text-[12px] ${isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10 ring-1 ring-inset ring-sky-200 dark:ring-sky-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-750'}`} onClick={() => onEmployeeClick(item)}>
-                                            <td className="px-3 py-2 border-r border-slate-100 dark:border-slate-700/50 min-w-[200px]">
-                                                <div className="flex items-center gap-2">
-                                                    <MedalBadge rank={item.rank} />
-                                                    <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item)} />
-                                                    <div className="flex flex-col min-w-0">
-                                                        <span className={`font-bold whitespace-normal break-words tracking-tight ${isStale ? 'text-slate-400 dark:text-slate-500' : 'text-sky-700 dark:text-sky-400 hover:underline'}`}>
-                                                            {item.name}
-                                                        </span>
-                                                        <span className="text-[10px] text-slate-400 capitalize font-medium tabular-nums">{item.department}</span>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-semibold ${getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-semibold ${getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-semibold ${getCellColor(erpVal, 'erp')}`}>
-                                                {bonus ? f.format(Math.ceil(erpVal / 1000)) : '-'}
-                                            </td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-semibold ${getCellColor(tnongVal, 'tnong')}`}>
-                                                {bonus ? f.format(Math.ceil(tnongVal / 1000)) : '-'}
-                                            </td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-semibold ${getCellColor(pnongVal, 'pnong')}`}>{bonus ? pnongVal.toFixed(0) + '%' : '-'}</td>
-                                            <td className={`px-2 py-2 text-[11px] text-center border-r border-slate-100 dark:border-slate-700/50 tabular-nums font-bold ${getCellColor(tongVal, 'tong')}`}>
-                                                {bonus ? f.format(Math.ceil(tongVal / 1000)) : '-'}
-                                            </td>
-                                            <td className={`px-2 py-2 text-[12px] text-center ${isHighlighted ? 'bg-amber-100/50 dark:bg-amber-900/30' : 'bg-amber-50/40 dark:bg-amber-900/10'} tabular-nums font-black text-amber-700 dark:text-amber-400`}>
-                                                {bonus ? f.format(Math.ceil(dkienVal / 1000)) : '-'}
-                                            </td>
-                                        </tr>
+                                        <BonusDesktopRow
+                                            key={item.originalName}
+                                            item={item}
+                                            isHighlighted={isHighlighted}
+                                            isStale={isStale}
+                                            dtqdVal={dtqdVal}
+                                            hqqdVal={hqqdVal}
+                                            erpVal={erpVal}
+                                            tnongVal={tnongVal}
+                                            pnongVal={pnongVal}
+                                            tongVal={tongVal}
+                                            dkienVal={dkienVal}
+                                            onEmployeeClick={onEmployeeClick}
+                                            getCellColor={getCellColor}
+                                            f={f}
+                                            avatarElement={<AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item)} />}
+                                            medalElement={<MedalBadge rank={item.rank} />}
+                                        />
                                     );
                                 })}
                             </tbody>
