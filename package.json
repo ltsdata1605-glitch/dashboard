@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "git add -A && git commit -m \"chore: sync source code and deploy latest web changes\" || echo \"No changes to commit\" && git push origin main && gh-pages -d dist"
   },
   "dependencies": {
     "@google/genai": "^1.48.0",
