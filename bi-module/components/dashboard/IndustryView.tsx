@@ -69,15 +69,16 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     const { headers, rows } = data;
 
     const headerGroups = useMemo(() => {
-        const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean }[] = [];
-        orderedHeaders.filter(h => visibleColumns.has(h)).forEach(h => {
+        const visH = orderedHeaders.filter(h => visibleColumns.has(h) && h !== 'Nhóm ngành hàng');
+        const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean, isSingle: boolean, singleHeader: string }[] = [];
+        visH.forEach(h => {
             const defaultGroup = { label: 'KHÁC', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' };
             const g = COLUMN_GROUPS[h] || defaultGroup;
-            const isSticky = h === 'Nhóm ngành hàng';
-            if (groups.length > 0 && groups[groups.length - 1].label === g.label && !isSticky && !groups[groups.length - 1].isSticky) {
+            if (groups.length > 0 && groups[groups.length - 1].label === g.label) {
                 groups[groups.length - 1].colspan += 1;
+                groups[groups.length - 1].isSingle = false;
             } else {
-                groups.push({ ...g, colspan: 1, isSticky });
+                groups.push({ ...g, colspan: 1, isSticky: false, isSingle: true, singleHeader: h });
             }
         });
         return groups;
@@ -325,7 +326,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     return (
         <div className="js-industry-view-container relative z-10">
-            <Card ref={ref} title={<div className="flex flex-col items-center justify-center w-full"><span className="text-xl font-black uppercase text-primary-700 dark:text-primary-400 text-center leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} rounded={false} noPadding>
+            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-xl font-black uppercase text-primary-700 dark:text-primary-400 leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} rounded={false} noPadding>
                 <div className="overflow-hidden">
                     <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
                         {isMobile ? (
@@ -416,30 +417,67 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                             </div>
                         ) : (
                             /* ─── DESKTOP TABLE VIEW ─── */
-                            <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden shadow-sm m-4 mb-6">
-                                <table className="w-full border-collapse compact-export-table">
+                            <div className="overflow-hidden m-4 mb-6">
+                                <table className="w-full border-collapse compact-export-table border border-slate-200 dark:border-slate-700">
                                     <thead>
                                         {/* TIER 1: GROUP HEADERS */}
-                                        <tr>
-                                            {headerGroups.map((g, idx) => (
+                                        <tr className="text-[11px] font-bold uppercase tracking-wider">
+                                            {/* Sticky 'NGÀNH HÀNG' merged header (rowSpan=2) */}
+                                            {visibleColumns.has('Nhóm ngành hàng') && (
                                                 <th
-                                                    key={`group-${idx}`}
-                                                    colSpan={g.colspan}
+                                                    rowSpan={2}
                                                     className={`
-                                                        py-2 px-2 text-[11px] font-black uppercase tracking-widest text-center border-r border-b border-white dark:border-slate-800
-                                                        ${g.bg} ${g.text}
-                                                        ${g.isSticky ? 'sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.02)]' : ''}
+                                                        px-4 py-2.5 text-center text-[12px] font-bold
+                                                        text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800
+                                                        border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
+                                                        border-r border-slate-200 dark:border-slate-700
+                                                        sticky left-0 z-20 align-middle
+                                                        uppercase tracking-wider min-w-[120px]
                                                     `}
                                                 >
-                                                    {g.label}
+                                                    NGÀNH HÀNG
                                                 </th>
-                                            ))}
+                                            )}
+                                            {headerGroups.map((g, idx) => {
+                                                if (g.isSingle) {
+                                                    return (
+                                                        <th
+                                                            key={`group-${idx}`}
+                                                            rowSpan={2}
+                                                            className={`
+                                                                py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider text-center
+                                                                align-middle whitespace-nowrap
+                                                                border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
+                                                                border-r border-slate-200 dark:border-slate-700
+                                                                ${g.bg} ${g.text}
+                                                            `}
+                                                            dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }}
+                                                        />
+                                                    );
+                                                }
+                                                return (
+                                                    <th
+                                                        key={`group-${idx}`}
+                                                        colSpan={g.colspan}
+                                                        className={`
+                                                            py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider text-center 
+                                                            border-b border-r border-slate-200 dark:border-slate-700
+                                                            ${g.bg} ${g.text}
+                                                        `}
+                                                    >
+                                                        {g.label}
+                                                    </th>
+                                                );
+                                            })}
                                         </tr>
 
                                         {/* TIER 2: COLUMN HEADERS */}
-                                        <tr className="bg-white dark:bg-[#1c1c1e] shadow-sm">
+                                        <tr>
                                             {orderedHeaders.map(h => {
                                                 if (!visibleColumns.has(h)) return null;
+                                                if (h === 'Nhóm ngành hàng') return null;
+                                                const isSingleGroup = headerGroups.some(g => g.isSingle && g.singleHeader === h);
+                                                if (isSingleGroup) return null;
                                                 const g = COLUMN_GROUPS[h] || { text: 'text-slate-600 dark:text-slate-300' };
                                                 return (
                                                     <th
@@ -451,13 +489,12 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         onDrop={handleDrop}
                                                         onDragEnd={() => setDraggedColumn(null)}
                                                         className={`
-                                                            px-2 py-3 text-[10px] font-bold uppercase
-                                                            tracking-wider border-r border-slate-200 dark:border-slate-700/80
-                                                            border-b border-b-slate-300 dark:border-b-slate-600
+                                                            px-2 py-2.5 text-[10px] font-bold uppercase
+                                                            tracking-wider border-r border-slate-200 dark:border-slate-700
+                                                            border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
                                                             text-center align-middle whitespace-nowrap cursor-move
-                                                            hover:bg-slate-50 dark:hover:bg-slate-800/50 select-none
+                                                            hover:opacity-80 transition-opacity select-none
                                                             ${g.text}
-                                                            ${h === 'Nhóm ngành hàng' ? 'min-w-[120px] text-left sticky left-0 z-10 bg-white dark:bg-[#1c1c1e] shadow-[2px_0_4px_rgba(0,0,0,0.02)]' : 'min-w-[65px]'}
                                                             ${draggedColumn === h ? 'opacity-40' : ''}
                                                         `}
                                                         dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
@@ -466,7 +503,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                             })}
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white dark:bg-[#1c1c1e]">
+                                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                                         {treeDisplayRows ? (
                                             /* ─── TREE TABLE ROWS (luyke mode with hierarchy) ─── */
                                             treeDisplayRows.map((flatRow) => {

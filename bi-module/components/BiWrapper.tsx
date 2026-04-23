@@ -66,17 +66,21 @@ export default function BiWrapper() {
     return (
         <div className="flex flex-col w-full min-h-screen">
             {/* Thanh Tab Ngang Nội Bộ */}
-            <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-100 dark:border-slate-800 px-4 md:px-6 lg:px-8 z-40 sticky top-0 bg-[#f8fafc]/90 dark:bg-slate-950/90 backdrop-blur-md pb-0 shadow-sm relative pt-4">
-                <div className="flex items-end gap-1 overflow-x-auto flex-1 min-w-0 pb-2 pt-2 hide-scrollbar">
+            <div className="flex justify-between items-end border-b border-slate-200 dark:border-slate-800 px-4 md:px-6 lg:px-8 z-40 sticky top-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
+                <div className="flex items-end gap-0 overflow-x-auto flex-1 min-w-0 hide-scrollbar">
                     {navigationLinks.map(tab => {
                         const isActive = activeView === tab.id;
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
-                                className={`flex items-center justify-center gap-2 py-1.5 ${tab.label ? 'px-3.5' : 'px-2 w-[34px]'} rounded-xl font-bold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${getTabColorClasses(tab.color, isActive)}`}
+                                className={`flex items-center justify-center gap-2 py-3 ${tab.label ? 'px-4' : 'px-2.5 w-[36px]'} font-semibold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none border-b-2 ${
+                                    isActive
+                                        ? 'border-sky-500 text-sky-600 dark:text-sky-400'
+                                        : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-500 dark:hover:text-slate-300'
+                                }`}
                             >
-                                <div className={`${isActive ? 'text-current' : 'text-slate-400'} shrink-0 flex items-center justify-center`}>
+                                <div className={`shrink-0 flex items-center justify-center ${isActive ? 'text-current' : ''}`}>
                                     <Icon name={tab.icon as any} size={4} />
                                 </div>
                                 {tab.label && <span>{tab.label}</span>}

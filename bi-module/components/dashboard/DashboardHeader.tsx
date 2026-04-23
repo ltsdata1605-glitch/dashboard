@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { MainTab } from '../../utils/dashboardHelpers';
-import { LineChartIcon, ArchiveBoxIcon, SparklesIcon } from '../Icons';
 
 interface DashboardHeaderProps {
     title: string;
@@ -12,41 +11,37 @@ interface DashboardHeaderProps {
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ title, activeMainTab, setActiveMainTab }) => {
     return (
         <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 w-full">
-            {/* Title + Icon */}
-            <div className="flex items-center gap-3 min-w-0">
-                <div className="p-2 sm:p-2.5 bg-sky-50 dark:bg-sky-900/20 text-sky-600 dark:text-sky-400 rounded-2xl flex-shrink-0 border border-sky-100 dark:border-sky-800">
-                    <SparklesIcon className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <div className="min-w-0 flex flex-col justify-center">
-                    <h1 id="dashboard-title" className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-tight truncate px-1">
-                        {title}
-                    </h1>
-                    <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase mt-1 tracking-wider leading-none">
-                        Realtime & Luỹ kế tháng
-                    </p>
-                </div>
+            {/* Title — clean, no icon box */}
+            <div className="min-w-0 flex flex-col justify-center">
+                <h1 id="dashboard-title" className="text-2xl sm:text-[1.7rem] font-black text-slate-800 dark:text-white tracking-tight leading-tight truncate">
+                    {title}
+                </h1>
+                <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase mt-1 tracking-[0.15em] leading-none">
+                    Realtime & Luỹ kế tháng
+                </p>
             </div>
 
-            {/* Main Tab Switcher */}
+            {/* Main Tab Switcher — modern pill style */}
             <div
                 id="main-tabs-container"
-                className="inline-flex rounded-xl shadow-sm p-1.5 bg-sky-50/50 dark:bg-slate-800/50 border border-sky-100/50 dark:border-slate-700 mr-2 flex-shrink-0"
+                className="inline-flex rounded-full p-1 bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 mr-2 flex-shrink-0"
             >
                 {([
                     { tab: 'realtime' as MainTab, label: 'Realtime' },
-                    { tab: 'cumulative' as MainTab, label: 'Luỹ kế' },
+                    { tab: 'cumulative' as MainTab, label: 'Luỹ Kế' },
                 ] as const).map(({ tab, label }) => {
                     const isActive = activeMainTab === tab;
                     return (
                         <button
                             key={tab}
                             onClick={() => setActiveMainTab(tab)}
-                            className={`py-1.5 px-4 sm:px-5 text-[10px] sm:text-[11px] font-black rounded-lg transition-all uppercase tracking-widest ${isActive ? 'bg-white dark:bg-slate-700 text-sky-600 shadow-sm border border-sky-100/50 relative' : 'text-slate-500 hover:text-sky-600 dark:hover:text-sky-400'}`}
+                            className={`py-1.5 px-5 sm:px-6 text-[11px] font-bold rounded-full transition-all uppercase tracking-widest ${
+                                isActive
+                                    ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-white shadow-sm'
+                                    : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                            }`}
                         >
                             {label}
-                            {isActive && (
-                                <span className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-sky-400 shadow-sm shadow-sky-400/50 border-2 border-white" />
-                            )}
                         </button>
                     );
                 })}
