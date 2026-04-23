@@ -39,8 +39,7 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
 const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props, ref) => {
     const { realtimeData, luykeData, isRealtime, onExport } = props;
     
-    const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
-    const selectorRef = useRef<HTMLDivElement>(null);
+
     const [isIndustryFilterOpen, setIsIndustryFilterOpen] = useState(false);
     const industryFilterRef = useRef<HTMLDivElement>(null);
     const [industryFilterSearch, setIndustryFilterSearch] = useState('');
@@ -59,14 +58,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         setHiddenIndustries,
         toggleRow,
         expandAll,
-        collapseAll,
-        toggleColumn,
-        handleDragStart,
-        handleDragOver,
-        handleDrop,
-        setDraggedColumn,
-        setColumnOrder,
-        setUserHiddenColumns
+        collapseAll
     } = logic;
 
     const data = isRealtime ? realtimeData : luykeData.table;
@@ -111,9 +103,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
-            if (selectorRef.current && !selectorRef.current.contains(event.target as Node)) {
-                setIsColumnSelectorOpen(false);
-            }
             if (industryFilterRef.current && !industryFilterRef.current.contains(event.target as Node)) {
                 setIsIndustryFilterOpen(false);
             }
@@ -178,75 +167,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     </div>
                 )}
             </div>
-            <div className="relative" ref={selectorRef}>
-                <button
-                    onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                    className={`p-1.5 rounded-lg transition-colors ${
-                        isColumnSelectorOpen
-                            ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600'
-                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
-                    }`}
-                    title="Tuỳ chỉnh cột"
-                >
-                    <CogIcon className="h-4 w-4" />
-                </button>
-                {isColumnSelectorOpen && (
-                    <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Hiển thị & Sắp xếp cột</p>
-                        <div className="grid gap-0.5">
-                            {orderedHeaders.filter(h => h !== 'Nhóm ngành hàng').map((h, idx) => (
-                                <div
-                                    key={h}
-                                    draggable
-                                    onDragStart={(e) => {
-                                        e.dataTransfer.effectAllowed = 'move';
-                                        e.dataTransfer.setData('text/plain', String(idx));
-                                        (e.currentTarget as HTMLElement).style.opacity = '0.4';
-                                    }}
-                                    onDragEnd={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
-                                    onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; (e.currentTarget as HTMLElement).classList.add('!bg-indigo-50', 'dark:!bg-indigo-900/20'); }}
-                                    onDragLeave={(e) => { (e.currentTarget as HTMLElement).classList.remove('!bg-indigo-50', 'dark:!bg-indigo-900/20'); }}
-                                    onDrop={(e) => {
-                                        e.preventDefault();
-                                        (e.currentTarget as HTMLElement).classList.remove('!bg-indigo-50', 'dark:!bg-indigo-900/20');
-                                        const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-                                        if (!isNaN(fromIdx) && fromIdx !== idx) {
-                                            setColumnOrder((prev: string[]) => {
-                                                // Adjust indices because we filtered out 'Nhóm ngành hàng'
-                                                // The 'idx' from map corresponds to the index in the filtered array.
-                                                // We need to map it back to the original array index.
-                                                const originalHeadersWithoutSticky = prev.filter(h => h !== 'Nhóm ngành hàng');
-                                                const arr = [...originalHeadersWithoutSticky];
-                                                const [moved] = arr.splice(fromIdx, 1);
-                                                arr.splice(idx, 0, moved);
-                                                
-                                                // Re-insert 'Nhóm ngành hàng' at the beginning (or where it should be)
-                                                return ['Nhóm ngành hàng', ...arr];
-                                            });
-                                        }
-                                    }}
-                                    className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-grab active:cursor-grabbing transition-colors"
-                                >
-                                    {/* Drag handle */}
-                                    <span className="text-slate-300 dark:text-slate-600 mr-2 select-none text-sm leading-none">⠇</span>
-                                    <label
-                                        className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
-                                        dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
-                                    />
-                                    <Switch
-                                        checked={visibleColumns.has(h)}
-                                        onChange={() => setUserHiddenColumns((prev: string[]) => {
-                                            const nH = new Set(prev);
-                                            if (nH.has(h)) nH.delete(h); else nH.add(h);
-                                            return Array.from(nH);
-                                        })}
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
+
         </div>
     );
 

@@ -36,11 +36,7 @@ export const flattenTree = (
 };
 
 export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealtime: boolean) {
-    const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>(`hidden-cols-industry-${isRealtime ? 'realtime' : 'luyke'}`, []);
     const [hiddenIndustries, setHiddenIndustries] = useIndexedDBState<string[]>(`hidden-industries-${isRealtime ? 'realtime' : 'luyke'}`, []);
-    const [columnOrder, setColumnOrder] = useIndexedDBState<string[]>(`industry-col-order-${isRealtime ? 'realtime' : 'luyke'}`, []);
-    
-    const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
     const data = isRealtime ? realtimeData : luykeData.table;
@@ -137,61 +133,13 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
     const hasTreeData = !isRealtime && luykeData.tree && luykeData.tree.length > 0;
     const hasAnyExpanded = expandedRows.size > 0;
     
-    useEffect(() => {
-        if (processedTable.headers.length > 0) {
-            const currentHeaders = processedTable.headers;
-            const newOrder = [...columnOrder];
-            const filteredOrder = newOrder.filter(h => currentHeaders.includes(h));
-            const missingHeaders = currentHeaders.filter(h => !filteredOrder.includes(h));
-            
-            if (missingHeaders.length > 0 || filteredOrder.length !== newOrder.length) {
-                setColumnOrder([...filteredOrder, ...missingHeaders]);
-            }
-        }
-    }, [processedTable.headers, columnOrder, setColumnOrder]);
-
     const orderedHeaders = useMemo(() => {
-        if (columnOrder.length === 0) return processedTable.headers;
-        return columnOrder.filter(h => processedTable.headers.includes(h));
-    }, [columnOrder, processedTable.headers]);
+        return processedTable.headers;
+    }, [processedTable.headers]);
 
     const visibleColumns = useMemo(() => {
-        const hiddenSet = new Set(userHiddenColumns);
-        return new Set(orderedHeaders.filter(h => !hiddenSet.has(h)));
-    }, [orderedHeaders, userHiddenColumns]);
-
-    const toggleColumn = (header: string) => {
-        setUserHiddenColumns(prev => {
-            const newHidden = new Set(prev);
-            if (newHidden.has(header)) newHidden.delete(header);
-            else newHidden.add(header);
-            return Array.from(newHidden);
-        });
-    };
-
-    const handleDragStart = (e: React.DragEvent, header: string) => {
-        setDraggedColumn(header);
-        e.dataTransfer.effectAllowed = 'move';
-    };
-
-    const handleDragOver = (e: React.DragEvent, header: string) => {
-        e.preventDefault();
-        if (draggedColumn === null || draggedColumn === header) return;
-
-        const newOrder = [...columnOrder];
-        const oldIdx = newOrder.indexOf(draggedColumn);
-        const newIdx = newOrder.indexOf(header);
-
-        if (oldIdx !== -1 && newIdx !== -1) {
-            newOrder.splice(oldIdx, 1);
-            newOrder.splice(newIdx, 0, draggedColumn);
-            setColumnOrder(newOrder);
-        }
-    };
-
-    const handleDrop = (_e: React.DragEvent) => {
-        setDraggedColumn(null);
-    };
+        return new Set(orderedHeaders);
+    }, [orderedHeaders]);
 
     return {
         allIndustries,
@@ -201,19 +149,10 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
         hasAnyExpanded,
         orderedHeaders,
         visibleColumns,
-        draggedColumn,
         hiddenIndustries,
-        userHiddenColumns,
         setHiddenIndustries,
         toggleRow,
         expandAll,
         collapseAll,
-        toggleColumn,
-        handleDragStart,
-        handleDragOver,
-        handleDrop,
-        setDraggedColumn,
-        setColumnOrder,
-        setUserHiddenColumns,
     };
 }
