@@ -471,4 +471,4 @@ const DataUpdater: React.FC = () => {
     );
 };
 
-export default DataUpdater;
+export default React.memo(DataUpdater);

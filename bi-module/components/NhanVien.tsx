@@ -443,8 +443,8 @@ export const NhanVien: React.FC = () => {
                                         formatter={(val: number, name: string) => [`${val.toLocaleString('en-US', {maximumFractionDigits:1})} Triệu`, name === 'DoanhThu' ? 'Doanh thu' : 'Doanh thu QĐ']}
                                     />
                                     <Legend wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingTop: '15px' }} iconType="circle" />
-                                    <Bar dataKey="DoanhThu" name="Doanh thu" fill="url(#colorDoanhThu)" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={true} animationDuration={1000} />
-                                    <Bar dataKey="DoanhThuQD" name="Doanh thu QĐ" fill="url(#colorDoanhThuQD)" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={true} animationDuration={1000} />
+                                    <Bar dataKey="DoanhThu" name="Doanh thu" fill="url(#colorDoanhThu)" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={false} />
+                                    <Bar dataKey="DoanhThuQD" name="Doanh thu QĐ" fill="url(#colorDoanhThuQD)" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={false} />
                                 </BarChart>
                             </ResponsiveContainer>
                         ) : (
@@ -566,4 +566,4 @@ export const NhanVien: React.FC = () => {
         </ExportOptionsProvider>
     );
 };
-export default NhanVien;
+export default React.memo(NhanVien);

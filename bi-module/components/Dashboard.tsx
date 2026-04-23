@@ -320,4 +320,4 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     );
 };
 
-export default Dashboard;
+export default React.memo(Dashboard);

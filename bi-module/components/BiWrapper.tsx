@@ -1,10 +1,11 @@
-import React, { useTransition } from 'react';
-import { useIndexedDBState } from '../hooks/useIndexedDBState';
-import Dashboard from './Dashboard';
-import NhanVien from './NhanVien';
-import DataUpdater from './DataUpdater';
-import Settings from './Settings';
+import React, { useState, useCallback, Suspense, lazy } from 'react';
 import { Icon } from '../../components/common/Icon';
+
+// Lazy load heavy sub-views so the initial BiWrapper mount is near-instant
+const Dashboard = lazy(() => import('./Dashboard'));
+const NhanVien = lazy(() => import('./NhanVien'));
+const DataUpdater = lazy(() => import('./DataUpdater'));
+const Settings = lazy(() => import('./Settings'));
 
 const getTabColorClasses = (color: string, isActive: boolean) => {
     if (!isActive) return 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800';
@@ -18,15 +19,42 @@ const getTabColorClasses = (color: string, isActive: boolean) => {
     }
 };
 
-export default function BiWrapper() {
-    const [activeView, setActiveView] = useIndexedDBState<'dashboard' | 'employee' | 'updater' | 'settings'>('main-active-view', 'dashboard');
-    const [isPending, startTransition] = useTransition();
+const TabSpinner = () => (
+    <div className="flex items-center justify-center min-h-[30vh]">
+        <div className="flex flex-col items-center gap-3">
+            <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-xs font-medium text-slate-400 animate-pulse">Đang tải module...</p>
+        </div>
+    </div>
+);
 
-    const handleTabChange = (id: string) => {
-        startTransition(() => {
-            setActiveView(id as any);
+/**
+ * BiWrapper — Container for the BI module.
+ * 
+ * PERFORMANCE FIX: Uses hidden/block CSS pattern instead of conditional rendering (&&).
+ * This keeps already-mounted views alive in the DOM so switching back is instant —
+ * no destroy/recreate cycle, no re-fetching data from IndexedDB, no re-parsing.
+ * 
+ * Also uses plain useState instead of useIndexedDBState for tab navigation
+ * to avoid the IDB write → event dispatch → re-render chain on every click.
+ * 
+ * Each sub-view is also lazy-loaded so initial mount only loads the active view's chunk.
+ */
+export default function BiWrapper() {
+    // Use plain useState — no IDB write needed for navigation state
+    const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater' | 'settings'>('dashboard');
+    // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
+    const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(['dashboard']));
+
+    const handleTabChange = useCallback((id: string) => {
+        setActiveView(id as any);
+        setMountedViews(prev => {
+            if (prev.has(id)) return prev;
+            const next = new Set(prev);
+            next.add(id);
+            return next;
         });
-    };
+    }, []);
 
     const navigationLinks = [
         { id: 'dashboard', icon: 'pie-chart', label: 'Tổng quan', color: 'sky' },
@@ -37,7 +65,7 @@ export default function BiWrapper() {
 
     return (
         <div className="flex flex-col w-full min-h-screen">
-            {/* Thanh Tab Ngang Nội Bộ giống chức năng Phân tích */}
+            {/* Thanh Tab Ngang Nội Bộ */}
             <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-100 dark:border-slate-800 px-4 md:px-6 lg:px-8 z-40 sticky top-0 bg-[#f8fafc]/90 dark:bg-slate-950/90 backdrop-blur-md pb-0 shadow-sm relative pt-4">
                 <div className="flex items-end gap-1 overflow-x-auto flex-1 min-w-0 pb-2 pt-2 hide-scrollbar">
                     {navigationLinks.map(tab => {
@@ -46,7 +74,7 @@ export default function BiWrapper() {
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
-                                className={`flex items-center justify-center gap-2 py-1.5 ${tab.label ? 'px-3.5' : 'px-2 w-[34px]'} rounded-xl font-bold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${getTabColorClasses(tab.color, isActive)} ${isPending ? 'opacity-70 cursor-wait' : ''}`}
+                                className={`flex items-center justify-center gap-2 py-1.5 ${tab.label ? 'px-3.5' : 'px-2 w-[34px]'} rounded-xl font-bold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${getTabColorClasses(tab.color, isActive)}`}
                             >
                                 <div className={`${isActive ? 'text-current' : 'text-slate-400'} shrink-0 flex items-center justify-center`}>
                                     <Icon name={tab.icon as any} size={4} />
@@ -58,12 +86,33 @@ export default function BiWrapper() {
                 </div>
             </div>
 
-            {/* Nội dung Module Cụ thể */}
+            {/* Nội dung Module — HIDDEN/BLOCK pattern: mount once, toggle visibility */}
             <main className="p-0 sm:p-4 lg:p-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">
-                {activeView === 'dashboard' && <Dashboard onNavigateToUpdater={() => handleTabChange('updater')} />}
-                {activeView === 'employee' && <NhanVien />}
-                {activeView === 'updater' && <DataUpdater onNavigateToDashboard={() => handleTabChange('dashboard')} />}
-                {activeView === 'settings' && <Settings />}
+                <Suspense fallback={<TabSpinner />}>
+                    {/* Dashboard view */}
+                    {mountedViews.has('dashboard') && (
+                        <div className={activeView === 'dashboard' ? 'block' : 'hidden'}>
+                            <Dashboard onNavigateToUpdater={() => handleTabChange('updater')} />
+                        </div>
+                    )}
+
+                    {/* Employee view */}
+                    {mountedViews.has('employee') && (
+                        <div className={activeView === 'employee' ? 'block' : 'hidden'}>
+                            <NhanVien />
+                        </div>
+                    )}
+
+                    {/* Data Updater view */}
+                    {mountedViews.has('updater') && (
+                        <div className={activeView === 'updater' ? 'block' : 'hidden'}>
+                            <DataUpdater onNavigateToDashboard={() => handleTabChange('dashboard')} />
+                        </div>
+                    )}
+
+                    {/* Settings view - lightweight, can use conditional */}
+                    {activeView === 'settings' && <Settings />}
+                </Suspense>
             </main>
         </div>
     );
