@@ -3,6 +3,9 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Card from '../Card';
 import ExportButton from '../ExportButton';
 import { parseSummaryData, roundUp, shortenSupermarketName, parseNumber } from '../../utils/dashboardHelpers';
+import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { CogIcon } from '@heroicons/react/outline';
+import { Switch } from '@headlessui/react';
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
@@ -57,6 +60,20 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     const headerMapping: Record<string, string> = {
         'Tên miền': 'SIÊU THỊ', 'DTLK': 'THỰC', 'DTQĐ': 'DTQĐ', 'Target (QĐ)': 'M.TIÊU<br/>QĐ', 'Target(QĐ) V.Trội': 'M.TIÊU<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>VT', '%HT TARGET(QĐ) V.Trội': '%HT<br/>VT', 'Lượt Khách LK': 'L.KHÁCH', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%T.CHẬM', 'DT TRẢ GÓP': 'DT T.CHẬM', 'DT Trả Góp': 'DT T.CHẬM', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'DTDK', 'DT Dự Kiến (QĐ)': 'DTQĐ<br/>DK', '+/- DTCK Tháng (QĐ)': '+/-QĐ<br/>CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- Tỷ Trọng Trả Góp': '+/-T.C', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HTQĐ', '% HT Target Ngày (QĐ)': '%HTQĐ', '%HQQĐ': '%QĐ',
     };
+
+    const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
+    const selectorRef = useRef<HTMLDivElement>(null);
+    const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>(`hidden-cols-summary-${isCumulative ? 'luyke' : 'realtime'}`, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (selectorRef.current && !selectorRef.current.contains(event.target as Node)) {
+                setIsColumnSelectorOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const processedTable = useMemo(() => {
         const { headers, rows } = data;
@@ -154,7 +171,19 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         return ['Tên miền', ...rest];
     }, [processedTable.allHeaders]);
 
-    const visibleColumns = useMemo(() => new Set(orderedHeaders), [orderedHeaders]);
+    const visibleColumns = useMemo(() => {
+        const hiddenSet = new Set(userHiddenColumns);
+        return new Set(orderedHeaders.filter(h => !hiddenSet.has(h)));
+    }, [orderedHeaders, userHiddenColumns]);
+
+    const toggleColumn = (header: string) => {
+        setUserHiddenColumns(prev => {
+            const newHidden = new Set(prev);
+            if (newHidden.has(header)) newHidden.delete(header);
+            else newHidden.add(header);
+            return Array.from(newHidden);
+        });
+    };
 
     // Build header groups, marking single-column groups for rowSpan=2 rendering
     const headerGroups = useMemo(() => {
@@ -208,7 +237,40 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 actionButton={
                     <div className="flex items-center gap-1.5 no-print">
                         <ExportButton onExportPNG={onExport} />
-
+                        <div className="relative" ref={selectorRef}>
+                            <button
+                                onClick={() => setIsColumnSelectorOpen(prev => !prev)}
+                                className={`p-1.5 rounded-lg transition-colors ${
+                                    isColumnSelectorOpen
+                                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600'
+                                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                }`}
+                                title="Tuỳ chỉnh hiển thị cột"
+                            >
+                                <CogIcon className="h-4 w-4" />
+                            </button>
+                            {isColumnSelectorOpen && (
+                                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
+                                    <div className="grid gap-0.5">
+                                        {orderedHeaders.filter(h => h !== 'Tên miền').map((h) => (
+                                            <div key={h} className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                                <label
+                                                    htmlFor={`col-toggle-sum-${h}`}
+                                                    className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
+                                                    dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
+                                                />
+                                                <Switch
+                                                    id={`col-toggle-sum-${h}`}
+                                                    checked={visibleColumns.has(h)}
+                                                    onChange={() => toggleColumn(h)}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 }
                 rounded={false} noPadding

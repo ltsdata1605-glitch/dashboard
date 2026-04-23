@@ -42,6 +42,8 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     const [isIndustryFilterOpen, setIsIndustryFilterOpen] = useState(false);
     const industryFilterRef = useRef<HTMLDivElement>(null);
+    const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
+    const selectorRef = useRef<HTMLDivElement>(null);
     const [industryFilterSearch, setIndustryFilterSearch] = useState('');
 
     const logic = useIndustryViewLogic(realtimeData, luykeData, isRealtime);
@@ -57,7 +59,8 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         setHiddenIndustries,
         toggleRow,
         expandAll,
-        collapseAll
+        collapseAll,
+        toggleColumn
     } = logic;
 
     const data = isRealtime ? realtimeData : luykeData.table;
@@ -102,6 +105,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
+            if (selectorRef.current && !selectorRef.current.contains(event.target as Node)) {
+                setIsColumnSelectorOpen(false);
+            }
             if (industryFilterRef.current && !industryFilterRef.current.contains(event.target as Node)) {
                 setIsIndustryFilterOpen(false);
             }
@@ -166,7 +172,40 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     </div>
                 )}
             </div>
-
+            <div className="relative" ref={selectorRef}>
+                <button
+                    onClick={() => setIsColumnSelectorOpen(prev => !prev)}
+                    className={`p-1.5 rounded-lg transition-colors ${
+                        isColumnSelectorOpen
+                            ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600'
+                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
+                    }`}
+                    title="Tuỳ chỉnh hiển thị cột"
+                >
+                    <CogIcon className="h-4 w-4" />
+                </button>
+                {isColumnSelectorOpen && (
+                    <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
+                        <div className="grid gap-0.5">
+                            {orderedHeaders.filter(h => h !== 'Nhóm ngành hàng').map((h) => (
+                                <div key={h} className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <label
+                                        htmlFor={`col-toggle-ind-${h}`}
+                                        className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
+                                        dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
+                                    />
+                                    <Switch
+                                        id={`col-toggle-ind-${h}`}
+                                        checked={visibleColumns.has(h)}
+                                        onChange={() => toggleColumn(h)}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     );
 

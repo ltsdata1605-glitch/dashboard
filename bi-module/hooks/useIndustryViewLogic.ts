@@ -36,6 +36,7 @@ export const flattenTree = (
 };
 
 export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealtime: boolean) {
+    const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>(`hidden-cols-industry-${isRealtime ? 'realtime' : 'luyke'}`, []);
     const [hiddenIndustries, setHiddenIndustries] = useIndexedDBState<string[]>(`hidden-industries-${isRealtime ? 'realtime' : 'luyke'}`, []);
     const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
@@ -138,8 +139,18 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
     }, [processedTable.headers]);
 
     const visibleColumns = useMemo(() => {
-        return new Set(orderedHeaders);
-    }, [orderedHeaders]);
+        const hiddenSet = new Set(userHiddenColumns);
+        return new Set(orderedHeaders.filter(h => !hiddenSet.has(h)));
+    }, [orderedHeaders, userHiddenColumns]);
+
+    const toggleColumn = (header: string) => {
+        setUserHiddenColumns(prev => {
+            const newHidden = new Set(prev);
+            if (newHidden.has(header)) newHidden.delete(header);
+            else newHidden.add(header);
+            return Array.from(newHidden);
+        });
+    };
 
     return {
         allIndustries,
@@ -150,9 +161,12 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
         orderedHeaders,
         visibleColumns,
         hiddenIndustries,
+        userHiddenColumns,
         setHiddenIndustries,
         toggleRow,
         expandAll,
         collapseAll,
+        toggleColumn,
+        setUserHiddenColumns,
     };
 }
