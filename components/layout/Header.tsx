@@ -150,7 +150,7 @@ const Header: React.FC<HeaderProps> = ({
                     )}
                 </div>
                     {/* Desktop: Full inline toolbar */}
-                    <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white dark:bg-slate-900 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+                    <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
                         {/* Shift Management Group */}
                         {(userRole === 'admin' || userRole === 'manager') && (
                         <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">

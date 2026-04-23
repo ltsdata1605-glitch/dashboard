@@ -7,6 +7,7 @@ import { SectionHeader } from '../common/SectionHeader';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { isKhoMatch } from '../../services/filterService';
 import { useTrendChartLogic, RechartsTrendData } from '../../hooks/useTrendChartLogic';
+import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
 import RevenueCalendar from './RevenueCalendar';
 import SavedCalendarCard from './SavedCalendarCard';
 import { saveCustomCalendars, getCustomCalendars } from '../../services/dbService';
@@ -330,7 +331,7 @@ const TrendChart: React.FC = React.memo(() => {
                         fill="url(#colorValue)" 
                         dot={{ fill: isDark ? '#1e293b' : '#ffffff', stroke: dailyBaseColor, strokeWidth: 2, r: 4 }} 
                         activeDot={{ r: 6, stroke: isDark ? '#ffffff' : dailyBaseColor, strokeWidth: 2, fill: dailyBaseColor }} 
-                        isAnimationActive={false}
+                        isAnimationActive={CHART_ANIMATION_ENABLED}
                     >
                         <LabelList dataKey="value" content={(props: any) => <CustomLabel {...props} textColor={textColor} positionOffset={12} metric={trendState.metric} />} />
                     </Area>
@@ -349,7 +350,7 @@ const TrendChart: React.FC = React.memo(() => {
                 <Bar 
                     dataKey="value" 
                     radius={[4, 4, 0, 0]} 
-                    isAnimationActive={false}
+                    isAnimationActive={CHART_ANIMATION_ENABLED}
                 >
                     <LabelList dataKey="value" content={(props: any) => <CustomLabel {...props} textColor={textColor} positionOffset={8} metric={trendState.metric} />} />
                     {chartData.map((entry, index) => (

@@ -1,5 +1,6 @@
 import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
 
 export interface TrendDataPoint {
   date: string;
@@ -68,7 +69,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data, employeeName }) => {
                         strokeWidth={3}
                         dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#3b82f6' }}
                         activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2, fill: '#3b82f6' }}
-                        isAnimationActive={false}
+                        isAnimationActive={CHART_ANIMATION_ENABLED}
                     />
                 </LineChart>
             </ResponsiveContainer>

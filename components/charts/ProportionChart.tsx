@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
 
 const data = [
   { name: 'Tủ lạnh', value: 400 },
@@ -30,7 +31,7 @@ export const ProportionChart: React.FC = () => {
               paddingAngle={5}
               dataKey="value"
               stroke="none"
-              isAnimationActive={false}
+              isAnimationActive={CHART_ANIMATION_ENABLED}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

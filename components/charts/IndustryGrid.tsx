@@ -1,6 +1,6 @@
-
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip as RechartsTooltip } from 'recharts';
+import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
 import { formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
@@ -413,7 +413,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                                     cornerRadius={3}
                                                     labelLine={false}
                                                     label={renderPieLabel}
-                                                    isAnimationActive={false}
+                                                    isAnimationActive={CHART_ANIMATION_ENABLED}
                                                 >
                                                     {pieChartData.map((_, idx) => (
                                                         <Cell key={`cell-m-${idx}`} fill={COLORS[idx % COLORS.length]} />
@@ -439,7 +439,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                                     cornerRadius={3}
                                                     labelLine={false}
                                                     label={renderPieLabel}
-                                                    isAnimationActive={false}
+                                                    isAnimationActive={CHART_ANIMATION_ENABLED}
                                                 >
                                                     {pieChartData.map((_, idx) => (
                                                         <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
