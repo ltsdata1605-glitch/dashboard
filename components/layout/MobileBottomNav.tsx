@@ -135,7 +135,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
             </AnimatePresence>
 
             {/* Bottom Tab Bar */}
-            <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[190] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200/80 dark:border-slate-800/80 pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+            <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-[190] bg-white dark:bg-slate-900 border-t border-slate-200/80 dark:border-slate-800/80 pb-[env(safe-area-inset-bottom,0px)] shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
                 <div className="flex items-stretch justify-around h-[56px]">
                     {mainTabs.map(tab => {
                         const isActive = activeTab === tab.id;

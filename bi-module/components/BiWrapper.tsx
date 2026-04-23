@@ -66,7 +66,7 @@ export default function BiWrapper() {
     return (
         <div className="flex flex-col w-full min-h-screen">
             {/* Thanh Tab Ngang Nội Bộ */}
-            <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-100 dark:border-slate-800 px-4 md:px-6 lg:px-8 z-40 sticky top-0 bg-[#f8fafc]/90 dark:bg-slate-950/90 backdrop-blur-md pb-0 shadow-sm relative pt-4">
+            <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-100 dark:border-slate-800 px-4 md:px-6 lg:px-8 z-40 sticky top-0 bg-[#f8fafc] dark:bg-slate-950 pb-0 shadow-sm relative pt-4">
                 <div className="flex items-end gap-1 overflow-x-auto flex-1 min-w-0 pb-2 pt-2 hide-scrollbar">
                     {navigationLinks.map(tab => {
                         const isActive = activeView === tab.id;

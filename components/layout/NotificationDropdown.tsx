@@ -4,11 +4,11 @@ import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
 import { AppNotification, markAsRead, markAllAsRead } from '../../services/notificationService';
-import { useLayout } from '../../contexts/LayoutContext';
+import { useActiveTab } from '../../contexts/LayoutContext';
 
 const NotificationDropdown = () => {
     const { user } = useAuth();
-    const { setActiveTab } = useLayout();
+    const { setActiveTab } = useActiveTab();
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);

@@ -330,3 +330,33 @@
   border-image: linear-gradient(90deg, rgba(99, 102, 241, 0.3), rgba(14, 165, 233, 0.3), rgba(16, 185, 129, 0.2)) 1;
 }
 
+/* ═══ MOBILE ENERGY SAVING ═══ */
+/* Tắt tất cả infinite animation trên mobile để tiết kiệm pin GPU */
+@media (max-width: 1023px) {
+  .animate-shimmer,
+  .progress-shimmer::after,
+  .animate-pulse-glow-green,
+  .animate-pulse-glow-amber,
+  .animate-blob,
+  .animate-wiggle {
+    animation: none !important;
+  }
+
+  /* animate-ping: tắt hoàn toàn trên mobile — chỉ giữ static dot */
+  .animate-ping {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+
+  /* Giảm backdrop-blur xuống 0 trên mọi element để GPU nghỉ */
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-lg,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+

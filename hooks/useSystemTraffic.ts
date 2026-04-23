@@ -12,6 +12,8 @@ export const useSystemTraffic = () => {
     const { user } = useAuth();
     const [stats, setStats] = useState<TrafficStats>({ totalVisits: 0, onlineUsers: 0 });
     const isVisibleRef = useRef(document.visibilityState === 'visible');
+    const pingIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const onlineIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
     // 1. COUNT TOTAL VISITS (chỉ 1 lần mỗi session)
     useEffect(() => {
@@ -33,29 +35,33 @@ export const useSystemTraffic = () => {
         };
         incrementVisit();
 
-        // Listen realtime for total visits
-        const statsRef = doc(db, '_system', 'stats');
-        const unsubStats = onSnapshot(statsRef, (docSnap) => {
-            if (docSnap.exists()) {
-                setStats(prev => ({ ...prev, totalVisits: docSnap.data()?.totalVisits || 0 }));
+        // FIX: Dùng getDoc 1 lần thay vì onSnapshot listener vĩnh viễn
+        // Việc hiển thị tổng lượt truy cập không cần realtime — đọc 1 lần là đủ
+        const loadTotalVisits = async () => {
+            try {
+                const statsRef = doc(db, '_system', 'stats');
+                const snap = await getDoc(statsRef);
+                if (snap.exists()) {
+                    setStats(prev => ({ ...prev, totalVisits: snap.data()?.totalVisits || 0 }));
+                }
+            } catch (e) {
+                console.error("Load total visits error:", e);
             }
-        });
-
-        return () => unsubStats();
+        };
+        loadTotalVisits();
+        
+        // Không cần cleanup vì không còn onSnapshot listener
     }, []);
 
     // 2. PRESENCE PING + ONLINE COUNT — chỉ chạy khi tab visible
     useEffect(() => {
-        let pingInterval: ReturnType<typeof setInterval> | null = null;
-        let onlineInterval: ReturnType<typeof setInterval> | null = null;
-
         const pingPresence = () => {
             if (!user || !isVisibleRef.current) return;
             updateDoc(doc(db, 'users', user.uid), { lastActive: serverTimestamp() }).catch(console.error);
         };
 
         const fetchOnlineUsers = async () => {
-            if (!isVisibleRef.current) return; // Skip khi tab ẩn
+            if (!isVisibleRef.current) return;
             try {
                 const activeTime = new Date(Date.now() - 15 * 60 * 1000);
                 const q = query(collection(db, 'users'), where('lastActive', '>=', activeTime));
@@ -66,24 +72,26 @@ export const useSystemTraffic = () => {
             }
         };
 
-        const startIntervals = () => {
-            if (user) {
-                pingPresence();
-                pingInterval = setInterval(pingPresence, 5 * 60 * 1000);
-            }
-            fetchOnlineUsers();
-            onlineInterval = setInterval(fetchOnlineUsers, 10 * 60 * 1000); // 10 phút thay vì 3 phút
+        // FIX: Luôn clear intervals cũ trước khi tạo mới → ngăn interval chồng lớp
+        const stopIntervals = () => {
+            if (pingIntervalRef.current) { clearInterval(pingIntervalRef.current); pingIntervalRef.current = null; }
+            if (onlineIntervalRef.current) { clearInterval(onlineIntervalRef.current); onlineIntervalRef.current = null; }
         };
 
-        const stopIntervals = () => {
-            if (pingInterval) { clearInterval(pingInterval); pingInterval = null; }
-            if (onlineInterval) { clearInterval(onlineInterval); onlineInterval = null; }
+        const startIntervals = () => {
+            stopIntervals(); // ← CRITICAL: Clear trước khi start
+            if (user) {
+                pingPresence();
+                pingIntervalRef.current = setInterval(pingPresence, 5 * 60 * 1000);
+            }
+            fetchOnlineUsers();
+            onlineIntervalRef.current = setInterval(fetchOnlineUsers, 10 * 60 * 1000);
         };
 
         const handleVisibilityChange = () => {
             isVisibleRef.current = document.visibilityState === 'visible';
             if (isVisibleRef.current) {
-                startIntervals(); // Resume khi tab active lại
+                startIntervals();
             } else {
                 stopIntervals(); // Dừng hẳn khi tab ẩn → tiết kiệm pin
             }
