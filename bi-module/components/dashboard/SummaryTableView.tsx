@@ -368,7 +368,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         </div>
                     ) : (
                         /* ─── DESKTOP TABLE VIEW ─── */
-                        <div className="border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden shadow-sm m-4 mb-6">
+                        <div className="border border-slate-200/80 dark:border-slate-700/50 rounded-2xl overflow-hidden shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] m-4 mb-6">
                             <table className="w-full border-collapse compact-export-table">
                                 <thead>
                                     {/* TIER 1: GROUP HEADERS */}
@@ -378,7 +378,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 key={`group-${idx}`}
                                                 colSpan={g.colspan}
                                                 className={`
-                                                    py-2 px-2 text-[11px] font-black uppercase tracking-widest text-center border-r border-b border-white dark:border-slate-800
+                                                    py-2.5 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-center 
+                                                    border-r border-b border-white/60 dark:border-slate-800/60
                                                     ${g.bg} ${g.text}
                                                     ${g.isSticky ? 'sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.02)]' : ''}
                                                 `}
@@ -389,7 +390,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                     </tr>
 
                                     {/* TIER 2: COLUMN HEADERS */}
-                                    <tr className="bg-white dark:bg-[#1c1c1e] shadow-sm">
+                                    <tr className="bg-slate-50/70 dark:bg-slate-800/60">
                                         {orderedHeaders.map(h => {
                                             if (!visibleColumns.has(h)) return null;
                                             const g = COLUMN_GROUPS[h] || { text: 'text-slate-600 dark:text-slate-300' };
@@ -397,13 +398,13 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 <th
                                                     key={h}
                                                     className={`
-                                                        px-2 py-3 text-[10px] font-bold uppercase
-                                                        tracking-wider border-r border-slate-200 dark:border-slate-700/80
-                                                        border-b border-b-slate-300 dark:border-b-slate-600
+                                                        px-3 py-3 text-[10px] font-bold uppercase
+                                                        tracking-wider border-r border-slate-100 dark:border-slate-700/50
+                                                        border-b-2 border-b-slate-200/80 dark:border-b-slate-600/60
                                                         text-center align-middle whitespace-nowrap
                                                         hover:bg-slate-50 dark:hover:bg-slate-800/50 select-none
                                                         ${g.text}
-                                                        ${h === 'Tên miền' ? 'text-left sticky left-0 z-10 min-w-[150px] bg-white dark:bg-[#1c1c1e] shadow-[2px_0_4px_rgba(0,0,0,0.02)]' : ''}
+                                                        ${h === 'Tên miền' ? 'text-left sticky left-0 z-10 min-w-[150px] bg-slate-50/70 dark:bg-slate-800/60 shadow-[2px_0_8px_-2px_rgba(0,0,0,0.04)]' : ''}
                                                     `}
                                                     dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
                                                 />
@@ -411,7 +412,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         })}
                                     </tr>
                                 </thead>
-                                <tbody className="bg-white dark:bg-[#1c1c1e]">
+                                <tbody>
                                     {processedTable.allRows.map((row, rIdx) => {
                                         const nameIdx = processedTable.allHeaders.indexOf('Tên miền');
                                         const isTotal = row[nameIdx] === 'Tổng';
@@ -422,9 +423,10 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 className={`
                                                     transition-colors duration-100 group
                                                     ${isTotal
-                                                        ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-y !border-y-emerald-200 dark:!border-y-emerald-800/50'
-                                                        : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50/50 dark:hover:bg-slate-800/30'}
-                                                    ${isSel ? '!bg-indigo-50/50 dark:!bg-indigo-900/30 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800' : ''}
+                                                        ? 'bg-slate-50 dark:bg-slate-800/80 font-extrabold border-t-2 border-t-slate-300 dark:border-t-slate-600'
+                                                        : rIdx % 2 === 0 ? 'bg-white dark:bg-slate-900/40' : 'bg-slate-50/40 dark:bg-slate-800/20'}
+                                                    ${!isTotal ? 'hover:bg-indigo-50/40 dark:hover:bg-indigo-900/10' : ''}
+                                                    ${isSel ? '!bg-indigo-50/60 dark:!bg-indigo-900/20 ring-1 ring-inset ring-indigo-200/70 dark:ring-indigo-800/50' : ''}
                                                 `}
                                             >
                                                 {orderedHeaders.map(h => {
@@ -447,11 +449,11 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         <td
                                                             key={h}
                                                             className={`
-                                                                px-2 py-2.5 whitespace-nowrap text-[11px]
-                                                                border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0
+                                                                px-3 py-3 whitespace-nowrap text-[11px]
+                                                                border-r border-b border-slate-100/80 dark:border-slate-700/40 last:border-r-0
                                                                 tabular-nums align-middle
-                                                                ${isTotal ? 'font-black text-emerald-800 dark:text-emerald-400' : 'font-semibold text-slate-600 dark:text-slate-300'}
-                                                                ${h === 'Tên miền' ? `text-left font-bold sticky left-0 z-[5] ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-[#1c1c1e]'}` : 'text-center'}
+                                                                ${isTotal ? 'font-black text-slate-800 dark:text-slate-200' : 'font-semibold text-slate-600 dark:text-slate-300'}
+                                                                ${h === 'Tên miền' ? `text-left font-bold sticky left-0 z-[5] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.04)] ${isTotal ? 'bg-slate-50 dark:bg-slate-800/80' : rIdx % 2 === 0 ? 'bg-white dark:bg-slate-900/40' : 'bg-slate-50/40 dark:bg-slate-800/20'}` : 'text-center'}
                                                                 ${colorCls}
                                                             `}
                                                         >
