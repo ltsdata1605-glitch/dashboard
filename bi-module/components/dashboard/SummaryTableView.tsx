@@ -487,7 +487,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                 leading-tight h-px
                                                                 tabular-nums align-middle
                                                                 ${isTotal ? 'font-bold text-slate-900 dark:text-slate-100' : 'font-semibold text-slate-600 dark:text-slate-300'}
-                                                                ${h === 'Tên miền' ? `text-center font-bold sticky left-0 z-[5] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900'} group-hover:bg-slate-50 dark:group-hover:bg-slate-800` : 'text-center'}
+                                                                ${h === 'Tên miền' ? `text-center font-bold sticky left-0 z-[5] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900'}` : 'text-center'}
                                                                 ${colorCls}
                                                             `}
                                                         >
