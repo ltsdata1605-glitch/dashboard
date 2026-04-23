@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Card from '../Card';
+import ExportButton from '../ExportButton';
 import { FilterIcon, CogIcon } from '../Icons';
 import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, roundUp } from '../../utils/dashboardHelpers';
 import { Switch } from './DashboardWidgets';
@@ -10,6 +11,7 @@ interface IndustryViewProps {
     luykeData: ReturnType<typeof parseIndustryLuyKeData>;
     isRealtime: boolean;
     activeSupermarket: string | null;
+    onExport?: () => Promise<void>;
 }
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
@@ -35,7 +37,7 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
 };
 
 const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props, ref) => {
-    const { realtimeData, luykeData, isRealtime } = props;
+    const { realtimeData, luykeData, isRealtime, onExport } = props;
     
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const selectorRef = useRef<HTMLDivElement>(null);
@@ -120,6 +122,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     const actionButton = (
         <div className="industry-view-controls flex items-center gap-1.5 no-print">
+             {onExport && <ExportButton onExportPNG={onExport} />}
              {/* Expand/Collapse buttons for tree mode */}
              {hasTreeData && (
                 <div className="flex items-center gap-0.5 mr-1">
@@ -494,7 +497,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
                                                             text-center align-middle whitespace-nowrap cursor-move
                                                             hover:opacity-80 transition-opacity select-none
-                                                            ${g.text}
+                                                            ${g.bg} ${g.text}
                                                             ${draggedColumn === h ? 'opacity-40' : ''}
                                                         `}
                                                         dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}

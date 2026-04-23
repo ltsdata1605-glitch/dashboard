@@ -285,6 +285,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                                         realtimeData={industryRealtimeParsed} 
                                         luykeData={industryLuyKeParsed} 
                                         activeSupermarket={activeSupermarket}
+                                        onExport={() => handleExportPNG(industryTableRef, `NganhHang_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`)}
                                     />
                                 </div>
                             )}
