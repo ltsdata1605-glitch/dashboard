@@ -75,7 +75,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
 
 
     const headerMapping: Record<string, string> = {
-        'Tên miền': 'SIÊU THỊ', 'DTLK': 'DT<br/>THỰC', 'DTQĐ': 'DTQĐ', 'Target (QĐ)': 'M.TIÊU<br/>QĐ', 'Target(QĐ) V.Trội': 'M.TIÊU<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>VT', '%HT TARGET(QĐ) V.Trội': '%HT<br/>VT', 'Lượt Khách LK': 'KHÁCH', 'Lượt Bill Bán Hàng': 'BILL', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%T.CHẬM', 'DT TRẢ GÓP': 'DT T.CHẬM', 'DT Trả Góp': 'DT T.CHẬM', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'DTDK', 'DT Dự Kiến (QĐ)': 'DTQĐ<br/>DK', '+/- DTCK Tháng (QĐ)': '+/-QĐ<br/>CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- Tỷ Trọng Trả Góp': '+/-T.C', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HTQĐ', '% HT Target Ngày (QĐ)': '%HTQĐ', '%HQQĐ': '%HQQĐ',
+        'Tên miền': 'SIÊU THỊ', 'DTLK': 'THỰC', 'DTQĐ': 'DTQĐ', 'Target (QĐ)': 'M.TIÊU<br/>QĐ', 'Target(QĐ) V.Trội': 'M.TIÊU<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>VT', '%HT TARGET(QĐ) V.Trội': '%HT<br/>VT', 'Lượt Khách LK': 'L.KHÁCH', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%T.CHẬM', 'DT TRẢ GÓP': 'DT T.CHẬM', 'DT Trả Góp': 'DT T.CHẬM', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'DTDK', 'DT Dự Kiến (QĐ)': 'DTQĐ<br/>DK', '+/- DTCK Tháng (QĐ)': '+/-QĐ<br/>CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- Tỷ Trọng Trả Góp': '+/-T.C', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HTQĐ', '% HT Target Ngày (QĐ)': '%HTQĐ', '%HQQĐ': '%QĐ',
     };
 
     const processedTable = useMemo(() => {
@@ -246,28 +246,36 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Hiển thị & Sắp xếp cột</p>
                                     <div className="grid gap-0.5">
                                         {orderedHeaders.map((h, idx) => (
-                                            <div key={h} className="flex items-center justify-between px-2 py-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 group/item">
-                                                {/* Reorder buttons */}
-                                                <div className="flex flex-col mr-1.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); if (idx > 0) { setColumnOrder(prev => { const n = [...prev]; [n[idx], n[idx-1]] = [n[idx-1], n[idx]]; return n; }); } }}
-                                                        disabled={idx === 0}
-                                                        className="p-0 text-slate-400 hover:text-indigo-600 disabled:opacity-20 leading-none"
-                                                        title="Di chuyển lên"
-                                                    >
-                                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M5 15l7-7 7 7"/></svg>
-                                                    </button>
-                                                    <button
-                                                        onClick={(e) => { e.stopPropagation(); if (idx < orderedHeaders.length - 1) { setColumnOrder(prev => { const n = [...prev]; [n[idx], n[idx+1]] = [n[idx+1], n[idx]]; return n; }); } }}
-                                                        disabled={idx === orderedHeaders.length - 1}
-                                                        className="p-0 text-slate-400 hover:text-indigo-600 disabled:opacity-20 leading-none"
-                                                        title="Di chuyển xuống"
-                                                    >
-                                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M19 9l-7 7-7-7"/></svg>
-                                                    </button>
-                                                </div>
+                                            <div
+                                                key={h}
+                                                draggable
+                                                onDragStart={(e) => {
+                                                    e.dataTransfer.effectAllowed = 'move';
+                                                    e.dataTransfer.setData('text/plain', String(idx));
+                                                    (e.currentTarget as HTMLElement).style.opacity = '0.4';
+                                                }}
+                                                onDragEnd={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+                                                onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; (e.currentTarget as HTMLElement).classList.add('!bg-indigo-50', 'dark:!bg-indigo-900/20'); }}
+                                                onDragLeave={(e) => { (e.currentTarget as HTMLElement).classList.remove('!bg-indigo-50', 'dark:!bg-indigo-900/20'); }}
+                                                onDrop={(e) => {
+                                                    e.preventDefault();
+                                                    (e.currentTarget as HTMLElement).classList.remove('!bg-indigo-50', 'dark:!bg-indigo-900/20');
+                                                    const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                                                    if (!isNaN(fromIdx) && fromIdx !== idx) {
+                                                        setColumnOrder(prev => {
+                                                            const arr = [...prev];
+                                                            const [moved] = arr.splice(fromIdx, 1);
+                                                            arr.splice(idx, 0, moved);
+                                                            return arr;
+                                                        });
+                                                    }
+                                                }}
+                                                className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-grab active:cursor-grabbing transition-colors"
+                                            >
+                                                {/* Drag handle */}
+                                                <span className="text-slate-300 dark:text-slate-600 mr-2 select-none text-sm leading-none">⠇</span>
                                                 <label
-                                                    className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer"
+                                                    className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
                                                     dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
                                                 />
                                                 <Switch
