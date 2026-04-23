@@ -53,7 +53,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         hasAnyExpanded,
         orderedHeaders,
         visibleColumns,
-        draggedColumn,
         hiddenIndustries,
         setHiddenIndustries,
         toggleRow,
@@ -292,7 +291,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             }
         }
 
-        return <td key={headerName} className={`${cellClasses} ${draggedColumn === headerName ? 'bg-slate-50 dark:bg-slate-800' : ''}`}>{cellContent()}</td>;
+        return <td key={headerName} className={cellClasses}>{cellContent()}</td>;
     };
 
     return (
@@ -449,24 +448,18 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                 if (h === 'Nhóm ngành hàng') return null;
                                                 const isSingleGroup = headerGroups.some(g => g.isSingle && g.singleHeader === h);
                                                 if (isSingleGroup) return null;
-                                                const g = COLUMN_GROUPS[h] || { text: 'text-slate-600 dark:text-slate-300' };
+                                                const g = COLUMN_GROUPS[h] || { text: 'text-slate-600 dark:text-slate-300', bg: '' };
                                                 return (
                                                     <th
                                                         key={h}
                                                         scope="col"
-                                                        draggable="true"
-                                                        onDragStart={(e) => handleDragStart(e, h)}
-                                                        onDragOver={(e) => handleDragOver(e, h)}
-                                                        onDrop={handleDrop}
-                                                        onDragEnd={() => setDraggedColumn(null)}
                                                         className={`
                                                             px-2 py-2.5 text-[10px] font-bold uppercase
                                                             tracking-wider border-r border-slate-200 dark:border-slate-700
                                                             border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
-                                                            text-center align-middle whitespace-nowrap cursor-move
+                                                            text-center align-middle whitespace-nowrap
                                                             hover:opacity-80 transition-opacity select-none
                                                             ${g.bg} ${g.text}
-                                                            ${draggedColumn === h ? 'opacity-40' : ''}
                                                         `}
                                                         dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
                                                     />
