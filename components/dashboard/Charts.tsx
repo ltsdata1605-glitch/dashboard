@@ -85,6 +85,7 @@ export function RevenueChart() {
             strokeWidth={4}
             fillOpacity={1} 
             fill="url(#colorRevenue)" 
+            isAnimationActive={false}
           />
         </AreaChart>
       </ResponsiveContainer>
@@ -105,6 +106,7 @@ export function CategoryPieChart() {
             outerRadius={100}
             paddingAngle={8}
             dataKey="value"
+            isAnimationActive={false}
           >
             {pieData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -157,8 +159,8 @@ export function ActivityBarChart() {
               boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' 
             }}
           />
-          <Bar dataKey="active" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={12} />
-          <Bar dataKey="inactive" fill="#e2e8f0" radius={[6, 6, 0, 0]} barSize={12} />
+          <Bar dataKey="active" fill="#6366f1" radius={[6, 6, 0, 0]} barSize={12} isAnimationActive={false} />
+          <Bar dataKey="inactive" fill="#e2e8f0" radius={[6, 6, 0, 0]} barSize={12} isAnimationActive={false} />
         </BarChart>
       </ResponsiveContainer>
     </div>

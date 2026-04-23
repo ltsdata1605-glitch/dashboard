@@ -24,46 +24,45 @@ import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
 
 /**
  * TabContent — Isolated component that handles tab switching.
- * Only this component re-renders when activeTab changes,
- * keeping the top bar / bottom nav responsive.
+ * Uses lazy-mount pattern: views only mount when first visited,
+ * then stay alive via hidden/block CSS. This prevents mounting
+ * heavy views (with IDB reads, Firebase listeners, etc.) that
+ * the user may never open → saves CPU + battery.
  */
 const TabContent = React.memo(() => {
     const { activeTab } = useActiveTab();
+    const [mountedTabs, setMountedTabs] = React.useState<Set<string>>(() => new Set([activeTab]));
 
-    const memoDashboardView = React.useMemo(() => <DashboardView />, []);
-    const memoUserManagementView = React.useMemo(() => <UserManagementView />, []);
-    const memoSettingsView = React.useMemo(() => <SettingsView />, []);
-    const memoPendingApprovalView = React.useMemo(() => <PendingApprovalView />, []);
-    const memoAboutView = React.useMemo(() => <AboutView />, []);
-    const memoCheckThuongView = React.useMemo(() => <CheckThuongView />, []);
-    const memoBiWrapper = React.useMemo(() => <BiWrapper />, []);
+    // Mount tab on first visit
+    React.useEffect(() => {
+        setMountedTabs(prev => {
+            if (prev.has(activeTab)) return prev;
+            const next = new Set(prev);
+            next.add(activeTab);
+            return next;
+        });
+    }, [activeTab]);
+
+    // Persistent views — only mount when first visited, keep alive after
+    const persistentViews: { id: string; className?: string; component: React.ReactNode }[] = [
+        { id: 'analysis', component: <DashboardView /> },
+        { id: 'approval', className: 'w-full', component: <UserManagementView /> },
+        { id: 'settings', className: 'w-full', component: <SettingsView /> },
+        { id: 'pending-approval', className: 'w-full', component: <PendingApprovalView /> },
+        { id: 'help', className: 'w-full', component: <AboutView /> },
+        { id: 'check-thuong', component: <CheckThuongView /> },
+        { id: 'employees', className: 'w-full', component: <BiWrapper /> },
+    ];
 
     return (
         <>
-            {/* Persistent Views to avoid re-loading data */}
-            <div className={activeTab === 'analysis' ? 'block' : 'hidden'}>
-                {memoDashboardView}
-            </div>
-
-            <div className={activeTab === 'approval' ? 'block w-full' : 'hidden'}>
-                {memoUserManagementView}
-            </div>
-
-            <div className={activeTab === 'settings' ? 'block w-full' : 'hidden'}>
-                {memoSettingsView}
-            </div>
-
-            <div className={activeTab === 'pending-approval' ? 'block w-full' : 'hidden'}>
-                {memoPendingApprovalView}
-            </div>
-
-            <div className={activeTab === 'help' ? 'block w-full' : 'hidden'}>
-                {memoAboutView}
-            </div>
-            
-            <div className={activeTab === 'check-thuong' ? 'block' : 'hidden'}>
-                {memoCheckThuongView}
-            </div>
+            {persistentViews.map(view => (
+                mountedTabs.has(view.id) ? (
+                    <div key={view.id} className={activeTab === view.id ? `block ${view.className || ''}` : 'hidden'}>
+                        {view.component}
+                    </div>
+                ) : null
+            ))}
 
             {activeTab === 'tools-coupon' && (
                 <div className="block">
@@ -88,10 +87,6 @@ const TabContent = React.memo(() => {
                     <ExternalToolView url="https://kiemquy-final-487587635482.us-west1.run.app" title="Kiểm quỹ" />
                 </div>
             )}
-
-            <div className={activeTab === 'employees' ? 'block w-full' : 'hidden'}>
-                {memoBiWrapper}
-            </div>
 
             {/* Fallback for other tabs */}
             {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees'].includes(activeTab) && (

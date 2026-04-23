@@ -68,7 +68,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data, employeeName }) => {
                         strokeWidth={3}
                         dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#3b82f6' }}
                         activeDot={{ r: 6, stroke: '#fff', strokeWidth: 2, fill: '#3b82f6' }}
-                        animationDuration={800}
+                        isAnimationActive={false}
                     />
                 </LineChart>
             </ResponsiveContainer>

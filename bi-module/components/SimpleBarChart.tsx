@@ -49,7 +49,7 @@ const SimpleBarChart: React.FC<SimpleBarChartProps> = ({ data, yAxisLabel }) => 
             tickFormatter={(value) => value.toLocaleString('vi-VN')}
           />
           <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(148, 163, 184, 0.1)' }} />
-          <Bar dataKey="value" radius={[4, 4, 0, 0]} animationDuration={800}>
+          <Bar dataKey="value" radius={[4, 4, 0, 0]} isAnimationActive={false}>
             {chartData.map((entry, index) => {
               const val = entry.value;
               let color = '#3b82f6'; // primary-500

@@ -413,6 +413,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                                     cornerRadius={3}
                                                     labelLine={false}
                                                     label={renderPieLabel}
+                                                    isAnimationActive={false}
                                                 >
                                                     {pieChartData.map((_, idx) => (
                                                         <Cell key={`cell-m-${idx}`} fill={COLORS[idx % COLORS.length]} />
@@ -438,6 +439,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                                     cornerRadius={3}
                                                     labelLine={false}
                                                     label={renderPieLabel}
+                                                    isAnimationActive={false}
                                                 >
                                                     {pieChartData.map((_, idx) => (
                                                         <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
