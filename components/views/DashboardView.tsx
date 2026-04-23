@@ -6,7 +6,6 @@ import { DashboardContext } from '../../contexts/DashboardContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 import { usePendingApprovalCount } from '../../hooks/usePendingApprovalCount';
-import { useLayout } from '../../contexts/LayoutContext';
 
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
@@ -73,7 +72,6 @@ export default function DashboardView() {
     const { userRole } = useAuth();
     const { totalVisits, onlineUsers } = useSystemTraffic();
     const pendingRequestsCount = usePendingApprovalCount();
-    const { setActiveTab } = useLayout();
 
     const [visibleComponents, setVisibleComponents] = useState<VisibilityState>(() => {
         try {

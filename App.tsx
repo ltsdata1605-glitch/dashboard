@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { LayoutProvider, useLayout } from './contexts/LayoutContext';
+import { LayoutProvider, useLayout, useActiveTab } from './contexts/LayoutContext';
 import ErrorBoundary from './components/common/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
 import MobileBottomNav from './components/layout/MobileBottomNav';
@@ -28,7 +28,7 @@ import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
  * keeping the top bar / bottom nav responsive.
  */
 const TabContent = React.memo(() => {
-    const { activeTab } = useLayout();
+    const { activeTab } = useActiveTab();
 
     const memoDashboardView = React.useMemo(() => <DashboardView />, []);
     const memoUserManagementView = React.useMemo(() => <UserManagementView />, []);

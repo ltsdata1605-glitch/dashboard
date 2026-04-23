@@ -16,11 +16,11 @@ import {
     HelpCircle,
     Shield
 } from 'lucide-react';
-import { useLayout } from '../../contexts/LayoutContext';
+import { useActiveTab } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
 
 const MobileBottomNav: React.FC = React.memo(() => {
-    const { activeTab, setActiveTab } = useLayout();
+    const { activeTab, setActiveTab } = useActiveTab();
     const { userRole } = useAuth();
     const [isMoreOpen, setIsMoreOpen] = useState(false);
 
