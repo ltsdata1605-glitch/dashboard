@@ -28,7 +28,7 @@ export default function Topbar() {
     ];
 
     return (
-        <header className="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-[100] px-4 md:px-6 flex items-center justify-between transition-colors duration-300">
+        <header className="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 sticky top-0 z-[100] px-4 md:px-6 flex items-center justify-between transition-colors duration-300">
             {/* Left: Mobile Menu Toggle & Search Bar */}
             <div className="flex items-center gap-4 flex-grow max-w-xl">
                 <button 

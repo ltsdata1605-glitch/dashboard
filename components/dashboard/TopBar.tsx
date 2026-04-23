@@ -16,7 +16,7 @@ export default function TopBar({ onToggleSidebar }: TopBarProps) {
   };
 
   return (
-    <header className="h-20 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-40 transition-colors duration-300">
+    <header className="h-20 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between px-8 sticky top-0 z-40 transition-colors duration-300">
       <div className="flex items-center gap-6 flex-1">
         <button 
           onClick={onToggleSidebar}

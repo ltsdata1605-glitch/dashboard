@@ -141,7 +141,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
     return (
         <div ref={tableRef} className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/80 overflow-hidden flex flex-col h-full rounded-2xl shadow-sm hover:shadow-md transition-shadow">
             <div 
-                className={`px-5 py-4 flex justify-between items-center sticky top-0 z-30 backdrop-blur-md border-b bg-white/90 dark:bg-slate-900/90 ${config.headerColor ? 'border-slate-100 dark:border-slate-800' : 'border-slate-200 dark:border-slate-700'}`}
+                className={`px-5 py-4 flex justify-between items-center sticky top-0 z-30 border-b bg-white dark:bg-slate-900 ${config.headerColor ? 'border-slate-100 dark:border-slate-800' : 'border-slate-200 dark:border-slate-700'}`}
                 style={{
                     borderLeftWidth: '6px',
                     borderLeftColor: config.headerColor ? config.headerColor : '#6366f1',
@@ -265,7 +265,7 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
                                     })}
                                     {deptTotalData && processedData.sortedDepartments.length > 1 && (
                                         <tr className="bg-slate-50/80 dark:bg-slate-800/50 font-semibold text-slate-700 dark:text-slate-200 shadow-sm relative z-10">
-                                            <td className="px-4 py-3 text-left text-[11px] uppercase font-black text-slate-400 dark:text-slate-500 sticky left-0 bg-slate-50/80 dark:bg-slate-800/50 z-10 border-b-2 border-slate-200/50 dark:border-slate-700/50 shadow-[inset_-1px_0_0_0_#f1f5f9] dark:shadow-[inset_-1px_0_0_0_#334155] backdrop-blur-sm">TỔNG NHÓM {department}</td>
+                                            <td className="px-4 py-3 text-left text-[11px] uppercase font-black text-slate-400 dark:text-slate-500 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10 border-b-2 border-slate-200/50 dark:border-slate-700/50 shadow-[inset_-1px_0_0_0_#f1f5f9] dark:shadow-[inset_-1px_0_0_0_#334155]">TỔNG NHÓM {department}</td>
                                             {processedData.dateHeaders.map(date => {
                                                 const dateKey = toLocalISOString(date);
                                                 return (
