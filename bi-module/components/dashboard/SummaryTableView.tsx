@@ -391,16 +391,31 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                             <table className="w-full border-collapse compact-export-table border border-slate-200 dark:border-slate-700">
                                 <thead>
                                     {/* TIER 1: GROUP HEADERS */}
-                                    <tr>
-                                        {headerGroups.map((g, idx) => (
+                                    <tr className="text-[11px] font-bold uppercase tracking-wider">
+                                        {/* Sticky 'SIÊU THỊ' merged header (rowSpan=2) */}
+                                        {visibleColumns.has('Tên miền') && (
+                                            <th
+                                                rowSpan={2}
+                                                className={`
+                                                    px-4 py-2.5 text-center text-[12px] font-bold
+                                                    text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30
+                                                    border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
+                                                    border-r border-slate-200 dark:border-slate-700
+                                                    sticky left-0 z-20 align-middle
+                                                    uppercase tracking-wider
+                                                `}
+                                            >
+                                                SIÊU THỊ
+                                            </th>
+                                        )}
+                                        {headerGroups.filter(g => !g.isSticky).map((g, idx) => (
                                             <th
                                                 key={`group-${idx}`}
                                                 colSpan={g.colspan}
                                                 className={`
-                                                    py-3 px-2 text-[11px] font-bold uppercase tracking-wider text-center 
+                                                    py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider text-center 
                                                     border-b border-r border-slate-200 dark:border-slate-700
                                                     ${g.bg} ${g.text}
-                                                    ${g.isSticky ? 'sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.02)]' : ''}
                                                 `}
                                             >
                                                 {g.label}
@@ -408,22 +423,22 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         ))}
                                     </tr>
 
-                                    {/* TIER 2: COLUMN HEADERS — nền giống màu tiêu đề chính */}
+                                    {/* TIER 2: COLUMN HEADERS — skip 'Tên miền' since it's merged above */}
                                     <tr>
                                         {orderedHeaders.map(h => {
                                             if (!visibleColumns.has(h)) return null;
+                                            if (h === 'Tên miền') return null; /* Already rendered as rowSpan=2 */
                                             const g = COLUMN_GROUPS[h] || { bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-300' };
                                             return (
                                                 <th
                                                     key={h}
                                                     className={`
-                                                        px-2 py-3 text-[11px] font-bold uppercase
+                                                        px-2 py-2.5 text-[11px] font-bold uppercase
                                                         tracking-wider border-r border-slate-200 dark:border-slate-700
                                                         border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
                                                         text-center align-middle whitespace-nowrap
                                                         cursor-pointer hover:opacity-80 transition-opacity select-none
                                                         ${g.bg} ${g.text}
-                                                        ${h === 'Tên miền' ? 'text-center sticky left-0 z-10 min-w-[150px] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.04)]' : ''}
                                                     `}
                                                     dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
                                                 />
@@ -468,7 +483,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         <td
                                                             key={h}
                                                             className={`
-                                                                px-2 py-3 whitespace-nowrap text-[12px]
+                                                                px-2 py-2.5 whitespace-nowrap text-[12px]
                                                                 leading-tight h-px
                                                                 tabular-nums align-middle
                                                                 ${isTotal ? 'font-bold text-slate-900 dark:text-slate-100' : 'font-semibold text-slate-600 dark:text-slate-300'}
