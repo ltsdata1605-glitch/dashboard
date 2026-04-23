@@ -368,7 +368,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         </div>
                     ) : (
                         /* ─── DESKTOP TABLE VIEW ─── */
-                        <div className="border border-slate-200/80 dark:border-slate-700/50 rounded-2xl overflow-hidden shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] m-4 mb-6">
+                        <div className="border border-slate-200/80 dark:border-slate-700/50 overflow-hidden shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] m-4 mb-6">
                             <table className="w-full border-collapse compact-export-table">
                                 <thead>
                                     {/* TIER 1: GROUP HEADERS */}
@@ -389,22 +389,22 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         ))}
                                     </tr>
 
-                                    {/* TIER 2: COLUMN HEADERS */}
-                                    <tr className="bg-slate-50/70 dark:bg-slate-800/60">
+                                    {/* TIER 2: COLUMN HEADERS — nền giống màu tiêu đề chính */}
+                                    <tr>
                                         {orderedHeaders.map(h => {
                                             if (!visibleColumns.has(h)) return null;
-                                            const g = COLUMN_GROUPS[h] || { text: 'text-slate-600 dark:text-slate-300' };
+                                            const g = COLUMN_GROUPS[h] || { bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-300' };
                                             return (
                                                 <th
                                                     key={h}
                                                     className={`
                                                         px-3 py-3 text-[10px] font-bold uppercase
-                                                        tracking-wider border-r border-slate-100 dark:border-slate-700/50
+                                                        tracking-wider border-r border-white/40 dark:border-slate-800/40
                                                         border-b-2 border-b-slate-200/80 dark:border-b-slate-600/60
                                                         text-center align-middle whitespace-nowrap
-                                                        hover:bg-slate-50 dark:hover:bg-slate-800/50 select-none
-                                                        ${g.text}
-                                                        ${h === 'Tên miền' ? 'text-left sticky left-0 z-10 min-w-[150px] bg-slate-50/70 dark:bg-slate-800/60 shadow-[2px_0_8px_-2px_rgba(0,0,0,0.04)]' : ''}
+                                                        select-none
+                                                        ${g.bg} ${g.text}
+                                                        ${h === 'Tên miền' ? 'text-left sticky left-0 z-10 min-w-[150px] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.04)]' : ''}
                                                     `}
                                                     dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
                                                 />
@@ -449,7 +449,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         <td
                                                             key={h}
                                                             className={`
-                                                                px-3 py-3 whitespace-nowrap text-[11px]
+                                                                px-3 py-3 whitespace-nowrap text-[12px]
                                                                 border-r border-b border-slate-100/80 dark:border-slate-700/40 last:border-r-0
                                                                 tabular-nums align-middle
                                                                 ${isTotal ? 'font-black text-slate-800 dark:text-slate-200' : 'font-semibold text-slate-600 dark:text-slate-300'}
