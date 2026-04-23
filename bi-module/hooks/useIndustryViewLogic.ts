@@ -213,5 +213,7 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
         handleDragOver,
         handleDrop,
         setDraggedColumn,
+        setColumnOrder,
+        setUserHiddenColumns,
     };
 }
