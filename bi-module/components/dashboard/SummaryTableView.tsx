@@ -176,19 +176,24 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         }
     }, [processedTable.allHeaders, columnOrder, setColumnOrder]);
 
-    const orderedHeaders = useMemo(() => columnOrder.filter(h => processedTable.allHeaders.includes(h)), [columnOrder, processedTable.allHeaders]);
+    const orderedHeaders = useMemo(() => {
+        const rest = columnOrder.filter(h => processedTable.allHeaders.includes(h) && h !== 'Tên miền');
+        return processedTable.allHeaders.includes('Tên miền') ? ['Tên miền', ...rest] : rest;
+    }, [columnOrder, processedTable.allHeaders]);
     const visibleColumns = useMemo(() => new Set(orderedHeaders.filter(h => !new Set(userHiddenColumns).has(h))), [orderedHeaders, userHiddenColumns]);
 
+    // Build header groups, marking single-column groups for rowSpan=2 rendering
     const headerGroups = useMemo(() => {
-        const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean }[] = [];
-        orderedHeaders.filter(h => visibleColumns.has(h)).forEach(h => {
+        const visH = orderedHeaders.filter(h => visibleColumns.has(h) && h !== 'Tên miền');
+        const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean, isSingle: boolean, singleHeader: string }[] = [];
+        visH.forEach(h => {
             const defaultGroup = { label: 'KHÁC', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' };
             const g = COLUMN_GROUPS[h] || defaultGroup;
-            const isSticky = h === 'Tên miền';
-            if (groups.length > 0 && groups[groups.length - 1].label === g.label && !isSticky && !groups[groups.length - 1].isSticky) {
+            if (groups.length > 0 && groups[groups.length - 1].label === g.label) {
                 groups[groups.length - 1].colspan += 1;
+                groups[groups.length - 1].isSingle = false;
             } else {
-                groups.push({ ...g, colspan: 1, isSticky });
+                groups.push({ ...g, colspan: 1, isSticky: false, isSingle: true, singleHeader: h });
             }
         });
         return groups;
@@ -245,7 +250,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
                                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Hiển thị & Sắp xếp cột</p>
                                     <div className="grid gap-0.5">
-                                        {orderedHeaders.map((h, idx) => (
+                                        {orderedHeaders.filter(h => h !== 'Tên miền').map((h, idx) => (
                                             <div
                                                 key={h}
                                                 draggable
@@ -427,26 +432,49 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 SIÊU THỊ
                                             </th>
                                         )}
-                                        {headerGroups.filter(g => !g.isSticky).map((g, idx) => (
-                                            <th
-                                                key={`group-${idx}`}
-                                                colSpan={g.colspan}
-                                                className={`
-                                                    py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider text-center 
-                                                    border-b border-r border-slate-200 dark:border-slate-700
-                                                    ${g.bg} ${g.text}
-                                                `}
-                                            >
-                                                {g.label}
-                                            </th>
-                                        ))}
+                                        {headerGroups.map((g, idx) => {
+                                            if (g.isSingle) {
+                                                /* Single-column group: merge into rowSpan=2 like SIÊU THỊ */
+                                                return (
+                                                    <th
+                                                        key={`group-${idx}`}
+                                                        rowSpan={2}
+                                                        className={`
+                                                            py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider text-center
+                                                            align-middle whitespace-nowrap
+                                                            border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
+                                                            border-r border-slate-200 dark:border-slate-700
+                                                            ${g.bg} ${g.text}
+                                                        `}
+                                                        dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }}
+                                                    />
+                                                );
+                                            }
+                                            /* Multi-column group: normal colSpan header */
+                                            return (
+                                                <th
+                                                    key={`group-${idx}`}
+                                                    colSpan={g.colspan}
+                                                    className={`
+                                                        py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider text-center 
+                                                        border-b border-r border-slate-200 dark:border-slate-700
+                                                        ${g.bg} ${g.text}
+                                                    `}
+                                                >
+                                                    {g.label}
+                                                </th>
+                                            );
+                                        })}
                                     </tr>
 
-                                    {/* TIER 2: COLUMN HEADERS — skip 'Tên miền' since it's merged above */}
+                                    {/* TIER 2: COLUMN HEADERS — skip 'Tên miền' and single-col groups (already rowSpan=2) */}
                                     <tr>
                                         {orderedHeaders.map(h => {
                                             if (!visibleColumns.has(h)) return null;
-                                            if (h === 'Tên miền') return null; /* Already rendered as rowSpan=2 */
+                                            if (h === 'Tên miền') return null;
+                                            /* Skip if this column is a single-column group (already rendered as rowSpan=2) */
+                                            const isSingleGroup = headerGroups.some(g => g.isSingle && g.singleHeader === h);
+                                            if (isSingleGroup) return null;
                                             const g = COLUMN_GROUPS[h] || { bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-300' };
                                             return (
                                                 <th
