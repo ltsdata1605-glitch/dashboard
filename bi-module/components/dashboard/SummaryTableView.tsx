@@ -184,12 +184,12 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     }, [orderedHeaders, visibleColumns]);
 
     const cardTitle = (
-        <div className="card-title-text flex flex-col items-center justify-center w-full">
-            <span className="text-xl font-black uppercase text-primary-700 dark:text-primary-400 text-center leading-none tracking-tight">
+        <div className="card-title-text flex flex-col items-start w-full">
+            <span className="text-xl font-black uppercase text-primary-700 dark:text-primary-400 leading-none tracking-tight">
                 {processedTable.title}
             </span>
             {updateTimestamp && !isCumulative && (
-                <div className="flex items-center justify-center gap-1 mt-1.5 opacity-60 no-print">
+                <div className="flex items-center gap-1 mt-1.5 opacity-60 no-print">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
                     <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">{updateTimestamp}</span>
                 </div>
@@ -231,11 +231,30 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                 <CogIcon className="h-4 w-4" />
                             </button>
                             {isColumnSelectorOpen && (
-                                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-80 overflow-y-auto">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Hiển thị cột</p>
+                                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Hiển thị & Sắp xếp cột</p>
                                     <div className="grid gap-0.5">
-                                        {orderedHeaders.map(h => (
-                                            <div key={h} className="flex items-center justify-between px-2 py-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50">
+                                        {orderedHeaders.map((h, idx) => (
+                                            <div key={h} className="flex items-center justify-between px-2 py-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 group/item">
+                                                {/* Reorder buttons */}
+                                                <div className="flex flex-col mr-1.5 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); if (idx > 0) { setColumnOrder(prev => { const n = [...prev]; [n[idx], n[idx-1]] = [n[idx-1], n[idx]]; return n; }); } }}
+                                                        disabled={idx === 0}
+                                                        className="p-0 text-slate-400 hover:text-indigo-600 disabled:opacity-20 leading-none"
+                                                        title="Di chuyển lên"
+                                                    >
+                                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M5 15l7-7 7 7"/></svg>
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); if (idx < orderedHeaders.length - 1) { setColumnOrder(prev => { const n = [...prev]; [n[idx], n[idx+1]] = [n[idx+1], n[idx]]; return n; }); } }}
+                                                        disabled={idx === orderedHeaders.length - 1}
+                                                        className="p-0 text-slate-400 hover:text-indigo-600 disabled:opacity-20 leading-none"
+                                                        title="Di chuyển xuống"
+                                                    >
+                                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M19 9l-7 7-7-7"/></svg>
+                                                    </button>
+                                                </div>
                                                 <label
                                                     className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer"
                                                     dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
@@ -404,7 +423,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         text-center align-middle whitespace-nowrap
                                                         cursor-pointer hover:opacity-80 transition-opacity select-none
                                                         ${g.bg} ${g.text}
-                                                        ${h === 'Tên miền' ? 'text-left sticky left-0 z-10 min-w-[150px] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.04)]' : ''}
+                                                        ${h === 'Tên miền' ? 'text-center sticky left-0 z-10 min-w-[150px] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.04)]' : ''}
                                                     `}
                                                     dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
                                                 />
@@ -453,7 +472,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                 leading-tight h-px
                                                                 tabular-nums align-middle
                                                                 ${isTotal ? 'font-bold text-slate-900 dark:text-slate-100' : 'font-semibold text-slate-600 dark:text-slate-300'}
-                                                                ${h === 'Tên miền' ? `text-left font-bold sticky left-0 z-[5] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900'} group-hover:bg-slate-50 dark:group-hover:bg-slate-800` : 'text-center'}
+                                                                ${h === 'Tên miền' ? `text-center font-bold sticky left-0 z-[5] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900'} group-hover:bg-slate-50 dark:group-hover:bg-slate-800` : 'text-center'}
                                                                 ${colorCls}
                                                             `}
                                                         >
