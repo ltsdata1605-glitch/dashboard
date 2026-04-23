@@ -368,8 +368,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         </div>
                     ) : (
                         /* ─── DESKTOP TABLE VIEW ─── */
-                        <div className="border border-slate-200/80 dark:border-slate-700/50 overflow-hidden shadow-[0_2px_12px_-4px_rgba(0,0,0,0.06)] m-4 mb-6">
-                            <table className="w-full border-collapse compact-export-table">
+                        <div className="overflow-hidden m-4 mb-6">
+                            <table className="w-full border-collapse compact-export-table border border-slate-200 dark:border-slate-700">
                                 <thead>
                                     {/* TIER 1: GROUP HEADERS */}
                                     <tr>
@@ -378,8 +378,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 key={`group-${idx}`}
                                                 colSpan={g.colspan}
                                                 className={`
-                                                    py-2.5 px-3 text-[10px] font-black uppercase tracking-[0.12em] text-center 
-                                                    border-r border-b border-white/60 dark:border-slate-800/60
+                                                    py-3 px-2 text-[11px] font-bold uppercase tracking-wider text-center 
+                                                    border-b border-r border-slate-200 dark:border-slate-700
                                                     ${g.bg} ${g.text}
                                                     ${g.isSticky ? 'sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.02)]' : ''}
                                                 `}
@@ -398,11 +398,11 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 <th
                                                     key={h}
                                                     className={`
-                                                        px-3 py-3 text-[10px] font-bold uppercase
-                                                        tracking-wider border-r border-white/40 dark:border-slate-800/40
-                                                        border-b-2 border-b-slate-200/80 dark:border-b-slate-600/60
+                                                        px-2 py-3 text-[11px] font-bold uppercase
+                                                        tracking-wider border-r border-slate-200 dark:border-slate-700
+                                                        border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
                                                         text-center align-middle whitespace-nowrap
-                                                        select-none
+                                                        cursor-pointer hover:opacity-80 transition-opacity select-none
                                                         ${g.bg} ${g.text}
                                                         ${h === 'Tên miền' ? 'text-left sticky left-0 z-10 min-w-[150px] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.04)]' : ''}
                                                     `}
@@ -412,7 +412,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         })}
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                                     {processedTable.allRows.map((row, rIdx) => {
                                         const nameIdx = processedTable.allHeaders.indexOf('Tên miền');
                                         const isTotal = row[nameIdx] === 'Tổng';
@@ -421,12 +421,12 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                             <tr
                                                 key={rIdx}
                                                 className={`
-                                                    transition-colors duration-100 group
+                                                    transition-colors group
                                                     ${isTotal
-                                                        ? 'bg-slate-50 dark:bg-slate-800/80 font-extrabold border-t-2 border-t-slate-300 dark:border-t-slate-600'
-                                                        : rIdx % 2 === 0 ? 'bg-white dark:bg-slate-900/40' : 'bg-slate-50/40 dark:bg-slate-800/20'}
-                                                    ${!isTotal ? 'hover:bg-indigo-50/40 dark:hover:bg-indigo-900/10' : ''}
-                                                    ${isSel ? '!bg-indigo-50/60 dark:!bg-indigo-900/20 ring-1 ring-inset ring-indigo-200/70 dark:ring-indigo-800/50' : ''}
+                                                        ? 'bg-slate-100 dark:bg-slate-800 font-bold border-t border-slate-200 dark:border-slate-700'
+                                                        : 'bg-white dark:bg-slate-900'}
+                                                    ${!isTotal ? 'hover:bg-slate-50 dark:hover:bg-slate-800' : ''}
+                                                    ${isSel ? '!bg-indigo-50/60 dark:!bg-indigo-900/20' : ''}
                                                 `}
                                             >
                                                 {orderedHeaders.map(h => {
@@ -449,11 +449,11 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         <td
                                                             key={h}
                                                             className={`
-                                                                px-3 py-3 whitespace-nowrap text-[12px]
-                                                                border-r border-b border-slate-100/80 dark:border-slate-700/40 last:border-r-0
+                                                                px-2 py-3 whitespace-nowrap text-[12px]
+                                                                leading-tight h-px
                                                                 tabular-nums align-middle
-                                                                ${isTotal ? 'font-black text-slate-800 dark:text-slate-200' : 'font-semibold text-slate-600 dark:text-slate-300'}
-                                                                ${h === 'Tên miền' ? `text-left font-bold sticky left-0 z-[5] shadow-[2px_0_8px_-2px_rgba(0,0,0,0.04)] ${isTotal ? 'bg-slate-50 dark:bg-slate-800/80' : rIdx % 2 === 0 ? 'bg-white dark:bg-slate-900/40' : 'bg-slate-50/40 dark:bg-slate-800/20'}` : 'text-center'}
+                                                                ${isTotal ? 'font-bold text-slate-900 dark:text-slate-100' : 'font-semibold text-slate-600 dark:text-slate-300'}
+                                                                ${h === 'Tên miền' ? `text-left font-bold sticky left-0 z-[5] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-slate-100 dark:bg-slate-800' : 'bg-white dark:bg-slate-900'} group-hover:bg-slate-50 dark:group-hover:bg-slate-800` : 'text-center'}
                                                                 ${colorCls}
                                                             `}
                                                         >
