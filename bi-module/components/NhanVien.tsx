@@ -8,10 +8,10 @@ import { CompetitionTab } from './nhanvien/CompetitionTab';
 import CrossSellingTab from './nhanvien/CrossSellingTab';
 import DetailTab from './nhanvien/DetailTab';
 import { shortenSupermarketName, parseNumber } from '../utils/dashboardHelpers';
-import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
+
 import { Switch } from './dashboard/DashboardWidgets';
-import { TrendingUp, Users, ShoppingBag, CreditCard, Award, ArrowUpRight, ArrowDownRight, MoreVertical } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, Cell, CartesianGrid, Legend } from 'recharts';
+import { Users, CreditCard, Award } from 'lucide-react';
+
 import { useExportOptions } from '../../hooks/useExportOptions';
 import ExportOptionsModal from '../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
@@ -233,21 +233,6 @@ export const NhanVien: React.FC = () => {
         }
     };
 
-    // Calculate generic stats for the new Dashboard view
-    const stats_TotalRevenue = useMemo(() => revenueRows.filter(r => r.type === 'employee' && (activeDepartments.includes('all') || activeDepartments.includes(r.department!))).reduce((sum, r) => sum + r.dtlk, 0), [revenueRows, activeDepartments]);
-    const stats_TotalCrossSelling = useMemo(() => banKemRows.filter(r => r.type === 'employee' && (activeDepartments.includes('all') || activeDepartments.includes(r.department!))).reduce((sum, r) => sum + r.dtlk, 0), [banKemRows, activeDepartments]);
-    const stats_TotalInstallment = useMemo(() => installmentRows.filter(r => r.type === 'employee' && (activeDepartments.includes('all') || activeDepartments.includes(r.department!))).reduce((sum, r) => sum + r.totalDtSieuThi, 0), [installmentRows, activeDepartments]);
-    
-
-    
-    const chartData = useMemo(() => {
-        return revenueRows.filter(r => r.type === 'department' && (effectiveActiveDepartments.includes(r.name))).map(d => ({
-            name: d.name,
-            DoanhThu: d.dtlk,
-            DoanhThuQD: d.dtqd
-        })).sort((a, b) => b.DoanhThu - a.DoanhThu);
-    }, [revenueRows, effectiveActiveDepartments]);
-
     const exportOptions = useExportOptions();
 
     return (
@@ -337,119 +322,7 @@ export const NhanVien: React.FC = () => {
                 </div>
             </div>
 
-            {/* --- DASHBOARD WIDGETS --- */}
-            
-            {/* 1. Statistics Cards Grid (Memoized) */}
-            {useMemo(() => (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
-                {/* Total Revenue */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-[1.75rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-slate-700/60 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(99,102,241,0.08)] hover:-translate-y-1 transition-all duration-300">
-                    <div className="absolute -right-6 -top-6 w-32 h-32 bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all duration-500"></div>
-                    <div className="flex justify-between items-start mb-6 relative z-10">
-                        <div>
-                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Tổng Doanh Thu</p>
-                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{stats_TotalRevenue.toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
-                        </div>
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40 border border-white dark:border-slate-700 shadow-[0_4px_12px_rgb(0,0,0,0.05)] flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                            <TrendingUp className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-medium bg-slate-50 dark:bg-slate-900/50 p-2 rounded-xl border border-slate-100 dark:border-slate-800 relative z-10">
-                        <span className="flex items-center text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 px-2 py-0.5 rounded-md font-bold">
-                            <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" /> +12.5%
-                        </span>
-                        <span className="text-slate-500">so với tháng trước</span>
-                    </div>
-                </div>
 
-                {/* Total Cross Selling */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-[1.75rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-slate-700/60 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(16,185,129,0.08)] hover:-translate-y-1 transition-all duration-300">
-                    <div className="absolute -right-6 -top-6 w-32 h-32 bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/20 transition-all duration-500"></div>
-                    <div className="flex justify-between items-start mb-6 relative z-10">
-                        <div>
-                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Tổng Bán Kèm (Phụ kiện)</p>
-                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{stats_TotalCrossSelling.toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
-                        </div>
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/40 dark:to-teal-900/40 border border-white dark:border-slate-700 shadow-[0_4px_12px_rgb(0,0,0,0.05)] flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-                            <ShoppingBag className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-medium bg-slate-50 dark:bg-slate-900/50 p-2 rounded-xl border border-slate-100 dark:border-slate-800 relative z-10">
-                        <span className="flex items-center text-emerald-600 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-900/40 px-2 py-0.5 rounded-md font-bold">
-                            <ArrowUpRight className="w-3.5 h-3.5 mr-0.5" /> +5.2%
-                        </span>
-                        <span className="text-slate-500">tăng trưởng nhẹ</span>
-                    </div>
-                </div>
-
-                {/* Total Competition Target */}
-                <div className="bg-white dark:bg-slate-800/90 rounded-[1.75rem] p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 dark:border-slate-700/60 relative overflow-hidden group hover:shadow-[0_8px_30px_rgb(245,158,11,0.08)] hover:-translate-y-1 transition-all duration-300">
-                    <div className="absolute -right-6 -top-6 w-32 h-32 bg-amber-500/10 dark:bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/20 transition-all duration-500"></div>
-                    <div className="flex justify-between items-start mb-6 relative z-10">
-                        <div>
-                            <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Tổng Target Thi Đua</p>
-                            <h3 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">{totalAggregatedTarget.toLocaleString('en-US', {maximumFractionDigits:1})} <span className="text-base font-bold text-slate-400">Tr</span></h3>
-                        </div>
-                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/40 dark:to-orange-900/40 border border-white dark:border-slate-700 shadow-[0_4px_12px_rgb(0,0,0,0.05)] flex items-center justify-center flex-shrink-0 group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
-                            <Award className="h-6 w-6 text-amber-600 dark:text-amber-400" />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs font-medium bg-slate-50 dark:bg-slate-900/50 p-2 rounded-xl border border-slate-100 dark:border-slate-800 relative z-10">
-                        <span className="flex items-center text-rose-600 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/40 px-2 py-0.5 rounded-md font-bold">
-                            <ArrowDownRight className="w-3.5 h-3.5 mr-0.5" /> -2.1%
-                        </span>
-                        <span className="text-slate-500">giảm so với mục tiêu</span>
-                    </div>
-                </div>
-            </div>
-            ), [stats_TotalRevenue, stats_TotalCrossSelling, totalAggregatedTarget])}
-
-            {/* 2. Chart */}
-            <div>
-                {/* Main Chart */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 flex flex-col">
-                    <div className="p-5 border-b border-slate-100 dark:border-slate-700/60 flex justify-between items-center">
-                        <div>
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Tổng Doanh Thu Theo Bộ Phận</h3>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Đơn vị: Triệu VNĐ</p>
-                        </div>
-                        <button className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                            <MoreVertical className="w-5 h-5" />
-                        </button>
-                    </div>
-                    <div className="p-5 flex-1 min-h-[300px]">
-                        {chartData.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
-                                <BarChart data={chartData} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="colorDoanhThu" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#4f46e5" stopOpacity={0.9}/>
-                                            <stop offset="95%" stopColor="#818cf8" stopOpacity={0.4}/>
-                                        </linearGradient>
-                                        <linearGradient id="colorDoanhThuQD" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" stopColor="#0284c7" stopOpacity={0.9}/>
-                                            <stop offset="95%" stopColor="#38bdf8" stopOpacity={0.4}/>
-                                        </linearGradient>
-                                    </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" strokeOpacity={0.4} />
-                                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }} dy={10} />
-                                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b', fontWeight: 500 }} tickFormatter={(val) => `${val.toLocaleString('en-US')}Tr`} width={60} />
-                                    <RechartsTooltip 
-                                        cursor={{ fill: 'rgba(99, 102, 241, 0.04)' }}
-                                        contentStyle={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)', fontWeight: 'bold', fontSize: '13px', backdropFilter: 'blur(8px)', backgroundColor: 'rgba(255, 255, 255, 0.95)' }}
-                                        formatter={(val: number, name: string) => [`${val.toLocaleString('en-US', {maximumFractionDigits:1})} Triệu`, name === 'DoanhThu' ? 'Doanh thu' : 'Doanh thu QĐ']}
-                                    />
-                                    <Legend wrapperStyle={{ fontSize: '12px', fontWeight: 'bold', paddingTop: '15px' }} iconType="circle" />
-                                    <Bar dataKey="DoanhThu" name="Doanh thu" fill="url(#colorDoanhThu)" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={CHART_ANIMATION_ENABLED} />
-                                    <Bar dataKey="DoanhThuQD" name="Doanh thu QĐ" fill="url(#colorDoanhThuQD)" radius={[6, 6, 0, 0]} maxBarSize={32} isAnimationActive={CHART_ANIMATION_ENABLED} />
-                                </BarChart>
-                            </ResponsiveContainer>
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm font-medium">Chưa có dữ liệu thống kê</div>
-                        )}
-                    </div>
-                </div>
-            </div>
 
             {/* 3. Detailed Data section with internal Tab Switcher */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 overflow-hidden">
