@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useTransition } from 'react';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import Dashboard from './Dashboard';
 import NhanVien from './NhanVien';
@@ -20,6 +20,13 @@ const getTabColorClasses = (color: string, isActive: boolean) => {
 
 export default function BiWrapper() {
     const [activeView, setActiveView] = useIndexedDBState<'dashboard' | 'employee' | 'updater' | 'settings'>('main-active-view', 'dashboard');
+    const [isPending, startTransition] = useTransition();
+
+    const handleTabChange = (id: string) => {
+        startTransition(() => {
+            setActiveView(id as any);
+        });
+    };
 
     const navigationLinks = [
         { id: 'dashboard', icon: 'pie-chart', label: 'Tổng quan', color: 'sky' },
@@ -38,8 +45,8 @@ export default function BiWrapper() {
                         return (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveView(tab.id as any)}
-                                className={`flex items-center justify-center gap-2 py-1.5 ${tab.label ? 'px-3.5' : 'px-2 w-[34px]'} rounded-xl font-bold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${getTabColorClasses(tab.color, isActive)}`}
+                                onClick={() => handleTabChange(tab.id)}
+                                className={`flex items-center justify-center gap-2 py-1.5 ${tab.label ? 'px-3.5' : 'px-2 w-[34px]'} rounded-xl font-bold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${getTabColorClasses(tab.color, isActive)} ${isPending ? 'opacity-70 cursor-wait' : ''}`}
                             >
                                 <div className={`${isActive ? 'text-current' : 'text-slate-400'} shrink-0 flex items-center justify-center`}>
                                     <Icon name={tab.icon as any} size={4} />
@@ -53,9 +60,9 @@ export default function BiWrapper() {
 
             {/* Nội dung Module Cụ thể */}
             <main className="p-0 sm:p-4 lg:p-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">
-                {activeView === 'dashboard' && <Dashboard onNavigateToUpdater={() => setActiveView('updater')} />}
+                {activeView === 'dashboard' && <Dashboard onNavigateToUpdater={() => handleTabChange('updater')} />}
                 {activeView === 'employee' && <NhanVien />}
-                {activeView === 'updater' && <DataUpdater onNavigateToDashboard={() => setActiveView('dashboard')} />}
+                {activeView === 'updater' && <DataUpdater onNavigateToDashboard={() => handleTabChange('dashboard')} />}
                 {activeView === 'settings' && <Settings />}
             </main>
         </div>

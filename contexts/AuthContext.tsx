@@ -21,11 +21,19 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [userRole, setUserRole] = useState<'admin' | 'manager' | 'employee' | 'pending' | null>(null);
-    const [departmentId, setDepartmentId] = useState<string | undefined>(undefined);
-    const [employeeName, setEmployeeName] = useState<string | undefined>(undefined);
+    const [userRole, setUserRole] = useState<'admin' | 'manager' | 'employee' | 'pending' | null>(() => {
+        return (localStorage.getItem('cached_user_role') as any) || null;
+    });
+    const [departmentId, setDepartmentId] = useState<string | undefined>(() => {
+        return localStorage.getItem('cached_dept_id') || undefined;
+    });
+    const [employeeName, setEmployeeName] = useState<string | undefined>(() => {
+        return localStorage.getItem('cached_emp_name') || undefined;
+    });
     const [expiresAt, setExpiresAt] = useState<Date | null>(null);
-    const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'new' | 'expired'>('new');
+    const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'new' | 'expired'>(() => {
+        return (localStorage.getItem('cached_user_status') as any) || 'new';
+    });
     
     const [isLoading, setIsLoading] = useState(true);
     const [isDemoMode, setDemoMode] = useState(false);
@@ -46,6 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
             setUser(currentUser);
+            setIsLoading(false); // Stop spinner immediately!
             if (currentUser) {
                 try {
                     const { doc, getDoc, setDoc, serverTimestamp, updateDoc } = await import('firebase/firestore');
@@ -88,6 +97,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setDepartmentId(data.departmentId);
                         setEmployeeName(data.employeeName);
                         setStatus(currentStatus);
+                        
+                        // Cache values for next fast-load
+                        localStorage.setItem('cached_user_role', currentRole);
+                        localStorage.setItem('cached_user_status', currentStatus);
+                        if (data.departmentId) localStorage.setItem('cached_dept_id', data.departmentId);
+                        if (data.employeeName) localStorage.setItem('cached_emp_name', data.employeeName);
                     } else {
                         let initialRole: 'admin' | 'pending' = 'pending';
                         let initialStatus: 'approved' | 'new' = 'new';
@@ -113,11 +128,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setUserRole(initialRole);
                         setStatus(initialStatus);
                         setDepartmentId(initialDept);
+                        
+                        localStorage.setItem('cached_user_role', initialRole);
+                        localStorage.setItem('cached_user_status', initialStatus);
+                        if (initialDept) localStorage.setItem('cached_dept_id', initialDept);
                     }
                 } catch (error) {
                     console.error("Lỗi lấy thông tin người dùng:", error);
-                    setUserRole('pending');
-                    setStatus('new');
+                    // Do not overwrite cached role on network error to allow offline use
                 }
             } else {
                 setUserRole(null);
@@ -125,8 +143,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setEmployeeName(undefined);
                 setExpiresAt(null);
                 setStatus('new');
+                localStorage.removeItem('cached_user_role');
+                localStorage.removeItem('cached_user_status');
+                localStorage.removeItem('cached_dept_id');
+                localStorage.removeItem('cached_emp_name');
             }
-            setIsLoading(false);
             clearTimeout(fallbackTimer);
         });
 

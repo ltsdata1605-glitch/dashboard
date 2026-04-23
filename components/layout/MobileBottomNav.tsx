@@ -1,5 +1,5 @@
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useTransition } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
     BarChart3, 
@@ -23,6 +23,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
     const { activeTab, setActiveTab } = useActiveTab();
     const { userRole } = useAuth();
     const [isMoreOpen, setIsMoreOpen] = useState(false);
+    const [isPending, startTransition] = useTransition();
 
     const mainTabs = [
         { id: 'analysis', label: 'Phân tích', icon: BarChart3 },
@@ -40,7 +41,9 @@ const MobileBottomNav: React.FC = React.memo(() => {
     ];
 
     const handleTabClick = useCallback((id: string) => {
-        setActiveTab(id);
+        startTransition(() => {
+            setActiveTab(id);
+        });
         setIsMoreOpen(false);
     }, [setActiveTab]);
 
@@ -117,7 +120,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                     isActive 
                                                         ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 
                                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                                                }`}
+                                                } ${isPending ? 'opacity-70' : ''}`}
                                             >
                                                 <tab.icon size={20} />
                                                 <span className="font-medium text-sm">{tab.label}</span>
@@ -142,7 +145,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 onClick={() => handleTabClick(tab.id)}
                                 className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
                                     isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
-                                }`}
+                                } ${isPending ? 'opacity-70' : ''}`}
                             >
                                 {isActive && (
                                     <motion.div
