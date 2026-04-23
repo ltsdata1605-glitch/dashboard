@@ -238,11 +238,7 @@ export const NhanVien: React.FC = () => {
     const stats_TotalCrossSelling = useMemo(() => banKemRows.filter(r => r.type === 'employee' && (activeDepartments.includes('all') || activeDepartments.includes(r.department!))).reduce((sum, r) => sum + r.dtlk, 0), [banKemRows, activeDepartments]);
     const stats_TotalInstallment = useMemo(() => installmentRows.filter(r => r.type === 'employee' && (activeDepartments.includes('all') || activeDepartments.includes(r.department!))).reduce((sum, r) => sum + r.totalDtSieuThi, 0), [installmentRows, activeDepartments]);
     
-    const topEmployees = useMemo(() => {
-        return [...revenueRows.filter(r => r.type === 'employee' && (activeDepartments.includes('all') || activeDepartments.includes(r.department!)))]
-            .sort((a, b) => b.dtqd - a.dtqd)
-            .slice(0, 6);
-    }, [revenueRows, activeDepartments]);
+
     
     const chartData = useMemo(() => {
         return revenueRows.filter(r => r.type === 'department' && (effectiveActiveDepartments.includes(r.name))).map(d => ({
@@ -408,10 +404,10 @@ export const NhanVien: React.FC = () => {
             </div>
             ), [stats_TotalRevenue, stats_TotalCrossSelling, totalAggregatedTarget])}
 
-            {/* 2. Charts & Top Lists Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* 2. Chart */}
+            <div>
                 {/* Main Chart */}
-                <div className="lg:col-span-7 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 flex flex-col">
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 flex flex-col">
                     <div className="p-5 border-b border-slate-100 dark:border-slate-700/60 flex justify-between items-center">
                         <div>
                             <h3 className="text-lg font-bold text-slate-800 dark:text-white">Tổng Doanh Thu Theo Bộ Phận</h3>
@@ -450,52 +446,6 @@ export const NhanVien: React.FC = () => {
                             </ResponsiveContainer>
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm font-medium">Chưa có dữ liệu thống kê</div>
-                        )}
-                    </div>
-                </div>
-
-                {/* Top Employees List */}
-                <div className="lg:col-span-5 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700/60 overflow-hidden flex flex-col">
-                    <div className="p-5 border-b border-slate-100 dark:border-slate-700/60 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/50">
-                        <div>
-                            <h3 className="text-lg font-bold text-slate-800 dark:text-white">Top Cá Nhân Xuất Sắc</h3>
-                            <p className="text-[11px] text-slate-500 uppercase tracking-wider font-semibold mt-0.5">Top 6 nhân sự xuất sắc</p>
-                        </div>
-                        <div className="w-10 h-10 flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 rounded-full border border-amber-100 dark:border-amber-800/30">
-                            <Award className="w-5 h-5 text-amber-500" />
-                        </div>
-                    </div>
-                    <div className="p-3 flex-1 overflow-y-auto custom-scrollbar">
-                        {topEmployees.length > 0 ? (
-                            <div className="space-y-2">
-                                {topEmployees.map((emp, idx) => {
-                                    // Huy hiệu Rank phong cách Kim loại 
-                                    const rankClass = idx === 0 
-                                        ? 'bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 text-white shadow-[0_2px_10px_rgba(251,191,36,0.4)] border-none'
-                                        : idx === 1 
-                                            ? 'bg-gradient-to-br from-slate-200 via-slate-300 to-slate-400 text-slate-700 shadow-[0_2px_10px_rgba(148,163,184,0.3)] border-none'
-                                            : idx === 2 
-                                                ? 'bg-gradient-to-br from-orange-300 via-orange-400 to-orange-600 text-white shadow-[0_2px_10px_rgba(249,115,22,0.3)] border-none'
-                                                : 'bg-slate-50 text-slate-500 border border-slate-200 shadow-sm';
-
-                                    return (
-                                        <div key={idx} className="flex items-center gap-3 p-3 rounded-2xl hover:bg-indigo-50/50 dark:hover:bg-slate-700/50 transition-all duration-300 border border-transparent hover:border-indigo-100 dark:hover:border-slate-600 group cursor-default">
-                                            <div className={`w-9 h-9 rounded-full flex items-center justify-center font-black text-xs shrink-0 ${rankClass}`}>
-                                                {idx + 1}
-                                            </div>
-                                            <div className="min-w-0 flex-1 ml-1 overflow-hidden">
-                                                <p className="text-[13px] font-bold text-slate-800 dark:text-white truncate group-hover:text-indigo-700 transition-colors">{emp.name}</p>
-                                                <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wide truncate mt-0.5">{emp.department || 'Nhân viên'}</p>
-                                            </div>
-                                            <div className="text-right shrink-0 bg-slate-50 dark:bg-slate-900/50 px-3 py-1.5 rounded-xl border border-slate-100 dark:border-slate-800 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:border-indigo-100 transition-colors">
-                                                <p className="text-[13px] font-black text-indigo-600 dark:text-indigo-400 tracking-tight">{Math.round(emp.dtqd).toLocaleString('en-US')}<span className="text-[10px] text-indigo-400 ml-0.5">Tr</span></p>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <div className="h-full flex items-center justify-center text-slate-500 text-sm">Chưa có dữ liệu top</div>
                         )}
                     </div>
                 </div>
