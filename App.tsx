@@ -58,7 +58,10 @@ const TabContent = React.memo(() => {
         <>
             {persistentViews.map(view => (
                 mountedTabs.has(view.id) ? (
-                    <div key={view.id} className={activeTab === view.id ? `block ${view.className || ''}` : 'hidden'}>
+                    <div 
+                        key={view.id} 
+                        className={`${view.className || ''} ${activeTab === view.id ? 'block relative w-full h-full' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}`}
+                    >
                         {view.component}
                     </div>
                 ) : null

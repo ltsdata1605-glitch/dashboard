@@ -95,21 +95,21 @@ const BiWrapper = React.memo(function BiWrapper() {
                 <Suspense fallback={<TabSpinner />}>
                     {/* Dashboard view */}
                     {mountedViews.has('dashboard') && (
-                        <div className={activeView === 'dashboard' ? 'block' : 'hidden'}>
+                        <div className={activeView === 'dashboard' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
                             <Dashboard onNavigateToUpdater={() => handleTabChange('updater')} />
                         </div>
                     )}
 
                     {/* Employee view */}
                     {mountedViews.has('employee') && (
-                        <div className={activeView === 'employee' ? 'block' : 'hidden'}>
+                        <div className={activeView === 'employee' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
                             <NhanVien />
                         </div>
                     )}
 
                     {/* Data Updater view */}
                     {mountedViews.has('updater') && (
-                        <div className={activeView === 'updater' ? 'block' : 'hidden'}>
+                        <div className={activeView === 'updater' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
                             <DataUpdater onNavigateToDashboard={() => handleTabChange('dashboard')} />
                         </div>
                     )}
