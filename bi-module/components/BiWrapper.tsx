@@ -56,6 +56,9 @@ const BiWrapper = React.memo(function BiWrapper() {
         });
     }, []);
 
+    const handleNavigateToUpdater = useCallback(() => handleTabChange('updater'), [handleTabChange]);
+    const handleNavigateToDashboard = useCallback(() => handleTabChange('dashboard'), [handleTabChange]);
+
     const navigationLinks = [
         { id: 'dashboard', icon: 'pie-chart', label: 'Tổng quan', color: 'sky' },
         { id: 'employee', icon: 'users', label: 'Nhân viên', color: 'emerald' },
@@ -96,7 +99,7 @@ const BiWrapper = React.memo(function BiWrapper() {
                     {/* Dashboard view */}
                     {mountedViews.has('dashboard') && (
                         <div className={activeView === 'dashboard' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
-                            <Dashboard onNavigateToUpdater={() => handleTabChange('updater')} />
+                            <Dashboard onNavigateToUpdater={handleNavigateToUpdater} />
                         </div>
                     )}
 
@@ -110,7 +113,7 @@ const BiWrapper = React.memo(function BiWrapper() {
                     {/* Data Updater view */}
                     {mountedViews.has('updater') && (
                         <div className={activeView === 'updater' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
-                            <DataUpdater onNavigateToDashboard={() => handleTabChange('dashboard')} />
+                            <DataUpdater onNavigateToDashboard={handleNavigateToDashboard} />
                         </div>
                     )}
 
