@@ -51,7 +51,7 @@ const debugInitialData = {
     SummaryTable: { name: "Bảng Chi tiết Ngành hàng (SummaryTable.tsx)", description: "...", design: "..." },
 };
 
-export default function DashboardView() {
+const DashboardView = React.memo(function DashboardView() {
     const logic = useDashboardLogic();
     const {
         status, appState, isProcessing, isClearingDepartments, isExporting, fileInfo,
@@ -475,4 +475,6 @@ export default function DashboardView() {
             </div>
         </div>
     );
-}
+});
+
+export default DashboardView;

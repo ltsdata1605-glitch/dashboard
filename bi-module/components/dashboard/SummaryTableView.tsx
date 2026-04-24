@@ -4,8 +4,8 @@ import Card from '../Card';
 import ExportButton from '../ExportButton';
 import { parseSummaryData, roundUp, shortenSupermarketName, parseNumber } from '../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { CogIcon } from '@heroicons/react/outline';
-import { Switch } from '@headlessui/react';
+import { CogIcon } from '../Icons';
+import { Switch } from './DashboardWidgets';
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {

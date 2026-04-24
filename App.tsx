@@ -44,7 +44,7 @@ const TabContent = React.memo(() => {
     }, [activeTab]);
 
     // Persistent views — only mount when first visited, keep alive after
-    const persistentViews: { id: string; className?: string; component: React.ReactNode }[] = [
+    const persistentViews = React.useMemo(() => [
         { id: 'analysis', component: <DashboardView /> },
         { id: 'approval', className: 'w-full', component: <UserManagementView /> },
         { id: 'settings', className: 'w-full', component: <SettingsView /> },
@@ -52,7 +52,7 @@ const TabContent = React.memo(() => {
         { id: 'help', className: 'w-full', component: <AboutView /> },
         { id: 'check-thuong', component: <CheckThuongView /> },
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
-    ];
+    ], []);
 
     return (
         <>

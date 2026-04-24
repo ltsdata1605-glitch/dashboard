@@ -40,7 +40,7 @@ const TabSpinner = () => (
  * 
  * Each sub-view is also lazy-loaded so initial mount only loads the active view's chunk.
  */
-export default function BiWrapper() {
+const BiWrapper = React.memo(function BiWrapper() {
     // Use plain useState — no IDB write needed for navigation state
     const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater' | 'settings'>('dashboard');
     // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
@@ -120,4 +120,6 @@ export default function BiWrapper() {
             </main>
         </div>
     );
-}
+});
+
+export default BiWrapper;
