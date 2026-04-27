@@ -6,18 +6,20 @@ type SetStateAction<S> = S | ((prevState: S) => S);
 type Dispatch<A> = (value: A) => void;
 
 const DB_CHANGE_EVENT = 'indexeddb-change';
-// Dùng Map để quản lý debounce cho sự kiện theo từng key riêng biệt
-const eventTimeouts = new Map<string, any>();
 
 export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, Dispatch<SetStateAction<T>>] {
   const [value, setValue] = useState<T>(defaultValue);
   const loadIdRef = useRef(0);
   const writeQueueRef = useRef<(() => Promise<any>)[]>([]);
   const isWritingRef = useRef(false);
+  // Ref để lưu defaultValue ổn định (tránh object/array literal gây re-render vô tận)
+  const defaultValueRef = useRef(defaultValue);
+  // Ref đánh dấu key vừa ghi — khi nhận event cho key này, bỏ qua reload (vì state đã đúng)
+  const justWroteKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!key) {
-      setValue(defaultValue);
+      setValue(defaultValueRef.current);
       return;
     }
 
@@ -29,7 +31,7 @@ export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, D
                 if (storedValue !== undefined && storedValue !== null) {
                     setValue(storedValue);
                 } else {
-                    setValue(defaultValue);
+                    setValue(defaultValueRef.current);
                 }
             }
         }).catch(err => {
@@ -41,13 +43,18 @@ export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, D
 
     const handleDbChange = (event: CustomEvent) => {
         if (event.detail.key === key) {
+            // Nếu chính hook này vừa ghi key đó → state đã đúng rồi, bỏ qua reload
+            if (justWroteKeyRef.current === key) {
+                justWroteKeyRef.current = null;
+                return;
+            }
             loadValue();
         }
     };
 
     window.addEventListener(DB_CHANGE_EVENT, handleDbChange as EventListener);
     return () => window.removeEventListener(DB_CHANGE_EVENT, handleDbChange as EventListener);
-  }, [key, defaultValue]);
+  }, [key]); // ← ĐÃ XOÁ defaultValue khỏi deps — tránh vòng lặp vô tận
 
   const setStoredValue = useCallback((newValue: SetStateAction<T>) => {
     if (!key) return;
@@ -70,18 +77,9 @@ export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, D
             }
         };
 
+        // Đánh dấu key đang được ghi bởi hook này
+        justWroteKeyRef.current = key;
         const task = () => db.set(key, finalValue)
-            .then(() => {
-                // Debounce event: Chỉ phát sự kiện sau khi các thay đổi dồn dập kết thúc cho key này
-                if (eventTimeouts.has(key)) {
-                    clearTimeout(eventTimeouts.get(key));
-                }
-                const timeout = setTimeout(() => {
-                    window.dispatchEvent(new CustomEvent(DB_CHANGE_EVENT, { detail: { key } }));
-                    eventTimeouts.delete(key);
-                }, 100); 
-                eventTimeouts.set(key, timeout);
-            })
             .catch(err => console.error(`Save error ${key}`, err));
         
         writeQueueRef.current.push(task);

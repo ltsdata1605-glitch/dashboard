@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0284c7" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="apple-touch-icon" href="https://ais-dev-kqkxygmhqw5bxf4kimtcjr-173602261831.asia-southeast1.run.app/favicon.ico" />
+    <title>BI Dashboard Pro - Hệ thống Phân tích Siêu thị</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+      
+      :root {
+        --primary-gradient: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+      }
+
+      /* NGĂN CHẶN REFRESH KHI KÉO XUỐNG (PULL-TO-REFRESH) */
+      html, body {
+        overscroll-behavior-y: none;
+        overscroll-behavior-x: none;
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        /* Ngăn chặn các cử chỉ mặc định của trình duyệt như double-tap to zoom */
+        touch-action: manipulation;
+      }
+
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        letter-spacing: -0.01em;
+        overflow: hidden; /* Body không cuộn, chúng ta cuộn ở container nội bộ */
+      }
+
+      * {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+      }
+
+      .font-mono, .font-mono *, textarea, code, pre {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+      }
+
+      #root {
+        height: 100%;
+        width: 100%;
+        overflow: hidden;
+      }
+
+      @media print {
+        header, nav, .no-print, .theme-toggle-button { display: none !important; }
+        main { padding: 0 !important; margin: 0 !important; }
+        .printable-area { box-shadow: none !important; border: none !important; width: 100% !important; }
+      }
+
+      /* Tối ưu cuộn trên Mobile */
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      
+      .overflow-x-auto {
+        -webkit-overflow-scrolling: touch;
+      }
+
+      /* Custom Scrollbar cho Laptop */
+      ::-webkit-scrollbar { width: 6px; height: 6px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+      .dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+            colors: {
+              primary: {
+                DEFAULT: '#0ea5e9',
+                50: '#f0f9ff', 100: '#e0f2fe', 200: '#bae6fd', 300: '#7dd3fc',
+                400: '#38bdf8', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1',
+                800: '#075985', 900: '#0c4a6e', 950: '#082f49',
+              },
+              slate: {
+                950: '#020617',
+              }
+            },
+            borderRadius: {
+              '3xl': '1.5rem',
+              '4xl': '2rem',
+            }
+          }
+        }
+      }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.35.0",
+    "vite": "https://esm.sh/vite@^7.3.1",
+    "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.2"
+  }
+}
+</script>
+</head>
+  <body class="bg-[#f8fafc] dark:bg-slate-950 text-slate-900 dark:text-slate-100 antialiased">
+    <div id="root">
+      <div class="flex items-center justify-center min-h-screen bg-white dark:bg-slate-950">
+        <div class="relative">
+          <div class="w-16 h-16 border-4 border-primary-200 border-t-primary-600 rounded-full animate-spin"></div>
+          <div class="mt-4 text-center font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">BI PRO SYSTEM</div>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      // CHỐNG REFRESH KHI VUỐT XUỐNG TRÊN MOBILE (SCRIPT CẤP THẤP)
+      let lastTouchY = 0;
+      document.addEventListener('touchstart', function(e) {
+          lastTouchY = e.touches[0].clientY;
+      }, {passive: false});
+
+      document.addEventListener('touchmove', function(e) {
+          const touchY = e.touches[0].clientY;
+          const touchTop = touchY > lastTouchY;
+          
+          // Nếu đang ở đỉnh trang và cố tình kéo xuống
+          if (window.scrollY === 0 && touchTop) {
+              // Kiểm tra xem có đang cuộn bên trong một phần tử con không
+              const path = e.composedPath();
+              let isInternalScroll = false;
+              for (let i = 0; i < path.length; i++) {
+                  const el = path[i];
+                  if (el.scrollTop > 0) {
+                      isInternalScroll = true;
+                      break;
+                  }
+              }
+              
+              if (!isInternalScroll) {
+                  e.preventDefault(); // Chặn hành vi pull-to-refresh
+              }
+          }
+      }, {passive: false});
+    </script>
+  </body>
+</html>

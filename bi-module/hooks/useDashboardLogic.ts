@@ -268,13 +268,15 @@ export const useDashboardLogic = () => {
             }
             : {
                 dtlk: 'DTLK', dtqd: 'DTQĐ', htTargetDuKienQD: '% HT Target Dự Kiến (QĐ)',
-                dtDuKienQD: 'DT Dự Kiến (QĐ)', lkhach: 'Lượt Khách LK', tlpv: 'TLPVTC LK',
+                dtDuKienQD: 'DT Dự Kiến (QĐ)', dtDuKien: 'DT Dự Kiến', lkhach: 'Lượt Khách LK', tlpv: 'TLPVTC LK',
                 tyTrongTraGop: 'Tỷ Trọng Trả Góp', dtckThang: '+/- DTCK Tháng',
                 dtckThangQD: '+/- DTCK Tháng (QĐ)', luotKhachChange: '+/- Lượt Khách',
                 tlpvChange: '+/- TLPVTC', traGopChange: '+/- Tỷ Trọng Trả Góp',
             };
             for (const key in mapping) {
-                const idx = headers.indexOf(mapping[key]);
+                let idx = headers.indexOf(mapping[key]);
+                if (idx === -1 && key === 'tyTrongTraGop') idx = headers.indexOf('Tỷ Trọng Trả Chậm');
+                if (idx === -1 && key === 'traGopChange') idx = headers.indexOf('+/- Tỷ Trọng Trả Chậm');
                 if (idx !== -1 && row[idx]) kpis[key] = row[idx];
             }
         }

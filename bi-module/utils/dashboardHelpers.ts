@@ -24,7 +24,7 @@ export const parseSummaryData = (text: string) => {
         dtqd: /Doanh thu quy đổi\s+DTQĐ\s+([\d,.]+)/,
         targetQD: /Target \(QĐ\)\s+([\d,.]+)/,
         htTargetQD: /% HT Target \(QĐ\)\s+([\d,.]+%)/,
-        tyTrongTraGop: /Tỷ Trọng Trả Góp\s+([\d,.]+%)/,
+        tyTrongTraGop: /Tỷ Trọng Trả (?:Góp|Chậm)\s+([\d,.]+%)/,
         dtDuKien: /DT Dự Kiến\s+([\d,.]+)/,
         dtDuKienQD: /DT Dự Kiến \(QĐ\)\s+([\d,.]+)/,
         htTargetDuKienQD: /% HT Target Dự Kiến \(QĐ\)\s+([\d,.]+%)/,
@@ -35,7 +35,7 @@ export const parseSummaryData = (text: string) => {
         tlpv: /TLPV Thành công\s+([\d,.]+%)/,
         luotKhachChange: /\+\/- Lượt Khách\s+(?:\+\/- Lượt Khách\s+)?([-+\d,.]+%)/,
         tlpvChange: /\+\/- TLPVTC\s+(?:\+\/- TLPVTC\s+)?([-+\d,.]+%)/,
-        traGopChange: /\+\/- Tỷ Trọng Trả Góp\s+(?:\+\/- Tỷ Trọng Trả Góp\s+)?([-+\d,.]+%)/,
+        traGopChange: /\+\/- Tỷ Trọng Trả (?:Góp|Chậm)\s+(?:\+\/- Tỷ Trọng Trả (?:Góp|Chậm)\s+)?([-+\d,.]+%)/,
         dtckThangQD: /\+\/- DTCK Tháng \(QĐ\)\s+(?:\+\/- DTCK Tháng \(QĐ\)\s+)?([-+\d,.]+%)/,
     };
 

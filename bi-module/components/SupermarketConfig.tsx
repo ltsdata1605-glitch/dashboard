@@ -418,7 +418,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
     const ids = useMemo(() => ({
         ds: supermarketName ? `config-${supermarketName}-danhsach` : null,
-        mt: supermarketName ? `config-${supermarketName}-matran` : null,
         td: supermarketName ? `config-${supermarketName}-thidua` : null,
         rt: supermarketName ? `config-${supermarketName}-industry-realtime` : null,
         lk: supermarketName ? `config-${supermarketName}-industry-luyke` : null,
@@ -427,7 +426,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     }), [supermarketName]);
 
     const [danhSachData, setDanhSachData] = useIndexedDBState(ids.ds, '');
-    const [maTranData, setMaTranData] = useIndexedDBState(ids.mt, '');
     const [thiDuaData, setThiDuaData] = useIndexedDBState(ids.td, '');
     const [industryRealtimeData, setIndustryRealtimeData] = useIndexedDBState(ids.rt, '');
     const [industryLuyKeData, setIndustryLuyKeData] = useIndexedDBState(ids.lk, '');
@@ -435,7 +433,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     const [banKemData, setBanKemData] = useIndexedDBState(ids.bk, '');
 
     const [danhSachTs, setDanhSachTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.ds}-ts` : null, null);
-    const [maTranTs, setMaTranTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.mt}-ts` : null, null);
     const [thiDuaTs, setThiDuaTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.td}-ts` : null, null);
     const [industryRealtimeTs, setIndustryRealtimeTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.rt}-ts` : null, null);
     const [industryLuyKeTs, setIndustryLuyKeTs] = useIndexedDBState<string | null>(supermarketName ? `${ids.lk}-ts` : null, null);
@@ -590,17 +587,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
                                         setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
                                     }} />
-
-                                <StatusTile title="HQ BÁN KÈM" lastUpdated={banKemTs} value={banKemData} placeholder="Nhân viên..." error={errors.banKem} 
-                                    icon={<ChartBarIcon className="h-4 w-4" />} colorTheme="emerald"
-                                    onChange={(v) => { setBanKemData(v); handleUpdate('banKem', v, s => s.includes('Nhân viên	DTLK	DTLK áp dụng MNGN'), setBanKemTs, `Nhân viên (BK) - ${supermarketName}`, ids.bk!); }}
-                                    onClear={(title) => { 
-                                        setBanKemData(''); 
-                                        setBanKemTs(null); 
-                                        removeUpdate(ids.bk!); 
-                                        setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                        setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
-                                    }} />
                             </div>
                         </div>
 
@@ -611,13 +597,13 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 Trả góp & CHI TIẾT NH
                             </h3>
                             <div className="grid grid-cols-1 gap-2">
-                                <StatusTile title="MA TRẬN NH" lastUpdated={maTranTs} value={maTranData} downloadUrl={`https://bi.thegioididong.com/nhan-vien?id=${supermarketName}&tab=3`}
-                                    icon={<DocumentReportIcon className="h-4 w-4" />} colorTheme="rose"
-                                    onChange={(v) => { setMaTranData(v); handleUpdate('maTran', v, s => s.includes('Phòng ban') && s.includes('DTQĐ	Số lượng'), setMaTranTs, `Nhân viên (MT) - ${supermarketName}`, ids.mt!); }}
+                                <StatusTile title="HQ BÁN KÈM" lastUpdated={banKemTs} value={banKemData} placeholder="Nhân viên..." error={errors.banKem} 
+                                    icon={<ChartBarIcon className="h-4 w-4" />} colorTheme="emerald"
+                                    onChange={(v) => { setBanKemData(v); handleUpdate('banKem', v, s => s.includes('Nhân viên	DTLK	DTLK áp dụng MNGN'), setBanKemTs, `Nhân viên (BK) - ${supermarketName}`, ids.bk!); }}
                                     onClear={(title) => { 
-                                        setMaTranData(''); 
-                                        setMaTranTs(null); 
-                                        removeUpdate(ids.mt!); 
+                                        setBanKemData(''); 
+                                        setBanKemTs(null); 
+                                        removeUpdate(ids.bk!); 
                                         setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
                                         setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
                                     }} />

@@ -13,10 +13,14 @@ import UserManagementView from './UserManagementView';
 type SettingsTab = 'appearance' | 'data' | 'account' | 'approval_link';
 
 const FONTS = [
-    { id: 'Inter', name: 'Inter (Khuyên dùng)' },
-    { id: 'Roboto', name: 'Roboto' },
-    { id: 'Plus Jakarta Sans', name: 'Plus Jakarta Sans' },
-    { id: 'Be Vietnam Pro', name: 'Be Vietnam Pro' }
+    { id: 'Plus Jakarta Sans', name: 'Plus Jakarta Sans (Mặc định)' },
+    { id: 'Inter', name: 'Inter' },
+    { id: 'Oswald', name: 'Oswald' },
+    { id: 'Roboto Condensed', name: 'Roboto Condensed' },
+    { id: 'Fjalla One', name: 'Fjalla One' },
+    { id: 'Archivo Narrow', name: 'Archivo Narrow' },
+    { id: 'Jost', name: 'Jost' },
+    { id: 'Josefin Sans', name: 'Josefin Sans' }
 ];
 
 const SettingsView: React.FC = () => {
@@ -25,7 +29,7 @@ const SettingsView: React.FC = () => {
     const { syncState, lastSyncTime, forceSync } = useCloudSync();
     
     const [activeTab, setActiveTab] = useState<SettingsTab>('account');
-    const [font, setFont] = useState('Inter');
+    const [font, setFont] = useState('Plus Jakarta Sans');
     const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(true);
     const [configUrl, setConfigUrl] = useState('');
     const [isClearing, setIsClearing] = useState(false);
@@ -78,7 +82,7 @@ const SettingsView: React.FC = () => {
     const handleFontChange = async (newFont: string) => {
         setFont(newFont);
         await dbService.saveGlobalFont(newFont);
-        if (newFont === 'Inter') {
+        if (newFont === 'Plus Jakarta Sans') {
             document.body.style.fontFamily = '';
         } else {
             document.body.style.fontFamily = `'${newFont}', sans-serif`;

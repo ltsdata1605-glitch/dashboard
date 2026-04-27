@@ -9,13 +9,16 @@ interface KpiOverviewProps {
     kpiData: Record<string, string>;
     targets: { quyDoi: number; traGop: number };
     supermarketDailyTargets: Record<string, number>;
+    supermarketMonthlyTargets?: Record<string, number>;
     activeSupermarket: string;
 }
 
-const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets, supermarketDailyTargets, activeSupermarket }) => {
+const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets, supermarketDailyTargets, supermarketMonthlyTargets, activeSupermarket }) => {
 
     const dtlk = parseNumber(kpiData.dtlk);
     const dtqd = parseNumber(kpiData.dtqd);
+    const dtDuKien = parseNumber(kpiData.dtDuKien);
+    const dtDuKienQD = parseNumber(kpiData.dtDuKienQD);
     const hqqd = dtlk > 0 ? ((dtqd / dtlk) - 1) * 100 : 0;
 
     let totalVuotTroi = 0;
@@ -49,7 +52,17 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         );
     };
 
-    const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetDuKienQD_c;
+    let totalVuotTroiMonthly = 0;
+    if (!isRealtime && supermarketMonthlyTargets) {
+        totalVuotTroiMonthly = supermarketMonthlyTargets[activeSupermarket] || 0;
+        if (activeSupermarket === 'Tổng') {
+            totalVuotTroiMonthly = Object.values(supermarketMonthlyTargets).reduce<number>((sum, value) => sum + Number(value), 0);
+        }
+    }
+
+    const htTargetVuotTroiMonthly = totalVuotTroiMonthly > 0 ? (dtDuKienQD / totalVuotTroiMonthly) * 100 : parseNumber(kpiData.htTargetDuKienQD);
+
+    const secondaryPct = isRealtime ? htTargetVuotTroi : htTargetVuotTroiMonthly;
     const secondaryLabel = isRealtime ? 'MỤC TIÊU NGÀY' : 'MỤC TIÊU THÁNG';
 
     // Helper for rendering the native-style KPI Card
@@ -117,7 +130,11 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     titleColor: 'text-slate-500 dark:text-slate-400',
                     value: `${roundUp(dtlk).toLocaleString('vi-VN')} Tr`,
                     valueColor: 'text-amber-500 dark:text-amber-400',
-                    rightEl: !isRealtime ? renderGrowth(kpiData.dtckThangQD) : null,
+                    rightEl: !isRealtime ? renderGrowth(kpiData.dtckThang) : null,
+                    progressPct: (!isRealtime && dtDuKien > 0) ? Math.ceil((dtlk / dtDuKien) * 100) : undefined,
+                    progressColor: 'bg-emerald-400',
+                    targetLabel: !isRealtime ? 'DỰ KIẾN THÁNG' : undefined,
+                    targetStr: !isRealtime && dtDuKien > 0 ? `${roundUp(dtDuKien).toLocaleString('vi-VN')} Tr` : undefined
                 })}
 
                 {/* Card 2: DOANH THU Q.ĐỔI */}
@@ -131,7 +148,9 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                     progressPct: Math.ceil(secondaryPct),
                     progressColor: 'bg-blue-400',
                     targetLabel: secondaryLabel,
-                    targetStr: isRealtime && totalVuotTroi > 0 ? `${roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr` : undefined
+                    targetStr: isRealtime 
+                        ? (totalVuotTroi > 0 ? `${roundUp(totalVuotTroi).toLocaleString('vi-VN')} Tr` : undefined)
+                        : (totalVuotTroiMonthly > 0 ? `${roundUp(totalVuotTroiMonthly).toLocaleString('vi-VN')} Tr` : undefined)
                 })}
 
                 {/* Card 3: HIỆU QUẢ Q.ĐỔI */}

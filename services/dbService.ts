@@ -52,6 +52,12 @@ export async function saveSetting(key: string, value: any): Promise<void> {
             tx.oncomplete = () => {
                 if (typeof window !== 'undefined') {
                     window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                    // Nếu key thuộc BI module (có prefix bi_), bắn thêm event indexeddb-change
+                    // để BI module nội bộ cập nhật UI khi dữ liệu được kéo từ Cloud về
+                    if (key.startsWith('bi_')) {
+                        const originalKey = key.slice(3); // Bỏ prefix 'bi_'
+                        window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                    }
                 }
                 resolve();
             };

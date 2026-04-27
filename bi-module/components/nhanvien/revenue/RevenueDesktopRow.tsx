@@ -52,7 +52,7 @@ export const RevenueDesktopRow = React.memo(({
                 <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
             </td>
             <td className="px-3 py-2 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60">
-                <div className={`inline-flex items-center justify-center px-2 py-0.5 rounded-lg text-white shadow-sm`} style={{ backgroundColor: getHtColor(row.calculatedCompletion) }}>
+                <div className={`inline-flex items-center justify-center px-2 py-0.5 rounded-lg text-white shadow-sm`} style={{ backgroundColor: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion) }}>
                     {f.format(roundUp(row.dtqd))}
                 </div>
                 <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
@@ -66,7 +66,7 @@ export const RevenueDesktopRow = React.memo(({
                 <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
             </td>
             <td className="px-3 py-2 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60">
-                <div className={`inline-flex items-center justify-center px-2 py-0.5 rounded-lg text-white shadow-sm`} style={{ backgroundColor: getHtColor(row.calculatedCompletion) }}>
+                <div className={`inline-flex items-center justify-center px-2 py-0.5 rounded-lg text-white shadow-sm`} style={{ backgroundColor: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion) }}>
                     {isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%
                 </div>
                 <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />

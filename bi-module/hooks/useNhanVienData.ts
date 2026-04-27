@@ -24,7 +24,8 @@ export function useNhanVienData() {
         if (activeSupermarkets.length === 0 && supermarkets.length > 0) {
             setActiveSupermarkets([supermarkets[0]]);
         }
-    }, [supermarkets, activeSupermarkets, setActiveSupermarkets]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [supermarkets]);
 
     useEffect(() => {
         let isMounted = true;
@@ -87,7 +88,7 @@ export function useNhanVienData() {
     useEffect(() => {
         const handleDbChange = (event: CustomEvent) => {
             const key = event.detail.key;
-            if (key.startsWith('config-') || key.startsWith('manual-dept-mapping') || key.startsWith('bonus-data-') || key.includes('departmentweights')) {
+            if (key.startsWith('config-') || key.startsWith('manual-dept-mapping') || key.startsWith('bonus-data-') || key.startsWith('targethero-') || key.startsWith('comptarget-') || key === 'summary-luy-ke') {
                 setDataVersion(v => v + 1);
             }
         };
@@ -209,7 +210,6 @@ export function useNhanVienData() {
             bonusData: { ...prev.bonusData, [originalName]: metrics }
         }));
         await db.set(`bonus-data-${currentSm}`, { ...aggregatedData.bonusData, [originalName]: metrics });
-        window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: `bonus-data-${currentSm}` } }));
     };
 
     return {

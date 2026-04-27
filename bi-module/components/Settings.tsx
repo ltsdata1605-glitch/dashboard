@@ -172,10 +172,7 @@ const Settings: React.FC = () => {
                     await db.set(key, value);
                 }
                 
-                const keysToNotify = [...Object.keys(navState), 'summary-realtime', 'summary-luy-ke', 'supermarket-list'];
-                keysToNotify.forEach(key => {
-                    window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key } }));
-                });
+                // db.set() và db.setMany() mới đã tự bắn event indexeddb-change
 
                 addLog("Khôi phục thành công!");
                 setIsLoading(null); 

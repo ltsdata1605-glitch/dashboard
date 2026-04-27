@@ -4,7 +4,8 @@ import { saveGlobalFont, getGlobalFont } from '../../services/dbService';
 import { createPortal } from 'react-dom';
 
 const FONTS = [
-    { label: 'Mặc định (Inter)', value: 'Inter', className: 'font-sans' },
+    { label: 'Mặc định (Plus Jakarta Sans)', value: 'Plus Jakarta Sans', className: 'font-sans' },
+    { label: 'Inter', value: 'Inter', style: { fontFamily: "'Inter', sans-serif" } },
     { label: 'Oswald', value: 'Oswald', style: { fontFamily: "'Oswald', sans-serif" } },
     { label: 'Roboto Condensed', value: 'Roboto Condensed', style: { fontFamily: "'Roboto Condensed', sans-serif" } },
     { label: 'Fjalla One', value: 'Fjalla One', style: { fontFamily: "'Fjalla One', sans-serif" } },
@@ -15,7 +16,7 @@ const FONTS = [
 
 const FontSelector: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [currentFont, setCurrentFont] = useState<string>('Inter');
+    const [currentFont, setCurrentFont] = useState<string>('Plus Jakarta Sans');
     const buttonRef = useRef<HTMLButtonElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
@@ -24,6 +25,17 @@ const FontSelector: React.FC = () => {
         getGlobalFont().then(font => {
             if (font) {
                 setCurrentFont(font);
+                
+                // Apply on mount
+                let styleEl = document.getElementById('dynamic-font-style');
+                if (!styleEl) {
+                    styleEl = document.createElement('style');
+                    styleEl.id = 'dynamic-font-style';
+                    document.head.appendChild(styleEl);
+                }
+                if (font !== 'Plus Jakarta Sans') {
+                    styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, strong, em, b, i { font-family: '${font}', sans-serif !important; }`;
+                }
             }
         });
     }, []);
@@ -84,11 +96,18 @@ const FontSelector: React.FC = () => {
         setCurrentFont(fontValue);
         await saveGlobalFont(fontValue);
         
-        // Apply instantly
-        if (fontValue && fontValue !== 'Inter') {
-            document.body.style.fontFamily = `'${fontValue}', sans-serif`;
+        let styleEl = document.getElementById('dynamic-font-style');
+        if (!styleEl) {
+            styleEl = document.createElement('style');
+            styleEl.id = 'dynamic-font-style';
+            document.head.appendChild(styleEl);
+        }
+        
+        // Apply instantly using a style block with !important to override tailwind utilities
+        if (fontValue && fontValue !== 'Plus Jakarta Sans') {
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, strong, em, b, i { font-family: '${fontValue}', sans-serif !important; }`;
         } else {
-            document.body.style.fontFamily = ''; // Reset to tailwind default
+            styleEl.innerHTML = ''; // Reset to tailwind default (Plus Jakarta Sans)
         }
         
         setIsOpen(false);

@@ -52,7 +52,7 @@ export const RevenueMobileCard = React.memo(({
             <div className="grid grid-cols-3 gap-2">
                 <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
                     <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">DTQĐ</p>
-                    <p className="text-sm font-black text-sky-600 tabular-nums">{f.format(roundUp(row.dtqd))}</p>
+                    <p className="text-sm font-black tabular-nums" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || '#0284c7' }}>{f.format(roundUp(row.dtqd))}</p>
                     <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">

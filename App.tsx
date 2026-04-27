@@ -11,6 +11,7 @@ const ExternalToolView = lazy(() => import('./components/views/ExternalToolView'
 const UserManagementView = lazy(() => import('./components/views/UserManagementView'));
 const SettingsView = lazy(() => import('./components/views/SettingsView'));
 const AboutView = lazy(() => import('./components/views/AboutView'));
+const StickerPrinterView = lazy(() => import('./components/views/StickerPrinterView'));
 
 // BI Module Wrapper
 const BiWrapper = lazy(() => import('./bi-module/components/BiWrapper'));
@@ -52,6 +53,7 @@ const TabContent = React.memo(() => {
         { id: 'help', className: 'w-full', component: <AboutView /> },
         { id: 'check-thuong', component: <CheckThuongView /> },
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
+        { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
     ], []);
 
     return (
@@ -92,7 +94,7 @@ const TabContent = React.memo(() => {
             )}
 
             {/* Fallback for other tabs */}
-            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees'].includes(activeTab) && (
+            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees', 'tools-print-sticker'].includes(activeTab) && (
                 <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>
@@ -117,10 +119,10 @@ function AppContent() {
 
     React.useEffect(() => {
         getGlobalFont().then(font => {
-            if (font && font !== 'Inter') {
+            if (font && font !== 'Plus Jakarta Sans') {
                 document.body.style.fontFamily = `'${font}', sans-serif`;
             } else {
-                document.body.style.fontFamily = ''; // Reset to default
+                document.body.style.fontFamily = ''; // Reset to default (Plus Jakarta Sans)
             }
         }).catch(error => {
             console.warn("Failed to get global font, ignoring:", error);

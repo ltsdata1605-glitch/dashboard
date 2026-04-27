@@ -121,17 +121,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                     await db.set(key, value);
                 }
 
-                const keysToNotify = [
-                    ...Object.keys(navState),
-                    'summary-realtime',
-                    'summary-luy-ke',
-                    'competition-realtime',
-                    'competition-luy-ke',
-                    'supermarket-list'
-                ];
-                keysToNotify.forEach(key => {
-                    window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key } }));
-                });
+                // db.set() và db.setMany() mới đã tự bắn event indexeddb-change
+                // nên không cần dispatch thêm
 
                 // Tắt thông báo thành công theo yêu cầu
             } catch (error) {
@@ -274,6 +265,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                                 kpiData={currentKpiData}
                                 targets={activeTargets}
                                 supermarketDailyTargets={supermarketDailyTargets}
+                                supermarketMonthlyTargets={supermarketMonthlyTargets}
                                 activeSupermarket={activeSupermarket}
                             />
 

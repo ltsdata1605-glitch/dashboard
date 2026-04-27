@@ -29,12 +29,160 @@ import {
 import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
 
+const NavItem = React.memo(({ 
+    item, 
+    isCollapsed, 
+    activeTab, 
+    expandedMenus, 
+    setExpandedMenus, 
+    setActiveTab, 
+    setIsMobileSidebarOpen 
+}: { 
+    item: any, 
+    isCollapsed: boolean,
+    activeTab: string,
+    expandedMenus: string[],
+    setExpandedMenus: React.Dispatch<React.SetStateAction<string[]>>,
+    setActiveTab: (id: string) => void,
+    setIsMobileSidebarOpen: (val: boolean) => void
+}) => {
+    const isActive = activeTab === item.id || (item.subItems?.some((sub: any) => activeTab === sub.id));
+    const isExpanded = expandedMenus.includes(item.id);
+    const hasSubItems = item.subItems && item.subItems.length > 0;
+    
+    const toggleExpand = (e: React.MouseEvent) => {
+        if (hasSubItems && !isCollapsed) {
+            e.stopPropagation();
+            setExpandedMenus(prev => 
+                prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
+            );
+        }
+    };
+
+    return (
+        <div className="w-full">
+            <button
+                onClick={(e) => {
+                    if (hasSubItems && !isCollapsed) {
+                        toggleExpand(e);
+                    } else {
+                        if (item.path === '/analysis') setActiveTab('analysis');
+                        else if (item.path === '/') setActiveTab('check-thuong');
+                        else if (item.path === '/employees') setActiveTab('employees');
+                        else if (item.path === '/inventory') setActiveTab('inventory');
+                        else if (item.path === '/reports') setActiveTab('reports');
+                        else if (item.path === '/tools') setActiveTab('tools');
+                        else if (item.id) setActiveTab(item.id);
+                        if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
+                    }
+                }}
+                className={`
+                    flex items-center w-full px-3 py-3 my-1 rounded-xl transition-all duration-200 group relative
+                    ${isActive 
+                        ? 'bg-[#0584c7] text-white shadow-lg shadow-[#0584c7]/20 dark:shadow-[#0584c7]/20' 
+                        : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#0584c7] dark:hover:text-[#0584c7]'
+                    }
+                `}
+            >
+                <div className={`flex items-center justify-center min-w-[22px] transition-all duration-300 ${isCollapsed ? 'mx-auto' : ''}`}>
+                    <item.icon size={22} className={isActive ? 'text-white' : 'group-hover:scale-110 transition-transform duration-300'} />
+                </div>
+                
+                <motion.div 
+                    initial={false}
+                    animate={{ 
+                        opacity: isCollapsed ? 0 : 1,
+                        width: isCollapsed ? 0 : 'auto',
+                        marginLeft: isCollapsed ? 0 : 12,
+                        display: isCollapsed ? 'none' : 'flex'
+                    }}
+                    transition={{ duration: 0.2 }}
+                    className="flex-grow overflow-hidden items-center justify-between"
+                >
+                    <span className="font-medium whitespace-nowrap flex items-center gap-2">
+                        {item.label}
+                        {item.id === 'pending-approval' && (
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                            </span>
+                        )}
+                    </span>
+                    
+                    {hasSubItems && (
+                        <ChevronDown 
+                            size={16} 
+                            className={`transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                        />
+                    )}
+                </motion.div>
+
+                {isCollapsed && (
+                    <div className="absolute left-full ml-4 px-3 py-2 bg-slate-800 text-white text-sm rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-[100] shadow-xl flex items-center gap-2">
+                        {item.label}
+                        {item.id === 'pending-approval' && (
+                            <span className="relative flex h-2 w-2">
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
+                            </span>
+                        )}
+                    </div>
+                )}
+            </button>
+
+            {!isCollapsed && hasSubItems && (
+                <AnimatePresence>
+                    {isExpanded && (
+                        <motion.div
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: 'auto', opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="ml-5 pl-4 border-l-2 border-slate-200 dark:border-slate-700/50 mt-1 space-y-1">
+                                {item.subItems.map((sub: any) => (
+                                    <button
+                                        key={sub.id}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (sub.externalUrl) {
+                                                window.open(sub.externalUrl, '_blank');
+                                            } else {
+                                                setActiveTab(sub.id);
+                                                if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
+                                            }
+                                        }}
+                                        className={`
+                                            flex items-center w-full px-3 py-2 rounded-lg text-sm transition-all duration-200 group relative
+                                            ${activeTab === sub.id 
+                                                ? 'bg-sky-50 dark:bg-sky-900/30 text-[#0584c7] font-semibold' 
+                                                : 'text-slate-500 dark:text-slate-400 hover:text-[#0584c7] hover:bg-slate-50 dark:hover:bg-slate-800'
+                                            }
+                                        `}
+                                    >
+                                        <span className="flex-grow text-left">{sub.label}</span>
+                                        {sub.externalUrl && (
+                                            <ExternalLink size={12} className="opacity-50 group-hover:opacity-100 transition-opacity" />
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            )}
+        </div>
+    );
+});
+
 export default function Sidebar() {
     const { isSidebarCollapsed, setIsSidebarCollapsed, isMobileSidebarOpen, setIsMobileSidebarOpen, activeTab, setActiveTab } = useLayout();
     const { user, userRole, logout, isDemoMode } = useAuth();
     const [isHovered, setIsHovered] = useState(false);
     const [isTempExpanded, setIsTempExpanded] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [expandedMenus, setExpandedMenus] = useState<string[]>(['tools']);
 
     const menuItems = [
         { id: 'analysis', label: 'Phân tích', icon: BarChart3, path: '/analysis' },
@@ -48,6 +196,7 @@ export default function Sidebar() {
             icon: Wrench, 
             path: '/tools',
             subItems: [
+                { id: 'tools-print-sticker', label: 'In Sticker', icon: Sticker },
                 { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket, externalUrl: 'https://chuy-n-i-coupon-487587635482.us-west1.run.app' },
                 { id: 'tools-tax', label: 'Hoàn thuế nhận thay', icon: Calculator, externalUrl: 'https://tinhthue-netify-487587635482.us-west1.run.app' },
                 { id: 'tools-sticker', label: 'Sticker Event', icon: Sticker, externalUrl: 'https://stickerevent-final-487587635482.us-west1.run.app' },
@@ -58,12 +207,20 @@ export default function Sidebar() {
 
     const secondaryItems = [
         ...(userRole === 'pending' ? [{ id: 'pending-approval', label: 'Hồ sơ Quyền', icon: Users, path: '/pending' }] : []),
+        { id: 'settings', label: 'Cài đặt', icon: Settings, path: '/settings' },
         { id: 'help', label: 'Giới thiệu', icon: HelpCircle, path: '/help' },
     ];
 
-    // Desktop-only logic: close mobile sidebar correctly if it was ever opened
     useEffect(() => {
-        setIsMobileSidebarOpen(false);
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 1024);
+            if (window.innerWidth >= 1024) {
+                setIsMobileSidebarOpen(false);
+            }
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
     }, [setIsMobileSidebarOpen]);
 
     const sidebarVariants = {
@@ -72,144 +229,7 @@ export default function Sidebar() {
     };
 
     const sidebarTransition: any = { duration: 0.2, ease: 'easeInOut' };
-    // On mobile, never collapse if open. On desktop, follow isSidebarCollapsed state.
     const effectiveCollapsed = isMobile ? false : (isSidebarCollapsed && !isHovered && !isTempExpanded);
-
-    const [expandedMenus, setExpandedMenus] = useState<string[]>(['tools']);
-
-    const NavItem = React.memo(({ item, isCollapsed }: { item: any, isCollapsed: boolean }) => {
-        const isActive = activeTab === item.id || (item.subItems?.some((sub: any) => activeTab === sub.id));
-        const isExpanded = expandedMenus.includes(item.id);
-        const hasSubItems = item.subItems && item.subItems.length > 0;
-        
-        const toggleExpand = (e: React.MouseEvent) => {
-            if (hasSubItems && !isCollapsed) {
-                e.stopPropagation();
-                setExpandedMenus(prev => 
-                    prev.includes(item.id) ? prev.filter(id => id !== item.id) : [...prev, item.id]
-                );
-            }
-        };
-
-        return (
-            <div className="w-full">
-                <button
-                    onClick={(e) => {
-                        if (hasSubItems && !isCollapsed) {
-                            toggleExpand(e);
-                        } else {
-                            setActiveTab(item.id);
-                            if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
-                        }
-                    }}
-                    className={`
-                        flex items-center w-full px-3 py-3 my-1 rounded-xl transition-all duration-200 group relative
-                        ${isActive 
-                            ? 'bg-[#0584c7] text-white shadow-lg shadow-[#0584c7]/20 dark:shadow-[#0584c7]/20' 
-                            : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#0584c7] dark:hover:text-[#0584c7]'
-                        }
-                    `}
-                >
-                    <div className={`flex items-center justify-center min-w-[22px] transition-all duration-300 ${isCollapsed ? 'mx-auto' : ''}`}>
-                        <item.icon size={22} className={isActive ? 'text-white' : 'group-hover:scale-110 transition-transform duration-300'} />
-                    </div>
-                    
-                    <motion.div 
-                        initial={false}
-                        animate={{ 
-                            opacity: isCollapsed ? 0 : 1,
-                            width: isCollapsed ? 0 : 'auto',
-                            marginLeft: isCollapsed ? 0 : 12,
-                            display: isCollapsed ? 'none' : 'flex'
-                        }}
-                        transition={{ duration: 0.2 }}
-                        className="flex-grow overflow-hidden items-center justify-between"
-                    >
-                        <span className="font-medium whitespace-nowrap flex items-center gap-2">
-                            {item.label}
-                            {item.id === 'pending-approval' && (
-                                <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
-                                </span>
-                            )}
-                        </span>
-                        
-                        {hasSubItems && (
-                            <ChevronDown 
-                                size={16} 
-                                className={`transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''} ${isActive ? 'text-white' : 'text-slate-400'}`} 
-                            />
-                        )}
-                    </motion.div>
-
-                    {isCollapsed && (
-                        <div className="absolute left-full ml-4 px-2 py-1 bg-slate-900 text-white text-[11px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity duration-300 z-50 whitespace-nowrap shadow-xl">
-                            {item.label}
-                        </div>
-                    )}
-                    
-                    <motion.div 
-                        initial={false}
-                        animate={{ 
-                            opacity: (isActive && !isCollapsed && !hasSubItems) ? 1 : 0,
-                            scale: (isActive && !isCollapsed && !hasSubItems) ? 1 : 0
-                        }}
-                        className="absolute right-2 w-1.5 h-1.5 rounded-full bg-white"
-                    />
-                </button>
-
-                {/* Sub Items */}
-                {hasSubItems && isExpanded && !isCollapsed && (
-                    <div className="overflow-hidden pl-10 pr-2 space-y-1">
-                        {item.subItems.map((sub: any) => {
-                            const isSubActive = activeTab === sub.id;
-                            
-                            if (sub.externalUrl) {
-                                return (
-                                    <a
-                                        key={sub.id}
-                                        href={sub.externalUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className={`
-                                            flex items-center w-full px-3 py-2 rounded-lg text-sm transition-all duration-200
-                                            text-slate-500 dark:text-slate-400 hover:text-[#0584c7] dark:hover:text-[#0584c7] hover:bg-slate-50 dark:hover:bg-slate-800/50
-                                        `}
-                                    >
-                                        <sub.icon size={16} className="mr-2" />
-                                        <span className="truncate">{sub.label}</span>
-                                        <div className="flex-grow"></div>
-                                        <ExternalLink size={12} className="opacity-50" />
-                                    </a>
-                                );
-                            }
-
-                            return (
-                                <button
-                                    key={sub.id}
-                                    onClick={() => {
-                                        setActiveTab(sub.id);
-                                        if (window.innerWidth < 1024) setIsMobileSidebarOpen(false);
-                                    }}
-                                    className={`
-                                        flex items-center w-full px-3 py-2 rounded-lg text-sm transition-all duration-200
-                                        ${isSubActive
-                                            ? 'bg-[#0584c7]/10 text-[#0584c7] font-bold dark:bg-[#0584c7]/20 dark:text-[#0584c7]'
-                                            : 'text-slate-500 dark:text-slate-400 hover:text-[#0584c7] dark:hover:text-[#0584c7] hover:bg-slate-50 dark:hover:bg-slate-800/50'
-                                        }
-                                    `}
-                                >
-                                    <sub.icon size={16} className="mr-2" />
-                                    <span className="truncate">{sub.label}</span>
-                                </button>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-        );
-    });
 
     return (
         <>
@@ -265,7 +285,16 @@ export default function Sidebar() {
                             <p className="px-3 mb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Menu Chính</p>
                         )}
                         {menuItems.map(item => (
-                            <NavItem key={item.id} item={item} isCollapsed={effectiveCollapsed} />
+                            <NavItem 
+                                key={item.id} 
+                                item={item} 
+                                isCollapsed={effectiveCollapsed}
+                                activeTab={activeTab}
+                                expandedMenus={expandedMenus}
+                                setExpandedMenus={setExpandedMenus}
+                                setActiveTab={setActiveTab}
+                                setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+                            />
                         ))}
                     </div>
 
@@ -274,7 +303,16 @@ export default function Sidebar() {
                             <p className="px-3 mb-2 text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hệ Thống</p>
                         )}
                         {secondaryItems.map(item => (
-                            <NavItem key={item.id} item={item} isCollapsed={effectiveCollapsed} />
+                            <NavItem 
+                                key={item.id} 
+                                item={item} 
+                                isCollapsed={effectiveCollapsed}
+                                activeTab={activeTab}
+                                expandedMenus={expandedMenus}
+                                setExpandedMenus={setExpandedMenus}
+                                setActiveTab={setActiveTab}
+                                setIsMobileSidebarOpen={setIsMobileSidebarOpen}
+                            />
                         ))}
                     </div>
                 </div>

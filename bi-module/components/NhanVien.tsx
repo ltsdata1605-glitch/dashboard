@@ -18,6 +18,7 @@ import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { useNhanVienData } from '../hooks/useNhanVienData';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { parseCompetitionData } from '../utils/nhanVienHelpers';
+import * as db from '../utils/db';
 const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: Tab; setActiveTab: (t: Tab) => void; icon?: React.ReactNode; }> = React.memo(({ tab, children, activeTab, setActiveTab }) => (
     <button 
         onClick={() => setActiveTab(tab)} 
@@ -32,6 +33,11 @@ const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: T
         {children}
     </button>
 ));
+
+// Hằng số ổn định — tránh tạo reference mới mỗi render gây re-render child thừa
+const EMPTY_MAP = new Map();
+const EMPTY_ARRAY: any[] = [];
+const NOOP = () => {};
 
 export const NhanVien: React.FC = () => {
     const [activeTab, setActiveTab] = useState<Tab>('revenue');
@@ -121,39 +127,83 @@ export const NhanVien: React.FC = () => {
         const fetchTargets = async () => {
             if (activeSupermarkets.length === 0) return;
             const targets = new Map<string, Map<string, number>>();
-            const competitionLuyKeData = await db.get('competition-luy-ke');
-            if (!competitionLuyKeData) return;
+            const [competitionLuyKeData, competitionRealtimeData] = await Promise.all([
+                db.get('competition-luy-ke'),
+                db.get('competition-realtime')
+            ]);
             
-            const lines = String(competitionLuyKeData).split('\n');
+            const linesLuyKe = competitionLuyKeData ? String(competitionLuyKeData).split('\n') : [];
+            const linesRealtime = competitionRealtimeData ? String(competitionRealtimeData).split('\n') : [];
+            const lines = [...linesLuyKe, ...linesRealtime];
+            
+            if (lines.length === 0) return;
+
+            // Song song hóa tất cả IDB reads cho tất cả siêu thị
+            const smDataResults = await Promise.all(activeSupermarkets.map(sm => 
+                Promise.all([
+                    db.get(`comptarget-${sm}-targets`),
+                    db.get(`targethero-${sm}-departmentweights`),
+                    sm // giữ lại tên SM để mapping
+                ])
+            ));
+
+            const smDataMap = new Map<string, { competitionTargets: any; departmentWeights: any }>();
+            smDataResults.forEach(([compTargets, deptWeights, sm]) => {
+                smDataMap.set(sm as string, { competitionTargets: compTargets, departmentWeights: deptWeights });
+            });
+            
             for (const sm of activeSupermarkets) {
-                const competitionTargetsData = await db.get(`comptarget-${sm}-targets`);
-                const departmentWeightsData = await db.get(`targethero-${sm}-departmentweights`);
-                let currentComp: string | null = null;
+                const smData = smDataMap.get(sm);
+                const competitionTargetsData = smData?.competitionTargets;
+                const departmentWeightsData = smData?.departmentWeights;
+                let currentComp: { name: string, targetIdx: number } | null = null;
+                
                 for (const line of lines) {
                     const parts = line.split('\t').map(p => p.trim());
-                    if (parts.length > 2 && ['DTLK', 'DTQĐ', 'SLLK'].includes(parts[1]) && parts[2] === 'Target') { currentComp = parts[0]; continue; }
-                    if (currentComp && parts[0] === sm) {
-                        const baseTarget = parseFloat(parts[2].replace(/,/g, '')) || 0;
-                        const slider = competitionTargetsData?.[currentComp] ?? 100;
-                        const adjTarget = baseTarget * (slider / 100);
-                        let totalW = 0;
-                        const empWeights = new Map<string, number>();
-                        allEmployees.forEach(emp => { 
-                            const w = departmentWeightsData?.[emp.department] ?? (100 / allEmployees.length); 
-                            empWeights.set(emp.originalName, w); 
-                            totalW += w; 
-                        });
-                        if (totalW > 0) {
-                            if (!targets.has(currentComp)) targets.set(currentComp, new Map());
-                            const compT = targets.get(currentComp)!;
-                            allEmployees.forEach(emp => { 
-                                const existing = compT.get(emp.originalName) || 0;
-                                compT.set(emp.originalName, existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW))); 
+                    
+                    if (parts.length > 2) {
+                        const p1 = parts[1].toUpperCase();
+                        const isMetric = ['DTLK', 'DTQĐ', 'SLLK', 'DT REALTIME', 'SL REALTIME', 'DT REALTIME (QĐ)'].some(m => p1.includes(m));
+                        if (isMetric) {
+                            const targetIdx = parts.findIndex(p => {
+                                const up = p.toUpperCase();
+                                return up.includes('TARGET') || up.includes('MỤC TIÊU');
                             });
+                            if (targetIdx > -1) {
+                                currentComp = { name: parts[0], targetIdx };
+                                continue;
+                            }
+                        }
+                    }
+                    
+                    if (currentComp && parts[0] === sm) {
+                        const targetValRaw = parts[currentComp.targetIdx];
+                        if (targetValRaw) {
+                            const baseTarget = parseNumber(targetValRaw);
+                            const slider = competitionTargetsData?.[currentComp.name] ?? 100;
+                            const adjTarget = baseTarget * (slider / 100);
+                            
+                            let totalW = 0;
+                            const empWeights = new Map<string, number>();
+                            allEmployees.forEach(emp => { 
+                                const w = departmentWeightsData?.[emp.department] ?? (100 / allEmployees.length); 
+                                empWeights.set(emp.originalName, w); 
+                                totalW += w; 
+                            });
+                            
+                            if (totalW > 0) {
+                                if (!targets.has(currentComp.name)) targets.set(currentComp.name, new Map());
+                                const compT = targets.get(currentComp.name)!;
+                                allEmployees.forEach(emp => { 
+                                    const existing = compT.get(emp.originalName) || 0;
+                                    compT.set(emp.originalName, existing + (adjTarget * (empWeights.get(emp.originalName)! / totalW))); 
+                                });
+                            }
                         }
                     }
                 }
             }
+            (window as any).debugEmployeeCompetitionTargets = targets;
             setEmployeeCompetitionTargets(targets);
         };
         fetchTargets();
@@ -164,19 +214,27 @@ export const NhanVien: React.FC = () => {
     useEffect(() => {
         const loadConfigs = async () => {
             if (activeSupermarkets.length === 0) return;
-            const summaryLuyKeData = await db.get('summary-luy-ke');
+            // Song song đọc tất cả: summary + target cho mỗi SM
+            const [summaryLuyKeData, ...smTargets] = await Promise.all([
+                db.get('summary-luy-ke'),
+                ...activeSupermarkets.map(sm => db.get(`targethero-${sm}-total`))
+            ]);
             let totalT = 0;
             if (summaryLuyKeData) {
                 const lines = String(summaryLuyKeData).split('\n');
-                for (const sm of activeSupermarkets) {
-                    const totalTargetPercent = await db.get(`targethero-${sm}-total`) ?? 100;
+                activeSupermarkets.forEach((sm, i) => {
+                    const totalTargetPercent = smTargets[i] ?? 100;
                     const smLine = lines.find(l => l.trim().startsWith(sm));
                     if (smLine) {
                         const cols = smLine.split('\t');
-                        const biTarget = parseNumber(cols[5]);
-                        if (biTarget > 0) totalT += biTarget * (totalTargetPercent / 100);
+                        const dtDuKienQd = parseNumber(cols[5]);
+                        const htTargetPercent = parseNumber(cols[6]);
+                        if (!isNaN(dtDuKienQd) && !isNaN(htTargetPercent) && htTargetPercent > 0) {
+                            const baseTarget = dtDuKienQd / (htTargetPercent / 100);
+                            totalT += baseTarget * (totalTargetPercent / 100);
+                        }
                     }
-                }
+                });
             }
             setTotalAggregatedTarget(totalT);
         };
@@ -343,39 +401,49 @@ export const NhanVien: React.FC = () => {
                     </nav>
                 </div>
                 
-                {/* Embedded Module Content */}
+                {/* Embedded Module Content — HIDDEN/BLOCK pattern: mount once, toggle visibility */}
+                {/* Tránh destroy/recreate khi chuyển tab → không cần re-fetch IDB, re-parse data */}
                 <div className="p-0 sm:p-2 bg-slate-50 dark:bg-slate-900">
                     <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-[0_0_10px_rgba(0,0,0,0.02)]">
-                        {activeTab === 'revenue' && <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={effectiveActiveDepartments} performanceChanges={new Map()} onViewTrend={() => {}} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} snapshotId={null} setSnapshotId={() => {}} snapshots={[]} handleSaveSnapshot={() => {}} handleDeleteSnapshot={() => {}} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} />}
-                        {activeTab === 'crossSelling' && <CrossSellingTab rows={banKemRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />}
-                        {activeTab === 'installment' && <InstallmentTab rows={installmentRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />}
-                        {activeTab === 'competition' && <CompetitionTab groupedData={competitionData} allCompetitionsByCriterion={competitionData} selectedCompetitions={selectedCompetitions} setSelectedCompetitions={setSelectedCompetitions} supermarket={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} versions={versions} activeVersionName={activeVersionName} setActiveVersionName={setActiveVersionName} activeCompetitionTab={activeCompetitionTab} setActiveCompetitionTab={setActiveCompetitionTab} onVersionTabClick={handleVersionTabClick} onStartNewVersion={handleStartNewVersion} onCancelNewVersion={handleCancelNewVersion} onSaveVersion={handleSaveVersion} onDeleteVersion={handleDeleteVersion} employeeCompetitionTargets={employeeCompetitionTargets} allEmployees={allEmployees} performanceChanges={new Map()} individualViewEmployees={individualViewEmployees} selectedIndividual={selectedIndividual} onSelectIndividual={setSelectedIndividual} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} activeDepartments={effectiveActiveDepartments} />}
-                        {activeTab === 'bonus' && (
-                            <>
-                                <BonusView 
-                                    employees={allEmployees} 
-                                    bonusData={aggregatedData.bonusData} 
-                                    revenueRows={revenueRows} 
-                                    supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} 
-                                    onEmployeeClick={(emp) => setEditingBonusEmployee(emp)} 
-                                    onBatchUpdate={startBatchBonusUpdate}
-                                    highlightedEmployees={highlightedEmployees} 
-                                    activeDepartments={effectiveActiveDepartments} 
-                                />
-                                {editingBonusEmployee && (
-                                    <BonusDataModal 
-                                        employee={editingBonusEmployee} 
-                                        supermarketName={activeSupermarkets[0]} 
-                                        remainingInBatch={isBatchBonusMode ? allEmployees.length - allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) : 0}
-                                        onClose={handleBonusModalClose}
-                                        onSave={handleSaveBonus}
-                                    />
-                                )}
-                            </>
-                        )}
-                        {activeTab === 'detail' && <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} />}
+                        <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
+                            <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={effectiveActiveDepartments} performanceChanges={EMPTY_MAP} onViewTrend={NOOP} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} snapshotId={null} setSnapshotId={NOOP} snapshots={EMPTY_ARRAY} handleSaveSnapshot={NOOP} handleDeleteSnapshot={NOOP} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} />
+                        </div>
+                        <div className={activeTab === 'crossSelling' ? 'block' : 'hidden'}>
+                            <CrossSellingTab rows={banKemRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />
+                        </div>
+                        <div className={activeTab === 'installment' ? 'block' : 'hidden'}>
+                            <InstallmentTab rows={installmentRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />
+                        </div>
+                        <div className={activeTab === 'competition' ? 'block' : 'hidden'}>
+                            <CompetitionTab groupedData={competitionData} allCompetitionsByCriterion={competitionData} selectedCompetitions={selectedCompetitions} setSelectedCompetitions={setSelectedCompetitions} supermarket={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} versions={versions} activeVersionName={activeVersionName} setActiveVersionName={setActiveVersionName} activeCompetitionTab={activeCompetitionTab} setActiveCompetitionTab={setActiveCompetitionTab} onVersionTabClick={handleVersionTabClick} onStartNewVersion={handleStartNewVersion} onCancelNewVersion={handleCancelNewVersion} onSaveVersion={handleSaveVersion} onDeleteVersion={handleDeleteVersion} employeeCompetitionTargets={employeeCompetitionTargets} allEmployees={allEmployees} performanceChanges={EMPTY_MAP} individualViewEmployees={individualViewEmployees} selectedIndividual={selectedIndividual} onSelectIndividual={setSelectedIndividual} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} activeDepartments={effectiveActiveDepartments} />
+                        </div>
+                        <div className={activeTab === 'bonus' ? 'block' : 'hidden'}>
+                            <BonusView 
+                                employees={allEmployees} 
+                                bonusData={aggregatedData.bonusData} 
+                                revenueRows={revenueRows} 
+                                supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} 
+                                onEmployeeClick={(emp) => setEditingBonusEmployee(emp)} 
+                                onBatchUpdate={startBatchBonusUpdate}
+                                highlightedEmployees={highlightedEmployees} 
+                                activeDepartments={effectiveActiveDepartments} 
+                            />
+                        </div>
+                        <div className={activeTab === 'detail' ? 'block' : 'hidden'}>
+                            <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} />
+                        </div>
                     </div>
                 </div>
+                {/* BonusDataModal — giữ conditional vì là modal overlay */}
+                {editingBonusEmployee && (
+                    <BonusDataModal 
+                        employee={editingBonusEmployee} 
+                        supermarketName={activeSupermarkets[0]} 
+                        remainingInBatch={isBatchBonusMode ? allEmployees.length - allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) : 0}
+                        onClose={handleBonusModalClose}
+                        onSave={handleSaveBonus}
+                    />
+                )}
             </div>
             
             <ExportOptionsModal

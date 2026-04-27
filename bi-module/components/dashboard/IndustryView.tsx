@@ -32,8 +32,8 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
     'DTTRẢGÓP': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
     'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'Đơn giá': { label: 'GIÁ TRỊ ĐH', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400' },
-    'ĐƠN GIÁ': { label: 'GIÁ TRỊ ĐH', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400' },
+    'Đơn giá': { label: 'GTĐH', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400' },
+    'ĐƠN GIÁ': { label: 'GTĐH', bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-400' },
 };
 
 const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props, ref) => {
@@ -70,7 +70,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         const visH = orderedHeaders.filter(h => visibleColumns.has(h) && h !== 'Nhóm ngành hàng');
         const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean, isSingle: boolean, singleHeader: string }[] = [];
         visH.forEach(h => {
-            const defaultGroup = { label: 'KHÁC', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' };
+            const defaultGroup = { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' };
             const g = COLUMN_GROUPS[h] || defaultGroup;
             if (groups.length > 0 && groups[groups.length - 1].label === g.label) {
                 groups[groups.length - 1].colspan += 1;
@@ -84,18 +84,18 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     const headerMapping: Record<string, string> = {
         'Nhóm ngành hàng': 'NGÀNH HÀNG',
-        'SL Realtime': 'SL',
+        'SL Realtime': 'S.LƯỢNG',
         'DT Realtime (QĐ)': 'T.HIỆN',
-        'Target Ngày (QĐ)': 'M.TIÊU',
+        'Target Ngày (QĐ)': 'TARGET',
         '% HT Target Ngày (QĐ)': '%HT',
         'DT Trả Gộp': 'DT',
         'DT TRẢ GÓP': 'DT',
         'DT Trả Góp': 'DT',
         'DTTRẢGÓP': 'DT',
         'Tỷ Trọng Trả Góp': '%TC',
-        'Số lượng': 'SL',
-        'DTQĐ': 'DTQĐ',
-        'Target (QĐ)': 'M.TIÊU',
+        'Số lượng': 'S.LƯỢNG',
+        'DTQĐ': 'L.KẾ',
+        'Target (QĐ)': 'TARGET',
         '% HT Target (QĐ)': '%HT',
         '+/- DTCK Tháng (QĐ)': '+/-QĐ CK',
         'Lãi gộp QĐ': 'L.GỘP<br/>QĐ',
@@ -238,9 +238,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         const isQdCkCol = headerName === '+/- DTCK Tháng (QĐ)';
         const isHtCol = headerName.includes('% HT');
         const isDtqdCol = (headerName === 'DT Realtime (QĐ)' || headerName === 'DTQĐ');
+        const isGTDHCol = (headerName === 'Đơn giá' || headerName === 'ĐƠN GIÁ');
         const isNNH = level === 0;
         const isNhomHang = level === 1;
         const isHang = level === 2;
+
+        // Formatter cho GTĐH — 1 số lẻ
+        const fmtGTDH = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1, minimumFractionDigits: 1 });
 
         const cellContent = () => {
             if (headerName === 'Nhóm ngành hàng') {
@@ -279,7 +283,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     </div>
                 );
             }
-            if (isTotalRow && (isPercentCol || isNumericCol)) return isPercentCol ? `${roundUp(numericValue)}%` : new Intl.NumberFormat('vi-VN').format(roundUp(numericValue));
+            if (isTotalRow && (isPercentCol || isNumericCol)) return isPercentCol ? `${roundUp(numericValue)}%` : isGTDHCol ? fmtGTDH.format(numericValue) : new Intl.NumberFormat('vi-VN').format(roundUp(numericValue));
             if (isHtCol) {
                 return (
                     <div className="flex justify-center items-center">
@@ -290,6 +294,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 );
             }
             if (isDtqdCol) return <span className="text-indigo-700 dark:text-indigo-400 font-black text-[12px]">{new Intl.NumberFormat('vi-VN').format(roundUp(numericValue))}</span>;
+            if (isGTDHCol && isNumericCol) return fmtGTDH.format(numericValue);
             if (isPercentCol && isNumericCol && numericValue === 0) return '-';
             if (isPercentCol) return `${roundUp(numericValue)}%`;
             if (isNumericCol) return new Intl.NumberFormat('vi-VN').format(roundUp(numericValue));

@@ -9,29 +9,46 @@ import { Switch } from './DashboardWidgets';
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
-    'Tên miền': { label: 'DANH MỤC', bg: 'bg-slate-50', text: 'text-slate-700' },
-    'DTLK': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'DTQĐ': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'Target (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'Target(QĐ) V.Trội': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    '%HT V.Trội': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    '%HT TARGET(QĐ) V.Trội': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'DT Dự Kiến': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'DT Dự Kiến (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    '% HT Target Dự Kiến (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    '% HT Target (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    '% HT Target Ngày (QĐ)': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    '%HQQĐ': { label: 'DOANH THU', bg: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-400' },
-    'Lượt Khách LK': { label: 'TRAFFIC & TỶ LỆ', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' },
-    'Lượt Bill Bán Hàng': { label: 'TRAFFIC & TỶ LỆ', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' },
-    'Lượt bill': { label: 'TRAFFIC & TỶ LỆ', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' },
-    'TLPVTC LK': { label: 'TRAFFIC & TỶ LỆ', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' },
-    'Lượt Bill Thu Hộ': { label: 'TRAFFIC & TỶ LỆ', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' },
-    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-orange-50 dark:bg-orange-900/20', text: 'text-orange-700 dark:text-orange-400' },
-    'Số lượng': { label: 'SỐ LƯỢNG', bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-400' },
+    'Tên miền': { label: 'DANH MỤC', bg: 'bg-indigo-100 dark:bg-indigo-900/30', text: 'text-indigo-800 dark:text-indigo-300' },
+    
+    // H.QUA
+    'DT Hôm Qua': { label: 'H.QUA', bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300' },
+
+    // DT THỰC
+    'DTLK': { label: 'DT THỰC', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
+    'DT Dự Kiến': { label: 'DT THỰC', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
+    
+    // DOANH THU QĐ
+    'DTQĐ': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    'Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    'Target(QĐ) V.Trội': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    '%HT V.Trội': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    '%HT TARGET(QĐ) V.Trội': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    'DT Dự Kiến (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    '% HT Target Dự Kiến (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    '% HT Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    '% HT Target Ngày (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    '%HQQĐ': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    
+    // TRAFFIC
+    'Lượt Khách LK': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+    'Lượt Bill Bán Hàng': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+    'Lượt bill': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+    'TLPVTC LK': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+    'Lượt Bill Thu Hộ': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
+    
+    // TRẢ CHẬM
+    'Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
+    'Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
+    '+/- Tỷ Trọng Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
+    '+/- Tỷ Trọng Trả Chậm': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
+    'Tỷ lệ duyệt': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
+    'DT TRẢ GÓP': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
+    'DT Trả Góp': { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' },
+    
+    // KHÁC
+    'Số lượng': { label: 'SỐ LƯỢNG', bg: 'bg-fuchsia-100 dark:bg-fuchsia-900/30', text: 'text-fuchsia-800 dark:text-fuchsia-300' },
 };
 
 // --- Helpers ---
@@ -58,7 +75,7 @@ interface SummaryTableViewProps {
 const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>((props, ref) => {
     const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, onExport, updateTimestamp, supermarketTargets } = props;
     const headerMapping: Record<string, string> = {
-        'Tên miền': 'SIÊU THỊ', 'DTLK': 'THỰC', 'DTQĐ': 'DTQĐ', 'Target (QĐ)': 'M.TIÊU<br/>QĐ', 'Target(QĐ) V.Trội': 'M.TIÊU<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>VT', '%HT TARGET(QĐ) V.Trội': '%HT<br/>VT', 'Lượt Khách LK': 'L.KHÁCH', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%T.CHẬM', 'DT TRẢ GÓP': 'DT T.CHẬM', 'DT Trả Góp': 'DT T.CHẬM', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'DTDK', 'DT Dự Kiến (QĐ)': 'DTQĐ<br/>DK', '+/- DTCK Tháng (QĐ)': '+/-QĐ<br/>CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- Tỷ Trọng Trả Góp': '+/-T.C', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HTQĐ', '% HT Target Ngày (QĐ)': '%HTQĐ', '%HQQĐ': '%QĐ',
+        'Tên miền': 'SIÊU THỊ', 'DTLK': 'L.Kế', 'DTQĐ': 'L.Kế', 'Target (QĐ)': 'TARGET<br/>QĐ', 'Target(QĐ) V.Trội': 'TARGET<br/>V.TRỘI', '%HT V.Trội': '%HTDK<br/>V.TRỘI', '%HT TARGET(QĐ) V.Trội': '%HTDK<br/>V.TRỘI', 'Lượt Khách LK': 'L.KHÁCH', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', 'DT Dự Kiến (QĐ)': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-QĐ<br/>CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'S.LƯỢNG', '% HT Target (QĐ)': '%HTQĐ', '% HT Target Ngày (QĐ)': '%HTQĐ', '%HQQĐ': '%QĐ',
     };
 
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
@@ -141,7 +158,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             }
         }
 
-        const pairs = [{ base: 'Lượt Khách LK', growth: '+/- Lượt Khách' }, { base: 'Tỷ Trọng Trả Góp', growth: '+/- Tỷ Trọng Trả Góp' }, { base: 'DT Dự Kiến', growth: '+/- DTCK Tháng' }, { base: 'DT Dự Kiến (QĐ)', growth: '+/- DTCK Tháng (QĐ)' }, { base: 'TLPVTC LK', growth: '+/- TLPVTC' }];
+        const pairs = [{ base: 'Lượt Khách LK', growth: '+/- Lượt Khách' }, { base: 'DT Dự Kiến', growth: '+/- DTCK Tháng' }, { base: 'DT Dự Kiến (QĐ)', growth: '+/- DTCK Tháng (QĐ)' }, { base: 'TLPVTC LK', growth: '+/- TLPVTC' }];
         pairs.forEach(p => {
             const bIdx = tempHeaders.indexOf(p.base), gIdx = tempHeaders.indexOf(p.growth);
             if (bIdx !== -1 && gIdx !== -1) {
@@ -153,9 +170,42 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             }
         });
 
-        const finalH: string[] = [], rIdxs: number[] = [];
-        tempHeaders.forEach((h, i) => { if (h === '__TO_REMOVE__') rIdxs.push(i); else finalH.push(h); });
-        tempRows = tempRows.map(row => row.filter((_, i) => !rIdxs.includes(i)));
+        let cleanedHeaders: string[] = [];
+        let cleanedRows: any[][] = tempRows.map(() => []);
+        tempHeaders.forEach((h, i) => {
+            if (h !== '__TO_REMOVE__') {
+                cleanedHeaders.push(h);
+                tempRows.forEach((r, ri) => cleanedRows[ri].push(r[i]));
+            }
+        });
+
+        const desiredOrder = [
+            'Tên miền', 'DT Hôm Qua',
+            'DTLK', 'DT Dự Kiến',
+            'DTQĐ', 'DT Dự Kiến (QĐ)', 'Target (QĐ)', '%HQQĐ', '% HT Target Dự Kiến (QĐ)', '% HT Target (QĐ)', 'Target(QĐ) V.Trội', '%HT TARGET(QĐ) V.Trội', '%HT V.Trội',
+            'Lượt Khách LK', 'TLPVTC LK', 'Lượt Bill Bán Hàng', 'Lượt bill', 'Lượt Bill Thu Hộ',
+            'Tỷ Trọng Trả Góp', 'Tỷ Trọng Trả Chậm', '+/- Tỷ Trọng Trả Góp', '+/- Tỷ Trọng Trả Chậm', 'Tỷ lệ duyệt'
+        ];
+        
+        const finalH: string[] = [];
+        const colIndices: number[] = [];
+        
+        desiredOrder.forEach(dh => {
+            const idx = cleanedHeaders.indexOf(dh);
+            if (idx !== -1) {
+                finalH.push(dh);
+                colIndices.push(idx);
+            }
+        });
+
+        cleanedHeaders.forEach((h, idx) => {
+            if (!desiredOrder.includes(h)) {
+                finalH.push(h);
+                colIndices.push(idx);
+            }
+        });
+
+        tempRows = cleanedRows.map(row => colIndices.map(idx => row[idx]));
         
         let tRowIdx = tempRows.findIndex(r => r[nameIndex] === 'Tổng');
         let tRow = tRowIdx > -1 ? tempRows.splice(tRowIdx, 1)[0] : null;
@@ -190,7 +240,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         const visH = orderedHeaders.filter(h => visibleColumns.has(h) && h !== 'Tên miền');
         const groups: { label: string, bg: string, text: string, colspan: number, isSticky: boolean, isSingle: boolean, singleHeader: string }[] = [];
         visH.forEach(h => {
-            const defaultGroup = { label: 'KHÁC', bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-400' };
+            const defaultGroup = { label: 'TRẢ CHẬM', bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300' };
             const g = COLUMN_GROUPS[h] || defaultGroup;
             if (groups.length > 0 && groups[groups.length - 1].label === g.label) {
                 groups[groups.length - 1].colspan += 1;
@@ -275,7 +325,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 }
                 rounded={false} noPadding
             >
-                <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
+                <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
                     {isMobile ? (
                         /* ─── MOBILE CARD VIEW ─── */
                         <div className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -368,7 +418,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         }`}>
                                                             {cell?.isMerged
                                                                 ? (cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val)))
-                                                                : (String(cell).includes('%') || h.includes('%') ? roundUp(val) + '%' : f.format(roundUp(val)))}
+                                                                : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))}
                                                         </p>
                                                         {cell?.isMerged && (
                                                             <p className={`text-[7px] font-bold mt-0.5 ${parseNumber(cell.growth) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
@@ -385,8 +435,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         </div>
                     ) : (
                         /* ─── DESKTOP TABLE VIEW ─── */
-                        <div className="overflow-hidden m-4 mb-6">
-                            <table className="w-full border-collapse compact-export-table border border-slate-200 dark:border-slate-700">
+                        <div className="overflow-x-auto m-4 mb-6 pb-4 custom-scrollbar">
+                            <table className="w-full border-collapse compact-export-table border border-slate-200 dark:border-slate-700 min-w-max">
                                 <thead>
                                     {/* TIER 1: GROUP HEADERS */}
                                     <tr className="text-[11px] font-bold uppercase tracking-wider">
@@ -396,7 +446,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 rowSpan={2}
                                                 className={`
                                                     px-4 py-2.5 text-center text-[12px] font-bold
-                                                    text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30
+                                                    text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30
                                                     border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
                                                     border-r border-slate-200 dark:border-slate-700
                                                     sticky left-0 z-20 align-middle
@@ -533,7 +583,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                             </div>
                                                                         )
                                                                     : h === 'DTQĐ' && !isTotal ? <span className="text-indigo-700 dark:text-indigo-400 font-black text-[12px]">{f.format(roundUp(val))}</span>
-                                                                    : (String(cell).includes('%') || h.includes('%') ? roundUp(val) + '%' : f.format(roundUp(val)))
+                                                                    : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))
                                                             )}
                                                         </td>
                                                     );

@@ -344,7 +344,7 @@ const RevenueView: React.FC<{
                                                         {isGrandTotal ? (
                                                             <div className="text-sky-700 dark:text-sky-400">{f.format(roundUp(row.dtqd))}</div>
                                                         ) : (
-                                                            <div className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-lg text-white shadow-sm`} style={{ backgroundColor: getHtColor(row.calculatedCompletion) }}>
+                                                            <div className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-lg text-white shadow-sm`} style={{ backgroundColor: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion) }}>
                                                                 {f.format(roundUp(row.dtqd))}
                                                             </div>
                                                         )}
@@ -362,7 +362,7 @@ const RevenueView: React.FC<{
                                                         {isGrandTotal ? (
                                                             <div style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) }}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                                                         ) : (
-                                                            <div className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-lg text-white shadow-sm`} style={{ backgroundColor: getHtColor(row.calculatedCompletion) }}>
+                                                            <div className={`inline-flex items-center justify-center px-2.5 py-0.5 rounded-lg text-white shadow-sm`} style={{ backgroundColor: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion) }}>
                                                                 {isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%
                                                             </div>
                                                         )}

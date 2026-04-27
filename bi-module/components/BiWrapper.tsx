@@ -1,5 +1,7 @@
-import React, { useState, useCallback, Suspense, lazy } from 'react';
+import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
 import { Icon } from '../../components/common/Icon';
+import FontSelector from '../../components/layout/FontSelector';
+import { migrateClusterDataToMain } from '../utils/dbMigration';
 
 // Lazy load heavy sub-views so the initial BiWrapper mount is near-instant
 const Dashboard = lazy(() => import('./Dashboard'));
@@ -46,6 +48,11 @@ const BiWrapper = React.memo(function BiWrapper() {
     // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
     const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(['dashboard']));
 
+    // Migrate dữ liệu cũ từ ClusterDataDB sang BI_HUB_DATABASE_V2 (chỉ chạy 1 lần)
+    useEffect(() => {
+        migrateClusterDataToMain().catch(err => console.warn('[BI Migration] Error:', err));
+    }, []);
+
     const handleTabChange = useCallback((id: string) => {
         setActiveView(id as any);
         setMountedViews(prev => {
@@ -90,6 +97,13 @@ const BiWrapper = React.memo(function BiWrapper() {
                             </button>
                         );
                     })}
+                    
+                    {/* Font Selector */}
+                    <div className="flex shrink-0 items-center pl-2 ml-1 pb-1.5">
+                        <div className="rounded-lg overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700">
+                            <FontSelector />
+                        </div>
+                    </div>
                 </div>
             </div>
 
