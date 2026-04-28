@@ -14,9 +14,9 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     // H.QUA
     'DT Hôm Qua': { label: 'H.QUA', bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300' },
 
-    // DT THỰC
-    'DTLK': { label: 'DT THỰC', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
-    'DT Dự Kiến': { label: 'DT THỰC', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
+    // DOANH THU QĐ
+    'DTLK': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    'DT Dự Kiến': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
     
     // DOANH THU QĐ
     'DTQĐ': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
@@ -75,7 +75,7 @@ interface SummaryTableViewProps {
 const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>((props, ref) => {
     const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, onExport, updateTimestamp, supermarketTargets } = props;
     const headerMapping: Record<string, string> = {
-        'Tên miền': 'SIÊU THỊ', 'DTLK': 'L.Kế', 'DTQĐ': 'L.Kế', 'Target (QĐ)': 'TARGET<br/>QĐ', 'Target(QĐ) V.Trội': 'TARGET<br/>V.TRỘI', '%HT V.Trội': '%HTDK<br/>V.TRỘI', '%HT TARGET(QĐ) V.Trội': '%HTDK<br/>V.TRỘI', 'Lượt Khách LK': 'L.KHÁCH', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', 'DT Dự Kiến (QĐ)': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-QĐ<br/>CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'S.LƯỢNG', '% HT Target (QĐ)': '%HTQĐ', '% HT Target Ngày (QĐ)': '%HTQĐ', '%HQQĐ': '%QĐ',
+        'Tên miền': 'SIÊU THỊ', 'DTLK': 'DT', 'DTQĐ': 'DTQĐ', 'Target (QĐ)': 'Target', 'Target(QĐ) V.Trội': 'TARGET<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.Trội', 'Lượt Khách LK': 'L.KHÁCH', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', 'DT Dự Kiến (QĐ)': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-QĐ<br/>CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'S.LƯỢNG', '% HT Target (QĐ)': '%HTQĐ', '% HT Target Ngày (QĐ)': '%HTQĐ', '%HQQĐ': '%HQQĐ',
     };
 
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
@@ -182,7 +182,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         const desiredOrder = [
             'Tên miền', 'DT Hôm Qua',
             'DTLK', 'DT Dự Kiến',
-            'DTQĐ', 'DT Dự Kiến (QĐ)', 'Target (QĐ)', '%HQQĐ', '% HT Target Dự Kiến (QĐ)', '% HT Target (QĐ)', 'Target(QĐ) V.Trội', '%HT TARGET(QĐ) V.Trội', '%HT V.Trội',
+            'DTQĐ', 'DT Dự Kiến (QĐ)', 'Target (QĐ)', '% HT Target Dự Kiến (QĐ)', '% HT Target (QĐ)', '%HQQĐ', 'Target(QĐ) V.Trội', '%HT TARGET(QĐ) V.Trội', '%HT V.Trội',
             'Lượt Khách LK', 'TLPVTC LK', 'Lượt Bill Bán Hàng', 'Lượt bill', 'Lượt Bill Thu Hộ',
             'Tỷ Trọng Trả Góp', 'Tỷ Trọng Trả Chậm', '+/- Tỷ Trọng Trả Góp', '+/- Tỷ Trọng Trả Chậm', 'Tỷ lệ duyệt'
         ];
