@@ -6,7 +6,11 @@ import { Icon } from '../common/Icon';
 import { AppNotification, markAsRead, markAllAsRead } from '../../services/notificationService';
 import { useActiveTab } from '../../contexts/LayoutContext';
 
-const NotificationDropdown = () => {
+interface NotificationDropdownProps {
+    buttonClassName?: string;
+}
+
+const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClassName }) => {
     const { user } = useAuth();
     const { setActiveTab } = useActiveTab();
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -101,7 +105,7 @@ const NotificationDropdown = () => {
         <div className="relative" ref={dropdownRef}>
             <button 
                 onClick={() => setIsOpen(!isOpen)}
-                className="relative flex items-center justify-center p-2.5 bg-slate-50/50 dark:bg-slate-900/10 text-slate-600 dark:text-slate-400 border border-transparent rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors tooltip"
+                className={buttonClassName || "relative flex items-center justify-center p-2.5 bg-slate-50/50 dark:bg-slate-900/10 text-slate-600 dark:text-slate-400 border border-transparent rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors tooltip"}
                 title="Thông báo"
             >
                 <Icon name="bell" size={4} />

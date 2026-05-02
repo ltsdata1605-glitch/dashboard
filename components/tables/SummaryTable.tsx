@@ -434,7 +434,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                         </tbody>
                         <tfoot className="bg-teal-100 dark:bg-teal-900/40 font-bold text-sm border-t-2 border-teal-200 dark:border-teal-800">
                            <tr>
-                                <td className={`px-4 py-2 text-center sticky left-0 z-40 bg-teal-100 dark:bg-teal-900/60 font-extrabold text-[12px] uppercase tracking-widest text-teal-700 dark:text-teal-300 ${separatorClass}`}>TỔNG CỘNG</td>
+                                <td className={`px-4 py-2 text-center sticky left-0 z-40 bg-teal-100 dark:bg-teal-900/60 font-extrabold text-[13px] uppercase tracking-widest text-teal-700 dark:text-teal-300 ${separatorClass}`}>TỔNG</td>
                                 {/* Quantity */}
                                 {visibleColumns.includes('totalQuantity') && (
                                     <>

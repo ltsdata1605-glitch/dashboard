@@ -40,7 +40,7 @@ const TrendChart: React.FC<TrendChartProps> = ({ data, employeeName }) => {
             <h4 className="text-lg font-semibold text-center text-slate-700 dark:text-slate-200 mb-4">
                 Xu hướng Hiệu suất của {employeeName}
             </h4>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                 <LineChart
                     data={data}
                     margin={{ top: 20, right: 30, left: 10, bottom: 20 }}

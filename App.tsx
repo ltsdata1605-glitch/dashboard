@@ -174,10 +174,7 @@ function AppContent() {
                     {/* Thêm Banner thông báo Đơn chờ duyệt */}
                     <PendingApprovalBanner />
 
-                    {/* Desktop Notification Center */}
-                    <div className="hidden lg:block absolute top-[19px] right-6 z-[200]">
-                        <NotificationDropdown />
-                    </div>
+                    {/* Desktop Notification Center has been moved into the Header component to prevent layout overlap */}
                     
                     <div className="w-full relative">
                         <ErrorBoundary name="MainContent">

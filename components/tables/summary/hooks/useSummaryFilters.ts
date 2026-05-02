@@ -58,6 +58,17 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
         }
     }, [summaryTableFilters, globalParentFilters]);
 
+    // Allow external updates (e.g., from IndustryGrid drilldown) to update localParentFilters
+    useEffect(() => {
+        if (!isInitializedRef.current) return;
+        setLocalParentFilters(prev => {
+            if (JSON.stringify(prev) !== JSON.stringify(globalParentFilters || [])) {
+                return globalParentFilters || [];
+            }
+            return prev;
+        });
+    }, [globalParentFilters]);
+
     // Debounced save: push local state → global (onFilterChange) + IndexedDB.
     // This is the ONLY direction of sync after initialization.
     useEffect(() => {

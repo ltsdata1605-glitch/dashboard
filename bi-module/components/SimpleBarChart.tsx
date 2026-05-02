@@ -37,7 +37,7 @@ const SimpleBarChart: React.FC<SimpleBarChartProps> = ({ data, yAxisLabel }) => 
 
   return (
     <div className="w-full text-xs text-slate-500 dark:text-slate-400" style={{ height: '180px' }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
         <BarChart
           data={chartData}
           margin={{ top: 10, right: 10, left: -20, bottom: 0 }}

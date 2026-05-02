@@ -208,10 +208,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                             <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/30 rounded-md text-emerald-600 dark:text-emerald-400 shadow-sm">
                                 <Icon name="truck" size={3.5} />
                             </div>
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Trạng Thái Xuất</label>
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">T.Thái Xuất</label>
                         </div>
                         <MultiSelectDropdown 
-                            label="Trạng Thái Xuất" 
+                            label="T.Thái Xuất" 
                             options={['Đã', 'Chưa']} 
                             selected={localFilters.xuat === 'all' ? [] : [localFilters.xuat === 'Đã' ? 'Đã' : 'Chưa']} 
                             onChange={(sel) => updateLocalFilter({ xuat: sel.length > 0 ? sel[sel.length - 1] : 'all' })} 

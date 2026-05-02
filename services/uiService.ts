@@ -405,11 +405,20 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 svgClone.setAttribute('viewBox', `0 0 ${w} ${h}`);
             }
             // Inline computed styles for text elements (fonts, fills) 
-            svgClone.querySelectorAll('text, tspan').forEach((textEl: any) => {
-                const computed = window.getComputedStyle(textEl);
-                textEl.style.fontFamily = computed.fontFamily;
-                textEl.style.fontSize = computed.fontSize;
-                textEl.style.fill = computed.fill;
+            const liveTexts = sourceSvg.querySelectorAll('text, tspan');
+            svgClone.querySelectorAll('text, tspan').forEach((textEl: any, idx: number) => {
+                const liveText = liveTexts[idx];
+                if (liveText) {
+                    const computed = window.getComputedStyle(liveText);
+                    if (computed.fontFamily) textEl.style.fontFamily = computed.fontFamily;
+                    if (computed.fontSize) textEl.style.fontSize = computed.fontSize;
+                    
+                    // Only apply fill if it's explicitly set in CSS, otherwise rely on the SVG 'fill' attribute
+                    const fill = computed.getPropertyValue('fill');
+                    if (fill && fill !== 'none' && fill !== 'rgba(0, 0, 0, 0)') {
+                        textEl.style.fill = fill;
+                    }
+                }
             });
             const svgData = new XMLSerializer().serializeToString(svgClone);
             const svgBase64 = btoa(unescape(encodeURIComponent(svgData)));
@@ -604,17 +613,18 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     });
 
     // Strip large padding from content containers (p-6, p-2.5, lg:p-6, etc.)
-    clone.querySelectorAll('div').forEach((el: any) => {
+    clone.querySelectorAll('div, header, section').forEach((el: any) => {
         if (!(el instanceof HTMLElement)) return;
         const cls = el.getAttribute('class') || '';
-        // Target divs that have explicit padding classes like p-6, p-5, p-4 but NOT table cells
-        if ((cls.includes('p-6') || cls.includes('lg:p-6') || cls.includes('p-5')) && !cls.includes('kpi-grid')) {
-            el.style.setProperty('padding', '4px', 'important');
+        // Target elements that have explicit padding classes like p-6, p-5, py-5 but NOT table cells
+        if ((cls.includes('p-6') || cls.includes('lg:p-6') || cls.includes('p-5') || cls.includes('py-5')) && !cls.includes('kpi-grid')) {
+            el.style.setProperty('padding', '8px', 'important');
         }
     });
 
     // Strip border-radius from the clone root itself
     clone.style.borderRadius = '0';
+    clone.style.padding = '0';
 
     try {
         await document.fonts.ready;

@@ -31,7 +31,7 @@ export const ProportionChart: React.FC = () => {
               paddingAngle={5}
               dataKey="value"
               stroke="none"
-              isAnimationActive={CHART_ANIMATION_ENABLED}
+              isAnimationActive={CHART_ANIMATION_ENABLED && !isExporting}
             >
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

@@ -397,7 +397,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                         <div className="flex-grow bg-slate-50/70 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-white/5 p-3 flex flex-col" style={{ minHeight: 280 }}>
                             {pieChartData.length > 0 ? (
                                 <>
-                                    <div style={{ height: 320 }} className="lg:hidden">
+                                    <div className="h-[320px] lg:h-[230px]">
                                         <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
                                             <PieChart>
                                                 <Pie
@@ -413,33 +413,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                                     cornerRadius={3}
                                                     labelLine={false}
                                                     label={renderPieLabel}
-                                                    isAnimationActive={CHART_ANIMATION_ENABLED}
-                                                >
-                                                    {pieChartData.map((_, idx) => (
-                                                        <Cell key={`cell-m-${idx}`} fill={COLORS[idx % COLORS.length]} />
-                                                    ))}
-                                                </Pie>
-                                                <RechartsTooltip content={<CustomTooltip />} />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                    </div>
-                                    <div style={{ height: 230 }} className="hidden lg:block">
-                                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                                            <PieChart>
-                                                <Pie
-                                                    data={pieChartData}
-                                                    dataKey={metricToDisplay}
-                                                    nameKey="name"
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    innerRadius="40%"
-                                                    outerRadius="74%"
-                                                    paddingAngle={2}
-                                                    stroke="none"
-                                                    cornerRadius={3}
-                                                    labelLine={false}
-                                                    label={renderPieLabel}
-                                                    isAnimationActive={CHART_ANIMATION_ENABLED}
+                                                    isAnimationActive={CHART_ANIMATION_ENABLED && !isExporting}
                                                 >
                                                     {pieChartData.map((_, idx) => (
                                                         <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />

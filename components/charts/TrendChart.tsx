@@ -41,20 +41,6 @@ const CustomTooltip = ({ active, payload, metricName }: any) => {
     );
 };
 
-const CustomLabel = (props: any) => {
-    const { x, y, width, value, textColor, positionOffset = 8, metric } = props;
-    if (!value) return null;
-    
-    // For AreaChart, width is undefined.
-    const cx = width !== undefined ? x + width / 2 : x;
-    const cy = y - positionOffset;
-    
-    return (
-      <text x={cx} y={cy} fill={textColor} textAnchor="middle" fontSize={10} fontWeight="bold">
-        {metric === 'quantity' ? formatQuantity(value) : formatCurrency(value)}
-      </text>
-    );
-};
 
 const TrendChart: React.FC = React.memo(() => {
   const { processedData, handleExport, isExporting, filterState, baseFilteredData, calendarSourceData, originalData, productConfig, uniqueFilterOptions } = useDashboardContext();
@@ -331,9 +317,17 @@ const TrendChart: React.FC = React.memo(() => {
                         fill="url(#colorValue)" 
                         dot={{ fill: isDark ? '#1e293b' : '#ffffff', stroke: dailyBaseColor, strokeWidth: 2, r: 4 }} 
                         activeDot={{ r: 6, stroke: isDark ? '#ffffff' : dailyBaseColor, strokeWidth: 2, fill: dailyBaseColor }} 
-                        isAnimationActive={CHART_ANIMATION_ENABLED}
+                        isAnimationActive={CHART_ANIMATION_ENABLED && !isExporting}
                     >
-                        <LabelList dataKey="value" content={(props: any) => <CustomLabel {...props} textColor={textColor} positionOffset={12} metric={trendState.metric} />} />
+                        <LabelList 
+                            dataKey="value" 
+                            position="top" 
+                            offset={12}
+                            fill={textColor} 
+                            fontSize={10} 
+                            fontWeight="bold"
+                            formatter={(val: number) => trendState.metric === 'quantity' ? formatQuantity(val) : formatCurrency(val)}
+                        />
                     </Area>
                 </AreaChart>
             </ResponsiveContainer>
@@ -350,9 +344,17 @@ const TrendChart: React.FC = React.memo(() => {
                 <Bar 
                     dataKey="value" 
                     radius={[4, 4, 0, 0]} 
-                    isAnimationActive={CHART_ANIMATION_ENABLED}
+                    isAnimationActive={CHART_ANIMATION_ENABLED && !isExporting}
                 >
-                    <LabelList dataKey="value" content={(props: any) => <CustomLabel {...props} textColor={textColor} positionOffset={8} metric={trendState.metric} />} />
+                    <LabelList 
+                        dataKey="value" 
+                        position="top" 
+                        offset={8}
+                        fill={textColor} 
+                        fontSize={10} 
+                        fontWeight="bold"
+                        formatter={(val: number) => trendState.metric === 'quantity' ? formatQuantity(val) : formatCurrency(val)}
+                    />
                     {chartData.map((entry, index) => (
                         <Cell 
                             key={`cell-${index}`} 

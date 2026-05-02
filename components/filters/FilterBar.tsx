@@ -268,7 +268,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                         {/* Export Status Segments */}
                         <div className="w-auto min-w-[125px] shrink-0">
                             <SingleSelectDropdown
-                                label="Trạng thái xuất"
+                                label="T.Thái Xuất"
                                 options={[
                                     { value: 'all', label: 'Tất cả' },
                                     { value: 'Đã', label: 'Đã xuất' },
@@ -329,8 +329,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                     <div className="relative flex items-center gap-1 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 shrink-0">
                         {[
                             { range: 'week', label: 'Tuần' },
-                            { range: 'today', label: 'Hôm nay' },
-                            { range: 'yesterday', label: 'Hôm qua' },
+                            { range: 'today', label: 'H.Nay' },
+                            { range: 'yesterday', label: 'H.Qua' },
                             { range: 'all', label: 'All' }
                         ].map(({ range, label }) => (
                             <div key={range} className="relative">
@@ -377,7 +377,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                     {/* Export Status (Segmented) */}
                     <div className="w-auto shrink-0 transition-transform hover:scale-105">
                         <SingleSelectDropdown
-                            label="Trạng thái xuất"
+                            label="T.Thái Xuất"
                             options={[
                                 { value: 'all', label: 'Tất cả' },
                                 { value: 'Đã', label: 'Đã xuất' },

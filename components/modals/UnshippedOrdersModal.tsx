@@ -253,10 +253,16 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                 });
 
                 const customerHieuQuaQD = totalCustomerRevenue !== 0 ? ((totalCustomerRevenueQD - totalCustomerRevenue) / Math.abs(totalCustomerRevenue)) * 100 : 0;
-                let scheduledDateRaw = getRowValue(firstOrder, ['Thời gian hẹn giao', 'Thoi gian hen giao', 'TG Hẹn Giao', '__EMPTY_24', 'Column25']);
-                if (scheduledDateRaw === undefined || scheduledDateRaw === null || scheduledDateRaw === '') {
-                    const keys = Object.keys(firstOrder);
-                    if (keys.length > 24) scheduledDateRaw = firstOrder[keys[24]];
+                let scheduledDateRaw: any = undefined;
+                for (const order of customerOrders) {
+                    const raw = getRowValue(order, ['Thời gian hẹn giao', 'Thoi gian hen giao', 'TG Hẹn Giao', '__EMPTY_24', 'Column25']) || (() => {
+                        const keys = Object.keys(order).filter(k => k !== 'parsedDate' && k !== 'rowIndex');
+                        return keys.length > 24 ? order[keys[24]] : undefined;
+                    })();
+                    if (raw !== undefined && raw !== null && raw !== '') {
+                        scheduledDateRaw = raw;
+                        break;
+                    }
                 }
                 
                 let formattedScheduledDate = 'N/A';

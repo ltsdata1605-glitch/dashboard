@@ -214,7 +214,7 @@ const Header: React.FC<HeaderProps> = ({
                                         title="Tải lên báo cáo YCX mới"
                                     >
                                         <Icon name="file-up" size={4} />
-                                        <span>Tải YCX</span>
+                                        <span>UpFile YCX</span>
                                     </button>
                                     
                                     <button 
@@ -241,6 +241,10 @@ const Header: React.FC<HeaderProps> = ({
 
                             <div className="border-l border-slate-100 dark:border-slate-700">
                                 <FontSelector />
+                            </div>
+                            
+                            <div className="border-l border-slate-100 dark:border-slate-700 flex items-center">
+                                <NotificationDropdown buttonClassName="relative flex items-center justify-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" />
                             </div>
                         </div>
                     </div>
