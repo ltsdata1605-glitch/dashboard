@@ -11,7 +11,25 @@ const FONTS = [
     { label: 'Fjalla One', value: 'Fjalla One', style: { fontFamily: "'Fjalla One', sans-serif" } },
     { label: 'Archivo Narrow', value: 'Archivo Narrow', style: { fontFamily: "'Archivo Narrow', sans-serif" } },
     { label: 'Jost', value: 'Jost', style: { fontFamily: "'Jost', sans-serif" } },
-    { label: 'Josefin Sans', value: 'Josefin Sans', style: { fontFamily: "'Josefin Sans', sans-serif" } }
+    { label: 'Josefin Sans', value: 'Josefin Sans', style: { fontFamily: "'Josefin Sans', sans-serif" } },
+    { label: 'Bai Jamjuree', value: 'Bai Jamjuree', style: { fontFamily: "'Bai Jamjuree', sans-serif" } },
+    { label: 'Anton', value: 'Anton', style: { fontFamily: "'Anton', sans-serif" } },
+    { label: 'Bebas Neue', value: 'Bebas Neue', style: { fontFamily: "'Bebas Neue', sans-serif" } },
+    { label: 'Kanit', value: 'Kanit', style: { fontFamily: "'Kanit', sans-serif" } },
+    { label: 'Alata Regular', value: 'Alata Regular', style: { fontFamily: "'Alata Regular', sans-serif" } },
+    { label: 'Shopee Text', value: 'Shopee Text', style: { fontFamily: "'Shopee Text', sans-serif" } },
+    { label: 'SF Pro Display', value: 'SF Pro Display', style: { fontFamily: "'SF Pro Display', sans-serif" } },
+    { label: 'SVN-Gilroy', value: 'SVN-Gilroy', style: { fontFamily: "'SVN-Gilroy', sans-serif" } },
+    { label: 'Samsung Sharp Sans', value: 'Samsung Sharp Sans', style: { fontFamily: "'Samsung Sharp Sans', sans-serif" } },
+    { label: 'Shopee Display', value: 'Shopee Display', style: { fontFamily: "'Shopee Display', sans-serif" } },
+    { label: 'UTM Aurora', value: 'UTM Aurora', style: { fontFamily: "'UTM Aurora', sans-serif" } },
+    { label: 'UTM Avo', value: 'UTM Avo', style: { fontFamily: "'UTM Avo', sans-serif" } },
+    { label: 'UTM Cafeta', value: 'UTM Cafeta', style: { fontFamily: "'UTM Cafeta', sans-serif" } },
+    { label: 'UTM Colossalis', value: 'UTM Colossalis', style: { fontFamily: "'UTM Colossalis', sans-serif" } },
+    { label: 'UTM Gloria', value: 'UTM Gloria', style: { fontFamily: "'UTM Gloria', sans-serif" } },
+    { label: 'UTM Libel KT', value: 'UTM Libel KT', style: { fontFamily: "'UTM Libel KT', sans-serif" } },
+    { label: 'UTM Pacific Standard', value: 'UTM Pacific Standard', style: { fontFamily: "'UTM Pacific Standard', sans-serif" } },
+    { label: 'UTM Penumbra', value: 'UTM Penumbra', style: { fontFamily: "'UTM Penumbra', sans-serif" } }
 ];
 
 const FontSelector: React.FC = () => {
@@ -140,7 +158,11 @@ const FontSelector: React.FC = () => {
                         <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tùy chọn Font</span>
                     </div>
                     <div className="flex flex-col p-1 max-h-60 overflow-y-auto custom-scrollbar">
-                        {FONTS.map(font => {
+                        {[...FONTS].sort((a, b) => {
+                            if (a.label.includes('Mặc định')) return -1;
+                            if (b.label.includes('Mặc định')) return 1;
+                            return a.label.localeCompare(b.label);
+                        }).map(font => {
                             const isSelected = currentFont === font.value;
                             return (
                                 <button

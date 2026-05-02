@@ -9,7 +9,7 @@ const htmlContent = `
     <title>Bảng Tra Cứu Thưởng Thi Đua</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -203,10 +203,10 @@ const htmlContent = `
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/50 z-[100] flex items-center justify-center">
-        <div class="flex flex-col items-center">
-            <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white"></div>
-            <p id="loadingText" class="text-white mt-4 text-lg font-semibold"></p>
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center transition-all duration-300">
+        <div class="flex flex-col items-center bg-white/10 p-8 rounded-2xl backdrop-blur-md border border-white/20 shadow-2xl">
+            <div class="animate-spin rounded-full h-14 w-14 border-4 border-indigo-500/30 border-t-indigo-500"></div>
+            <p id="loadingText" class="text-white mt-5 text-lg font-bold tracking-wide drop-shadow-md"></p>
         </div>
     </div>
 
@@ -253,12 +253,14 @@ const htmlContent = `
             let sortState = { key: null, direction: 'desc' };
             let comparisonSortState = { key: 'bonusDiff', direction: 'desc' };
             let singleViewMode = 'list';
+            let fileUploadTime = null;
 
             const saveState = () => {
                 if (competitionData && competitionData.length > 0) {
                     idbKeyval.set('checkthuong_data', {
                         competitionData: competitionData,
                         fileName: fileStatus.textContent.replace('Đã tải: ', '').replace(' (từ bộ nhớ tạm)', ''),
+                        uploadTime: fileUploadTime,
                         code1: storeCodeInput1.value,
                         code2: storeCodeInput2.value,
                         singleViewMode: singleViewMode
@@ -270,6 +272,7 @@ const htmlContent = `
             idbKeyval.get('checkthuong_data').then(savedData => {
                 if (savedData && savedData.competitionData && savedData.competitionData.length > 0) {
                     competitionData = savedData.competitionData;
+                    fileUploadTime = savedData.uploadTime || new Date().toISOString();
                     preProcessData(competitionData);
                     
                     if (savedData.fileName) {
@@ -622,6 +625,7 @@ const htmlContent = `
             function handleFileSelect(event) {
                 const file = event.target.files[0];
                 if (!file) return;
+                fileUploadTime = new Date().toISOString();
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     try {
@@ -764,11 +768,24 @@ const htmlContent = `
                 const totalBonus = currentStoreData.reduce((sum, row) => sum + parseNumber(row[COLS.TONG_THUONG]), 0); 
                 const storeInfo = currentStoreData[0][COLS.SIÊU_THỊ]; 
                 const top10Value = currentStoreData[0][COLS.LAY_TOP_10] || '-'; 
+                
+                const uploadDate = fileUploadTime ? new Date(fileUploadTime) : new Date();
+                const timeStr = String(uploadDate.getHours()).padStart(2, '0') + ':' + String(uploadDate.getMinutes()).padStart(2, '0') + ' - ' + String(uploadDate.getDate()).padStart(2, '0') + '/' + String(uploadDate.getMonth() + 1).padStart(2, '0') + '/' + uploadDate.getFullYear();
+                
                 summaryCard.innerHTML = \`
-                    <button id="exportSummaryImageButton" title="Xuất ảnh báo cáo tổng hợp" style="position:absolute;top:16px;right:16px;padding:6px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;transition:all 0.15s" class="no-print">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-                    </button>
-                    <p style="font-size:13px;opacity:0.7;margin:0 0 2px 0;font-weight:500">Kết quả tra cứu</p>
+                    <div style="position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:10" class="no-print">
+                        <button id="exportFullPageImageButton" title="Xuất ảnh toàn bộ trang" style="padding:6px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="10" cy="12" r="2"/><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"/></svg>
+                        </button>
+                        <button id="exportSummaryImageButton" title="Xuất ảnh báo cáo tổng hợp" style="padding:6px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        </button>
+                    </div>
+                    <p style="font-size:13px;opacity:0.8;margin:0 0 2px 0;font-weight:500;display:flex;align-items:center;gap:6px">
+                        Kết quả tra cứu
+                        <span style="opacity:0.5">•</span>
+                        <span style="font-weight:400;opacity:0.9">\${timeStr}</span>
+                    </p>
                     <h2 style="font-size:20px;font-weight:800;margin:0;letter-spacing:-0.02em" class="truncate">\${storeInfo}</h2>
                     <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.12)">
                         <p style="font-size:11px;opacity:0.6;margin:0;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Tổng tiền thưởng dự kiến</p>
@@ -1069,13 +1086,13 @@ const htmlContent = `
                                 <h2 class="text-xl sm:text-2xl font-bold text-[#1d1d1f]">Phân Tích & Đề Xuất</h2>
                                 <div id="analysisActions" class="flex items-center gap-2 no-print">
                                     <button id="copyAnalysisButton" title="Sao chép nội dung" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-600 transition">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lucide lucide-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                                     </button>
                                     <button id="exportAnalysisImageButton" title="Xuất ảnh khu vực này" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-600 transition">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lucide lucide-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                     </button>
                                     <button id="exportAnalysisRankingsButton" title="Xuất ảnh tất cả BXH Cơ hội vàng & Cảnh báo" class="p-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white transition">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 lucide lucide-images" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/></svg>
                                     </button>
                                 </div>
                             </div>
@@ -1134,10 +1151,10 @@ const htmlContent = `
                                 : '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>'}
                         </button>
                         <button id="exportFilteredImageButton" title="Xuất ảnh" style="width:30px;height:30px;border-radius:8px;background:#10b981;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                         </button>
                         <button id="exportAllFilteredImagesButton" title="Xuất tất cả" style="width:30px;height:30px;border-radius:8px;background:#f97316;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-images"><path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/></svg>
                         </button>
                    </div>\`;
             }
@@ -1501,8 +1518,11 @@ const htmlContent = `
                     
                     const groupHtml = \`<div id="group-section-\${group.key}" class="group-container border border-gray-200 bg-white" data-group-key="\${group.key}" style="margin-bottom:16px">
                         <div class="capture-target \${singleViewMode === 'card' ? 'mod-card' : ''}" style="overflow:hidden">
-                            <div class="capture-fix \${pastelClass} border-b border-gray-200" style="padding:10px 14px">
+                            <div class="capture-fix \${pastelClass} border-b border-gray-200 flex justify-between items-center" style="padding:10px 14px">
                                 <h2 style="font-size:14px;font-weight:800;margin:0;letter-spacing:0.02em">\${group.title.toUpperCase()} (\${group.data.length})</h2>
+                                <button class="exportGroupImageBtn no-print flex items-center justify-center transition" data-group-key="\${group.key}" title="Xuất ảnh nhóm này" style="width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,0.4);color:rgba(0,0,0,0.6);border:none;cursor:pointer" onmouseover="this.style.background='rgba(255,255,255,0.8)';this.style.color='#000'" onmouseout="this.style.background='rgba(255,255,255,0.4)';this.style.color='rgba(0,0,0,0.6)'">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                                </button>
                             </div>
                             \${contentHtml}
                         </div>
@@ -1546,9 +1566,9 @@ const htmlContent = `
                     console.error('Phần tử không tồn tại!');
                     return;
                 }
-                if (typeof html2canvas === 'undefined') {
-                    console.error('html2canvas không được tải!');
-                    messageEl.textContent = 'Lỗi: html2canvas không được tải.';
+                if (typeof htmlToImage === 'undefined') {
+                    console.error('htmlToImage không được tải!');
+                    messageEl.textContent = 'Lỗi: htmlToImage không được tải.';
                     messageEl.classList.remove('hidden');
                     return;
                 }
@@ -1565,20 +1585,19 @@ const htmlContent = `
                 await new Promise(resolve => setTimeout(resolve, 500)); 
 
                 try {
-                    console.log('Đang gọi html2canvas...');
+                    console.log('Đang gọi htmlToImage...');
                     if (!document.body.contains(element)) {
                         console.error('Phần tử không nằm trong DOM!');
                     }
-                    const canvas = await html2canvas(element, {
-                        useCORS: true, scale: 2,
+                    const dataUrl = await htmlToImage.toPng(element, {
+                        pixelRatio: 2,
                         backgroundColor: options.backgroundColor || '#f5f5f7',
-                        ignoreElements: (el) => el.classList.contains('backdrop-blur') || el.classList.contains('backdrop-blur-sm'),
-                        logging: true
+                        filter: (el) => !(el.classList && (el.classList.contains('backdrop-blur') || el.classList.contains('backdrop-blur-sm')))
                     });
-                    console.log('Đã tạo canvas thành công.');
+                    console.log('Đã tạo ảnh thành công.');
                     const link = document.createElement('a');
                     link.download = filename;
-                    link.href = canvas.toDataURL('image/png');
+                    link.href = dataUrl;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
@@ -1644,15 +1663,8 @@ const htmlContent = `
                     const filename = \`so_sanh_chi_tiet_\${store1Name}_vs_\${store2Name}.png\`;
 
                     if (captureArea) {
-                         const originalWidth = captureArea.style.width;
                         captureElementAsImage(captureArea, filename, {
-                            backgroundColor: '#ffffff',
-                             onBeforeCapture: () => {
-                                captureArea.style.width = '1280px';
-                             },
-                             onAfterCapture: () => {
-                                captureArea.style.width = originalWidth;
-                             }
+                            backgroundColor: '#ffffff'
                         });
                     }
                 }
@@ -1663,17 +1675,13 @@ const htmlContent = `
                     const store1Name = storeCodeInput1.value.trim();
                     const store2Name = storeCodeInput2.value.trim();
                     const filename = \`phan_tich_nhanh_\${store1Name}_vs_\${store2Name}.png\`;
-                    const originalWidth = captureArea.style.width;
-
                     if (captureArea) {
                         captureElementAsImage(captureArea, filename, {
                             backgroundColor: '#ffffff',
                             onBeforeCapture: () => {
-                                captureArea.style.width = '1280px';
                                 captureArea.classList.add('p-4');
                             },
                             onAfterCapture: () => {
-                                captureArea.style.width = originalWidth;
                                 captureArea.classList.remove('p-4');
                             }
                         });
@@ -1692,38 +1700,47 @@ const htmlContent = `
                 if (exportSummaryBtn) {
                     const captureArea = document.getElementById('summaryReportArea');
                     const titleElement = captureArea.querySelector('#summaryCard h2');
-                    const originalWidth = captureArea.style.width;
                     
                     const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
                     
                     captureElementAsImage(captureArea, \`\${storeName}_tong_hop.png\`, {
                         onBeforeCapture: () => {
-                            captureArea.style.width = '1280px';
                             if(titleElement) titleElement.classList.remove('truncate');
                             captureArea.classList.add('p-4'); 
                         },
                         onAfterCapture: () => {
-                            captureArea.style.width = originalWidth;
                             if(titleElement) titleElement.classList.add('truncate');
                             captureArea.classList.remove('p-4'); 
+                        }
+                    });
+                }
+                const exportFullPageBtn = event.target.closest('#exportFullPageImageButton');
+                if (exportFullPageBtn) {
+                    const captureArea = document.getElementById('mainContent');
+                    const truncatedElements = captureArea.querySelectorAll('.truncate');
+                    const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                    
+                    captureElementAsImage(captureArea, \`\${storeName}_toan_trang.png\`, {
+                        onBeforeCapture: () => {
+                            truncatedElements.forEach(el => el.classList.remove('truncate'));
+                        },
+                        onAfterCapture: () => {
+                            truncatedElements.forEach(el => el.classList.add('truncate'));
                         }
                     });
                 }
                 const exportComparisonBtn = event.target.closest('#exportComparisonImageButton');
                 if (exportComparisonBtn) {
                     const captureArea = document.getElementById('captureComparisonMain');
-                    const originalWidth = captureArea.style.width;
                     const truncatedElements = captureArea.querySelectorAll('.truncate');
                     const store1Name = storeCodeInput1.value.trim();
                     const store2Name = storeCodeInput2.value.trim();
                     captureElementAsImage(captureArea, \`so_sanh_\${store1Name}_vs_\${store2Name}.png\`, {
                          onBeforeCapture: () => { 
-                            captureArea.style.width = '1280px';
                             truncatedElements.forEach(el => el.classList.remove('truncate'));
                             captureArea.classList.add('p-4');
                         },
                         onAfterCapture: () => { 
-                            captureArea.style.width = originalWidth;
                             truncatedElements.forEach(el => el.classList.add('truncate'));
                             captureArea.classList.remove('p-4');
                         }
@@ -1779,7 +1796,7 @@ const htmlContent = `
                      captureElementAsImage(analysisSection, \`\${storeName}_phan_tich.png\`, {
                          backgroundColor: '#ffffff',
                          onBeforeCapture: () => {
-                            analysisSection.style.width = '1280px';
+                            analysisSection.style.width = '960px';
                             analysisSection.classList.add('p-4');
                          },
                          onAfterCapture: () => {
@@ -1833,11 +1850,11 @@ const htmlContent = `
                             const titleText = \`Bảng Xếp Hạng: \${groupName} - Kênh \${groupChannel}\`;
                             tempContainer.innerHTML = getRankingTableHtml(dataForTable, titleText);
                             try {
-                                const canvas = await html2canvas(tempContainer.firstChild, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+                                const dataUrl = await htmlToImage.toPng(tempContainer.firstChild, { pixelRatio: 2, backgroundColor: '#ffffff' });
                                 const link = document.createElement('a');
                                 const filename = \`BXH_\${groupName}_\${groupChannel}\`.replace(/[^\\w\\s-]/g, '').trim().replace(/\\s+/g, '_') + '.png';
                                 link.download = filename;
-                                link.href = canvas.toDataURL('image/png');
+                                link.href = dataUrl;
                                 link.click();
                                 await new Promise(res => setTimeout(res, 300));
                             } catch (err) {
@@ -1861,6 +1878,34 @@ const htmlContent = `
                     if (groupName && groupChannel) {
                         showRankingModal(groupName, groupChannel);
                     }
+                    return;
+                }
+                
+                const exportGroupBtn = event.target.closest('.exportGroupImageBtn');
+                if (exportGroupBtn) {
+                    const groupKey = exportGroupBtn.dataset.groupKey;
+                    const container = document.querySelector(\`.group-container[data-group-key="\${groupKey}"]\`);
+                    if (container) {
+                        const captureTarget = container.querySelector('.capture-target');
+                        if (captureTarget) {
+                            const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
+                            const filename = \`\${storeName}_\${groupKey}.png\`;
+                            const originalWidth = captureTarget.style.width;
+                            const truncatedElements = captureTarget.querySelectorAll('.truncate');
+
+                            captureElementAsImage(captureTarget, filename, {
+                                onBeforeCapture: () => {
+                                    truncatedElements.forEach(el => el.classList.remove('truncate'));
+                                    captureTarget.style.width = '960px';
+                                },
+                                onAfterCapture: () => {
+                                    truncatedElements.forEach(el => el.classList.add('truncate'));
+                                    captureTarget.style.width = originalWidth;
+                                }
+                            });
+                        }
+                    }
+                    return;
                 }
             });
 
@@ -1961,11 +2006,7 @@ const htmlContent = `
                         captureElementAsImage(captureTarget, filename, {
                             onBeforeCapture: () => {
                                 truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                let newWidth = '1400px';
-                                if (activeFilter === 'all') {
-                                    newWidth = '1600px'; // Wider for all results
-                                }
-                                captureTarget.style.width = newWidth;
+                                captureTarget.style.width = '960px';
                             },
                             onAfterCapture: () => {
                                 truncatedElements.forEach(el => el.classList.add('truncate'));
@@ -1975,6 +2016,7 @@ const htmlContent = `
                     }
                     return;
                 }
+
                 
                 const exportAllBtn = e.target.closest('#exportAllFilteredImagesButton');
                 if(exportAllBtn) {
@@ -2003,16 +2045,16 @@ const htmlContent = `
                                      const truncatedElements = captureTarget.querySelectorAll('.truncate');
                                      
                                      truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                     captureTarget.style.width = '1400px';
+                                     captureTarget.style.width = '960px';
 
-                                     const canvas = await html2canvas(captureTarget, { useCORS: true, scale: 2, backgroundColor: '#f5f5f7' });
+                                     const dataUrl = await htmlToImage.toPng(captureTarget, { pixelRatio: 2, backgroundColor: '#f5f5f7' });
                                      
                                      captureTarget.style.width = originalWidth;
                                      truncatedElements.forEach(el => el.classList.add('truncate'));
 
                                      const link = document.createElement('a');
                                      link.download = \`\${storeName}_\${filter}.png\`;
-                                     link.href = canvas.toDataURL('image/png');
+                                     link.href = dataUrl;
                                      link.click();
                                      await new Promise(res => setTimeout(res, 200));
                                  }

@@ -291,7 +291,7 @@ const DashboardView = React.memo(function DashboardView() {
                     {showDashboard && (
                         <>
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
-                                <div className="max-w-[1280px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
+                                <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
                                     <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} />
                                     
                                     {/* Data Coverage Indicator */}

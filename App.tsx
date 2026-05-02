@@ -105,9 +105,29 @@ const TabContent = React.memo(() => {
 });
 TabContent.displayName = 'TabContent';
 
+const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
+    'analysis': { main: 'Phân Tích', highlight: 'YCX' },
+    'check-thuong': { main: 'Check', highlight: 'Thưởng' },
+    'employees': { main: 'Report', highlight: 'BI' },
+    'inventory': { main: 'Kho', highlight: 'Hàng' },
+    'reports': { main: 'Báo', highlight: 'Cáo' },
+    'tools': { main: 'Công', highlight: 'Cụ' },
+    'tools-print-sticker': { main: 'In', highlight: 'Sticker' },
+    'tools-coupon': { main: 'Đổi', highlight: 'Coupon' },
+    'tools-tax': { main: 'Hoàn Thuế', highlight: 'Nhận Thay' },
+    'tools-sticker': { main: 'Sticker', highlight: 'Event' },
+    'tools-audit': { main: 'Kiểm', highlight: 'Quỹ' },
+    'settings': { main: 'Cài', highlight: 'Đặt' },
+    'help': { main: 'Giới', highlight: 'Thiệu' },
+    'pending-approval': { main: 'Hồ Sơ', highlight: 'Quyền' },
+};
+
 function AppContent() {
     const { isDarkMode, toggleDarkMode } = useLayout();
+    const { activeTab } = useActiveTab();
     const { user, userRole, isDemoMode, isLoading } = useAuth();
+    
+    const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
 
     // Smart greeting based on time of day
     const greeting = React.useMemo(() => {
@@ -161,7 +181,7 @@ function AppContent() {
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                         </div>
                         <div className="flex flex-col">
-                            <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none">Báo Cáo YCX</span>
+                            <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none">{titleData.main} {titleData.highlight}</span>
                             <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">{greeting}</span>
                         </div>
                     </div>
@@ -173,6 +193,16 @@ function AppContent() {
                 <main className="flex-grow flex flex-col bg-slate-50/50 dark:bg-slate-950/20 relative">
                     {/* Thêm Banner thông báo Đơn chờ duyệt */}
                     <PendingApprovalBanner />
+
+                    {/* Global Page Header (Desktop) */}
+                    <div className="hidden lg:flex flex-col gap-1 px-4 sm:px-6 lg:px-8 pt-6 pb-2">
+                        <div className="flex items-center gap-4">
+                            <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
+                            <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+                                {titleData.main} <span className="text-indigo-600 dark:text-indigo-400">{titleData.highlight}</span>
+                            </h1>
+                        </div>
+                    </div>
 
                     {/* Desktop Notification Center has been moved into the Header component to prevent layout overlap */}
                     

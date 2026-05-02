@@ -100,25 +100,16 @@ const Header: React.FC<HeaderProps> = ({
                 </div>
             )}
             <header className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 lg:gap-6 mb-3 lg:mb-5 pb-3 lg:pb-5 border-b border-slate-200/60 dark:border-slate-800/60">
-            {/* Title Section — Hidden on mobile (top bar shows app name) */}
-            <div className="hidden lg:flex flex-col gap-1">
-                <div className="flex items-center gap-4">
-                    <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
-                    <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
-                        Báo Cáo <span className="text-indigo-600 dark:text-indigo-400">YCX</span>
-                    </h1>
-                </div>
-                
-                <div className="flex items-center gap-2 text-slate-400 dark:text-slate-500 pl-5 mt-1">
-                    <Icon name="calendar-days" size={3.5} className="opacity-60" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-80">
-                        {fileInfo ? (
-                            <>Cập nhật: <span className="text-slate-700 dark:text-slate-300 font-extrabold">{fileInfo.savedAt}</span></>
-                        ) : (
-                            "Dữ liệu thời gian thực"
-                        )}
-                    </span>
-                </div>
+            {/* Desktop Left side: File Info */}
+            <div className="hidden lg:flex items-center gap-2 text-slate-500 dark:text-slate-400">
+                <Icon name="calendar-days" size={4} className="opacity-70" />
+                <span className="text-xs font-bold uppercase tracking-wider">
+                    {fileInfo ? (
+                        <>Cập nhật: <span className="text-slate-800 dark:text-slate-200 font-extrabold">{fileInfo.savedAt}</span></>
+                    ) : (
+                        "Dữ liệu thời gian thực"
+                    )}
+                </span>
             </div>
             {/* Mobile: Compact file info line */}
             {fileInfo && (
