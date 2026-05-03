@@ -58,7 +58,8 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             const originalCard = cardRef.current;
             const filename = `${displayTitle.replace(/[\s/]/g, '_')}.png`;
             const blob = await exportElementAsImage(originalCard, filename, {
-                mode: 'blob-only', elementsToHide: ['.export-button-component']
+                mode: 'blob-only', elementsToHide: ['.export-button-component'],
+                captureAsDisplayed: true
             });
             if (blob) showExportOptions(blob, filename);
         } catch (err) {
@@ -153,7 +154,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             <tr key={employee.originalName} className={`
                 ${highlightClass 
                     ? `${highlightClass} font-bold border-b border-slate-100 dark:border-slate-700` 
-                    : `border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-750 transition-all cursor-pointer text-[12px]`
+                    : `border-b border-slate-100 dark:border-slate-700/50 hover:bg-slate-50 dark:hover:bg-slate-750 transition-all cursor-pointer text-[13px]`
                 } 
                 last:border-b-0`}>
                 <td className="px-1.5 py-1.5 whitespace-nowrap text-slate-800 dark:text-slate-100 text-left leading-tight">
@@ -192,7 +193,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                 </div>
             </div>
             <div className="mt-1">
-                <table className="w-full text-[11px] table-fixed border-collapse compact-export-table">
+                <table className="w-full text-[12px] table-fixed border-collapse compact-export-table">
                     <colgroup>
                         <col className="w-[30%]" />
                         <col className="w-[17%]" />
@@ -201,7 +202,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                         <col className="w-[21%]" />
                     </colgroup>
                     <thead>
-                        <tr className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
+                        <tr className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[11px] font-bold text-slate-500 tracking-wider">
                             <th className="text-left px-1.5 py-1.5 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700">
                                 <button onClick={() => handleCardSort('name')} className="flex items-center w-full group">NV{getSortIcon('name')}</button>
                             </th>
@@ -243,13 +244,13 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                                 return (
                                     <React.Fragment key={deptName}>
                                         <tr className="bg-slate-50 dark:bg-slate-700/50">
-                                            <td colSpan={5} className="px-1.5 py-1 font-bold text-slate-500 dark:text-slate-400 text-left uppercase text-[9px] tracking-wider border-b border-slate-100 dark:border-slate-800">
+                                            <td colSpan={5} className="px-1.5 py-1 font-bold text-slate-500 dark:text-slate-400 text-left uppercase text-[10px] tracking-wider border-b border-slate-100 dark:border-slate-800">
                                                 {deptName}
                                             </td>
                                         </tr>
                                         {employeesInDept.map((employee, index) => renderEmployeeRow(employee, index, bottom30Threshold))}
                                         <tr className="bg-slate-100 dark:bg-slate-800/80 text-slate-800 dark:text-white shadow-inner font-extrabold border-t-[3px] border-t-slate-200">
-                                            <td className="px-1.5 py-1.5 text-left uppercase text-[10px] tracking-wider border-r border-slate-200 dark:border-slate-700">Tổng {deptName}</td>
+                                            <td className="px-1.5 py-1.5 text-left uppercase text-[11px] tracking-wider border-r border-slate-200 dark:border-slate-700">Tổng {deptName}</td>
                                             <td className="px-1 py-1.5 text-center whitespace-nowrap tabular-nums border-r border-slate-200 dark:border-slate-700">{formatter.format(roundUp(totalTarget))}</td>
                                             <td className="px-1 py-1.5 text-center whitespace-nowrap tabular-nums border-r border-slate-200 dark:border-slate-700">{formatter.format(roundUp(totalActual))}</td>
                                             <td className="px-1 py-1.5 text-center font-bold whitespace-nowrap tabular-nums border-r border-slate-200 dark:border-slate-700">{roundUp(totalCompletion).toFixed(0)}%</td>
@@ -266,7 +267,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                             }
                         })}
                         <tr className="bg-indigo-50 dark:bg-indigo-900/40 shadow-inner font-extrabold text-indigo-800 dark:text-indigo-200 border-t-[3px] border-t-indigo-200 dark:border-t-indigo-800">
-                             <td className="px-1.5 py-1.5 text-left uppercase text-[11px] tracking-wider border-r border-indigo-200 dark:border-indigo-800/50">TỔNG</td>
+                             <td className="px-1.5 py-1.5 text-left uppercase text-[12px] tracking-wider border-r border-indigo-200 dark:border-indigo-800/50">TỔNG</td>
                              <td className="px-1 py-1.5 text-center whitespace-nowrap border-r border-indigo-200 dark:border-indigo-800/50 tabular-nums">{formatter.format(roundUp(grandTotalTarget))}</td>
                              <td className="px-1 py-1.5 text-center whitespace-nowrap border-r border-indigo-200 dark:border-indigo-800/50 tabular-nums">{formatter.format(roundUp(grandTotalActual))}</td>
                              <td className="px-1 py-1.5 text-center whitespace-nowrap border-r border-indigo-200 dark:border-indigo-800/50 tabular-nums">{roundUp(grandTotalCompletion).toFixed(0)}%</td>

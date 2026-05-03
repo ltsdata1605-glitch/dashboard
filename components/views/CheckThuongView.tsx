@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { useActiveTab } from '../../contexts/LayoutContext';
+import { Icon } from '../common/Icon';
 
 const htmlContent = `
 <!DOCTYPE html>
@@ -134,7 +137,7 @@ const htmlContent = `
 
     <div class="app-shell">
         <!-- Search Section (shown after file load) -->
-        <div id="searchSection" class="hidden" style="margin-bottom:16px;padding:0 16px">
+        <div id="searchSection" class="hidden" style="display: none !important;">
             <div class="mod-card" style="padding:16px 20px;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.05)">
                 <div style="display:flex;gap:16px;align-items:flex-end">
                     <div style="flex:1">
@@ -286,6 +289,8 @@ const htmlContent = `
                     if (savedData.code1) storeCodeInput1.value = savedData.code1;
                     if (savedData.code2) storeCodeInput2.value = savedData.code2;
                     if (savedData.singleViewMode) singleViewMode = savedData.singleViewMode;
+                    
+                    window.parent.postMessage({ type: 'CHECK_THUONG_FILE_LOADED', code1: storeCodeInput1.value, code2: storeCodeInput2.value }, '*');
                     
                     if(storeCodeInput1.value) handleSearchOrCompare();
                 }
@@ -675,6 +680,7 @@ const htmlContent = `
                         searchSection.classList.remove('hidden');
                         landingPage.classList.add('hidden');
                         changeFileButton.classList.remove('hidden');
+                        window.parent.postMessage({ type: 'CHECK_THUONG_FILE_LOADED', code1: storeCodeInput1.value, code2: storeCodeInput2.value }, '*');
                         storeCodeInput1.focus();
                         if(storeCodeInput1.value) handleSearchOrCompare();
                         saveState();
@@ -2078,6 +2084,15 @@ const htmlContent = `
             closeVersionModalButton.addEventListener('click', () => versionModal.classList.add('hidden'));
             versionModal.addEventListener('click', (event) => { if (event.target === event.currentTarget) { versionModal.classList.add('hidden'); } });
 
+            window.addEventListener('message', (e) => {
+                if (e.data && e.data.type === 'CHECK_THUONG_SEARCH') {
+                    storeCodeInput1.value = e.data.code1 || '';
+                    storeCodeInput2.value = e.data.code2 || '';
+                    handleSearchOrCompare();
+                } else if (e.data && e.data.type === 'CHECK_THUONG_CHANGE_FILE') {
+                    changeFileButton.click();
+                }
+            });
         });
     </script>
 </body>
@@ -2085,9 +2100,93 @@ const htmlContent = `
 `;
 
 export const CheckThuongView: React.FC = () => {
+    const { activeTab } = useActiveTab();
+    const [mounted, setMounted] = useState(false);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const [hasData, setHasData] = useState(false);
+    const [codes, setCodes] = useState({ code1: '910', code2: '' });
+
+    useEffect(() => {
+        setMounted(true);
+        const handleMessage = (e: MessageEvent) => {
+            if (e.data?.type === 'CHECK_THUONG_FILE_LOADED') {
+                setHasData(true);
+                if (e.data.code1) setCodes(prev => ({ ...prev, code1: e.data.code1 }));
+                if (e.data.code2) setCodes(prev => ({ ...prev, code2: e.data.code2 }));
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, []);
+
+    const handleSearch = () => {
+        iframeRef.current?.contentWindow?.postMessage({
+            type: 'CHECK_THUONG_SEARCH',
+            code1: codes.code1, 
+            code2: codes.code2
+        }, '*');
+    };
+
+    const handleCodeChange = (field: 'code1' | 'code2', value: string) => {
+        setCodes(prev => {
+            const newCodes = { ...prev, [field]: value };
+            iframeRef.current?.contentWindow?.postMessage({
+                type: 'CHECK_THUONG_SEARCH',
+                code1: newCodes.code1, 
+                code2: newCodes.code2
+            }, '*');
+            return newCodes;
+        });
+    };
+
+    const handleChangeFile = () => {
+        iframeRef.current?.contentWindow?.postMessage({
+            type: 'CHECK_THUONG_CHANGE_FILE'
+        }, '*');
+    };
+
     return (
         <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute inset-0">
+            {mounted && activeTab === 'check-thuong' && hasData && document.getElementById('global-header-actions') && createPortal(
+                <div className="flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
+                    <div className="flex items-center gap-2 px-2">
+                        <input 
+                            type="text" 
+                            placeholder="Mã kho (VD: 910)" 
+                            className="w-32 lg:w-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]"
+                            value={codes.code1}
+                            onChange={(e) => handleCodeChange('code1', e.target.value)}
+                        />
+                        <span className="text-slate-300 dark:text-slate-600">|</span>
+                        <input 
+                            type="text" 
+                            placeholder="So sánh..." 
+                            className="w-28 lg:w-36 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]"
+                            value={codes.code2}
+                            onChange={(e) => handleCodeChange('code2', e.target.value)}
+                        />
+                    </div>
+                    <div className="flex items-center gap-1 border-l border-slate-200 dark:border-slate-700 pl-2">
+                        <button 
+                            onClick={handleSearch}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 transition-colors"
+                            title="Tra cứu"
+                        >
+                            <Icon name="search" size={4} />
+                        </button>
+                        <button 
+                            onClick={handleChangeFile}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors"
+                            title="Tải file khác"
+                        >
+                            <Icon name="upload" size={4} />
+                        </button>
+                    </div>
+                </div>,
+                document.getElementById('global-header-actions')!
+            )}
             <iframe
+                ref={iframeRef}
                 srcDoc={htmlContent}
                 title="Bảng Tra Cứu Thưởng Thi Đua"
                 className="w-full h-full border-none flex-grow"

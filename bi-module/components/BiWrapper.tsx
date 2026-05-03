@@ -1,4 +1,6 @@
 import React, { useState, useCallback, useEffect, Suspense, lazy } from 'react';
+import { createPortal } from 'react-dom';
+import { useActiveTab } from '../../contexts/LayoutContext';
 import { Icon } from '../../components/common/Icon';
 import FontSelector from '../../components/layout/FontSelector';
 import { migrateClusterDataToMain } from '../utils/dbMigration';
@@ -43,10 +45,15 @@ const TabSpinner = () => (
  * Each sub-view is also lazy-loaded so initial mount only loads the active view's chunk.
  */
 const BiWrapper = React.memo(function BiWrapper() {
-    // Use plain useState — no IDB write needed for navigation state
+    const { activeTab } = useActiveTab();
     const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater' | 'settings'>('dashboard');
     // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
     const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(['dashboard']));
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Migrate dữ liệu cũ từ ClusterDataDB sang BI_HUB_DATABASE_V2 (chỉ chạy 1 lần)
     useEffect(() => {
@@ -75,37 +82,35 @@ const BiWrapper = React.memo(function BiWrapper() {
 
     return (
         <div className="flex flex-col w-full min-h-screen">
-            {/* Thanh Tab Ngang Nội Bộ */}
-            <div className="flex justify-between items-end border-b border-slate-200 dark:border-slate-800 px-4 md:px-6 lg:px-8 z-40 sticky top-0 bg-white/95 dark:bg-slate-950/95 backdrop-blur-md shadow-[0_1px_2px_rgba(0,0,0,0.04)]">
-                <div className="flex items-end gap-0 overflow-x-auto flex-1 min-w-0 hide-scrollbar">
+            {mounted && activeTab === 'employees' && document.getElementById('global-header-actions') && createPortal(
+                <div className="flex items-center gap-1 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
                     {navigationLinks.map(tab => {
                         const isActive = activeView === tab.id;
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
-                                className={`flex items-center justify-center gap-2 py-3 ${tab.label ? 'px-4' : 'px-2.5 w-[36px]'} font-semibold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none border-b-2 ${
+                                className={`flex items-center justify-center gap-2 py-1.5 ${tab.label ? 'px-4' : 'px-2 w-[32px]'} rounded-full font-semibold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
                                     isActive
-                                        ? 'border-sky-500 text-sky-600 dark:text-sky-400'
-                                        : 'border-transparent text-slate-400 hover:text-slate-600 dark:hover:text-slate-500 dark:hover:text-slate-300'
+                                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.1)] border border-slate-200/60 dark:border-slate-700/60'
+                                        : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                 }`}
+                                title={tab.label || tab.id}
                             >
-                                <div className={`shrink-0 flex items-center justify-center ${isActive ? 'text-current' : ''}`}>
-                                    <Icon name={tab.icon as any} size={4} />
-                                </div>
+                                <Icon name={tab.icon as any} size={4} />
                                 {tab.label && <span>{tab.label}</span>}
                             </button>
                         );
                     })}
                     
-                    {/* Font Selector */}
-                    <div className="flex shrink-0 items-center pl-2 ml-1 pb-1.5">
-                        <div className="rounded-lg overflow-hidden shadow-[0_1px_2px_rgba(0,0,0,0.05)] border border-slate-200 dark:border-slate-700">
+                    <div className="flex shrink-0 items-center pl-1 border-l border-slate-200 dark:border-slate-700 ml-1">
+                        <div className="rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
                             <FontSelector />
                         </div>
                     </div>
-                </div>
-            </div>
+                </div>,
+                document.getElementById('global-header-actions')!
+            )}
 
             {/* Nội dung Module — HIDDEN/BLOCK pattern: mount once, toggle visibility */}
             <main className="p-0 sm:p-4 lg:p-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">

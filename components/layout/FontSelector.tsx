@@ -43,7 +43,7 @@ const FontSelector: React.FC = () => {
         getGlobalFont().then(font => {
             if (font) {
                 setCurrentFont(font);
-                
+
                 // Apply on mount
                 let styleEl = document.getElementById('dynamic-font-style');
                 if (!styleEl) {
@@ -64,7 +64,7 @@ const FontSelector: React.FC = () => {
             // Align right edge of dropdown with right edge of button
             const minW = 200;
             let leftPos = rect.right - minW;
-            
+
             // Prevent going out of screen on the left
             if (leftPos < 10) {
                 leftPos = 10;
@@ -113,21 +113,21 @@ const FontSelector: React.FC = () => {
     const handleSelectFont = async (fontValue: string) => {
         setCurrentFont(fontValue);
         await saveGlobalFont(fontValue);
-        
+
         let styleEl = document.getElementById('dynamic-font-style');
         if (!styleEl) {
             styleEl = document.createElement('style');
             styleEl.id = 'dynamic-font-style';
             document.head.appendChild(styleEl);
         }
-        
+
         // Apply instantly using a style block with !important to override tailwind utilities
         if (fontValue && fontValue !== 'Plus Jakarta Sans') {
             styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, strong, em, b, i { font-family: '${fontValue}', sans-serif !important; }`;
         } else {
             styleEl.innerHTML = ''; // Reset to tailwind default (Plus Jakarta Sans)
         }
-        
+
         setIsOpen(false);
     };
 
@@ -149,7 +149,7 @@ const FontSelector: React.FC = () => {
             </button>
 
             {isOpen && createPortal(
-                <div 
+                <div
                     ref={dropdownRef}
                     style={dropdownStyles}
                     className="absolute bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm overflow-hidden"
@@ -168,11 +168,10 @@ const FontSelector: React.FC = () => {
                                 <button
                                     key={font.value}
                                     onClick={() => handleSelectFont(font.value)}
-                                    className={`flex items-center gap-2 px-3 py-2 w-full text-left rounded-lg transition-colors ${
-                                        isSelected 
-                                            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' 
-                                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'
-                                    }`}
+                                    className={`flex items-center gap-2 px-3 py-2 w-full text-left rounded-lg transition-colors ${isSelected
+                                        ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
+                                        : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'
+                                        }`}
                                     style={font.style}
                                 >
                                     <div className={`flex items-center justify-center w-4 h-4 rounded-full border ${isSelected ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300 dark:border-slate-600'}`}>

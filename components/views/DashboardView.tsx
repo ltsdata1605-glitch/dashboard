@@ -305,13 +305,22 @@ const DashboardView = React.memo(function DashboardView() {
                                                 <Icon name="users" size={3} className="text-indigo-400" /> Tổng: <span className="text-slate-600 dark:text-slate-300">{totalVisits.toLocaleString()}</span> lượt • <span className="font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> {onlineUsers} đang online</span>
                                             </span>
                                         </div>
-                                        
-                                        {processingTime > 0 && (
-                                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
-                                                <Icon name="zap" size={3} className="text-amber-500" />
-                                                <span>Xử lý {processingTime}ms</span>
-                                            </div>
-                                        )}
+                                        <div className="flex items-center gap-3">
+                                            {logic.fileInfo && (
+                                                <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 px-2 py-1 rounded-md border border-slate-200/50 dark:border-slate-700/50">
+                                                    <Icon name="calendar-days" size={3.5} className="opacity-70" />
+                                                    <span className="text-[10px] font-bold uppercase tracking-widest">
+                                                        Cập nhật: <span className="text-slate-800 dark:text-slate-200 font-black">{logic.fileInfo.savedAt}</span>
+                                                    </span>
+                                                </div>
+                                            )}
+                                            {processingTime > 0 && (
+                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400">
+                                                    <Icon name="zap" size={3} className="text-amber-500" />
+                                                    <span>Xử lý {processingTime}ms</span>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {processedData.warehouseSummary && processedData.warehouseSummary.length > 0 && (

@@ -17,7 +17,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
         filterState, 
         handleFilterChange, 
         uniqueFilterOptions,
-        originalData
+        originalData,
+        fileInfo
     } = useDashboardContext();
 
     const { availableWeeks, availableMonths } = useMemo(() => {

@@ -196,11 +196,14 @@ function AppContent() {
 
                     {/* Global Page Header (Desktop) */}
                     <div className="hidden lg:flex flex-col gap-1 px-4 sm:px-6 lg:px-8 pt-6 pb-2">
-                        <div className="flex items-center gap-4">
-                            <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
-                            <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
-                                {titleData.main} <span className="text-indigo-600 dark:text-indigo-400">{titleData.highlight}</span>
-                            </h1>
+                        <div className="flex items-center justify-between gap-4 w-full">
+                            <div className="flex items-center gap-4">
+                                <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
+                                <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+                                    {titleData.main} <span className="text-indigo-600 dark:text-indigo-400">{titleData.highlight}</span>
+                                </h1>
+                            </div>
+                            <div id="global-header-actions" className="flex items-center z-50"></div>
                         </div>
                     </div>
 

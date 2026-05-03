@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Icon } from '../common/Icon';
 import { motion, AnimatePresence } from 'motion/react';
 import ModalWrapper from '../modals/ModalWrapper';
@@ -10,6 +11,7 @@ import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useCloudSync } from '../../hooks/useCloudSync';
+import { useActiveTab } from '../../contexts/LayoutContext';
 
 interface HeaderProps {
     onNewFile: () => void;
@@ -41,10 +43,15 @@ const Header: React.FC<HeaderProps> = ({
     const [showEmployeeModal, setShowEmployeeModal] = useState(false);
     const [showDriveHistory, setShowDriveHistory] = useState(false);
     const { syncState, lastError } = useCloudSync();
+    const { activeTab } = useActiveTab();
 
     // Prevent hydration warnings
     const [mounted, setMounted] = useState(false);
     const hasPromptedDrive = useRef(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         if (user && context.appState === 'upload' && !hasPromptedDrive.current && (userRole === 'admin' || userRole === 'manager')) {
@@ -84,6 +91,8 @@ const Header: React.FC<HeaderProps> = ({
         setDeptClearSuccess(true);
         setTimeout(() => setDeptClearSuccess(false), 3000);
     };
+
+    if (activeTab !== 'analysis') return null;
     
     return (
         <>
@@ -99,22 +108,11 @@ const Header: React.FC<HeaderProps> = ({
                     </div>
                 </div>
             )}
-            <header className="relative flex flex-col lg:flex-row justify-between items-start lg:items-center gap-3 lg:gap-6 mb-3 lg:mb-5 pb-3 lg:pb-5 border-b border-slate-200/60 dark:border-slate-800/60">
-            {/* Desktop Left side: File Info */}
-            <div className="hidden lg:flex items-center gap-2 text-slate-500 dark:text-slate-400">
-                <Icon name="calendar-days" size={4} className="opacity-70" />
-                <span className="text-xs font-bold uppercase tracking-wider">
-                    {fileInfo ? (
-                        <>Cập nhật: <span className="text-slate-800 dark:text-slate-200 font-extrabold">{fileInfo.savedAt}</span></>
-                    ) : (
-                        "Dữ liệu thời gian thực"
-                    )}
-                </span>
-            </div>
+            <header className="relative flex flex-col lg:hidden justify-between items-start gap-3 mb-3 pb-3 border-b border-slate-200/60 dark:border-slate-800/60">
             {/* Mobile: Compact file info line */}
             {fileInfo && (
                 <>
-                <div className="lg:hidden flex items-center justify-between w-full">
+                <div className="flex items-center justify-between w-full">
                     <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
                         <Icon name="calendar-days" size={3} className="opacity-60" />
                         <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">
@@ -140,110 +138,112 @@ const Header: React.FC<HeaderProps> = ({
                         </div>
                     )}
                 </div>
-                    {/* Desktop: Full inline toolbar */}
-                    <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
-                        {/* Shift Management Group */}
-                        {(userRole === 'admin' || userRole === 'manager') && (
-                        <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
-                            <button 
-                                onClick={onLoadShiftFile}
-                                className="flex items-center gap-2 px-4 py-2 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-semibold text-sm transition-colors"
-                                title="Tải lên báo cáo Phân ca"
-                            >
-                                <Icon name="users-round" size={4} />
-                                <span>Nhân Viên</span>
-                            </button>
-                            
-                            {hasDepartmentData && (
-                                <div className="flex items-center border-l border-slate-100 dark:border-slate-700">
-                                    <button 
-                                        onClick={() => setShowEmployeeModal(true)}
-                                        className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
-                                        title="Quản lý danh sách nhân viên"
-                                    >
-                                        <Icon name="settings" size={4} />
-                                    </button>
-                                </div>
-                            )}
-                            
-                            <div className="flex items-center border-l border-slate-100 dark:border-slate-700">
-                                <a 
-                                    href="#" 
-                                    onClick={handleExternalLinkClick}
-                                    className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
-                                    title="Mở trang quản lý phân ca"
-                                >
-                                    <Icon name="external-link" size={4} />
-                                </a>
-                                
-                                <AnimatePresence mode="wait">
-                                    {hasDepartmentData && (
-                                        <motion.button
-                                            initial={{ width: 0, opacity: 0 }}
-                                            animate={{ width: 'auto', opacity: 1 }}
-                                            exit={{ width: 0, opacity: 0 }}
-                                            onClick={handleDeptClear}
-                                            disabled={isClearingDepartments}
-                                            className={`p-2 transition-colors border-l border-slate-100 dark:border-slate-700 ${deptClearSuccess ? 'text-emerald-500' : 'text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20'}`}
-                                            title="Xóa dữ liệu phân ca"
-                                        >
-                                            <Icon name={deptClearSuccess ? 'check' : (isClearingDepartments ? 'loader-2' : 'trash-2')} size={4} className={isClearingDepartments ? 'animate-spin' : ''} />
-                                        </motion.button>
-                                    )}
-                                </AnimatePresence>
-                            </div>
-                        </div>
-                        )}
-
-                        {/* Data Import Group */}
-                        <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
-                            {(userRole === 'admin' || userRole === 'manager') && (
-                                <>
-                                    <button 
-                                        onClick={onNewFile}
-                                        className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold text-sm transition-colors"
-                                        title="Tải lên báo cáo YCX mới"
-                                    >
-                                        <Icon name="file-up" size={4} />
-                                        <span>UpFile YCX</span>
-                                    </button>
-                                    
-                                    <button 
-                                        onClick={() => setShowDriveHistory(true)}
-                                        className={`flex items-center p-2 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors tooltip ${syncState === 'error' ? 'text-red-500 animate-pulse' : 'text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400'}`}
-                                        title="Lịch sử dữ liệu (Mây)"
-                                    >
-                                        <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={4} className={syncState === 'error' ? "animate-bounce" : ""} />
-                                        {syncState === 'error' && (
-                                            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900 animate-ping"></span>
-                                        )}
-                                    </button>
-                                </>
-                            )}
-                            <a 
-                                href="https://report.mwgroup.vn/home/dashboard/77"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
-                                title="Tải dữ liệu báo cáo"
-                            >
-                                <Icon name="external-link" size={4} />
-                            </a>
-
-                            <div className="border-l border-slate-100 dark:border-slate-700">
-                                <FontSelector />
-                            </div>
-                            
-                            <div className="border-l border-slate-100 dark:border-slate-700 flex items-center">
-                                <NotificationDropdown buttonClassName="relative flex items-center justify-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" />
-                            </div>
-                        </div>
-                    </div>
-
-
                 </>
             )}
         </header>
+
+        {/* Desktop: Full inline toolbar ported to Global Header */}
+        {mounted && document.getElementById('global-header-actions') && createPortal(
+            <div className="hidden lg:flex flex-wrap items-center gap-4 w-auto bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
+                {/* Shift Management Group */}
+                {(userRole === 'admin' || userRole === 'manager') && (
+                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
+                    <button 
+                        onClick={onLoadShiftFile}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-semibold text-sm transition-colors"
+                        title="Tải lên báo cáo Phân ca"
+                    >
+                        <Icon name="users-round" size={4} />
+                        <span>Nhân Viên</span>
+                    </button>
+                    
+                    {hasDepartmentData && (
+                        <div className="flex items-center border-l border-slate-100 dark:border-slate-700">
+                            <button 
+                                onClick={() => setShowEmployeeModal(true)}
+                                className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                                title="Quản lý danh sách nhân viên"
+                            >
+                                <Icon name="settings" size={4} />
+                            </button>
+                        </div>
+                    )}
+                    
+                    <div className="flex items-center border-l border-slate-100 dark:border-slate-700">
+                        <a 
+                            href="#" 
+                            onClick={handleExternalLinkClick}
+                            className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                            title="Mở trang quản lý phân ca"
+                        >
+                            <Icon name="external-link" size={4} />
+                        </a>
+                        
+                        <AnimatePresence mode="wait">
+                            {hasDepartmentData && (
+                                <motion.button
+                                    initial={{ width: 0, opacity: 0 }}
+                                    animate={{ width: 'auto', opacity: 1 }}
+                                    exit={{ width: 0, opacity: 0 }}
+                                    onClick={handleDeptClear}
+                                    disabled={isClearingDepartments}
+                                    className={`p-2 transition-colors border-l border-slate-100 dark:border-slate-700 ${deptClearSuccess ? 'text-emerald-500' : 'text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20'}`}
+                                    title="Xóa dữ liệu phân ca"
+                                >
+                                    <Icon name={deptClearSuccess ? 'check' : (isClearingDepartments ? 'loader-2' : 'trash-2')} size={4} className={isClearingDepartments ? 'animate-spin' : ''} />
+                                </motion.button>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                </div>
+                )}
+
+                {/* Data Import Group */}
+                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
+                    {(userRole === 'admin' || userRole === 'manager') && (
+                        <>
+                            <button 
+                                onClick={onNewFile}
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold text-sm transition-colors"
+                                title="Tải lên báo cáo YCX mới"
+                            >
+                                <Icon name="file-up" size={4} />
+                                <span>UpFile YCX</span>
+                            </button>
+                            
+                            <button 
+                                onClick={() => setShowDriveHistory(true)}
+                                className={`flex items-center p-2 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors tooltip ${syncState === 'error' ? 'text-red-500 animate-pulse' : 'text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400'}`}
+                                title="Lịch sử dữ liệu (Mây)"
+                            >
+                                <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={4} className={syncState === 'error' ? "animate-bounce" : ""} />
+                                {syncState === 'error' && (
+                                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900 animate-ping"></span>
+                                )}
+                            </button>
+                        </>
+                    )}
+                    <a 
+                        href="https://report.mwgroup.vn/home/dashboard/77"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
+                        title="Tải dữ liệu báo cáo"
+                    >
+                        <Icon name="external-link" size={4} />
+                    </a>
+
+                    <div className="border-l border-slate-100 dark:border-slate-700">
+                        <FontSelector />
+                    </div>
+                    
+                    <div className="border-l border-slate-100 dark:border-slate-700 flex items-center">
+                        <NotificationDropdown buttonClassName="relative flex items-center justify-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" />
+                    </div>
+                </div>
+            </div>,
+            document.getElementById('global-header-actions')!
+        )}
 
             {/* Instruction Modal */}
             <ModalWrapper
