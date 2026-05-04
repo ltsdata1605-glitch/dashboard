@@ -22,7 +22,16 @@ const TabContext = createContext<TabContextType | undefined>(undefined);
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
 export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [activeTab, setActiveTabRaw] = useState('analysis');
+    const [activeTab, setActiveTabRaw] = useState(() => {
+        if (typeof window !== 'undefined') {
+            try {
+                return localStorage.getItem('active_tab') || 'analysis';
+            } catch (e) {
+                return 'analysis';
+            }
+        }
+        return 'analysis';
+    });
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
         if (typeof window !== 'undefined') {
             try {
@@ -57,6 +66,9 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         startTransition(() => {
             setActiveTabRaw(tab);
         });
+        try {
+            localStorage.setItem('active_tab', tab);
+        } catch (e) {}
     }, []);
 
     useEffect(() => {

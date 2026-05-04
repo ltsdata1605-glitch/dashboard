@@ -59,7 +59,8 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     // Sort Children logic
     const currentChildrenKeys = currentNode ? Object.keys(currentNode.children) : [];
     const prevChildrenKeys = prevNode ? Object.keys(prevNode.children) : [];
-    let allChildrenKeys = Array.from(new Set([...currentChildrenKeys, ...prevChildrenKeys]));
+    let allChildrenKeys = Array.from(new Set([...currentChildrenKeys, ...prevChildrenKeys]))
+        .filter(key => key !== 'Không xác định');
 
     // Apply sorting to children
     allChildrenKeys.sort((a, b) => {

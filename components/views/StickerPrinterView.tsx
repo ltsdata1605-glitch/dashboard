@@ -294,6 +294,7 @@ export default function StickerPrinterView() {
                     width: 100%;
                     aspect-ratio: 197 / 285;
                     position: relative;
+                    background-color: white;
                     background-image: url('${bgImage}');
                     background-position: center;
                     background-size: 100% 100%;
@@ -404,7 +405,7 @@ export default function StickerPrinterView() {
             </style>
 
             {/* Print Section (Left) */}
-            <div className="bg-white p-0 rounded-xl lg:rounded-2xl shadow-xl border border-slate-200 shrink-0 w-full max-w-[550px] overflow-hidden no-print-bg">
+            <div className="bg-white p-0 shadow-xl border border-slate-200 shrink-0 w-full max-w-[550px] overflow-hidden no-print-bg">
                 <div id="print-section" className="w-full">
                     {batchItems.length > 0 ? (
                         batchItems.filter(it => it.selected).map((item, index, arr) => (

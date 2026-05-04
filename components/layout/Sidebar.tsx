@@ -197,10 +197,10 @@ export default function Sidebar() {
             path: '/tools',
             subItems: [
                 { id: 'tools-print-sticker', label: 'In Sticker', icon: Sticker },
-                { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket, externalUrl: 'https://chuy-n-i-coupon-487587635482.us-west1.run.app' },
+                { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket },
                 { id: 'tools-tax', label: 'Hoàn thuế nhận thay', icon: Calculator, externalUrl: 'https://tinhthue-netify-487587635482.us-west1.run.app' },
                 { id: 'tools-sticker', label: 'Sticker Event', icon: Sticker, externalUrl: 'https://stickerevent-final-487587635482.us-west1.run.app' },
-                { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-final-487587635482.us-west1.run.app' },
+                { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-final-487587635482.us-west1.run.app' }
             ]
         },
     ];

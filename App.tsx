@@ -19,6 +19,10 @@ const BiWrapper = lazy(() => import('./bi-module/components/BiWrapper'));
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginView from './components/views/LoginView';
 import PendingApprovalView from './components/views/PendingApprovalView';
+import StaffListView from './components/views/StaffListView';
+import ReportLinkView from './components/views/ReportLinkView';
+import StaffScheduleView from './components/views/StaffScheduleView';
+import CouponConverterView from './components/views/CouponConverterView';
 import { Toaster } from 'react-hot-toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
@@ -70,9 +74,7 @@ const TabContent = React.memo(() => {
             ))}
 
             {activeTab === 'tools-coupon' && (
-                <div className="block">
-                    <ExternalToolView url="https://chuy-n-i-coupon-487587635482.us-west1.run.app" title="Chuyển đổi Coupon" />
-                </div>
+                <CouponConverterView />
             )}
 
             {activeTab === 'tools-tax' && (

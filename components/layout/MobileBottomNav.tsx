@@ -32,7 +32,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
     ];
 
     const moreTabs = [
-        { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket, externalUrl: 'https://chuy-n-i-coupon-487587635482.us-west1.run.app' },
+        { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket },
         { id: 'tools-tax', label: 'Hoàn thuế nhận thay', icon: Calculator, externalUrl: 'https://tinhthue-netify-487587635482.us-west1.run.app' },
         { id: 'tools-sticker', label: 'Sticker Event', icon: Sticker, externalUrl: 'https://stickerevent-final-487587635482.us-west1.run.app' },
         { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-final-487587635482.us-west1.run.app' },
@@ -90,18 +90,31 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest px-1 mb-2.5 flex items-center gap-2"><span className="w-4 h-px bg-slate-200 dark:bg-slate-700"></span>Công cụ<span className="flex-1 h-px bg-slate-200 dark:bg-slate-700"></span></p>
                                 <div className="grid grid-cols-4 gap-2.5">
                                     {moreTabs.filter(t => t.id.startsWith('tools-')).map(tab => (
-                                        <a
-                                            key={tab.id}
-                                            href={'externalUrl' in tab ? (tab as any).externalUrl : undefined}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                                        >
-                                            <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
-                                                <tab.icon size={20} className="text-indigo-600 dark:text-indigo-400" />
-                                            </div>
-                                            <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
-                                        </a>
+                                        'externalUrl' in tab ? (
+                                            <a
+                                                key={tab.id}
+                                                href={(tab as any).externalUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                            >
+                                                <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                                                    <tab.icon size={20} className="text-indigo-600 dark:text-indigo-400" />
+                                                </div>
+                                                <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
+                                            </a>
+                                        ) : (
+                                            <button
+                                                key={tab.id}
+                                                onClick={() => handleTabClick(tab.id)}
+                                                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                            >
+                                                <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                                                    <tab.icon size={20} className="text-indigo-600 dark:text-indigo-400" />
+                                                </div>
+                                                <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
+                                            </button>
+                                        )
                                     ))}
                                 </div>
                             </div>
