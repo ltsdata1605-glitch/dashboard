@@ -294,7 +294,8 @@ export default function StickerPrinterView() {
                         overflow: hidden !important;
                         page-break-after: always;
                         page-break-inside: avoid;
-                        transform: none !important;
+                        transform: scale(0.95) !important;
+                        transform-origin: center center !important;
                     }
                     #print-host .sticker-container:last-child {
                         page-break-after: auto;
