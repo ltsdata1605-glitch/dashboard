@@ -1,8 +1,49 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-import { Printer, Settings, CheckCircle2, Image as ImageIcon, Upload } from 'lucide-react';
+import { Printer, Settings, CheckCircle2, Image as ImageIcon, Upload, Plus, Trash2, RotateCcw, Clock, ChevronDown, ChevronUp, X, Download, FileSpreadsheet } from 'lucide-react';
 import { useActiveTab } from '../../contexts/LayoutContext';
+import { saveSetting, getSetting } from '../../services/dbService';
+import BarcodeCanvas from './BarcodeCanvas';
 import * as XLSX from 'xlsx';
+
+const STICKER_DB_KEY = 'stickerPrinterState';
+const STICKER_HISTORY_KEY = 'stickerPrintHistory';
+const STICKER_SAVED_LISTS_KEY = 'stickerSavedLists';
+
+interface SavedStickerList {
+    id: string;
+    name: string;
+    pages: StickerPage[];
+    timestamp: number;
+    stickerType: 'gia_soc' | 'gio_vang';
+    headerTextContent: string;
+}
+
+interface StickerPage {
+    id: string;
+    html: string;
+    label: string;
+    oldPrice: string;
+    newPrice: string;
+    percent: string;
+    timestamp: number;
+}
+
+interface PrintHistoryEntry {
+    id: string;
+    timestamp: number;
+    label: string;
+    pageCount: number;
+    stickerType: 'gia_soc' | 'gio_vang';
+    bgImage: string;
+    headerTextSize: number;
+    batchItems: BatchItem[];
+    headerTextContent: string;
+    subHeaderTextContent: string;
+    footerTextContent: string;
+    showBarcode: boolean;
+    manualPages: StickerPage[];
+}
 
 interface BatchItem {
     id: string;
@@ -27,6 +68,11 @@ export default function StickerPrinterView() {
     const [searchTerm, setSearchTerm] = useState('');
     const [showBarcode, setShowBarcode] = useState(false);
     const [barcodeImei, setBarcodeImei] = useState('123456');
+    const [manualPages, setManualPages] = useState<StickerPage[]>([]);
+    const [printHistory, setPrintHistory] = useState<PrintHistoryEntry[]>([]);
+    const [showHistory, setShowHistory] = useState(false);
+    const [savedLists, setSavedLists] = useState<SavedStickerList[]>([]);
+    const [showSavedLists, setShowSavedLists] = useState(false);
     const nameRef = useRef<HTMLDivElement>(null);
     const footerRef = useRef<HTMLDivElement>(null);
     const previewNameRef = useRef('Quạt điều hoà Daikiosan DMI03');
@@ -34,9 +80,58 @@ export default function StickerPrinterView() {
     const headerRef = useRef<HTMLDivElement>(null);
     const subHeaderRef = useRef<HTMLDivElement>(null);
 
+    const [isLoaded, setIsLoaded] = useState(false);
+
+    // Load saved state from IndexedDB on mount
     useEffect(() => {
         setMounted(true);
+        getSetting<any>(STICKER_DB_KEY).then(saved => {
+            if (saved) {
+                if (saved.stickerType) setStickerType(saved.stickerType);
+                if (saved.bgImage) setBgImage(saved.bgImage);
+                if (saved.headerTextSize != null) setHeaderTextSize(saved.headerTextSize);
+                if (saved.batchItems) setBatchItems(saved.batchItems);
+                if (saved.headerTextContent) setHeaderTextContent(saved.headerTextContent);
+                if (saved.subHeaderTextContent) setSubHeaderTextContent(saved.subHeaderTextContent);
+                if (saved.footerTextContent) {
+                    setFooterTextContent(saved.footerTextContent);
+                    footerContentRef.current = saved.footerTextContent;
+                }
+                if (saved.showBarcode != null) setShowBarcode(saved.showBarcode);
+                if (saved.previewName) previewNameRef.current = saved.previewName;
+                if (saved.manualPages) setManualPages(saved.manualPages);
+            }
+            setIsLoaded(true);
+        }).catch(() => setIsLoaded(true));
+        // Load print history
+        getSetting<PrintHistoryEntry[]>(STICKER_HISTORY_KEY).then(history => {
+            if (history) setPrintHistory(history);
+        }).catch(() => {});
+        // Load saved lists
+        getSetting<SavedStickerList[]>(STICKER_SAVED_LISTS_KEY).then(lists => {
+            if (lists) setSavedLists(lists);
+        }).catch(() => {});
     }, []);
+
+    // Save state to IndexedDB whenever key values change (debounced)
+    useEffect(() => {
+        if (!isLoaded) return;
+        const timer = setTimeout(() => {
+            saveSetting(STICKER_DB_KEY, {
+                stickerType,
+                bgImage,
+                headerTextSize,
+                batchItems,
+                headerTextContent,
+                subHeaderTextContent,
+                footerTextContent,
+                showBarcode,
+                previewName: previewNameRef.current,
+                manualPages,
+            }).catch(() => {});
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [isLoaded, stickerType, bgImage, headerTextSize, batchItems, headerTextContent, subHeaderTextContent, footerTextContent, showBarcode, manualPages]);
 
     useEffect(() => {
         if (nameRef.current && !nameRef.current.hasAttribute('data-initialized')) {
@@ -179,12 +274,230 @@ export default function StickerPrinterView() {
         e.target.value = '';
     };
 
+    const downloadTemplate = () => {
+        const wb = XLSX.utils.book_new();
+        const header = ['CODE', 'SẢN PHẨM', 'GIÁ NIÊM YẾT', 'GIÁ GIẢM', 'THỜI GIAN ÁP DỤNG', 'SỐ LƯỢNG SUẤT'];
+        const sampleData = [
+            ['ABC123', 'Quạt điều hoà Daikiosan DMI03', '5490000', '3490000', 'TỪ 08/05 ĐẾN 10/05', '5 SUẤT/NGÀY'],
+            ['DEF456', 'Tủ lạnh Samsung RT29K5012S8', '8990000', '6990000', 'TỪ 08/05 ĐẾN 10/05', '5 SUẤT/NGÀY'],
+        ];
+        const ws = XLSX.utils.aoa_to_sheet([header, ...sampleData]);
+        // Set column widths
+        ws['!cols'] = [
+            { wch: 15 }, { wch: 40 }, { wch: 18 }, { wch: 18 }, { wch: 22 }, { wch: 18 }
+        ];
+        XLSX.utils.book_append_sheet(wb, ws, 'Template');
+        XLSX.writeFile(wb, 'Sticker_Template.xlsx');
+    };
+
+    const parsePrice = (val: any): number => {
+        if (val == null) return 0;
+        const str = String(val).replace(/[^0-9]/g, '');
+        return str ? Number(str) : 0;
+    };
+
+    const handleTemplateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const bstr = evt.target?.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+                
+                const items: BatchItem[] = [];
+                for (let i = 1; i < data.length; i++) {
+                    const row = data[i];
+                    if (!row || row.length < 2) continue;
+
+                    const code = row[0] != null ? String(row[0]).trim() : '';
+                    const name = row[1] != null ? String(row[1]).trim() : '';
+                    if (!name) continue;
+
+                    const retailPrice = parsePrice(row[2]);
+                    const salePrice = parsePrice(row[3]);
+
+                    const oldPrice = retailPrice ? retailPrice.toLocaleString('vi-VN') : '';
+                    const newPrice = salePrice ? Number(Math.floor(salePrice / 1000)).toLocaleString('vi-VN') : '';
+
+                    let percent = '';
+                    if (retailPrice > 0 && salePrice > 0) {
+                        const ratio = Math.round((salePrice / retailPrice - 1) * 100);
+                        percent = `${ratio}%`;
+                    }
+
+                    items.push({
+                        id: `tpl_${i}_${Date.now()}`,
+                        name,
+                        oldPrice,
+                        newPrice,
+                        percent,
+                        imei: code,
+                        selected: true,
+                    });
+                }
+                if (items.length === 0) {
+                    alert('Không tìm thấy dữ liệu hợp lệ trong file.');
+                    return;
+                }
+                setBatchItems(items);
+                setShowBarcode(true);
+
+                // Apply THỜI GIAN ÁP DỤNG and SỐ LƯỢNG SUẤT from first data row
+                const firstRow = data[1];
+                if (firstRow) {
+                    const thoiGian = firstRow[4] != null ? String(firstRow[4]).trim() : '';
+                    const soLuong = firstRow[5] != null ? String(firstRow[5]).trim() : '';
+                    if (thoiGian) setHeaderTextContent(thoiGian);
+                    if (soLuong) setSubHeaderTextContent(soLuong);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi đọc file Excel');
+            }
+        };
+        reader.readAsBinaryString(file);
+        e.target.value = '';
+    };
+
     const toggleItemSelection = (id: string) => {
         setBatchItems(prev => prev.map(it => it.id === id ? { ...it, selected: !it.selected } : it));
     };
 
     const toggleAllSelection = (select: boolean) => {
         setBatchItems(prev => prev.map(it => ({ ...it, selected: select })));
+    };
+
+    const addCurrentPage = () => {
+        const printSection = document.getElementById('print-section');
+        if (!printSection) return;
+        const firstSticker = printSection.querySelector('.sticker-container') as HTMLElement;
+        if (!firstSticker) return;
+        const label = firstSticker.querySelector('.name')?.textContent || 'Sticker';
+        const oldPrice = firstSticker.querySelector('.old')?.textContent || '';
+        const newPrice = firstSticker.querySelector('.extra2')?.textContent || '';
+        const percent = firstSticker.querySelector('.extra1')?.textContent || '';
+        const page: StickerPage = {
+            id: `page_${Date.now()}`,
+            html: firstSticker.outerHTML,
+            label: label.substring(0, 50),
+            oldPrice,
+            newPrice,
+            percent,
+            timestamp: Date.now(),
+        };
+        setManualPages(prev => [...prev, page]);
+    };
+
+    const loadPageToEditor = (page: StickerPage) => {
+        // Parse data from the saved HTML and load into React state
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = page.html;
+        const sticker = tempDiv.querySelector('.sticker-container') as HTMLElement;
+        if (!sticker) return;
+
+        // Extract text content from the saved sticker HTML
+        const headerText = sticker.querySelector('.header-text')?.textContent || headerTextContent;
+        const nameText = sticker.querySelector('.name')?.textContent || '';
+        const oldPriceText = sticker.querySelector('.old')?.textContent || '';
+        const newPriceText = sticker.querySelector('.extra2')?.textContent || '';
+        const percentText = sticker.querySelector('.extra1')?.textContent || '';
+        const footerText = sticker.querySelector('.footer-text')?.textContent || footerTextContent;
+        const subHeader = sticker.querySelector('.sub-header')?.textContent || subHeaderTextContent;
+
+        // Apply to React state
+        setHeaderTextContent(headerText);
+        setSubHeaderTextContent(subHeader);
+        setFooterTextContent(footerText);
+        footerContentRef.current = footerText;
+        previewNameRef.current = nameText;
+
+        // Clear batch items and set as single-item to populate the sticker
+        setBatchItems([{
+            id: `loaded_${Date.now()}`,
+            name: nameText,
+            oldPrice: oldPriceText,
+            newPrice: newPriceText,
+            percent: percentText,
+            imei: '',
+            selected: true,
+        }]);
+
+        // Reset contentEditable refs
+        if (nameRef.current) {
+            nameRef.current.removeAttribute('data-initialized');
+        }
+        if (footerRef.current) {
+            footerRef.current.removeAttribute('data-initialized');
+        }
+        // Dòng vẫn giữ nguyên trong hàng đợi — KHÔNG xóa
+    };
+
+    const removeManualPage = (id: string) => {
+        setManualPages(prev => prev.filter(p => p.id !== id));
+    };
+
+    const clearManualPages = () => {
+        setManualPages([]);
+    };
+
+    const saveCurrentList = () => {
+        if (manualPages.length === 0) return;
+        const name = prompt('Đặt tên cho danh sách:', `DS ${new Date().toLocaleDateString('vi-VN')}`);
+        if (!name) return;
+        const list: SavedStickerList = {
+            id: `list_${Date.now()}`,
+            name,
+            pages: manualPages,
+            timestamp: Date.now(),
+            stickerType,
+            headerTextContent,
+        };
+        setSavedLists(prev => {
+            const next = [list, ...prev].slice(0, 20);
+            saveSetting(STICKER_SAVED_LISTS_KEY, next).catch(() => {});
+            return next;
+        });
+    };
+
+    const loadSavedList = (list: SavedStickerList) => {
+        setManualPages(list.pages);
+        if (list.stickerType) setStickerType(list.stickerType);
+        if (list.headerTextContent) setHeaderTextContent(list.headerTextContent);
+        setShowSavedLists(false);
+    };
+
+    const deleteSavedList = (id: string) => {
+        setSavedLists(prev => {
+            const next = prev.filter(l => l.id !== id);
+            saveSetting(STICKER_SAVED_LISTS_KEY, next).catch(() => {});
+            return next;
+        });
+    };
+
+    const restoreHistory = (entry: PrintHistoryEntry) => {
+        setStickerType(entry.stickerType);
+        setBgImage(entry.bgImage);
+        setHeaderTextSize(entry.headerTextSize);
+        setBatchItems(entry.batchItems);
+        setHeaderTextContent(entry.headerTextContent);
+        setSubHeaderTextContent(entry.subHeaderTextContent);
+        setFooterTextContent(entry.footerTextContent);
+        footerContentRef.current = entry.footerTextContent;
+        setShowBarcode(entry.showBarcode);
+        setManualPages(entry.manualPages || []);
+        setShowHistory(false);
+    };
+
+    const deleteHistory = (id: string) => {
+        setPrintHistory(prev => {
+            const next = prev.filter(h => h.id !== id);
+            saveSetting(STICKER_HISTORY_KEY, next).catch(() => {});
+            return next;
+        });
     };
 
     const handleReset = () => {
@@ -203,11 +516,41 @@ export default function StickerPrinterView() {
         const printHost = document.createElement('div');
         printHost.id = 'print-host';
         printHost.innerHTML = printSection.innerHTML;
+
+        // Append manual pages (queued sticker snapshots)
+        manualPages.forEach(page => {
+            printHost.innerHTML += page.html;
+        });
+
         document.body.appendChild(printHost);
 
         // Hide the app, show only the print host
         const root = document.getElementById('root');
         if (root) root.style.display = 'none';
+
+        // Save to print history
+        const selectedCount = batchItems.filter(i => i.selected).length;
+        const totalPages = Math.max(selectedCount, 1) + manualPages.length;
+        const historyEntry: PrintHistoryEntry = {
+            id: `history_${Date.now()}`,
+            timestamp: Date.now(),
+            label: headerTextContent || 'Sticker',
+            pageCount: totalPages,
+            stickerType,
+            bgImage,
+            headerTextSize,
+            batchItems,
+            headerTextContent,
+            subHeaderTextContent,
+            footerTextContent,
+            showBarcode,
+            manualPages,
+        };
+        setPrintHistory(prev => {
+            const next = [historyEntry, ...prev].slice(0, 20);
+            saveSetting(STICKER_HISTORY_KEY, next).catch(() => {});
+            return next;
+        });
 
         window.print();
 
@@ -241,7 +584,7 @@ export default function StickerPrinterView() {
                                 setStickerType('gio_vang');
                                 setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
                                 setBgImage('/frame/GVO2-scaled.png');
-                                setHeaderTextSize(7.5);
+                                setHeaderTextSize(8);
                             }}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-[13px] transition-all ${
                                 stickerType === 'gio_vang' 
@@ -336,7 +679,7 @@ export default function StickerPrinterView() {
                 .sticker-container .header-text {
                     font-size: ${headerTextSize}cqw;
                     font-weight: 900;
-                    top: 4.2%;
+                    top: 5.5%;
                     height: 8.5%;
                     color: white;
                     font-family: 'UTM Avo', sans-serif;
@@ -389,11 +732,12 @@ export default function StickerPrinterView() {
                     left: 50%;
                     transform: translateX(-50%);
                     width: 70%;
-                    height: 2.2%;
+                    height: 1.4%;
                     display: flex;
                     justify-content: center;
                 }
-                .sticker-container .barcode img {
+                .sticker-container .barcode img,
+                .sticker-container .barcode canvas {
                     height: 100%;
                     width: 100%;
                     object-fit: fill;
@@ -500,7 +844,7 @@ export default function StickerPrinterView() {
                             <div key={item.id} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto' }}>
                                 {showBarcode && item.imei && (
                                     <div className="barcode">
-                                        <img src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(item.imei)}&includetext=false`} alt="barcode" crossOrigin="anonymous" />
+                                        <BarcodeCanvas value={item.imei} />
                                     </div>
                                 )}
                                 <div className="header-text" contentEditable suppressContentEditableWarning>{headerTextContent}</div>
@@ -525,7 +869,7 @@ export default function StickerPrinterView() {
                         <div className="sticker-container" data-type={stickerType}>
                             {showBarcode && barcodeImei && (
                                 <div className="barcode">
-                                    <img src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(barcodeImei)}&includetext=false`} alt="barcode" crossOrigin="anonymous" />
+                                    <BarcodeCanvas value={barcodeImei} />
                                 </div>
                             )}
                             <div className="header-text" ref={headerRef} onInput={handleTextInput} contentEditable suppressContentEditableWarning />
@@ -550,14 +894,125 @@ export default function StickerPrinterView() {
             </div>
 
             {/* Instruction Panel (Right) - no-print */}
+            {/* Manual Pages Queue */}
+            {manualPages.length > 0 && (
+                <div className="w-full max-w-[550px] no-print">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-4 mb-4">
+                        <div className="flex items-center justify-between mb-3">
+                            <h4 className="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
+                                <Clock size={16} className="text-indigo-500" />
+                                Hàng đợi in ({manualPages.length} trang)
+                            </h4>
+                            <div className="flex items-center gap-2">
+                                <button onClick={saveCurrentList} className="text-[11px] text-indigo-600 hover:text-indigo-700 font-bold uppercase flex items-center gap-1" title="Lưu danh sách này">
+                                    <CheckCircle2 size={12} /> Lưu DS
+                                </button>
+                                <button onClick={clearManualPages} className="text-[11px] text-red-500 hover:text-red-600 font-bold uppercase flex items-center gap-1">
+                                    <Trash2 size={12} /> Xóa tất cả
+                                </button>
+                            </div>
+                        </div>
+                        <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                            {manualPages.map((page, idx) => (
+                                <div 
+                                    key={page.id} 
+                                    className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-colors group"
+                                    onClick={() => loadPageToEditor(page)}
+                                    title="Click để load lại và chỉnh sửa"
+                                >
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                        <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 w-6 h-6 flex items-center justify-center rounded-full shrink-0">{idx + 1}</span>
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-xs text-slate-700 dark:text-slate-300 truncate font-medium">{page.label}</p>
+                                            <div className="flex gap-2 mt-0.5 text-[10px]">
+                                                <span className="text-red-600 font-bold">{page.newPrice}</span>
+                                                <span className="line-through text-slate-400">{page.oldPrice}</span>
+                                                {page.percent && <span className="text-green-600 font-bold">{page.percent}</span>}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={(e) => { e.stopPropagation(); removeManualPage(page.id); }} 
+                                        className="text-slate-400 hover:text-red-500 transition-colors shrink-0 p-1 opacity-0 group-hover:opacity-100"
+                                    >
+                                        <X size={14} />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Saved Lists */}
+            {savedLists.length > 0 && manualPages.length === 0 && (
+                <div className="w-full max-w-[550px] no-print">
+                    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-4 mb-4">
+                        <button 
+                            onClick={() => setShowSavedLists(!showSavedLists)}
+                            className="w-full flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition-colors"
+                        >
+                            <span className="flex items-center gap-2">
+                                <ImageIcon size={16} className="text-emerald-500" />
+                                Danh sách đã lưu ({savedLists.length})
+                            </span>
+                            {showSavedLists ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+                        {showSavedLists && (
+                            <div className="mt-3 space-y-2 max-h-[200px] overflow-y-auto">
+                                {savedLists.map(list => (
+                                    <div key={list.id} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 group">
+                                        <div className="min-w-0 flex-1">
+                                            <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{list.name}</p>
+                                            <div className="flex gap-2 mt-0.5 text-[10px] text-slate-400">
+                                                <span>{new Date(list.timestamp).toLocaleDateString('vi-VN')}</span>
+                                                <span>•</span>
+                                                <span>{list.pages.length} trang</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-1 shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button 
+                                                onClick={() => loadSavedList(list)}
+                                                className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 transition-colors text-[10px] font-bold"
+                                                title="Tải danh sách"
+                                            >
+                                                <RotateCcw size={13} />
+                                            </button>
+                                            <button 
+                                                onClick={() => deleteSavedList(list.id)}
+                                                className="p-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-lg hover:bg-red-200 transition-colors"
+                                                title="Xóa"
+                                            >
+                                                <Trash2 size={13} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Instruction Panel (Right) - no-print */}
             <div className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 no-print">
-                <button 
-                    onClick={handlePrint}
-                    className="w-full bg-[#fbbc04] hover:bg-[#f0b400] text-black font-black text-xl py-4 rounded-xl flex items-center justify-center gap-3 transition-transform active:scale-95 shadow-lg shadow-yellow-500/30 mb-8"
-                >
-                    <Printer size={28} />
-                    BẤM ĐỂ IN
-                </button>
+                <div className="flex gap-2 mb-4">
+                    <button 
+                        onClick={handlePrint}
+                        className="flex-1 bg-[#fbbc04] hover:bg-[#f0b400] text-black font-black text-lg py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-transform active:scale-95 shadow-lg shadow-yellow-500/30"
+                    >
+                        <Printer size={24} />
+                        BẤM ĐỂ IN {manualPages.length > 0 && `(${(batchItems.filter(i => i.selected).length || 1) + manualPages.length})`}
+                    </button>
+                    <button 
+                        onClick={addCurrentPage}
+                        className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm py-3.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-transform active:scale-95 shadow-lg shadow-indigo-500/30"
+                        title="Thêm trang hiện tại vào hàng đợi in"
+                    >
+                        <Plus size={20} />
+                        Thêm
+                    </button>
+                </div>
 
                 <div className="space-y-6">
                     <h3 className="text-xl font-bold text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-700 pb-2">
@@ -617,6 +1072,27 @@ export default function StickerPrinterView() {
                             </button>
                         </div>
 
+                        <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-100 dark:border-emerald-800/50">
+                            <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-1.5">
+                                <FileSpreadsheet size={14} />
+                                Nhập từ File Mẫu
+                            </p>
+                            <div className="flex gap-2">
+                                <button 
+                                    onClick={downloadTemplate}
+                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-xs cursor-pointer transition-colors shadow-sm"
+                                >
+                                    <Download size={14} />
+                                    Tải File Mẫu
+                                </button>
+                                <label className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold text-xs cursor-pointer transition-colors shadow-sm">
+                                    <Upload size={14} />
+                                    Nhập File Mẫu
+                                    <input type="file" accept=".xlsx, .xls, .csv" onChange={handleTemplateUpload} className="hidden" />
+                                </label>
+                            </div>
+                        </div>
+
                         <div className="mt-4 flex flex-col gap-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50">
                             <div className="flex items-center justify-between">
                                 <label htmlFor="toggle-barcode" className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
@@ -674,6 +1150,58 @@ export default function StickerPrinterView() {
                                         </label>
                                     ))}
                                 </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Print History */}
+                    <div className="mt-6 border-t border-slate-200 dark:border-slate-700 pt-4">
+                        <button 
+                            onClick={() => setShowHistory(!showHistory)}
+                            className="w-full flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition-colors"
+                        >
+                            <span className="flex items-center gap-2">
+                                <RotateCcw size={16} />
+                                Lịch sử in ({printHistory.length})
+                            </span>
+                            {showHistory ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                        </button>
+                        {showHistory && (
+                            <div className="mt-3 space-y-2 max-h-[300px] overflow-y-auto">
+                                {printHistory.length === 0 ? (
+                                    <p className="text-xs text-slate-400 text-center py-4">Chưa có lịch sử in</p>
+                                ) : (
+                                    printHistory.map(entry => (
+                                        <div key={entry.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 group">
+                                            <div className="min-w-0 flex-1">
+                                                <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{entry.label}</p>
+                                                <div className="flex gap-2 mt-1 text-[10px] text-slate-400">
+                                                    <span>{new Date(entry.timestamp).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>
+                                                    <span>•</span>
+                                                    <span>{entry.pageCount} trang</span>
+                                                    <span>•</span>
+                                                    <span>{entry.stickerType === 'gia_soc' ? 'Giá Sốc' : 'Giờ Vàng'}</span>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-1 shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button 
+                                                    onClick={() => restoreHistory(entry)}
+                                                    className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
+                                                    title="Khôi phục"
+                                                >
+                                                    <RotateCcw size={13} />
+                                                </button>
+                                                <button 
+                                                    onClick={() => deleteHistory(entry.id)}
+                                                    className="p-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                                                    title="Xóa"
+                                                >
+                                                    <Trash2 size={13} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         )}
                     </div>

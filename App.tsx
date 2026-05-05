@@ -200,15 +200,15 @@ function AppContent() {
                     <PendingApprovalBanner />
 
                     {/* Global Page Header */}
-                    <div className="lg:sticky lg:top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md flex flex-col gap-1 px-3 sm:px-6 lg:px-8 pt-3 lg:pt-6 pb-2 border-b border-transparent">
-                        <div className="flex items-center justify-end lg:justify-between gap-4 w-full">
+                    <div className="lg:sticky lg:top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md flex flex-col gap-1 px-3 sm:px-6 lg:px-8 pt-3 lg:pt-6 pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
+                        <div className="flex items-center justify-end lg:justify-between gap-4 w-full flex-wrap">
                             <div className="hidden lg:flex items-center gap-4 shrink-0">
                                 <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
                                 <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
                                     {titleData.main} <span className="text-indigo-600 dark:text-indigo-400">{titleData.highlight}</span>
                                 </h1>
                             </div>
-                            <div id="global-header-actions" className="flex items-center z-50 overflow-x-auto no-scrollbar max-w-full pb-1 lg:pb-0"></div>
+                            <div id="global-header-actions" className="flex items-center z-50 overflow-x-auto no-scrollbar flex-1 justify-end pb-1 lg:pb-0"></div>
                         </div>
                     </div>
 

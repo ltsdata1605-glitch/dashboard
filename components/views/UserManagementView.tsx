@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase';
 import { collection, query, where, getDocs, doc, updateDoc, orderBy } from 'firebase/firestore';
@@ -18,6 +18,7 @@ interface AccessRequest {
     status: 'pending' | 'approved' | 'rejected' | 'new';
     createdAt: any;
     requestDate: any;
+    loginCount?: number;
 }
 
 interface UserManagementViewProps {
@@ -34,6 +35,51 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     const [listMode, setListMode] = useState<'pending' | 'active'>('pending');
     const [searchQuery, setSearchQuery] = useState('');
     const [editRoles, setEditRoles] = useState<Record<string, string>>({});
+    const [sortBy, setSortBy] = useState<'name' | 'role' | 'dept' | 'date' | 'logins'>('date');
+    const [sortAsc, setSortAsc] = useState(false);
+    const [savingIds, setSavingIds] = useState<Set<string>>(new Set());
+    const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
+
+    // Auto-save a single user's data to Firestore (debounced)
+    const autoSave = useCallback(async (requestId: string, field: string, value: any) => {
+        // Clear existing timer for this user+field
+        const key = `${requestId}_${field}`;
+        if (debounceTimers.current[key]) clearTimeout(debounceTimers.current[key]);
+
+        debounceTimers.current[key] = setTimeout(async () => {
+            try {
+                setSavingIds(prev => new Set(prev).add(requestId));
+                const userRef = doc(db, 'users', requestId);
+                const updateData: any = {};
+
+                if (field === 'role') {
+                    updateData.role = value;
+                    updateData.status = value === 'blocked' ? 'blocked' : 'approved';
+                } else if (field === 'departmentId') {
+                    updateData.departmentId = value;
+                } else if (field === 'employeeName') {
+                    updateData.employeeName = value;
+                } else if (field === 'expiresAt') {
+                    if (value) {
+                        const { Timestamp } = await import('firebase/firestore');
+                        const d = new Date(value);
+                        d.setHours(23, 59, 59, 999);
+                        updateData.expiresAt = Timestamp.fromDate(d);
+                    } else {
+                        updateData.expiresAt = null;
+                    }
+                }
+
+                await updateDoc(userRef, updateData);
+                toast.success('Đã tự động lưu!', { duration: 1500, id: `autosave-${requestId}` });
+            } catch (err) {
+                console.error('Auto-save failed:', err);
+                toast.error('Lỗi tự động lưu, thử lại.');
+            } finally {
+                setSavingIds(prev => { const n = new Set(prev); n.delete(requestId); return n; });
+            }
+        }, 800);
+    }, []);
 
     const fetchRequests = async () => {
         if (!userRole) return;
@@ -42,21 +88,17 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             const usersRef = collection(db, 'users');
             let q;
             
-            // Admin fetches all to manually control roles & statuses.
+            // Admin and any user with full access fetches all.
             // Manager fetches strictly to their scope.
-            if (userRole === 'admin') {
-                q = usersRef;
-            } 
-            else if (userRole === 'manager' && departmentId) {
+            if (userRole === 'manager' && departmentId) {
                 if (listMode === 'pending') {
                     q = query(usersRef, where('status', '==', 'pending'));
                 } else {
                     q = query(usersRef, where('role', '==', 'employee'));
                 }
             } else {
-                setRequests([]);
-                setIsLoading(false);
-                return;
+                // admin or any other role: fetch all
+                q = usersRef;
             }
 
             const querySnapshot = await getDocs(q);
@@ -118,9 +160,13 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             });
             
             setRequests(filteredData);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Lỗi lấy danh sách yêu cầu:", error);
-            toast.error('Không thể tải danh sách yêu cầu.');
+            if (error?.code === 'permission-denied') {
+                toast.error('Firestore: Quyền truy cập bị từ chối. Vui lòng kiểm tra Security Rules.');
+            } else {
+                toast.error(`Không thể tải danh sách yêu cầu. (${error?.code || error?.message || 'Unknown'})`);
+            }
         } finally {
             setIsLoading(false);
         }
@@ -196,252 +242,167 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         }
     };
 
-    if (userRole !== 'admin' && userRole !== 'manager') {
-        return (
-            <div className="flex-1 p-8 flex items-center justify-center">
-                <div className="text-center text-slate-500">
-                    <Icon name="shield-off" size={12} className="mx-auto mb-4 opacity-50" />
-                    <h2 className="text-xl font-bold mb-2">Bạn không có quyền truy cập</h2>
-                    <p>Chức năng này chỉ dành cho Quản trị viên và Quản lý Kho</p>
-                </div>
-            </div>
-        );
-    }
+
+    // Role guard removed — all users with tab access can view
 
     return (
-        <div className={`flex-1 overflow-y-auto ${isEmbedded ? 'p-0 sm:p-2' : 'bg-slate-50 dark:bg-slate-900/50 min-h-screen p-6'}`}>
-            <div className="max-w-5xl mx-auto space-y-6">
-                
+        <div className={`flex-1 overflow-y-auto ${isEmbedded ? 'p-0 sm:p-2' : 'bg-slate-50 dark:bg-slate-900/50 min-h-screen p-4 sm:p-6'}`}>
+            <div className="max-w-5xl mx-auto space-y-4">
                 {/* Header */}
-                <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-slate-100 dark:border-slate-700/50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                    <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
-                            <Icon name="users" size={6} />
-                        </div>
+                <div className="bg-white dark:bg-slate-800 p-4 shadow-sm border border-slate-200 dark:border-slate-700/50 rounded-md flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 flex items-center justify-center rounded-md"><Icon name="users" size={5} /></div>
                         <div>
-                            <h1 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">
-                                Quản Trị Hệ Thống & Phân Quyền
-                            </h1>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
-                                {userRole === 'admin' 
-                                    ? 'Cấp quyền cho các Quản lý Siêu thị mới' 
-                                    : `Quản lý nhân viên cho Siêu thị (Kho: ${departmentId})`
-                                }
-                            </p>
+                            <h1 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Quản Trị Hệ Thống & Phân Quyền</h1>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{userRole === 'admin' ? 'Cấp quyền cho các Quản lý Siêu thị mới' : `Quản lý nhân viên cho Siêu thị (Kho: ${departmentId})`}</p>
                         </div>
                     </div>
-                    <button 
-                        onClick={fetchRequests}
-                        disabled={isLoading}
-                        className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors font-semibold flex items-center gap-2"
-                    >
-                        <Icon name="refresh-ccw" size={4} className={isLoading ? 'animate-spin' : ''} />
-                        Làm Mới
+                    <button onClick={fetchRequests} disabled={isLoading} className="h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
+                        <Icon name="refresh-ccw" size={3.5} className={isLoading ? 'animate-spin' : ''} /> Làm Mới
                     </button>
                 </div>
-
-                {/* Tabs & Search */}
-                <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                    <div className="flex bg-slate-200/50 dark:bg-slate-800/50 p-1 rounded-xl w-fit">
-                        <button 
-                            onClick={() => setListMode('pending')}
-                            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${listMode === 'pending' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                        >
+                {/* Tabs & Search & Sort */}
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+                    <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
+                        <button onClick={() => setListMode('pending')} className={`h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'pending' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}>
+                            <Icon name="clock" size={3.5} />
                             Đơn Chờ Duyệt
                         </button>
-                        <button 
-                            onClick={() => setListMode('active')}
-                            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${listMode === 'active' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                        >
+                        <button onClick={() => setListMode('active')} className={`h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'active' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}>
+                            <Icon name="users" size={3.5} />
                             Người Dùng Hoạt Động
                         </button>
                     </div>
-
-                    <div className="relative w-full sm:w-64">
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                            <Icon name="search" size={4} />
+                    <div className="flex items-center gap-2">
+                        <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
+                            <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} className="h-9 bg-transparent text-xs font-semibold text-slate-600 dark:text-slate-300 px-2.5 outline-none border-none cursor-pointer">
+                                <option value="date">Ngày ĐK</option>
+                                <option value="name">Tên</option>
+                                <option value="role">Vai trò</option>
+                                <option value="dept">Mã Kho</option>
+                                <option value="logins">Truy cập</option>
+                            </select>
+                            <button onClick={() => setSortAsc(p => !p)} className="h-9 px-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                                <Icon name={sortAsc ? 'arrow-up-narrow-wide' : 'arrow-down-wide-narrow'} size={3.5} />
+                            </button>
                         </div>
-                        <input
-                            type="text"
-                            placeholder="Tìm kiếm Email, Mã Kho, User..."
-                            value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
-                            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 block w-full pl-10 pr-3 py-2 text-sm rounded-xl outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 transition-all shadow-sm text-slate-700 dark:text-slate-200"
-                        />
+                        <div className="relative w-full sm:w-56">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><Icon name="search" size={3.5} /></div>
+                            <input type="text" placeholder="Tìm kiếm Email, Mã Kho..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 block w-full pl-9 pr-3 text-xs font-medium rounded-md outline-none focus:border-indigo-500 transition-all shadow-sm text-slate-700 dark:text-slate-200" />
+                        </div>
                     </div>
                 </div>
-
-                {/* Modern Card Grid Layout */}
-                <div className="mt-6">
+                {/* User List */}
+                <div>
                     <AnimatePresence>
                         {isLoading ? (
-                            <div className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm">
+                            <div className="flex flex-col items-center justify-center py-16 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
                                 <Icon name="loader-2" size={8} className="animate-spin text-indigo-500 mb-4" />
                                 <p className="text-slate-500 font-medium">Đang tải danh sách...</p>
                             </div>
                         ) : requests.length === 0 ? (
-                            <motion.div 
-                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                                className="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700/50 shadow-sm"
-                            >
-                                <div className="w-20 h-20 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-5">
-                                    <Icon name="check-circle-2" size={10} className="text-indigo-400" />
-                                </div>
-                                <p className="text-xl font-bold text-slate-700 dark:text-slate-200">
-                                    {listMode === 'pending' ? 'Không có yêu cầu chờ duyệt' : 'Chưa có người dùng hoạt động'}
-                                </p>
-                                <p className="text-slate-500 mt-2 font-medium">
-                                    {listMode === 'pending' ? 'Hệ thống đã xử lý xong tất cả đơn đăng ký.' : 'Danh sách trống hoặc hệ thống chưa cập nhật.'}
-                                </p>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col items-center justify-center py-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50 rounded-md">
+                                <div className="w-16 h-16 bg-indigo-50 dark:bg-indigo-900/20 rounded-full flex items-center justify-center mb-4"><Icon name="check-circle-2" size={8} className="text-indigo-400" /></div>
+                                <p className="text-lg font-bold text-slate-700 dark:text-slate-200">{listMode === 'pending' ? 'Không có yêu cầu chờ duyệt' : 'Chưa có người dùng hoạt động'}</p>
+                                <p className="text-slate-500 mt-1 text-sm">{listMode === 'pending' ? 'Hệ thống đã xử lý xong tất cả đơn đăng ký.' : 'Danh sách trống hoặc chưa cập nhật.'}</p>
                             </motion.div>
                         ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                            <div className="flex flex-col gap-2">
                                 {requests.filter(req => {
                                     if (!searchQuery) return true;
                                     const q = searchQuery.toLowerCase();
-                                    return (req.email?.toLowerCase().includes(q) || 
-                                            req.employeeName?.toLowerCase().includes(q) || 
-                                            req.departmentId?.toLowerCase().includes(q) || 
-                                            req.displayName?.toLowerCase().includes(q) ||
-                                            editDepartments[req.id]?.toLowerCase().includes(q) ||
-                                            editNames[req.id]?.toLowerCase().includes(q));
+                                    return (req.email?.toLowerCase().includes(q) || req.employeeName?.toLowerCase().includes(q) || req.departmentId?.toLowerCase().includes(q) || req.displayName?.toLowerCase().includes(q) || editDepartments[req.id]?.toLowerCase().includes(q) || editNames[req.id]?.toLowerCase().includes(q));
+                                }).sort((a, b) => {
+                                    const dir = sortAsc ? 1 : -1;
+                                    switch (sortBy) {
+                                        case 'name': return dir * (a.displayName || '').localeCompare(b.displayName || '');
+                                        case 'role': return dir * (editRoles[a.id] || a.role || '').localeCompare(editRoles[b.id] || b.role || '');
+                                        case 'dept': return dir * (editDepartments[a.id] || a.departmentId || '').localeCompare(editDepartments[b.id] || b.departmentId || '');
+                                        case 'logins': return dir * ((a.loginCount ?? 0) - (b.loginCount ?? 0));
+                                        case 'date': default: return dir * ((a.createdAt?.toMillis?.() || 0) - (b.createdAt?.toMillis?.() || 0));
+                                    }
                                 }).map((req) => (
-                                    <motion.div 
-                                        key={req.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, scale: 0.95 }}
-                                        className={`bg-white dark:bg-slate-800 rounded-2xl border ${!req.departmentId && listMode === 'active' ? 'border-amber-400/50 shadow-[0_0_15px_rgba(251,191,36,0.1)]' : 'border-slate-200 dark:border-slate-700/50 hover:shadow-md'} shadow-sm transition-all flex flex-col overflow-hidden group`}
-                                    >
-                                        {/* Row Header: User Profile */}
-                                        <div className="p-5 flex items-center gap-4 bg-slate-50/50 dark:bg-slate-800/80 border-b border-slate-100 dark:border-slate-700/50 relative">
-                                            {!req.departmentId && listMode === 'active' && (
-                                                <div className="absolute top-0 right-0 bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">
-                                                    CHƯA CÓ MÃ KHO
-                                                </div>
-                                            )}
-                                            <div className="relative">
-                                                <img src={req.photoURL} alt="" className="w-14 h-14 rounded-2xl shadow-sm object-cover" />
-                                                <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-white dark:border-slate-800 ${req.status === 'approved' ? 'bg-emerald-500' : req.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'}`}></div>
+                                    <motion.div key={req.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className={`bg-white dark:bg-slate-800 border rounded-md ${!req.departmentId && listMode === 'active' ? 'border-amber-400/50' : 'border-slate-200 dark:border-slate-700/50'} shadow-sm transition-all overflow-hidden`}>
+                                        {/* Row 1: Avatar + Name + Role + Actions */}
+                                        <div className="flex items-center gap-3 px-4 py-2.5 border-b border-slate-100 dark:border-slate-700/30">
+                                            <div className="relative shrink-0">
+                                                <img src={req.photoURL} alt="" className="w-8 h-8 rounded-md object-cover" />
+                                                <div className={`absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-slate-800 ${req.status === 'approved' ? 'bg-emerald-500' : req.status === 'pending' ? 'bg-amber-500' : 'bg-slate-400'}`}></div>
                                             </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h3 className="font-bold text-slate-800 dark:text-white text-lg truncate">{req.displayName}</h3>
-                                                <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{req.email}</p>
+                                            <div className="min-w-0 flex-1">
+                                                <h3 className="font-bold text-slate-800 dark:text-white text-sm truncate leading-tight">{req.displayName}</h3>
+                                                <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">{req.email}</p>
                                             </div>
-                                        </div>
-
-                                        {/* Body Fields Grid */}
-                                        <div className="p-5 flex-1 flex flex-col gap-5">
-                                            <div className="grid grid-cols-2 gap-4">
-                                                {/* Role Field */}
-                                                <div className="flex flex-col gap-2">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="shield" size={3.5} /> Vị Trí / Quyền</span>
-                                                    {userRole === 'admin' ? (
-                                                        <select 
-                                                            value={editRoles[req.id] || req.role || req.requestedRole || 'pending'}
-                                                            onChange={(e) => setEditRoles(prev => ({...prev, [req.id]: e.target.value}))}
-                                                            className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-lg px-3 py-2 text-sm font-bold focus:ring-2 outline-none focus:border-indigo-500 transition-all w-full"
-                                                        >
-                                                            <option value="pending">Chờ phê duyệt</option>
-                                                            <option value="employee">Nhân Viên</option>
-                                                            <option value="manager">Quản Lý</option>
-                                                            <option value="admin">Quản Trị Viên</option>
-                                                            <option value="blocked">Khoá Tài Khoản</option>
-                                                        </select>
-                                                    ) : (
-                                                        <span className={`inline-flex items-center w-max gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold ${
-                                                            (req.role === 'manager' || req.requestedRole === 'manager')
-                                                            ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400' 
-                                                            : 'bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-900/40 dark:text-teal-400'
-                                                        }`}>
-                                                            <Icon name={(req.role === 'manager' || req.requestedRole === 'manager') ? 'briefcase' : 'users'} size={4} />
-                                                            {(req.role === 'manager' || req.requestedRole === 'manager') ? 'Quản Lý Kho' : 'Nhân Viên'}
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                {/* Department Code Field */}
-                                                <div className="flex flex-col gap-2">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> Mã Kho (ID)</span>
-                                                    {userRole === 'admin' ? (
-                                                        <input
-                                                            type="text"
-                                                            value={editDepartments[req.id] || ''}
-                                                            onChange={e => setEditDepartments(prev => ({...prev, [req.id]: e.target.value}))}
-                                                            placeholder="VD: 58614, 21707"
-                                                            className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:bg-white text-slate-800 dark:text-slate-200 w-full font-mono uppercase transition-all"
-                                                        />
-                                                    ) : (
-                                                        <div className="bg-slate-50 dark:bg-slate-900 rounded-lg px-3 py-2 font-mono text-sm font-bold text-slate-700 dark:text-slate-300 border border-transparent">
-                                                            {req.departmentId || 'Chưa ĐK'}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Report Matching Name */}
-                                                <div className="flex flex-col gap-2 col-span-2">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> User (Mã Nhân Viên)</span>
-                                                    {userRole === 'admin' ? (
-                                                        <input
-                                                            type="text"
-                                                            value={editNames[req.id] || ''}
-                                                            onChange={e => setEditNames(prev => ({...prev, [req.id]: e.target.value}))}
-                                                            placeholder="VD: 58614"
-                                                            className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:bg-white text-slate-800 dark:text-slate-200 w-full transition-all"
-                                                        />
-                                                    ) : (
-                                                        <div className="font-bold text-amber-600 dark:text-amber-400 italic text-sm px-1">
-                                                            {req.employeeName || 'Chưa cập nhật User'}
-                                                        </div>
-                                                    )}
-                                                </div>
-
-                                                {/* Expiry Date */}
-                                                <div className="flex flex-col gap-2 col-span-2">
-                                                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1.5"><Icon name="calendar" size={3.5} /> Hạn Cấp Phép Truy Cập</span>
-                                                    <input 
-                                                        type="date"
-                                                        value={expiryDates[req.id] || ''}
-                                                        onChange={e => setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value }))}
-                                                        className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 outline-none focus:border-indigo-500 focus:bg-white text-slate-800 dark:text-slate-200 w-full transition-all"
-                                                    />
-                                                </div>
+                                            <div className="shrink-0">
+                                                {userRole === 'admin' ? (
+                                                    <select value={editRoles[req.id] || req.role || req.requestedRole || 'pending'} onChange={(e) => { setEditRoles(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'role', e.target.value); }} className="h-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md px-2 text-xs font-semibold outline-none focus:border-indigo-500 w-[100px] cursor-pointer">
+                                                        <option value="pending">Chờ duyệt</option>
+                                                        <option value="employee">Nhân Viên</option>
+                                                        <option value="manager">Quản Lý</option>
+                                                        <option value="admin">Admin</option>
+                                                        <option value="blocked">Khoá</option>
+                                                    </select>
+                                                ) : (
+                                                    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${req.role === 'admin' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400' : req.role === 'manager' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400'}`}>
+                                                        <Icon name={req.role === 'admin' ? 'shield' : req.role === 'manager' ? 'briefcase' : 'users'} size={3} />
+                                                        {req.role === 'admin' ? 'Admin' : req.role === 'manager' ? 'Quản Lý' : 'NV'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                {listMode === 'pending' ? (
+                                                    <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
+                                                        <button onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700" title="Từ chối">
+                                                            <Icon name="x" size={3.5} />
+                                                        </button>
+                                                        <button onClick={() => handleApproval(req.id, true)} className="h-8 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center gap-1">
+                                                            <Icon name="check" size={3.5} /> Duyệt
+                                                        </button>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center gap-1.5">
+                                                        <button onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors rounded-md shadow-sm flex items-center" title="Thu hồi">
+                                                            <Icon name="user-minus" size={3.5} />
+                                                        </button>
+                                                        {savingIds.has(req.id) && (
+                                                            <span className="text-[10px] text-indigo-500 font-bold flex items-center gap-1 animate-pulse">
+                                                                <Icon name="loader-2" size={3} className="animate-spin" /> Lưu...
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
-
-                                        {/* Actions Footer */}
-                                        <div className="p-4 bg-slate-50/50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700/50 flex gap-3">
-                                            {listMode === 'pending' ? (
-                                                <>
-                                                    <button 
-                                                        onClick={() => handleApproval(req.id, false)}
-                                                        className="flex-1 py-2.5 bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors font-bold text-sm flex items-center justify-center gap-2"
-                                                    >
-                                                        <Icon name="x" size={4} /> Từ chối
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => handleApproval(req.id, true)}
-                                                        className="flex-1 py-2.5 bg-indigo-600 text-white dark:bg-indigo-500 rounded-xl hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors shadow-sm font-bold text-sm flex items-center justify-center gap-2"
-                                                    >
-                                                        <Icon name="check" size={4} /> Phê duyệt
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <button 
-                                                        onClick={() => handleApproval(req.id, false)}
-                                                        className="px-4 py-2.5 bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors font-bold text-sm flex items-center gap-2"
-                                                    >
-                                                        <Icon name="user-minus" size={4.5} />
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => handleApproval(req.id, true)}
-                                                        className="flex-1 py-2.5 bg-emerald-600 text-white dark:bg-emerald-500 rounded-xl hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors shadow-sm font-bold text-sm flex items-center justify-center gap-2"
-                                                    >
-                                                        <Icon name="save" size={4.5} /> Lưu & Cập Nhật
-                                                    </button>
-                                                </>
-                                            )}
+                                        {/* Row 2: Fields */}
+                                        <div className="flex items-center gap-3 px-4 py-2 bg-slate-50/50 dark:bg-slate-900/20 flex-wrap sm:flex-nowrap">
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Mã Kho:</span>
+                                                {userRole === 'admin' ? (
+                                                    <input type="text" value={editDepartments[req.id] || ''} onChange={e => { setEditDepartments(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'departmentId', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-200 w-[100px] font-mono uppercase rounded-md" />
+                                                ) : (<span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">{req.departmentId || '—'}</span>)}
+                                            </div>
+                                            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Mã NV:</span>
+                                                {userRole === 'admin' ? (
+                                                    <input type="text" value={editNames[req.id] || ''} onChange={e => { setEditNames(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'employeeName', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-200 w-[100px] rounded-md" />
+                                                ) : (<span className="text-xs font-bold text-amber-600 dark:text-amber-400">{req.employeeName || '—'}</span>)}
+                                            </div>
+                                            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Hạn:</span>
+                                                <input type="date" value={expiryDates[req.id] || ''} onChange={e => { setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value })); if (listMode === 'active') autoSave(req.id, 'expiresAt', e.target.value); }} className="h-7 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-200 w-[130px] rounded-md" />
+                                            </div>
+                                            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Đăng ký:</span>
+                                                <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString('vi-VN') : '—'}</span>
+                                            </div>
+                                            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                                <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Truy cập:</span>
+                                                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">{req.loginCount ?? 0} lần</span>
+                                            </div>
                                         </div>
                                     </motion.div>
                                 ))}

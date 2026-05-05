@@ -57,7 +57,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsLoading(false); // Stop spinner immediately!
             if (currentUser) {
                 try {
-                    const { doc, getDoc, setDoc, serverTimestamp, updateDoc } = await import('firebase/firestore');
+                    const { doc, getDoc, setDoc, serverTimestamp, updateDoc, increment } = await import('firebase/firestore');
                     const userRef = doc(db, 'users', currentUser.uid);
                     const snap = await getDoc(userRef);
                     if (snap.exists()) {
@@ -103,6 +103,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         localStorage.setItem('cached_user_status', currentStatus);
                         if (data.departmentId) localStorage.setItem('cached_dept_id', data.departmentId);
                         if (data.employeeName) localStorage.setItem('cached_emp_name', data.employeeName);
+
+                        // Increment login count & update lastLogin (once per session)
+                        const sessionKey = `login_counted_${currentUser.uid}`;
+                        if (!sessionStorage.getItem(sessionKey)) {
+                            sessionStorage.setItem(sessionKey, '1');
+                            updateDoc(userRef, {
+                                loginCount: increment(1),
+                                lastLogin: serverTimestamp()
+                            }).catch(e => console.warn('loginCount update failed:', e));
+                        }
                     } else {
                         let initialRole: 'admin' | 'pending' = 'pending';
                         let initialStatus: 'approved' | 'new' = 'new';
@@ -123,7 +133,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             status: initialStatus,
                             departmentId: initialDept || '',
                             createdAt: serverTimestamp(),
-                            lastLogin: serverTimestamp()
+                            lastLogin: serverTimestamp(),
+                            loginCount: 1
                         });
                         setUserRole(initialRole);
                         setStatus(initialStatus);
@@ -135,7 +146,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     }
                 } catch (error) {
                     console.error("Lỗi lấy thông tin người dùng:", error);
-                    // Do not overwrite cached role on network error to allow offline use
+                    // Fallback: force admin for super admin email even when Firestore is down
+                    if (currentUser.email === 'lts.truongson@gmail.com') {
+                        setUserRole('admin');
+                        setStatus('approved');
+                        setDepartmentId('ALL (Super Admin)');
+                        localStorage.setItem('cached_user_role', 'admin');
+                        localStorage.setItem('cached_user_status', 'approved');
+                        localStorage.setItem('cached_dept_id', 'ALL (Super Admin)');
+                    }
+                    // Do not overwrite cached role on network error for other users to allow offline use
                 }
             } else {
                 setUserRole(null);
