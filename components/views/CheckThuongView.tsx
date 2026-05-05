@@ -2234,6 +2234,50 @@ export const CheckThuongView: React.FC = () => {
                 </div>,
                 document.getElementById('global-header-actions')!
             )}
+            {/* Mobile search bar — visible only on small screens */}
+            {hasData && (
+                <div className="lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 px-3 py-2 flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-1">
+                        <div className="relative flex-1">
+                            <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                                <Icon name="search" size={3.5} />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Mã kho (VD: 910)"
+                                className="w-full h-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all"
+                                value={codes.code1}
+                                onChange={(e) => handleCodeChange('code1', e.target.value)}
+                            />
+                        </div>
+                        <div className="relative flex-1">
+                            <div className="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400">
+                                <Icon name="arrow-left-right" size={3.5} />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="So sánh..."
+                                className="w-full h-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all"
+                                value={codes.code2}
+                                onChange={(e) => handleCodeChange('code2', e.target.value)}
+                            />
+                        </div>
+                    </div>
+                    <button
+                        onClick={handleSearch}
+                        className="h-9 px-3 bg-indigo-600 text-white rounded-md flex items-center gap-1.5 text-xs font-semibold hover:bg-indigo-700 transition-colors shrink-0"
+                    >
+                        <Icon name="search" size={3.5} />
+                    </button>
+                    <button
+                        onClick={handleChangeFile}
+                        className="h-9 px-2.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-md flex items-center hover:bg-slate-200 transition-colors shrink-0"
+                        title="Tải file khác"
+                    >
+                        <Icon name="upload" size={3.5} />
+                    </button>
+                </div>
+            )}
             <iframe
                 ref={iframeRef}
                 srcDoc={htmlContent}
