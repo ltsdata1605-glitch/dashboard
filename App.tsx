@@ -12,6 +12,7 @@ const UserManagementView = lazy(() => import('./components/views/UserManagementV
 const SettingsView = lazy(() => import('./components/views/SettingsView'));
 const AboutView = lazy(() => import('./components/views/AboutView'));
 const StickerPrinterView = lazy(() => import('./components/views/StickerPrinterView'));
+const PhanCaView = lazy(() => import('./components/views/phanca/PhanCaView'));
 
 // BI Module Wrapper
 const BiWrapper = lazy(() => import('./bi-module/components/BiWrapper'));
@@ -58,6 +59,7 @@ const TabContent = React.memo(() => {
         { id: 'check-thuong', component: <CheckThuongView /> },
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
+        { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
     ], []);
 
     return (
@@ -95,9 +97,9 @@ const TabContent = React.memo(() => {
                 </div>
             )}
 
-            {/* Fallback for other tabs */}
-            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees', 'tools-print-sticker'].includes(activeTab) && (
-                <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
+            {/* Render External Tool view when applicable */}
+            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) && (
+                <div style={{ display: !['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) ? 'block' : 'none' }} className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>
                 </div>
@@ -116,10 +118,11 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'tools': { main: 'Công', highlight: 'Cụ' },
     'tools-print-sticker': { main: 'In', highlight: 'Sticker' },
     'tools-coupon': { main: 'Đổi', highlight: 'Coupon' },
-    'tools-tax': { main: 'Hoàn Thuế', highlight: 'Nhận Thay' },
+    'tools-tax': { main: 'Hoàn', highlight: 'Thuế' },
     'tools-sticker': { main: 'Sticker', highlight: 'Event' },
     'tools-audit': { main: 'Kiểm', highlight: 'Quỹ' },
-    'settings': { main: 'Cài', highlight: 'Đặt' },
+    'tools-phanca': { main: 'Phân', highlight: 'Ca' },
+    'settings': { main: 'Cài đặt', highlight: 'Hệ thống' },
     'help': { main: 'Giới', highlight: 'Thiệu' },
     'pending-approval': { main: 'Hồ Sơ', highlight: 'Quyền' },
 };
@@ -196,16 +199,16 @@ function AppContent() {
                     {/* Thêm Banner thông báo Đơn chờ duyệt */}
                     <PendingApprovalBanner />
 
-                    {/* Global Page Header (Desktop) */}
-                    <div className="hidden lg:flex flex-col gap-1 px-4 sm:px-6 lg:px-8 pt-6 pb-2">
-                        <div className="flex items-center justify-between gap-4 w-full">
-                            <div className="flex items-center gap-4">
+                    {/* Global Page Header */}
+                    <div className="lg:sticky lg:top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md flex flex-col gap-1 px-3 sm:px-6 lg:px-8 pt-3 lg:pt-6 pb-2 border-b border-transparent">
+                        <div className="flex items-center justify-end lg:justify-between gap-4 w-full">
+                            <div className="hidden lg:flex items-center gap-4 shrink-0">
                                 <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
                                 <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
                                     {titleData.main} <span className="text-indigo-600 dark:text-indigo-400">{titleData.highlight}</span>
                                 </h1>
                             </div>
-                            <div id="global-header-actions" className="flex items-center z-50"></div>
+                            <div id="global-header-actions" className="flex items-center z-50 overflow-x-auto no-scrollbar max-w-full pb-1 lg:pb-0"></div>
                         </div>
                     </div>
 

@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { transformCouponText } from '../../utils/couponFormatter';
+import { SAMPLE_TITLE, SAMPLE_OUTPUT } from '../../utils/couponSampleData';
 import { Icon } from '../common/Icon';
 
 export default function CouponConverterView() {
@@ -9,6 +10,7 @@ export default function CouponConverterView() {
     const [isCopied, setIsCopied] = useState<boolean>(false);
     const [lastUpdated, setLastUpdated] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string>('');
+    const [showGuide, setShowGuide] = useState<boolean>(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     // --- Helpers ---
@@ -133,12 +135,32 @@ export default function CouponConverterView() {
         <main className="h-full w-full flex flex-col items-center p-4 sm:p-6 lg:p-8 font-sans bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 overflow-y-auto">
             <div className="w-full max-w-[960px] mx-auto relative z-10 flex flex-col h-full min-h-[600px]">
                 <header className="text-center mb-10 shrink-0">
-                    <h1 className="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent mb-4 tracking-tight py-2 leading-tight">
-                        Định dạng Coupon Pro
+                    <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent mb-4 tracking-tight py-2 leading-tight">
+                        Chuyển đổi coupon GVGS, EVENT
                     </h1>
-                    <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto font-medium">
-                        Công cụ tự động hoá xử lý dữ liệu. Dán dữ liệu thô và nhận ngay kết quả chuẩn xác.
-                    </p>
+                    <div className="text-sm text-slate-500 dark:text-slate-400 max-w-3xl mx-auto font-medium space-y-1">
+                        <p>Hỗ trợ chuyển đổi COUPON từ báo cáo Anh 3169 - Phạm Nguyên Vũ gửi Event, GVGS:</p>
+                        <p>Mã COUPON Áp Dụng Cho Máy lọc nước Giờ vàng giá sốc ngày 1/5 - 3/5/2026</p>
+                        <p>Mã COUPON Áp Dụng Cho Tivi - Loa Karaoke Giờ vàng giá sốc ngày 1/5 - 3/5/2026</p>
+                    </div>
+
+                    <button 
+                        onClick={() => setShowGuide(!showGuide)}
+                        className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors py-2 px-4 rounded-full bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-100 dark:border-indigo-800/50 hover:shadow-sm"
+                    >
+                        <Icon name={showGuide ? "chevron-up" : "help-circle"} size={4} />
+                        {showGuide ? "Ẩn hướng dẫn sử dụng" : "Xem hướng dẫn sử dụng"}
+                    </button>
+                    
+                    {showGuide && (
+                        <div className="mt-6 max-w-4xl mx-auto rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-md animate-in fade-in slide-in-from-top-4 duration-300">
+                            <img 
+                                src="/Tuts/Coupon.png" 
+                                alt="Hướng dẫn sử dụng" 
+                                className="w-full h-auto object-contain bg-slate-100 dark:bg-slate-800 block" 
+                            />
+                        </div>
+                    )}
                 </header>
 
                 {errorMessage && (
@@ -203,7 +225,7 @@ export default function CouponConverterView() {
                                       onChange={handleTitleChange}
                                       onPaste={handleTitlePaste}
                                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                      placeholder="VD: Cập nhật Coupon tháng 9..."
+                                      placeholder={SAMPLE_TITLE}
                                   />
                               </div>
                               <div className="flex-grow flex flex-col">
@@ -266,6 +288,10 @@ export default function CouponConverterView() {
                                 <pre className="text-sm font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
                                     {outputText ? (
                                         outputText
+                                    ) : (!inputText && !title) ? (
+                                        <div className="opacity-40 pointer-events-none select-none">
+                                            {SAMPLE_OUTPUT}
+                                        </div>
                                     ) : (
                                         <span className="text-slate-400 dark:text-slate-500 select-none italic flex flex-col items-center justify-center h-full text-center">
                                             <Icon name="code" size={12} className="mb-4 opacity-40" />

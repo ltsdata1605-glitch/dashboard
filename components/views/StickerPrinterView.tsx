@@ -17,18 +17,22 @@ interface BatchItem {
 export default function StickerPrinterView() {
     const { activeTab } = useActiveTab();
     const [mounted, setMounted] = useState(false);
+    const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang'>('gia_soc');
     const [bgImage, setBgImage] = useState('/frame/X24_NEW.png');
     const [headerTextSize, setHeaderTextSize] = useState(8);
     const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
-    const [headerTextContent, setHeaderTextContent] = useState('HÀNG TRƯNG BÀY');
+    const [headerTextContent, setHeaderTextContent] = useState('QUẠT ĐIỀU HOÀ');
+    const [subHeaderTextContent, setSubHeaderTextContent] = useState('0 SUẤT/NGÀY');
     const [footerTextContent, setFooterTextContent] = useState('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
     const [searchTerm, setSearchTerm] = useState('');
-    const [showBarcode, setShowBarcode] = useState(true);
+    const [showBarcode, setShowBarcode] = useState(false);
     const [barcodeImei, setBarcodeImei] = useState('123456');
     const nameRef = useRef<HTMLDivElement>(null);
     const footerRef = useRef<HTMLDivElement>(null);
-    const previewNameRef = useRef('TÊN SẢN PHẨM (IMEI:123456)');
+    const previewNameRef = useRef('Quạt điều hoà Daikiosan DMI03');
     const footerContentRef = useRef('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
+    const headerRef = useRef<HTMLDivElement>(null);
+    const subHeaderRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setMounted(true);
@@ -43,31 +47,20 @@ export default function StickerPrinterView() {
             footerRef.current.innerText = footerContentRef.current;
             footerRef.current.setAttribute('data-initialized', 'true');
         }
+        if (headerRef.current && document.activeElement !== headerRef.current) {
+            headerRef.current.innerText = headerTextContent;
+        }
+        if (subHeaderRef.current && document.activeElement !== subHeaderRef.current) {
+            subHeaderRef.current.innerText = subHeaderTextContent;
+        }
     });
 
     const handleTextInput = (e: React.FormEvent<HTMLDivElement>) => {
-        const el = e.currentTarget;
-        const text = el.innerText;
-        setHeaderTextContent(text.toUpperCase());
-        if (text !== text.toUpperCase()) {
-            const sel = window.getSelection();
-            let offset = 0;
-            if (sel && sel.rangeCount > 0) {
-                offset = sel.getRangeAt(0).startOffset;
-            }
-            el.innerText = text.toUpperCase();
-            if (sel) {
-                const range = document.createRange();
-                if (el.childNodes.length > 0) {
-                    try {
-                        range.setStart(el.childNodes[0], offset);
-                        range.collapse(true);
-                        sel.removeAllRanges();
-                        sel.addRange(range);
-                    } catch (e) {}
-                }
-            }
-        }
+        setHeaderTextContent(e.currentTarget.innerText);
+    };
+
+    const handleSubHeaderInput = (e: React.FormEvent<HTMLDivElement>) => {
+        setSubHeaderTextContent(e.currentTarget.innerText);
     };
 
     const handleFooterTextInput = (e: React.FormEvent<HTMLDivElement>) => {
@@ -210,11 +203,38 @@ export default function StickerPrinterView() {
         <div className="print-wrapper w-full h-full p-4 lg:p-8 overflow-y-auto bg-slate-100 dark:bg-slate-900 flex flex-col lg:flex-row gap-8 justify-center items-start">
             {mounted && activeTab === 'tools-print-sticker' && document.getElementById('global-header-actions') && createPortal(
                 <div className="flex items-center gap-1 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
-                    <button 
-                        className="flex items-center gap-2 px-4 py-1.5 rounded-full font-semibold text-[13px] transition-all bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/60 dark:border-slate-700/60"
-                    >
-                        <ImageIcon size={14} /> Sticker Giá Sốc
-                    </button>
+                    <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+                        <button
+                            onClick={() => {
+                                setStickerType('gia_soc');
+                                setHeaderTextContent('QUẠT ĐIỀU HOÀ');
+                                setBgImage('/frame/X24_NEW.png');
+                                setHeaderTextSize(8);
+                            }}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-[13px] transition-all ${
+                                stickerType === 'gia_soc' 
+                                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                            }`}
+                        >
+                            {stickerType === 'gia_soc' && <CheckCircle2 size={14} className="text-indigo-600 dark:text-indigo-400" />} Giá Sốc
+                        </button>
+                        <button
+                            onClick={() => {
+                                setStickerType('gio_vang');
+                                setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
+                                setBgImage('/frame/GVO2-scaled.png');
+                                setHeaderTextSize(7.5);
+                            }}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-[13px] transition-all ${
+                                stickerType === 'gio_vang' 
+                                    ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 shadow-sm' 
+                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                            }`}
+                        >
+                            {stickerType === 'gio_vang' && <CheckCircle2 size={14} className="text-amber-600 dark:text-amber-400" />} Giờ Vàng
+                        </button>
+                    </div>
                     
                     <div className="flex items-center gap-1 ml-1 pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
                         <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[26px]">
@@ -324,7 +344,7 @@ export default function StickerPrinterView() {
                 .sticker-container .header-text {
                     font-size: ${headerTextSize}cqw;
                     font-weight: 900;
-                    top: 5.2%;
+                    top: 4.2%;
                     height: 8.5%;
                     color: white;
                     font-family: 'UTM Avo', sans-serif;
@@ -361,7 +381,7 @@ export default function StickerPrinterView() {
                 .sticker-container .extra2 {
                     font-size: 26.5cqw;
                     font-weight: 400 !important;
-                    top: 75.5%;
+                    top: 76.5%;
                     height: 21%;
                     right: 24%;
                     left: auto;
@@ -401,6 +421,82 @@ export default function StickerPrinterView() {
                     align-items: center;
                     justify-content: center;
                 }
+
+                .sticker-container[data-type="gio_vang"] .header-text {
+                    font-size: ${headerTextSize}cqw;
+                    font-weight: 400;
+                    top: 44.5%;
+                    height: 8%;
+                    color: black;
+                    font-family: 'UTM Colossalis', sans-serif !important;
+                    text-transform: uppercase;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                }
+                .sticker-container[data-type="gio_vang"] .sub-header {
+                    font-size: 13cqw;
+                    font-weight: 400;
+                    top: 52.5%;
+                    height: 10%;
+                    color: black;
+                    font-family: 'UTM Colossalis', sans-serif !important;
+                    text-transform: uppercase;
+                    position: absolute;
+                    left: 0;
+                    width: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: text;
+                    outline: none;
+                }
+                .sticker-container[data-type="gio_vang"] .name {
+                    font-size: 4cqw;
+                    font-weight: bold !important;
+                    top: 65.8%;
+                    height: 4.5%;
+                    color: black;
+                    font-family: 'Alata Regular', sans-serif !important;
+                }
+                .sticker-container[data-type="gio_vang"] .old {
+                    font-size: 11cqw;
+                    font-weight: 400 !important;
+                    top: 73%;
+                    height: 9%;
+                    color: black;
+                    font-family: 'UTM Colossalis', sans-serif !important;
+                    text-decoration: line-through;
+                    text-decoration-thickness: 3px;
+                }
+                .sticker-container[data-type="gio_vang"] .extra2 {
+                    font-size: 24cqw;
+                    font-weight: 400 !important;
+                    top: 77%;
+                    height: 20%;
+                    right: 0;
+                    left: 0;
+                    width: 100%;
+                    display: flex;
+                    justify-content: center;
+                    align-items: baseline;
+                    letter-spacing: -0.06em;
+                    color: black;
+                    font-family: 'UTM Colossalis', sans-serif !important;
+                }
+                .sticker-container[data-type="gio_vang"] .extra2 span {
+                    font-family: 'UTM Colossalis', sans-serif !important;
+                    font-weight: 400 !important;
+                }
+                .sticker-container[data-type="gio_vang"] .extra2 .small-zeros {
+                    font-size: 40%;
+                    letter-spacing: normal;
+                    font-weight: 400 !important;
+                }
+                .sticker-container[data-type="gio_vang"] .extra1,
+                .sticker-container[data-type="gio_vang"] .footer-text {
+                    display: none !important;
+                }
                 `}
             </style>
 
@@ -409,32 +505,52 @@ export default function StickerPrinterView() {
                 <div id="print-section" className="w-full">
                     {batchItems.length > 0 ? (
                         batchItems.filter(it => it.selected).map((item, index, arr) => (
-                            <div key={item.id} className="sticker-container" style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto' }}>
+                            <div key={item.id} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto' }}>
                                 {showBarcode && item.imei && (
                                     <div className="barcode">
                                         <img src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(item.imei)}&includetext=false`} alt="barcode" crossOrigin="anonymous" />
                                     </div>
                                 )}
                                 <div className="header-text" contentEditable suppressContentEditableWarning>{headerTextContent}</div>
+                                {stickerType === 'gio_vang' && (
+                                    <div className="sub-header" contentEditable suppressContentEditableWarning>{subHeaderTextContent}</div>
+                                )}
                                 <div className="extra1" contentEditable suppressContentEditableWarning>{item.percent}</div>
                                 <div className="old" contentEditable suppressContentEditableWarning>{item.oldPrice}</div>
                                 <div className="name" contentEditable suppressContentEditableWarning>{item.name}</div>
-                                <div className="extra2" contentEditable suppressContentEditableWarning>{item.newPrice}</div>
+                                {stickerType === 'gio_vang' ? (
+                                    <div className="extra2 flex items-baseline justify-center">
+                                        <span contentEditable suppressContentEditableWarning>{item.newPrice}</span>
+                                        <span className="small-zeros" contentEditable={false}>.000</span>
+                                    </div>
+                                ) : (
+                                    <div className="extra2" contentEditable suppressContentEditableWarning>{item.newPrice}</div>
+                                )}
                                 <div className="footer-text" contentEditable suppressContentEditableWarning>{footerTextContent}</div>
                             </div>
                         ))
                     ) : (
-                        <div className="sticker-container">
+                        <div className="sticker-container" data-type={stickerType}>
                             {showBarcode && barcodeImei && (
                                 <div className="barcode">
                                     <img src={`https://bwipjs-api.metafloor.com/?bcid=code128&text=${encodeURIComponent(barcodeImei)}&includetext=false`} alt="barcode" crossOrigin="anonymous" />
                                 </div>
                             )}
-                            <div className="header-text" onInput={handleTextInput} contentEditable suppressContentEditableWarning>HÀNG TRƯNG BÀY</div>
-                            <div className="extra1" contentEditable suppressContentEditableWarning>-30%</div>
-                            <div className="old" onInput={handlePriceInput} contentEditable suppressContentEditableWarning>19.990.000</div>
+                            <div className="header-text" ref={headerRef} onInput={handleTextInput} contentEditable suppressContentEditableWarning />
+                            {stickerType === 'gio_vang' && (
+                                <div className="sub-header" ref={subHeaderRef} onInput={handleSubHeaderInput} contentEditable suppressContentEditableWarning />
+                            )}
+                            <div className="extra1" contentEditable suppressContentEditableWarning>-36%</div>
+                            <div className="old" onInput={handlePriceInput} contentEditable suppressContentEditableWarning>5.490.000</div>
                             <div className="name" ref={nameRef} onInput={handleNameInput} contentEditable suppressContentEditableWarning />
-                            <div className="extra2" onInput={handlePriceInput} contentEditable suppressContentEditableWarning>10.990</div>
+                            {stickerType === 'gio_vang' ? (
+                                <div className="extra2 flex items-baseline justify-center">
+                                    <span onInput={handlePriceInput} contentEditable suppressContentEditableWarning>10.990</span>
+                                    <span className="small-zeros" contentEditable={false}>.000</span>
+                                </div>
+                            ) : (
+                                <div className="extra2" onInput={handlePriceInput} contentEditable suppressContentEditableWarning>3.490</div>
+                            )}
                             <div className="footer-text" ref={footerRef} onInput={handleFooterTextInput} contentEditable suppressContentEditableWarning />
                         </div>
                     )}
@@ -498,7 +614,7 @@ export default function StickerPrinterView() {
                         <div className="flex gap-2">
                             <label className="flex-1 flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-sm text-sm">
                                 <Upload size={18} />
-                                TẢI FILE EXCEL
+                                File giá ĐSD - TBBM
                                 <input type="file" accept=".xlsx, .xls, .csv" onChange={handleExcelUpload} className="hidden" />
                             </label>
                             <button 

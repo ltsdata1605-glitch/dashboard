@@ -96,42 +96,91 @@ const htmlContent = `
 </head>
 <body>
     <!-- Landing Page -->
-    <div id="landingPage" class="landing-hero">
-        <nav class="nav-bar">
-            <div style="display:flex;align-items:center;gap:8px">
-                <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,#6366f1,#a78bfa);display:flex;align-items:center;justify-content:center;font-size:14px">🏆</div>
-                <div>
-                    <span style="font-size:14px;font-weight:800;color:#1e293b;letter-spacing:-0.02em">CHECK THƯỞNG</span>
-                    <span style="font-size:10px;color:#94a3b8;margin-left:4px">Tra cứu thi đua</span>
-                </div>
+    <div id="landingPage" class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] selection:bg-indigo-500/20 selection:text-indigo-600 pb-20">
+        
+        <!-- Ambient Background Grid -->
+        <div class="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
+
+        <!-- Animated Glow Orbs -->
+        <div class="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-indigo-500/30 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 animate-pulse pointer-events-none"></div>
+        <div class="absolute top-[10%] right-[20%] w-[500px] h-[500px] bg-purple-500/30 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 animate-pulse [animation-delay:2s] pointer-events-none"></div>
+        <div class="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-500/30 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 animate-pulse [animation-delay:4s] pointer-events-none"></div>
+
+        <div class="relative z-10 w-full max-w-[1000px] px-6 flex flex-col items-center text-center mt-8">
+            
+            <!-- Hero Typography -->
+            <div class="mb-14">
+                <h1 class="text-6xl sm:text-7xl lg:text-[5.5rem] font-extrabold tracking-tight text-slate-900 leading-[1.05] mb-6 drop-shadow-sm">
+                    Tra cứu thưởng.<br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600">Phân tích tức thì.</span>
+                </h1>
+                <p class="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed tracking-tight">
+                    Tải file Luỹ Kế Thi Đua để tra cứu thưởng, phân tích cơ hội và so sánh giữa các siêu thị.<br class="hidden sm:block"/>
+                    Xử lý cục bộ trực tiếp trên trình duyệt, không lưu trữ dữ liệu.
+                </p>
             </div>
-            <span id="versionInfo" style="font-size:10px;color:#94a3b8;cursor:pointer;padding:4px 12px;background:#fff;border-radius:20px;border:1px solid #e2e8f0">V10.6</span>
-        </nav>
-        <div class="hero-content">
-            <p style="font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px">✦ CHECK THƯỞNG PHIÊN BẢN 10.6</p>
-            <h1 style="font-size:42px;font-weight:900;color:#0f172a;line-height:1.1;letter-spacing:-0.03em;margin-bottom:8px">Tra cứu thưởng.</h1>
-            <h1 style="font-size:42px;font-weight:900;background:linear-gradient(135deg,#6366f1,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1.1;letter-spacing:-0.03em;margin-bottom:24px">Phân tích tức thì.</h1>
-            <p style="font-size:14px;color:#64748b;line-height:1.7;max-width:480px;margin:0 auto">Tải file Luỹ Kế Thi Đua để tra cứu thưởng, phân tích cơ hội và so sánh giữa các siêu thị.</p>
-        </div>
-        <div style="max-width:520px;margin:36px auto 0;padding:0 24px">
-            <div style="background:#fff;border-radius:16px;box-shadow:0 4px 24px rgba(0,0,0,0.06);border:1px solid rgba(0,0,0,0.04);padding:28px 24px">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px">
-                    <svg style="width:18px;height:18px;color:#6366f1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    <div>
-                        <p style="font-size:14px;font-weight:700;color:#1e293b;margin:0">Nhập dữ liệu</p>
-                        <p style="font-size:11px;color:#94a3b8;margin:0">Hỗ trợ Excel (.xlsx, .xls, .csv)</p>
+
+            <!-- Main Action Area - Glass Card -->
+            <div class="w-full max-w-2xl">
+                <div class="relative group">
+                    <!-- Glow effect behind -->
+                    <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500/40 via-purple-500/40 to-blue-500/40 rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+                    
+                    <div class="relative bg-white/70 backdrop-blur-3xl rounded-[30px] p-2 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.15)] ring-1 ring-white">
+                        <div class="bg-white/90 backdrop-blur-xl rounded-[24px] overflow-hidden border border-slate-100 p-8">
+                            
+                            <!-- Upload Section -->
+                            <div class="flex items-center gap-3 mb-6">
+                                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/50">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>
+                                </div>
+                                <div class="text-left flex-1">
+                                    <h3 class="font-bold text-slate-900 text-[15px]">Nhập dữ liệu</h3>
+                                    <p class="text-[12px] font-medium text-slate-500">Hỗ trợ Excel (.xlsx, .xls)</p>
+                                </div>
+                                <div class="text-slate-300">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                                </div>
+                            </div>
+
+                            <label for="fileInput" class="relative group/dropzone flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-slate-200 hover:border-blue-400/50 rounded-2xl cursor-pointer bg-slate-50/50 hover:bg-blue-50/30 transition-all duration-300 overflow-hidden">
+                                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>
+                                <div class="flex flex-col items-center justify-center p-6 relative z-10">
+                                    <div class="w-12 h-12 mb-4 rounded-full bg-white shadow-sm flex items-center justify-center border border-slate-100 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-blue-100 group-hover/dropzone:border-blue-200 text-slate-400 group-hover/dropzone:text-blue-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                    </div>
+                                    <p class="mb-2 text-[14px] font-medium text-slate-600">
+                                        <span class="text-blue-600 font-semibold">Chọn file</span> hoặc thả các file Excel vào đây
+                                    </p>
+                                    <p class="text-[12px] text-slate-400 font-medium">Xử lý an toàn • Không tải lên máy chủ</p>
+                                </div>
+                                <input id="fileInput" type="file" class="hidden" accept=".csv, .xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
+                            </label>
+                            <p id="fileStatus" class="mt-4 text-[13px] font-medium text-slate-500 text-center">Chưa có file nào được chọn.</p>
+                        </div>
                     </div>
                 </div>
-                <label for="fileInput" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;border:2px dashed #e2e8f0;border-radius:12px;cursor:pointer;background:#fafbff;transition:all 0.2s">
-                    <div style="width:44px;height:44px;border-radius:50%;background:#f1f5f9;display:flex;align-items:center;justify-content:center;margin-bottom:12px">
-                        <svg style="width:20px;height:20px;color:#6366f1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                    </div>
-                    <p style="font-size:13px;color:#64748b;margin:0"><strong style="color:#6366f1">Chọn file</strong> hoặc thả các file Excel vào đây</p>
-                    <p style="font-size:11px;color:#94a3b8;margin:6px 0 0 0">Xử lý hoàn toàn • Không lưu dữ liệu của bạn</p>
-                    <input id="fileInput" type="file" class="hidden" accept=".csv, .xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
-                </label>
-                <p id="fileStatus" style="margin-top:12px;font-size:11px;color:#94a3b8;text-align:center">Chưa có file nào được chọn.</p>
             </div>
+
+            <!-- Footer / Trust Indicators -->
+            <div class="mt-16 grid grid-cols-3 gap-8 text-center">
+                <div class="space-y-1">
+                    <div class="flex justify-center text-slate-400 mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
+                    <p class="text-xs font-bold text-slate-700">Local Processing</p>
+                    <p class="text-[10px] text-slate-500">Dữ liệu không rời khỏi máy</p>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex justify-center text-slate-400 mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
+                    <p class="text-xs font-bold text-slate-700">Instant Speed</p>
+                    <p class="text-[10px] text-slate-500">Xử lý cực nhanh</p>
+                </div>
+                <div class="space-y-1">
+                    <div class="flex justify-center text-slate-400 mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg></div>
+                    <p class="text-xs font-bold text-slate-700">Smart UI</p>
+                    <p class="text-[10px] text-slate-500">Giao diện thông minh</p>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -2080,7 +2129,7 @@ const htmlContent = `
                 if (th) { sortRankingData(th.dataset.sortKey); }
             });
 
-            versionInfo.addEventListener('click', () => { renderVersionHistory(); versionModal.classList.remove('hidden'); });
+            if (versionInfo) versionInfo.addEventListener('click', () => { renderVersionHistory(); versionModal.classList.remove('hidden'); });
             closeVersionModalButton.addEventListener('click', () => versionModal.classList.add('hidden'));
             versionModal.addEventListener('click', (event) => { if (event.target === event.currentTarget) { versionModal.classList.add('hidden'); } });
 
@@ -2122,7 +2171,7 @@ export const CheckThuongView: React.FC = () => {
     const handleSearch = () => {
         iframeRef.current?.contentWindow?.postMessage({
             type: 'CHECK_THUONG_SEARCH',
-            code1: codes.code1, 
+            code1: codes.code1,
             code2: codes.code2
         }, '*');
     };
@@ -2132,7 +2181,7 @@ export const CheckThuongView: React.FC = () => {
             const newCodes = { ...prev, [field]: value };
             iframeRef.current?.contentWindow?.postMessage({
                 type: 'CHECK_THUONG_SEARCH',
-                code1: newCodes.code1, 
+                code1: newCodes.code1,
                 code2: newCodes.code2
             }, '*');
             return newCodes;
@@ -2148,33 +2197,33 @@ export const CheckThuongView: React.FC = () => {
     return (
         <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute inset-0">
             {mounted && activeTab === 'check-thuong' && hasData && document.getElementById('global-header-actions') && createPortal(
-                <div className="flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
+                <div className="hidden lg:flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
                     <div className="flex items-center gap-2 px-2">
-                        <input 
-                            type="text" 
-                            placeholder="Mã kho (VD: 910)" 
+                        <input
+                            type="text"
+                            placeholder="Mã kho (VD: 910)"
                             className="w-32 lg:w-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]"
                             value={codes.code1}
                             onChange={(e) => handleCodeChange('code1', e.target.value)}
                         />
                         <span className="text-slate-300 dark:text-slate-600">|</span>
-                        <input 
-                            type="text" 
-                            placeholder="So sánh..." 
+                        <input
+                            type="text"
+                            placeholder="So sánh..."
                             className="w-28 lg:w-36 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]"
                             value={codes.code2}
                             onChange={(e) => handleCodeChange('code2', e.target.value)}
                         />
                     </div>
                     <div className="flex items-center gap-1 border-l border-slate-200 dark:border-slate-700 pl-2">
-                        <button 
+                        <button
                             onClick={handleSearch}
                             className="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 transition-colors"
                             title="Tra cứu"
                         >
                             <Icon name="search" size={4} />
                         </button>
-                        <button 
+                        <button
                             onClick={handleChangeFile}
                             className="w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors"
                             title="Tải file khác"

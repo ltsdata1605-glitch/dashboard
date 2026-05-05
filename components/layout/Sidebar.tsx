@@ -24,7 +24,8 @@ import {
     Calculator,
     Sticker,
     ClipboardCheck,
-    ExternalLink
+    ExternalLink,
+    Calendar
 } from 'lucide-react';
 import { useLayout } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -197,6 +198,7 @@ export default function Sidebar() {
             path: '/tools',
             subItems: [
                 { id: 'tools-print-sticker', label: 'In Sticker', icon: Sticker },
+                { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
                 { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket },
                 { id: 'tools-tax', label: 'Hoàn thuế nhận thay', icon: Calculator, externalUrl: 'https://tinhthue-netify-487587635482.us-west1.run.app' },
                 { id: 'tools-sticker', label: 'Sticker Event', icon: Sticker, externalUrl: 'https://stickerevent-final-487587635482.us-west1.run.app' },
