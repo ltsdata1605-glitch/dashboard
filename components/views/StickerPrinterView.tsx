@@ -196,7 +196,24 @@ export default function StickerPrinterView() {
     };
 
     const handlePrint = () => {
+        const printSection = document.getElementById('print-section');
+        if (!printSection) return;
+
+        // Create a temporary wrapper directly under <body>
+        const printHost = document.createElement('div');
+        printHost.id = 'print-host';
+        printHost.innerHTML = printSection.innerHTML;
+        document.body.appendChild(printHost);
+
+        // Hide the app, show only the print host
+        const root = document.getElementById('root');
+        if (root) root.style.display = 'none';
+
         window.print();
+
+        // Cleanup: restore the app
+        if (root) root.style.display = '';
+        document.body.removeChild(printHost);
     };
 
     return (
@@ -255,45 +272,21 @@ export default function StickerPrinterView() {
                     }
                     html, body {
                         width: 210mm !important;
-                        height: 297mm !important;
                         margin: 0 !important;
                         padding: 0 !important;
                         background: white !important;
-                        overflow: hidden !important;
                     }
-                    body * {
-                        visibility: hidden;
-                    }
-                    html, body, #root, main, .print-wrapper, .print-wrapper > div {
-                        position: static !important;
-                        padding: 0 !important;
-                        margin: 0 !important;
-                    }
-                    #print-section, #print-section * {
-                        visibility: visible;
-                    }
-                    #print-section {
-                        position: fixed !important;
-                        left: 0 !important;
-                        top: 0 !important;
+                    #print-host {
+                        display: block !important;
                         width: 210mm !important;
-                        height: 297mm !important;
                         margin: 0 !important;
                         padding: 0 !important;
-                        border: none !important;
                         background: white !important;
-                        overflow: visible !important;
-                        display: flex !important;
-                        align-items: center !important;
-                        justify-content: center !important;
                     }
-                    .no-print {
-                        display: none !important;
-                    }
-                    .sticker-container {
+                    #print-host .sticker-container {
                         width: 210mm !important;
                         height: 297mm !important;
-                        margin: 0 auto !important;
+                        margin: 0 !important;
                         padding: 0 !important;
                         box-sizing: border-box !important;
                         background-size: 100% 100% !important;
@@ -301,11 +294,9 @@ export default function StickerPrinterView() {
                         overflow: hidden !important;
                         page-break-after: always;
                         page-break-inside: avoid;
-                        /* Ép thu nhỏ nội dung vừa khít trang A4 kể cả khi có lề mặc định */
-                        transform: scale(0.93) !important;
-                        transform-origin: center center !important;
+                        transform: none !important;
                     }
-                    .sticker-container:last-child {
+                    #print-host .sticker-container:last-child {
                         page-break-after: auto;
                     }
                 }
