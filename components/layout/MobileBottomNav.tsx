@@ -14,7 +14,9 @@ import {
     ExternalLink,
     Settings,
     HelpCircle,
-    Shield
+    Shield,
+    Printer,
+    Calendar
 } from 'lucide-react';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -32,6 +34,8 @@ const MobileBottomNav: React.FC = React.memo(() => {
     ];
 
     const moreTabs = [
+        { id: 'tools-print-sticker', label: 'In Sticker', icon: Printer },
+        { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
         { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket },
         { id: 'tools-tax', label: 'Hoàn thuế nhận thay', icon: Calculator, externalUrl: 'https://tinhthue-netify-487587635482.us-west1.run.app' },
         { id: 'tools-sticker', label: 'Sticker Event', icon: Sticker, externalUrl: 'https://stickerevent-final-487587635482.us-west1.run.app' },

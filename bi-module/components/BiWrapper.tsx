@@ -112,6 +112,27 @@ const BiWrapper = React.memo(function BiWrapper() {
                 document.getElementById('global-header-actions')!
             )}
 
+            {/* Mobile tab bar — visible only on small screens */}
+            <div className="lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 px-3 py-2 flex items-center gap-1 overflow-x-auto no-scrollbar">
+                {navigationLinks.map(tab => {
+                    const isActive = activeView === tab.id;
+                    return (
+                        <button
+                            key={tab.id}
+                            onClick={() => handleTabChange(tab.id)}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold text-xs transition-all whitespace-nowrap shrink-0 ${
+                                isActive
+                                    ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-700/60'
+                                    : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400'
+                            }`}
+                        >
+                            <Icon name={tab.icon as any} size={3.5} />
+                            {tab.label || 'Cài đặt'}
+                        </button>
+                    );
+                })}
+            </div>
+
             {/* Nội dung Module — HIDDEN/BLOCK pattern: mount once, toggle visibility */}
             <main className="p-0 sm:p-4 lg:p-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">
                 <Suspense fallback={<TabSpinner />}>

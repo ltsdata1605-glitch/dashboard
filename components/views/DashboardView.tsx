@@ -395,7 +395,7 @@ const DashboardView = React.memo(function DashboardView() {
                                                     icon="bar-chart-3" 
                                                     subtitle={processedData.reportSubTitle}
                                                 >
-                                                        <div className="hidden lg:flex items-center gap-2 hide-on-export">
+                                                        <div className="flex items-center gap-2 hide-on-export">
                                                             <button onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                                 <Icon name="settings-2" size={5} />
                                                             </button>
