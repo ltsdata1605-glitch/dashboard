@@ -164,7 +164,7 @@ export default function CouponConverterView() {
                 </header>
 
                 {errorMessage && (
-                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 p-4 mb-8 flex justify-between items-start shadow-sm shrink-0">
+                    <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 p-4 mb-8 flex justify-between items-start shadow-sm shrink-0 rounded-lg">
                         <div className="flex items-center gap-3">
                             <Icon name="alert-triangle" size={6} className="text-red-500" />
                             <div>
@@ -183,7 +183,7 @@ export default function CouponConverterView() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 flex-grow">
                     {/* Input Section */}
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md">
+                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md rounded-xl">
                          <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                   <div className="w-2.5 h-2.5 bg-indigo-500" />
@@ -192,21 +192,21 @@ export default function CouponConverterView() {
                               <div className="flex items-center gap-2">
                                   <button
                                       onClick={handlePasteClick}
-                                      className="flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 transition-all hover:scale-105 active:scale-95"
+                                      className="flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 transition-all hover:scale-105 active:scale-95 rounded-lg"
                                       title="Làm mới và chuẩn bị dán"
                                   >
                                       <Icon name="clipboard-paste" size={4} /> <span className="hidden sm:inline">Dán</span>
                                   </button>
                                   <button
                                       onClick={handleClearContent}
-                                      className="flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800 transition-all hover:scale-105 active:scale-95"
+                                      className="flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800 transition-all hover:scale-105 active:scale-95 rounded-lg"
                                       title="Xóa nội dung, giữ tiêu đề"
                                   >
                                       <Icon name="trash-2" size={4} /> <span className="hidden sm:inline">Nội dung</span>
                                   </button>
                                   <button
                                       onClick={handleClearAll}
-                                      className="flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800 transition-all hover:scale-105 active:scale-95"
+                                      className="flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800 transition-all hover:scale-105 active:scale-95 rounded-lg"
                                       title="Xóa toàn bộ"
                                   >
                                       <Icon name="trash-2" size={4} /> <span className="hidden sm:inline">Tất cả</span>
@@ -224,7 +224,7 @@ export default function CouponConverterView() {
                                       value={title}
                                       onChange={handleTitleChange}
                                       onPaste={handleTitlePaste}
-                                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                      className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all rounded-lg"
                                       placeholder={SAMPLE_TITLE}
                                   />
                               </div>
@@ -239,7 +239,7 @@ export default function CouponConverterView() {
                                       value={inputText}
                                       onChange={handleInputChange}
                                       onPaste={handleContentPaste}
-                                      className="w-full h-full min-h-[200px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2.5 text-sm font-mono text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none custom-scrollbar"
+                                      className="w-full h-full min-h-[200px] bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-2.5 text-sm font-mono text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none custom-scrollbar rounded-lg"
                                       placeholder="Dán dữ liệu thô vào đây...&#10;Hệ thống sẽ tự động định dạng và sao chép kết quả."
                                   />
                               </div>
@@ -247,7 +247,7 @@ export default function CouponConverterView() {
                     </div>
 
                     {/* Output Section */}
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md relative group">
+                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md relative group rounded-xl">
                         <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 relative z-10">
                             <div className="flex items-center gap-4">
                                 <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
@@ -255,7 +255,7 @@ export default function CouponConverterView() {
                                     Kết Quả
                                 </h2>
                                 {lastUpdated && (
-                                    <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-2 py-1 border border-slate-200 dark:border-slate-700">
+                                    <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-800 px-2 py-1 border border-slate-200 dark:border-slate-700 rounded-md">
                                         <Icon name="clock" size={3.5} /> {lastUpdated}
                                     </span>
                                 )}
@@ -263,7 +263,7 @@ export default function CouponConverterView() {
                             <button
                                 onClick={handleManualCopyClick}
                                 disabled={!outputText}
-                                className={`flex items-center gap-2 text-sm font-bold py-1.5 px-4 transition-all duration-300 ${
+                                className={`flex items-center gap-2 text-sm font-bold py-1.5 px-4 transition-all duration-300 rounded-lg ${
                                     isCopied
                                         ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                                         : 'bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-600'
@@ -283,7 +283,7 @@ export default function CouponConverterView() {
                             </button>
                         </div>
                         
-                        <div className="relative flex-grow m-6 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden z-10">
+                        <div className="relative flex-grow m-6 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 overflow-hidden z-10 rounded-lg">
                             <div className="absolute inset-0 overflow-auto p-5 custom-scrollbar">
                                 <pre className="text-sm font-mono text-slate-800 dark:text-slate-200 whitespace-pre-wrap leading-relaxed">
                                     {outputText ? (
