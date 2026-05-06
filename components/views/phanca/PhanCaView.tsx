@@ -786,38 +786,37 @@ const App: React.FC = () => {
 
       {/* GLOBAL HEADER ACTIONS PORTAL */}
       {mounted && activeTab === 'tools-phanca' && document.getElementById('global-header-actions') && createPortal(
-          <div className="flex items-center gap-1.5 px-2">
+          <div className="flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
             {/* Data management group */}
-            <div className="flex items-center border border-slate-200 bg-white rounded-md overflow-hidden shadow-sm">
-              <button onClick={handleImportClick} className="h-9 px-3 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-1.5 border-r border-slate-200">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
-                  Nhập NV
+            <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
+              <button onClick={handleImportClick} className="flex items-center gap-2 px-4 py-2 bg-blue-50/50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-semibold text-sm transition-colors">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" /></svg>
+                  <span>Nhập NV</span>
               </button>
-              <a href="https://office.thegioididong.com/quan-ly-phan-ca" target="_blank" rel="noopener noreferrer" className="h-9 px-3 text-slate-500 hover:bg-indigo-50 hover:text-indigo-600 transition-colors flex items-center justify-center border-r border-slate-200" title="Lấy danh sách nhân viên từ hệ thống">
+              <a href="https://office.thegioididong.com/quan-ly-phan-ca" target="_blank" rel="noopener noreferrer" className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" title="Lấy danh sách nhân viên từ hệ thống">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
               </a>
-              <button onClick={handleDeleteStaffList} className="h-9 px-3 text-xs font-semibold text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center gap-1.5 border-r border-slate-200" title="Xóa danh sách">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                  Xoá
+              <button onClick={handleDeleteStaffList} className="p-2 text-slate-500 hover:text-rose-500 hover:bg-rose-50 dark:text-slate-400 dark:hover:bg-rose-900/20 border-l border-slate-100 dark:border-slate-700 transition-colors" title="Xóa danh sách">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
               </button>
-              <button onClick={() => setEditPatternModalOpen(true)} className="h-9 px-3 text-xs font-semibold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-1.5">
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
-                  Ca Xoay
+              <button onClick={() => setEditPatternModalOpen(true)} className="flex items-center gap-2 px-4 py-2 text-slate-700 dark:text-slate-300 hover:bg-indigo-50 hover:text-indigo-700 dark:hover:bg-indigo-900/30 dark:hover:text-indigo-400 font-semibold text-sm border-l border-slate-100 dark:border-slate-700 transition-colors">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                  <span>Ca Xoay</span>
               </button>
             </div>
 
             {/* Export group */}
-            <div className="flex items-center shadow-sm rounded-md overflow-hidden">
-              <button onClick={handleExportAll} className="h-9 px-3 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 transition-colors" disabled={!hasStaff}>
+            <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
+              <button onClick={handleExportAll} className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" disabled={!hasStaff}>
                   Tất cả
               </button>
-              <button onClick={handleExportWeekly} className="h-9 px-3 text-xs font-semibold text-slate-600 bg-white hover:bg-slate-50 border border-l-0 border-slate-200 transition-colors" disabled={!hasStaff}>
+              <button onClick={handleExportWeekly} className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 border-l border-slate-100 dark:border-slate-700 transition-colors" disabled={!hasStaff}>
                   Tuần
               </button>
-              <button onClick={handleExportIndividual} className="h-9 px-3 text-xs font-bold text-white bg-slate-800 hover:bg-slate-900 border border-l-0 border-slate-800 transition-colors" disabled={!hasStaff}>
+              <button onClick={handleExportIndividual} className="px-4 py-2 text-sm font-bold text-white bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 border-l border-slate-700 transition-colors" disabled={!hasStaff}>
                   Từng NV
               </button>
-              <button onClick={handleExportExcel} className="h-9 px-3 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 border border-l-0 border-emerald-600 transition-colors" disabled={!hasStaff}>
+              <button onClick={handleExportExcel} className="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 border-l border-emerald-700 transition-colors" disabled={!hasStaff}>
                   Excel
               </button>
             </div>

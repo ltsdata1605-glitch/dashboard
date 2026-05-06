@@ -85,11 +85,6 @@ const TabContent = React.memo(() => {
                 </div>
             )}
 
-            {activeTab === 'tools-sticker' && (
-                <div className="block">
-                    <ExternalToolView url="https://stickerevent-final-487587635482.us-west1.run.app" title="Sticker Event" />
-                </div>
-            )}
 
             {activeTab === 'tools-audit' && (
                 <div className="block">
@@ -98,7 +93,7 @@ const TabContent = React.memo(() => {
             )}
 
             {/* Render External Tool view when applicable */}
-            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-sticker', 'tools-audit', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) && (
+            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-audit', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) && (
                 <div style={{ display: !['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) ? 'block' : 'none' }} className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>
@@ -119,7 +114,6 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'tools-print-sticker': { main: 'In', highlight: 'Sticker' },
     'tools-coupon': { main: 'Đổi', highlight: 'Coupon' },
     'tools-tax': { main: 'Hoàn', highlight: 'Thuế' },
-    'tools-sticker': { main: 'Sticker', highlight: 'Event' },
     'tools-audit': { main: 'Kiểm', highlight: 'Quỹ' },
     'tools-phanca': { main: 'Phân', highlight: 'Ca' },
     'settings': { main: 'Cài đặt', highlight: 'Hệ thống' },

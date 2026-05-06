@@ -227,7 +227,7 @@ const SettingsView: React.FC = () => {
             <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 min-h-screen p-4 sm:p-6 overflow-y-auto">
             <div className="max-w-5xl mx-auto">
                 {/* Settings Content */}
-                <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700/50 p-6 sm:p-8">
+                <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700/50 p-6 sm:p-8 rounded-xl">
                         <AnimatePresence mode="wait">
                             {/* APPROVAL / PHÂN QUYỀN */}
                             {activeTab === 'approval_link' && (
@@ -256,7 +256,7 @@ const SettingsView: React.FC = () => {
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Giao Diện Hệ Thống</h3>
                                         
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-5  border border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-5 border border-slate-200 dark:border-slate-700 flex items-center justify-between rounded-lg">
                                             <div>
                                                 <h4 className="font-bold text-slate-800 dark:text-white text-base">Chế Độ Tối (Dark Mode)</h4>
                                                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Chuyển sang giao diện Dark Mode để bảo vệ mắt.</p>
@@ -277,7 +277,7 @@ const SettingsView: React.FC = () => {
                                                 <div 
                                                     key={f.id}
                                                     onClick={() => handleFontChange(f.id)}
-                                                    className={`cursor-pointer p-4  border-2 transition-all ${
+                                                    className={`cursor-pointer p-4 border-2 transition-all rounded-lg ${
                                                         font === f.id 
                                                         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' 
                                                         : 'border-slate-200 dark:border-slate-700 hover:border-indigo-200 dark:hover:border-indigo-700'
@@ -307,7 +307,7 @@ const SettingsView: React.FC = () => {
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Cấu Hình Kết Xuất Base Data</h3>
                                         
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-5  border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-5 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg">
                                             <div>
                                                 <h4 className="font-bold text-slate-800 dark:text-white text-base">Gộp Đơn Cùng Chứng Từ (Deduplication)</h4>
                                                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md">Các MÃ CHỨNG TỪ giống nhau sẽ bị gộp thành 1 dòng (tổng hợp doanh thu) để tránh làm trùng lặp khi xoay Pivot theo Đơn.</p>
@@ -323,13 +323,13 @@ const SettingsView: React.FC = () => {
 
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Kết Nối Đám Mây</h3>
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-5  border border-slate-200 dark:border-slate-700">
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-5 border border-slate-200 dark:border-slate-700 rounded-lg">
                                             <h4 className="font-bold text-slate-800 dark:text-white text-base mb-2">Google Sheet File CSV</h4>
                                             <input 
                                                 type="text" 
                                                 readOnly 
                                                 value={configUrl || 'Chưa thiết lập URL cấu hình YCX nào...'} 
-                                                className="w-full bg-slate-200/50 dark:bg-slate-800 px-4 py-3  text-slate-500 dark:text-slate-400 font-mono text-xs outline-none"
+                                                className="w-full bg-slate-200/50 dark:bg-slate-800 px-4 py-3 text-slate-500 dark:text-slate-400 font-mono text-xs outline-none rounded-md"
                                             />
                                             <p className="text-xs text-slate-400 mt-2">Dữ liệu Cấu trúc Danh mục (Product Config) được nạp trực tiếp qua Google Sheet Public.</p>
                                         </div>
@@ -337,7 +337,7 @@ const SettingsView: React.FC = () => {
 
                                     <div>
                                         <h3 className="text-lg font-bold text-rose-600 dark:text-rose-400 mb-4 border-b border-rose-100 dark:border-rose-900/30 pb-2">Khu Vực Nguy Hiểm</h3>
-                                        <div className="bg-rose-50 dark:bg-rose-900/10 p-5  border border-rose-200 dark:border-rose-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                        <div className="bg-rose-50 dark:bg-rose-900/10 p-5 border border-rose-200 dark:border-rose-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg">
                                             <div>
                                                 <h4 className="font-bold text-rose-800 dark:text-rose-400 text-base">Xóa Cứng Toàn Bộ Bộ Nhớ Tạm</h4>
                                                 <p className="text-sm text-rose-600/80 dark:text-rose-400/70 mt-1 max-w-md">Xóa sạch Dữ Liệu YCX (Sales Data), Cấu Hình, Sơ đồ Kho lưu trong Local Database của Trình duyệt. Bạn sẽ cần tải YCX lại từ đầu.</p>
@@ -345,7 +345,7 @@ const SettingsView: React.FC = () => {
                                             <button 
                                                 onClick={handleClearLocalData}
                                                 disabled={isClearing}
-                                                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white  font-bold transition-colors shadow-sm whitespace-nowrap disabled:opacity-50"
+                                                className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold transition-colors shadow-sm whitespace-nowrap disabled:opacity-50 rounded-lg"
                                             >
                                                 {isClearing ? 'Đang Xóa...' : 'Khôi Phục Mặc Định Trình Duyệt'}
                                             </button>
@@ -366,10 +366,10 @@ const SettingsView: React.FC = () => {
                                     <div>
                                         <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Hồ Sơ Định Danh & Quyền Hạn</h3>
                                         
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-6  border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-6">
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-6 rounded-lg">
                                             {/* Top: Avatar & Basic Info */}
                                             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b border-slate-200 dark:border-slate-700/50 pb-6">
-                                                <div className="w-24 h-24  overflow-hidden shadow-md bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 relative group">
+                                                <div className="w-24 h-24 overflow-hidden shadow-md bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 relative group rounded-xl">
                                                     {user?.photoURL ? (
                                                         <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                                                     ) : (
@@ -381,7 +381,7 @@ const SettingsView: React.FC = () => {
                                                     <h4 className="text-2xl font-black text-slate-800 dark:text-white">{user?.displayName || 'Thành viên YCX'}</h4>
                                                     <p className="text-slate-500 dark:text-slate-400 font-medium mb-3">{user?.email}</p>
                                                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                                                        <span className={`px-3 py-1.5 text-xs font-bold  uppercase tracking-wider flex items-center gap-1.5 ${
+                                                        <span className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 rounded-md ${
                                                             userRole === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
                                                             userRole === 'manager' ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' :
                                                             'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400'
@@ -391,7 +391,7 @@ const SettingsView: React.FC = () => {
                                                         </span>
                                                         
                                                         {expiresAt && (
-                                                            <span className="px-3 py-1.5 text-xs font-bold  bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 flex items-center gap-1.5">
+                                                            <span className="px-3 py-1.5 text-xs font-bold bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 flex items-center gap-1.5 rounded-md">
                                                                 <Icon name="calendar" size={4} /> Hạn: {expiresAt.toLocaleDateString('vi-VN')}
                                                             </span>
                                                         )}
@@ -401,7 +401,7 @@ const SettingsView: React.FC = () => {
                                                 {userRole !== 'admin' && (
                                                     <button 
                                                         onClick={() => isEditingProfile ? handleSaveProfile() : setIsEditingProfile(true)}
-                                                        className={`px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2  transition-all shadow-sm ${isEditingProfile ? 'bg-emerald-600 text-white hover:bg-emerald-700 w-full sm:w-auto' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-500 w-full sm:w-auto'}`}
+                                                        className={`px-4 py-2.5 text-sm font-bold flex items-center justify-center gap-2 transition-all shadow-sm rounded-lg ${isEditingProfile ? 'bg-emerald-600 text-white hover:bg-emerald-700 w-full sm:w-auto' : 'bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:border-indigo-500 w-full sm:w-auto'}`}
                                                     >
                                                         <Icon name={isEditingProfile ? "save" : "edit-3"} size={4} />
                                                         {isEditingProfile ? 'Lưu Dữ Liệu' : 'Yêu Cầu Đổi Kho'}
@@ -411,7 +411,7 @@ const SettingsView: React.FC = () => {
 
                                             {/* Bottom: Fields & Editing */}
                                             {isEditingProfile ? (
-                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-slate-800 p-5  border-2 border-indigo-100 dark:border-indigo-900/50 shadow-inner">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white dark:bg-slate-800 p-5 border-2 border-indigo-100 dark:border-indigo-900/50 shadow-inner rounded-lg">
                                                     <div className="flex flex-col gap-2">
                                                         <label className="text-xs font-bold text-slate-500 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> MÃ KHO ĐĂNG KÝ (Cách nhau bởi dấu phẩy)</label>
                                                         <input 
@@ -419,7 +419,7 @@ const SettingsView: React.FC = () => {
                                                             value={stagedDept}
                                                             onChange={e => setStagedDept(e.target.value)}
                                                             placeholder="Ví dụ: 58614, 58615, 66708"
-                                                            className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700  p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-700 dark:text-slate-300 font-mono transition-all uppercase"
+                                                            className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-700 dark:text-slate-300 font-mono transition-all uppercase rounded-md"
                                                         />
                                                     </div>
                                                     {userRole === 'employee' && (
@@ -430,12 +430,12 @@ const SettingsView: React.FC = () => {
                                                                 value={stagedEmployee}
                                                                 onChange={e => setStagedEmployee(e.target.value)}
                                                                 placeholder="Ví dụ: 58614 - Nguyễn Đăng Khoa"
-                                                                className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700  p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-700 dark:text-slate-300 transition-all"
+                                                                className="text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-3 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 text-slate-700 dark:text-slate-300 transition-all rounded-md"
                                                             />
                                                         </div>
                                                     )}
                                                     <div className="md:col-span-2 mt-1">
-                                                        <p className={`text-xs font-bold px-4 py-2  flex items-center gap-2 ${userRole === 'manager' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'}`}>
+                                                        <p className={`text-xs font-bold px-4 py-2 flex items-center gap-2 rounded-md ${userRole === 'manager' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400' : 'bg-rose-50 text-rose-600 dark:bg-rose-900/20 dark:text-rose-400'}`}>
                                                             {userRole === 'manager' 
                                                                 ? <><Icon name="check-circle" size={4} /> Quản lý có thể cập nhật chuỗi Mã Kho và áp dụng ngay lập tức mà không cần duyệt lại.</>
                                                                 : <><Icon name="alert-triangle" size={4} /> Gửi yêu cầu đổi Mã Kho sẽ tạm khóa quyền làm việc (về trạng thái Pending) cho đến khi Quản Lý Kho đó phê duyệt.</>}
@@ -444,19 +444,19 @@ const SettingsView: React.FC = () => {
                                                 </div>
                                             ) : (
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                    <div className="bg-white dark:bg-slate-800 p-4  border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5">
+                                                    <div className="bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5 rounded-lg">
                                                         <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> Danh sách Mã Kho</span>
                                                         <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-sm truncate uppercase">{departmentId || 'Chưa Đăng Ký'}</span>
                                                     </div>
-                                                    <div className="bg-white dark:bg-slate-800 p-4  border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5">
+                                                    <div className="bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5 rounded-lg">
                                                         <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> Tên Đối Chiếu NV</span>
                                                         <span className="font-bold text-amber-600 dark:text-amber-400 text-sm truncate px-1 italic">{employeeName || 'Không áp dụng'}</span>
                                                     </div>
-                                                    <div className="bg-white dark:bg-slate-800 p-4  border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5">
+                                                    <div className="bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5 rounded-lg">
                                                         <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="shield" size={3.5} /> Chức năng khả dụng</span>
                                                         <span className="font-bold text-slate-700 dark:text-slate-300 text-sm truncate">{userRole === 'admin' ? 'Toàn bộ tính năng' : userRole === 'manager' ? 'Quản Lý Doanh Thu Kho' : 'Xem Báo Cáo Cá Nhân'}</span>
                                                     </div>
-                                                    <div className="bg-white dark:bg-slate-800 p-4  border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5">
+                                                    <div className="bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5 rounded-lg">
                                                         <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="calendar" size={3.5} /> Thời hạn Cấp Phép</span>
                                                         <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm truncate">{expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô Thời Hạn'}</span>
                                                     </div>
@@ -468,9 +468,9 @@ const SettingsView: React.FC = () => {
                                     {/* Cloud Sync Information */}
                                     <div className="mt-8">
                                         <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Đồng Bộ Lưu Trữ Đám Mây</h3>
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-6  border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6 rounded-lg">
                                             <div className="flex items-start gap-4">
-                                                <div className={`p-3  ${syncState === 'synced' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : syncState === 'error' ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'}`}>
+                                                <div className={`p-3 rounded-lg ${syncState === 'synced' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400' : syncState === 'error' ? 'bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400' : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'}`}>
                                                     <Icon name={syncState === 'synced' ? 'cloud-check' : syncState === 'error' ? 'cloud-off' : 'cloud-snow'} size={6} className={syncState === 'syncing' ? 'animate-pulse' : ''} />
                                                 </div>
                                                 <div>
@@ -484,7 +484,7 @@ const SettingsView: React.FC = () => {
                                             <button 
                                                 onClick={forceSync}
                                                 disabled={syncState === 'syncing' || !user || isDemoMode}
-                                                className={`px-5 py-2.5 whitespace-nowrap  font-bold flex items-center justify-center gap-2 transition-all shadow-sm w-full md:w-auto
+                                                className={`px-5 py-2.5 whitespace-nowrap font-bold flex items-center justify-center gap-2 transition-all shadow-sm w-full md:w-auto rounded-lg
                                                     ${syncState === 'syncing' ? 'bg-indigo-100 text-indigo-400 dark:bg-indigo-900/20 cursor-not-allowed' : 'bg-white border-2 border-indigo-100 text-indigo-600 hover:border-indigo-500 hover:bg-indigo-50 dark:bg-slate-800 dark:border-slate-700 dark:text-indigo-400 dark:hover:border-indigo-500'}`}
                                             >
                                                 <Icon name={syncState === 'syncing' ? 'loader-2' : 'refresh-ccw'} size={4} className={syncState === 'syncing' ? 'animate-spin' : ''} />
@@ -500,7 +500,7 @@ const SettingsView: React.FC = () => {
                                             {(userRole === 'admin' || userRole === 'manager' || userRole === 'employee') && (
                                                 <button 
                                                     onClick={() => setShowShareModal(true)}
-                                                    className="px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50  font-bold flex items-center gap-2 transition-colors text-sm border border-indigo-100 dark:border-indigo-800"
+                                                    className="px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 font-bold flex items-center gap-2 transition-colors text-sm border border-indigo-100 dark:border-indigo-800 rounded-lg"
                                                 >
                                                     <Icon name="share-2" size={4} />
                                                     Đăng Bài Chia Sẻ
@@ -509,18 +509,18 @@ const SettingsView: React.FC = () => {
                                         </div>
                                         
                                         {sharedConfigs.length === 0 ? (
-                                            <div className="bg-slate-50 dark:bg-slate-900/30 border-2 border-dashed border-slate-200 dark:border-slate-800  p-8 text-center flex flex-col items-center justify-center text-slate-500">
+                                            <div className="bg-slate-50 dark:bg-slate-900/30 border-2 border-dashed border-slate-200 dark:border-slate-800 p-8 text-center flex flex-col items-center justify-center text-slate-500 rounded-lg">
                                                 <Icon name="layout-template" size={10} className="text-slate-300 dark:text-slate-700 mb-3" />
                                                 <p className="font-medium text-sm">Chưa có Cấu Hình nào được chia sẻ trong hệ thống của bạn.</p>
                                             </div>
                                         ) : (
                                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                                 {sharedConfigs.map(config => (
-                                                    <div key={config.id} className="bg-white dark:bg-slate-800 p-5  border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
+                                                    <div key={config.id} className="bg-white dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors rounded-lg">
                                                         <div>
                                                             <div className="flex items-start justify-between gap-2 mb-3">
                                                                 <h4 className="font-bold text-slate-800 dark:text-white line-clamp-1">{config.description}</h4>
-                                                                <span className={`px-2 py-1 text-[10px] font-bold  whitespace-nowrap uppercase tracking-wider flex-shrink-0 ${config.role === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'}`}>
+                                                                <span className={`px-2 py-1 text-[10px] font-bold whitespace-nowrap uppercase tracking-wider flex-shrink-0 rounded-md ${config.role === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400'}`}>
                                                                     {config.role === 'admin' ? 'Super Admin' : config.role === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'}
                                                                 </span>
                                                             </div>
@@ -539,7 +539,7 @@ const SettingsView: React.FC = () => {
                                                                             deleteSharedConfig(config.id).then(() => toast.success("Đã xoá cấu hình."));
                                                                         }
                                                                     }}
-                                                                    className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20  transition-colors tooltip"
+                                                                    className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors tooltip rounded-md"
                                                                     title="Xoá bài đăng của bạn"
                                                                 >
                                                                     <Icon name="trash-2" size={4} />
@@ -548,7 +548,7 @@ const SettingsView: React.FC = () => {
                                                             
                                                             <button 
                                                                 onClick={() => handleApplyConfig(config)}
-                                                                className="px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40  text-sm font-bold flex items-center gap-2 transition-colors"
+                                                                className="px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40 text-sm font-bold flex items-center gap-2 transition-colors rounded-lg"
                                                             >
                                                                 <Icon name="download-cloud" size={4} />
                                                                 Đồng Bộ Về Máy
@@ -563,7 +563,7 @@ const SettingsView: React.FC = () => {
                                     <div className="pt-4 mt-8 border-t border-slate-100 dark:border-slate-700 flex justify-end">
                                         <button 
                                             onClick={logout}
-                                            className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700  font-bold transition-colors shadow-sm flex items-center gap-2"
+                                            className="px-6 py-3 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 font-bold transition-colors shadow-sm flex items-center gap-2 rounded-lg"
                                         >
                                             <Icon name="log-out" size={5} />
                                             Đăng Xuất Tài Khoản
@@ -585,7 +585,7 @@ const SettingsView: React.FC = () => {
                 titleColorClass="text-indigo-600 dark:text-indigo-400"
             >
                 <div className="p-6">
-                    <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4  text-sm text-blue-700 dark:text-blue-300">
+                    <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 text-sm text-blue-700 dark:text-blue-300 rounded-lg">
                         <Icon name="info" size={4} className="inline mr-2" />
                         <strong className="font-bold">Mọi người {userRole === 'admin' ? 'trong toàn hệ thống' : `(trong nhóm Mã Kho ${departmentId})`}</strong> sẽ có thể sao chép giao diện cột, cấu hình bảng Tranh tài, Industry mà bạn đã cài đặt. Mẫu sẽ chia sẻ ẩn danh báo cáo Excel của riêng bạn.
                     </div>
@@ -597,7 +597,7 @@ const SettingsView: React.FC = () => {
                         onChange={e => setShareDescription(e.target.value)}
                         placeholder="Nhập tên dễ hiểu..."
                         maxLength={60}
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900  border border-slate-200 dark:border-slate-700 outline-none focus:border-indigo-500 mb-2 transition-all dark:text-white"
+                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-indigo-500 mb-2 transition-all dark:text-white rounded-md"
                         autoFocus
                     />
                     <div className="text-right text-xs text-slate-400 mb-6">{shareDescription.length}/60</div>
@@ -605,14 +605,14 @@ const SettingsView: React.FC = () => {
                     <div className="flex justify-end gap-3">
                         <button 
                             onClick={() => setShowShareModal(false)} 
-                            className="px-5 py-2.5  font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors"
+                            className="px-5 py-2.5 font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors rounded-lg"
                         >
                             Huỷ Bỏ
                         </button>
                         <button 
                             onClick={handleShareConfig}
                             disabled={isSharing || !shareDescription.trim()}
-                            className="px-6 py-2.5  font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all"
+                            className="px-6 py-2.5 font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all rounded-lg"
                         >
                             {isSharing && <Icon name="loader-2" size={4} className="animate-spin" />}
                             {isSharing ? 'Đang Đăng...' : 'Đăng Phiên Bản Của Tôi'}

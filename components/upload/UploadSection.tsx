@@ -42,52 +42,52 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
     return (
         <div className="flex flex-col h-full">
             {/* Header Area inside the component */}
-            <div className="px-8 pt-8 pb-4 flex justify-between items-center relative z-10">
-                <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-50/50 dark:bg-slate-800/50 backdrop-blur-md shadow-sm border border-indigo-100 dark:border-slate-700/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-                        <Icon name="database" size={6} />
+            <div className="px-6 pt-5 pb-2 flex justify-between items-center relative z-10">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-indigo-50/50 dark:bg-slate-800/50 backdrop-blur-md shadow-sm border border-indigo-100 dark:border-slate-700/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                        <Icon name="database" size={5} />
                     </div>
                     <div>
-                        <h3 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">Nhập dữ liệu</h3>
-                        <p className="text-sm text-slate-500 font-medium">Hỗ trợ Excel (.xlsx, .xls)</p>
+                        <h3 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">Nhập dữ liệu</h3>
+                        <p className="text-xs text-slate-500 font-medium">Hỗ trợ Excel (.xlsx, .xls)</p>
                     </div>
                 </div>
                 <button 
                     onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                    className={`p-2.5 rounded-xl transition-all duration-200 ${isSettingsOpen ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800/60'} shadow-sm`}
+                    className={`p-2 rounded-xl transition-all duration-200 ${isSettingsOpen ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300' : 'text-slate-400 hover:bg-slate-100 hover:text-slate-600 dark:hover:bg-slate-800/60'} shadow-sm`}
                     title="Cài đặt cấu hình"
                 >
-                    <Icon name="settings-2" size={5} />
+                    <Icon name="settings-2" size={4.5} />
                 </button>
             </div>
 
             {/* Download Data Callout - New Feature */}
-            <div className="mx-8 mb-8 p-5 rounded-2xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white/60 dark:border-slate-700/50 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-sm relative z-10 transition-all hover:bg-white/60 dark:hover:bg-slate-800/60">
-                <div className="flex items-center gap-4 mb-3 sm:mb-0">
-                    <div className="w-10 h-10 shrink-0 rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 flex items-center justify-center shadow-sm">
-                        <Icon name="download-cloud" size={5} />
+            <div className="mx-6 mb-4 p-3.5 rounded-xl bg-white/40 dark:bg-slate-800/40 backdrop-blur-md border border-white/60 dark:border-slate-700/50 flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-sm relative z-10 transition-all hover:bg-white/60 dark:hover:bg-slate-800/60">
+                <div className="flex items-center gap-3 mb-2 sm:mb-0">
+                    <div className="w-8 h-8 shrink-0 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 flex items-center justify-center shadow-sm">
+                        <Icon name="download-cloud" size={4} />
                     </div>
                     <div>
-                        <h4 className="text-sm font-bold text-slate-900 dark:text-white tracking-tight">Bước 1: Tải dữ liệu báo cáo</h4>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Trích xuất file xuất từ BCNB (Doanh thu siêu thị).</p>
+                        <h4 className="text-xs font-bold text-slate-900 dark:text-white tracking-tight">Bước 1: Tải dữ liệu báo cáo</h4>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 font-medium">Trích xuất file xuất từ BCNB (Doanh thu siêu thị).</p>
                     </div>
                 </div>
                 <a 
                     href="https://report.mwgroup.vn/home/dashboard/77" 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="shrink-0 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-indigo-500/20 flex items-center gap-2 group active:scale-95"
+                    className="shrink-0 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-lg shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-indigo-500/20 flex items-center gap-1.5 group active:scale-95"
                 >
-                    Tải file dữ liệu <Icon name="external-link" size={4} className="opacity-80 group-hover:opacity-100 transition-opacity" />
+                    Tải file dữ liệu <Icon name="external-link" size={3.5} className="opacity-80 group-hover:opacity-100 transition-opacity" />
                 </a>
             </div>
 
             {/* Main Upload Area */}
-            <div className="px-8 pb-8 relative">
+            <div className="px-6 pb-5 relative">
                 {/* Decorative node for step 2 */}
-                <div className="absolute top-[-36px] left-12 w-0.5 h-6 bg-indigo-200 dark:bg-indigo-800/50 hidden sm:block"></div>
+                <div className="absolute top-[-28px] left-10 w-0.5 h-4 bg-indigo-200 dark:bg-indigo-800/50 hidden sm:block"></div>
                 {isSettingsOpen ? (
-                    <div className="p-6 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 animate-fade-in space-y-5">
+                    <div className="p-5 bg-slate-100 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 animate-fade-in space-y-4">
                         <div>
                             <label htmlFor="config-url" className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                                 Nguồn cấu hình (Google Sheets CSV)
@@ -128,7 +128,7 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                 ) : (
                     <label
                         htmlFor="file-upload"
-                        className={`group relative flex flex-col items-center justify-center w-full h-[260px] rounded-[24px] cursor-pointer transition-all duration-300 overflow-hidden
+                        className={`group relative flex flex-col items-center justify-center w-full h-[160px] rounded-[20px] cursor-pointer transition-all duration-300 overflow-hidden
                             ${isDragging 
                                 ? 'bg-indigo-50/50 dark:bg-indigo-900/20 border-2 border-indigo-500 scale-[1.01] shadow-inner backdrop-blur-xl' 
                                 : 'bg-white/40 dark:bg-slate-800/30 border-2 border-dashed border-indigo-200/60 dark:border-slate-700 hover:border-indigo-400 hover:bg-white/60 dark:hover:bg-slate-800/60 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md'
@@ -150,16 +150,16 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                         {/* Background Pattern */}
                         <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none"></div>
 
-                        <div className="flex flex-col items-center justify-center relative z-10 space-y-4">
-                            <div className={`p-4 rounded-2xl bg-white dark:bg-slate-700 text-slate-400 shadow-sm border border-slate-100 dark:border-slate-600 group-hover:text-indigo-600 group-hover:border-indigo-200 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:scale-110 transition-all duration-300`}>
-                                <Icon name="upload-cloud" size={8} />
+                        <div className="flex flex-col items-center justify-center relative z-10 space-y-3">
+                            <div className={`p-3 rounded-xl bg-white dark:bg-slate-700 text-slate-400 shadow-sm border border-slate-100 dark:border-slate-600 group-hover:text-indigo-600 group-hover:border-indigo-200 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/30 group-hover:scale-110 transition-all duration-300`}>
+                                <Icon name="upload-cloud" size={6} />
                             </div>
                             <div className="text-center">
-                                <h4 className="text-sm font-semibold text-slate-900 dark:text-white tracking-tight mb-1">Bước 2: Nạp báo cáo vào hệ thống</h4>
-                                <p className="text-base font-medium text-slate-600 dark:text-slate-300">
+                                <h4 className="text-xs font-semibold text-slate-900 dark:text-white tracking-tight mb-0.5">Bước 2: Nạp báo cáo vào hệ thống</h4>
+                                <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                                     <span className="text-indigo-600 dark:text-indigo-400 group-hover:underline">Chọn nhiều file</span> hoặc thả các file Excel vào đây
                                 </p>
-                                <p className="text-xs text-slate-400 mt-1 font-medium">
+                                <p className="text-[11px] text-slate-400 mt-0.5 font-medium">
                                     Xử lý an toàn • Không tải lên máy chủ
                                 </p>
                             </div>
