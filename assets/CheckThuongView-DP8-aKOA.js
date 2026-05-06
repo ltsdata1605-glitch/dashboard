@@ -1,4 +1,4 @@
-import{u as v,j as t,I as a}from"./index-8cg-CZ2G.js";import{a as s}from"./vendor-ui-41ClhQAI.js";import{r as w}from"./vendor-charts-CQD-9o8f.js";import"./vendor-firebase-BiwTAARP.js";const C=`
+import{u as v,j as t,I as a}from"./index-B1klLoJY.js";import{a as s}from"./vendor-ui-41ClhQAI.js";import{r as w}from"./vendor-charts-CQD-9o8f.js";import"./vendor-firebase-BiwTAARP.js";const C=`
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -91,25 +91,25 @@ import{u as v,j as t,I as a}from"./index-8cg-CZ2G.js";import{a as s}from"./vendo
 </head>
 <body>
     <!-- Landing Page -->
-    <div id="landingPage" class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] selection:bg-indigo-500/20 selection:text-indigo-600 pb-20">
+    <div id="landingPage" class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] selection:bg-indigo-500/20 selection:text-indigo-600 pb-8">
         
         <!-- Ambient Background Grid -->
         <div class="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
         <!-- Animated Glow Orbs -->
-        <div class="absolute top-[10%] left-[20%] w-[300px] h-[300px] bg-indigo-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse pointer-events-none"></div>
-        <div class="absolute top-[10%] right-[20%] w-[300px] h-[300px] bg-purple-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse [animation-delay:2s] pointer-events-none"></div>
-        <div class="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-blue-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse [animation-delay:4s] pointer-events-none"></div>
+        <div class="absolute top-[10%] left-[20%] w-[200px] h-[200px] bg-indigo-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse pointer-events-none"></div>
+        <div class="absolute top-[10%] right-[20%] w-[200px] h-[200px] bg-purple-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse [animation-delay:2s] pointer-events-none"></div>
+        <div class="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[250px] h-[250px] bg-blue-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse [animation-delay:4s] pointer-events-none"></div>
 
-        <div class="relative z-10 w-full max-w-[1000px] px-6 flex flex-col items-center text-center mt-8">
+        <div class="relative z-10 w-full max-w-[1000px] px-6 flex flex-col items-center text-center mt-4">
             
             <!-- Hero Typography -->
-            <div class="mb-6">
-                <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-4 drop-shadow-sm">
+            <div class="mb-4">
+                <h1 class="text-3xl sm:text-4xl lg:text-[2.8rem] font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-3 drop-shadow-sm">
                     Tra cứu thưởng.<br/>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600">Phân tích tức thì.</span>
                 </h1>
-                <p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto font-medium leading-relaxed tracking-tight">
+                <p class="text-xs sm:text-sm text-slate-600 max-w-xl mx-auto font-medium leading-relaxed tracking-tight">
                     Tải file Luỹ Kế Thi Đua để tra cứu thưởng, phân tích cơ hội và so sánh giữa các siêu thị.<br class="hidden sm:block"/>
                     Xử lý cục bộ trực tiếp trên trình duyệt, không lưu trữ dữ liệu.
                 </p>
@@ -121,58 +121,57 @@ import{u as v,j as t,I as a}from"./index-8cg-CZ2G.js";import{a as s}from"./vendo
                     <!-- Glow effect behind -->
                     <div class="absolute -inset-1 bg-gradient-to-r from-indigo-500/40 via-purple-500/40 to-blue-500/40 rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
                     
-                    <div class="relative bg-white/70 backdrop-blur-3xl rounded-[30px] p-2 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.15)] ring-1 ring-white">
-                        <div class="bg-white/90 backdrop-blur-xl rounded-[24px] overflow-hidden border border-slate-100 p-8">
+                    <div class="relative bg-white/70 backdrop-blur-3xl rounded-[24px] p-1.5 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.15)] ring-1 ring-white">
+                        <div class="bg-white/90 backdrop-blur-xl rounded-[20px] overflow-hidden border border-slate-100 p-5">
                             
                             <!-- Upload Section -->
-                            <div class="flex items-center gap-3 mb-6">
-                                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/50">
+                            <div class="flex items-center gap-3 mb-4">
+                                <div class="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/50">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5V19A9 3 0 0 0 21 19V5"></path><path d="M3 12A9 3 0 0 0 21 12"></path></svg>
                                 </div>
                                 <div class="text-left flex-1">
-                                    <h3 class="font-bold text-slate-900 text-[15px]">Nhập dữ liệu</h3>
-                                    <p class="text-[12px] font-medium text-slate-500">Hỗ trợ Excel (.xlsx, .xls)</p>
+                                    <h3 class="font-bold text-slate-900 text-[13px]">Nhập dữ liệu</h3>
+                                    <p class="text-[11px] font-medium text-slate-500">Hỗ trợ Excel (.xlsx, .xls)</p>
                                 </div>
                                 <div class="text-slate-300">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
                                 </div>
                             </div>
 
-                            <label for="fileInput" class="relative group/dropzone flex flex-col items-center justify-center w-full min-h-[160px] border-2 border-dashed border-slate-200 hover:border-blue-400/50 rounded-2xl cursor-pointer bg-slate-50/50 hover:bg-blue-50/30 transition-all duration-300 overflow-hidden">
+                            <label for="fileInput" class="relative group/dropzone flex flex-col items-center justify-center w-full min-h-[120px] border-2 border-dashed border-slate-200 hover:border-blue-400/50 rounded-xl cursor-pointer bg-slate-50/50 hover:bg-blue-50/30 transition-all duration-300 overflow-hidden">
                                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 pointer-events-none"></div>
-                                <div class="flex flex-col items-center justify-center p-6 relative z-10">
-                                    <div class="w-12 h-12 mb-4 rounded-full bg-white shadow-sm flex items-center justify-center border border-slate-100 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-blue-100 group-hover/dropzone:border-blue-200 text-slate-400 group-hover/dropzone:text-blue-500">
+                                <div class="flex flex-col items-center justify-center p-4 relative z-10">
+                                    <div class="w-10 h-10 mb-3 rounded-full bg-white shadow-sm flex items-center justify-center border border-slate-100 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-blue-100 group-hover/dropzone:border-blue-200 text-slate-400 group-hover/dropzone:text-blue-500">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
                                     </div>
-                                    <p class="mb-2 text-[14px] font-medium text-slate-600">
+                                    <p class="mb-1.5 text-[13px] font-medium text-slate-600">
                                         <span class="text-blue-600 font-semibold">Chọn file</span> hoặc thả các file Excel vào đây
                                     </p>
-                                    <p class="text-[12px] text-slate-400 font-medium">Xử lý an toàn • Không tải lên máy chủ</p>
+                                    <p class="text-[11px] text-slate-400 font-medium">Xử lý an toàn • Không tải lên máy chủ</p>
                                 </div>
                                 <input id="fileInput" type="file" class="hidden" accept=".csv, .xlsx, .xls, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
                             </label>
-                            <p id="fileStatus" class="mt-4 text-[13px] font-medium text-slate-500 text-center">Chưa có file nào được chọn.</p>
+                            <p id="fileStatus" class="mt-3 text-[12px] font-medium text-slate-500 text-center">Chưa có file nào được chọn.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Footer / Trust Indicators -->
-            <div class="mt-16 grid grid-cols-3 gap-8 text-center">
-                <div class="space-y-1">
-                    <div class="flex justify-center text-slate-400 mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg></div>
-                    <p class="text-xs font-bold text-slate-700">Local Processing</p>
-                    <p class="text-[10px] text-slate-500">Dữ liệu không rời khỏi máy</p>
+            <div class="mt-6 flex items-center justify-center gap-6 text-center">
+                <div class="flex items-center gap-1.5 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
+                    <span class="text-[10px] font-semibold text-slate-500">Local Processing</span>
                 </div>
-                <div class="space-y-1">
-                    <div class="flex justify-center text-slate-400 mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg></div>
-                    <p class="text-xs font-bold text-slate-700">Instant Speed</p>
-                    <p class="text-[10px] text-slate-500">Xử lý cực nhanh</p>
+                <div class="w-1 h-1 rounded-full bg-slate-300"></div>
+                <div class="flex items-center gap-1.5 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                    <span class="text-[10px] font-semibold text-slate-500">Instant Speed</span>
                 </div>
-                <div class="space-y-1">
-                    <div class="flex justify-center text-slate-400 mb-2"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg></div>
-                    <p class="text-xs font-bold text-slate-700">Smart UI</p>
-                    <p class="text-[10px] text-slate-500">Giao diện thông minh</p>
+                <div class="w-1 h-1 rounded-full bg-slate-300"></div>
+                <div class="flex items-center gap-1.5 text-slate-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg>
+                    <span class="text-[10px] font-semibold text-slate-500">Smart UI</span>
                 </div>
             </div>
 
@@ -2141,4 +2140,4 @@ import{u as v,j as t,I as a}from"./index-8cg-CZ2G.js";import{a as s}from"./vendo
     <\/script>
 </body>
 </html>
-`,H=()=>{const{activeTab:f}=v(),[x,b]=s.useState(!1),i=s.useRef(null),[p,y]=s.useState(!1),[o,d]=s.useState({code1:"910",code2:""});s.useEffect(()=>{b(!0);const e=r=>{var c;((c=r.data)==null?void 0:c.type)==="CHECK_THUONG_FILE_LOADED"&&(y(!0),r.data.code1&&d(n=>({...n,code1:r.data.code1})),r.data.code2&&d(n=>({...n,code2:r.data.code2})))};return window.addEventListener("message",e),()=>window.removeEventListener("message",e)},[]);const u=()=>{var e,r;(r=(e=i.current)==null?void 0:e.contentWindow)==null||r.postMessage({type:"CHECK_THUONG_SEARCH",code1:o.code1,code2:o.code2},"*")},l=(e,r)=>{d(c=>{var h,m;const n={...c,[e]:r};return(m=(h=i.current)==null?void 0:h.contentWindow)==null||m.postMessage({type:"CHECK_THUONG_SEARCH",code1:n.code1,code2:n.code2},"*"),n})},g=()=>{var e,r;(r=(e=i.current)==null?void 0:e.contentWindow)==null||r.postMessage({type:"CHECK_THUONG_CHANGE_FILE"},"*")};return t.jsxs("div",{className:"w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute inset-0",children:[x&&f==="check-thuong"&&p&&document.getElementById("global-header-actions")&&w.createPortal(t.jsxs("div",{className:"hidden lg:flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300",children:[t.jsxs("div",{className:"flex items-center gap-2 px-2",children:[t.jsx("input",{type:"text",placeholder:"Mã kho (VD: 910)",className:"w-32 lg:w-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]",value:o.code1,onChange:e=>l("code1",e.target.value)}),t.jsx("span",{className:"text-slate-300 dark:text-slate-600",children:"|"}),t.jsx("input",{type:"text",placeholder:"So sánh...",className:"w-28 lg:w-36 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]",value:o.code2,onChange:e=>l("code2",e.target.value)})]}),t.jsxs("div",{className:"flex items-center gap-1 border-l border-slate-200 dark:border-slate-700 pl-2",children:[t.jsx("button",{onClick:u,className:"w-8 h-8 flex items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 transition-colors",title:"Tra cứu",children:t.jsx(a,{name:"search",size:4})}),t.jsx("button",{onClick:g,className:"w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors",title:"Tải file khác",children:t.jsx(a,{name:"upload",size:4})})]})]}),document.getElementById("global-header-actions")),p&&t.jsxs("div",{className:"lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 px-3 py-2 flex items-center gap-2",children:[t.jsxs("div",{className:"flex items-center gap-2 flex-1",children:[t.jsxs("div",{className:"relative flex-1",children:[t.jsx("div",{className:"absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400",children:t.jsx(a,{name:"search",size:3.5})}),t.jsx("input",{type:"text",placeholder:"Mã kho (VD: 910)",className:"w-full h-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all",value:o.code1,onChange:e=>l("code1",e.target.value)})]}),t.jsxs("div",{className:"relative flex-1",children:[t.jsx("div",{className:"absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400",children:t.jsx(a,{name:"arrow-left-right",size:3.5})}),t.jsx("input",{type:"text",placeholder:"So sánh...",className:"w-full h-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all",value:o.code2,onChange:e=>l("code2",e.target.value)})]})]}),t.jsx("button",{onClick:u,className:"h-9 px-3 bg-indigo-600 text-white rounded-md flex items-center gap-1.5 text-xs font-semibold hover:bg-indigo-700 transition-colors shrink-0",children:t.jsx(a,{name:"search",size:3.5})}),t.jsx("button",{onClick:g,className:"h-9 px-2.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-md flex items-center hover:bg-slate-200 transition-colors shrink-0",title:"Tải file khác",children:t.jsx(a,{name:"upload",size:3.5})})]}),t.jsx("iframe",{ref:i,srcDoc:C,title:"Bảng Tra Cứu Thưởng Thi Đua",className:"w-full h-full border-none flex-grow",style:{width:"100%",height:"100%",minHeight:"100vh",border:"none"},sandbox:"allow-scripts allow-same-origin allow-forms allow-downloads"})]})};export{H as CheckThuongView,H as default};
+`,H=()=>{const{activeTab:f}=v(),[x,b]=s.useState(!1),i=s.useRef(null),[p,y]=s.useState(!1),[o,c]=s.useState({code1:"910",code2:""});s.useEffect(()=>{b(!0);const e=r=>{var d;((d=r.data)==null?void 0:d.type)==="CHECK_THUONG_FILE_LOADED"&&(y(!0),r.data.code1&&c(n=>({...n,code1:r.data.code1})),r.data.code2&&c(n=>({...n,code2:r.data.code2})))};return window.addEventListener("message",e),()=>window.removeEventListener("message",e)},[]);const u=()=>{var e,r;(r=(e=i.current)==null?void 0:e.contentWindow)==null||r.postMessage({type:"CHECK_THUONG_SEARCH",code1:o.code1,code2:o.code2},"*")},l=(e,r)=>{c(d=>{var h,m;const n={...d,[e]:r};return(m=(h=i.current)==null?void 0:h.contentWindow)==null||m.postMessage({type:"CHECK_THUONG_SEARCH",code1:n.code1,code2:n.code2},"*"),n})},g=()=>{var e,r;(r=(e=i.current)==null?void 0:e.contentWindow)==null||r.postMessage({type:"CHECK_THUONG_CHANGE_FILE"},"*")};return t.jsxs("div",{className:"w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute inset-0",children:[x&&f==="check-thuong"&&p&&document.getElementById("global-header-actions")&&w.createPortal(t.jsxs("div",{className:"hidden lg:flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300",children:[t.jsxs("div",{className:"flex items-center gap-2 px-2",children:[t.jsx("input",{type:"text",placeholder:"Mã kho (VD: 910)",className:"w-32 lg:w-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]",value:o.code1,onChange:e=>l("code1",e.target.value)}),t.jsx("span",{className:"text-slate-300 dark:text-slate-600",children:"|"}),t.jsx("input",{type:"text",placeholder:"So sánh...",className:"w-28 lg:w-36 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]",value:o.code2,onChange:e=>l("code2",e.target.value)})]}),t.jsxs("div",{className:"flex items-center gap-1 border-l border-slate-200 dark:border-slate-700 pl-2",children:[t.jsx("button",{onClick:u,className:"w-8 h-8 flex items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 transition-colors",title:"Tra cứu",children:t.jsx(a,{name:"search",size:4})}),t.jsx("button",{onClick:g,className:"w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors",title:"Tải file khác",children:t.jsx(a,{name:"upload",size:4})})]})]}),document.getElementById("global-header-actions")),p&&t.jsxs("div",{className:"lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 px-3 py-2 flex items-center gap-2",children:[t.jsxs("div",{className:"flex items-center gap-2 flex-1",children:[t.jsxs("div",{className:"relative flex-1",children:[t.jsx("div",{className:"absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400",children:t.jsx(a,{name:"search",size:3.5})}),t.jsx("input",{type:"text",placeholder:"Mã kho (VD: 910)",className:"w-full h-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all",value:o.code1,onChange:e=>l("code1",e.target.value)})]}),t.jsxs("div",{className:"relative flex-1",children:[t.jsx("div",{className:"absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400",children:t.jsx(a,{name:"arrow-left-right",size:3.5})}),t.jsx("input",{type:"text",placeholder:"So sánh...",className:"w-full h-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all",value:o.code2,onChange:e=>l("code2",e.target.value)})]})]}),t.jsx("button",{onClick:u,className:"h-9 px-3 bg-indigo-600 text-white rounded-md flex items-center gap-1.5 text-xs font-semibold hover:bg-indigo-700 transition-colors shrink-0",children:t.jsx(a,{name:"search",size:3.5})}),t.jsx("button",{onClick:g,className:"h-9 px-2.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-md flex items-center hover:bg-slate-200 transition-colors shrink-0",title:"Tải file khác",children:t.jsx(a,{name:"upload",size:3.5})})]}),t.jsx("iframe",{ref:i,srcDoc:C,title:"Bảng Tra Cứu Thưởng Thi Đua",className:"w-full h-full border-none flex-grow",style:{width:"100%",height:"100%",minHeight:"100vh",border:"none"},sandbox:"allow-scripts allow-same-origin allow-forms allow-downloads"})]})};export{H as CheckThuongView,H as default};
