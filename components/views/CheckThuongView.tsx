@@ -35,9 +35,9 @@ const htmlContent = `
         .capture-fix { display: flex; align-items: center; }
         .app-shell { max-width: 960px; margin: 0 auto; padding: 0; }
         /* Landing hero */
-        .landing-hero { background: linear-gradient(180deg, #eef1fb 0%, #f4ecf9 40%, #f8f9fc 100%); padding: 0 0 60px 0; text-align: center; }
+        .landing-hero { background: linear-gradient(180deg, #eef1fb 0%, #f4ecf9 40%, #f8f9fc 100%); padding: 0 0 30px 0; text-align: center; }
         .nav-bar { max-width: 960px; margin: 0 auto; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
-        .hero-content { max-width: 640px; margin: 0 auto; padding: 40px 24px 0; }
+        .hero-content { max-width: 640px; margin: 0 auto; padding: 20px 24px 0; }
         /* Modern card */
         .mod-card { background: #fff; border-radius: 0; border: 1px solid rgba(0,0,0,0.06); box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
         /* Pastel group header colors */
@@ -102,19 +102,19 @@ const htmlContent = `
         <div class="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
         <!-- Animated Glow Orbs -->
-        <div class="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-indigo-500/30 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 animate-pulse pointer-events-none"></div>
-        <div class="absolute top-[10%] right-[20%] w-[500px] h-[500px] bg-purple-500/30 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 animate-pulse [animation-delay:2s] pointer-events-none"></div>
-        <div class="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-blue-500/30 rounded-full mix-blend-multiply filter blur-[120px] opacity-60 animate-pulse [animation-delay:4s] pointer-events-none"></div>
+        <div class="absolute top-[10%] left-[20%] w-[300px] h-[300px] bg-indigo-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse pointer-events-none"></div>
+        <div class="absolute top-[10%] right-[20%] w-[300px] h-[300px] bg-purple-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse [animation-delay:2s] pointer-events-none"></div>
+        <div class="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-blue-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse [animation-delay:4s] pointer-events-none"></div>
 
         <div class="relative z-10 w-full max-w-[1000px] px-6 flex flex-col items-center text-center mt-8">
             
             <!-- Hero Typography -->
-            <div class="mb-14">
-                <h1 class="text-6xl sm:text-7xl lg:text-[5.5rem] font-extrabold tracking-tight text-slate-900 leading-[1.05] mb-6 drop-shadow-sm">
+            <div class="mb-6">
+                <h1 class="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-4 drop-shadow-sm">
                     Tra cứu thưởng.<br/>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600">Phân tích tức thì.</span>
                 </h1>
-                <p class="text-lg sm:text-xl text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed tracking-tight">
+                <p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto font-medium leading-relaxed tracking-tight">
                     Tải file Luỹ Kế Thi Đua để tra cứu thưởng, phân tích cơ hội và so sánh giữa các siêu thị.<br class="hidden sm:block"/>
                     Xử lý cục bộ trực tiếp trên trình duyệt, không lưu trữ dữ liệu.
                 </p>

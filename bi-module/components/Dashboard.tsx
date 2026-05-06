@@ -21,32 +21,86 @@ interface DashboardProps {
 }
 
 const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; message?: string }> = ({ onNavigate, onRestore, message }) => (
-    <Card title="CHƯA CÓ DỮ LIỆU">
-        <div className="mt-4 text-center py-12 flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
-            <div className="bg-sky-50 dark:bg-sky-900/20 p-4 rounded-full mb-4">
-                <UploadIcon className="h-10 w-10 text-sky-500 dark:text-sky-400" />
+    <div className="relative min-h-[calc(100vh-180px)] flex flex-col justify-center items-center overflow-hidden bg-[#F8FAFC] dark:bg-[#0B0F19] selection:bg-indigo-500/20 rounded-xl">
+        {/* Ambient Background Grid */}
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
+        
+        {/* Glow Orbs */}
+        <div className="absolute top-[10%] left-[20%] w-[300px] h-[300px] bg-sky-500/25 dark:bg-sky-600/15 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 pointer-events-none"></div>
+        <div className="absolute top-[10%] right-[20%] w-[300px] h-[300px] bg-indigo-500/25 dark:bg-indigo-600/15 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 pointer-events-none"></div>
+
+        <div className="relative z-10 w-full max-w-[800px] px-6 flex flex-col items-center text-center">
+            {/* Badge */}
+            <div className="mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-200/50 dark:border-sky-500/20 bg-white/80 dark:bg-sky-500/10 backdrop-blur-xl shadow-sm">
+                    <span className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-sky-800 dark:text-sky-300">Report BI Pro</span>
+                </div>
             </div>
-            <p className="text-slate-600 dark:text-slate-300 font-medium">{message || "Hãy bắt đầu bằng cách cập nhật báo cáo mới nhất."}</p>
-            <p className="text-sm text-slate-400 mt-1 mb-8">Bạn có thể dán dữ liệu copy từ BI hoặc khôi phục từ file backup JSON.</p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full max-w-sm px-4">
-                <button 
-                    onClick={onNavigate} 
-                    className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-transparent text-sm font-bold rounded-lg shadow-sm shadow-blue-500/20 text-white bg-blue-600 hover:bg-blue-700 focus:outline-none transition-all active:scale-95"
-                >
-                    <span>Cập nhật</span>
-                </button>
-                <div className="text-slate-300 dark:text-slate-600 hidden sm:block">hoặc</div>
-                <button 
-                    onClick={onRestore}
-                    className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 border border-slate-200 dark:border-slate-700 text-sm font-bold rounded-lg shadow-sm text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 focus:outline-none transition-all active:scale-95 hover:border-slate-300 dark:hover:border-slate-600"
-                >
-                    <UploadIcon className="h-4 w-4" />
-                    <span>Khôi phục</span>
-                </button>
+
+            {/* Hero Typography */}
+            <div className="mb-6">
+                <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1] mb-4 drop-shadow-sm">
+                    {message ? message : (<>Báo cáo BI.<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 dark:from-sky-400 dark:via-blue-400 dark:to-indigo-400">Chuyên nghiệp.</span></>)}
+                </h1>
+                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto font-medium leading-relaxed">
+                    Tổng hợp doanh thu, thi đua và phân tích ngành hàng theo thời gian thực.<br className="hidden sm:block"/>
+                    Cập nhật dữ liệu từ BI hoặc khôi phục từ file backup.
+                </p>
+            </div>
+
+            {/* Action Card */}
+            <div className="w-full max-w-md">
+                <div className="relative group">
+                    <div className="absolute -inset-1 bg-gradient-to-r from-sky-500/30 via-blue-500/30 to-indigo-500/30 rounded-[24px] blur-xl opacity-0 group-hover:opacity-100 transition duration-700"></div>
+                    <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-2xl rounded-2xl p-6 shadow-lg ring-1 ring-slate-200/60 dark:ring-white/10">
+                        <div className="flex flex-col items-center gap-4">
+                            <div className="w-12 h-12 bg-sky-50 dark:bg-sky-900/30 rounded-xl flex items-center justify-center">
+                                <UploadIcon className="h-6 w-6 text-sky-500 dark:text-sky-400" />
+                            </div>
+                            <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+                                <button 
+                                    onClick={onNavigate} 
+                                    className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-white bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 shadow-md shadow-sky-500/20 transition-all active:scale-95"
+                                >
+                                    Cập nhật dữ liệu
+                                </button>
+                                <span className="text-slate-300 dark:text-slate-600 hidden sm:block text-sm">hoặc</span>
+                                <button 
+                                    onClick={onRestore}
+                                    className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all active:scale-95"
+                                >
+                                    <UploadIcon className="h-4 w-4" /> Khôi phục
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Trust Indicators */}
+            <div className="mt-8 grid grid-cols-3 gap-6 text-center">
+                <div className="space-y-0.5">
+                    <div className="flex justify-center text-slate-400 mb-1"><UploadIcon className="h-4 w-4" /></div>
+                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Dán & Cập nhật</p>
+                    <p className="text-[10px] text-slate-500">Từ BI trực tiếp</p>
+                </div>
+                <div className="space-y-0.5">
+                    <div className="flex justify-center text-slate-400 mb-1"><UploadIcon className="h-4 w-4" /></div>
+                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Offline Ready</p>
+                    <p className="text-[10px] text-slate-500">Lưu trữ cục bộ IndexedDB</p>
+                </div>
+                <div className="space-y-0.5">
+                    <div className="flex justify-center text-slate-400 mb-1"><UploadIcon className="h-4 w-4" /></div>
+                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Export Pro</p>
+                    <p className="text-[10px] text-slate-500">Chia sẻ ảnh HD</p>
+                </div>
             </div>
         </div>
-    </Card>
+    </div>
 );
 
 const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
