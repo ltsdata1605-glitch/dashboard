@@ -23,10 +23,10 @@ const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: T
     <button 
         onClick={() => setActiveTab(tab)} 
         className={`
-            flex-1 sm:flex-none px-5 py-1.5 text-[12px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap rounded-md
+            flex-1 sm:flex-none px-5 py-2.5 text-[12px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap border-b-2
             ${activeTab === tab 
-                ? 'font-black text-sky-600 dark:text-sky-400 bg-white dark:bg-slate-700 shadow-[0_1px_3px_rgba(0,0,0,0.1)]' 
-                : 'font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                ? 'font-black text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400' 
+                : 'font-bold text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'
             }
         `} 
     >
@@ -296,37 +296,28 @@ export const NhanVien: React.FC = () => {
     return (
         <ExportOptionsProvider value={{ showExportOptions: exportOptions.showExportOptions }}>
         <div className="space-y-4 sm:space-y-6 relative">
-            {/* Title - Non Sticky */}
-            <div className="flex items-center gap-3 min-w-0 pt-2 pb-2">
-                <div className="p-2 sm:p-2.5 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 rounded-2xl flex-shrink-0 border border-indigo-100 dark:border-indigo-800">
-                    <SparklesIcon className="h-5 w-5 sm:h-6 sm:w-6" />
-                </div>
-                <div className="min-w-0 flex flex-col justify-center">
-                    <h1 className="text-xl sm:text-2xl font-black text-slate-800 dark:text-white tracking-tight leading-none truncate">
-                        Report BI Nhân Viên
+
+
+            {/* Title + Filter Toolbar */}
+            <div className="relative z-20 mb-4 flex flex-col sm:flex-row sm:items-end justify-between gap-3 pt-3 pb-1 border-b border-slate-200 dark:border-slate-800 w-full">
+                <div>
+                    <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white uppercase">
+                        Nhân Viên
                     </h1>
-                    <p className="text-slate-400 dark:text-slate-500 text-[10px] font-bold uppercase mt-1 tracking-wider leading-none">
-                        Hiệu suất & Kinh doanh cá nhân
+                    <p className="mt-1 text-[11px] text-slate-500 dark:text-slate-400 pb-2">
+                        Hiệu suất cá nhân
                     </p>
                 </div>
-            </div>
-
-            {/* Filter Toolbar Container */}
-            <div className="sticky top-[66px] z-50 mb-6 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 rounded-2xl shadow-sm px-4 py-3 flex flex-col sm:flex-row items-center justify-between gap-4 w-full transition-all flex-wrap">
-                <div className="hidden sm:flex items-center gap-2 text-[12px] font-black text-slate-500 uppercase tracking-widest">
-                    <FilterIcon className="w-4 h-4" />
-                    Bộ Lọc Dữ Liệu
-                </div>
-                <div className="flex flex-1 sm:flex-none flex-row gap-2 sm:gap-3 z-50 w-full sm:w-auto justify-end">
+                <div className="flex flex-1 sm:flex-none flex-row gap-2 sm:gap-3 w-full sm:w-auto justify-end">
                     {/* Supermarket Filter */}
                     <div className="relative w-full sm:w-auto min-w-0" ref={smRef}>
-                        <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm whitespace-nowrap">
+                        <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all outline-none whitespace-nowrap">
                             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                                 <BuildingStorefrontIcon className="h-4 w-4 text-indigo-500 flex-shrink-0" />
                                 <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : activeSupermarkets.map(s => shortenSupermarketName(s)).join(', ')}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">{activeSupermarkets.length}</span>
+                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{activeSupermarkets.length}</span>
                                 <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isSmFilterOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </button>
@@ -350,13 +341,13 @@ export const NhanVien: React.FC = () => {
 
                     {/* Department Filter (Mới bổ sung) */}
                     <div className="relative w-full sm:w-auto min-w-0" ref={deptRef}>
-                        <button onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-2 sm:px-4 py-2 sm:py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all outline-none shadow-sm whitespace-nowrap">
+                        <button onClick={() => setIsDeptFilterOpen(!isDeptFilterOpen)} className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-sky-400 dark:hover:border-sky-600 transition-all outline-none whitespace-nowrap">
                             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                                 <ArchiveBoxIcon className="h-4 w-4 text-sky-500 flex-shrink-0" />
                                 <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 rounded-full">{activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}</span>
+                                <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-1.5 py-0.5">{activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}</span>
                                 <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isDeptFilterOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </button>
@@ -382,16 +373,11 @@ export const NhanVien: React.FC = () => {
 
 
 
-            {/* 3. Detailed Data section with internal Tab Switcher */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700/60 overflow-hidden">
-                <div className="border-b border-slate-200 dark:border-slate-700 p-4 sm:p-5 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 bg-slate-50/50 dark:bg-slate-800/50">
-                    <div>
-                        <h3 className="text-lg font-bold text-slate-800 dark:text-white">Bảng Chỉ Tiêu Chi Tiết</h3>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Dữ liệu phân mảnh cho nhân viên siêu thị</p>
-                    </div>
-                    
-                    {/* The NavTabButton container moved here from header */}
-                    <nav className="inline-flex items-center bg-white dark:bg-slate-900 p-1 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-x-auto hide-scrollbar w-full sm:w-auto">
+            {/* 3. Tab Switcher — minimal bottom-border style */}
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+                <div className="border-b border-slate-200 dark:border-slate-700 px-4 sm:px-5 pt-3">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
+                    <nav className="flex items-center gap-0 overflow-x-auto hide-scrollbar w-full sm:w-auto -mb-px">
                         <NavTabButton tab="revenue" activeTab={activeTab} setActiveTab={setActiveTab}>Doanh thu</NavTabButton>
                         <NavTabButton tab="crossSelling" activeTab={activeTab} setActiveTab={setActiveTab}>Bán kèm</NavTabButton>
                         <NavTabButton tab="installment" activeTab={activeTab} setActiveTab={setActiveTab}>Trả góp</NavTabButton>
@@ -401,10 +387,9 @@ export const NhanVien: React.FC = () => {
                     </nav>
                 </div>
                 
-                {/* Embedded Module Content — HIDDEN/BLOCK pattern: mount once, toggle visibility */}
-                {/* Tránh destroy/recreate khi chuyển tab → không cần re-fetch IDB, re-parse data */}
-                <div className="p-0 sm:p-2 bg-slate-50 dark:bg-slate-900">
-                    <div className="bg-white dark:bg-slate-800 rounded-xl overflow-hidden shadow-[0_0_10px_rgba(0,0,0,0.02)]">
+                {/* Embedded Module Content */}
+                <div className="p-0">
+                    <div className="bg-white dark:bg-slate-800 overflow-hidden">
                         <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
                             <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={effectiveActiveDepartments} performanceChanges={EMPTY_MAP} onViewTrend={NOOP} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} snapshotId={null} setSnapshotId={NOOP} snapshots={EMPTY_ARRAY} handleSaveSnapshot={NOOP} handleDeleteSnapshot={NOOP} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} />
                         </div>

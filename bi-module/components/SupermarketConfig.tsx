@@ -233,7 +233,8 @@ const CompetitionTarget: React.FC<{
     addUpdate: (id: string, message: string, category: UpdateCategory) => void;
     competitions: Competition[];
     competitionLuyKeData: string;
-}> = ({ supermarketName, addUpdate, competitions, competitionLuyKeData }) => {
+    totalEmployees?: number;
+}> = ({ supermarketName, addUpdate, competitions, competitionLuyKeData, totalEmployees = 0 }) => {
     const [targets, setTargets] = useIndexedDBState<Record<string, number>>(`comptarget-${supermarketName}-targets`, {});
     const [nameOverrides, setNameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [groupOverrides, setGroupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
@@ -301,9 +302,9 @@ const CompetitionTarget: React.FC<{
                     <div className="space-y-6">
                         {Object.entries(groupedCompetitions).map(([criteria, comps]) => (
                             <div key={criteria} className="space-y-3">
-                                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-1 flex items-center gap-2">
+                                <h3 className="text-[14px] font-black text-slate-500 uppercase tracking-widest px-1 flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-sm"></div>
-                                    Nhóm Tiêu Chí: <span className="text-slate-600 dark:text-slate-300">{criteria}</span>
+                                    Nhóm Tiêu Chí: <span className="text-slate-700 dark:text-slate-200">{criteria}</span>
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
                                     {comps.map(comp => {
@@ -312,6 +313,8 @@ const CompetitionTarget: React.FC<{
                                         const ratio = targets[comp.name] ?? 100;
                                         const adjVal = baseVal * (ratio / 100);
                                         const unitSuffix = comp.criteria === 'SLLK' ? ' Cái' : ' Tr';
+                                        const perPerson = totalEmployees > 0 ? adjVal / totalEmployees : 0;
+                                        const perPersonUnit = comp.criteria === 'SLLK' ? 'Cái/ng' : 'Tr/ng';
 
                                         const dThemes = [
                                             { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-200 dark:border-emerald-800', label: 'text-emerald-700 dark:text-emerald-400', after: 'text-emerald-600 dark:text-emerald-400', inputBg: 'bg-white dark:bg-slate-800', inputBorder: 'border-emerald-200 dark:border-emerald-700/50', inputText: 'text-emerald-600', ring: 'focus-within:ring-emerald-500', track: 'bg-emerald-200 dark:bg-emerald-900', thumb: 'accent-emerald-500', btnHover: 'hover:text-emerald-600 hover:bg-emerald-100 dark:hover:bg-emerald-900', btnText: 'text-emerald-500/50' },
@@ -324,22 +327,31 @@ const CompetitionTarget: React.FC<{
 
                                         return (
                                             <div key={comp.name} className={`relative group p-3 ${t.bg} border ${t.border} rounded-xl shadow-sm transition-all hover:scale-[1.01]`}>
-                                                <div className="flex justify-between items-center mb-2">
-                                                    <span className={`text-[12px] font-black uppercase tracking-wider ${t.label} truncate pr-3`} title={comp.name}>
+                                                {/* Row 1: Tên nhóm hàng — full width */}
+                                                <div className="mb-1.5">
+                                                    <span className={`text-[13px] font-black uppercase tracking-wider ${t.label}`} title={comp.name}>
                                                         {shortenName(comp.name, nameOverrides)}
                                                     </span>
-                                                    <div className="flex items-center gap-3 shrink-0">
-                                                        <div className="text-right flex items-center gap-2">
-                                                            <div className="flex items-center gap-1 opacity-80">
-                                                                <span className="text-[9px] font-bold uppercase">Gốc:</span>
-                                                                <span className="text-[11px] font-bold tabular-nums">{f.format(baseVal)}{unitSuffix}</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-1 pl-2 border-l border-current/20">
-                                                                <span className={`text-[9px] font-bold uppercase`}>Sau:</span>
-                                                                <span className={`text-[12px] font-black tabular-nums ${t.after}`}>{f.format(adjVal)}{unitSuffix}</span>
-                                                            </div>
+                                                </div>
+                                                {/* Row 2: Gốc / Sau / TB/ng / % / Save */}
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                        <div className="flex items-center gap-1">
+                                                            <span className="text-[9px] font-black uppercase">Gốc:</span>
+                                                            <span className="text-[11px] font-black tabular-nums">{f.format(baseVal)}{unitSuffix}</span>
                                                         </div>
-                                                        <div className={`flex items-center gap-1 ml-1 ${t.inputBg} px-2 py-1 rounded-lg border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm`}>
+                                                        <div className="flex items-center gap-1 pl-2 border-l border-current/20">
+                                                            <span className="text-[9px] font-black uppercase">Sau:</span>
+                                                            <span className={`text-[11px] font-black tabular-nums ${t.after}`}>{f.format(adjVal)}{unitSuffix}</span>
+                                                        </div>
+                                                        {perPerson > 0 && (
+                                                            <div className="flex items-center gap-1 pl-2 border-l border-current/20">
+                                                                <span className={`text-[11px] font-black tabular-nums`}>{f.format(perPerson)} {perPersonUnit}</span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-1 shrink-0">
+                                                        <div className={`flex items-center gap-1 ${t.inputBg} px-2 py-1 rounded-lg border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm`}>
                                                             <input 
                                                                 type="number"
                                                                 value={Math.round(ratio).toString()}
@@ -356,7 +368,7 @@ const CompetitionTarget: React.FC<{
                                                         </div>
                                                         <button 
                                                             onClick={() => handleSaveAsPrevMonth(comp.name)}
-                                                            className={`ml-1 p-1.5 ${t.btnText} ${t.btnHover} rounded-lg border border-transparent hover:border-current/20 transition-colors bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm`}
+                                                            className={`p-1.5 ${t.btnText} ${t.btnHover} rounded-lg border border-transparent hover:border-current/20 transition-colors bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm`}
                                                             title="Lưu dữ liệu hiện tại làm mốc so sánh tháng trước"
                                                         >
                                                             <ClockIcon className="h-3.5 w-3.5" />
@@ -623,7 +635,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                     </div>
                 )}
                 {activeTab === 'revenueTarget' && <TargetHero supermarketName={supermarketName!} addUpdate={addUpdate} departments={departments} summaryLuyKeData={summaryLuyKeData} />}
-                {activeTab === 'competitionTarget' && <CompetitionTarget supermarketName={supermarketName!} addUpdate={addUpdate} competitions={competitions} competitionLuyKeData={competitionLuyKeData} />}
+                {activeTab === 'competitionTarget' && <CompetitionTarget supermarketName={supermarketName!} addUpdate={addUpdate} competitions={competitions} competitionLuyKeData={competitionLuyKeData} totalEmployees={departments.reduce((s, d) => s + d.employeeCount, 0)} />}
             </div>
         </div>
     );

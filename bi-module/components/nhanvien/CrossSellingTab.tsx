@@ -12,9 +12,6 @@ import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services
 
 const MedalBadge: React.FC<{ rank?: number }> = ({ rank }) => {
     if (!rank) return <div className="w-7" />;
-    if (rank === 1) return <span className="flex items-center justify-center w-7 h-7 bg-yellow-400 text-white rounded-full shadow-sm text-sm" title="TOP 1">🥇</span>;
-    if (rank === 2) return <span className="flex items-center justify-center w-7 h-7 bg-slate-300 text-white rounded-full shadow-sm text-sm" title="TOP 2">🥈</span>;
-    if (rank === 3) return <span className="flex items-center justify-center w-7 h-7 bg-amber-600 text-white rounded-full shadow-sm text-sm" title="TOP 3">🥉</span>;
     return <span className="text-slate-400 font-bold w-7 text-center text-xs tabular-nums">#{rank}</span>;
 };
 
@@ -43,7 +40,7 @@ const ImportPrevMonthModal: React.FC<{
     const [pastedData, setPastedData] = useState('');
     if (!isOpen) return null;
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-md z-[200] flex items-center justify-center p-4">
             <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-6 w-full max-w-xl animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-white uppercase">Nhập dữ liệu Bán kèm cùng kỳ</h3>
@@ -411,10 +408,10 @@ const CrossSellingTab: React.FC<{
                                             <div className="flex justify-between items-start">
                                                 <div className="flex items-center gap-3">
                                                     <MedalBadge rank={row.rank} />
-                                                    <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />
+
                                                     <div className="flex flex-col">
                                                         <span className="font-bold text-primary-600 dark:text-primary-400">{row.name}</span>
-                                                        <span className="text-[10px] text-slate-400 font-bold uppercase">{row.department}</span>
+
                                                     </div>
                                                 </div>
                                                 <div className="flex flex-col items-end">
@@ -503,10 +500,10 @@ const CrossSellingTab: React.FC<{
                                                 <td className="px-3 py-2 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 min-w-[150px]">
                                                     <div className="flex items-center gap-2">
                                                         <MedalBadge rank={row.rank} />
-                                                        <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />
+
                                                         <div className="flex flex-col min-w-0">
                                                             <span className="font-bold text-sky-700 dark:text-sky-400 hover:underline whitespace-normal break-words">{row.name}</span>
-                                                            <span className="text-[10px] text-slate-400 capitalize font-medium tabular-nums">{row.department}</span>
+
                                                         </div>
                                                     </div>
                                                 </td>

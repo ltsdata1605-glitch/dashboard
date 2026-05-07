@@ -20,7 +20,7 @@ const htmlContent = `
     <style>
         * { box-sizing: border-box; margin: 0; }
         body { 
-            font-family: 'Inter', sans-serif; 
+            font-family: inherit; 
             background: #f8f9fc;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
@@ -2216,11 +2216,18 @@ export const CheckThuongView: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-1 border-l border-slate-200 dark:border-slate-700 pl-2">
                         <button
-                            onClick={handleSearch}
-                            className="w-8 h-8 flex items-center justify-center rounded-full bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 transition-colors"
-                            title="Tra cứu"
+                            onClick={() => {
+                                setCodes(prev => ({ ...prev, code2: '' }));
+                                iframeRef.current?.contentWindow?.postMessage({
+                                    type: 'CHECK_THUONG_SEARCH',
+                                    code1: codes.code1,
+                                    code2: ''
+                                }, '*');
+                            }}
+                            className="w-8 h-8 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors"
+                            title="Xoá mã kho đang so sánh"
                         >
-                            <Icon name="search" size={4} />
+                            <Icon name="rotate-ccw" size={4} />
                         </button>
                         <button
                             onClick={handleChangeFile}
@@ -2263,10 +2270,18 @@ export const CheckThuongView: React.FC = () => {
                         </div>
                     </div>
                     <button
-                        onClick={handleSearch}
-                        className="h-9 px-3 bg-indigo-600 text-white rounded-md flex items-center gap-1.5 text-xs font-semibold hover:bg-indigo-700 transition-colors shrink-0"
+                        onClick={() => {
+                            setCodes(prev => ({ ...prev, code2: '' }));
+                            iframeRef.current?.contentWindow?.postMessage({
+                                type: 'CHECK_THUONG_SEARCH',
+                                code1: codes.code1,
+                                code2: ''
+                            }, '*');
+                        }}
+                        className="h-9 px-3 bg-red-50 text-red-500 rounded-md flex items-center gap-1.5 text-xs font-semibold hover:bg-red-100 transition-colors shrink-0"
+                        title="Xoá mã kho"
                     >
-                        <Icon name="search" size={3.5} />
+                        <Icon name="rotate-ccw" size={3.5} />
                     </button>
                     <button
                         onClick={handleChangeFile}

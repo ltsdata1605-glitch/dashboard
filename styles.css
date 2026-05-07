@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "UTM Avo", "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   
   --color-indigo-50: #f0f9ff;
   --color-indigo-100: #e0f2fe;
@@ -80,6 +80,14 @@
   .compact-export-table th, 
   .compact-export-table td {
     @apply px-1 py-1 text-[10px];
+  }
+
+  /* Report BI — tiêu đề & chú thích mặc định dùng UTM Avo */
+  .js-report-title {
+    font-family: 'UTM Avo', sans-serif !important;
+  }
+  .js-report-title + span {
+    font-family: 'UTM Avo', sans-serif !important;
   }
 }
 
@@ -387,9 +395,7 @@
 @font-face { font-family: 'UTM Aurora'; src: url('/fonts/UTM Aurora.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
 @font-face { font-family: 'UTM Avo'; src: url('/fonts/UTM Avo.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
 @font-face { font-family: 'UTM Avo'; src: url('/fonts/UTM AvoBold.ttf') format('truetype'); font-weight: bold; font-style: normal; font-display: swap; }
-@font-face { font-family: 'UTM Cafeta'; src: url('/fonts/UTM Cafeta.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+
 @font-face { font-family: 'UTM Colossalis'; src: url('/fonts/UTM Colossalis.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
-@font-face { font-family: 'UTM Gloria'; src: url('/fonts/UTM Gloria.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
-@font-face { font-family: 'UTM Libel KT'; src: url('/fonts/UTM Libel KT.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
-@font-face { font-family: 'UTM Pacific Standard'; src: url('/fonts/UTM Pacific Standard.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
+
 @font-face { font-family: 'UTM Penumbra'; src: url('/fonts/UTM Penumbra.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }

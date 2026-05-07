@@ -204,91 +204,118 @@ const Settings: React.FC = () => {
     };
 
     return (
-        <div className="space-y-8">
-            <header>
-                <h1 className="text-4xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Cài đặt & Quản lý</h1>
+        <div className="space-y-6">
+            {/* Header */}
+            <header className="flex items-center gap-3 pb-4 border-b-2 border-slate-200 dark:border-slate-700">
+                <div className="w-1.5 h-8 bg-indigo-600"></div>
+                <div>
+                    <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Cài đặt & Quản lý</h1>
+                    <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Sao lưu · Khôi phục · Quản lý dữ liệu</p>
+                </div>
             </header>
 
-            <Card title="Sao lưu & Khôi phục (Chuyển thiết bị)">
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 leading-relaxed">
-                    Chuyển toàn bộ dữ liệu (Báo cáo, Target, Snapshot, Dữ liệu Thưởng) sang máy tính khác hoặc lưu trữ dự phòng.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                    <button onClick={handleBackup} disabled={!!isLoading} className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-md text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 transition-all active:scale-95">
-                        {isLoading === 'backup' ? <SpinnerIcon className="h-5 w-5 animate-spin" /> : <SaveIcon className="h-5 w-5" />}
-                        <span>Sao lưu (.json)</span>
-                    </button>
-                    <button onClick={handleRestore} disabled={!!isLoading} className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold rounded-lg shadow-sm text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 disabled:opacity-50 transition-all active:scale-95">
-                        {isLoading === 'restore' ? <SpinnerIcon className="h-5 w-5 animate-spin" /> : <UploadIcon className="h-5 w-5" />}
-                        <span>Khôi phục từ File</span>
-                    </button>
-                    <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
+            {/* Section 1: Sao lưu & Khôi phục */}
+            <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                    <SaveIcon className="h-4 w-4 text-indigo-500" />
+                    <h2 className="text-[12px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">Sao lưu & Khôi phục (Chuyển thiết bị)</h2>
                 </div>
-            </Card>
-
-            {restoreLogs.length > 0 && (
-                <div className="bg-slate-900 rounded-lg p-4 font-mono text-xs shadow-lg border border-slate-700 animate-in fade-in slide-in-from-top-4">
-                    <div className="flex justify-between items-center mb-2 pb-2 border-b border-slate-700 text-slate-300 font-bold uppercase tracking-wider">
-                        <span>Nhật ký hệ thống</span>
-                        <button onClick={() => setRestoreLogs([])} className="text-slate-500 hover:text-slate-300 text-xs">Xóa log</button>
+                <div className="p-5">
+                    <p className="text-[12px] text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
+                        Chuyển toàn bộ dữ liệu (Báo cáo, Target, Snapshot, Dữ liệu Thưởng) sang máy tính khác hoặc lưu trữ dự phòng.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <button onClick={handleBackup} disabled={!!isLoading} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 disabled:opacity-50 transition-all active:scale-95 shadow-sm">
+                            {isLoading === 'backup' ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
+                            <span>Sao lưu (.json)</span>
+                        </button>
+                        <button onClick={handleRestore} disabled={!!isLoading} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-all active:scale-95 shadow-sm">
+                            {isLoading === 'restore' ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UploadIcon className="h-4 w-4" />}
+                            <span>Khôi phục từ File</span>
+                        </button>
+                        <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
                     </div>
-                    <div className="h-32 overflow-y-auto space-y-1">
+                </div>
+            </section>
+
+            {/* Restore Logs */}
+            {restoreLogs.length > 0 && (
+                <section className="bg-slate-900 border border-slate-700 shadow-lg animate-in fade-in slide-in-from-top-4">
+                    <div className="flex justify-between items-center px-4 py-2.5 border-b border-slate-700">
+                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Nhật ký hệ thống</span>
+                        <button onClick={() => setRestoreLogs([])} className="text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase tracking-wider transition-colors">Xóa log</button>
+                    </div>
+                    <div className="h-32 overflow-y-auto p-4 font-mono text-xs space-y-1">
                         {restoreLogs.map((log, index) => (
                             <div key={index} className={`${log.includes('❌') ? 'text-red-400' : (log.includes('thành công') ? 'text-green-400' : 'text-slate-300')}`}>
                                 {log}
                             </div>
                         ))}
                     </div>
-                </div>
+                </section>
             )}
 
-            <Card title="Quản lý Snapshots (Lịch sử lưu)">
-                <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 p-4 rounded-r-lg">
-                    <div className="flex items-start gap-3">
-                        <ClockIcon className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 shrink-0" />
-                        <div className="text-sm text-blue-800 dark:text-blue-200">
-                            <h4 className="font-bold mb-1 uppercase tracking-tight">Hướng dẫn sử dụng Snapshots:</h4>
-                            <ul className="list-disc pl-5 space-y-1">
-                                <li><strong>Tạo mới:</strong> Tại tab <span className="font-bold">Phân tích Nhân viên &gt; Doanh thu</span>, nhấn biểu tượng 👤 (+) bên cạnh dòng "So sánh với" để lưu dữ liệu hiện tại.</li>
-                                <li><strong>Công dụng:</strong> Cho phép bạn quay lại xem dữ liệu hiệu suất của các ngày trước đó để so sánh sự tăng/giảm.</li>
-                                <li><strong>Quản lý:</strong> Bạn có thể xóa các bản snapshot cũ tại đây để giải phóng bộ nhớ trình duyệt nếu ứng dụng chạy chậm.</li>
-                            </ul>
-                        </div>
+            {/* Section 2: Quản lý Snapshots */}
+            <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+                <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                    <ClockIcon className="h-4 w-4 text-amber-500" />
+                    <h2 className="text-[12px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">Quản lý Snapshots (Lịch sử lưu)</h2>
+                </div>
+                <div className="p-5">
+                    {/* Info banner */}
+                    <div className="mb-5 bg-slate-50 dark:bg-slate-800/50 border-l-3 border-l-indigo-500 p-4">
+                        <h4 className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-2">Hướng dẫn sử dụng Snapshots:</h4>
+                        <ul className="space-y-1.5 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                            <li className="flex gap-2">
+                                <span className="text-indigo-500 font-black shrink-0">•</span>
+                                <span><strong className="text-slate-700 dark:text-slate-200">Tạo mới:</strong> Tại tab Phân tích Nhân viên → Doanh thu, nhấn biểu tượng 👤 (+) bên cạnh dòng "So sánh với" để lưu dữ liệu hiện tại.</span>
+                            </li>
+                            <li className="flex gap-2">
+                                <span className="text-indigo-500 font-black shrink-0">•</span>
+                                <span><strong className="text-slate-700 dark:text-slate-200">Công dụng:</strong> Cho phép bạn quay lại xem dữ liệu hiệu suất của các ngày trước đó để so sánh sự tăng/giảm.</span>
+                            </li>
+                            <li className="flex gap-2">
+                                <span className="text-indigo-500 font-black shrink-0">•</span>
+                                <span><strong className="text-slate-700 dark:text-slate-200">Quản lý:</strong> Bạn có thể xóa các bản snapshot cũ tại đây để giải phóng bộ nhớ trình duyệt nếu ứng dụng chạy chậm.</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    {/* Snapshot list */}
+                    <div className="space-y-4">
+                        {isLoading === 'snapshots' ? (
+                            <div className="flex justify-center py-8"><SpinnerIcon className="h-8 w-8 text-indigo-500 animate-spin" /></div>
+                        ) : Object.keys(allSnapshots).length > 0 ? (
+                            (Object.entries(allSnapshots) as [string, SnapshotMetadata[]][]).map(([supermarket, snapshots]) => (
+                                <div key={supermarket} className="border border-slate-200 dark:border-slate-700">
+                                    <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                                        <span className="text-[12px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">{supermarket}</span>
+                                        <span className="text-[10px] font-black text-slate-400 bg-white dark:bg-slate-700 px-2 py-0.5 border border-slate-200 dark:border-slate-600">{snapshots.length} bản lưu</span>
+                                    </div>
+                                    <ul className="divide-y divide-slate-100 dark:divide-slate-800">
+                                        {snapshots.map(snapshot => (
+                                            <li key={snapshot.id} className="px-4 py-3 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                                <div>
+                                                    <p className="text-[12px] font-bold text-slate-800 dark:text-slate-100">{snapshot.name}</p>
+                                                    <p className="text-[10px] text-slate-400 mt-0.5">Lưu lúc: {new Date(snapshot.date).toLocaleString('vi-VN')}</p>
+                                                </div>
+                                                <button onClick={() => handleDeleteSnapshot(supermarket, snapshot.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border border-transparent hover:border-red-200 dark:hover:border-red-800 transition-all">
+                                                    <TrashIcon className="h-3.5 w-3.5" />
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            ))
+                        ) : (
+                            <div className="text-center py-10 bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700">
+                                <ClockIcon className="h-8 w-8 text-slate-300 mx-auto mb-2" />
+                                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Chưa có snapshot nào được lưu</p>
+                            </div>
+                        )}
                     </div>
                 </div>
-
-                <div className="space-y-6">
-                    {isLoading === 'snapshots' ? (
-                        <div className="flex justify-center py-8"><SpinnerIcon className="h-8 w-8 text-primary-500 animate-spin" /></div>
-                    ) : Object.keys(allSnapshots).length > 0 ? (
-                        (Object.entries(allSnapshots) as [string, SnapshotMetadata[]][]).map(([supermarket, snapshots]) => (
-                            <div key={supermarket} className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-                                <h3 className="text-md font-bold text-slate-700 dark:text-slate-200 border-b border-slate-200 dark:border-slate-600 pb-2 mb-3 flex justify-between">
-                                    <span>{supermarket}</span>
-                                    <span className="text-xs px-2 bg-white dark:bg-slate-600 rounded-full">{snapshots.length} bản lưu</span>
-                                </h3>
-                                <ul className="divide-y divide-slate-200 dark:divide-slate-700">
-                                    {snapshots.map(snapshot => (
-                                        <li key={snapshot.id} className="py-3 flex items-center justify-between group">
-                                            <div>
-                                                <p className="font-medium text-sm text-slate-800 dark:text-slate-100">{snapshot.name}</p>
-                                                <p className="text-xs text-slate-500">Lưu lúc: {new Date(snapshot.date).toLocaleString('vi-VN')}</p>
-                                            </div>
-                                            <button onClick={() => handleDeleteSnapshot(supermarket, snapshot.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors">
-                                                <TrashIcon className="h-4 w-4" />
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ))
-                    ) : (
-                        <div className="text-center py-12 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-dashed border-slate-300">
-                            <p className="text-sm text-slate-500">Chưa có snapshot nào được lưu.</p>
-                        </div>
-                    )}
-                </div>
-            </Card>
+            </section>
         </div>
     );
 };

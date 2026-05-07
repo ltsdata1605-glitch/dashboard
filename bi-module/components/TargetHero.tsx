@@ -25,6 +25,7 @@ const CreateDeptModal: React.FC<{
 }> = ({ isOpen, onClose, onSave, allEmployees, existingMapping, editingDept }) => {
     const [name, setName] = useState('');
     const [selectedEmps, setSelectedEmps] = useState<Set<string>>(new Set());
+    const [hiddenEmps, setHiddenEmps] = useState<Set<string>>(new Set());
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
@@ -36,6 +37,7 @@ const CreateDeptModal: React.FC<{
                 setName('');
                 setSelectedEmps(new Set());
             }
+            setHiddenEmps(new Set());
             setSearchTerm('');
         }
     }, [isOpen, editingDept]);
@@ -48,8 +50,17 @@ const CreateDeptModal: React.FC<{
             .flatMap(([_, emps]) => emps)
     );
 
-    const availableEmps = allEmployees.filter(emp => !assignedInOtherDepts.has(emp.originalName));
+    const availableEmps = allEmployees.filter(emp => !assignedInOtherDepts.has(emp.originalName) && !hiddenEmps.has(emp.originalName));
     const filteredEmps = availableEmps.filter(emp => emp.originalName.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const removeEmp = (originalName: string) => {
+        const nextSelected = new Set(selectedEmps);
+        nextSelected.delete(originalName);
+        setSelectedEmps(nextSelected);
+        const nextHidden = new Set(hiddenEmps);
+        nextHidden.add(originalName);
+        setHiddenEmps(nextHidden);
+    };
 
     const toggleEmp = (originalName: string) => {
         const next = new Set(selectedEmps);
@@ -70,20 +81,65 @@ const CreateDeptModal: React.FC<{
                         <label className="block text-[10px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-widest mb-2">Tên nhóm / Bộ phận</label>
                         <input value={name} onChange={e => setName(e.target.value)} placeholder="Ví dụ: Nhóm Online..." className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 outline-none transition-all font-bold text-slate-700 dark:text-slate-200 text-sm placeholder:text-slate-400 placeholder:font-normal" />
                     </div>
+
+                    {/* Selected employees summary with remove buttons */}
+                    {selectedEmps.size > 0 && (
+                        <div>
+                            <label className="block text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-2">
+                                Đã chọn ({selectedEmps.size})
+                            </label>
+                            <div className="flex flex-wrap gap-1.5 p-2 border border-emerald-100 dark:border-emerald-800/50 rounded-xl bg-emerald-50/30 dark:bg-emerald-900/10 max-h-[15vh] overflow-y-auto">
+                                {Array.from(selectedEmps).map(empName => (
+                                    <span key={empName} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 rounded-lg text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 group/tag hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                                        <span className="truncate max-w-[150px]">{allEmployees.find(e => e.originalName === empName)?.name || empName}</span>
+                                        <button onClick={() => toggleEmp(empName)} className="p-0.5 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-slate-400 hover:text-red-500 transition-colors" title="Bỏ chọn">
+                                            <XIcon className="h-3 w-3" />
+                                        </button>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
                     <div>
                         <div className="flex justify-between items-end mb-2">
                             <label className="block text-[10px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-widest">
                                 Chọn nhân sự
                             </label>
-                            <span className="text-[10px] uppercase font-bold text-sky-600/70 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">{selectedEmps.size} đã chọn</span>
+                            <div className="flex items-center gap-2">
+                                {availableEmps.length > 0 && (
+                                    <button 
+                                        onClick={() => {
+                                            if (selectedEmps.size === availableEmps.length) {
+                                                setSelectedEmps(new Set());
+                                            } else {
+                                                setSelectedEmps(new Set(availableEmps.map(e => e.originalName)));
+                                            }
+                                        }}
+                                        className="text-[9px] font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400 uppercase tracking-wider transition-colors"
+                                    >
+                                        {selectedEmps.size === availableEmps.length ? 'Bỏ tất cả' : 'Chọn tất cả'}
+                                    </button>
+                                )}
+                                <span className="text-[10px] uppercase font-bold text-sky-600/70 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">{selectedEmps.size} đã chọn</span>
+                            </div>
                         </div>
                         <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm kiếm tên nhân viên..." className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 text-sm mb-3 outline-none transition-all font-medium placeholder:text-slate-400" />
                         <div className="space-y-1.5 max-h-[30vh] overflow-y-auto p-1.5 border border-slate-100 dark:border-slate-700/50 rounded-xl bg-slate-50/30 dark:bg-slate-900/30">
                             {filteredEmps.length > 0 ? filteredEmps.map(emp => (
-                                <label key={emp.originalName} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${selectedEmps.has(emp.originalName) ? 'bg-sky-50/80 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700 shadow-sm' : 'border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'}`}>
-                                    <input type="checkbox" checked={selectedEmps.has(emp.originalName)} onChange={() => toggleEmp(emp.originalName)} className="rounded-md border-slate-300 text-sky-500 focus:ring-sky-500 h-4.5 w-4.5 cursor-pointer bg-white" />
-                                    <span className={`text-sm font-medium ${selectedEmps.has(emp.originalName) ? 'text-sky-800 dark:text-sky-300 font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{emp.originalName}</span>
-                                </label>
+                                <div key={emp.originalName} className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${selectedEmps.has(emp.originalName) ? 'bg-sky-50/80 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700 shadow-sm' : 'border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'}`}>
+                                    <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                                        <input type="checkbox" checked={selectedEmps.has(emp.originalName)} onChange={() => toggleEmp(emp.originalName)} className="rounded-md border-slate-300 text-sky-500 focus:ring-sky-500 h-4.5 w-4.5 cursor-pointer bg-white shrink-0" />
+                                        <span className={`text-sm font-medium truncate ${selectedEmps.has(emp.originalName) ? 'text-sky-800 dark:text-sky-300 font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{emp.originalName}</span>
+                                    </label>
+                                    <button 
+                                        onClick={() => removeEmp(emp.originalName)} 
+                                        className="p-1.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 border border-transparent hover:border-red-200 dark:hover:border-red-800 transition-colors shrink-0" 
+                                        title="Xoá khỏi danh sách"
+                                    >
+                                        <TrashIcon className="h-3.5 w-3.5" />
+                                    </button>
+                                </div>
                             )) : <div className="flex flex-col items-center justify-center py-8 opacity-60">
                                     <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2"><XIcon className="h-5 w-5 text-slate-400" /></div>
                                     <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Nhân sự đã được phân bổ hết</p>
@@ -92,12 +148,15 @@ const CreateDeptModal: React.FC<{
                     </div>
                 </div>
                 <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex gap-3 bg-slate-50/80 dark:bg-slate-900/50">
+                    <button onClick={() => { setName(''); setSelectedEmps(new Set()); setHiddenEmps(new Set()); }} className="px-3 py-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-700 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-black hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors shadow-sm uppercase tracking-widest active:scale-95" title="Khôi phục mặc định">
+                        <ResetIcon className="h-4 w-4" />
+                    </button>
                     <button onClick={onClose} className="flex-1 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm uppercase tracking-widest active:scale-95">Hủy bỏ</button>
                     <button 
-                        disabled={!name.trim() || selectedEmps.size === 0}
+                        disabled={!name.trim() || (!editingDept && selectedEmps.size === 0)}
                         onClick={() => { onSave(name.trim(), Array.from(selectedEmps)); onClose(); }}
                         className="flex-[1.5] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-500 hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95"
-                    >Lưu cập nhật</button>
+                    >{editingDept && selectedEmps.size === 0 ? 'Xoá bộ phận' : 'Lưu cập nhật'}</button>
                 </div>
             </div>
         </div>
@@ -113,7 +172,8 @@ const CompactTargetItem: React.FC<{
     onChange: (val: number) => void;
     onReset: () => void;
     colorTheme?: 'sky' | 'purple' | 'amber' | 'slate';
-}> = ({ label, baseValue, adjValue, unit, ratio, onChange, onReset, colorTheme = 'slate' }) => {
+    perPerson?: number;
+}> = ({ label, baseValue, adjValue, unit, ratio, onChange, onReset, colorTheme = 'slate', perPerson }) => {
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
     
     // Theme mapping
@@ -127,32 +187,37 @@ const CompactTargetItem: React.FC<{
 
     return (
         <div className={`p-3 rounded-xl transition-all border ${t.bg} ${t.border} ${t.shadow}`}>
-            <div className="flex justify-between items-center mb-2 gap-4">
-                <span className={`text-[11px] font-black uppercase tracking-wider ${t.label}`}>{label}</span>
-                <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5 opacity-80">
-                         <span className="text-[9px] font-bold uppercase">Gốc:</span>
-                         <span className="text-[11px] font-bold tabular-nums">{f.format(baseValue)}{unit}</span>
+            <div className="flex justify-between items-start mb-2 gap-4">
+                <div>
+                    <span className={`text-[11px] font-black uppercase tracking-wider ${t.label}`}>{label}</span>
+                    <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-[9px] font-black uppercase opacity-70">Gốc:</span>
+                        <span className="text-[11px] font-black tabular-nums">{f.format(baseValue)}{unit}</span>
+                        <span className="text-[9px] opacity-40">|</span>
+                        <span className="text-[9px] font-black uppercase">Sau:</span>
+                        <span className={`text-[11px] font-black tabular-nums ${t.after}`}>{f.format(adjValue)}{unit}</span>
+                        {perPerson != null && perPerson > 0 && (
+                            <>
+                                <span className="text-[9px] opacity-40">|</span>
+                                <span className="text-[9px] font-black uppercase">{f.format(perPerson)}Tr/ng</span>
+                            </>
+                        )}
                     </div>
-                    <div className={`flex items-center gap-1.5 pl-3 border-l border-current/20`}>
-                         <span className={`text-[9px] font-bold uppercase`}>Sau:</span>
-                         <span className={`text-[12px] font-black tabular-nums ${t.after}`}>{f.format(adjValue)}{unit}</span>
-                    </div>
-                    <div className={`flex items-center gap-1 ml-2 ${t.inputBg} px-2 py-1 rounded-lg border ${t.inputBorder} ${t.ring} focus-within:ring-1`}>
-                        <input 
-                            type="number"
-                            value={Math.round(ratio).toString()}
-                            onFocus={(e) => e.target.select()}
-                            onChange={(e) => { 
-                                const val = e.target.value;
-                                if (val === '') { onChange(0); return; }
-                                const v = parseInt(val, 10); 
-                                if (!isNaN(v)) onChange(v); 
-                            }}
-                            className={`w-10 bg-transparent text-right text-[12px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                        />
-                        <span className="text-[9px] font-bold opacity-60">%</span>
-                    </div>
+                </div>
+                <div className={`flex items-center gap-1 ${t.inputBg} px-2 py-1 rounded-lg border ${t.inputBorder} ${t.ring} focus-within:ring-1`}>
+                    <input 
+                        type="number"
+                        value={Math.round(ratio).toString()}
+                        onFocus={(e) => e.target.select()}
+                        onChange={(e) => { 
+                            const val = e.target.value;
+                            if (val === '') { onChange(0); return; }
+                            const v = parseInt(val, 10); 
+                            if (!isNaN(v)) onChange(v); 
+                        }}
+                        className={`w-10 bg-transparent text-right text-[12px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                    />
+                    <span className="text-[9px] font-bold opacity-60">%</span>
                 </div>
             </div>
             <div className="px-1 relative">
@@ -206,9 +271,6 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
         const manualNames = Object.keys(manualMapping);
         if (manualNames.length === 0) return departments.map(d => ({ ...d, isManual: false }));
         const manualList = manualNames.map(name => ({ name, employeeCount: manualMapping[name].length, isManual: true }));
-        const assignedEmps = new Set(Object.values(manualMapping).flat());
-        const otherEmpsCount = allEmployees.filter(e => !assignedEmps.has(e.originalName)).length;
-        if (otherEmpsCount > 0) manualList.push({ name: 'BP Khác', employeeCount: otherEmpsCount, isManual: false });
         return manualList.sort((a,b) => {
             if (a.name === 'BP Khác') return 1;
             if (b.name === 'BP Khác') return -1;
@@ -238,6 +300,13 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
         return combinedDepts.reduce((sum, d) => sum + (effectiveWeights[d.name] || 0), 0);
     }, [combinedDepts, effectiveWeights]);
 
+    const totalAllocatedEmployees = useMemo(() => {
+        return combinedDepts.reduce((sum, d) => {
+            const w = effectiveWeights[d.name] || 0;
+            return sum + (w > 0 ? d.employeeCount : 0);
+        }, 0);
+    }, [combinedDepts, effectiveWeights]);
+
     return (
         <section className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
@@ -252,7 +321,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <ResetIcon className="h-3 w-3" /><span>Reset</span>
                         </button>
                     </div>
-                    <CompactTargetItem label="Target DTQĐ" baseValue={baseTargetQuyDoi} adjValue={adjustedTarget} unit="Tr" ratio={totalTarget} onChange={v => setTotalTarget(v)} onReset={() => setTotalTarget(100)} colorTheme="sky" />
+                    <CompactTargetItem label="Target DTQĐ" baseValue={baseTargetQuyDoi} adjValue={adjustedTarget} unit="Tr" ratio={totalTarget} onChange={v => setTotalTarget(v)} onReset={() => setTotalTarget(100)} colorTheme="sky" perPerson={totalAllocatedEmployees > 0 ? adjustedTarget / totalAllocatedEmployees : undefined} />
                     <CompactTargetItem label="Target Trả góp" baseValue={45} adjValue={traGop} unit="%" ratio={traGop} onChange={v => setTraGop(v)} onReset={() => setTraGop(45)} colorTheme="purple" />
                     <CompactTargetItem label="Target Quy đổi" baseValue={40} adjValue={quyDoi} unit="%" ratio={quyDoi} onChange={v => setQuyDoi(v)} onReset={() => setQuyDoi(40)} colorTheme="amber" />
                 </div>
@@ -319,37 +388,38 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
 
                             return (
                                 <div key={dept.name} className={`relative group p-3 ${t.bg} border ${t.border} rounded-xl shadow-sm transition-all hover:scale-[1.01]`}>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <div className="flex items-center gap-2">
-                                            <span className={`text-[12px] font-black uppercase tracking-wider ${t.label}`}>{dept.name}</span>
-                                            <span className="text-[9px] opacity-70 font-bold uppercase">({dept.employeeCount} NV)</span>
-                                            {isManual && (
-                                                <div className="flex gap-1 ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <button onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3 w-3" /></button>
-                                                    <button onClick={() => { if(confirm(`Xóa bộ phận "${dept.name}"?`)) { const n = {...manualMapping}; delete n[dept.name]; setManualMapping(n); const w = {...departmentWeights}; delete w[dept.name]; setDepartmentWeights(w); } }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-red-600 hover:bg-red-100 hover:border-red-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3 w-3" /></button>
-                                                </div>
-                                            )}
+                                    <div className="flex justify-between items-start mb-1">
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-[12px] font-black uppercase tracking-wider ${t.label}`}>{dept.name}</span>
+                                                <span className="text-[9px] opacity-70 font-bold uppercase">({dept.employeeCount} NV)</span>
+                                                {isManual && (
+                                                    <div className="flex gap-1 ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <button onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3 w-3" /></button>
+                                                        <button onClick={() => { if(confirm(`Xóa bộ phận "${dept.name}"?`)) { const n = {...manualMapping}; delete n[dept.name]; setManualMapping(n); const w = {...departmentWeights}; delete w[dept.name]; setDepartmentWeights(w); } }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-red-600 hover:bg-red-100 hover:border-red-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3 w-3" /></button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="flex items-center gap-2 mt-0.5">
+                                                <span className={`text-[11px] font-black ${t.after} tabular-nums`}>{f.format(allocated)}<span className="text-[8px] opacity-60 ml-0.5 uppercase">Tr</span></span>
+                                                <span className="text-[9px] opacity-50">—</span>
+                                                <span className={`text-[11px] font-black ${t.label}`}>{f.format(perEmployee)}Tr/ng</span>
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-3">
-                                            <div className="text-right">
-                                                <span className={`text-[12px] font-black ${t.after} tabular-nums`}>{f.format(allocated)}<span className="text-[8px] opacity-60 ml-0.5 uppercase">Tr</span></span>
-                                                <span className={`text-[9px] ${t.label} font-bold ml-2 opacity-80`}>~ {f.format(perEmployee)}Tr/ng</span>
-                                            </div>
-                                            <div className={`flex items-center gap-1 ${t.inputBg} px-2 py-1 rounded-lg border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm`}>
-                                                <input 
-                                                    type="number"
-                                                    value={Math.round(weight).toString()}
-                                                    onFocus={(e) => e.target.select()}
-                                                    onChange={(e) => { 
-                                                        const val = e.target.value;
-                                                        if (val === '') { handleDepartmentSliderChange(dept.name)(0); return; }
-                                                        const v = parseInt(val, 10); 
-                                                        if (!isNaN(v)) handleDepartmentSliderChange(dept.name)(v); 
-                                                    }}
-                                                    className={`w-10 bg-transparent text-right text-[12px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-                                                />
-                                                <span className="text-[9px] font-bold opacity-60">%</span>
-                                            </div>
+                                        <div className={`flex items-center gap-1 ${t.inputBg} px-2 py-1 rounded-lg border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm`}>
+                                            <input 
+                                                type="number"
+                                                value={Math.round(weight).toString()}
+                                                onFocus={(e) => e.target.select()}
+                                                onChange={(e) => { 
+                                                    const val = e.target.value;
+                                                    if (val === '') { handleDepartmentSliderChange(dept.name)(0); return; }
+                                                    const v = parseInt(val, 10); 
+                                                    if (!isNaN(v)) handleDepartmentSliderChange(dept.name)(v); 
+                                                }}
+                                                className={`w-10 bg-transparent text-right text-[12px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                            />
+                                            <span className="text-[9px] font-bold opacity-60">%</span>
                                         </div>
                                     </div>
                                     <div className="px-1 relative">
@@ -370,7 +440,21 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
             <CreateDeptModal 
                 isOpen={isModalOpen} 
                 onClose={() => { setIsModalOpen(false); setEditingDept(null); }} 
-                onSave={(name, emps) => { const n = {...manualMapping}; if(editingDept && editingDept.name !== name) delete n[editingDept.name]; n[name] = emps; setManualMapping(n); }}
+                onSave={(name, emps) => {
+                    const n = {...manualMapping};
+                    if (editingDept && editingDept.name !== name) delete n[editingDept.name];
+                    if (emps.length === 0) {
+                        // Xóa hết NV → xóa luôn bộ phận
+                        delete n[name];
+                        const w = {...departmentWeights};
+                        delete w[name];
+                        if (editingDept) delete w[editingDept.name];
+                        setDepartmentWeights(w);
+                    } else {
+                        n[name] = emps;
+                    }
+                    setManualMapping(n);
+                }}
                 allEmployees={allEmployees}
                 existingMapping={manualMapping}
                 editingDept={editingDept}

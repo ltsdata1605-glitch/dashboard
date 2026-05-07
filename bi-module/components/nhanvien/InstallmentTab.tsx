@@ -12,9 +12,6 @@ import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services
 
 const MedalBadge: React.FC<{ rank?: number }> = ({ rank }) => {
     if (!rank) return <div className="w-7" />;
-    if (rank === 1) return <span className="flex items-center justify-center w-7 h-7 bg-yellow-400 text-white rounded-full shadow-sm text-sm" title="TOP 1">🥇</span>;
-    if (rank === 2) return <span className="flex items-center justify-center w-7 h-7 bg-slate-300 text-white rounded-full shadow-sm text-sm" title="TOP 2">🥈</span>;
-    if (rank === 3) return <span className="flex items-center justify-center w-7 h-7 bg-amber-600 text-white rounded-full shadow-sm text-sm" title="TOP 3">🥉</span>;
     return <span className="text-slate-400 font-bold w-7 text-center text-xs tabular-nums">#{rank}</span>;
 };
 
@@ -367,7 +364,7 @@ const InstallmentTab: React.FC<{
                                         >
                                             <div className="flex items-center gap-3">
                                                 <MedalBadge rank={row.rank} />
-                                                <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />
+
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex justify-between items-start">
                                                         <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
@@ -376,7 +373,7 @@ const InstallmentTab: React.FC<{
                                                             <DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} />
                                                         </div>
                                                     </div>
-                                                    <span className="text-[10px] text-slate-400 uppercase font-bold">{row.department}</span>
+
                                                 </div>
                                             </div>
                                             
@@ -448,10 +445,10 @@ const InstallmentTab: React.FC<{
                                                 <td className={`px-3 py-2 whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 ${isTotal ? 'text-center uppercase tracking-wider text-[11px]' : 'bg-transparent'}`}>
                                                     <div className={`flex items-center ${isTotal ? 'justify-center' : 'gap-2'}`}>
                                                         {!isTotal && <MedalBadge rank={row.rank} />}
-                                                        {!isTotal && <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />}
+
                                                         <div className="flex flex-col min-w-0" onClick={() => setHighlightedEmployees((prev: Set<string>) => { const n = new Set(prev); if (!row.originalName) return prev; if (n.has(row.originalName)) n.delete(row.originalName); else n.add(row.originalName); return n; })}>
                                                             <span className={`font-bold ${isTotal ? '' : 'text-sky-700 dark:text-sky-400 hover:underline whitespace-normal break-words'}`}>{row.name}</span>
-                                                            {!isTotal && <span className="text-[10px] text-slate-400 font-medium capitalize tabular-nums">{row.department}</span>}
+
                                                         </div>
                                                     </div>
                                                 </td>

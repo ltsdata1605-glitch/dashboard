@@ -2,7 +2,7 @@ import React from 'react';
 import { RevenueRow, Employee } from '../../../types/nhanVienTypes';
 import { roundUp } from '../../../utils/nhanVienHelpers';
 import { MedalBadge, DeltaBadge } from '../../shared/Badges';
-import { AvatarUploader } from '../../shared/AvatarUploader';
+
 import { UsersIcon } from '../../Icons';
 import { ColorSettings, CriterionConfig } from './ColorSettingsModal';
 
@@ -39,13 +39,13 @@ export const RevenueMobileCard = React.memo(({
         >
             <div className="flex items-center gap-3">
                 <MedalBadge rank={row.rank} />
-                <AvatarUploader employeeName={row.originalName!} supermarketName={supermarketName} />
+
                 <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
                         <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
-                        <span className="text-[10px] font-black text-sky-600 bg-sky-50 dark:bg-sky-900/30 px-2 py-0.5 rounded-full">{roundUp(row.calculatedCompletion)}% HT</span>
+                        <span className="text-[10px] font-black text-sky-600 dark:text-sky-400">{roundUp(row.calculatedCompletion)}% HT</span>
                     </div>
-                    <span className="text-[10px] text-slate-400 uppercase font-bold">{row.department}</span>
+
                 </div>
             </div>
             

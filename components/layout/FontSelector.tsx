@@ -9,26 +9,20 @@ const FONTS = [
     { label: 'Oswald', value: 'Oswald', style: { fontFamily: "'Oswald', sans-serif" } },
     { label: 'Roboto Condensed', value: 'Roboto Condensed', style: { fontFamily: "'Roboto Condensed', sans-serif" } },
     { label: 'Fjalla One', value: 'Fjalla One', style: { fontFamily: "'Fjalla One', sans-serif" } },
-    { label: 'Archivo Narrow', value: 'Archivo Narrow', style: { fontFamily: "'Archivo Narrow', sans-serif" } },
     { label: 'Jost', value: 'Jost', style: { fontFamily: "'Jost', sans-serif" } },
     { label: 'Josefin Sans', value: 'Josefin Sans', style: { fontFamily: "'Josefin Sans', sans-serif" } },
-    { label: 'Bai Jamjuree', value: 'Bai Jamjuree', style: { fontFamily: "'Bai Jamjuree', sans-serif" } },
-    { label: 'Anton', value: 'Anton', style: { fontFamily: "'Anton', sans-serif" } },
-    { label: 'Bebas Neue', value: 'Bebas Neue', style: { fontFamily: "'Bebas Neue', sans-serif" } },
-    { label: 'Kanit', value: 'Kanit', style: { fontFamily: "'Kanit', sans-serif" } },
+
     { label: 'Alata Regular', value: 'Alata Regular', style: { fontFamily: "'Alata Regular', sans-serif" } },
     { label: 'Shopee Text', value: 'Shopee Text', style: { fontFamily: "'Shopee Text', sans-serif" } },
     { label: 'SF Pro Display', value: 'SF Pro Display', style: { fontFamily: "'SF Pro Display', sans-serif" } },
     { label: 'SVN-Gilroy', value: 'SVN-Gilroy', style: { fontFamily: "'SVN-Gilroy', sans-serif" } },
     { label: 'Samsung Sharp Sans', value: 'Samsung Sharp Sans', style: { fontFamily: "'Samsung Sharp Sans', sans-serif" } },
     { label: 'Shopee Display', value: 'Shopee Display', style: { fontFamily: "'Shopee Display', sans-serif" } },
-    { label: 'UTM Aurora', value: 'UTM Aurora', style: { fontFamily: "'UTM Aurora', sans-serif" } },
+
     { label: 'UTM Avo', value: 'UTM Avo', style: { fontFamily: "'UTM Avo', sans-serif" } },
-    { label: 'UTM Cafeta', value: 'UTM Cafeta', style: { fontFamily: "'UTM Cafeta', sans-serif" } },
+
     { label: 'UTM Colossalis', value: 'UTM Colossalis', style: { fontFamily: "'UTM Colossalis', sans-serif" } },
-    { label: 'UTM Gloria', value: 'UTM Gloria', style: { fontFamily: "'UTM Gloria', sans-serif" } },
-    { label: 'UTM Libel KT', value: 'UTM Libel KT', style: { fontFamily: "'UTM Libel KT', sans-serif" } },
-    { label: 'UTM Pacific Standard', value: 'UTM Pacific Standard', style: { fontFamily: "'UTM Pacific Standard', sans-serif" } },
+
     { label: 'UTM Penumbra', value: 'UTM Penumbra', style: { fontFamily: "'UTM Penumbra', sans-serif" } }
 ];
 
@@ -52,7 +46,8 @@ const FontSelector: React.FC = () => {
                     document.head.appendChild(styleEl);
                 }
                 if (font !== 'Plus Jakarta Sans') {
-                    styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, strong, em, b, i { font-family: '${font}', sans-serif !important; }`;
+                    document.documentElement.style.setProperty('--font-sans', `'${font}', sans-serif`);
+                    styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${font}', sans-serif !important; }`;
                 }
             }
         });
@@ -123,9 +118,11 @@ const FontSelector: React.FC = () => {
 
         // Apply instantly using a style block with !important to override tailwind utilities
         if (fontValue && fontValue !== 'Plus Jakarta Sans') {
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, strong, em, b, i { font-family: '${fontValue}', sans-serif !important; }`;
+            document.documentElement.style.setProperty('--font-sans', `'${fontValue}', sans-serif`);
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${fontValue}', sans-serif !important; }`;
         } else {
-            styleEl.innerHTML = ''; // Reset to tailwind default (Plus Jakarta Sans)
+            document.documentElement.style.setProperty('--font-sans', `'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif`);
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }`;
         }
 
         setIsOpen(false);

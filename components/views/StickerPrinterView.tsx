@@ -1,10 +1,12 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, Suspense, lazy } from 'react';
 import { createPortal } from 'react-dom';
 import { Printer, Settings, CheckCircle2, Image as ImageIcon, Upload, Plus, Trash2, RotateCcw, Clock, ChevronDown, ChevronUp, X, Download, FileSpreadsheet, Package } from 'lucide-react';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { saveSetting, getSetting } from '../../services/dbService';
 import BarcodeCanvas from './BarcodeCanvas';
 import * as XLSX from 'xlsx';
+
+const StickerEventApp = lazy(() => import('./stickerevent/StickerEventApp'));
 
 const STICKER_DB_KEY = 'stickerPrinterState';
 const STICKER_HISTORY_KEY = 'stickerPrintHistory';
@@ -69,6 +71,7 @@ export default function StickerPrinterView() {
     const [footerTextContent, setFooterTextContent] = useState('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
     const [searchTerm, setSearchTerm] = useState('');
     const [showBarcode, setShowBarcode] = useState(false);
+    const [inventoryCodes, setInventoryCodes] = useState<Set<string> | null>(null);
     const [barcodeImei, setBarcodeImei] = useState('123456');
     const [manualPages, setManualPages] = useState<StickerPage[]>([]);
     const [printHistory, setPrintHistory] = useState<PrintHistoryEntry[]>([]);
@@ -81,6 +84,9 @@ export default function StickerPrinterView() {
     const footerContentRef = useRef('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
     const headerRef = useRef<HTMLDivElement>(null);
     const subHeaderRef = useRef<HTMLDivElement>(null);
+    const oldPriceRef = useRef<HTMLDivElement>(null);
+    const newPriceRef = useRef<HTMLDivElement>(null);
+    const percentRef = useRef<HTMLDivElement>(null);
 
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -194,6 +200,31 @@ export default function StickerPrinterView() {
                 range.collapse(false);
                 sel.removeAllRanges();
                 sel.addRange(range);
+            }
+        }
+
+        // Auto-calculate percentage from old and new price
+        autoCalcPercent();
+    };
+
+    const autoCalcPercent = () => {
+        const oldEl = oldPriceRef.current;
+        const newEl = newPriceRef.current;
+        const pctEl = percentRef.current;
+        if (!oldEl || !newEl || !pctEl) return;
+
+        const oldVal = Number(oldEl.innerText.replace(/\D/g, ''));
+        // For new price: in gio_vang mode the value is in thousands (has .000 suffix), in gia_soc mode it's also in thousands
+        let newVal = Number(newEl.innerText.replace(/\D/g, ''));
+        // newPrice is displayed in thousands (e.g. 3.490 = 3,490,000), oldPrice is full (e.g. 5.490.000)
+        if (oldVal > 0 && newVal > 0) {
+            // Detect if newVal is much smaller than oldVal (displayed in thousands)
+            if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
+                newVal = newVal * 1000;
+            }
+            const ratio = Math.round((newVal / oldVal - 1) * 100);
+            if (ratio < 0) {
+                pctEl.innerText = `${ratio}%`;
             }
         }
     };
@@ -345,6 +376,13 @@ export default function StickerPrinterView() {
                     alert('Không tìm thấy dữ liệu hợp lệ trong file.');
                     return;
                 }
+                // Auto-filter by inventory if loaded
+                if (inventoryCodes) {
+                    items = items.map(it => ({
+                        ...it,
+                        selected: inventoryCodes.has(String(it.imei).replace(/\D/g, '').replace(/^0+/, ''))
+                    }));
+                }
                 setBatchItems(items);
                 setShowBarcode(true);
 
@@ -363,6 +401,53 @@ export default function StickerPrinterView() {
         };
         reader.readAsBinaryString(file);
         e.target.value = '';
+    };
+
+    const handleInventoryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+            try {
+                const bstr = evt.target?.result;
+                const wb = XLSX.read(bstr, { type: 'binary' });
+                const ws = wb.Sheets[wb.SheetNames[0]];
+                const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+                const codes = new Set<string>();
+                for (let i = 1; i < data.length; i++) {
+                    const row = data[i];
+                    if (!row || row.length < 6) continue;
+                    const colF = row[5];
+                    if (colF == null) continue;
+                    // Normalize: convert to string, trim, strip non-digits, remove leading zeros
+                    const normalized = String(colF).trim().replace(/\D/g, '').replace(/^0+/, '');
+                    if (normalized) codes.add(normalized);
+                }
+                if (codes.size === 0) {
+                    alert('Không tìm thấy mã sản phẩm trong cột F của file tồn kho.');
+                    return;
+                }
+                setInventoryCodes(codes);
+                // Auto-filter existing batch items
+                if (batchItems.length > 0) {
+                    setBatchItems(prev => prev.map(it => ({
+                        ...it,
+                        selected: codes.has(String(it.imei).replace(/\D/g, '').replace(/^0+/, ''))
+                    })));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Lỗi đọc file tồn kho');
+            }
+        };
+        reader.readAsBinaryString(file);
+        e.target.value = '';
+    };
+
+    const clearInventory = () => {
+        setInventoryCodes(null);
+        // Restore all items to selected
+        setBatchItems(prev => prev.map(it => ({ ...it, selected: true })));
     };
 
     const toggleItemSelection = (id: string) => {
@@ -680,16 +765,19 @@ export default function StickerPrinterView() {
                 )}
             </div>
 
-            {/* Event iframe — always mounted once opened, toggled via CSS */}
+            {/* Event native component — always mounted once opened, toggled via CSS */}
             {eventEverOpened && (
-                <div className={`absolute inset-0 z-10 w-full h-full transition-opacity duration-200 ${stickerMode === 'event' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                    <iframe 
-                        src="https://stickerevent-final-487587635482.us-west1.run.app" 
-                        className="w-full h-full border-none"
-                        title="Event - Tồn kho"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                    />
+                <div className={`absolute inset-0 z-10 w-full h-full overflow-y-auto transition-opacity duration-200 ${stickerMode === 'event' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+                    <Suspense fallback={
+                        <div className="w-full h-full flex items-center justify-center bg-slate-50">
+                            <div className="flex flex-col items-center gap-3">
+                                <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                                <p className="text-sm text-slate-500 font-medium">Đang tải Event - Tồn kho...</p>
+                            </div>
+                        </div>
+                    }>
+                        <StickerEventApp />
+                    </Suspense>
                 </div>
             )}
 
@@ -966,16 +1054,16 @@ export default function StickerPrinterView() {
                             {stickerType === 'gio_vang' && (
                                 <div className="sub-header" ref={subHeaderRef} onInput={handleSubHeaderInput} contentEditable suppressContentEditableWarning />
                             )}
-                            <div className="extra1" contentEditable suppressContentEditableWarning>-36%</div>
-                            <div className="old" onInput={handlePriceInput} contentEditable suppressContentEditableWarning>5.490.000</div>
+                            <div className="extra1" ref={percentRef} contentEditable suppressContentEditableWarning>-36%</div>
+                            <div className="old" ref={oldPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>5.490.000</div>
                             <div className="name" ref={nameRef} onInput={handleNameInput} contentEditable suppressContentEditableWarning />
                             {stickerType === 'gio_vang' ? (
                                 <div className="extra2 flex items-baseline justify-center">
-                                    <span onInput={handlePriceInput} contentEditable suppressContentEditableWarning>10.990</span>
+                                    <span ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>10.990</span>
                                     <span className="small-zeros" contentEditable={false}>.000</span>
                                 </div>
                             ) : (
-                                <div className="extra2" onInput={handlePriceInput} contentEditable suppressContentEditableWarning>3.490</div>
+                                <div className="extra2" ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>3.490</div>
                             )}
                             <div className="footer-text" ref={footerRef} onInput={handleFooterTextInput} contentEditable suppressContentEditableWarning />
                         </div>
@@ -1147,6 +1235,15 @@ export default function StickerPrinterView() {
                         </div>
                     </div>
 
+                    <div className="mt-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
+                        <div className="flex gap-3">
+                            <CheckCircle2 className="text-emerald-500 shrink-0" size={20} />
+                            <p className="text-xs text-emerald-700 dark:text-emerald-300 leading-relaxed">
+                                <strong>% giảm tự động:</strong> Chỉ cần nhập <strong>Giá cũ</strong> và <strong>Giá mới</strong>, phần trăm giảm sẽ được tính tự động. Không cần nhập thủ công.
+                            </p>
+                        </div>
+                    </div>
+
                     <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
                         <div className="flex gap-2">
                             <label className="flex-1 flex items-center justify-center gap-2 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-sm text-sm">
@@ -1181,6 +1278,48 @@ export default function StickerPrinterView() {
                                     <input type="file" accept=".xlsx, .xls, .csv" onChange={handleTemplateUpload} className="hidden" />
                                 </label>
                             </div>
+                        </div>
+
+                        <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg border border-amber-100 dark:border-amber-800/50">
+                            <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-1.5">
+                                <Package size={14} />
+                                Lọc tồn kho trưng bày
+                            </p>
+                            <div className="grid grid-cols-2 gap-2">
+                                <a 
+                                    href="https://report.mwgroup.vn/home/dashboard/17" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-center gap-1.5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-xs cursor-pointer transition-colors shadow-sm"
+                                >
+                                    <Package size={14} />
+                                    Đỗ tồn Trưng bày
+                                </a>
+                                <label className="flex items-center justify-center gap-1.5 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-xs cursor-pointer transition-colors shadow-sm">
+                                    <Upload size={14} />
+                                    {inventoryCodes ? `Đổi file (${inventoryCodes.size} mã)` : 'Nhập File Tồn'}
+                                    <input type="file" accept=".xlsx, .xls, .csv" onChange={handleInventoryUpload} className="hidden" />
+                                </label>
+                            </div>
+                            {inventoryCodes && (
+                                <div className="mt-2 flex items-center justify-between">
+                                    <div className="flex items-center gap-2 text-[10px] font-bold">
+                                        <span className="text-emerald-600 dark:text-emerald-400">
+                                            ✓ {batchItems.filter(i => i.selected).length} có tồn
+                                        </span>
+                                        <span className="text-slate-400">|</span>
+                                        <span className="text-red-500 dark:text-red-400">
+                                            ✗ {batchItems.filter(i => !i.selected).length} không tồn
+                                        </span>
+                                    </div>
+                                    <button 
+                                        onClick={clearInventory}
+                                        className="text-[10px] font-bold text-amber-600 hover:text-amber-800 dark:text-amber-400 uppercase"
+                                    >
+                                        Xoá lọc
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
                         <div className="mt-4 flex flex-col gap-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-lg border border-slate-100 dark:border-slate-700/50">
