@@ -26,7 +26,7 @@ import ExportLoader from '../common/ExportLoader';
 import ChangelogModal from '../modals/ChangelogModal';
 import { SectionHeader } from '../common/SectionHeader';
 import { Icon } from '../common/Icon';
-import { getExportFilenamePrefix } from '../../utils/dataUtils';
+import { getExportFilenamePrefix, formatCurrency } from '../../utils/dataUtils';
 import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } from '../common/SkeletonLoader';
 import { DebugPanel } from '../common/DebugPanel';
 import KpiCardConfigModal from '../kpis/modals/KpiCardConfigModal';
@@ -393,7 +393,22 @@ const DashboardView = React.memo(function DashboardView() {
                                                 <SectionHeader 
                                                     title="TỔNG QUAN DOANH THU" 
                                                     icon="bar-chart-3" 
-                                                    subtitle={processedData.reportSubTitle}
+                                                    subtitle={<>
+                                                        <span className="hidden md:inline">{processedData.reportSubTitle}</span>
+                                                        {/* Mobile: show Chờ Xuất inline */}
+                                                        <span className="md:hidden inline-flex items-center gap-1">
+                                                            <span>{processedData.reportSubTitle}</span>
+                                                            {processedData.kpis && (processedData.kpis as any).doanhThuThucChoXuat > 0 && (
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); openUnshippedModal(); }}
+                                                                    className="inline-flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold text-[10px] border border-rose-200 dark:border-rose-800 active:scale-95 transition-transform"
+                                                                >
+                                                                    <Icon name="archive-restore" size={3} />
+                                                                    Chờ xuất: {formatCurrency((processedData.kpis as any).doanhThuThucChoXuat)}
+                                                                </button>
+                                                            )}
+                                                        </span>
+                                                    </>}
                                                 >
                                                         <div className="flex items-center gap-2 hide-on-export">
                                                             <button onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
