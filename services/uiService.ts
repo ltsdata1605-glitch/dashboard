@@ -50,6 +50,62 @@ export async function shareBlob(blob: Blob, filename: string): Promise<boolean> 
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// EXPORT OVERLAY — Full-screen overlay with progress during image export
+// ═══════════════════════════════════════════════════════════════════════
+let _overlayEl: HTMLDivElement | null = null;
+
+export function showExportOverlay(message = 'Đang xuất ảnh...', progress?: string) {
+    if (!_overlayEl) {
+        _overlayEl = document.createElement('div');
+        _overlayEl.id = 'export-overlay';
+        _overlayEl.style.cssText = `
+            position: fixed; inset: 0; z-index: 9999999;
+            background: rgba(15,23,42,.65); backdrop-filter: blur(4px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity .2s ease;
+        `;
+        _overlayEl.innerHTML = `
+            <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding:32px;border-radius:16px;background:rgba(30,41,59,.9);box-shadow:0 8px 32px rgba(0,0,0,.3);">
+                <div id="export-spinner" style="width:40px;height:40px;border:3px solid rgba(255,255,255,.15);border-top-color:#818cf8;border-radius:50%;animation:exportSpin .8s linear infinite;"></div>
+                <p id="export-msg" style="color:#e2e8f0;font-size:15px;font-weight:600;text-align:center;margin:0;"></p>
+                <p id="export-progress" style="color:#94a3b8;font-size:13px;font-weight:500;text-align:center;margin:0;"></p>
+            </div>
+        `;
+        const style = document.createElement('style');
+        style.textContent = '@keyframes exportSpin { to { transform: rotate(360deg); } }';
+        _overlayEl.appendChild(style);
+        document.body.appendChild(_overlayEl);
+    }
+    const msgEl = _overlayEl.querySelector('#export-msg') as HTMLElement;
+    const progressEl = _overlayEl.querySelector('#export-progress') as HTMLElement;
+    if (msgEl) msgEl.textContent = message;
+    if (progressEl) progressEl.textContent = progress || '';
+    requestAnimationFrame(() => { if (_overlayEl) _overlayEl.style.opacity = '1'; });
+}
+
+export function updateExportOverlay(message?: string, progress?: string) {
+    if (!_overlayEl) return;
+    if (message) {
+        const msgEl = _overlayEl.querySelector('#export-msg') as HTMLElement;
+        if (msgEl) msgEl.textContent = message;
+    }
+    if (progress !== undefined) {
+        const progressEl = _overlayEl.querySelector('#export-progress') as HTMLElement;
+        if (progressEl) progressEl.textContent = progress;
+    }
+}
+
+export function hideExportOverlay() {
+    if (_overlayEl) {
+        _overlayEl.style.opacity = '0';
+        setTimeout(() => {
+            _overlayEl?.remove();
+            _overlayEl = null;
+        }, 200);
+    }
+}
+
 const waitForImages = (element: HTMLElement): Promise<void[]> => {
     const images = Array.from(element.querySelectorAll('img'));
     const promises = images.map(img => {
@@ -335,8 +391,16 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     // FIX FOR SCROLLABLE CONTENT (Expand scrollable tables for export)
     const scrollableContainers = clone.querySelectorAll('.overflow-x-auto, .overflow-y-auto, .custom-scrollbar, [class*="max-h-"], [class*="overflow-"]');
     const hideScrollbarStyle = document.createElement('style');
-    hideScrollbarStyle.textContent = `.clone-no-scrollbar::-webkit-scrollbar { display: none !important; }`;
+    hideScrollbarStyle.textContent = `
+        .clone-no-scrollbar::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+        .clone-no-scrollbar { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+        *::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+        * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+    `;
     clone.appendChild(hideScrollbarStyle);
+    // Hide scrollbar on the root clone element itself
+    clone.style.scrollbarWidth = 'none';
+    clone.classList.add('clone-no-scrollbar');
 
     if (captureAsDisplayed) {
         // Only expand VERTICAL overflow — keep horizontal clipped to match viewport width
@@ -643,8 +707,8 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         finalHeight += 4;
 
         let finalScale = scale;
-        if (finalHeight * scale > 15000) {
-            finalScale = Math.max(1, 15000 / finalHeight);
+        if (finalHeight * scale > 32000) {
+            finalScale = Math.max(1, 32000 / finalHeight);
             console.warn(`Cảnh báo: Ảnh quá dài (${finalHeight}px). Tự động giảm tỉ lệ xuống ${finalScale.toFixed(2)} để tránh lỗi trình duyệt.`);
         }
 

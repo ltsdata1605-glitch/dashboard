@@ -18,12 +18,14 @@ interface SummaryTableFilterBarProps {
     expandLevel: number;
     handleExport: () => void;
     isExporting: boolean;
+    isFullScreen?: boolean;
+    setIsFullScreen?: (val: boolean) => void;
 }
 
 export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
     isCrossSellingMode, isPending, sortableListRef, localDrilldownOrder, getFilterProps,
     activeFilterKey, setActiveFilterKey, hasActiveFilters, handleExpandAll, handleCollapseAll,
-    handleResetAllFilters, expandLevel, handleExport, isExporting
+    handleResetAllFilters, expandLevel, handleExport, isExporting, isFullScreen, setIsFullScreen
 }) => {
     if (isCrossSellingMode) return null;
 
@@ -78,6 +80,18 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                             >
                                 <Icon name="minimize-2" size={4} />
                             </button>
+                            {setIsFullScreen && (
+                                <>
+                                    <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                                    <button
+                                        onClick={() => setIsFullScreen(!isFullScreen)}
+                                        className={`h-7 w-7 rounded-lg flex items-center justify-center transition-colors ${isFullScreen ? 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200 dark:bg-indigo-900/40 dark:text-indigo-400 dark:hover:bg-indigo-800/60' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700'}`}
+                                        title={isFullScreen ? "Thu nhỏ bảng" : "Phóng to toàn màn hình"}
+                                    >
+                                        <Icon name={isFullScreen ? "minimize" : "maximize"} size={4} />
+                                    </button>
+                                </>
+                            )}
                             {hasActiveFilters && (
                                 <button
                                     onClick={handleResetAllFilters}
@@ -89,13 +103,6 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                             )}
                         </div>
                 </div>
-            </div>
-            
-            <div className="flex items-center gap-2 sm:gap-3 ml-auto mt-1 sm:mt-2 lg:mt-0">
-                
-                <button onClick={handleExport} disabled={isExporting} title="Xuất Ảnh" className="p-2 text-slate-500 dark:text-slate-400 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
-                    {isExporting ? <Icon name="loader-2" className="animate-spin" /> : <Icon name="camera" />}
-                </button>
             </div>
         </div>
     );

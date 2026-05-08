@@ -98,7 +98,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
     });
     
     const hasChildren = allChildrenKeys.length > 0;
-    const isExpandable = hasChildren && level < 5; 
+    const isExpandable = hasChildren && level < 6; 
 
     const aov = quantity > 0 ? revenue / quantity : 0;
     

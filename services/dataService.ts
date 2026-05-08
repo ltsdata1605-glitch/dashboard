@@ -52,7 +52,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             throw new Error(`Không thể tải file cấu hình. Status: ${response.status}`);
         }
         const csvText = await response.text();
-        setStatus({ message: 'Đang xử lý file cấu hình...', type: 'info', progress: 50 });
+        setStatus({ message: 'Đang xử lý file cấu hình...', type: 'info', progress: 30 });
         
         const parsedRows = robustCsvParse(csvText);
 
@@ -67,7 +67,8 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             groups: {},
             subgroups: {},
             childToParentMap: {},
-            childToSubgroupMap: {}
+            childToSubgroupMap: {},
+            quantityMultiplierMap: {}
         };
 
         const groupIndex = headers.indexOf('NhomCha');
@@ -107,6 +108,38 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
         
         if (Object.keys(config.groups).length === 0) {
             throw new Error("Không thể xử lý dữ liệu từ file cấu hình. Vui lòng kiểm tra định dạng.");
+        }
+
+        // --- Load quantity multiplier map from VIEON sheet ---
+        setStatus({ message: 'Đang tải bảng hệ số số lượng...', type: 'info', progress: 70 });
+        try {
+            // Derive the VIEON sheet URL from the base config URL
+            const vieonUrl = url.replace(/pub\?.*$/, 'pub?gid=681719985&single=true&output=csv');
+            const vieonResponse = await fetch(vieonUrl);
+            if (vieonResponse.ok) {
+                const vieonCsvText = await vieonResponse.text();
+                const vieonRows = robustCsvParse(vieonCsvText);
+                
+                if (vieonRows.length >= 2) {
+                    const vieonHeaders = vieonRows[0].map(h => h.trim());
+                    const codeIdx = vieonHeaders.indexOf('Mã sản phẩm');
+                    const multiplierIdx = vieonHeaders.indexOf('Hệ Số');
+                    
+                    if (codeIdx !== -1 && multiplierIdx !== -1) {
+                        for (let i = 1; i < vieonRows.length; i++) {
+                            const row = vieonRows[i];
+                            const code = (row[codeIdx] || '').trim();
+                            const multiplier = parseFloat(row[multiplierIdx] || '');
+                            if (code && !isNaN(multiplier)) {
+                                config.quantityMultiplierMap[code] = multiplier;
+                            }
+                        }
+                        console.log(`[Config] Đã tải ${Object.keys(config.quantityMultiplierMap).length} mã hệ số số lượng.`);
+                    }
+                }
+            }
+        } catch (vieonError) {
+            console.warn('[Config] Không thể tải bảng hệ số VIEON, bỏ qua:', vieonError);
         }
 
         setStatus({ message: 'Tải cấu hình thành công.', type: 'success', progress: 100 });

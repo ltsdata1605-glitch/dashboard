@@ -107,7 +107,7 @@ const TabContent = React.memo(() => {
 TabContent.displayName = 'TabContent';
 
 const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
-    'analysis': { main: 'Phân Tích', highlight: 'YCX' },
+    'analysis': { main: 'Phân Tích' },
     'check-thuong': { main: 'Check', highlight: 'Thưởng' },
     'employees': { main: 'Report', highlight: 'BI' },
     'inventory': { main: 'Kho', highlight: 'Hàng' },

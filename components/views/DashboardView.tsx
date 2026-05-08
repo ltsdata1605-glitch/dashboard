@@ -400,7 +400,7 @@ const DashboardView = React.memo(function DashboardView() {
                                                                 <Icon name="settings-2" size={5} />
                                                             </button>
                                                             <button onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                                                <Icon name="image" size={5} />
+                                                                <Icon name="download" size={5} />
                                                             </button>
                                                             <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                                 <Icon name="camera" size={5} />

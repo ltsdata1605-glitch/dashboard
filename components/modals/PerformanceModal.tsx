@@ -1,13 +1,14 @@
-import React, { useMemo, useRef, useEffect, useCallback, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import type { Employee, DataRow, ProductConfig } from '../../types';
 import ModalWrapper from './ModalWrapper';
 import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity, getHinhThucThanhToan } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../../constants';
 import { DashboardContext } from '../../contexts/DashboardContext';
+import { showExportOverlay, hideExportOverlay } from '../../services/uiService';
 
-// Added a global declaration for the 'google' object to resolve TypeScript errors about 'google' not being found.
-declare const google: any;
+
+
 
 interface PerformanceModalProps {
     isOpen: boolean;
@@ -61,10 +62,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     const productConfig = productConfigFromProps ?? context?.productConfig;
 
     const modalBodyRef = React.useRef<HTMLDivElement>(null);
-    const pieChartRef = useRef<HTMLDivElement>(null);
-    const chartInstanceRef = useRef<any>(null);
+
     const [isExporting, setIsExporting] = useState(false);
-    const [exportScale, setExportScale] = useState(2);
+
     const [isAllCustomersExpanded, setIsAllCustomersExpanded] = useState(false);
     const customerDetailsContainerRef = useRef<HTMLDivElement>(null);
 
@@ -196,13 +196,27 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 status: getRowValue(groupLines[0], COL.XUAT)
             })).sort((a, b) => b.lines.reduce((s, l) => s + (Number(getRowValue(l, COL.PRICE)) || 0), 0) - a.lines.reduce((s, l) => s + (Number(getRowValue(l, COL.PRICE)) || 0), 0));
 
+            // Get the created date from the first order
+            let createdDateKey = '';
+            let createdDateFormatted = '';
+            const firstOrderDateRaw = getRowValue(orders[0], COL.DATE_CREATED);
+            if (firstOrderDateRaw) {
+                const d = firstOrderDateRaw instanceof Date ? firstOrderDateRaw : new Date(firstOrderDateRaw as string);
+                if (!isNaN(d.getTime())) {
+                    createdDateKey = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                    createdDateFormatted = d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                }
+            }
+
             return { 
                 name: customerName, 
                 orderGroups: sortedOrderGroups,
                 totalRevenue,
                 totalRevenueQD,
                 hieuQuaQD,
-                scheduledDate: formattedScheduledDate
+                scheduledDate: formattedScheduledDate,
+                createdDateKey,
+                createdDateFormatted
             };
         }).sort((a, b) => b.totalRevenue - a.totalRevenue);
         
@@ -210,78 +224,16 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
 
     }, [employeeSalesData, productConfig]);
 
-    const drawChart = useCallback(() => {
-        if (!pieChartRef.current || !(window as any).google?.visualization || Object.keys(industryBreakdown).length === 0) {
-            if (pieChartRef.current) pieChartRef.current.innerHTML = '<p class="text-center text-slate-500 dark:text-slate-400">Không có dữ liệu ngành hàng.</p>';
-            return;
-        }
 
-        const dataTable = new (window as any).google.visualization.DataTable();
-        dataTable.addColumn('string', 'Industry');
-        dataTable.addColumn('number', 'Revenue');
-        Object.entries(industryBreakdown).forEach(([industry, revenue]) => {
-            dataTable.addRow([industry, revenue]);
-        });
-        
-        const isDark = document.documentElement.classList.contains('dark');
-        const options = {
-            backgroundColor: 'transparent',
-            chartArea: { width: '90%', height: '90%' },
-            legend: { textStyle: { color: isDark ? '#f1f5f9' : '#0f172a' } },
-            pieHole: 0.4,
-            pieSliceTextStyle: { color: isDark ? '#1e293b' : '#ffffff' },
-            tooltip: { text: 'value' }
-        };
-
-        try {
-            const chart = new (window as any).google.visualization.PieChart(pieChartRef.current);
-            chart.draw(dataTable, options);
-            chartInstanceRef.current = chart;
-        } catch (error) {
-            console.error("Failed to draw PieChart", error);
-        }
-    }, [industryBreakdown]);
-
-    useEffect(() => {
-        let observer: ResizeObserver;
-        const chartContainer = pieChartRef.current;
-        const drawAndObserve = () => {
-            drawChart();
-            if (chartContainer) {
-                observer = new ResizeObserver(() => {
-                    setTimeout(() => drawChart(), 150);
-                });
-                observer.observe(chartContainer);
-            }
-        };
-        if (isOpen) {
-            const timer = setTimeout(() => {
-                if ((window as any).google?.visualization) {
-                    drawAndObserve();
-                } else {
-                    (window as any).google?.charts?.load('current', { 'packages': ['corechart'] });
-                    (window as any).google?.charts?.setOnLoadCallback(drawAndObserve);
-                }
-            }, 350);
-            return () => {
-                clearTimeout(timer);
-                if (observer && chartContainer) {
-                    observer.unobserve(chartContainer);
-                }
-                if (chartInstanceRef.current && chartInstanceRef.current.clearChart) {
-                    chartInstanceRef.current.clearChart();
-                    chartInstanceRef.current = null;
-                }
-            };
-        }
-    }, [isOpen, drawChart]);
 
     const handleExport = async () => {
-        const elementToExport = modalBodyRef.current?.closest('.modal-content') as HTMLElement | null;
+        const elementToExport = modalBodyRef.current;
         if (elementToExport) {
             setIsExporting(true);
-            await onExport(elementToExport, `phan-tich-hieu-qua-${employeeName}.png`, { scale: exportScale, forceOpenDetails: true });
+            showExportOverlay(`Đang xuất: ${employeeName}`);
+            await onExport(elementToExport, `phan-tich-hieu-qua-${employeeName}.png`, { forceOpenDetails: true, forcedWidth: 960 });
             setIsExporting(false);
+            hideExportOverlay();
         }
     };
 
@@ -298,16 +250,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     
     const controls = (
         <div className="flex items-center gap-2 hide-on-export">
-            <select
-                value={exportScale}
-                onChange={(e) => setExportScale(Number(e.target.value))}
-                className="bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm px-2 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
-                aria-label="Chọn chất lượng ảnh xuất"
-            >
-                <option value={1}>Tiêu chuẩn (1x)</option>
-                <option value={2}>Chất lượng cao (2x)</option>
-                <option value={3}>Ultra HD (3x)</option>
-            </select>
+            <button onClick={toggleAllCustomers} title={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'} className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center w-[42px] h-[42px] border border-slate-300 dark:border-slate-600">
+                <Icon name={isAllCustomersExpanded ? "chevrons-up-down" : "chevrons-down-up"} size={4} />
+            </button>
             <button onClick={handleExport} disabled={isExporting} title="Xuất Ảnh Phân Tích" className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center w-[42px] h-[42px] border border-slate-300 dark:border-slate-600">
                  {isExporting ? <Icon name="loader-2" className="animate-spin" /> : <Icon name="camera" />}
             </button>
@@ -349,9 +294,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Top Products */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 flex flex-col">
                     <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2"><Icon name="award" size={5} className="text-amber-500"/> Top 5 Sản Phẩm Bán Chạy</h4>
-                    <ul className="space-y-2">
+                    <ul className="space-y-2 flex-1">
                         {topProducts.map((p, i) => (
                             <li key={i} className="flex justify-between items-center text-sm p-2 rounded-md bg-slate-50 dark:bg-slate-700/50">
                                 <div className="truncate pr-4">
@@ -364,10 +309,57 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                     </ul>
                 </div>
 
-                {/* Industry Breakdown */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 flex flex-col">
                     <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2"><Icon name="pie-chart" size={5} className="text-teal-500"/> Tỷ Trọng Doanh Thu Ngành Hàng</h4>
-                    <div ref={pieChartRef} style={{ width: '100%', height: '250px' }}></div>
+                    <div className="flex-1 overflow-y-auto">
+                    {(() => {
+                        const totalIndustryRevenue = Object.values(industryBreakdown).reduce((s, v) => s + v, 0);
+                        const sortedIndustries = Object.entries(industryBreakdown)
+                            .filter(([name]) => name !== 'Khác' && name !== 'Không xác định')
+                            .sort(([, a], [, b]) => b - a)
+                            .slice(0, 5);
+                        
+                        const barColors = [
+                            'bg-indigo-500', 'bg-emerald-500', 'bg-amber-500', 'bg-rose-500', 
+                            'bg-cyan-500', 'bg-purple-500', 'bg-orange-500', 'bg-teal-500',
+                            'bg-pink-500', 'bg-sky-500', 'bg-lime-500', 'bg-fuchsia-500'
+                        ];
+                        const dotColors = [
+                            'bg-indigo-400', 'bg-emerald-400', 'bg-amber-400', 'bg-rose-400',
+                            'bg-cyan-400', 'bg-purple-400', 'bg-orange-400', 'bg-teal-400',
+                            'bg-pink-400', 'bg-sky-400', 'bg-lime-400', 'bg-fuchsia-400'
+                        ];
+
+                        if (sortedIndustries.length === 0) {
+                            return <p className="text-center text-slate-500 dark:text-slate-400 py-4">Không có dữ liệu ngành hàng.</p>;
+                        }
+
+                        return (
+                            <ul className="space-y-2.5">
+                                {sortedIndustries.map(([name, revenue], i) => {
+                                    const percent = totalIndustryRevenue > 0 ? (revenue / totalIndustryRevenue) * 100 : 0;
+                                    return (
+                                        <li key={name}>
+                                            <div className="flex items-center justify-between mb-1">
+                                                <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
+                                                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotColors[i % dotColors.length]}`}></span>
+                                                    {name}
+                                                </span>
+                                                <span className="text-sm font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap ml-3">{formatCurrency(revenue)}</span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                    <div className={`h-full rounded-full ${barColors[i % barColors.length]} transition-all duration-500`} style={{ width: `${percent}%` }}></div>
+                                                </div>
+                                                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 w-10 text-right">{percent.toFixed(0)}%</span>
+                                            </div>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                        );
+                    })()}
+                    </div>
                 </div>
             </div>
 
@@ -377,13 +369,30 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                     <span className="flex items-center gap-2">
                         <Icon name="contact" size={5} className="text-sky-500"/> Chi Tiết Theo Khách Hàng
                     </span>
-                    <button onClick={toggleAllCustomers} title={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'} className="p-1.5 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 rounded-md transition-colors hide-on-export">
-                        <Icon name={isAllCustomersExpanded ? "chevrons-up-down" : "chevrons-down-up"} size={4} />
-                    </button>
                  </h4>
                  <div ref={customerDetailsContainerRef} className="space-y-0 max-h-[500px] overflow-y-auto pr-2 mt-4">
-                    {customerBreakdown.map(customer => (
-                        <details key={customer.name} className="bg-white dark:bg-slate-900 overflow-hidden" open={customerBreakdown.length === 1}>
+                    {(() => {
+                        // Sort customers by createdDateKey (newest first), then by revenue
+                        const sorted = [...customerBreakdown].sort((a, b) => {
+                            if (a.createdDateKey !== b.createdDateKey) return b.createdDateKey.localeCompare(a.createdDateKey);
+                            return b.totalRevenue - a.totalRevenue;
+                        });
+                        let lastDateKey = '';
+                        return sorted.map(customer => {
+                            const showDateHeader = customer.createdDateKey && customer.createdDateKey !== lastDateKey;
+                            lastDateKey = customer.createdDateKey || lastDateKey;
+                            return (
+                                <React.Fragment key={customer.name}>
+                                    {showDateHeader && (
+                                        <div className="flex items-center gap-2 mt-3 mb-1 px-1">
+                                            <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-md">
+                                                <Icon name="calendar" size={3} />
+                                                <span>Ngày tạo: {customer.createdDateFormatted}</span>
+                                            </div>
+                                            <div className="flex-1 h-px bg-indigo-200 dark:bg-indigo-800"></div>
+                                        </div>
+                                    )}
+                        <details className="bg-white dark:bg-slate-900 overflow-hidden" open={customerBreakdown.length === 1}>
                              <summary className="py-2.5 px-3 cursor-pointer flex justify-between items-center list-none bg-cyan-50/80 hover:bg-cyan-100/80 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-cyan-400">
                                 <p className="font-bold text-[17px] text-cyan-950 dark:text-cyan-100 pl-1">{customer.name.toUpperCase()}</p>
                                 <div className="flex items-center gap-x-4 gap-y-1 flex-wrap justify-end text-sm font-semibold">
@@ -401,11 +410,11 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                      <table className="w-full text-sm table-fixed compact-export-table border-collapse">
                                          <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs border-b border-t border-slate-100 dark:border-slate-800">
                                              <tr>
-                                                 <th className="py-2.5 px-2 text-left font-semibold w-[20%] lg:w-[15%]">Mã ĐH</th>
-                                                 <th className="py-2.5 px-2 text-left font-semibold w-[35%] lg:w-[40%]">Sản phẩm</th>
-                                                 <th className="py-2.5 px-2 text-center font-semibold w-[10%]">SL</th>
-                                                 <th className="py-2.5 px-2 text-right font-semibold w-[15%] whitespace-nowrap">Doanh Thu</th>
-                                                 <th className="py-2.5 px-2 text-center font-semibold w-[20%] lg:w-[20%]">Trạng Thái</th>
+                                                 <th className="py-2.5 px-2 text-left font-semibold w-[25%]">Mã ĐH</th>
+                                                 <th className="py-2.5 px-2 text-left font-semibold w-[35%] lg:w-[38%]">Sản phẩm</th>
+                                                 <th className="py-2.5 px-2 text-center font-semibold w-[8%]">SL</th>
+                                                 <th className="py-2.5 px-2 text-right font-semibold w-[14%] whitespace-nowrap">Doanh Thu</th>
+                                                 <th className="py-2.5 px-2 text-center font-semibold w-[18%]">Trạng Thái</th>
                                              </tr>
                                          </thead>
                                          <tbody>
@@ -419,9 +428,23 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                     return (
                                                         <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                                             {lineIndex === 0 && (
-                                                                <td rowSpan={group.lines.length} className="py-2.5 px-2 text-center text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700">
-                                                                    <div className="flex flex-col items-center justify-center gap-1">
-                                                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300 truncate w-full" title={orderId}>{orderId}</span>
+                                                            <td rowSpan={group.lines.length} className="py-2.5 px-2 text-left text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                                onClick={() => {
+                                                                    if (orderId && orderId !== '-') {
+                                                                        navigator.clipboard.writeText(orderId).then(() => {
+                                                                            const toast = document.createElement('div');
+                                                                            toast.textContent = `\u2713 \u0110\u00e3 sao ch\u00e9p: ${orderId}`;
+                                                                            toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
+                                                                            document.body.appendChild(toast);
+                                                                            requestAnimationFrame(() => { toast.style.opacity = '1'; });
+                                                                            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 1500);
+                                                                        });
+                                                                    }
+                                                                }}
+                                                                title={orderId !== '-' ? 'Nh\u1ea5n \u0111\u1ec3 sao ch\u00e9p' : ''}
+                                                            >
+                                                                    <div className="flex flex-col items-start justify-center gap-1">
+                                                                        <span className="font-mono font-bold text-slate-700 dark:text-slate-300 break-all">{orderId}</span>
                                                                         {group.isAttached && (
                                                                             <span className="inline-flex w-fit items-center px-1.5 py-1 rounded text-[9px] font-black uppercase bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-100 shadow-sm leading-none ring-1 ring-green-300/30">
                                                                                 Bán kèm
@@ -466,7 +489,10 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                  </div>
                               </div>
                         </details>
-                    ))}
+                                </React.Fragment>
+                            );
+                        });
+                    })()}
                  </div>
             </div>
         </div>

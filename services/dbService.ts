@@ -33,40 +33,57 @@ function getDb(): Promise<IDBDatabase> {
             if (!db.objectStoreNames.contains(APP_STORE)) db.createObjectStore(APP_STORE);
             if (!db.objectStoreNames.contains(SETTINGS_STORE)) db.createObjectStore(SETTINGS_STORE);
         };
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
+        request.onsuccess = () => {
+            const db = request.result;
+            // Reset cache khi kết nối bị đóng (HMR, tab management, etc.)
+            db.onclose = () => { dbPromise = null; };
+            resolve(db);
+        };
+        request.onerror = () => {
+            dbPromise = null;
+            reject(request.error);
+        };
     });
     return dbPromise;
 }
 
 export async function saveSetting(key: string, value: any): Promise<void> {
-    const db = await getDb();
-    return new Promise((resolve, reject) => {
-        try {
-            const tx = db.transaction(SETTINGS_STORE, 'readwrite');
-            const store = tx.objectStore(SETTINGS_STORE);
-            store.put(value, key);
-            if (key !== 'localSettingsLastModified') {
-                store.put(Date.now(), 'localSettingsLastModified');
-            }
-            tx.oncomplete = () => {
-                if (typeof window !== 'undefined') {
-                    window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
-                    // Nếu key thuộc BI module (có prefix bi_), bắn thêm event indexeddb-change
-                    // để BI module nội bộ cập nhật UI khi dữ liệu được kéo từ Cloud về
-                    if (key.startsWith('bi_')) {
-                        const originalKey = key.slice(3); // Bỏ prefix 'bi_'
-                        window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
-                    }
+    const tryTransaction = async (db: IDBDatabase) => {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+                const store = tx.objectStore(SETTINGS_STORE);
+                store.put(value, key);
+                if (key !== 'localSettingsLastModified') {
+                    store.put(Date.now(), 'localSettingsLastModified');
                 }
-                resolve();
-            };
-            tx.onerror = () => reject(tx.error);
-        } catch (error) {
-            console.error(`IndexedDB Error while saving setting '${key}':`, error);
-            reject(error);
-        }
-    });
+                tx.oncomplete = () => {
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                        if (key.startsWith('bi_')) {
+                            const originalKey = key.slice(3);
+                            window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                        }
+                    }
+                    resolve();
+                };
+                tx.onerror = () => reject(tx.error);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    };
+
+    try {
+        const db = await getDb();
+        await tryTransaction(db);
+    } catch (error) {
+        // Retry once with a fresh connection (handles stale/closing connections)
+        console.warn(`[IDB] Retry save '${key}' after error:`, (error as Error)?.message);
+        dbPromise = null;
+        const db = await getDb();
+        await tryTransaction(db);
+    }
 }
 
 export async function getAllSettings(): Promise<Record<string, any>> {
@@ -139,18 +156,28 @@ export const setValue = saveSetting;
 // --- Sales Data ---
 export async function saveSalesData(data: DataRow[], filename: string, fileLastModified?: number): Promise<void> {
     const stored: StoredSalesData = { data, filename, savedAt: new Date(), fileLastModified };
-    const db = await getDb();
-    return new Promise((resolve, reject) => {
-        try {
-            const tx = db.transaction(APP_STORE, 'readwrite');
-            tx.objectStore(APP_STORE).put(stored, 'salesData');
-            tx.oncomplete = () => resolve();
-            tx.onerror = () => reject(tx.error);
-        } catch (error) {
-            console.error('IndexedDB Error in saveSalesData:', error);
-            reject(error);
-        }
-    });
+    const tryTransaction = async (db: IDBDatabase) => {
+        return new Promise<void>((resolve, reject) => {
+            try {
+                const tx = db.transaction(APP_STORE, 'readwrite');
+                tx.objectStore(APP_STORE).put(stored, 'salesData');
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    };
+
+    try {
+        const db = await getDb();
+        await tryTransaction(db);
+    } catch (error) {
+        console.warn('[IDB] Retry saveSalesData after error:', (error as Error)?.message);
+        dbPromise = null;
+        const db = await getDb();
+        await tryTransaction(db);
+    }
 }
 
 export async function getSalesData(): Promise<StoredSalesData | null> {
@@ -197,12 +224,18 @@ export async function saveProductConfig(config: ProductConfig, url: string): Pro
 
 export async function getProductConfig(): Promise<{ config: ProductConfig, url: string, fetchedAt: Date } | null> {
     const data = await getSetting<{ config: ProductConfig, url: string, fetchedAt: Date }>('productConfig');
-    if (data && data.config && data.config.groups) {
-        const restoredGroups: { [key: string]: Set<string> } = {};
-        for (const [key, value] of Object.entries(data.config.groups)) {
-            restoredGroups[key] = new Set(value as any);
+    if (data && data.config) {
+        if (data.config.groups) {
+            const restoredGroups: { [key: string]: Set<string> } = {};
+            for (const [key, value] of Object.entries(data.config.groups)) {
+                restoredGroups[key] = new Set(value as any);
+            }
+            data.config.groups = restoredGroups;
         }
-        data.config.groups = restoredGroups;
+        // Backward compatibility: ensure quantityMultiplierMap exists
+        if (!data.config.quantityMultiplierMap) {
+            data.config.quantityMultiplierMap = {};
+        }
     }
     return data;
 }

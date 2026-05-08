@@ -189,6 +189,8 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                     expandLevel={expandLevel}
                     handleExport={handleExport}
                     isExporting={isExporting}
+                    isFullScreen={isFullScreen}
+                    setIsFullScreen={setIsFullScreen}
                 />
 
 

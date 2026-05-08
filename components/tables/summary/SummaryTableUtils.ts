@@ -99,11 +99,11 @@ export const HEADER_CONFIG: HeaderConfig[] = [
 
 export const ORDER_LABELS: Record<string, string> = {
     'kho': 'Kho',
-    'parent': 'Ngành hàng',
-    'child': 'Nhóm hàng',
+    'parent': 'Ngành',
+    'child': 'Nhóm',
     'manufacturer': 'Hãng SX',
-    'creator': 'Nhân viên',
-    'product': 'Tên sản phẩm'
+    'creator': 'Người tạo',
+    'product': 'Sản phẩm'
 };
 
 export const SHORT_ORDER_LABELS: Record<string, string> = {
@@ -111,7 +111,7 @@ export const SHORT_ORDER_LABELS: Record<string, string> = {
     'parent': 'Ngành',
     'child': 'Nhóm',
     'manufacturer': 'Hãng',
-    'creator': 'Nhân viên',
+    'creator': 'Người tạo',
     'product': 'Sản phẩm'
 };
 

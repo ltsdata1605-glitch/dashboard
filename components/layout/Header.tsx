@@ -176,7 +176,7 @@ const Header: React.FC<HeaderProps> = ({
                             className="p-2 text-slate-500 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                             title="Mở trang quản lý phân ca"
                         >
-                            <Icon name="external-link" size={4} />
+                            <Icon name="link" size={4} />
                         </a>
                         
                         <AnimatePresence mode="wait">
@@ -230,7 +230,7 @@ const Header: React.FC<HeaderProps> = ({
                         className="flex items-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                         title="Tải dữ liệu báo cáo"
                     >
-                        <Icon name="external-link" size={4} />
+                        <Icon name="link" size={4} />
                     </a>
 
                     <div className="border-l border-slate-100 dark:border-slate-700">

@@ -5,6 +5,7 @@ import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
+import { showExportOverlay, updateExportOverlay, hideExportOverlay } from '../../services/uiService';
 import * as XLSX from 'xlsx';
 
 interface UnshippedOrdersModalProps {
@@ -55,7 +56,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             const now = new Date();
             const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
             data = data.filter(row => {
-                let scheduledDateRaw = row['TG Hẹn Giao'] || row.parsedDate;
+                let scheduledDateRaw = row['Thời gian hẹn giao'] || row['TG Hẹn Giao'] || row.parsedDate;
                 if (!scheduledDateRaw) return false;
                 let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
                 if (!isNaN(scheduledDate.getTime())) {
@@ -72,35 +73,42 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
     const creatorRefs = useRef<{ [key: string]: HTMLDetailsElement | null }>({});
     const [isExporting, setIsExporting] = useState(false);
     const [isAllExpanded, setIsAllExpanded] = useState(false);
-    const [exportScale, setExportScale] = useState(2);
+
     
     useEffect(() => {
         creatorRefs.current = {};
     }, [salesData]);
 
     const handleExportAll = async () => {
-        const elementToExport = modalBodyRef.current?.closest('.modal-content') as HTMLElement | null;
+        const elementToExport = modalBodyRef.current;
         if (elementToExport) {
             setIsExporting(true);
-            await onExport(elementToExport, `don-hang-cho-xuat-all.png`, { forceOpenDetails: true, scale: exportScale });
+            showExportOverlay('Đang xuất ảnh toàn bộ...');
+            await onExport(elementToExport, `don-hang-cho-xuat-all.png`, { forceOpenDetails: true, forcedWidth: 960 });
             setIsExporting(false);
+            hideExportOverlay();
         }
     };
     
     const handleBatchExport = async () => {
         if (!modalBodyRef.current) return;
         setIsExporting(true);
-        for (const creator of creatorData) {
+        const total = creatorData.length;
+        showExportOverlay('Đang xuất ảnh hàng loạt...', `0/${total}`);
+        for (let i = 0; i < creatorData.length; i++) {
+            const creator = creatorData[i];
+            updateExportOverlay(`Đang xuất: ${creator.name}`, `${i + 1}/${total}`);
             const creatorElement = creatorRefs.current[creator.name];
             if (creatorElement) {
                 const filename = `cho-xuat-${creator.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
                 await onExport(creatorElement, filename, {
                     forceOpenDetails: true,
-                    scale: exportScale,
+                    forcedWidth: 960,
                 });
             }
         }
         setIsExporting(false);
+        hideExportOverlay();
     };
 
     const handleExportCreator = async (e: React.MouseEvent, creatorName: string) => {
@@ -108,12 +116,14 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         const creatorElement = creatorRefs.current[creatorName];
         if (creatorElement) {
             setIsExporting(true);
+            showExportOverlay(`Đang xuất: ${creatorName}`);
             const filename = `cho-xuat-${creatorName.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
             await onExport(creatorElement, filename, {
                 forceOpenDetails: true,
-                scale: exportScale,
+                forcedWidth: 960,
             });
             setIsExporting(false);
+            hideExportOverlay();
         }
     };
 
@@ -138,7 +148,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             const price = Number(getRowValue(order, COL.PRICE)) || 0;
             const revenueQD = price * heso;
             
-            let scheduledDateRaw = order['TG Hẹn Giao'] || order.parsedDate;
+            let scheduledDateRaw = order['Thời gian hẹn giao'] || order['TG Hẹn Giao'] || order.parsedDate;
             let formattedDate = 'N/A';
             if (scheduledDateRaw) {
                 let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
@@ -301,16 +311,6 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
 
     const controls = (
         <div className="flex items-center gap-2 hide-on-export">
-            <select
-                value={exportScale}
-                onChange={(e) => setExportScale(Number(e.target.value))}
-                className="bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm px-2 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600 focus:ring-indigo-500 focus:border-indigo-500"
-                aria-label="Chọn chất lượng ảnh xuất"
-            >
-                <option value={1}>Tiêu chuẩn (1x)</option>
-                <option value={2}>Chất lượng cao (2x)</option>
-                <option value={3}>Ultra HD (3x)</option>
-            </select>
             <button onClick={toggleAllDetails} title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'} className="p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center w-10 h-10">
                 <Icon name="chevrons-down-up" size={4} />
             </button>
@@ -334,7 +334,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             subTitle="Chi Tiết Đơn Hàng"
             titleColorClass="text-red-600 dark:text-red-400"
             controls={controls}
-            maxWidthClass="max-w-7xl"
+            maxWidthClass="max-w-[960px]"
             noRounded={true}
         >
             <div className="p-4 sm:p-8 overflow-y-auto bg-white dark:bg-slate-900" ref={modalBodyRef}>
@@ -402,10 +402,10 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                                                 <table className="w-full text-sm table-fixed compact-export-table border-collapse">
                                                     <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs border-b border-t border-slate-100 dark:border-slate-800">
                                                         <tr>
-                                                            <th className="py-2.5 px-2 text-left font-semibold w-[18%] lg:w-[15%]">Mã ĐH</th>
-                                                            <th className="py-2.5 px-2 text-left font-semibold w-[32%] lg:w-[35%]">Sản phẩm</th>
+                                                            <th className="py-2.5 px-2 text-left font-semibold w-[22%]">Mã ĐH</th>
+                                                            <th className="py-2.5 px-2 text-left font-semibold w-[12%] whitespace-nowrap">Ngày tạo</th>
+                                                            <th className="py-2.5 px-2 text-left font-semibold w-[28%] lg:w-[30%]">Sản phẩm</th>
                                                             <th className="py-2.5 px-2 text-center font-semibold w-[8%]">SL</th>
-                                                            <th className="py-2.5 px-2 text-left font-semibold w-[12%] whitespace-nowrap">Ngày Xuất</th>
                                                             <th className="py-2.5 px-2 text-right font-semibold w-[15%] whitespace-nowrap">Doanh Thu</th>
                                                             <th className="py-2.5 px-2 text-right font-semibold w-[15%] whitespace-nowrap">DTQĐ</th>
                                                         </tr>
@@ -417,31 +417,34 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                                                             const maNhomHang = getRowValue(order, COL.MA_NHOM_HANG);
                                                             const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig);
                                                             const priceQD = price * heso;
-                                                            
-                                                            let exportDate = getRowValue(order, ['Ngày xuất', 'Ngay xuat', 'Ngày Xuất']) as string | Date | number;
-                                                            if (!exportDate && exportDate !== 0) {
-                                                                const keys = Object.keys(order);
-                                                                if (keys.length > 24) exportDate = order[keys[24]] as string | Date | number;
-                                                            }
-                                                            
-                                                            let formattedDate = '';
-                                                            if (exportDate) {
-                                                                if (exportDate instanceof Date && !isNaN(exportDate.getTime())) {
-                                                                    formattedDate = exportDate.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'});
-                                                                } else if (typeof exportDate === 'number') {
-                                                                    const dt = new Date((exportDate - 25569) * 86400 * 1000);
-                                                                    formattedDate = !isNaN(dt.getTime()) ? dt.toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'}) : String(exportDate);
-                                                                } else {
-                                                                    formattedDate = String(exportDate);
-                                                                }
-                                                            }
+                                                            const orderId = getRowValue(order, COL.ID) as string;
 
                                                             return (
-                                                                <tr key={getRowValue(order, COL.ID) || index} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
-                                                                    <td className="py-2.5 px-2 text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 truncate w-full" title={getRowValue(order, COL.ID) as string}>{getRowValue(order, COL.ID)}</td>
+                                                                <tr key={orderId || index} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
+                                                                    <td
+                                                                        className="py-2.5 px-2 text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 break-all font-mono cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                                        title="Nhấn để sao chép"
+                                                                        onClick={() => {
+                                                                            if (orderId) {
+                                                                                navigator.clipboard.writeText(orderId).then(() => {
+                                                                                    const toast = document.createElement('div');
+                                                                                    toast.textContent = `✓ Đã sao chép: ${orderId}`;
+                                                                                    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
+                                                                                    document.body.appendChild(toast);
+                                                                                    requestAnimationFrame(() => { toast.style.opacity = '1'; });
+                                                                                    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 1500);
+                                                                                });
+                                                                            }
+                                                                        }}
+                                                                    >{orderId}</td>
+                                                                    <td className="py-2.5 px-2 text-left text-xs text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 whitespace-nowrap">{(() => {
+                                                                        const raw = getRowValue(order, COL.DATE_CREATED);
+                                                                        if (!raw) return '';
+                                                                        const d = raw instanceof Date ? raw : new Date(raw as string);
+                                                                        return !isNaN(d.getTime()) ? d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) : String(raw);
+                                                                    })()}</td>
                                                                     <td className="py-2.5 px-2 text-left text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-700/50 truncate w-full" title={getRowValue(order, COL.PRODUCT) as string}>{getRowValue(order, COL.PRODUCT)}</td>
                                                                     <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
-                                                                    <td className="py-2.5 px-2 text-left text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 whitespace-nowrap text-xs">{formattedDate}</td>
                                                                     <td className="py-2.5 px-2 text-right font-semibold text-slate-800 dark:text-slate-200 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(price)}</td>
                                                                     <td className="py-2.5 px-2 text-right font-semibold text-blue-600 dark:text-blue-400 whitespace-nowrap border-b border-slate-200 dark:border-slate-700/50">{formatCurrency(priceQD)}</td>
                                                                 </tr>

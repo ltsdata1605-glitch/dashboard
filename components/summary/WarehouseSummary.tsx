@@ -86,35 +86,42 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         }
     };
 
-    const { allIndustries, allGroups, allManufacturers } = useMemo(() => {
-        if (!productConfig || !originalData) return { allIndustries: [], allGroups: [], allManufacturers: [] };
+    const { allIndustries, allGroups } = useMemo(() => {
+        if (!productConfig) return { allIndustries: [] as string[], allGroups: [] as string[] };
         const industries = new Set<string>();
         const groups = new Set<string>();
         Object.keys(productConfig.childToParentMap).forEach(childKey => industries.add(productConfig.childToParentMap[childKey]));
         Object.values(productConfig.subgroups).forEach(parent => Object.keys(parent).forEach(subgroup => groups.add(subgroup)));
-        const dataRows = originalData;
-        const manufacturers = new Set<string>(dataRows.map(row => getRowValue(row, COL.MANUFACTURER)).filter(Boolean));
         return { 
             allIndustries: Array.from(industries).sort(), 
             allGroups: Array.from(groups).sort(),
-            allManufacturers: Array.from(manufacturers).sort(),
         };
-    }, [productConfig, originalData]);
+    }, [productConfig]);
+
+    const allManufacturers = useMemo(() => {
+        if (!originalData || originalData.length === 0) return [] as string[];
+        const manufacturers = new Set<string>(originalData.map(row => getRowValue(row, COL.MANUFACTURER)).filter(Boolean));
+        return Array.from(manufacturers).sort();
+    }, [originalData]);
 
     useEffect(() => {
+        let cancelled = false;
         const loadConfig = async () => {
             let config = await getWarehouseColumnConfig();
             if (!config || config.length === 0) {
                 config = [...DEFAULT_WAREHOUSE_COLUMNS];
                 await saveWarehouseColumnConfig(config);
             }
-            startTransition(() => {
-                setColumns(config);
-                setColumnsLoaded(true);
-            });
+            if (!cancelled) {
+                startTransition(() => {
+                    setColumns(config);
+                    setColumnsLoaded(true);
+                });
+            }
         };
         loadConfig();
-    }, [allIndustries, allGroups]);
+        return () => { cancelled = true; };
+    }, []); // Column config is a user preference — load once on mount
 
     const handleSaveColumns = (newColumns: WarehouseColumnConfig[]) => {
         setColumns(newColumns);
@@ -284,9 +291,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 <Icon name="settings-2" size={5} />
                             </button>
                         )}
-                        <button onClick={toggleFullScreen} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title={isFullScreen ? "Thu nhỏ" : "Phóng to toàn màn hình"}>
-                            <Icon name={isFullScreen ? "minimize-2" : "maximize-2"} size={5} />
-                        </button>
+
                         {uniqueFilterOptions.kho.length > 1 && (
                             <button onClick={onBatchExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
                                 <Icon name="images" size={5} />
@@ -302,12 +307,13 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
 
                 {/* === TABLE VIEW (all screen sizes) === */}
+                <div className="overflow-hidden">
                 <section className="overflow-x-auto custom-scrollbar p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative">
                     <table className="w-full min-w-max text-sm text-center border-collapse border border-slate-200 dark:border-slate-700">
                         <thead>
                             {/* Top Level Group Headers */}
                             <tr className="text-[11px] font-bold uppercase tracking-wider">
-                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-4 py-3 text-center text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider">
+                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-4 py-3 text-center text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
                                     <div className="flex items-center justify-center gap-1">
                                         MÃ KHO
                                         {sortConfig.key === 'khoName' && (
@@ -363,9 +369,9 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {currentData.map((row) => (
-                                <tr key={row.khoName} className="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                                <tr key={row.khoName} className="group hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                     <td 
-                                        className={`px-2 py-3 font-bold text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 leading-tight border-r border-slate-200 dark:border-slate-700 text-center ${userRole !== 'employee' ? 'cursor-pointer' : ''}`}
+                                        className={`px-2 py-3 font-extrabold text-[13px] text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 leading-tight border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${userRole !== 'employee' ? 'cursor-pointer' : ''}`}
                                         onClick={() => handleTargetClick(row.khoName)}
                                     >
                                         {row.khoName}
@@ -480,7 +486,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         {/* Table Footer / Total Row */}
                         <tfoot className="bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
                             <tr className="font-bold text-slate-900 dark:text-slate-100">
-                                <td className="px-2 py-3 uppercase tracking-tight text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center">Tổng</td>
+                                <td className="px-2 py-3 uppercase tracking-tight text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tổng</td>
                                 {visibleColumns.map((col, index) => {
                                     let value;
                                     if (col.isCustom) {
@@ -543,6 +549,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         </tfoot>
                     </table>
                 </section>
+                </div>
                 {/* Pagination Controls */}
                 {totalPages > 1 && (
                     <div className="flex items-center justify-between px-6 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hide-on-export">

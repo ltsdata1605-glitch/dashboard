@@ -60,7 +60,8 @@ async function processFilesInWorker(files: File[], enableDeduplication: boolean)
                     'Trạng thái thu tiền', 'Mã Đơn Hàng', 'Mã đơn hàng', 'Tên Sản Phẩm', 'Tên sản phẩm',
                     'Tên Khách Hàng', 'Tên khách hàng', 'Số Lượng', 'Số lượng', 'Giá bán_1', 'Giá bán',
                     'Mã kho tạo', 'Trạng thái hồ sơ', 'Người tạo', 'Trạng thái xuất', 'Hình thức xuất',
-                    'Ngành Hàng', 'Ngành hàng', 'Nhóm Hàng', 'Nhóm hàng', 'Nhà sản xuất', 'Hãng', 'TG Hẹn Giao'
+                    'Ngành Hàng', 'Ngành hàng', 'Nhóm Hàng', 'Nhóm hàng', 'Nhà sản xuất', 'Hãng', 'TG Hẹn Giao', 'Thời gian hẹn giao',
+                    'Mã sản phẩm'
                 ];
                 
                 const reqIndices: Record<number, string> = {};

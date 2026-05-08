@@ -18,9 +18,10 @@ interface SavedCalendarCardProps {
     baseFilteredData: any[];
     productConfig: any;
     onRemove: (id: string) => void;
+    badgeLabel?: string;
 }
 
-const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter, baseFilteredData, productConfig, onRemove }) => {
+const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter, baseFilteredData, productConfig, onRemove, badgeLabel }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const [isExporting, setIsExporting] = useState(false);
 
@@ -130,24 +131,7 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
     const monthDate = filter.month ? new Date(`${filter.month}-01T00:00:00`) : new Date();
 
     return (
-        <div ref={cardRef} className="relative border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-slate-50 dark:bg-[#121212] flex flex-col animate-fade-in group w-full calendar-export-target">
-            <div className="absolute top-1.5 right-1.5 z-20 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity hide-on-export">
-                <button 
-                    onClick={handleExport} 
-                    disabled={isExporting}
-                    className="p-1 bg-indigo-50 text-indigo-500 rounded-md hover:bg-indigo-100 dark:bg-indigo-900/30 dark:hover:bg-indigo-900/50 transition-colors"
-                    title="Tải ảnh Lịch"
-                >
-                    {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin" /> : <Icon name="camera" size={3.5} />}
-                </button>
-                <button 
-                    onClick={() => onRemove(filter.id)} 
-                    className="p-1 bg-red-50 text-red-500 rounded-md transition-colors hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50"
-                    title="Xóa Bảng Lịch Này"
-                >
-                    <Icon name="trash-2" size={3.5} />
-                </button>
-            </div>
+        <div ref={cardRef} className="relative border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm bg-slate-50 dark:bg-[#121212] flex flex-col animate-fade-in group w-full pb-2 calendar-export-target">
             <div className="flex-1 w-full relative z-10 px-1 pb-1 pt-1">
                 <RevenueCalendar 
                     data={calendarData} 
@@ -156,6 +140,25 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                     title={title}
                     subtitle={khoLabel}
                     compact={true}
+                    actionButtons={
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button 
+                                onClick={handleExport} 
+                                disabled={isExporting}
+                                className="p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
+                                title="Xuất ảnh"
+                            >
+                                {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin" /> : <Icon name="camera" size={3.5} />}
+                            </button>
+                            <button 
+                                onClick={() => onRemove(filter.id)} 
+                                className="p-1.5 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-700/50 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shadow-sm"
+                                title="Xóa bảng lịch"
+                            >
+                                <Icon name="trash-2" size={3.5} />
+                            </button>
+                        </div>
+                    }
                 />
             </div>
         </div>

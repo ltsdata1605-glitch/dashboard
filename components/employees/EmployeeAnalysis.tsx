@@ -178,7 +178,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                 title={(
                     <div className="flex flex-col">
                         <span>Phân tích nhân viên</span>
-                        <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">
+                        <span className="text-[10px] lg:text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">
                             {(filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `KHO: ${filterState.kho.join(', ')} | ` : ''} 
                             {(filterState.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filterState.xuat} | ` : ''}
                             {(filterState.department && filterState.department.length > 0) ? `BỘ PHẬN: ${filterState.department.join(', ')} | ` : ''}
@@ -187,7 +187,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                     </div>
                 ) as any}
                 icon="users"
-                subtitle=""
+
             >
                 <div className="flex items-center gap-2 hide-on-export">
                     <EmployeeAnalysisFilters 

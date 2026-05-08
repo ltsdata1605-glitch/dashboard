@@ -108,21 +108,15 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                             ) : (
                                 <>
                                     <div className="flex items-center gap-2">
-                                        {setIsFullScreen && (
-                                            <button
-                                                onClick={() => setIsFullScreen(!isFullScreen)}
-                                                className={`p-1.5 sm:p-2 rounded-md transition-colors ${isFullScreen ? 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/50 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
-                                                title={isFullScreen ? "Thu nhỏ bảng" : "Phóng to toàn màn hình"}
-                                            >
-                                                <Icon name={isFullScreen ? "minimize" : "maximize"} size={4.5}/>
-                                            </button>
-                                        )}
                                         <button
                                             onClick={() => setActiveFilterKey(prev => prev === 'columns' ? null : 'columns')}
                                             className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                             title="Tùy chọn hiển thị cột"
                                         >
                                             <Icon name="settings-2" size={4.5}/>
+                                        </button>
+                                        <button onClick={handleExport} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                            {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin" /> : <Icon name="camera" size={4.5} />}
                                         </button>
                                     </div>
 

@@ -376,20 +376,39 @@ const TrendChart: React.FC = React.memo(() => {
   return (
     <div 
       ref={chartCardRef}
-      className="bg-white dark:bg-[#1c1c1e] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-white/5 rounded-none sm:rounded-xl lg:rounded-2xl mb-3 lg:mb-8 transition-all duration-300 relative z-0"
+      className="bg-white dark:bg-[#1c1c1e] shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-white/5 mb-3 lg:mb-8 transition-all duration-300 relative z-0"
     >
       <SectionHeader 
         title={(
             <div className="flex flex-col">
                 <div className="flex items-center gap-3">
                     <span className="text-slate-800 dark:text-slate-100 uppercase">XU HƯỚNG DOANH THU</span>
-                    {totalValue > 0 && displayMode !== 'calendar' && (
-                        <div className="text-slate-500 dark:text-slate-400 font-extrabold text-sm border-l border-slate-200 dark:border-slate-700/50 pl-3">
-                            TỔNG: <span className="text-indigo-600 dark:text-indigo-400 ml-1">{formatCurrency(totalValue)}</span>
-                        </div>
-                    )}
                 </div>
-                <span className="text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5">
+                <span className="text-[10px] lg:text-[11px] text-slate-500 font-medium uppercase tracking-wider mt-0.5 flex items-center gap-1.5 flex-wrap">
+                    {displayMode !== 'calendar' && (
+                        <>
+                            <span
+                                onClick={() => setTrendState(prev => ({ ...prev, metric: 'thuc' }))}
+                                className={`cursor-pointer transition-colors font-extrabold ${
+                                    trendState.metric === 'thuc'
+                                        ? 'text-indigo-600 dark:text-indigo-400'
+                                        : 'text-slate-400 dark:text-slate-500 hover:text-indigo-500'
+                                }`}
+                            >DT THỰC</span>
+                            <span
+                                onClick={() => setTrendState(prev => ({ ...prev, metric: 'qd' }))}
+                                className={`cursor-pointer transition-colors font-extrabold ${
+                                    trendState.metric === 'qd'
+                                        ? 'text-indigo-600 dark:text-indigo-400'
+                                        : 'text-slate-400 dark:text-slate-500 hover:text-indigo-500'
+                                }`}
+                            >DTQĐ</span>
+                            {totalValue > 0 && (
+                                <span className="text-slate-400 dark:text-slate-500 font-extrabold">TỔNG: <span className="text-indigo-600 dark:text-indigo-400">{formatCurrency(totalValue)}</span></span>
+                            )}
+                            <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></span>
+                        </>
+                    )}
                     {(Array.isArray(filterState.kho) ? filterState.kho : (filterState.kho ? [filterState.kho as unknown as string] : [])).length > 0 && !(Array.isArray(filterState.kho) ? filterState.kho : (filterState.kho ? [filterState.kho as unknown as string] : [])).includes('all') ? `KHO: ${(Array.isArray(filterState.kho) ? filterState.kho : (filterState.kho ? [filterState.kho as unknown as string] : [])).join(', ')} | ` : ''} 
                     {(filterState.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filterState.xuat} | ` : ''}
                     {filterState.dateRange !== 'all' ? `TỪ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}
@@ -398,96 +417,53 @@ const TrendChart: React.FC = React.memo(() => {
         ) as any}
         icon="trending-up"
       >
-        <div className="flex flex-wrap items-center gap-2 hide-on-export w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-2 hide-on-export">
           {displayMode === 'calendar' ? (
-              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100/30 dark:bg-slate-800/30 rounded-xl border border-slate-200/50 dark:border-slate-700/50 w-full md:w-auto pb-1 relative z-[200]">
-                  {/* Cụm 1: Thời gian & Kho */}
-                  <div className="flex flex-none items-center gap-1 pr-1.5 sm:pr-2 border-r border-slate-200 dark:border-slate-700">
-                      <select
-                          className="text-[10px] sm:text-[11px] font-black bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 rounded-xl px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-sm transition-all uppercase tracking-wider min-h-[32px]"
-                          value={calendarFilters.month}
-                          onChange={(e) => setCalendarFilters(prev => ({ ...prev, month: e.target.value }))}
-                      >
-                          {availableMonths.map(m => <option key={m} value={m}>{m.split('-')[1]}/{m.split('-')[0]}</option>)}
-                      </select>
+              <div className="flex flex-wrap items-center gap-1">
+                  <select
+                      className="text-[10px] font-bold bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer uppercase tracking-wider"
+                      value={calendarFilters.month}
+                      onChange={(e) => setCalendarFilters(prev => ({ ...prev, month: e.target.value }))}
+                  >
+                      {availableMonths.map(m => <option key={m} value={m}>{m.split('-')[1]}/{m.split('-')[0]}</option>)}
+                  </select>
+                  <div className="w-auto">
+                      <MultiSelectDropdown
+                          label="Ngành"
+                          options={uniqueParentGroups}
+                          selected={calendarFilters.parentGroup}
+                          onChange={(val) => setCalendarFilters(prev => ({ ...prev, parentGroup: val, childGroup: [] }))}
+                          variant="compact"
+                      />
                   </div>
-
-                  {/* Cụm 2: Phân nhóm */}
-                  <div className="flex flex-none items-center gap-1 px-1.5 sm:px-2 border-r border-slate-200 dark:border-slate-700">
-                      <div className="w-auto">
-                          <MultiSelectDropdown
-                              label="Ngành"
-                              options={uniqueParentGroups}
-                              selected={calendarFilters.parentGroup}
-                              onChange={(val) => setCalendarFilters(prev => ({ ...prev, parentGroup: val, childGroup: [] }))}
-                              variant="compact"
-                          />
-                      </div>
-                      <div className="w-auto">
-                          <MultiSelectDropdown
-                              label="Nhóm"
-                              options={uniqueChildGroups}
-                              selected={calendarFilters.childGroup}
-                              onChange={(val) => setCalendarFilters(prev => ({ ...prev, childGroup: val }))}
-                              variant="compact"
-                          />
-                      </div>
+                  <div className="w-auto">
+                      <MultiSelectDropdown
+                          label="Nhóm"
+                          options={uniqueChildGroups}
+                          selected={calendarFilters.childGroup}
+                          onChange={(val) => setCalendarFilters(prev => ({ ...prev, childGroup: val }))}
+                          variant="compact"
+                      />
                   </div>
-
-                  {/* Cụm 3: Chỉ số & Hành động */}
-                  <div className="flex flex-none items-center gap-1 pl-1.5 sm:pl-2">
-                       <select
-                          className="text-[10px] sm:text-[11px] font-black text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-700 border border-rose-100 dark:border-rose-900/30 rounded-xl px-1.5 sm:px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 cursor-pointer shadow-sm transition-all uppercase tracking-wider min-h-[32px]"
-                          style={{ width: calendarFilters.metric === 'quantity' ? '92px' : calendarFilters.metric === 'revenueQD' ? '122px' : calendarFilters.metric === 'traChamPercent' ? '96px' : '104px' }}
-                          value={calendarFilters.metric}
-                          onChange={(e) => setCalendarFilters(prev => ({ ...prev, metric: e.target.value }))}
-                      >
-                          <option value="revenue">Doanh thu</option>
-                          <option value="revenueQD">Doanh thu QĐ</option>
-                          <option value="quantity">Số lượng</option>
-                          <option value="traChamPercent">Trả Chậm</option>
-                      </select>
-
-                      <button 
-                          onClick={handleAddCalendar}
-                          className="w-auto px-2.5 min-h-[32px] flex-shrink-0 flex justify-center items-center bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md shadow-indigo-100 dark:shadow-none transition-all active:scale-90"
-                          title="Lưu cấu hình này"
-                      >
-                          <Icon name="plus" size={4} />
-                      </button>
-                  </div>
+                  <select
+                      className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 cursor-pointer uppercase tracking-wider"
+                      value={calendarFilters.metric}
+                      onChange={(e) => setCalendarFilters(prev => ({ ...prev, metric: e.target.value }))}
+                  >
+                      <option value="revenue">Doanh thu</option>
+                      <option value="revenueQD">DT QĐ</option>
+                      <option value="quantity">Số lượng</option>
+                      <option value="traChamPercent">Trả Chậm</option>
+                  </select>
               </div>
           ) : (
               <>
-                  <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                    <button
-                      onClick={() => setTrendState(prev => ({ ...prev, metric: 'thuc' }))}
-                      className={`py-1.5 px-3 sm:px-4 text-[10px] md:text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${
-                        trendState.metric === 'thuc' 
-                        ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
-                        : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
-                      }`}
-                    >
-                      DT THỰC
-                    </button>
-                    <button
-                      onClick={() => setTrendState(prev => ({ ...prev, metric: 'qd' }))}
-                      className={`py-1.5 px-3 sm:px-4 text-[10px] md:text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${
-                        trendState.metric === 'qd' 
-                        ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
-                        : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
-                      }`}
-                    >
-                      DTQĐ
-                    </button>
-                  </div>
-
-                  <div className="inline-flex rounded-lg shadow-sm p-0.5 lg:p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 ml-1">
+          <div className="inline-flex rounded-lg p-0.5 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                     {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
                       <button
                         key={v}
                         onClick={() => setTrendState(prev => ({ ...prev, view: v }))}
-                        className={`py-1.5 px-2 lg:px-3 text-[10px] lg:text-xs font-bold rounded-lg transition-all duration-200 uppercase tracking-wider ${
+                        className={`py-1 px-2 lg:px-2.5 text-[10px] font-bold rounded-md transition-all duration-200 uppercase tracking-wider ${
                           trendState.view === v 
                           ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/20' 
                           : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/50 dark:hover:bg-slate-700/50'
@@ -500,38 +476,38 @@ const TrendChart: React.FC = React.memo(() => {
               </>
           )}
 
-          <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 ml-1 hide-on-export">
-            <button
-                onClick={() => setDisplayMode('chart')}
-                className={`flex items-center justify-center py-1.5 px-2.5 rounded-lg transition-all ${
-                    displayMode === 'chart'
-                        ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600'
-                        : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
-                }`}
-                title="Dạng Biểu đồ"
-            >
-                <Icon name="bar-chart-2" size={4} />
-            </button>
-            <button
-                onClick={() => setDisplayMode('calendar')}
-                className={`flex items-center justify-center py-1.5 px-2.5 rounded-lg transition-all ${
-                    displayMode === 'calendar'
-                        ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm ring-1 ring-slate-200 dark:ring-slate-600'
-                        : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
-                }`}
-                title="Dạng Bảng Lịch"
-            >
-                <Icon name="calendar" size={4} />
-            </button>
+          <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 p-0.5">
+              <button
+                  onClick={() => setDisplayMode('chart')}
+                  className={`py-1 px-1.5 rounded-md transition-colors ${
+                      displayMode === 'chart'
+                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                          : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                  }`}
+                  title="Dạng Biểu đồ"
+              >
+                  <Icon name="bar-chart-2" size={5} />
+              </button>
+              <button
+                  onClick={() => setDisplayMode('calendar')}
+                  className={`py-1 px-1.5 rounded-md transition-colors ${
+                      displayMode === 'calendar'
+                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                          : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
+                  }`}
+                  title="Dạng Bảng Lịch"
+              >
+                  <Icon name="calendar" size={5} />
+              </button>
           </div>
 
           <button 
             onClick={handleExportClick}
             disabled={isExporting}
-            className={`p-2 ml-1 rounded-md transition-colors ${
+            className={`p-2 rounded-md transition-colors ${
               isExporting 
               ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
-              : 'text-slate-400 hover:text-indigo-600 dark:text-slate-500 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer'
+              : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
             title={displayMode === 'calendar' ? "Xuất ảnh hàng loạt toàn bộ Bảng Lịch" : "Xuất ảnh"}
           >
@@ -552,28 +528,10 @@ const TrendChart: React.FC = React.memo(() => {
                         </div>
                     )}
 
-                    {/* 2-Column Grid: Draft (left) | Saved Calendar (right) */}
+                    {/* Uniform Grid: Draft + Saved Calendars */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {/* LEFT: Draft Calendar */}
-                        <div ref={draftCalendarRef} className="border border-slate-200 dark:border-slate-800 overflow-hidden relative z-10 w-full pb-2 bg-slate-50 dark:bg-[#121212] pt-6 calendar-export-target">
-                            <div className="absolute top-2 left-3 z-20 px-2 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-500 text-[10px] uppercase font-bold rounded shadow-sm border border-amber-200 dark:border-amber-700/50 block hide-on-export">Nháp</div>
-                            <div className="absolute top-2 right-3 z-20 flex items-center gap-1 hide-on-export">
-                                <button
-                                    onClick={handleAddCalendar}
-                                    className="p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition-colors"
-                                    title="Lưu bảng nháp thành tab mới"
-                                >
-                                    <Icon name="plus" size={3.5} />
-                                </button>
-                                <button
-                                    onClick={handleExportDraft}
-                                    disabled={isExporting}
-                                    className="p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
-                                    title="Xuất ảnh bảng Nháp"
-                                >
-                                    <Icon name="camera" size={3.5} />
-                                </button>
-                            </div>
+                        {/* Draft Calendar */}
+                        <div ref={draftCalendarRef} className="border border-slate-200 dark:border-slate-800 overflow-hidden relative z-10 w-full pb-2 bg-slate-50 dark:bg-[#121212] calendar-export-target">
                             <RevenueCalendar 
                                 data={calendarData} 
                                 monthDate={new Date(`${calendarFilters.month || new Date().toISOString().substring(0,7)}-01T00:00:00`)} 
@@ -585,7 +543,7 @@ const TrendChart: React.FC = React.memo(() => {
                                             ? calendarFilters.childGroup.join(', ')
                                             : calendarFilters.parentGroup.join(', '))
                                     : (
-                                        calendarFilters.metric === 'revenue' ? `TỔNG DOANH THU THỰC THÁNG ${calendarFilters.month ? calendarFilters.month.split('-')[1] + '/' + calendarFilters.month.split('-')[0] : ''}`
+                                        calendarFilters.metric === 'revenue' ? `DOANH THU THỰC ${calendarFilters.month ? calendarFilters.month.split('-')[1] + '/' + calendarFilters.month.split('-')[0] : ''}`
                                         : calendarFilters.metric === 'revenueQD' ? 'DOANH THU QUY ĐỔI'
                                         : calendarFilters.metric === 'traChamPercent' ? 'TỈ TRỌNG TRẢ CHẬM'
                                         : 'TỔNG DOANH THU'
@@ -596,71 +554,56 @@ const TrendChart: React.FC = React.memo(() => {
                                 }
                                 isDraft={true}
                                 compact={true}
+                                actionButtons={
+                                    <>
+                                        <button
+                                            onClick={handleAddCalendar}
+                                            className="p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition-colors"
+                                            title="Lưu bảng nháp thành bảng mới"
+                                        >
+                                            <Icon name="plus" size={3.5} />
+                                        </button>
+                                        <button
+                                            onClick={handleExportDraft}
+                                            disabled={isExporting}
+                                            className="p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
+                                            title="Xuất ảnh"
+                                        >
+                                            <Icon name="camera" size={3.5} />
+                                        </button>
+                                    </>
+                                }
                             />
                         </div>
 
-                        {/* RIGHT: Tabs + Active Saved Calendar */}
-                        {savedCalendars.length > 0 && (
-                            <div className="flex flex-col">
-                                {/* Tab Bar */}
-                                <div className="flex items-center gap-0.5 border-b-2 border-slate-200 dark:border-slate-700 overflow-x-auto">
-                                    {savedCalendars.map(cal => {
-                                        const isActive = activeCalendarTab === cal.id;
-                                        let tabLabel = '';
-                                        const pg = Array.isArray(cal.parentGroup) ? cal.parentGroup : [];
-                                        const cg = Array.isArray(cal.childGroup) ? cal.childGroup : [];
-                                        if (pg.length > 0 || cg.length > 0) {
-                                            tabLabel = pg.length > 0 && cg.length > 0
-                                                ? `${pg.join(', ')} - ${cg.join(', ')}`
-                                                : cg.length > 0 ? cg.join(', ') : pg.join(', ');
-                                        } else {
-                                            if (cal.metric === 'revenue') tabLabel = 'DOANH THU';
-                                            else if (cal.metric === 'revenueQD') tabLabel = 'DOANH THU QĐ';
-                                            else if (cal.metric === 'traChamPercent') tabLabel = 'TRẢ CHẬM';
-                                            else if (cal.metric === 'quantity') tabLabel = 'SỐ LƯỢNG';
-                                            else tabLabel = 'LỊCH';
-                                        }
-                                        return (
-                                            <button
-                                                key={cal.id}
-                                                onClick={() => setActiveCalendarTab(cal.id)}
-                                                className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all duration-200 border-b-2 -mb-[2px] ${
-                                                    isActive
-                                                        ? 'text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
-                                                        : 'text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-600 dark:hover:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600'
-                                                }`}
-                                            >
-                                                {tabLabel}
-                                            </button>
-                                        );
-                                    })}
-                                    <button
-                                        onClick={handleAddCalendar}
-                                        className="px-2 py-2 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 border-b-2 border-transparent -mb-[2px] transition-colors"
-                                        title="Thêm bảng lịch mới từ bộ lọc hiện tại"
-                                    >
-                                        <Icon name="plus" size={3.5} />
-                                    </button>
-                                </div>
-
-                                {/* Active Tab Calendar */}
-                                <div className="mt-3 flex-1">
-                                    {savedCalendars.map(cal => {
-                                        if (cal.id !== activeCalendarTab) return null;
-                                        const effectiveFilter = { ...cal, month: calendarFilters.month };
-                                        return (
-                                            <SavedCalendarCard 
-                                                key={cal.id} 
-                                                filter={effectiveFilter} 
-                                                baseFilteredData={baseFilteredData || []} 
-                                                productConfig={productConfig} 
-                                                onRemove={handleRemoveCalendar} 
-                                            />
-                                        );
-                                    })}
-                                </div>
-                            </div>
-                        )}
+                        {/* Saved Calendars — same design as Draft */}
+                        {savedCalendars.map(cal => {
+                            const pg = Array.isArray(cal.parentGroup) ? cal.parentGroup : [];
+                            const cg = Array.isArray(cal.childGroup) ? cal.childGroup : [];
+                            let badgeLabel = '';
+                            if (pg.length > 0 || cg.length > 0) {
+                                badgeLabel = pg.length > 0 && cg.length > 0
+                                    ? `${pg.join(', ')} - ${cg.join(', ')}`
+                                    : cg.length > 0 ? cg.join(', ') : pg.join(', ');
+                            } else {
+                                if (cal.metric === 'revenue') badgeLabel = 'DOANH THU';
+                                else if (cal.metric === 'revenueQD') badgeLabel = 'DT QUY ĐỔI';
+                                else if (cal.metric === 'traChamPercent') badgeLabel = 'TRẢ CHẬM';
+                                else if (cal.metric === 'quantity') badgeLabel = 'SỐ LƯỢNG';
+                                else badgeLabel = 'LỊCH';
+                            }
+                            const effectiveFilter = { ...cal, month: calendarFilters.month };
+                            return (
+                                <SavedCalendarCard 
+                                    key={cal.id} 
+                                    filter={effectiveFilter} 
+                                    baseFilteredData={baseFilteredData || []} 
+                                    productConfig={productConfig} 
+                                    onRemove={handleRemoveCalendar}
+                                    badgeLabel={badgeLabel}
+                                />
+                            );
+                        })}
                     </div>
                 </div>
             ) : renderChart()}

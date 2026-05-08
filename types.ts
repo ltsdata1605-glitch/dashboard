@@ -17,6 +17,7 @@ export interface ProductConfig {
     subgroups: { [key: string]: { [key: string]: string[] } };
     childToParentMap: { [key: string]: string };
     childToSubgroupMap: { [key: string]: string };
+    quantityMultiplierMap: { [productCode: string]: number };
 }
 
 export interface StoredSalesData {

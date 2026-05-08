@@ -210,7 +210,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 colSpan={2} 
                                 rowSpan={2} 
                                 onClick={() => onSort('name')}
-                                className="px-4 py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-40 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 select-none cursor-pointer h-px hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors group/nhanvien"
+                                className="px-4 py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-40 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 select-none cursor-pointer h-px hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors group/nhanvien"
                             >
                                 <div className="flex items-center justify-center gap-1">
                                     NHÂN VIÊN
@@ -220,7 +220,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 </div>
                             </th>
                             {groupedHeaders.map((group, i) => (
-                                <th key={i} colSpan={group.colSpan} rowSpan={group.noSubHeader ? 2 : 1} className={`px-2 py-3 ${group.bg} ${group.text} border-r border-slate-200 dark:border-slate-700 text-center h-px relative group/th ${group.noSubHeader ? 'border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600' : 'border-b'}`}
+                                <th key={i} colSpan={group.colSpan} rowSpan={group.noSubHeader ? 2 : 1} className={`px-2 py-2 ${group.bg} ${group.text} border-r border-slate-200 dark:border-slate-700 text-center h-px relative group/th ${group.noSubHeader ? 'border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600' : 'border-b'}`}
                                     onClick={() => {
                                         if (group.noSubHeader) {
                                             const targetCol = headers.find(h => h.groupName === group.name);
@@ -334,12 +334,12 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                 className={`group border-b border-slate-200 dark:border-slate-700 transition-colors duration-100 hover:bg-slate-100 dark:hover:bg-slate-800 ${isTopThree ? dc.row : idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800'}`}
                                             >
                                                 {/* Rank */}
-                                                <td className="px-2 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-inherit z-10 outline outline-1 outline-transparent">
+                                                <td className="px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-inherit z-10 outline outline-1 outline-transparent">
                                                     <RankBadge rank={idx} />
                                                 </td>
 
                                                 {/* Name */}
-                                                <td className="px-3 py-1.5 border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10 outline outline-1 outline-transparent">
+                                                <td className="px-3 py-1 border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10 outline outline-1 outline-transparent">
                                                     <button
                                                         onClick={() => onEmployeeClick(emp.name)}
                                                         className="flex items-center gap-2 min-w-0 group/name"
@@ -352,7 +352,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
 
                                                 {/* Data cells */}
                                                 {headers.map(h => (
-                                                    <td key={h.key} className={`px-2 py-1.5 text-[13px] border-r border-slate-200 dark:border-slate-700 ${h.align === 'right' ? 'text-right' : h.align === 'center' ? 'text-center' : 'text-left'}`}>
+                                                    <td key={h.key} className={`px-2 py-1 text-[13px] border-r border-slate-200 dark:border-slate-700 ${h.align === 'right' ? 'text-right' : h.align === 'center' ? 'text-center' : 'text-left'}`}>
 
                                                         {h.key === 'doanhThuThuc' && (
                                                             <span className="text-slate-500 dark:text-slate-400 font-medium">{formatCurrency(emp.doanhThuThuc)}</span>
@@ -402,7 +402,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                                 <span className={`text-[10px] font-extrabold px-1.5 py-0.5 rounded ${getPercentBadge(Number(emp.percentHT || 0))}`}>
                                                                     {Number(emp.percentHT || 0).toFixed(0)}%
                                                                 </span>
-                                                                <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                                                                <div className="w-full h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                                                                     <div
                                                                         className={`h-full rounded-full bg-gradient-to-r ${getProgressBarColor(Number(emp.percentHT || 0))} transition-all duration-500`}
                                                                         style={{ width: `${Math.min(Number(emp.percentHT || 0), 100)}%` }}

@@ -92,12 +92,12 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
             <button 
                 type="button" 
                 onClick={() => setIsOpen(!isOpen)} 
-                className={`w-full flex items-center justify-between rounded-xl border transition-all duration-200 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
-                    variant === 'compact' ? 'min-h-[32px] py-1' : 'min-h-[38px] py-1.5'
+                className={`w-full flex items-center justify-between rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                    variant === 'compact' ? 'px-2 py-1.5' : 'px-3 py-1.5 min-h-[38px]'
                 } ${
                     hasSelection || isOpen
                     ? 'border-indigo-500 bg-white dark:bg-slate-800 shadow-md ring-2 ring-indigo-500/10' 
-                    : 'border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm'
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm'
                 }`}
             >
                 <div className="flex-grow flex items-center overflow-hidden pr-2">

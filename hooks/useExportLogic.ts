@@ -2,7 +2,7 @@
 import React, { useState, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
 import type { Employee, ProcessedData, ProductConfig, FilterState } from '../types';
-import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles } from '../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExportOverlay, updateExportOverlay, hideExportOverlay } from '../services/uiService';
 import type { ExportMode } from '../services/uiService';
 import PerformanceModal from '../components/modals/PerformanceModal';
 
@@ -34,6 +34,7 @@ export const useExportLogic = ({
     const handleExport = async (element: HTMLElement | null, filename: string, options: any = {}) => {
         if (element) {
             setIsExporting(true);
+            showExportOverlay('Đang xuất ảnh...');
             await new Promise(resolve => setTimeout(resolve, 150));
             const exportOptions = {
                 elementsToHide: ['.hide-on-export'],
@@ -42,6 +43,7 @@ export const useExportLogic = ({
             };
             const blob = await exportElementAsImage(element, filename, exportOptions);
             setIsExporting(false);
+            hideExportOverlay();
             if (blob) {
                 const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
                 if (!isMobile) {
@@ -74,12 +76,16 @@ export const useExportLogic = ({
     const handleBatchExport = async (employeesToExport: Employee[]) => {
         if (!employeesToExport.length || !productConfig || !processedData) return;
         setIsExporting(true);
+        const total = employeesToExport.length;
+        showExportOverlay('Đang xuất ảnh hàng loạt...', `0/${total}`);
         const offscreenContainer = document.createElement('div');
         offscreenContainer.style.cssText = 'position: absolute; left: -9999px; top: 0;';
         document.body.appendChild(offscreenContainer);
         const root = ReactDOM.createRoot(offscreenContainer);
         try {
-            for (const employee of employeesToExport) {
+            for (let i = 0; i < employeesToExport.length; i++) {
+                const employee = employeesToExport[i];
+                updateExportOverlay(`Đang xuất: ${employee.name}`, `${i + 1}/${total}`);
                 await new Promise<void>(resolve => {
                     root.render(
                         React.createElement(PerformanceModal, {
@@ -98,7 +104,7 @@ export const useExportLogic = ({
                 const modalContent = offscreenContainer.querySelector('.modal-content');
                 if (modalContent) {
                     const filename = `phan-tich-hieu-qua-${employee.name.replace(/[^a-zA-Z0-9]/g, '_')}.png`;
-                    await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true });
+                    await exportElementAsImage(modalContent as HTMLElement, filename, { scale: 2, forceOpenDetails: true, forcedWidth: 960 });
                 }
                 // Memory pressure relief: clear render + yield to GC between exports
                 root.render(null);
@@ -106,6 +112,7 @@ export const useExportLogic = ({
             }
         } finally {
             setIsExporting(false);
+            hideExportOverlay();
             root.unmount();
             document.body.removeChild(offscreenContainer);
         }
@@ -122,41 +129,38 @@ export const useExportLogic = ({
     
         try {
             const khosToExport = uniqueFilterOptions.kho.filter(k => k && k !== 'all');
+            const total = khosToExport.length + 1; // +1 for warehouse summary
+            showExportOverlay('Đang xuất báo cáo kho...', `1/${total}`);
             const overviewElement = document.getElementById('business-overview');
             const warehouseElement = document.getElementById('warehouse-summary-view');
 
             if (!overviewElement || !warehouseElement) {
                 throw new Error('Không tìm thấy thành phần cần xuất (#business-overview or #warehouse-summary-view).');
             }
+
+            // Export warehouse summary once (all khos, no highlight)
+            updateExportOverlay('Đang xuất: Tổng hợp kho', `1/${total}`);
+            handleFilterChange({ kho: [] }); // Reset to show all
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            await exportElementAsImage(warehouseElement, `bao-cao-kho-tong-hop.png`, {
+                elementsToHide: ['.hide-on-export'],
+                captureAsDisplayed: true,
+            });
+            await new Promise(resolve => setTimeout(resolve, 800));
     
-            for (const kho of khosToExport) {
+            // Then export business overview per kho
+            for (let i = 0; i < khosToExport.length; i++) {
+                const kho = khosToExport[i];
+                updateExportOverlay(`Đang xuất: ${kho}`, `${i + 2}/${total}`);
                 handleFilterChange({ kho: [kho] });
                 await new Promise(resolve => setTimeout(resolve, 1500));
-    
-                let rowToHighlight: Element | null = warehouseElement.querySelector(`tr[data-kho-id="${kho}"]`);
-                if (rowToHighlight) {
-                    rowToHighlight.classList.add('is-highlighted-for-export');
-                }
-                
-                await new Promise(resolve => setTimeout(resolve, 200)); // Short delay for highlight to render
 
-                // Export #1: Business Overview
                 await exportElementAsImage(overviewElement, `tong-quan-kinh-doanh-${kho}.png`, {
                     elementsToHide: ['.hide-on-export'],
                     captureAsDisplayed: true,
                 });
 
                 await new Promise(resolve => setTimeout(resolve, 800));
-    
-                // Export #2: Warehouse Summary
-                await exportElementAsImage(warehouseElement, `bao-cao-kho-${kho}.png`, {
-                    elementsToHide: ['.hide-on-export'],
-                    captureAsDisplayed: true,
-                });
-                
-                if (rowToHighlight) {
-                    rowToHighlight.classList.remove('is-highlighted-for-export');
-                }
             }
         } catch (error) {
             console.error("Lỗi khi xuất hàng loạt theo kho:", error);
@@ -165,6 +169,7 @@ export const useExportLogic = ({
             handleFilterChange({ kho: originalKho });
             await new Promise(resolve => setTimeout(resolve, 1500)); 
             setIsExporting(false);
+            hideExportOverlay();
         }
     };
 

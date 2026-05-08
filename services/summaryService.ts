@@ -47,6 +47,10 @@ export function processSummaryTable(
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT);
         if (HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) return;
 
+        // Bỏ qua sản phẩm không xác định nhóm hàng (không có trong cấu hình)
+        const maNhomHangCheck = getRowValue(row, COL.MA_NHOM_HANG);
+        if (!productConfig.childToParentMap[maNhomHangCheck]) return;
+
         // Compute all values ONCE per row (eliminating double computation)
         const allValues: Record<string, string> = {};
         for (const key in valueExtractors) {
@@ -84,9 +88,10 @@ export function processSummaryTable(
         const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
         const revenueQD = revenue * heso;
 
-        // Logic trọng số số lượng Vieon
-        const isVieon = childVal === 'Vieon' || parentVal === 'Vieon' || (productName || '').includes('VieON');
-        const weightedQuantity = isVieon ? (quantity * heso) : quantity;
+        // Logic trọng số số lượng dựa trên mã sản phẩm (cột AF) và bảng hệ số từ file cấu hình
+        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+        const qtyMultiplier = productConfig.quantityMultiplierMap?.[productCode];
+        const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;
 
         // Reuse already-computed allValues for keys
         const keys: string[] = [];
@@ -181,10 +186,13 @@ export function calculateWarehouseSummary(
         }
 
         if (!HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
+            const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+            // Bỏ qua sản phẩm không xác định nhóm hàng
+            if (!productConfig.childToParentMap[maNhomHang]) return;
+
             const price = Number(getRowValue(row, COL.PRICE)) || 0;
             const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
             const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
-            const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
             const productName = getRowValue(row, COL.PRODUCT);
             const customer = getRowValue(row, COL.CUSTOMER_NAME);
 
@@ -192,11 +200,12 @@ export function calculateWarehouseSummary(
             const rowRevenue = price;
             const rowRevenueQD = rowRevenue * heso;
 
-            // Trọng số Vieon
+            // Trọng số số lượng dựa trên mã sản phẩm (cột AF) và bảng hệ số từ file cấu hình
             const industry = productConfig.childToParentMap[maNhomHang] || 'Khác';
             const group = productConfig.childToSubgroupMap[maNhomHang] || 'Khác';
-            const isVieon = group === 'Vieon' || industry === 'Vieon' || (productName || '').toString().includes('VieON');
-            const weightedQuantity = isVieon ? (quantity * heso) : quantity;
+            const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+            const qtyMultiplier = productConfig.quantityMultiplierMap?.[productCode];
+            const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;
 
             if (customer) summary.customers.add(customer);
             if (HINH_THUC_XUAT_TRA_GOP.has(getRowValue(row, COL.HINH_THUC_XUAT))) {

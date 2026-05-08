@@ -407,7 +407,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         const dailyRevTarget = revenueTarget > 0 ? revenueTarget / daysInMonth : 0;
                         const activeTarget = isLuyKe ? revenueTarget : dailyRevTarget;
                         const pctHT = activeTarget > 0 ? (rawValue / activeTarget) * 100 : 0;
-                        finalTrendLabel = activeTarget > 0 ? (isLuyKe ? "Lũy kế" : "Mục tiêu ngày") : "Mục tiêu";
+                        finalTrendLabel = activeTarget > 0 ? (isLuyKe ? "Lũy kế" : "Tar ngày") : "Tar";
                         isGood = pctHT >= 100;
                         progressPercent = pctHT;
                         finalTrendValue = revenueTarget > 0
@@ -479,7 +479,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     const dailyDTThuc = monthlyTarget > 0 ? monthlyTarget / daysInMonth : 0;
                     const activeTarget = isLuyKe ? monthlyTarget : dailyDTThuc;
                     const pct = activeTarget > 0 ? (rawValue / activeTarget) * 100 : 0;
-                    finalTrendLabel = activeTarget > 0 ? (isLuyKe ? "Lũy kế" : "Mục tiêu ngày") : "Mục tiêu";
+                    finalTrendLabel = activeTarget > 0 ? (isLuyKe ? "Lũy kế" : "Tar ngày") : "Tar";
                     
                     isGood = pct >= 100;
                     progressPercent = pct;
@@ -503,7 +503,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         finalTrendValue = (
                             <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1">
                                 <Icon name="alert-triangle" size={3.5} />
-                                {unshippedCount} đơn chờ xuất
+                                {unshippedCount} đơn
                             </span>
                         );
                     } else {

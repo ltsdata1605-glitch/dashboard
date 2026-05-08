@@ -15,6 +15,8 @@ interface RevenueCalendarProps {
     isDraft?: boolean;
     /** compact mode: smaller cells, tighter layout for saved-calendar grid */
     compact?: boolean;
+    /** Action buttons rendered inline with the title */
+    actionButtons?: React.ReactNode;
 }
 
 const formatValue = (val: number, metricName: string) => {
@@ -28,7 +30,7 @@ const formatValue = (val: number, metricName: string) => {
     return val.toLocaleString('vi-VN');
 };
 
-const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metricName, title, subtitle, isDraft, compact }) => {
+const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metricName, title, subtitle, isDraft, compact, actionButtons }) => {
     const year = monthDate.getFullYear();
     const month = monthDate.getMonth();
 
@@ -139,35 +141,43 @@ const RevenueCalendar: React.FC<RevenueCalendarProps> = ({ data, monthDate, metr
         <div className="w-full flex-col relative p-1 md:p-2 bg-transparent">
             <div className={`w-full flex flex-col ${compact ? 'gap-1 md:gap-2' : 'gap-2 md:gap-4'}`}>
                 {/* Header Title Section */}
-                <div className="flex items-center justify-between mb-1">
-                    <div className="flex flex-col">
-                        <h2 className={`font-black uppercase tracking-tight text-slate-800 dark:text-slate-100 ${titleSize}`}>
+                <div className="mb-1">
+                    <div className="flex items-center justify-between">
+                        <h2 className={`font-black uppercase tracking-tight text-slate-800 dark:text-slate-100 ${titleSize} flex items-center gap-2`}>
                             {title}
+                            {isDraft && (
+                                <span className="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-500 text-[9px] font-bold rounded border border-amber-200 dark:border-amber-700/50 hide-on-export leading-none">NHÁP</span>
+                            )}
                         </h2>
-                        <div className={`font-bold mt-0.5 text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 flex-wrap ${compact ? 'text-[9px]' : 'text-[11px] md:text-[12px]'}`}>
-                            <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md whitespace-nowrap">THÁNG {monthStr}.{year}</span>
-                            {subtitle && (
-                                <>
-                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></span>
-                                    <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-md font-extrabold whitespace-nowrap">{subtitle}</span>
-                                </>
-                            )}
-                            {displayTotal !== null && (
-                                <>
-                                    <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></span>
-                                    <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md font-black whitespace-nowrap whitespace-pre">TỔNG: {displayTotal}</span>
-                                </>
-                            )}
-                            {!compact && (
-                                <>
-                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
-                                    <span className="text-indigo-600 dark:text-indigo-400 font-extrabold flex items-center gap-1">
-                                        <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
-                                        CẬP NHẬT MỚI
-                                    </span>
-                                </>
-                            )}
-                        </div>
+                        {actionButtons && (
+                            <div className="flex items-center gap-1 flex-shrink-0 hide-on-export">
+                                {actionButtons}
+                            </div>
+                        )}
+                    </div>
+                    <div className={`font-bold mt-0.5 text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5 flex-wrap ${compact ? 'text-[9px]' : 'text-[11px] md:text-[12px]'}`}>
+                        <span className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md whitespace-nowrap">THÁNG {monthStr}.{year}</span>
+                        {subtitle && (
+                            <>
+                                <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></span>
+                                <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-md font-extrabold whitespace-nowrap">{subtitle}</span>
+                            </>
+                        )}
+                        {displayTotal !== null && (
+                            <>
+                                <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600 flex-shrink-0"></span>
+                                <span className="bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-md font-black whitespace-nowrap whitespace-pre">TỔNG: {displayTotal}</span>
+                            </>
+                        )}
+                        {!compact && (
+                            <>
+                                <span className="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                                <span className="text-indigo-600 dark:text-indigo-400 font-extrabold flex items-center gap-1">
+                                    <span className="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></span>
+                                    CẬP NHẬT MỚI
+                                </span>
+                            </>
+                        )}
                     </div>
                 </div>
 

@@ -78,11 +78,11 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         <p className="text-xs font-medium text-slate-400">{isExpanded ? 'Toàn bộ danh sách' : 'Top & Bot 20%'}</p>
                     </div>
                 </div>
-                <div className="px-3 lg:px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
+                <div className="flex items-center gap-2 hide-on-export">
                     <div className="flex items-center gap-2">
-                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                            <button onClick={() => setIsExpanded(false)} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${!isExpanded ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Top & Bot 20%</button>
-                            <button onClick={() => setIsExpanded(true)} className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${isExpanded ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Toàn bộ</button>
+                        <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700">
+                            <button onClick={() => setIsExpanded(false)} className={`py-1 px-2.5 text-[10px] font-bold rounded-l-lg transition-all uppercase tracking-wider ${!isExpanded ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>Top & Bot 20%</button>
+                            <button onClick={() => setIsExpanded(true)} className={`py-1 px-2.5 text-[10px] font-bold rounded-r-lg border-l border-slate-200 dark:border-slate-600 transition-all uppercase tracking-wider ${isExpanded ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>Toàn bộ</button>
                         </div>
                         <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
                         <button 

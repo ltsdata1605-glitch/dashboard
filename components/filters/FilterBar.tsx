@@ -167,15 +167,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                                 variant="compact"
                             />
                         </div>
-                        <div className="flex-1 min-w-0">
-                            <MultiSelectDropdown
-                                label="Trạng thái"
-                                options={uniqueFilterOptions.trangThai}
-                                selected={filterState.trangThai}
-                                onChange={(sel) => handleFilterChange({ trangThai: sel })}
-                                variant="compact"
-                            />
-                        </div>
+
                         <div className="flex-1 min-w-0">
                             <MultiSelectDropdown
                                 label="Bộ phận"
@@ -201,7 +193,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             title="Tải dữ liệu báo cáo (BCNB)"
                             className="hidden sm:flex items-center justify-center w-[44px] h-[44px] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl transition-all active:scale-95 shrink-0"
                         >
-                            <Icon name="external-link" size={4} />
+                            <Icon name="link" size={4} />
                         </a>
                         <button
                             onClick={onToggleAdvanced}
@@ -327,7 +319,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                     </div>
 
                     {/* Quick Date Ranges */}
-                    <div className="relative flex items-center gap-1 bg-slate-50 dark:bg-slate-800/50 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                    <div className="relative flex items-center gap-0.5 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
                         {[
                             { range: 'week', label: 'Tuần' },
                             { range: 'today', label: 'H.Nay' },
@@ -363,10 +355,10 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                                             handleDateRangeClick(range);
                                         }
                                     }}
-                                    className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-full transition-all relative z-0 ${
+                                    className={`px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all relative z-0 ${
                                         filterState.dateRange === range
-                                        ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200/50 dark:border-slate-600/50'
-                                        : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
+                                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
+                                        : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                                     }`}
                                 >
                                     {label}
@@ -390,16 +382,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                         />
                     </div>
                     
-                    {/* Hoso Status Filter */}
-                    <div className="w-auto shrink-0">
-                        <MultiSelectDropdown
-                            label="Trạng thái"
-                            options={uniqueFilterOptions.trangThai}
-                            selected={filterState.trangThai}
-                            onChange={(sel) => handleFilterChange({ trangThai: sel })}
-                            variant="compact"
-                        />
-                    </div>
+
 
                     {/* Department Filter */}
                     <div className="w-auto shrink-0">
@@ -445,7 +428,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             title="Tải dữ liệu báo cáo (BCNB)"
                             className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-full transition-all active:scale-95 group"
                         >
-                            <Icon name="external-link" size={4.5} />
+                            <Icon name="link" size={4.5} />
                         </a>
                         <button
                             onClick={onToggleAdvanced}

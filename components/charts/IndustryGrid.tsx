@@ -248,16 +248,16 @@ const IndustryGrid: React.FC = React.memo(() => {
                 icon="pie-chart"
             >
                 <div className="flex flex-wrap items-center gap-2 hide-on-export">
-                    <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 mr-2">
+                    <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 mr-2">
                         <button 
                             onClick={() => setMetricToDisplay('quantity')}
-                            className={`py-1.5 px-3 sm:px-4 text-[10px] md:text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${metricToDisplay === 'quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
+                            className={`py-1 px-2.5 text-[10px] font-bold rounded-l-lg transition-all uppercase tracking-wider ${metricToDisplay === 'quantity' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                         >
                             Số lượng
                         </button>
                         <button 
                             onClick={() => setMetricToDisplay('revenue')}
-                            className={`py-1.5 px-3 sm:px-4 text-[10px] md:text-xs font-bold rounded-lg transition-all uppercase tracking-wider ${metricToDisplay === 'revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
+                            className={`py-1 px-2.5 text-[10px] font-bold rounded-r-lg border-l border-slate-200 dark:border-slate-600 transition-all uppercase tracking-wider ${metricToDisplay === 'revenue' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                         >
                             Doanh thu
                         </button>
