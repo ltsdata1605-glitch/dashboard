@@ -14,6 +14,7 @@ const AboutView = lazy(() => import('./components/views/AboutView'));
 const StickerPrinterView = lazy(() => import('./components/views/StickerPrinterView'));
 const PhanCaView = lazy(() => import('./components/views/phanca/PhanCaView'));
 
+
 // BI Module Wrapper
 const BiWrapper = lazy(() => import('./bi-module/components/BiWrapper'));
 
@@ -60,6 +61,7 @@ const TabContent = React.memo(() => {
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
+
     ], []);
 
     return (
@@ -116,6 +118,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'tools-tax': { main: 'Hoàn', highlight: 'Thuế' },
     'tools-audit': { main: 'Kiểm', highlight: 'Quỹ' },
     'tools-phanca': { main: 'Phân', highlight: 'Ca' },
+
     'settings': { main: 'Cài đặt', highlight: 'Hệ thống' },
     'help': { main: 'Giới', highlight: 'Thiệu' },
     'pending-approval': { main: 'Hồ Sơ', highlight: 'Quyền' },

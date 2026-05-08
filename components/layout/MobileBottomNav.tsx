@@ -31,6 +31,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
         { id: 'analysis', label: 'Phân tích', icon: BarChart3 },
         { id: 'check-thuong', label: 'Check thưởng', icon: LayoutDashboard },
         { id: 'employees', label: 'Report BI', icon: Users },
+
     ];
 
     const moreTabs = [
