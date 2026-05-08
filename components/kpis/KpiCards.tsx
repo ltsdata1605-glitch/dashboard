@@ -124,16 +124,17 @@ const KpiCard: React.FC<{
             className={`relative flex flex-col justify-between h-full bg-white dark:bg-[#1c1c1e] rounded-xl lg:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.06] transition-all duration-300 group touch-feedback ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
         >
             {/* Gradient accent strip */}
-            <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />
+            <div className={`h-[2px] sm:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />
 
-            <div className="px-2.5 py-2 lg:px-4 lg:py-3.5 flex flex-col flex-1">
+            <div className="px-1.5 py-1.5 sm:px-2.5 sm:py-2 lg:px-4 lg:py-3.5 flex flex-col flex-1">
                 {/* Header: Icon + Title */}
-                <div className="flex items-center gap-1.5 lg:gap-2 mb-1.5 lg:mb-3">
-                    <div className={`w-7 h-7 lg:w-9 lg:h-9 rounded-lg lg:rounded-lg flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
-                        <Icon name={icon} size={3} className="lg:hidden" />
+                <div className="flex flex-col sm:flex-row items-center gap-0.5 sm:gap-1.5 lg:gap-2 mb-1 sm:mb-1.5 lg:mb-3">
+                    <div className={`w-5 h-5 sm:w-7 sm:h-7 lg:w-9 lg:h-9 rounded-md sm:rounded-lg flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
+                        <Icon name={icon} size={2.5} className="sm:hidden" />
+                        <Icon name={icon} size={3} className="hidden sm:block lg:hidden" />
                         <Icon name={icon} size={4.5} className="hidden lg:block" />
                     </div>
-                    <h3 className="text-[9px] lg:text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-2">{title}</h3>
+                    <h3 className="text-[7px] sm:text-[9px] lg:text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-2 text-center sm:text-left">{title}</h3>
                 </div>
 
                 {/* Value */}
@@ -142,9 +143,9 @@ const KpiCard: React.FC<{
                         {children}
                     </div>
 
-                    {/* Progress bar — always uses the card's own gradient color */}
+                    {/* Progress bar — hidden on mobile, visible from sm up */}
                     {clampedProgress !== undefined && (
-                        <div className="mt-1.5 lg:mt-2">
+                        <div className="hidden sm:block mt-1.5 lg:mt-2">
                             <div className="flex items-center justify-between mb-0.5">
                                 <span className="text-[8px] lg:text-[10px] font-semibold text-slate-400 dark:text-slate-500">Tiến độ</span>
                                 <span className={`text-[9px] lg:text-[11px] font-bold ${style.iconText}`}>
@@ -159,10 +160,19 @@ const KpiCard: React.FC<{
                             </div>
                         </div>
                     )}
+                    {/* Mobile-only: compact progress % */}
+                    {clampedProgress !== undefined && (
+                        <div className="sm:hidden mt-0.5">
+                            <div className={`w-full h-1 rounded-full ${style.progressBg} overflow-hidden`}>
+                                <div className={`h-full rounded-full ${style.progressFill}`} style={{ width: `${Math.min(clampedProgress, 100)}%` }} />
+                            </div>
+                            <span className={`text-[7px] font-bold ${style.iconText} block text-center mt-0.5`}>{Math.round(clampedProgress)}%</span>
+                        </div>
+                    )}
 
-                    {/* Trend / Target footer */}
+                    {/* Trend / Target footer — hidden on mobile */}
                     {(trendLabel || trendValue) && (
-                        <div className="flex items-center justify-between gap-1 lg:gap-1.5 mt-1.5 lg:mt-2 pt-1.5 lg:pt-2 border-t border-slate-100 dark:border-white/[0.04]">
+                        <div className="hidden sm:flex items-center justify-between gap-1 lg:gap-1.5 mt-1.5 lg:mt-2 pt-1.5 lg:pt-2 border-t border-slate-100 dark:border-white/[0.04]">
                             <span className="text-[8px] lg:text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider truncate">{trendLabel}</span>
                             <div className="text-[9px] lg:text-[11px] font-bold text-slate-600 dark:text-slate-400 text-right shrink-0">
                                 {trendValue}
@@ -379,9 +389,10 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     return (
         <div>
             <div className={`
-                grid grid-cols-2 gap-2 pb-1
+                grid grid-cols-4 gap-1.5 pb-1
+                sm:grid-cols-2 sm:gap-2
                 md:grid-cols-3 md:gap-3
-                xl:grid-cols-5 md:gap-4 mb-3 lg:mb-8 kpi-grid-for-export
+                xl:grid-cols-5 xl:gap-4 mb-3 lg:mb-8 kpi-grid-for-export
             `}>
             {visibleCards.map(config => {
                 const isSpecialUnshipped = config.metric === 'doanhThuThucChoXuat';
@@ -561,7 +572,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         progressPercent={progressPercent}
                         isGood={isGood}
                     >
-                        <div className={`text-[19px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight ${valueColor}`}>
+                        <div className={`text-[11px] sm:text-[19px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight text-center sm:text-left ${valueColor}`}>
                             {displayValue}
                         </div>
                     </KpiCard>
