@@ -295,7 +295,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                             <Icon name="layout" size={3.5} className="text-indigo-500 sm:hidden" />
                             <Icon name="layout" size={4} className="text-indigo-500 hidden sm:block" /> Cấu trúc cột
                         </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
                             <div ref={headersRef} className="relative z-50">
                                 <label htmlFor="mainHeader" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 flex justify-between">
                                     Tiêu đề nhóm (Cha)
@@ -355,7 +355,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                 </div>
                             </div>
                             
-                            <div className="md:col-span-2 mt-1">
+                            <div className="col-span-2 mt-1">
                                 <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2 flex justify-between">
                                     Phân loại cột
                                     <span className="font-normal text-[10px] sm:text-xs text-slate-500">Quyết định cách tính toán dữ liệu</span>
@@ -384,18 +384,20 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                 <Icon name="palette" size={4} className="text-slate-400 hidden sm:block" />
                                 Tùy chỉnh màu nền cho nhóm (Mặc định ngẫu nhiên)
                             </label>
-                            <div className="flex flex-wrap gap-2 sm:gap-2.5">
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2.5">
                                 {PASTEL_COLORS.map(c => (
                                     <button
                                         key={c.label}
                                         type="button"
                                         onClick={() => setHeaderColor(c.value)}
                                         title={c.label}
-                                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all hover:scale-110 flex items-center justify-center shadow-sm ${headerColor === c.value ? 'ring-2 ring-offset-2 ring-indigo-500 scale-110 shadow-md' : 'border border-slate-200 dark:border-slate-600'} ${!c.value ? 'bg-slate-100 dark:bg-slate-800' : ''}`}
+                                        className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full transition-all hover:scale-110 flex items-center justify-center shadow-sm ${headerColor === c.value ? 'ring-2 ring-offset-1 sm:ring-offset-2 ring-indigo-500 scale-110 shadow-md' : 'border border-slate-200 dark:border-slate-600'} ${!c.value ? 'bg-slate-100 dark:bg-slate-800' : ''}`}
                                         style={c.value ? { backgroundColor: c.value } : {}}
                                     >
-                                        {!c.value && <Icon name="shuffle" size={4} className="text-slate-500 dark:text-slate-400" />}
-                                        {headerColor === c.value && c.value && <Icon name="check" size={4} className="text-slate-800 opacity-70" />}
+                                        {!c.value && <Icon name="shuffle" size={3} className="text-slate-500 dark:text-slate-400 sm:hidden" />}
+                                        {!c.value && <Icon name="shuffle" size={4} className="text-slate-500 dark:text-slate-400 hidden sm:block" />}
+                                        {headerColor === c.value && c.value && <Icon name="check" size={3} className="text-slate-800 opacity-70 sm:hidden" />}
+                                        {headerColor === c.value && c.value && <Icon name="check" size={4} className="text-slate-800 opacity-70 hidden sm:block" />}
                                     </button>
                                 ))}
                             </div>
@@ -448,10 +450,10 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                 </div>
                 
                 {/* FOOTER */}
-                <div className="p-3 sm:p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                    <button type="button" onClick={onClose} className="py-2 sm:py-2.5 px-3 sm:px-5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-slate-300 focus:outline-none"> Hủy Bỏ </button>
-                    <button type="submit" className="py-2 sm:py-2.5 px-4 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-xs sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 w-full sm:w-auto flex items-center gap-1.5 sm:gap-2 justify-center">
-                        <Icon name="save" size={4} /> {editingColumn ? "Chấp Nhận Lưu Chỉnh Sửa" : "Lưu & Bắt Đầu Cột Mới"}
+                <div className="p-3 sm:p-4 sm:px-6 sm:py-5 grid grid-cols-2 gap-2 sm:gap-3 bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+                    <button type="button" onClick={onClose} className="py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-slate-300 focus:outline-none border border-slate-200 dark:border-slate-600"> Hủy Bỏ </button>
+                    <button type="submit" className="py-2 sm:py-2.5 rounded-lg sm:rounded-xl shadow-md text-xs sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-1.5 sm:gap-2 justify-center">
+                        <Icon name="save" size={4} /> {editingColumn ? "Lưu Chỉnh Sửa" : "Lưu & Bắt Đầu Cột Mới"}
                     </button>
                 </div>
             </form>

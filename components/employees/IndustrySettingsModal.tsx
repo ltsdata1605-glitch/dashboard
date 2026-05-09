@@ -274,7 +274,7 @@ const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, 
                 </button>
             </div>
             
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pb-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5 pb-4 sm:pb-6">
                  {groupOrder.map((mainHeader, groupIndex) => {
                     const cols = groupedColumns[mainHeader] || [];
                     if (cols.length === 0) return null;
@@ -295,13 +295,13 @@ const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, 
                             className={`group relative flex flex-col h-full bg-white dark:bg-slate-800 rounded-xl border ${styles.border} shadow-sm hover:shadow-md transition-all duration-300 cursor-grab active:cursor-grabbing overflow-hidden`}
                         >
                             {/* Header Group */}
-                            <div className={`px-5 py-3.5 flex justify-between items-center border-b ${styles.border} ${styles.bg} pointer-events-none`}>
+                            <div className={`px-3 sm:px-5 py-2.5 sm:py-3.5 flex justify-between items-center border-b ${styles.border} ${styles.bg} pointer-events-none`}>
                                 <div className="flex flex-col">
-                                    <h4 className={`text-xs font-bold uppercase tracking-wider ${styles.text} flex items-center gap-2`}>
-                                        <Icon name="layers" size={3.5} className="opacity-70" />
+                                    <h4 className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${styles.text} flex items-center gap-1.5 sm:gap-2`}>
+                                        <Icon name="layers" size={3} className="opacity-70 sm:hidden" /><Icon name="layers" size={3.5} className="opacity-70 hidden sm:block" />
                                         {mainHeader}
                                     </h4>
-                                    <span className="text-[10px] font-medium text-slate-500 mt-1">
+                                    <span className="text-[9px] sm:text-[10px] font-medium text-slate-500 mt-0.5 sm:mt-1">
                                         Hiển thị {visibleCount}/{cols.length} cột
                                     </span>
                                 </div>
@@ -317,19 +317,19 @@ const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, 
                             </div>
                             
                             {/* Columns List */}
-                            <div className="p-3 flex flex-wrap content-start gap-1.5 flex-grow">
+                            <div className="p-2 sm:p-3 flex flex-wrap content-start gap-1 sm:gap-1.5 flex-grow">
                                 {cols.map(col => (
                                     <div 
                                         key={col.id} 
-                                        className={`relative group/item inline-flex items-center gap-1.5 pl-2.5 pr-1.5 py-1 rounded-lg text-[11px] font-semibold transition-all cursor-pointer select-none border
+                                        className={`relative group/item inline-flex items-center gap-1 sm:gap-1.5 pl-2 sm:pl-2.5 pr-1 sm:pr-1.5 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[9px] sm:text-[11px] font-semibold transition-all cursor-pointer select-none border
                                             ${col.isVisible 
                                                 ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.05)]' 
                                                 : 'bg-slate-50/50 dark:bg-slate-800/30 border-transparent text-slate-400 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'
                                             }`}
                                         onClick={() => handleToggleVisibility(col.id)}
                                     >
-                                        <div className={`w-1.5 h-1.5 rounded-full transition-colors ${col.isVisible ? styles.indicator : 'bg-slate-300 dark:bg-slate-600'}`}></div>
-                                        <span className="truncate max-w-[130px]">{col.subHeader}</span>
+                                        <div className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full transition-colors ${col.isVisible ? styles.indicator : 'bg-slate-300 dark:bg-slate-600'}`}></div>
+                                        <span className="truncate max-w-[100px] sm:max-w-[130px]">{col.subHeader}</span>
                                         
                                         <div className="flex items-center ml-0.5 pl-1.5 border-l border-slate-200 dark:border-slate-700/50 opacity-0 group-hover/item:opacity-100 transition-opacity">
                                             <button onClick={(e) => { e.stopPropagation(); handleEdit(col); }} className="p-0.5 text-slate-400 hover:text-blue-600 rounded transition-colors" title="Chỉnh sửa"><Icon name="edit-3" size={3} /></button>

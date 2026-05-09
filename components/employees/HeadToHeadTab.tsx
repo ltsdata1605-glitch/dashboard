@@ -144,19 +144,20 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
     return (
         <div ref={ref}>
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400`}>
-                        <Icon name="calendar-days" size={6} />
+            <div className="flex justify-between items-center mb-3 sm:mb-6">
+                <div className="flex items-center gap-2 sm:gap-4">
+                    <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400`}>
+                        <Icon name="calendar-days" size={4} className="sm:hidden" />
+                        <Icon name="calendar-days" size={6} className="hidden sm:block" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-slate-800 dark:text-white leading-tight">7 Ngày</h3>
-                        <p className="text-xs font-medium text-slate-400">Phân tích hiệu suất 7 ngày gần nhất</p>
+                        <h3 className="text-sm sm:text-lg font-black text-slate-800 dark:text-white leading-tight">7 Ngày</h3>
+                        <p className="text-[9px] sm:text-xs font-medium text-slate-400">Phân tích hiệu suất 7 ngày gần nhất</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 hide-on-export overflow-x-auto no-scrollbar py-1">
                     {!isBatchExporting && tables.length > 0 && (
-                        <div className="flex bg-slate-100 dark:bg-slate-800/80 p-1 rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                        <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
                             {tables.map((t, index) => {
                                 const theme = colorThemes[index % colorThemes.length];
                                 const isActive = activeTableId === t.id;
@@ -164,7 +165,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                                 <button
                                     key={`tab-${t.id}`}
                                     onClick={() => setActiveTableId(t.id)}
-                                    className={`px-3.5 py-1.5 text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-lg transition-all ${
+                                    className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-lg transition-all ${
                                         isActive
                                         ? `${theme.header} shadow-sm border ${theme.border}`
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 border border-transparent'
@@ -177,9 +178,9 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                         </div>
                     )}
                     
-                    <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-1.5 rounded-xl shrink-0 shadow-sm">
-                        <button onClick={() => setModalState({ type: 'ADD' })} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Tạo bảng 7 Ngày mới">
-                            <Icon name="plus" size={4.5} />
+                    <div className="flex items-center gap-0.5 sm:gap-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-1 sm:p-1.5 rounded-lg sm:rounded-xl shrink-0 shadow-sm">
+                        <button onClick={() => setModalState({ type: 'ADD' })} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Tạo bảng 7 Ngày mới">
+                            <Icon name="plus" size={3.5} className="sm:hidden" /><Icon name="plus" size={4.5} className="hidden sm:block" />
                         </button>
                         <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
                         {onExport && (

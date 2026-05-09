@@ -237,17 +237,17 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                         {editingCard ? (
                             <div className="space-y-3 sm:space-y-6">
                                 <div>
-                                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">Tiêu Đề Hiển Thị</label>
+                                    <label className="block text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">TIÊU ĐỀ HIỂN THỊ</label>
                                     <input 
                                         type="text" 
                                         value={editingCard.title}
                                         onChange={e => updateEditingCard({ title: e.target.value })}
-                                        className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-indigo-500 dark:text-white font-medium"
+                                        className="w-full px-2.5 sm:px-3 py-1.5 sm:py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-lg focus:ring-2 focus:ring-indigo-500 dark:text-white font-medium text-xs sm:text-sm"
                                         placeholder="Vd: Doanh Thu Tháng..."
                                     />
                                 </div>
 
-                                <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+                                <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 sm:p-1">
                                     {(['metric', 'data', 'calculated'] as const).map(tab => (
                                         <button 
                                             key={tab}
@@ -255,7 +255,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 setActiveTab(tab);
                                                 updateEditingCard({ type: tab });
                                             }}
-                                            className={`flex-1 text-sm font-semibold py-1.5 rounded-md transition-colors ${
+                                            className={`flex-1 text-[10px] sm:text-sm font-semibold py-1 sm:py-1.5 rounded-md transition-colors ${
                                                 (editingCard.type || 'metric') === tab 
                                                 ? 'bg-white text-indigo-600 shadow-sm dark:bg-slate-700 dark:text-indigo-400' 
                                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50'
@@ -269,13 +269,13 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 {/* Metric Type rendering */}
                                 {(!editingCard.type || editingCard.type === 'metric') && (
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">Nguồn Dữ Liệu</label>
-                                        <div className="grid grid-cols-2 gap-2">
+                                        <label className="block text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">NGUỒN DỮ LIỆU</label>
+                                        <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
                                             {AVAILABLE_METRICS.map(m => (
                                                 <button 
                                                     key={m.value}
                                                     onClick={() => updateEditingCard({ metric: m.value })}
-                                                    className={`px-3 py-2 text-left rounded-lg border text-sm font-medium transition-colors ${editingCard.metric === m.value ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-500/20 dark:border-indigo-500/30 dark:text-indigo-300' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'}`}
+                                                    className={`px-2 sm:px-3 py-1.5 sm:py-2 text-left rounded-lg border text-[10px] sm:text-sm font-medium transition-colors ${editingCard.metric === m.value ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-500/20 dark:border-indigo-500/30 dark:text-indigo-300' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'}`}
                                                 >
                                                     {m.label}
                                                 </button>
@@ -286,29 +286,29 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
 
                                 {/* Data Builder Type rendering */}
                                 {editingCard.type === 'data' && (
-                                    <div className="space-y-4">
-                                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-sm text-amber-800 dark:text-amber-400 font-medium flex gap-2">
-                                            <Icon name="info" size={4} className="mt-0.5 shrink-0" />
-                                            <span>Thẻ này sẽ tự động lọc dữ liệu trên danh sách các Đơn Hàng qua Kho được chọn. Tính toán có thể chậm hệ thống một chút.</span>
+                                    <div className="space-y-3 sm:space-y-4">
+                                        <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-2 sm:p-3 text-[10px] sm:text-sm text-amber-800 dark:text-amber-400 font-medium flex gap-1.5 sm:gap-2">
+                                            <Icon name="info" size={3.5} className="mt-0.5 shrink-0" />
+                                            <span>Thẻ này sẽ lọc dữ liệu trên danh sách Đơn Hàng qua Kho được chọn.</span>
                                         </div>
                                         
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 h-fit">
-                                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">Loại Chỉ Số Cần Lấy:</label>
+                                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                            <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 sm:p-4 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 h-fit">
+                                                <label className="block text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Loại Chỉ Số:</label>
                                                 <select 
                                                     value={editingCard.dataFilters?.metricType || 'revenue'} 
                                                     onChange={(e) => updateEditingCard({ dataFilters: { ...editingCard.dataFilters, metricType: e.target.value as any }})}
-                                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded-lg text-sm focus:ring-1 focus:ring-indigo-500 mb-4"
+                                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 rounded-lg text-[10px] sm:text-sm focus:ring-1 focus:ring-indigo-500 mb-3 sm:mb-4"
                                                 >
                                                     <option value="revenue">Tổng Doanh Thu Thực</option>
                                                     <option value="revenueQD">Tổng Doanh Thu QĐ</option>
                                                     <option value="quantity">Tổng Số Lượng</option>
                                                 </select>
-                                                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">Định Dạng Tiền Tố Số Liệu:</label>
+                                                <label className="block text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Định Dạng Số Liệu:</label>
                                                 <select
                                                     value={editingCard.format}
                                                     onChange={(e) => updateEditingCard({ format: e.target.value as any })}
-                                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded-lg text-sm focus:ring-1 focus:ring-indigo-500"
+                                                    className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 rounded-lg text-[10px] sm:text-sm focus:ring-1 focus:ring-indigo-500"
                                                 >
                                                     <option value="currency">Tiền Tệ (VNĐ)</option>
                                                     <option value="number">Số thông thường</option>
@@ -316,7 +316,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 </select>
                                             </div>
                                             
-                                            <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-4">
+                                            <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 sm:p-4 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col gap-3 sm:gap-4">
                                                 <div>
                                                     <MultiSelectDropdown
                                                         label="Lọc theo Ngành Hàng"
@@ -354,8 +354,8 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
 
                                 {/* Calculated rendering */}
                                 {editingCard.type === 'calculated' && (
-                                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-xl p-4">
-                                        <div className="flex items-center gap-4">
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg sm:rounded-xl p-2.5 sm:p-4">
+                                        <div className="flex items-center gap-2 sm:gap-4">
                                             <select 
                                                 value={editingCard.operand1_cardId || ''}
                                                 onChange={(e) => updateEditingCard({ operand1_cardId: e.target.value })}
@@ -407,10 +407,10 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-2 gap-3 sm:gap-6">
+                                <div className="grid grid-cols-2 gap-2 sm:gap-6">
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">Biểu Tượng</label>
-                                        <div className="flex flex-wrap gap-2">
+                                        <label className="block text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">BIỂU TƯỢNG</label>
+                                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                             {ICONS.map(icon => (
                                                 <button 
                                                     key={icon}
@@ -423,8 +423,8 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                         </div>
                                     </div>
                                     <div>
-                                        <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">Màu Sắc</label>
-                                        <div className="flex flex-wrap gap-2">
+                                        <label className="block text-[10px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 uppercase tracking-wide">MÀU SẮC</label>
+                                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
                                             {COLORS.map(color => (
                                                 <button 
                                                     key={color}
@@ -438,28 +438,28 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                     </div>
                                 </div>
 
-                                <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800/30">
-                                    <label className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 cursor-pointer">
+                                <div className="bg-emerald-50/50 dark:bg-emerald-900/10 p-2.5 sm:p-4 rounded-lg sm:rounded-xl border border-emerald-200 dark:border-emerald-800/30">
+                                    <label className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2 cursor-pointer">
                                         <input
                                             type="checkbox"
                                             checked={editingCard.hasTarget}
                                             onChange={(e) => updateEditingCard({ hasTarget: e.target.checked, targetType: e.target.checked ? 'custom' : 'none', customTargetValue: editingCard.customTargetValue || 0 })}
-                                            className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                                            className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                                         />
                                         Kích hoạt Mục tiêu tháng (Target)
                                     </label>
                                     
                                     {editingCard.hasTarget && (
-                                        <div className="mt-3 animate-fade-in pl-6 border-l-2 border-emerald-200 dark:border-emerald-800/50 ml-1.5">
-                                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1.5">Chỉ tiêu Cố định ({editingCard.format === 'percentage' ? '%' : 'Con số VNĐ/Số lượng'})</label>
+                                        <div className="mt-2 sm:mt-3 animate-fade-in pl-4 sm:pl-6 border-l-2 border-emerald-200 dark:border-emerald-800/50 ml-1 sm:ml-1.5">
+                                            <label className="block text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1 sm:mb-1.5">Chỉ tiêu ({editingCard.format === 'percentage' ? '%' : 'VNĐ'})</label>
                                             <input 
                                                 type="number"
                                                 value={editingCard.customTargetValue ?? ''}
                                                 onChange={(e) => updateEditingCard({ customTargetValue: e.target.value ? Number(e.target.value) : undefined })}
                                                 placeholder={editingCard.format === 'percentage' ? "Ví dụ: 80" : "Ví dụ: 10000000"}
-                                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2 rounded-lg text-sm focus:ring-1 focus:ring-indigo-500"
+                                                className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-1.5 sm:p-2 rounded-lg text-xs sm:text-sm focus:ring-1 focus:ring-indigo-500"
                                             />
-                                            <p className="text-[10px] text-slate-400 mt-1.5 font-medium leading-relaxed">Giúp thẻ tự động hiển thị thanh tiến độ, đồng thời tự động tính % đạt và đổi màu Xanh/Đỏ trạng thái trên bảng KPI.</p>
+                                            <p className="text-[9px] sm:text-[10px] text-slate-400 mt-1 sm:mt-1.5 font-medium leading-relaxed">Tự động hiển thị thanh tiến độ, tính % đạt và đổi màu trạng thái.</p>
                                         </div>
                                     )}
                                 </div>

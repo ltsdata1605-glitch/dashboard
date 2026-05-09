@@ -111,11 +111,12 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         return (
                             <div key={dept}>
                                 {showHeader && (
-                                    <div className="flex items-center gap-2.5 bg-gradient-to-r from-sky-50 to-indigo-50/40 dark:from-sky-900/40 dark:to-indigo-900/20 px-3 py-2.5 border-l-4 border-sky-400 dark:border-sky-500 rounded-r-lg shadow-sm border-t border-r border-b border-white dark:border-slate-800 mb-3 ml-0.5">
+                                    <div className="flex items-center gap-1.5 sm:gap-2.5 bg-gradient-to-r from-sky-50 to-indigo-50/40 dark:from-sky-900/40 dark:to-indigo-900/20 px-2 sm:px-3 py-1.5 sm:py-2.5 border-l-4 border-sky-400 dark:border-sky-500 rounded-r-lg shadow-sm border-t border-r border-b border-white dark:border-slate-800 mb-2 sm:mb-3 ml-0.5">
                                         <div className="text-sky-600 dark:text-sky-400">
-                                            <Icon name="users-round" size={4.5} />
+                                            <Icon name="users-round" size={3.5} className="sm:hidden" />
+                                            <Icon name="users-round" size={4.5} className="hidden sm:block" />
                                         </div>
-                                        <h3 className="text-[15px] font-bold text-sky-900 dark:text-sky-100 uppercase tracking-wide translate-y-[0.5px]">
+                                        <h3 className="text-[11px] sm:text-[15px] font-bold text-sky-900 dark:text-sky-100 uppercase tracking-wide translate-y-[0.5px]">
                                             {dept}
                                         </h3>
                                     </div>
@@ -127,9 +128,9 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                         
                                         let rankDisplay;
                                         if (medal) {
-                                            rankDisplay = <div className="w-8 text-2xl font-bold text-center">{medal}</div>;
+                                            rankDisplay = <div className="w-6 sm:w-8 text-lg sm:text-2xl font-bold text-center">{medal}</div>;
                                         } else {
-                                            rankDisplay = <div className="w-8 text-sm text-slate-500 dark:text-slate-400 font-semibold text-center">#{rankIndex + 1}</div>
+                                            rankDisplay = <div className="w-6 sm:w-8 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-semibold text-center">#{rankIndex + 1}</div>
                                         }
 
                                         const hieuQuaClass = Number(seller.hieuQuaValue || 0) < 35 ? 'text-red-500 font-bold' : 'text-green-500 font-bold';
@@ -137,11 +138,11 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
 
                                         return (
                                             <div key={seller.name} onClick={() => onEmployeeClick(seller.name)} className="p-2 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 transition-shadow hover:shadow-md cursor-pointer">
-                                                <div className="flex items-center gap-2">
+                                                    <div className="flex items-center gap-1.5 sm:gap-2">
                                                     {rankDisplay}
                                                     <div className="flex-grow min-w-0">
-                                                        <p className="font-bold text-slate-800 dark:text-slate-100 text-sm truncate">{abbreviateName(seller.name)}</p>
-                                                        <div className="text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
+                                                        <p className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm truncate">{abbreviateName(seller.name)}</p>
+                                                        <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-2 sm:gap-x-3 gap-y-0.5 mt-0.5 sm:mt-1">
                                                             <span><strong className="text-slate-600 dark:text-slate-300">Thực:</strong> {formatCurrency(seller.doanhThuThuc, 0)}</span>
                                                             <span className="inline-flex items-center"><strong className="text-slate-600 dark:text-slate-300">HQQĐ:</strong><span className={`ml-1 ${hieuQuaClass}`}>{Number(seller.hieuQuaValue || 0).toFixed(0)}%</span></span>
                                                             <span><strong className="text-slate-600 dark:text-slate-300">T.Cận:</strong> {formatQuantity(seller.slTiepCan)}</span>
@@ -150,8 +151,8 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                                         </div>
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400">DTQĐ</p>
-                                                        <p className="font-bold text-lg text-indigo-600 dark:text-indigo-400">{formatCurrency(seller.doanhThuQD, 0)}</p>
+                                                        <p className="text-[9px] sm:text-xs text-slate-500 dark:text-slate-400">DTQĐ</p>
+                                                        <p className="font-bold text-base sm:text-lg text-indigo-600 dark:text-indigo-400">{formatCurrency(seller.doanhThuQD, 0)}</p>
                                                     </div>
                                                 </div>
                                             </div>

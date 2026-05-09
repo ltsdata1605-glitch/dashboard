@@ -53,7 +53,7 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
                         <button type="button" onClick={() => setMetricType('revenueQD')} className={`flex-1 sm:flex-none py-1 sm:py-1.5 px-3 sm:px-6 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'revenueQD' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Doanh thu QĐ</button>
                     </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+                <div className="grid grid-cols-3 gap-3 sm:gap-4">
                         <div>
                         <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ngành hàng</label>
                         <MultiSelectDropdown options={allIndustries} selected={selectedIndustries} onChange={setSelectedIndustries} label="Ngành hàng" variant="compact"/>
@@ -77,13 +77,13 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
                     </h5>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <div className="w-full sm:w-[160px]">
-                            <select value={priceType} onChange={e => setPriceType(e.target.value as any)} className="w-full h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-medium text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <select value={priceType} onChange={e => setPriceType(e.target.value as any)} className="w-full h-8 sm:h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-medium text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="discounted">Giá bán (Khuyến mãi)</option>
                                 <option value="original">Giá niêm yết (Gốc)</option>
                             </select>
                         </div>
                         <div className="w-full sm:w-[130px]">
-                            <select value={priceCondition} onChange={e => setPriceCondition(e.target.value as any)} className="w-full h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-medium text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <select value={priceCondition} onChange={e => setPriceCondition(e.target.value as any)} className="w-full h-8 sm:h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-medium text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                                 <option value="none" className="text-slate-500">Bỏ qua giá</option>
                                 <option value="greater">Lớn hơn - &gt;</option>
                                 <option value="less">Nhỏ hơn - &lt;</option>
@@ -94,12 +94,12 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
                         {priceCondition !== 'none' && (
                             <div className="flex-grow flex items-center gap-2">
                                 <div className="relative flex-grow">
-                                    <input type="number" value={priceValue1} onChange={e => setPriceValue1(e.target.value)} placeholder="0 đ" className="w-full h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-3 pr-3 text-sm focus:ring-2 focus:ring-indigo-500" />
+                                    <input type="number" value={priceValue1} onChange={e => setPriceValue1(e.target.value)} placeholder="0 đ" className="w-full h-8 sm:h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-2 sm:pl-3 pr-2 sm:pr-3 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500" />
                                 </div>
                                 {priceCondition === 'between' && (
                                     <div className="flex items-center gap-2 flex-grow">
-                                        <span className="text-slate-400 text-sm font-medium">~</span>
-                                        <input type="number" value={priceValue2} onChange={e => setPriceValue2(e.target.value)} placeholder="0 đ" className="w-full h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-3 pr-3 text-sm focus:ring-2 focus:ring-indigo-500" />
+                                        <span className="text-slate-400 text-xs sm:text-sm font-medium">~</span>
+                                        <input type="number" value={priceValue2} onChange={e => setPriceValue2(e.target.value)} placeholder="0 đ" className="w-full h-8 sm:h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-2 sm:pl-3 pr-2 sm:pr-3 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500" />
                                     </div>
                                 )}
                             </div>

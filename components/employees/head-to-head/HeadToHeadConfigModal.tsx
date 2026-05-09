@@ -296,28 +296,29 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
             maxWidthClass="max-w-4xl"
         >
             <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0">
-                <div className="flex-grow p-5 sm:p-6 space-y-6 sm:space-y-8 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar min-h-0">
+                <div className="flex-grow p-3 sm:p-6 space-y-4 sm:space-y-8 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar min-h-0">
                     {feedback && (
-                        <div className={`p-3 border rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm ${
+                        <div className={`p-2.5 sm:p-3 border rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
                             feedback.type === 'error' 
                             ? 'bg-rose-50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300'
                             : 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
                         }`}>
-                           <Icon name={feedback.type === 'error' ? 'alert-triangle' : 'check-circle'} size={4} />
+                           <Icon name={feedback.type === 'error' ? 'alert-triangle' : 'check-circle'} size={3.5} className="sm:hidden" />
+                           <Icon name={feedback.type === 'error' ? 'alert-triangle' : 'check-circle'} size={4} className="hidden sm:block" />
                            {feedback.message}
                         </div>
                     )}
                     
                     {/* SECTION 1: Cấu trúc Bảng */}
-                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
-                        <h4 className="flex items-center gap-2 font-bold mb-4 text-slate-800 dark:text-slate-100">
-                            <Icon name="layout" size={4} className="text-indigo-500" /> Cấu trúc Bảng
+                    <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-5 shadow-sm">
+                        <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold mb-3 sm:mb-4 text-xs sm:text-base text-slate-800 dark:text-slate-100">
+                            <Icon name="layout" size={3.5} className="text-indigo-500 sm:hidden" /><Icon name="layout" size={4} className="text-indigo-500 hidden sm:block" /> Cấu trúc Bảng
                         </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5">
                             <div ref={headersRef} className="relative z-50">
-                                <label htmlFor="mainHeader" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex justify-between">
+                                <label htmlFor="mainHeader" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 flex justify-between">
                                     Tiêu đề nhóm (Cha)
-                                    {existingMainHeaders.length > 0 && <span className="text-xs font-normal text-slate-400">Chọn từ danh sách có sẵn</span>}
+                                    {existingMainHeaders.length > 0 && <span className="text-[10px] sm:text-xs font-normal text-slate-400">Chọn từ danh sách</span>}
                                 </label>
                                 <div className="relative">
                                     <Icon name="layers" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -328,7 +329,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                                         onChange={e => { setMainHeader(e.target.value); setShowHeadersList(true); }}
                                         onFocus={() => setShowHeadersList(true)}
                                         placeholder="Tạo nhóm mới hoặc chọn..." 
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-10 pr-10 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm" 
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-8 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm" 
                                         autoComplete="off"
                                     />
                                     <button 
@@ -358,7 +359,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                                 )}
                             </div>
                             <div>
-                                <label htmlFor="tableName" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tên Bảng (Bắt buộc) *</label>
+                                <label htmlFor="tableName" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">Tên Bảng (Bắt buộc) *</label>
                                 <div className="relative">
                                     <Icon name="type" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input 
@@ -367,48 +368,49 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                                         value={tableName} 
                                         onChange={e => setTableName(e.target.value.toUpperCase())} 
                                         placeholder="VD: SL SIM, DT APPLE..." 
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-10 pr-3 py-2.5 text-sm font-bold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm" 
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-8 sm:pl-10 pr-3 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm" 
                                         required 
                                     />
                                 </div>
                             </div>
                             
                             <div className="md:col-span-2 mt-1">
-                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex justify-between">
+                                <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2 flex justify-between">
                                     Phân loại bảng
-                                    <span className="font-normal text-xs text-slate-500">Quyết định tính toán dữ liệu 7 ngày</span>
+                                    <span className="font-normal text-[10px] sm:text-xs text-slate-500">Tính toán dữ liệu 7 ngày</span>
                                 </label>
-                                <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 shadow-inner">
-                                    <button type="button" onClick={() => setTableType('data')} className={`flex-1 flex flex-col items-center justify-center py-2 px-2 text-sm rounded-lg transition-all ${tableType === 'data' ? 'bg-white text-indigo-600 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'}`}>
-                                        <Icon name="database" size={4} className="mb-1 opacity-80" /> Truy vấn Data
+                                <div className="flex bg-slate-100 dark:bg-slate-900 p-1 sm:p-1.5 rounded-lg sm:rounded-xl border border-slate-200 shadow-inner">
+                                    <button type="button" onClick={() => setTableType('data')} className={`flex-1 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1.5 sm:px-2 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all ${tableType === 'data' ? 'bg-white text-indigo-600 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'}`}>
+                                        <Icon name="database" size={3.5} className="mb-0.5 sm:mb-1 opacity-80 sm:hidden" /><Icon name="database" size={4} className="mb-0.5 sm:mb-1 opacity-80 hidden sm:block" /> Truy vấn Data
                                     </button>
-                                    <button type="button" onClick={() => setTableType('calculated')} className={`flex-1 flex flex-col items-center justify-center py-2 px-2 text-sm rounded-lg transition-all ${tableType === 'calculated' ? 'bg-white text-indigo-600 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'}`}>
-                                        <Icon name="calculator" size={4} className="mb-1 opacity-80" /> Bảng Tính Toán
+                                    <button type="button" onClick={() => setTableType('calculated')} className={`flex-1 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1.5 sm:px-2 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all ${tableType === 'calculated' ? 'bg-white text-indigo-600 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'}`}>
+                                        <Icon name="calculator" size={3.5} className="mb-0.5 sm:mb-1 opacity-80 sm:hidden" /><Icon name="calculator" size={4} className="mb-0.5 sm:mb-1 opacity-80 hidden sm:block" /> Bảng Tính Toán
                                     </button>
-                                    <button type="button" onClick={() => setTableType('target')} className={`flex-1 flex flex-col items-center justify-center py-2 px-2 text-sm rounded-lg transition-all ${tableType === 'target' ? 'bg-white text-indigo-600 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'}`}>
-                                        <Icon name="target" size={4} className="mb-1 opacity-80" /> Thiết lập Target
+                                    <button type="button" onClick={() => setTableType('target')} className={`flex-1 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1.5 sm:px-2 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all ${tableType === 'target' ? 'bg-white text-indigo-600 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'}`}>
+                                        <Icon name="target" size={3.5} className="mb-0.5 sm:mb-1 opacity-80 sm:hidden" /><Icon name="target" size={4} className="mb-0.5 sm:mb-1 opacity-80 hidden sm:block" /> Thiết lập Target
                                     </button>
                                 </div>
                             </div>
                         </div>
 
                         {/* Tùy chỉnh màu */}
-                        <div className="mt-5 border-t border-slate-100 dark:border-slate-700 pt-5">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
-                                <Icon name="palette" size={4} className="text-slate-400" />
-                                Tùy chỉnh màu nền hiển thị (Mặc định ngẫu nhiên)
+                        <div className="mt-3 sm:mt-5 border-t border-slate-100 dark:border-slate-700 pt-3 sm:pt-5">
+                            <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
+                                <Icon name="palette" size={3.5} className="text-slate-400 sm:hidden" /><Icon name="palette" size={4} className="text-slate-400 hidden sm:block" />
+                                Tùy chỉnh màu nền (Mặc định ngẫu nhiên)
                             </label>
-                            <div className="flex flex-wrap gap-2.5">
+                            <div className="flex flex-wrap gap-2 sm:gap-2.5">
                                 {PASTEL_COLORS.map(c => (
                                     <button
                                         key={c.label}
                                         type="button"
                                         onClick={() => setHeaderColor(c.value)}
                                         title={c.label}
-                                        className={`w-8 h-8 rounded-full transition-all hover:scale-110 flex items-center justify-center shadow-sm ${headerColor === c.value ? 'ring-2 ring-offset-2 ring-indigo-500 scale-110 shadow-md' : 'border border-slate-200'} ${!c.value ? 'bg-slate-100' : ''}`}
+                                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all hover:scale-110 flex items-center justify-center shadow-sm ${headerColor === c.value ? 'ring-2 ring-offset-2 ring-indigo-500 scale-110 shadow-md' : 'border border-slate-200'} ${!c.value ? 'bg-slate-100' : ''}`}
                                         style={c.value ? { backgroundColor: c.value } : {}}
                                     >
-                                        {!c.value && <Icon name="shuffle" size={4} className="text-slate-500" />}
+                                        {!c.value && <Icon name="shuffle" size={3.5} className="text-slate-500 sm:hidden" />}
+                                        {!c.value && <Icon name="shuffle" size={4} className="text-slate-500 hidden sm:block" />}
                                         {headerColor === c.value && c.value && <Icon name="check" size={4} className="text-slate-800 opacity-70" />}
                                     </button>
                                 ))}
@@ -453,13 +455,13 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                     </div>
                     
                     {/* SECTION 2.5: Total Calculation */}
-                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-5 flex items-center justify-between">
-                         <h4 className="flex items-center gap-2 font-bold text-slate-800 dark:text-slate-100">
-                             <Icon name="calculator" size={4} className="text-indigo-500" /> Cột tổng chốt cuối bảng
+                    <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                         <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-base text-slate-800 dark:text-slate-100">
+                             <Icon name="calculator" size={3.5} className="text-indigo-500 sm:hidden" /><Icon name="calculator" size={4} className="text-indigo-500 hidden sm:block" /> Cột tổng chốt cuối bảng
                          </h4>
-                         <div className="flex bg-slate-100 p-1 rounded-xl shadow-inner border border-slate-200 font-medium">
-                             <button type="button" onClick={() => setTotalCalculationMethod('sum')} className={`px-4 py-1.5 text-sm rounded-lg transition-all ${totalCalculationMethod === 'sum' ? 'bg-white text-indigo-700 shadow ring-1 ring-black/5 font-bold' : 'text-slate-500 hover:text-slate-900'}`}>Tổng</button>
-                             <button type="button" onClick={() => setTotalCalculationMethod('average')} className={`px-4 py-1.5 text-sm rounded-lg transition-all ${totalCalculationMethod === 'average' ? 'bg-white text-indigo-700 shadow ring-1 ring-black/5 font-bold' : 'text-slate-500 hover:text-slate-900'}`}>T.Bình / Ngày</button>
+                         <div className="flex bg-slate-100 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-inner border border-slate-200 font-medium w-full sm:w-auto">
+                             <button type="button" onClick={() => setTotalCalculationMethod('sum')} className={`flex-1 sm:flex-none px-3 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-sm rounded-md sm:rounded-lg transition-all ${totalCalculationMethod === 'sum' ? 'bg-white text-indigo-700 shadow ring-1 ring-black/5 font-bold' : 'text-slate-500 hover:text-slate-900'}`}>Tổng</button>
+                             <button type="button" onClick={() => setTotalCalculationMethod('average')} className={`flex-1 sm:flex-none px-3 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-sm rounded-md sm:rounded-lg transition-all ${totalCalculationMethod === 'average' ? 'bg-white text-indigo-700 shadow ring-1 ring-black/5 font-bold' : 'text-slate-500 hover:text-slate-900'}`}>T.Bình / Ngày</button>
                          </div>
                     </div>
 
@@ -474,9 +476,9 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                 </div>
                 
                 {/* FOOTER */}
-                <div className="p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                    <button type="button" onClick={onClose} className="py-2.5 px-5 rounded-xl text-sm font-bold text-slate-500 hover:bg-slate-100 transition-colors focus:ring-2 focus:ring-slate-300"> Hủy Bỏ </button>
-                    <button type="submit" className="py-2.5 px-8 rounded-xl shadow-md text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-2 justify-center">
+                <div className="p-3 sm:p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+                    <button type="button" onClick={onClose} className="py-2 sm:py-2.5 px-3 sm:px-5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-slate-500 hover:bg-slate-100 transition-colors focus:ring-2 focus:ring-slate-300"> Hủy Bỏ </button>
+                    <button type="submit" className="py-2 sm:py-2.5 px-4 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-xs sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-1.5 sm:gap-2 justify-center">
                         <Icon name="save" size={4} /> {editingConfig ? "Lưu Chỉnh Sửa" : "Thêm Bảng Mới"}
                     </button>
                 </div>

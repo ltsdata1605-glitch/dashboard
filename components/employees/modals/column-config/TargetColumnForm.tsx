@@ -20,12 +20,12 @@ export const TargetColumnForm: React.FC<TargetColumnFormProps> = ({
                 </h4>
             </div>
             <div className="p-3 sm:p-5 space-y-4 sm:space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6">
                     <div>
                         <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">Đinh dạng chỉ tiêu</label>
                         <div className="inline-flex rounded-lg shadow-sm p-0.5 sm:p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
-                            <button type="button" onClick={() => setMetricType('revenue')} className={`flex-1 py-1.5 sm:py-2 px-3 sm:px-4 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'revenue' ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Tiền Tệ ($)</button>
-                            <button type="button" onClick={() => setMetricType('quantity')} className={`flex-1 py-1.5 sm:py-2 px-3 sm:px-4 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'quantity' ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Số Lượng (#)</button>
+                            <button type="button" onClick={() => setMetricType('revenue')} className={`flex-1 py-1 sm:py-2 px-2 sm:px-4 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'revenue' ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Tiền Tệ ($)</button>
+                            <button type="button" onClick={() => setMetricType('quantity')} className={`flex-1 py-1 sm:py-2 px-2 sm:px-4 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'quantity' ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Số Lượng (#)</button>
                         </div>
                     </div>
                     <div>
@@ -39,14 +39,14 @@ export const TargetColumnForm: React.FC<TargetColumnFormProps> = ({
                                     setTargetValue(raw ? Number(raw).toLocaleString('en-US') : '');
                                 }}
                                 placeholder="VD: 1,500,000,000" 
-                                className="w-full bg-white dark:bg-slate-900 border-2 border-teal-200 dark:border-teal-800 rounded-lg p-2.5 sm:p-3 pl-8 sm:pl-10 text-sm sm:text-base font-black text-teal-700 dark:text-teal-300 focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition outline-none"
+                                className="w-full bg-white dark:bg-slate-900 border-2 border-teal-200 dark:border-teal-800 rounded-lg p-2 sm:p-3 pl-7 sm:pl-10 text-xs sm:text-base font-black text-teal-700 dark:text-teal-300 focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition outline-none"
                             />
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-500">
-                                <Icon name={metricType === 'revenue' ? "dollar-sign" : "hash"} size={5} />
+                            <div className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-teal-500">
+                                <Icon name={metricType === 'revenue' ? "dollar-sign" : "hash"} size={3.5} className="sm:hidden" /><Icon name={metricType === 'revenue' ? "dollar-sign" : "hash"} size={5} className="hidden sm:block" />
                             </div>
                         </div>
-                        <p className="mt-2.5 text-xs text-slate-500 dark:text-slate-400 flex items-start gap-1.5 font-medium">
-                            <Icon name="info" size={3.5} className="mt-0.5 text-teal-500" />
+                        <p className="mt-1.5 sm:mt-2.5 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 flex items-start gap-1 sm:gap-1.5 font-medium">
+                            <Icon name="info" size={3} className="mt-0.5 text-teal-500 sm:hidden" /><Icon name="info" size={3.5} className="mt-0.5 text-teal-500 hidden sm:block" />
                             <span>Hệ thống phân bổ tổng điểm này theo nguyên tắc trung bình công cho số lượng nhân viên thực tế làm việc.</span>
                         </p>
                     </div>
