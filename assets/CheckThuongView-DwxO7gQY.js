@@ -1,4 +1,4 @@
-import{u as w,j as e,I as d,g as C}from"./index-CEGGeLeP.js";import{a as l}from"./vendor-ui-B9PAsar3.js";import{r as N}from"./vendor-charts-NOCJZyOI.js";import"./vendor-firebase-Bg-CYcPW.js";const k=`
+import{u as N,j as o,g as S,I as b}from"./index-VTe9bT1j.js";import{a as i}from"./vendor-ui-B9PAsar3.js";import{r as y}from"./vendor-charts-NOCJZyOI.js";import"./vendor-firebase-Bg-CYcPW.js";const k=`
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -87,6 +87,78 @@ import{u as w,j as e,I as d,g as C}from"./index-CEGGeLeP.js";import{a as l}from"
         .filter-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 0; font-size: 11px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; background: #f1f5f9; color: #475569; transition: all 0.2s; }
         .filter-pill:hover { background: #e2e8f0; }
         .filter-pill.active { background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(99,102,241,0.25); }
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .app-shell { padding: 0 4px; }
+            /* Landing page */
+            #landingPage h1 { font-size: 1.5rem !important; }
+            #landingPage .hero-content { padding: 12px 12px 0; }
+            /* Search section - stack vertically */
+            #searchSection .mod-card { padding: 10px 12px !important; border-radius: 10px !important; }
+            #searchSection .mod-card > div { flex-direction: column !important; gap: 8px !important; }
+            #searchSection .mod-card > div > div[style*="width:1px"] { display: none !important; }
+            #searchSection .mod-input { height: 36px !important; font-size: 13px !important; padding-left: 32px !important; border-radius: 8px !important; }
+            #searchSection .mod-btn { height: 36px !important; width: 36px !important; border-radius: 8px !important; }
+            #searchSection label { font-size: 10px !important; margin-bottom: 4px !important; }
+            /* Summary banner */
+            .summary-banner { padding: 12px 14px !important; }
+            .summary-banner h2 { font-size: 15px !important; }
+            .summary-banner .text-3xl, .summary-banner .text-2xl { font-size: 18px !important; }
+            /* Stat mini cards */
+            .stat-mini { min-width: 70px !important; max-width: 100% !important; padding: 8px 8px 8px 12px !important; border-radius: 8px !important; }
+            .stat-mini span, .stat-mini div { font-size: 10px !important; }
+            .stat-mini .text-lg, .stat-mini .text-xl { font-size: 14px !important; }
+            /* Group summary - allow scroll */
+            #groupSummaryContainer { gap: 6px !important; flex-wrap: wrap !important; }
+            #summaryFiltersSection { padding: 10px 10px !important; border-radius: 10px !important; }
+            #summaryFiltersSection span[style*="font-size:13px"] { font-size: 10px !important; }
+            /* Filter pills */
+            .filter-pill { font-size: 9px !important; padding: 3px 7px !important; }
+            /* Main content area */
+            #mainContent { padding: 0 6px !important; }
+            /* Cards */
+            .mod-card { border-radius: 8px !important; }
+            .s-card { border-radius: 8px !important; }
+            /* Analysis section */
+            #analysisSection { padding: 10px 10px !important; }
+            /* Result cards / Details grid */
+            #detailsGrid { gap: 8px !important; }
+            #detailsGrid .s-card { font-size: 11px !important; }
+            /* Table improvements */
+            table { font-size: 10px !important; }
+            th, td { padding: 4px 6px !important; }
+            /* Top 10 info card */
+            #top10InfoCard { padding: 8px 10px !important; font-size: 11px !important; }
+            /* Modal */
+            #rankingModal > div { max-height: 95vh !important; border-radius: 12px !important; }
+            #rankingModal h3 { font-size: 14px !important; }
+            #modalBody { padding: 8px !important; }
+            #modalBody table { font-size: 9px !important; }
+            #modalBody th, #modalBody td { padding: 3px 4px !important; white-space: nowrap; }
+            /* Version modal */
+            #versionModal > div { max-height: 95vh !important; }
+            #versionModal h3 { font-size: 14px !important; }
+            #versionModal h4 { font-size: 13px !important; }
+            /* Comparison content */
+            #comparisonContent { padding: 0 6px; }
+            #comparisonContent table { font-size: 9px !important; }
+            #comparisonContent th, #comparisonContent td { padding: 3px 4px !important; }
+            /* Bonus row */
+            .bonus-row-pastel { padding: 4px 6px !important; font-size: 10px !important; }
+            /* Typography scaling */
+            .text-xl { font-size: 14px !important; }
+            .text-lg { font-size: 13px !important; }
+            .text-base { font-size: 12px !important; }
+            .text-sm { font-size: 11px !important; }
+            /* Overflow protection */
+            body { overflow-x: hidden; }
+            #mainContent, #comparisonContent, #summaryReportArea { overflow-x: hidden; }
+            /* Card grid - 2 columns on mobile */
+            #detailsGrid div[style*="grid-template-columns"] { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; gap: 6px !important; padding: 6px !important; }
+            /* Group header */
+            .group-container h2 { font-size: 11px !important; }
+            .capture-fix { padding: 6px 10px !important; }
+        }
     </style>
 </head>
 <body>
@@ -821,24 +893,28 @@ import{u as w,j as e,I as d,g as C}from"./index-CEGGeLeP.js";import{a as l}from"
                 const uploadDate = fileUploadTime ? new Date(fileUploadTime) : new Date();
                 const timeStr = String(uploadDate.getHours()).padStart(2, '0') + ':' + String(uploadDate.getMinutes()).padStart(2, '0') + ' - ' + String(uploadDate.getDate()).padStart(2, '0') + '/' + String(uploadDate.getMonth() + 1).padStart(2, '0') + '/' + uploadDate.getFullYear();
                 
+                // Shorten store name: take text after the last " - "
+                const storeInfoParts = storeInfo.split(' - ');
+                const storeInfoShort = storeInfoParts.length > 1 ? storeInfoParts[storeInfoParts.length - 1].trim() : storeInfo;
+                
                 summaryCard.innerHTML = \`
-                    <div style="position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:10" class="no-print">
-                        <button id="exportFullPageImageButton" title="Xuất ảnh toàn bộ trang" style="padding:6px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-image"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="10" cy="12" r="2"/><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"/></svg>
+                    <div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:10" class="no-print">
+                        <button id="exportFullPageImageButton" title="Xuất ảnh toàn bộ trang" style="padding:5px;border-radius:6px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="10" cy="12" r="2"/><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"/></svg>
                         </button>
-                        <button id="exportSummaryImageButton" title="Xuất ảnh báo cáo tổng hợp" style="padding:6px;border-radius:8px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                        <button id="exportSummaryImageButton" title="Xuất ảnh báo cáo tổng hợp" style="padding:5px;border-radius:6px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                         </button>
                     </div>
-                    <p style="font-size:13px;opacity:0.8;margin:0 0 2px 0;font-weight:500;display:flex;align-items:center;gap:6px">
+                    <p style="font-size:11px;opacity:0.8;margin:0 0 2px 0;font-weight:500;display:flex;align-items:center;gap:6px">
                         Kết quả tra cứu
                         <span style="opacity:0.5">•</span>
                         <span style="font-weight:400;opacity:0.9">\${timeStr}</span>
                     </p>
-                    <h2 style="font-size:20px;font-weight:800;margin:0;letter-spacing:-0.02em" class="truncate">\${storeInfo}</h2>
-                    <div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.12)">
-                        <p style="font-size:11px;opacity:0.6;margin:0;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Tổng tiền thưởng dự kiến</p>
-                        <p style="font-size:36px;font-weight:800;margin:4px 0 0 0;letter-spacing:-0.02em">\${formatCurrencyFull(totalBonus)}</p>
+                    <h2 style="font-size:16px;font-weight:800;margin:0;letter-spacing:-0.02em" class="truncate">\${storeInfoShort}</h2>
+                    <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.12)">
+                        <p style="font-size:10px;opacity:0.6;margin:0;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Tổng tiền thưởng dự kiến</p>
+                        <p style="font-size:28px;font-weight:800;margin:4px 0 0 0;letter-spacing:-0.02em">\${formatCurrencyFull(totalBonus)}</p>
                     </div>
                 \`;
                  top10InfoCard.innerHTML = \`
@@ -879,8 +955,14 @@ import{u as w,j as e,I as d,g as C}from"./index-CEGGeLeP.js";import{a as l}from"
             function renderComparison(store1Data, store2Data) {
                 const store1Info = store1Data[0]?.[COLS.SIÊU_THỊ] || \`Kho \${storeCodeInput1.value}\`;
                 const store2Info = store2Data[0]?.[COLS.SIÊU_THỊ] || \`Kho \${storeCodeInput2.value}\`;
-                const store1NameShort = store1Info.split(' ').slice(1).join(' ');
-                const store2NameShort = store2Info.split(' ').slice(1).join(' ');
+                // Extract readable name: take text after the last " - " dash
+                const extractShortName = (fullName) => {
+                    if (!fullName) return '';
+                    const parts = fullName.split(' - ');
+                    return parts.length > 1 ? parts[parts.length - 1].trim() : fullName;
+                };
+                const store1NameShort = extractShortName(store1Info);
+                const store2NameShort = extractShortName(store2Info);
 
                 const calcStats = (data) => {
                     const definitions = getGroupDefinitions(data);
@@ -909,20 +991,20 @@ import{u as w,j as e,I as d,g as C}from"./index-CEGGeLeP.js";import{a as l}from"
                         : { bg: 'bg-gradient-to-br from-purple-50 to-white', border: 'border-purple-100', text: 'text-purple-800', badgeBg: 'bg-purple-100', badgeText: 'text-purple-700', icon: 'text-purple-500' };
 
                      return \`
-                        <div class="\${colorScheme.bg} p-4 border \${colorScheme.border} rounded-xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
-                             <div class="absolute top-0 right-0 p-3 opacity-10">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 \${colorScheme.icon}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
+                        <div class="\${colorScheme.bg} p-3 border \${colorScheme.border} rounded-xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                             <div class="absolute top-0 right-0 p-2 opacity-10">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 \${colorScheme.icon}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
                              </div>
-                             <div class="relative z-10 flex items-center gap-2 mb-4">
-                                <span class="text-[11px] font-bold py-0.5 px-2.5 rounded-full \${colorScheme.badgeBg} \${colorScheme.badgeText} shadow-sm border border-white/50">\${storeCode}</span>
-                                <h3 class="text-lg font-bold truncate \${colorScheme.text}">\${storeName}</h3>
+                             <div class="relative z-10 flex items-center gap-1.5 mb-1.5">
+                                <span class="text-[10px] font-bold py-0.5 px-2 rounded-full \${colorScheme.badgeBg} \${colorScheme.badgeText} shadow-sm border border-white/50">\${storeCode}</span>
+                                <h3 class="text-sm font-bold truncate \${colorScheme.text}">\${storeName}</h3>
                              </div>
-                             <div class="relative z-10 space-y-2.5">
-                                <div class="flex justify-between items-center pb-2 border-b border-gray-100/50"><span class="text-gray-500 font-medium text-xs">Tổng Thưởng</span><div class="flex items-center gap-1.5"><span class="font-extrabold text-xl text-gray-900">\${formatCurrency(stats.totalBonus)}</span> \${isStore1 ? getWinnerIcon(stats.totalBonus, opponentStats.totalBonus) : getWinnerIcon(opponentStats.totalBonus, stats.totalBonus)}</div></div>
-                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-xs">Môn đạt thưởng</span><div class="flex items-center gap-1.5"><span class="font-bold text-sm text-gray-800">\${stats.achieved}</span> \${isStore1 ? getWinnerIcon(stats.achieved, opponentStats.achieved) : getWinnerIcon(opponentStats.achieved, stats.achieved)}</div></div>
-                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-xs">Môn sắp có thưởng</span><div class="flex items-center gap-1.5"><span class="font-bold text-sm text-gray-800">\${stats.nearly}</span> \${isStore1 ? getWinnerIcon(stats.nearly, opponentStats.nearly) : getWinnerIcon(opponentStats.nearly, stats.nearly)}</div></div>
-                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-xs">Môn Bottom 50%</span><div class="flex items-center gap-1.5"><span class="font-bold text-sm text-gray-800">\${stats.bottom50}</span> \${isStore1 ? getWinnerIcon(stats.bottom50, opponentStats.bottom50, true) : getWinnerIcon(opponentStats.bottom50, stats.bottom50, true)}</div></div>
-                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-xs">Môn No Sale</span><div class="flex items-center gap-1.5"><span class="font-bold text-sm text-gray-800">\${stats.noSale}</span> \${isStore1 ? getWinnerIcon(stats.noSale, opponentStats.noSale, true) : getWinnerIcon(opponentStats.noSale, stats.noSale, true)}</div></div>
+                             <div class="relative z-10 space-y-0.5">
+                                <div class="flex justify-between items-center pb-1 border-b border-gray-100/50"><span class="text-gray-500 font-medium text-[10px]">Tổng Thưởng</span><div class="flex items-center gap-1"><span class="font-extrabold text-base text-gray-900">\${formatCurrency(stats.totalBonus)}</span> \${isStore1 ? getWinnerIcon(stats.totalBonus, opponentStats.totalBonus) : getWinnerIcon(opponentStats.totalBonus, stats.totalBonus)}</div></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">Đạt thưởng</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">\${stats.achieved}</span> \${isStore1 ? getWinnerIcon(stats.achieved, opponentStats.achieved) : getWinnerIcon(opponentStats.achieved, stats.achieved)}</div></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">Sắp có thưởng</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">\${stats.nearly}</span> \${isStore1 ? getWinnerIcon(stats.nearly, opponentStats.nearly) : getWinnerIcon(opponentStats.nearly, stats.nearly)}</div></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">Bottom 50%</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">\${stats.bottom50}</span> \${isStore1 ? getWinnerIcon(stats.bottom50, opponentStats.bottom50, true) : getWinnerIcon(opponentStats.bottom50, stats.bottom50, true)}</div></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">No Sale</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">\${stats.noSale}</span> \${isStore1 ? getWinnerIcon(stats.noSale, opponentStats.noSale, true) : getWinnerIcon(opponentStats.noSale, stats.noSale, true)}</div></div>
                              </div>
                         </div>\`;
                 };
@@ -986,15 +1068,15 @@ import{u as w,j as e,I as d,g as C}from"./index-CEGGeLeP.js";import{a as l}from"
 
                     const formattedCategory = \`#\${index}. \${category}\`;
                     
-                    tableRowsHtml += \`<tr class="hover:bg-gray-100 transition-colors group text-[13px]">
-                        <td class="px-2 py-1.5 font-semibold text-gray-700 sticky left-0 bg-white group-hover:bg-gray-50 transition-colors border-r border-gray-200 shadow-[1px_0_0_0_#e5e7eb] truncate max-w-[200px] z-0" title="\${category}">\${formattedCategory}</td>
-                        <td class="px-1 py-1.5 text-center \${bgStore1} \${percentColor1} border-r border-gray-200">\${row1 ? formatPercent(percent1) : '-'}</td>
-                        <td class="px-1 py-1.5 text-center \${bgStore1} \${textClass1} border-r border-gray-200">\${rankV1 !== Infinity ? rankV1 : '-'}</td>
-                        <td class="px-1 py-1.5 text-center \${bgStore1} \${textClass1} border-r border-gray-200">\${formatBonus(bonus1)}</td>
-                        <td class="px-1 py-1.5 text-center \${bgStore2} \${percentColor2} border-r border-gray-200">\${row2 ? formatPercent(percent2) : '-'}</td>
-                        <td class="px-1 py-1.5 text-center \${bgStore2} \${textClass2} border-r border-gray-200">\${rankV2 !== Infinity ? rankV2 : '-'}</td>
-                        <td class="px-1 py-1.5 text-center \${bgStore2} \${textClass2} border-r border-gray-200">\${formatBonus(bonus2)}</td>
-                        <td class="px-2 py-1.5 text-center bg-emerald-50/30"><span class="\${getDiffClass(bonusDiff)}">\${formatBonus(bonusDiff)}</span></td>
+                    tableRowsHtml += \`<tr class="hover:bg-gray-100 transition-colors group text-[10px]">
+                        <td class="px-1 py-1 font-semibold text-gray-700 sticky left-0 bg-white group-hover:bg-gray-50 transition-colors border-r border-gray-200 shadow-[1px_0_0_0_#e5e7eb] truncate max-w-[120px] z-0 text-[10px]" title="\${category}">\${formattedCategory}</td>
+                        <td class="px-0.5 py-1 text-center \${bgStore1} \${percentColor1} border-r border-gray-200">\${row1 ? formatPercent(percent1) : '-'}</td>
+                        <td class="px-0.5 py-1 text-center \${bgStore1} \${textClass1} border-r border-gray-200">\${rankV1 !== Infinity ? rankV1 : '-'}</td>
+                        <td class="px-0.5 py-1 text-center \${bgStore1} \${textClass1} border-r border-gray-200">\${formatBonus(bonus1)}</td>
+                        <td class="px-0.5 py-1 text-center \${bgStore2} \${percentColor2} border-r border-gray-200">\${row2 ? formatPercent(percent2) : '-'}</td>
+                        <td class="px-0.5 py-1 text-center \${bgStore2} \${textClass2} border-r border-gray-200">\${rankV2 !== Infinity ? rankV2 : '-'}</td>
+                        <td class="px-0.5 py-1 text-center \${bgStore2} \${textClass2} border-r border-gray-200">\${formatBonus(bonus2)}</td>
+                        <td class="px-1 py-1 text-center bg-emerald-50/30"><span class="\${getDiffClass(bonusDiff)}">\${formatBonus(bonusDiff)}</span></td>
                     </tr>\`;
                     index++;
                 }
@@ -1004,21 +1086,21 @@ import{u as w,j as e,I as d,g as C}from"./index-CEGGeLeP.js";import{a as l}from"
                     const sorted = storeData.filter(r => parseNumber(r[COLS.TONG_THUONG]) > 0)
                                       .sort((a,b) => parseNumber(b[COLS.TONG_THUONG]) - parseNumber(a[COLS.TONG_THUONG]))
                                       .slice(0, 3);
-                    if (sorted.length === 0) return \`<p class="text-gray-500 italic px-2 text-xs">Không có môn nào có thưởng.</p>\`;
+                    if (sorted.length === 0) return \`<p class="text-gray-500 italic px-1 text-[10px]">Không có môn nào có thưởng.</p>\`;
                     
                     const colorClass = isStore1 ? 'text-blue-700' : 'text-purple-700';
                     
-                    return \`<ul class="space-y-0">\` + sorted.map(item => \`<li class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0"><strong class="text-gray-700 truncate mr-2 text-xs" title="\${item[COLS.NGANH_HANG]}">\${item[COLS.NGANH_HANG]}</strong> <span class="font-bold \${colorClass} text-xs whitespace-nowrap">\${formatCurrencySimple(item[COLS.TONG_THUONG])}</span></li>\`).join('') + \`</ul>\`;
+                    return \`<ul class="space-y-0">\` + sorted.map(item => \`<li class="flex justify-between items-center py-0.5 border-b border-gray-100 last:border-0"><strong class="text-gray-700 truncate mr-1.5 text-[10px]" title="\${item[COLS.NGANH_HANG]}">\${item[COLS.NGANH_HANG]}</strong> <span class="font-bold \${colorClass} text-[10px] whitespace-nowrap">\${formatCurrencySimple(item[COLS.TONG_THUONG])}</span></li>\`).join('') + \`</ul>\`;
                 };
 
                 const store1AwardedHtml = store1Data.filter(r => parseNumber(r[COLS.TONG_THUONG]) > 0)
                     .sort((a, b) => parseNumber(b[COLS.TONG_THUONG]) - parseNumber(a[COLS.TONG_THUONG]))
-                    .map((r, i) => \`<li class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0"><div class="flex items-center gap-1.5 overflow-hidden"><span class="font-bold text-blue-300 text-[11px]">#\${i+1}</span><strong class="truncate" title="\${r[COLS.NGANH_HANG]}">\${r[COLS.NGANH_HANG]}</strong></div> <span class="font-semibold text-blue-700 whitespace-nowrap ml-2">\${formatCurrencySimple(r[COLS.TONG_THUONG])}</span></li>\`) 
-                    .join('') || \`<li class="italic text-gray-400">Không có</li>\`;
+                    .map((r, i) => \`<li class="flex justify-between items-center py-0.5 border-b border-gray-100 last:border-0"><div class="flex items-center gap-1 overflow-hidden"><span class="font-bold text-blue-300 text-[10px]">#\${i+1}</span><strong class="truncate text-[10px] text-gray-700" title="\${r[COLS.NGANH_HANG]}">\${r[COLS.NGANH_HANG]}</strong></div> <span class="font-semibold text-blue-700 whitespace-nowrap ml-1.5 text-[10px]">\${formatCurrencySimple(r[COLS.TONG_THUONG])}</span></li>\`) 
+                    .join('') || \`<li class="italic text-gray-400 text-[10px]">Không có</li>\`;
                 const store2AwardedHtml = store2Data.filter(r => parseNumber(r[COLS.TONG_THUONG]) > 0)
                     .sort((a, b) => parseNumber(b[COLS.TONG_THUONG]) - parseNumber(a[COLS.TONG_THUONG]))
-                    .map((r, i) => \`<li class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0"><div class="flex items-center gap-1.5 overflow-hidden"><span class="font-bold text-purple-300 text-[11px]">#\${i+1}</span><strong class="truncate" title="\${r[COLS.NGANH_HANG]}">\${r[COLS.NGANH_HANG]}</strong></div> <span class="font-semibold text-purple-700 whitespace-nowrap ml-2">\${formatCurrencySimple(r[COLS.TONG_THUONG])}</span></li>\`)
-                    .join('') || \`<li class="italic text-gray-400">Không có</li>\`;
+                    .map((r, i) => \`<li class="flex justify-between items-center py-0.5 border-b border-gray-100 last:border-0"><div class="flex items-center gap-1 overflow-hidden"><span class="font-bold text-purple-300 text-[10px]">#\${i+1}</span><strong class="truncate text-[10px] text-gray-700" title="\${r[COLS.NGANH_HANG]}">\${r[COLS.NGANH_HANG]}</strong></div> <span class="font-semibold text-purple-700 whitespace-nowrap ml-1.5 text-[10px]">\${formatCurrencySimple(r[COLS.TONG_THUONG])}</span></li>\`)
+                    .join('') || \`<li class="italic text-gray-400 text-[10px]">Không có</li>\`;
 
                 const sortClass = comparisonSortState.key === 'bonusDiff' ? (comparisonSortState.direction === 'asc' ? 'sort-asc' : 'sort-desc') : '';
 
@@ -1031,51 +1113,48 @@ import{u as w,j as e,I as d,g as C}from"./index-CEGGeLeP.js";import{a as l}from"
                 comparisonContent.innerHTML = \`
                     <div class="space-y-4">
                         <div id="captureComparisonMain">
-                            <div class="bg-white/80 backdrop-blur-sm border border-gray-200/80 p-4 shadow-sm mb-4 flex justify-between items-center">
-                                <h2 class="text-xl sm:text-2xl font-bold text-gray-800">So Sánh Trực Diện</h2>
-                                <button id="exportComparisonImageButton" title="Xuất ảnh so sánh" class="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 transition shadow-sm no-print">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg>
+                            <div class="bg-white/80 backdrop-blur-sm border border-gray-200/80 p-3 shadow-sm mb-3 rounded-xl flex justify-between items-center">
+                                <h2 class="text-base sm:text-2xl font-bold text-gray-800">So Sánh Trực Diện</h2>
+                                <button id="exportComparisonImageButton" title="Xuất ảnh so sánh" class="p-1 bg-gray-100 hover:bg-gray-200 text-gray-600 transition shadow-sm rounded-md border border-gray-200/50 no-print">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor"><path d="M4 5a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V7a2 2 0 00-2-2h-1.586a1 1 0 01-.707-.293l-1.121-1.121A2 2 0 0011.172 3H8.828a2 2 0 00-1.414.586L6.293 4.707A1 1 0 015.586 5H4zm6 9a3 3 0 100-6 3 3 0 000 6z" /></svg>
                                 </button>
                             </div>
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">\${renderStatCard(store1NameShort, storeCodeInput1.value.trim(), stats1, stats2, true)}\${renderStatCard(store2NameShort, storeCodeInput2.value.trim(), stats2, stats1, false)}</div>
+                            <div class="grid grid-cols-2 gap-2">\${renderStatCard(store1NameShort, storeCodeInput1.value.trim(), stats1, stats2, true)}\${renderStatCard(store2NameShort, storeCodeInput2.value.trim(), stats2, stats1, false)}</div>
                             
-                            <div id="strengthsAnalysisSection" class="bg-white/90 backdrop-blur-md border border-gray-200/60 shadow-sm p-4 mt-4">
-                                <div class="flex justify-between items-center mb-3 pb-3 border-b border-gray-100/80">
-                                    <h3 class="text-lg font-bold text-gray-800">Phân Tích Nhanh: Top 3 Nhóm Thưởng Cao Nhất</h3>
+                            <div id="strengthsAnalysisSection" class="bg-white/90 backdrop-blur-md border border-gray-200/60 shadow-sm rounded-xl p-3 mt-4">
+                                <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-100/80">
+                                    <h3 class="text-sm font-bold text-gray-800">Phân Tích Nhanh: Top 3 Nhóm Thưởng Cao Nhất</h3>
                                     <div class="flex items-center gap-2 no-print">
-                                        <button id="exportStrengthsImageButton" title="Xuất ảnh phân tích nhanh" class="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-600 transition shadow-sm border border-gray-200/50">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg>
-                                        </button>
-                                        <button id="toggleAllStrengthsButton" class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1.5 hover:bg-indigo-100 transition border border-indigo-100/50">Xem tất cả</button>
+                                        <button id="toggleAllStrengthsButton" class="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-1 hover:bg-indigo-100 transition border border-indigo-100/50">Xem tất cả</button>
                                     </div>
                                 </div>
-                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm" id="topStrengthsContainer">
-                                    <div class="border border-blue-200 bg-white">
-                                        <div class="bg-blue-50/70 p-2.5 border-b border-blue-100">
-                                            <h4 class="font-bold text-blue-800 flex items-center gap-1.5 text-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Thế mạnh của \${store1NameShort}</h4>
+                                 <div class="grid grid-cols-2 gap-2 text-xs" id="topStrengthsContainer">
+                                    <div class="border border-blue-200 bg-white rounded-lg overflow-hidden">
+                                        <div class="bg-blue-50/70 p-1.5 border-b border-blue-100">
+                                            <h4 class="font-bold text-blue-800 flex items-center gap-1 text-[11px]"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> \${store1NameShort}</h4>
                                         </div>
-                                        <div class="p-2.5">
+                                        <div class="p-1.5">
                                             \${renderTop3Strengths(store1Data, true)}
                                         </div>
                                     </div>
-                                    <div class="border border-purple-200 bg-white">
-                                        <div class="bg-purple-50/70 p-2.5 border-b border-purple-100">
-                                            <h4 class="font-bold text-purple-800 flex items-center gap-1.5 text-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> Thế mạnh của \${store2NameShort}</h4>
+                                    <div class="border border-purple-200 bg-white rounded-lg overflow-hidden">
+                                        <div class="bg-purple-50/70 p-1.5 border-b border-purple-100">
+                                            <h4 class="font-bold text-purple-800 flex items-center gap-1 text-[11px]"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> \${store2NameShort}</h4>
                                         </div>
-                                        <div class="p-2.5">
+                                        <div class="p-1.5">
                                             \${renderTop3Strengths(store2Data, false)}
                                         </div>
                                     </div>
                                  </div>
                                  <div class="hidden mt-4 pt-4 border-t border-gray-100" id="allStrengthsContainer">
                                     <h3 class="text-md font-bold text-center mb-4 text-gray-800">Danh sách tất cả các môn có giải</h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-                                        <div class="border border-blue-100 p-3">
+                                    <div class="grid grid-cols-2 gap-3 text-xs">
+                                        <div class="border border-blue-100 p-3 rounded-lg">
                                             <h4 class="font-bold text-blue-800 mb-2 flex items-center gap-2 border-b border-blue-100/50 pb-1.5">Kho \${store1NameShort}</h4>
                                             <ul class="space-y-0 text-gray-700">\${store1AwardedHtml}</ul>
                                         </div>
-                                        <div class="border border-purple-100 p-3">
+                                        <div class="border border-purple-100 p-3 rounded-lg">
                                             <h4 class="font-bold text-purple-800 mb-2 flex items-center gap-2 border-b border-purple-100/50 pb-1.5">Kho \${store2NameShort}</h4>
                                             <ul class="space-y-0 text-gray-700">\${store2AwardedHtml}</ul>
                                         </div>
@@ -1084,34 +1163,31 @@ import{u as w,j as e,I as d,g as C}from"./index-CEGGeLeP.js";import{a as l}from"
                             </div>
                         </div>
 
-                        <div id="captureDetailTable" class="bg-white border border-gray-200/80 shadow-sm mt-5 overflow-hidden">
-                             <div class="flex justify-between items-center p-3.5 bg-gray-50 border-b border-gray-200/80">
-                                <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                    So Sánh Chi Tiết Ngành Hàng
+                        <div id="captureDetailTable" class="bg-white border border-gray-200/80 shadow-sm rounded-xl mt-3 overflow-hidden">
+                             <div class="flex justify-between items-center p-2 bg-gray-50 border-b border-gray-200/80">
+                                <h3 class="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    Chi Tiết Ngành Hàng
                                 </h3>
-                                <button id="exportDetailTableImageButton" title="Xuất ảnh bảng chi tiết" class="p-1.5 bg-white border border-gray-200 hover:bg-gray-100 text-gray-600 transition shadow-sm no-print">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path></svg>
-                                </button>
                             </div>
-                            <div id="detailTableContainer" class="w-full">
-                                <table id="detailComparisonTable" class="w-full text-[13px]">
-                                    <thead class="sticky top-0 z-10 text-[13px]">
+                            <div id="detailTableContainer" class="w-full overflow-x-auto">
+                                <table id="detailComparisonTable" class="w-full text-[10px]">
+                                    <thead class="sticky top-0 z-10 text-[10px]">
                                         <tr>
-                                            <th rowspan="2" class="px-2 py-2 text-center font-bold text-gray-700 sticky left-0 bg-slate-100 align-middle uppercase border-b border-r border-gray-200 shadow-[1px_0_0_0_#e5e7eb] z-20">Ngành Hàng</th>
-                                            <th colspan="3" class="px-1 py-2 text-center font-bold text-blue-800 border-b border-r border-gray-200 bg-blue-100 truncate max-w-[120px]" title="\${store1NameShort}">\${shortenName(store1NameShort)}</th>
-                                            <th colspan="3" class="px-1 py-2 text-center font-bold text-purple-800 border-b border-r border-gray-200 bg-purple-100 truncate max-w-[120px]" title="\${store2NameShort}">\${shortenName(store2NameShort)}</th>
-                                            <th rowspan="2" class="px-2 py-2 text-center font-bold text-emerald-800 border-b border-gray-200 bg-emerald-100/60 align-middle sortable \${sortClass} hover:bg-emerald-100 transition cursor-pointer group w-[90px]" data-sort-key="bonusDiff">
-                                                <div class="flex items-center justify-center gap-1 uppercase">Chênh lệch <span class="text-emerald-400 group-hover:text-emerald-600">&#8597;</span></div>
+                                            <th rowspan="2" class="px-1 py-1 text-center font-bold text-gray-700 sticky left-0 bg-slate-100 align-middle uppercase border-b border-r border-gray-200 shadow-[1px_0_0_0_#e5e7eb] z-20 text-[9px] min-w-[80px]">Ngành Hàng</th>
+                                            <th colspan="3" class="px-0.5 py-1 text-center font-bold text-blue-800 border-b border-r border-gray-200 bg-blue-100 truncate max-w-[90px] text-[10px]" title="\${store1NameShort}">\${shortenName(store1NameShort)}</th>
+                                            <th colspan="3" class="px-0.5 py-1 text-center font-bold text-purple-800 border-b border-r border-gray-200 bg-purple-100 truncate max-w-[90px] text-[10px]" title="\${store2NameShort}">\${shortenName(store2NameShort)}</th>
+                                            <th rowspan="2" class="px-1 py-1 text-center font-bold text-emerald-800 border-b border-gray-200 bg-emerald-100/60 align-middle sortable \${sortClass} hover:bg-emerald-100 transition cursor-pointer group w-[50px] text-[9px]" data-sort-key="bonusDiff">
+                                                <div class="flex items-center justify-center gap-0.5 uppercase">+/- <span class="text-emerald-400 group-hover:text-emerald-600">&#8597;</span></div>
                                             </th>
                                         </tr>
                                         <tr>
-                                            <th class="px-1 py-1.5 text-center font-semibold text-blue-800 border-b border-r border-gray-200 bg-blue-50/80">%DKHT</th>
-                                            <th class="px-1 py-1.5 text-center font-semibold text-blue-800 border-b border-r border-gray-200 bg-blue-50/80">Hạng</th>
-                                            <th class="px-1 py-1.5 text-center font-semibold text-blue-800 border-b border-r border-gray-200 bg-blue-50/80">Thưởng</th>
-                                            <th class="px-1 py-1.5 text-center font-semibold text-purple-800 border-b border-r border-gray-200 bg-purple-50/80">%DKHT</th>
-                                            <th class="px-1 py-1.5 text-center font-semibold text-purple-800 border-b border-r border-gray-200 bg-purple-50/80">Hạng</th>
-                                            <th class="px-1 py-1.5 text-center font-semibold text-purple-800 border-b border-r border-gray-200 bg-purple-50/80">Thưởng</th>
+                                            <th class="px-0.5 py-1 text-center font-semibold text-blue-800 border-b border-r border-gray-200 bg-blue-50/80 text-[9px]">%</th>
+                                            <th class="px-0.5 py-1 text-center font-semibold text-blue-800 border-b border-r border-gray-200 bg-blue-50/80 text-[9px]">Hạng</th>
+                                            <th class="px-0.5 py-1 text-center font-semibold text-blue-800 border-b border-r border-gray-200 bg-blue-50/80 text-[9px]">Thưởng</th>
+                                            <th class="px-0.5 py-1 text-center font-semibold text-purple-800 border-b border-r border-gray-200 bg-purple-50/80 text-[9px]">%</th>
+                                            <th class="px-0.5 py-1 text-center font-semibold text-purple-800 border-b border-r border-gray-200 bg-purple-50/80 text-[9px]">Hạng</th>
+                                            <th class="px-0.5 py-1 text-center font-semibold text-purple-800 border-b border-r border-gray-200 bg-purple-50/80 text-[9px]">Thưởng</th>
                                         </tr>
                                     </thead>
                                     <tbody class="divide-y divide-gray-200 bg-white">\${tableRowsHtml}</tbody>
@@ -2134,11 +2210,21 @@ import{u as w,j as e,I as d,g as C}from"./index-CEGGeLeP.js";import{a as l}from"
                     handleSearchOrCompare();
                 } else if (e.data && e.data.type === 'CHECK_THUONG_CHANGE_FILE') {
                     changeFileButton.click();
+                } else if (e.data && e.data.type === 'CHECK_THUONG_EXPORT') {
+                    // Trigger export from parent
+                    const comparisonVisible = !comparisonContent.classList.contains('hidden');
+                    if (comparisonVisible) {
+                        const btn = document.getElementById('exportComparisonImageButton');
+                        if (btn) btn.click();
+                    } else {
+                        const btn = document.getElementById('exportSummaryImageButton');
+                        if (btn) btn.click();
+                    }
                 }
             });
         });
     <\/script>
 </body>
 </html>
-`,E=()=>{const{activeTab:b}=w(),[x,y]=l.useState(!1),i=l.useRef(null),[h,v]=l.useState(!1),[c,p]=l.useState({code1:"910",code2:""});l.useEffect(()=>{y(!0);const t=n=>{var o;((o=n.data)==null?void 0:o.type)==="CHECK_THUONG_FILE_LOADED"&&(v(!0),n.data.code1&&p(r=>({...r,code1:n.data.code1})),n.data.code2&&p(r=>({...r,code2:n.data.code2})))};return window.addEventListener("message",t),()=>window.removeEventListener("message",t)},[]);const g=l.useCallback(t=>{var r;const n=(r=i.current)==null?void 0:r.contentDocument;if(!n)return;let o=n.getElementById("injected-global-font");o||(o=n.createElement("style"),o.id="injected-global-font",n.head.appendChild(o)),t&&t!=="Plus Jakarta Sans"?o.innerHTML=`body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${t}', sans-serif !important; }`:o.innerHTML="body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }"},[]);l.useEffect(()=>{const t=i.current;if(!t)return;const n=()=>{try{const r=t.contentDocument;if(r){let a="";for(const s of Array.from(document.styleSheets))try{for(const f of Array.from(s.cssRules))f instanceof CSSFontFaceRule&&(a+=f.cssText+`
-`)}catch{}if(a){const s=r.createElement("style");s.id="injected-font-faces",s.textContent=a,r.head.appendChild(s)}}}catch{}C().then(r=>{r&&g(r)})};t.addEventListener("load",n);const o=new MutationObserver(()=>{const r=document.getElementById("dynamic-font-style");if(r){const a=r.innerHTML.match(/font-family:\s*'([^']+)'/);a&&g(a[1])}});return o.observe(document.head,{childList:!0,subtree:!0,characterData:!0}),()=>{t.removeEventListener("load",n),o.disconnect()}},[g]);const u=(t,n)=>{p(o=>{var a,s;const r={...o,[t]:n};return(s=(a=i.current)==null?void 0:a.contentWindow)==null||s.postMessage({type:"CHECK_THUONG_SEARCH",code1:r.code1,code2:r.code2},"*"),r})},m=()=>{var t,n;(n=(t=i.current)==null?void 0:t.contentWindow)==null||n.postMessage({type:"CHECK_THUONG_CHANGE_FILE"},"*")};return e.jsxs("div",{className:"w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute inset-0",children:[x&&b==="check-thuong"&&h&&document.getElementById("global-header-actions")&&N.createPortal(e.jsxs("div",{className:"hidden lg:flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300",children:[e.jsxs("div",{className:"flex items-center gap-2 px-2",children:[e.jsx("input",{type:"text",placeholder:"Mã kho (VD: 910)",className:"w-32 lg:w-40 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]",value:c.code1,onChange:t=>u("code1",t.target.value)}),e.jsx("span",{className:"text-slate-300 dark:text-slate-600",children:"|"}),e.jsx("input",{type:"text",placeholder:"So sánh...",className:"w-28 lg:w-36 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full px-4 py-1.5 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]",value:c.code2,onChange:t=>u("code2",t.target.value)})]}),e.jsxs("div",{className:"flex items-center gap-1 border-l border-slate-200 dark:border-slate-700 pl-2",children:[e.jsx("button",{onClick:()=>{var t,n;p(o=>({...o,code2:""})),(n=(t=i.current)==null?void 0:t.contentWindow)==null||n.postMessage({type:"CHECK_THUONG_SEARCH",code1:c.code1,code2:""},"*")},className:"w-8 h-8 flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors",title:"Xoá mã kho đang so sánh",children:e.jsx(d,{name:"rotate-ccw",size:4})}),e.jsx("button",{onClick:m,className:"w-8 h-8 flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors",title:"Tải file khác",children:e.jsx(d,{name:"upload",size:4})})]})]}),document.getElementById("global-header-actions")),h&&e.jsxs("div",{className:"lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 px-3 py-2 flex items-center gap-2",children:[e.jsxs("div",{className:"flex items-center gap-2 flex-1",children:[e.jsxs("div",{className:"relative flex-1",children:[e.jsx("div",{className:"absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400",children:e.jsx(d,{name:"search",size:3.5})}),e.jsx("input",{type:"text",placeholder:"Mã kho (VD: 910)",className:"w-full h-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all",value:c.code1,onChange:t=>u("code1",t.target.value)})]}),e.jsxs("div",{className:"relative flex-1",children:[e.jsx("div",{className:"absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-slate-400",children:e.jsx(d,{name:"arrow-left-right",size:3.5})}),e.jsx("input",{type:"text",placeholder:"So sánh...",className:"w-full h-9 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md pl-8 pr-3 text-sm font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 transition-all",value:c.code2,onChange:t=>u("code2",t.target.value)})]})]}),e.jsx("button",{onClick:()=>{var t,n;p(o=>({...o,code2:""})),(n=(t=i.current)==null?void 0:t.contentWindow)==null||n.postMessage({type:"CHECK_THUONG_SEARCH",code1:c.code1,code2:""},"*")},className:"h-9 px-3 bg-red-50 text-red-500 rounded-md flex items-center gap-1.5 text-xs font-semibold hover:bg-red-100 transition-colors shrink-0",title:"Xoá mã kho",children:e.jsx(d,{name:"rotate-ccw",size:3.5})}),e.jsx("button",{onClick:m,className:"h-9 px-2.5 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-md flex items-center hover:bg-slate-200 transition-colors shrink-0",title:"Tải file khác",children:e.jsx(d,{name:"upload",size:3.5})})]}),e.jsx("iframe",{ref:i,srcDoc:k,title:"Bảng Tra Cứu Thưởng Thi Đua",className:"w-full h-full border-none flex-grow",style:{width:"100%",height:"100%",minHeight:"100vh",border:"none"},sandbox:"allow-scripts allow-same-origin allow-forms allow-downloads"})]})};export{E as CheckThuongView,E as default};
+`,_=()=>{const{activeTab:u}=N(),[g,v]=i.useState(!1),l=i.useRef(null),[h,w]=i.useState(!1),[c,d]=i.useState({code1:"910",code2:""});i.useEffect(()=>{v(!0);const t=e=>{var r;((r=e.data)==null?void 0:r.type)==="CHECK_THUONG_FILE_LOADED"&&(w(!0),e.data.code1&&d(n=>({...n,code1:e.data.code1})),e.data.code2&&d(n=>({...n,code2:e.data.code2})))};return window.addEventListener("message",t),()=>window.removeEventListener("message",t)},[]);const p=i.useCallback(t=>{var n;const e=(n=l.current)==null?void 0:n.contentDocument;if(!e)return;let r=e.getElementById("injected-global-font");r||(r=e.createElement("style"),r.id="injected-global-font",e.head.appendChild(r)),t&&t!=="Plus Jakarta Sans"?r.innerHTML=`body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${t}', sans-serif !important; }`:r.innerHTML="body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }"},[]);i.useEffect(()=>{const t=l.current;if(!t)return;const e=()=>{try{const n=t.contentDocument;if(n){let a="";for(const s of Array.from(document.styleSheets))try{for(const x of Array.from(s.cssRules))x instanceof CSSFontFaceRule&&(a+=x.cssText+`
+`)}catch{}if(a){const s=n.createElement("style");s.id="injected-font-faces",s.textContent=a,n.head.appendChild(s)}}}catch{}S().then(n=>{n&&p(n)})};t.addEventListener("load",e);const r=new MutationObserver(()=>{const n=document.getElementById("dynamic-font-style");if(n){const a=n.innerHTML.match(/font-family:\s*'([^']+)'/);a&&p(a[1])}});return r.observe(document.head,{childList:!0,subtree:!0,characterData:!0}),()=>{t.removeEventListener("load",e),r.disconnect()}},[p]);const m=(t,e)=>{d(r=>{var a,s;const n={...r,[t]:e};return(s=(a=l.current)==null?void 0:a.contentWindow)==null||s.postMessage({type:"CHECK_THUONG_SEARCH",code1:n.code1,code2:n.code2},"*"),n})},C=()=>{var t,e;(e=(t=l.current)==null?void 0:t.contentWindow)==null||e.postMessage({type:"CHECK_THUONG_CHANGE_FILE"},"*")},f=t=>o.jsxs("div",{className:`flex items-center ${t?"gap-1":"hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300"}`,children:[o.jsxs("div",{className:`flex items-center ${t?"gap-1":"gap-2 px-2"}`,children:[o.jsx("input",{type:"text",placeholder:"Kho 1",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-40 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:c.code1,onChange:e=>m("code1",e.target.value)}),o.jsx("input",{type:"text",placeholder:"Kho 2",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-36 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:c.code2,onChange:e=>m("code2",e.target.value)})]}),o.jsxs("div",{className:`flex items-center ${t?"gap-0.5":"gap-1 border-l border-slate-200 dark:border-slate-700 pl-2"}`,children:[o.jsx("button",{onClick:()=>{var e,r;d(n=>({...n,code2:""})),(r=(e=l.current)==null?void 0:e.contentWindow)==null||r.postMessage({type:"CHECK_THUONG_SEARCH",code1:c.code1,code2:""},"*")},className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors`,title:"Xoá mã kho đang so sánh",children:o.jsx(b,{name:"rotate-ccw",size:t?3:3.5})}),o.jsx("button",{onClick:C,className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`,title:"Tải file khác",children:o.jsx(b,{name:"upload",size:t?3:3.5})})]})]});return o.jsxs("div",{className:"w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute inset-0",children:[g&&u==="check-thuong"&&h&&document.getElementById("global-header-actions")&&y.createPortal(f(!1),document.getElementById("global-header-actions")),g&&u==="check-thuong"&&h&&document.getElementById("mobile-topbar-actions")&&y.createPortal(f(!0),document.getElementById("mobile-topbar-actions")),o.jsx("iframe",{ref:l,srcDoc:k,title:"Bảng Tra Cứu Thưởng Thi Đua",className:"w-full h-full border-none flex-grow",style:{width:"100%",height:"100%",minHeight:"100vh",border:"none"},sandbox:"allow-scripts allow-same-origin allow-forms allow-downloads"})]})};export{_ as CheckThuongView,_ as default};
