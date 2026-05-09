@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { Icon } from '../common/Icon';
+import { getGlobalFont } from '../../services/dbService';
 
 const htmlContent = `
 <!DOCTYPE html>
@@ -16,11 +17,11 @@ const htmlContent = `
     <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Condensed:wght@400;700&family=Oswald:wght@400;500;600;700&family=Fjalla+One&family=Jost:wght@400;500;600;700&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; margin: 0; }
         body { 
-            font-family: inherit; 
+            font-family: 'UTM Avo', sans-serif; 
             background: #f8f9fc;
             min-height: 100vh;
             -webkit-font-smoothing: antialiased;
@@ -2166,6 +2167,77 @@ export const CheckThuongView: React.FC = () => {
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
     }, []);
+
+    // Inject parent's custom font into the iframe document
+    const injectFontIntoIframe = useCallback((fontValue: string) => {
+        const iframeDoc = iframeRef.current?.contentDocument;
+        if (!iframeDoc) return;
+
+        let styleEl = iframeDoc.getElementById('injected-global-font');
+        if (!styleEl) {
+            styleEl = iframeDoc.createElement('style');
+            styleEl.id = 'injected-global-font';
+            iframeDoc.head.appendChild(styleEl);
+        }
+
+        if (fontValue && fontValue !== 'Plus Jakarta Sans') {
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${fontValue}', sans-serif !important; }`;
+        } else {
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }`;
+        }
+    }, []);
+
+    useEffect(() => {
+        const iframe = iframeRef.current;
+        if (!iframe) return;
+
+        const onLoad = () => {
+            // 1. Copy @font-face declarations from parent to iframe so local fonts work
+            try {
+                const iframeDoc = iframe.contentDocument;
+                if (iframeDoc) {
+                    let fontFaceRules = '';
+                    for (const sheet of Array.from(document.styleSheets)) {
+                        try {
+                            for (const rule of Array.from(sheet.cssRules)) {
+                                if (rule instanceof CSSFontFaceRule) {
+                                    fontFaceRules += rule.cssText + '\n';
+                                }
+                            }
+                        } catch { /* skip cross-origin sheets */ }
+                    }
+                    if (fontFaceRules) {
+                        const fontFaceStyle = iframeDoc.createElement('style');
+                        fontFaceStyle.id = 'injected-font-faces';
+                        fontFaceStyle.textContent = fontFaceRules;
+                        iframeDoc.head.appendChild(fontFaceStyle);
+                    }
+                }
+            } catch { /* non-critical */ }
+
+            // 2. Read saved font and inject into iframe
+            getGlobalFont().then(font => {
+                if (font) injectFontIntoIframe(font);
+            });
+        };
+        iframe.addEventListener('load', onLoad);
+
+        // Also observe parent's dynamic font style changes (when user picks a new font)
+        const observer = new MutationObserver(() => {
+            const parentStyle = document.getElementById('dynamic-font-style');
+            if (parentStyle) {
+                // Extract font name from parent style
+                const match = parentStyle.innerHTML.match(/font-family:\s*'([^']+)'/);
+                if (match) injectFontIntoIframe(match[1]);
+            }
+        });
+        observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+
+        return () => {
+            iframe.removeEventListener('load', onLoad);
+            observer.disconnect();
+        };
+    }, [injectFontIntoIframe]);
 
     const handleSearch = () => {
         iframeRef.current?.contentWindow?.postMessage({

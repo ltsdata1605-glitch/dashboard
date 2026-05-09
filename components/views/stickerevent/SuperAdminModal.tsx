@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { db } from './firebase';
 import { collection, query, where, getDocs, deleteDoc, doc, limit } from 'firebase/firestore';
 import { X, Search, Trash2, ShieldAlert, User as UserIcon } from 'lucide-react';
@@ -14,24 +14,20 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (!isOpen) return null;
-
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const fetchUsers = useCallback(async (term: string = '') => {
     setLoading(true);
     setError(null);
     try {
       const usersRef = collection(db, 'users');
       let q;
       
-      const term = searchStoreId.trim();
-      if (!term) {
+      const trimmed = term.trim();
+      if (!trimmed) {
         // If empty, fetch latest 50 users
         q = query(usersRef, limit(50));
       } else {
         // Try searching by storeId first
-        const qStore = query(usersRef, where('storeId', '==', term.toUpperCase()), limit(100));
+        const qStore = query(usersRef, where('storeId', '==', trimmed.toUpperCase()), limit(100));
         const snapStore = await getDocs(qStore);
         
         if (!snapStore.empty) {
@@ -41,13 +37,13 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
         }
         
         // If not found by storeId, try searching by username
-        q = query(usersRef, where('username', '==', term));
+        q = query(usersRef, where('username', '==', trimmed));
       }
       
       const snapshot = await getDocs(q);
       setUsers(snapshot.docs.map(d => ({ id: d.id, ...(d.data() as any) })));
       
-      if (snapshot.empty && term) {
+      if (snapshot.empty && trimmed) {
         setError('Không tìm thấy người dùng nào khớp với từ khóa.');
       }
     } catch (err: any) {
@@ -56,6 +52,20 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  // Auto-load all users when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchUsers();
+    }
+  }, [isOpen, fetchUsers]);
+
+  if (!isOpen) return null;
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    fetchUsers(searchStoreId);
   };
 
   const handleDeleteUser = async (userId: string) => {
