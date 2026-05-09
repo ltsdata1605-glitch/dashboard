@@ -23,7 +23,7 @@ interface PerformanceModalProps {
 
 const KpiCard: React.FC<{ icon: string, label: string, value: string, color: string, children?: React.ReactNode }> = ({ icon, label, value, color, children }) => {
     return (
-        <div className={`flex-1 p-3 bg-white dark:bg-slate-800 rounded-xl shadow border-l-4 border-${color}-500 flex flex-col justify-center gap-1`}>
+        <div className={`flex-1 p-2 sm:p-3 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow border-l-[3px] sm:border-l-4 border-${color}-500 flex flex-col justify-center gap-0.5 sm:gap-1`}>
             {/* Color mapping for JIT compiler */}
             {/* border-indigo-500 bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 */}
             {/* border-green-500 bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400 */}
@@ -31,16 +31,17 @@ const KpiCard: React.FC<{ icon: string, label: string, value: string, color: str
             {/* border-amber-500 bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 */}
             {/* border-purple-500 bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 */}
             {/* border-cyan-500 bg-cyan-100 dark:bg-cyan-900/50 text-cyan-600 dark:text-cyan-400 */}
-            <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-lg bg-${color}-100 dark:bg-${color}-900/50 flex items-center justify-center text-${color}-600 dark:text-${color}-400 flex-shrink-0`}>
-                    <Icon name={icon} size={5} />
+            <div className="flex items-center gap-2 sm:gap-3">
+                <div className={`w-7 h-7 sm:w-10 sm:h-10 rounded-md sm:rounded-lg bg-${color}-100 dark:bg-${color}-900/50 flex items-center justify-center text-${color}-600 dark:text-${color}-400 flex-shrink-0`}>
+                    <Icon name={icon} size={3.5} className="sm:hidden" />
+                    <Icon name={icon} size={5} className="hidden sm:block" />
                 </div>
                 <div>
-                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">{label}</p>
-                    <p className={`text-xl font-black text-${color}-600 dark:text-${color}-400 leading-none`}>{value}</p>
+                    <p className="text-[8px] sm:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">{label}</p>
+                    <p className={`text-sm sm:text-xl font-black text-${color}-600 dark:text-${color}-400 leading-none`}>{value}</p>
                 </div>
             </div>
-            {children && <div className="mt-1">{children}</div>}
+            {children && <div className="mt-0.5 sm:mt-1 text-[9px] sm:text-[10px]">{children}</div>}
         </div>
     );
 };
@@ -249,12 +250,13 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     };
     
     const controls = (
-        <div className="flex items-center gap-2 hide-on-export">
-            <button onClick={toggleAllCustomers} title={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'} className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center w-[42px] h-[42px] border border-slate-300 dark:border-slate-600">
-                <Icon name={isAllCustomersExpanded ? "chevrons-up-down" : "chevrons-down-up"} size={4} />
+        <div className="flex items-center gap-1 sm:gap-2 hide-on-export">
+            <button onClick={toggleAllCustomers} title={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'} className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center w-8 h-8 sm:w-[42px] sm:h-[42px] border border-slate-300 dark:border-slate-600">
+                <Icon name={isAllCustomersExpanded ? "chevrons-up-down" : "chevrons-down-up"} size={3.5} className="sm:hidden" />
+                <Icon name={isAllCustomersExpanded ? "chevrons-up-down" : "chevrons-down-up"} size={4} className="hidden sm:block" />
             </button>
-            <button onClick={handleExport} disabled={isExporting} title="Xuất Ảnh Phân Tích" className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center w-[42px] h-[42px] border border-slate-300 dark:border-slate-600">
-                 {isExporting ? <Icon name="loader-2" className="animate-spin" /> : <Icon name="camera" />}
+            <button onClick={handleExport} disabled={isExporting} title="Xuất Ảnh Phân Tích" className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center w-8 h-8 sm:w-[42px] sm:h-[42px] border border-slate-300 dark:border-slate-600">
+                 {isExporting ? <Icon name="loader-2" className="animate-spin" size={3.5} /> : <><Icon name="camera" size={3.5} className="sm:hidden" /><Icon name="camera" size={4} className="hidden sm:block" /></>}
             </button>
         </div>
     );
@@ -262,9 +264,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     const modalContent = !employeeData ? (
         <p>Không tìm thấy dữ liệu cho nhân viên này.</p>
     ) : (
-        <div className="space-y-6">
+        <div className="space-y-3 sm:space-y-6">
             {/* KPIs */}
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-3">
                 <KpiCard icon="dollar-sign" label="Tổng DTQĐ" value={formatCurrency(employeeData.doanhThuQD)} color="indigo">
                     <div className="text-[10px] flex justify-between items-center text-slate-500 dark:text-slate-400 mt-1 border-t border-slate-100 dark:border-slate-700 pt-1">
                         <span>Thực:</span>
@@ -292,10 +294,10 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 </KpiCard>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-6">
                 {/* Top Products */}
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 flex flex-col">
-                    <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2"><Icon name="award" size={5} className="text-amber-500"/> Top 5 Sản Phẩm Bán Chạy</h4>
+                <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4 flex flex-col">
+                    <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="award" size={4} className="text-amber-500 sm:hidden"/><Icon name="award" size={5} className="text-amber-500 hidden sm:block"/> Top 5 Sản Phẩm Bán Chạy</h4>
                     <ul className="space-y-2 flex-1">
                         {topProducts.map((p, i) => (
                             <li key={i} className="flex justify-between items-center text-sm p-2 rounded-md bg-slate-50 dark:bg-slate-700/50">
@@ -309,8 +311,8 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                     </ul>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4 flex flex-col">
-                    <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-3 flex items-center gap-2"><Icon name="pie-chart" size={5} className="text-teal-500"/> Tỷ Trọng Doanh Thu Ngành Hàng</h4>
+                <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4 flex flex-col">
+                    <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="pie-chart" size={4} className="text-teal-500 sm:hidden"/><Icon name="pie-chart" size={5} className="text-teal-500 hidden sm:block"/> Tỷ Trọng Doanh Thu Ngành Hàng</h4>
                     <div className="flex-1 overflow-y-auto">
                     {(() => {
                         const totalIndustryRevenue = Object.values(industryBreakdown).reduce((s, v) => s + v, 0);
@@ -364,13 +366,13 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             </div>
 
              {/* Customer Breakdown */}
-            <div className="bg-white dark:bg-slate-800 rounded-xl shadow p-4">
-                 <h4 className="font-bold text-slate-800 dark:text-slate-100 mb-3 flex items-center justify-between">
+            <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4">
+                 <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center justify-between">
                     <span className="flex items-center gap-2">
-                        <Icon name="contact" size={5} className="text-sky-500"/> Chi Tiết Theo Khách Hàng
+                        <Icon name="contact" size={4} className="text-sky-500 sm:hidden"/><Icon name="contact" size={5} className="text-sky-500 hidden sm:block"/> Chi Tiết Theo Khách Hàng
                     </span>
                  </h4>
-                 <div ref={customerDetailsContainerRef} className="space-y-0 max-h-[500px] overflow-y-auto pr-2 mt-4">
+                 <div ref={customerDetailsContainerRef} className="space-y-0 max-h-[500px] overflow-y-auto pr-1 sm:pr-2 mt-2 sm:mt-4">
                     {(() => {
                         // Sort customers by createdDateKey (newest first), then by revenue
                         const sorted = [...customerBreakdown].sort((a, b) => {
@@ -393,9 +395,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                         </div>
                                     )}
                         <details className="bg-white dark:bg-slate-900 overflow-hidden" open={customerBreakdown.length === 1}>
-                             <summary className="py-2.5 px-3 cursor-pointer flex justify-between items-center list-none bg-cyan-50/80 hover:bg-cyan-100/80 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-cyan-400">
-                                <p className="font-bold text-[17px] text-cyan-950 dark:text-cyan-100 pl-1">{customer.name.toUpperCase()}</p>
-                                <div className="flex items-center gap-x-4 gap-y-1 flex-wrap justify-end text-sm font-semibold">
+                             <summary className="py-2 sm:py-2.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-cyan-50/80 hover:bg-cyan-100/80 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-cyan-400">
+                                <p className="font-bold text-sm sm:text-[17px] text-cyan-950 dark:text-cyan-100 pl-1">{customer.name.toUpperCase()}</p>
+                                <div className="flex items-center gap-x-2 sm:gap-x-4 gap-y-0.5 sm:gap-y-1 flex-wrap justify-end text-[10px] sm:text-sm font-semibold">
                                     <span className="text-slate-600 dark:text-slate-300">Hẹn giao: <span className="font-bold text-slate-800 dark:text-slate-100">{customer.scheduledDate}</span></span>
                                     <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(customer.totalRevenue)}</span></span>
                                     <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
@@ -524,7 +526,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
             controls={controls}
             maxWidthClass="max-w-4xl"
         >
-            <div className="p-6 overflow-y-auto bg-slate-100 dark:bg-slate-950" ref={modalBodyRef}>
+            <div className="p-3 sm:p-6 overflow-y-auto bg-slate-100 dark:bg-slate-950" ref={modalBodyRef}>
                 {modalContent}
             </div>
         </ModalWrapper>

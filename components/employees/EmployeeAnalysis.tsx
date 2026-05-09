@@ -198,18 +198,19 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                         <button 
                             onClick={() => setIsSettingsOpen(prev => !prev)} 
                             title="Tùy chọn hiển thị" 
-                            className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                         >
-                            <Icon name="settings-2" size={5}/>
+                            <Icon name="settings-2" size={4} className="sm:hidden"/>
+                            <Icon name="settings-2" size={5} className="hidden sm:block"/>
                         </button>
                         {isSettingsOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-3 border border-slate-100 dark:border-slate-700 z-[200]">
-                                <h4 className="font-bold text-sm mb-3 px-2 pt-1 text-slate-800 dark:text-slate-100">Hiển thị màn hình thi đua</h4>
-                                <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
+                            <div className="absolute top-full right-0 mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
+                                <h4 className="font-bold text-xs sm:text-sm mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 text-slate-800 dark:text-slate-100">Hiển thị màn hình thi đua</h4>
+                                <div className="space-y-1 sm:space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
                                     {allAvailableTabs.map(tab => (
-                                        <label key={tab.id} htmlFor={`vis-toggle-${tab.id}`} className="flex items-center justify-between cursor-pointer p-2.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
-                                            <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
-                                                <div className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500">
+                                        <label key={tab.id} htmlFor={`vis-toggle-${tab.id}`} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                                            <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 sm:gap-2">
+                                                <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-800 rounded-md sm:rounded-lg text-slate-500">
                                                     <Icon name={tab.icon} size={3.5}/>
                                                 </div>
                                                 {tab.label || (tab as any).name}
@@ -247,7 +248,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
             />
             </div>
             
-            <div className="flex-grow p-2.5 lg:p-6">
+            <div className="flex-grow p-1.5 sm:p-6">
                 <EmployeeAnalysisContent
                     activeTab={activeTab}
                     filteredEmployeeAnalysisData={filteredEmployeeAnalysisData}

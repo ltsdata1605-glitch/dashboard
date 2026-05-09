@@ -45,17 +45,18 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
     allAvailableTabs
 }) => {
     return (
-        <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-100 dark:border-slate-800 px-4 md:px-6 z-50 relative pb-0">
+        <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-100 dark:border-slate-800 px-2 sm:px-6 z-50 relative pb-0">
             <div className="relative flex-1 min-w-0">
-                <div className="flex items-end gap-1 overflow-x-auto flex-1 min-w-0 pb-2 pt-2 hide-scrollbar">
+                <div className="flex items-end gap-0.5 sm:gap-1 overflow-x-auto flex-1 min-w-0 pb-1.5 sm:pb-2 pt-1.5 sm:pt-2 hide-scrollbar">
                     {renderedDefaultTabs.map(tab => (
                         <button 
                             key={tab.id} 
                             onClick={() => setActiveTab(tab.id)} 
-                            className={`flex items-center gap-1.5 py-1.5 px-2.5 md:px-3.5 rounded-xl font-bold text-[12px] md:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses((tab as any).color || 'sky', activeTab === tab.id)}`}
+                            className={`flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses((tab as any).color || 'sky', activeTab === tab.id)}`}
                         >
                             <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
-                                <Icon name={tab.icon} size={4}/> 
+                                <Icon name={tab.icon} size={3.5} className="sm:hidden"/>
+                                <Icon name={tab.icon} size={4} className="hidden sm:block"/>
                             </div>
                             {tab.label}
                         </button>
@@ -72,10 +73,11 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                             <button 
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)} 
-                                className={`flex items-center gap-1.5 py-1.5 px-2.5 md:px-3.5 rounded-xl font-bold text-[12px] md:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses(customColor, activeTab === tab.id)}`}
+                                className={`flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses(customColor, activeTab === tab.id)}`}
                             >
                                 <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
-                                    <Icon name={tab.icon} size={4}/> 
+                                    <Icon name={tab.icon} size={3.5} className="sm:hidden"/>
+                                    <Icon name={tab.icon} size={4} className="hidden sm:block"/>
                                 </div>
                                 {tab.name}
                             </button>
@@ -86,7 +88,8 @@ const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
                         title="Tạo tab thi đua mới" 
                         className="ml-2 p-1.5 text-slate-400 hover:text-sky-600 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center shrink-0"
                     >
-                        <Icon name="plus-circle" size={5} />
+                        <Icon name="plus-circle" size={4} className="sm:hidden" />
+                        <Icon name="plus-circle" size={5} className="hidden sm:block" />
                     </button>
                 </div>
                 {/* Scroll fade indicator */}

@@ -53,7 +53,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
     return ReactDOM.createPortal(
         <div 
             ref={overlayRef}
-            className={`modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] p-4 transition-opacity duration-300 opacity-100 flex ${isBottom ? 'items-end sm:items-center justify-center sm:p-0' : 'items-center justify-center'}`}
+            className={`modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] p-1.5 sm:p-4 transition-opacity duration-300 opacity-100 flex ${isBottom ? 'items-end sm:items-center justify-center sm:p-0' : 'items-center justify-center'}`}
             onMouseDown={handleOverlayMouseDown}
         >
             <div

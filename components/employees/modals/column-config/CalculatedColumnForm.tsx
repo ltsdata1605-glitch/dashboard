@@ -25,13 +25,13 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
     availableOperands
 }) => {
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mt-5">
-            <div className="bg-amber-50/50 dark:bg-amber-900/20 px-5 py-3 border-b border-amber-100 dark:border-amber-900">
-                <h4 className="flex items-center gap-2 font-bold text-amber-700 dark:text-amber-300">
-                    <Icon name="sigma" size={4} /> Thuật toán ghép cột
+        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mt-3 sm:mt-5">
+            <div className="bg-amber-50/50 dark:bg-amber-900/20 px-3 sm:px-5 py-2 sm:py-3 border-b border-amber-100 dark:border-amber-900">
+                <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-base text-amber-700 dark:text-amber-300">
+                    <Icon name="sigma" size={3.5} className="sm:hidden" /><Icon name="sigma" size={4} className="hidden sm:block" /> Thuật toán ghép cột
                 </h4>
             </div>
-            <div className="p-5">
+            <div className="p-3 sm:p-5">
                 <div className="flex flex-col md:flex-row items-center gap-3 w-full">
                     <div className="flex-1 w-full relative">
                         <label className="block text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-1.5">Nguồn dữ liệu 1</label>
@@ -59,9 +59,9 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
                         </select>
                     </div>
                 </div>
-                <div className="mt-5 flex flex-wrap justify-end gap-5">
-                    <div className="w-[200px]">
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Làm tròn số</label>
+                <div className="mt-3 sm:mt-5 flex flex-wrap justify-end gap-3 sm:gap-5">
+                    <div className="w-full sm:w-[200px]">
+                        <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">Làm tròn số</label>
                         <div className="flex rounded-lg p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
                             <button type="button" onClick={() => setDecimalPlaces(0)} className={`flex-1 py-1 px-1 text-xs font-semibold rounded-md transition-all ${decimalPlaces === 0 ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Bỏ số lẻ</button>
                             <button type="button" onClick={() => setDecimalPlaces(1)} className={`flex-1 py-1 px-1 text-xs font-semibold rounded-md transition-all ${decimalPlaces === 1 ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>1 chữ số</button>
@@ -69,8 +69,8 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
                         </div>
                     </div>
                     {operation === '/' && (
-                        <div className="w-[120px]">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Định dạng</label>
+                        <div className="w-full sm:w-[120px]">
+                            <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">Định dạng</label>
                             <div className="flex rounded-lg p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
                                 <button type="button" onClick={() => setDisplayAs('number')} className={`flex-1 py-1 px-2 text-sm font-semibold rounded-md transition-all ${displayAs === 'number' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Số</button>
                                 <button type="button" onClick={() => setDisplayAs('percentage')} className={`flex-1 py-1 px-2 text-sm font-semibold rounded-md transition-all ${displayAs === 'percentage' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>%</button>

@@ -149,39 +149,40 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
         <div ref={tableRef} className="flex flex-col overflow-hidden">
 
             {/* Header */}
-            <div className="flex justify-between items-center mb-6">
-                <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${theme.iconBlockBg} ${theme.iconBlockText}`}>
-                        <Icon name={theme.icon} size={6} />
+            <div className="flex justify-between items-center mb-3 sm:mb-6">
+                <div className="flex items-center gap-2 sm:gap-4">
+                    <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center ${theme.iconBlockBg} ${theme.iconBlockText}`}>
+                        <Icon name={theme.icon} size={4} className="sm:hidden" />
+                        <Icon name={theme.icon} size={6} className="hidden sm:block" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-slate-800 dark:text-white leading-tight">{theme.title}</h3>
-                        <p className="text-xs font-medium text-slate-400">{theme.subtitle}</p>
+                        <h3 className="text-sm sm:text-lg font-black text-slate-800 dark:text-white leading-tight">{theme.title}</h3>
+                        <p className="text-[9px] sm:text-xs font-medium text-slate-400">{theme.subtitle}</p>
                     </div>
                 </div>
 
                 {/* Tab switcher + export */}
-                <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
+                <div className="px-2 sm:px-6 py-1 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-lg sm:rounded-xl">
                     <div className="flex items-center gap-2 flex-wrap">
-                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+                        <div className="inline-flex rounded-md sm:rounded-lg shadow-sm p-0.5 sm:p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                             {(['doanhThu', 'khaiThac', 'vuotTroi'] as GroupType[]).map(tab => (
                                 <button
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
-                                    className={`py-1.5 px-3 text-xs font-bold rounded-lg transition-all whitespace-nowrap ${groupType === tab ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}
+                                    className={`py-1 sm:py-1.5 px-2 sm:px-3 text-[10px] sm:text-xs font-bold rounded-md sm:rounded-lg transition-all whitespace-nowrap ${groupType === tab ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}
                                 >
                                     {tab === 'doanhThu' ? 'Doanh Thu' : tab === 'khaiThac' ? 'Trả Chậm' : 'Vượt Trội'}
                                 </button>
                             ))}
                         </div>
-                        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+                        <div className="hidden sm:block h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
                         <button
                             onClick={e => { e.stopPropagation(); onSingleExport(); }}
                             disabled={isExporting}
                             className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
                             title="Xuất Ảnh Tab Hiện Tại"
                         >
-                            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
+                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <><Icon name="camera" size={4} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
                         </button>
                         <button
                             onClick={async (e) => { 
@@ -192,7 +193,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
                             title="Xuất Ảnh Tất Cả Tab (3 Tab)"
                         >
-                            <Icon name="images" size={5} />
+                            <Icon name="images" size={4} className="sm:hidden" /><Icon name="images" size={5} className="hidden sm:block" />
                         </button>
                     </div>
                 </div>

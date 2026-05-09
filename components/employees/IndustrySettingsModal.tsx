@@ -257,20 +257,20 @@ const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, 
 
     const renderPickerView = () => (
         <>
-            <div className="flex items-center justify-between gap-3 mb-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm z-20">
-                <div className="flex items-center gap-3">
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Thao tác nhanh:</span>
-                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900/50 p-1 rounded-lg">
-                        <button onClick={() => handleSelectAll(true)} className="px-3 py-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-white dark:hover:bg-slate-800 rounded-md transition-all shadow-sm flex items-center gap-1.5">
-                            <Icon name="check-square" size={3.5} /> Bật tất cả
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-4 sm:mb-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 shadow-sm z-20">
+                <div className="flex items-center gap-2 sm:gap-3">
+                    <span className="text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300">Thao tác nhanh:</span>
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-900/50 p-0.5 sm:p-1 rounded-lg">
+                        <button onClick={() => handleSelectAll(true)} className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-white dark:hover:bg-slate-800 rounded-md transition-all shadow-sm flex items-center gap-1 sm:gap-1.5">
+                            <Icon name="check-square" size={3.5} /> Bật
                         </button>
-                        <button onClick={() => handleSelectAll(false)} className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-md transition-all flex items-center gap-1.5">
-                            <Icon name="square" size={3.5} /> Tắt tất cả
+                        <button onClick={() => handleSelectAll(false)} className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-md transition-all flex items-center gap-1 sm:gap-1.5">
+                            <Icon name="square" size={3.5} /> Tắt
                         </button>
                     </div>
                 </div>
-                 <button onClick={() => { resetForm(false); setView('form'); }} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl shadow-md text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30">
-                    <Icon name="plus" size={4} /> Tạo Cột Mới
+                 <button onClick={() => { resetForm(false); setView('form'); }} className="flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl shadow-md text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30">
+                    <Icon name="plus" size={3.5} className="sm:hidden" /><Icon name="plus" size={4} className="hidden sm:block" /> Tạo Cột Mới
                 </button>
             </div>
             
@@ -435,12 +435,12 @@ const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, 
                 )}
                 
                 {view === 'picker' && (
-                    <div className="p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                        <button onClick={handleRestoreDefaults} className="py-2.5 px-4 rounded-xl text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors flex items-center gap-2">
-                            <Icon name="rotate-ccw" size={4} /> Khôi phục mặc định
+                    <div className="p-3 sm:p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+                        <button onClick={handleRestoreDefaults} className="py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors flex items-center gap-1.5 sm:gap-2">
+                            <Icon name="rotate-ccw" size={3.5} className="sm:hidden" /><Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục
                         </button>
-                        <button onClick={handleSaveAndClose} className="py-2.5 px-8 rounded-xl shadow-md text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-2">
-                            Hoàn tất <Icon name="check" size={4} className="ml-1"/>
+                        <button onClick={handleSaveAndClose} className="py-2 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-xs sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-1.5 sm:gap-2">
+                            Hoàn tất <Icon name="check" size={3.5} className="ml-0.5 sm:hidden"/><Icon name="check" size={4} className="ml-1 hidden sm:block"/>
                         </button>
                     </div>
                 )}

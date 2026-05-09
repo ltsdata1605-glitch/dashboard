@@ -116,31 +116,33 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     return (
         <div ref={ref} className="overflow-hidden flex flex-col h-full bg-transparent">
             {/* Header */}
-            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3 mb-6">
-                <div className="flex items-center gap-4">
-                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400`}>
-                        <Icon name="gantt-chart-square" size={6} />
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
+                <div className="flex items-center gap-2 sm:gap-4">
+                    <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400`}>
+                        <Icon name="gantt-chart-square" size={4} className="sm:hidden" />
+                        <Icon name="gantt-chart-square" size={6} className="hidden sm:block" />
                     </div>
                     <div>
-                        <h3 className="text-lg font-black text-slate-800 dark:text-white leading-tight">Phân Tích Khai Thác</h3>
-                        <p className="text-xs font-medium text-slate-400">Chi tiết sản phẩm & hiệu quả bán kèm</p>
+                        <h3 className="text-sm sm:text-lg font-black text-slate-800 dark:text-white leading-tight">Phân Tích Khai Thác</h3>
+                        <p className="text-[9px] sm:text-xs font-medium text-slate-400">Chi tiết sản phẩm & hiệu quả bán kèm</p>
                     </div>
                 </div>
-                <div className="px-3 lg:px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
-                    <div className="flex items-center gap-2">
-                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 shrink-0">
-                            <button onClick={() => setViewMode('detail')} className={`py-1.5 px-2 lg:px-3 text-[10px] lg:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${viewMode === 'detail' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Chi tiết</button>
-                            <button onClick={() => setViewMode('efficiency')} className={`py-1.5 px-2 lg:px-3 text-[10px] lg:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Hiệu quả %</button>
-                            <button onClick={() => setViewMode('efficiency_dt_sl')} className={`py-1.5 px-2 lg:px-3 text-[10px] lg:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency_dt_sl' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Doanh thu</button>
-                            <button onClick={() => setViewMode('efficiency_quantity')} className={`py-1.5 px-2 lg:px-3 text-[10px] lg:text-xs font-bold rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency_quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Số lượng</button>
+                <div className="px-2 sm:px-6 py-1 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-lg sm:rounded-xl">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                        <div className="inline-flex rounded-md sm:rounded-lg shadow-sm p-0.5 sm:p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 shrink-0">
+                            <button onClick={() => setViewMode('detail')} className={`py-1 sm:py-1.5 px-1.5 sm:px-3 text-[9px] sm:text-xs font-bold rounded-md sm:rounded-lg transition-all whitespace-nowrap ${viewMode === 'detail' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Chi tiết</button>
+                            <button onClick={() => setViewMode('efficiency')} className={`py-1 sm:py-1.5 px-1.5 sm:px-3 text-[9px] sm:text-xs font-bold rounded-md sm:rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Hiệu quả %</button>
+                            <button onClick={() => setViewMode('efficiency_dt_sl')} className={`py-1 sm:py-1.5 px-1.5 sm:px-3 text-[9px] sm:text-xs font-bold rounded-md sm:rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency_dt_sl' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Doanh thu</button>
+                            <button onClick={() => setViewMode('efficiency_quantity')} className={`py-1 sm:py-1.5 px-1.5 sm:px-3 text-[9px] sm:text-xs font-bold rounded-md sm:rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency_quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Số lượng</button>
                         </div>
-                        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1 shrink-0"></div>
-                         <button onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all shrink-0">
-                            <Icon name="switch-camera" size={5} />
+                        <div className="hidden sm:block h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1 shrink-0"></div>
+                         <button onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-all shrink-0">
+                            <Icon name="switch-camera" size={4} className="sm:hidden" />
+                            <Icon name="switch-camera" size={5} className="hidden sm:block" />
                         </button>
                         {onExport && (
-                            <button onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all shrink-0">
-                                {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
+                            <button onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all shrink-0">
+                                {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <><Icon name="camera" size={4} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
                             </button>
                         )}
                     </div>

@@ -103,17 +103,18 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
             if (customTab) {
                 return (
                     <div ref={exportRef}>
-                        <div className="flex justify-between items-center mb-6">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
-                                    <Icon name={customTab.icon || 'folder'} size={6} />
+                        <div className="flex justify-between items-center mb-3 sm:mb-6">
+                            <div className="flex items-center gap-2 sm:gap-4">
+                                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
+                                    <Icon name={customTab.icon || 'folder'} size={4} className="sm:hidden" />
+                                    <Icon name={customTab.icon || 'folder'} size={6} className="hidden sm:block" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-black text-slate-800 dark:text-white leading-tight">{customTab.name}</h3>
-                                    <p className="text-xs font-medium text-slate-400">Bảng thi đua tùy chỉnh</p>
+                                    <h3 className="text-sm sm:text-lg font-black text-slate-800 dark:text-white leading-tight">{customTab.name}</h3>
+                                    <p className="text-[9px] sm:text-xs font-medium text-slate-400">Bảng thi đua tùy chỉnh</p>
                                 </div>
                             </div>
-                            <div className="px-6 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-xl">
+                            <div className="px-2 sm:px-6 py-1 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-lg sm:rounded-xl">
                                 <div className="flex items-center gap-2 flex-wrap">
                                     <button onClick={() => setModalState({ type: 'CREATE_TABLE', data: { tabId: customTab.id }})} title="Tạo Bảng Thi Đua Mới" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
                                         <Icon name="plus" size={5}/>

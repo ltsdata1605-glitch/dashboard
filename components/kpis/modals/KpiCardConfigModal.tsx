@@ -178,16 +178,16 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
 
     return (
         <ModalWrapper isOpen={isOpen} onClose={onClose} title="Cấu hình Dãy thẻ KPI" subTitle="Tuỳ chỉnh hiển thị thẻ tổng quan" titleColorClass="text-slate-800 dark:text-white" maxWidthClass="max-w-4xl max-h-[90vh]">
-            <div className="flex divide-x divide-slate-200 dark:divide-slate-700 h-[600px] overflow-hidden">
+            <div className="flex divide-x divide-slate-200 dark:divide-slate-700 h-[55vh] sm:h-[600px] overflow-hidden">
                 {/* Left Side: List */}
-                <div className="w-1/3 flex flex-col bg-slate-50 dark:bg-slate-800/50">
-                    <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-900">
-                        <h3 className="font-bold text-slate-800 dark:text-white">Thứ tự hiển thị</h3>
-                        <button onClick={addNewCard} className="text-xs px-2.5 py-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 font-semibold rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-1">
-                            <Icon name="plus" size={3.5} /> Thêm
+                <div className="w-[30%] sm:w-1/3 flex flex-col bg-slate-50 dark:bg-slate-800/50">
+                    <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-900">
+                        <h3 className="font-bold text-[10px] sm:text-base text-slate-800 dark:text-white">Thứ tự hiển thị</h3>
+                        <button onClick={addNewCard} className="text-[9px] sm:text-xs px-1.5 sm:px-2.5 py-1 sm:py-1.5 bg-indigo-50 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 font-semibold rounded-lg hover:bg-indigo-100 transition-colors flex items-center gap-0.5 sm:gap-1">
+                            <Icon name="plus" size={3} className="sm:hidden" /><Icon name="plus" size={3.5} className="hidden sm:block" /> Thêm
                         </button>
                     </div>
-                    <div className="flex-1 overflow-y-auto p-4 space-y-2 relative">
+                    <div className="flex-1 overflow-y-auto p-1.5 sm:p-4 space-y-1 sm:space-y-2 relative">
                         {internalConfigs.map((config, i) => (
                             <div 
                                 key={config.id} 
@@ -196,16 +196,17 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 onDragOver={(e) => handleDragOver(e, i)}
                                 onDrop={(e) => handleDrop(e, i)}
                                 onDragEnd={handleDragEnd}
-                                className={`flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-xl border ${editingCard?.id === config.id ? 'border-indigo-500 shadow-sm ring-1 ring-indigo-500/20' : 'border-slate-200 dark:border-slate-700'} ${draggedIndex === i ? 'opacity-50 ring-2 ring-indigo-500' : ''} transition-all cursor-pointer hover:border-indigo-300`}
+                                className={`flex items-center gap-1.5 sm:gap-3 p-1.5 sm:p-3 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border ${editingCard?.id === config.id ? 'border-indigo-500 shadow-sm ring-1 ring-indigo-500/20' : 'border-slate-200 dark:border-slate-700'} ${draggedIndex === i ? 'opacity-50 ring-2 ring-indigo-500' : ''} transition-all cursor-pointer hover:border-indigo-300`}
                                 onClick={() => setEditingCard(config)}
                             >
-                                <div className="flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-400 hover:text-indigo-600 p-1">
+                                <div className="hidden sm:flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-400 hover:text-indigo-600 p-1">
                                     <Icon name="grip-vertical" size={4.5} />
                                 </div>
-                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-${config.iconColor}-100 text-${config.iconColor}-600 dark:bg-${config.iconColor}-500/20 dark:text-${config.iconColor}-400`}>
-                                    <Icon name={config.icon} size={4.5} />
+                                <div className={`w-6 h-6 sm:w-8 sm:h-8 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 bg-${config.iconColor}-100 text-${config.iconColor}-600 dark:bg-${config.iconColor}-500/20 dark:text-${config.iconColor}-400`}>
+                                    <Icon name={config.icon} size={3.5} className="sm:hidden" />
+                                    <Icon name={config.icon} size={4.5} className="hidden sm:block" />
                                 </div>
-                                <div className="flex-1 min-w-0">
+                                <div className="flex-1 min-w-0 hidden sm:block">
                                     <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate">{config.title}</h4>
                                     <p className="text-[10px] text-slate-500 truncate">
                                         {config.type === 'metric' || !config.type 
@@ -213,8 +214,9 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             : config.type === 'data' ? 'Bộ lọc Tùy Biên' : 'Công Thức'}
                                     </p>
                                 </div>
-                                <button onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} className={`p-1.5 rounded-md ${config.isVisible ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/20 dark:text-indigo-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-700'}`}>
-                                    <Icon name={config.isVisible ? "eye" : "eye-off"} size={4} />
+                                <button onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} className={`p-1 sm:p-1.5 rounded-md ${config.isVisible ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/20 dark:text-indigo-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-700'}`}>
+                                    <Icon name={config.isVisible ? "eye" : "eye-off"} size={3.5} className="sm:hidden" />
+                                    <Icon name={config.isVisible ? "eye" : "eye-off"} size={4} className="hidden sm:block" />
                                 </button>
                             </div>
                         ))}
@@ -222,18 +224,18 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                 </div>
 
                 {/* Right Side: Editor */}
-                <div className="w-2/3 flex flex-col bg-white dark:bg-slate-900">
-                    <div className="p-4 border-b border-slate-200 dark:border-slate-700 h-14 flex items-center">
-                        <h3 className="font-semibold text-slate-700 dark:text-slate-300">{editingCard ? 'Chi Tiết Thẻ' : 'Chọn thẻ bên trái để sửa'}</h3>
+                <div className="w-[70%] sm:w-2/3 flex flex-col bg-white dark:bg-slate-900">
+                    <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 h-10 sm:h-14 flex items-center">
+                        <h3 className="font-semibold text-[10px] sm:text-base text-slate-700 dark:text-slate-300">{editingCard ? 'Chi Tiết Thẻ' : 'Chọn thẻ bên trái để tùy chỉnh giao diện và dữ liệu'}</h3>
                         {editingCard && (
                             <button onClick={() => deleteCard(editingCard.id)} className="ml-auto text-rose-500 hover:text-rose-700 text-sm font-semibold flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10">
                                 <Icon name="trash-2" size={4} /> Xóa thẻ
                             </button>
                         )}
                     </div>
-                    <div className="flex-1 overflow-y-auto p-6">
+                    <div className="flex-1 overflow-y-auto p-3 sm:p-6">
                         {editingCard ? (
-                            <div className="space-y-6">
+                            <div className="space-y-3 sm:space-y-6">
                                 <div>
                                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">Tiêu Đề Hiển Thị</label>
                                     <input 
@@ -405,7 +407,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                     </div>
                                 )}
 
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-2 gap-3 sm:gap-6">
                                     <div>
                                         <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5 uppercase tracking-wide">Biểu Tượng</label>
                                         <div className="flex flex-wrap gap-2">
@@ -413,9 +415,9 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 <button 
                                                     key={icon}
                                                     onClick={() => updateEditingCard({ icon })}
-                                                    className={`w-10 h-10 rounded-xl flex items-center justify-center border transition-all ${editingCard.icon === icon ? 'bg-indigo-100 border-indigo-300 text-indigo-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
+                                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center border transition-all ${editingCard.icon === icon ? 'bg-indigo-100 border-indigo-300 text-indigo-600 shadow-sm' : 'bg-white text-slate-500 border-slate-200 hover:bg-slate-50 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'}`}
                                                 >
-                                                    <Icon name={icon} size={5} />
+                                                    <Icon name={icon} size={3.5} className="sm:hidden" /><Icon name={icon} size={5} className="hidden sm:block" />
                                                 </button>
                                             ))}
                                         </div>
@@ -427,7 +429,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 <button 
                                                     key={color}
                                                     onClick={() => updateEditingCard({ iconColor: color })}
-                                                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all bg-${color}-100 text-${color}-600 dark:bg-${color}-500/20 dark:text-${color}-400 ${editingCard.iconColor === color ? 'ring-2 ring-offset-2 ring-indigo-500 scale-110 drop-shadow-md' : 'hover:scale-105'}`}
+                                                    className={`w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center transition-all bg-${color}-100 text-${color}-600 dark:bg-${color}-500/20 dark:text-${color}-400 ${editingCard.iconColor === color ? 'ring-2 ring-offset-1 sm:ring-offset-2 ring-indigo-500 scale-110 drop-shadow-md' : 'hover:scale-105'}`}
                                                 >
                                                     <Icon name="palette" size={4} />
                                                 </button>
@@ -464,21 +466,21 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
 
                             </div>
                         ) : (
-                            <div className="h-full flex flex-col items-center justify-center text-slate-400">
-                                <Icon name="layout-template" size={16} className="mb-4 opacity-20" />
-                                <p>Bấm vào một thẻ bên trái để tùy chỉnh giao diện và dữ liệu</p>
+                            <div className="h-full flex flex-col items-center justify-center text-slate-400 px-4">
+                                <Icon name="layout-template" size={10} className="sm:!w-16 sm:!h-16 mb-2 sm:mb-4 opacity-20" />
+                                <p className="text-[10px] sm:text-base text-center">Bấm vào một thẻ bên trái để tùy chỉnh giao diện và dữ liệu</p>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
             {/* Modal Footer */}
-            <div className="p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 flex justify-end gap-3 rounded-b-2xl">
-                <button onClick={onClose} className="px-5 py-2 font-medium text-slate-600 bg-white border border-slate-300 rounded-xl hover:bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-600 transition-colors shadow-sm">
+            <div className="p-2 sm:p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 flex justify-end gap-2 sm:gap-3 rounded-b-2xl">
+                <button onClick={onClose} className="px-3 sm:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-slate-600 bg-white border border-slate-300 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:bg-slate-700 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-600 transition-colors shadow-sm">
                     Hủy bỏ
                 </button>
-                <button onClick={handleSave} className="px-6 py-2 font-semibold text-white bg-indigo-600 rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-600/20 hover:shadow-md hover:shadow-indigo-600/30 flex items-center gap-2">
-                    <Icon name="save" size={4.5} /> Lưu Cấu Hình
+                <button onClick={handleSave} className="px-4 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-semibold text-white bg-indigo-600 rounded-lg sm:rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-600/20 hover:shadow-md hover:shadow-indigo-600/30 flex items-center gap-1.5 sm:gap-2">
+                    <Icon name="save" size={3.5} className="sm:hidden" /><Icon name="save" size={4.5} className="hidden sm:block" /> Lưu Cấu Hình
                 </button>
             </div>
         </ModalWrapper>

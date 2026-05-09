@@ -24,19 +24,20 @@ export const FormattingRulesForm: React.FC<FormattingRulesFormProps> = ({
     formattingRules, addFormattingRule, updateFormattingRule, removeFormattingRule
 }) => {
     return (
-        <div className="mt-5">
-            <div className="flex justify-between items-center mb-3">
-                <h4 className="font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                    <Icon name="paintbrush" size={4} className="text-pink-500 dark:text-pink-400" />
-                    Định dạng hiển thị cảnh báo
+        <div className="mt-3 sm:mt-5">
+            <div className="flex justify-between items-center mb-2 sm:mb-3">
+                <h4 className="font-bold text-xs sm:text-base text-slate-800 dark:text-slate-200 flex items-center gap-1.5 sm:gap-2">
+                    <Icon name="paintbrush" size={3.5} className="text-pink-500 dark:text-pink-400 sm:hidden" />
+                    <Icon name="paintbrush" size={4} className="text-pink-500 dark:text-pink-400 hidden sm:block" />
+                    Định dạng cảnh báo
                 </h4>
-                <button type="button" onClick={addFormattingRule} className="px-3 py-1.5 rounded-lg text-sm font-bold bg-slate-200/50 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors flex items-center gap-1">
-                    <Icon name="plus" size={4}/>Thêm luật
+                <button type="button" onClick={addFormattingRule} className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-sm font-bold bg-slate-200/50 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 transition-colors flex items-center gap-0.5 sm:gap-1">
+                    <Icon name="plus" size={3.5} className="sm:hidden" /><Icon name="plus" size={4} className="hidden sm:block" />Thêm luật
                 </button>
             </div>
             {formattingRules.length === 0 ? (
-                <div className="border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-4 text-center">
-                    <span className="text-slate-400 dark:text-slate-500 text-sm font-medium">Bạn có thể tạo luật đổ màu ô tự động dựa trên số liệu thực tế</span>
+                <div className="border border-dashed border-slate-300 dark:border-slate-700 rounded-lg sm:rounded-xl p-3 sm:p-4 text-center">
+                    <span className="text-slate-400 dark:text-slate-500 text-[10px] sm:text-sm font-medium">Tạo luật đổ màu ô tự động dựa trên số liệu thực tế</span>
                 </div>
             ) : (
                 <div className="space-y-2.5">

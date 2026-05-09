@@ -60,7 +60,14 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                         ytd_same_period_year: 'Lũy kế (YTD)',
                                         custom_range: 'Tùy chỉnh',
                                     } as Record<string, string>)[compMode] || compMode}
-                                    {dateDisplay && <span className="text-slate-500 dark:text-slate-400"> · {dateDisplay.current}</span>}
+                                    {dateDisplay && (() => {
+                                        // Extract short prev (strip year if same year as current)
+                                        const yearMatch = dateDisplay.current.match(/\/(\d{4})$/);
+                                        const prevShort = yearMatch && dateDisplay.prev.endsWith(`/${yearMatch[1]}`)
+                                            ? dateDisplay.prev.replace(`/${yearMatch[1]}`, '')
+                                            : dateDisplay.prev;
+                                        return <span className="text-slate-500 dark:text-slate-400"> · {prevShort} - {dateDisplay.current}</span>;
+                                    })()}
                                 </p>
                             )}
                             {/* Desktop: original dynamic title */}
@@ -132,22 +139,23 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                                     </div>
 
                                     {activeFilterKey === 'columns' && (
-                                        <div className="absolute right-0 sm:left-0 sm:right-auto md:right-0 md:left-auto mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-2xl p-3 border border-slate-100 dark:border-slate-700 z-[200]">
-                                            <div className="flex justify-between items-center mb-3 px-2 pt-1 border-b border-slate-50 pb-2 dark:border-slate-700/50">
-                                                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">Tùy chọn hiển thị cột</h4>
-                                                <button onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={4}/></button>
+                                        <div className="absolute right-0 sm:left-0 sm:right-auto md:right-0 md:left-auto mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
+                                            <div className="flex justify-between items-center mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 border-b border-slate-50 pb-1.5 sm:pb-2 dark:border-slate-700/50">
+                                                <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100">Tùy chọn hiển thị cột</h4>
+                                                <button onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={3.5} className="sm:hidden"/><Icon name="x" size={4} className="hidden sm:block"/></button>
                                             </div>
-                                            <div className="space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
+                                            <div className="space-y-1 sm:space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
                                                 {HEADER_CONFIG.filter((col: any) => {
                                                     const isPivotMode = isComparisonMode && compMode === 'monthly_trend';
                                                     const PIVOT_EXCLUDED_COLS = ['slPercent', 'dtThucPercent', 'avgQuantity', 'avgRevenue'];
                                                     if (isPivotMode && PIVOT_EXCLUDED_COLS.includes(col.key)) return false;
                                                     return true;
                                                 }).map((col: any) => (
-                                                    <div key={col.key} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} className="flex items-center justify-between cursor-pointer p-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
-                                                        <span className="text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2 select-none">
-                                                            <div className={`p-1.5 rounded-lg ${col.colorClass}`}>
-                                                                <Icon name={col.icon || 'columns'} size={3.5} />
+                                                    <div key={col.key} onClick={() => setVisibleColumns((prev: string[]) => prev.includes(col.key) ? prev.filter(k => k !== col.key) : [...prev, col.key])} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                                                        <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 sm:gap-2 select-none">
+                                                            <div className={`p-1 sm:p-1.5 rounded-md sm:rounded-lg ${col.colorClass}`}>
+                                                                <Icon name={col.icon || 'columns'} size={3} className="sm:hidden" />
+                                                                <Icon name={col.icon || 'columns'} size={3.5} className="hidden sm:block" />
                                                             </div>
                                                             {col.label}
                                                         </span>

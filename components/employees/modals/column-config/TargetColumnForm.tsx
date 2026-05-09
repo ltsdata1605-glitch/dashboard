@@ -13,23 +13,23 @@ export const TargetColumnForm: React.FC<TargetColumnFormProps> = ({
     targetValue, setTargetValue
 }) => {
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mt-5">
-            <div className="bg-teal-50/80 dark:bg-teal-900/20 px-5 py-3 border-b border-teal-100 dark:border-teal-900">
-                <h4 className="flex items-center gap-2 font-bold text-teal-700 dark:text-teal-300">
-                    <Icon name="target" size={4} /> Chỉ tiêu kho (Target)
+        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mt-3 sm:mt-5">
+            <div className="bg-teal-50/80 dark:bg-teal-900/20 px-3 sm:px-5 py-2 sm:py-3 border-b border-teal-100 dark:border-teal-900">
+                <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-base text-teal-700 dark:text-teal-300">
+                    <Icon name="target" size={3.5} className="sm:hidden" /><Icon name="target" size={4} className="hidden sm:block" /> Chỉ tiêu kho (Target)
                 </h4>
             </div>
-            <div className="p-5 space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-3 sm:p-5 space-y-4 sm:space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Đinh dạng chỉ tiêu</label>
-                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
-                            <button type="button" onClick={() => setMetricType('revenue')} className={`flex-1 py-2 px-4 text-sm font-bold rounded-md transition-all ${metricType === 'revenue' ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Tiền Tệ ($)</button>
-                            <button type="button" onClick={() => setMetricType('quantity')} className={`flex-1 py-2 px-4 text-sm font-bold rounded-md transition-all ${metricType === 'quantity' ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Số Lượng (#)</button>
+                        <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">Đinh dạng chỉ tiêu</label>
+                        <div className="inline-flex rounded-lg shadow-sm p-0.5 sm:p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
+                            <button type="button" onClick={() => setMetricType('revenue')} className={`flex-1 py-1.5 sm:py-2 px-3 sm:px-4 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'revenue' ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Tiền Tệ ($)</button>
+                            <button type="button" onClick={() => setMetricType('quantity')} className={`flex-1 py-1.5 sm:py-2 px-3 sm:px-4 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'quantity' ? 'bg-white dark:bg-slate-700 text-teal-600 dark:text-teal-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Số Lượng (#)</button>
                         </div>
                     </div>
                     <div>
-                        <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">Tổng Mục Tiêu *</label>
+                        <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">Tổng Mục Tiêu *</label>
                         <div className="relative">
                             <input 
                                 type="text" 
@@ -39,7 +39,7 @@ export const TargetColumnForm: React.FC<TargetColumnFormProps> = ({
                                     setTargetValue(raw ? Number(raw).toLocaleString('en-US') : '');
                                 }}
                                 placeholder="VD: 1,500,000,000" 
-                                className="w-full bg-white dark:bg-slate-900 border-2 border-teal-200 dark:border-teal-800 rounded-lg p-3 pl-10 text-base font-black text-teal-700 dark:text-teal-300 focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition outline-none"
+                                className="w-full bg-white dark:bg-slate-900 border-2 border-teal-200 dark:border-teal-800 rounded-lg p-2.5 sm:p-3 pl-8 sm:pl-10 text-sm sm:text-base font-black text-teal-700 dark:text-teal-300 focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition outline-none"
                             />
                             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-teal-500">
                                 <Icon name={metricType === 'revenue' ? "dollar-sign" : "hash"} size={5} />

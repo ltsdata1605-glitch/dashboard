@@ -584,38 +584,38 @@ const SettingsView: React.FC = () => {
                 maxWidthClass="max-w-md"
                 titleColorClass="text-indigo-600 dark:text-indigo-400"
             >
-                <div className="p-6">
-                    <div className="mb-6 bg-blue-50 dark:bg-blue-900/20 p-4 text-sm text-blue-700 dark:text-blue-300 rounded-lg">
-                        <Icon name="info" size={4} className="inline mr-2" />
+                <div className="p-4 sm:p-6">
+                    <div className="mb-4 sm:mb-6 bg-blue-50 dark:bg-blue-900/20 p-3 sm:p-4 text-xs sm:text-sm text-blue-700 dark:text-blue-300 rounded-lg">
+                        <Icon name="info" size={4} className="inline mr-1.5 sm:mr-2" />
                         <strong className="font-bold">Mọi người {userRole === 'admin' ? 'trong toàn hệ thống' : `(trong nhóm Mã Kho ${departmentId})`}</strong> sẽ có thể sao chép giao diện cột, cấu hình bảng Tranh tài, Industry mà bạn đã cài đặt. Mẫu sẽ chia sẻ ẩn danh báo cáo Excel của riêng bạn.
                     </div>
 
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tên gợi nhớ cho Cấu hình (Ví dụ: Cấu hình chuẩn Qúy 3)</label>
+                    <label className="block text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">Tên gợi nhớ cho Cấu hình</label>
                     <input 
                         type="text" 
                         value={shareDescription}
                         onChange={e => setShareDescription(e.target.value)}
                         placeholder="Nhập tên dễ hiểu..."
                         maxLength={60}
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-indigo-500 mb-2 transition-all dark:text-white rounded-md"
+                        className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-indigo-500 mb-1.5 sm:mb-2 transition-all dark:text-white rounded-md"
                         autoFocus
                     />
-                    <div className="text-right text-xs text-slate-400 mb-6">{shareDescription.length}/60</div>
+                    <div className="text-right text-[10px] sm:text-xs text-slate-400 mb-4 sm:mb-6">{shareDescription.length}/60</div>
 
-                    <div className="flex justify-end gap-3">
+                    <div className="flex justify-end gap-2 sm:gap-3">
                         <button 
                             onClick={() => setShowShareModal(false)} 
-                            className="px-5 py-2.5 font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors rounded-lg"
+                            className="px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors rounded-lg"
                         >
                             Huỷ Bỏ
                         </button>
                         <button 
                             onClick={handleShareConfig}
                             disabled={isSharing || !shareDescription.trim()}
-                            className="px-6 py-2.5 font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-all rounded-lg"
+                            className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 transition-all rounded-lg"
                         >
                             {isSharing && <Icon name="loader-2" size={4} className="animate-spin" />}
-                            {isSharing ? 'Đang Đăng...' : 'Đăng Phiên Bản Của Tôi'}
+                            {isSharing ? 'Đang Đăng...' : 'Đăng Phiên Bản'}
                         </button>
                     </div>
                 </div>

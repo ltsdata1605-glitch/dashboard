@@ -144,34 +144,35 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
         >
             <div className="flex flex-col h-[70vh]">
                 {/* Toolbar */}
-                <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
-                    <div className="relative w-64">
+                <div className="p-2.5 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
+                    <div className="relative w-48 sm:w-64">
                         <input 
                             type="text" 
                             placeholder="Tìm mã NV, tên, siêu thị..." 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500"
+                            className="w-full pl-8 sm:pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500"
                         />
-                        <Icon name="search" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <Icon name="search" size={3.5} className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400 sm:hidden" />
+                        <Icon name="search" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hidden sm:block" />
                     </div>
-                    <div className="flex gap-2 text-sm text-slate-500 dark:text-slate-400">
+                    <div className="hidden sm:flex gap-2 text-sm text-slate-500 dark:text-slate-400">
                         <span>Lưu ý: Dữ liệu được lưu tự động và an toàn (IndexedDB).</span>
                     </div>
                 </div>
 
                 {/* Table */}
                 <div className="flex-1 overflow-auto custom-scrollbar">
-                    <table className="min-w-full text-sm text-left border-collapse border border-slate-200 dark:border-slate-700">
+                    <table className="min-w-full text-xs sm:text-sm text-left border-collapse border border-slate-200 dark:border-slate-700">
                         <thead className="bg-slate-50 dark:bg-slate-800 sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th onClick={() => handleSort('id')} className="cursor-pointer px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-32 hover:bg-slate-100 transition-colors">
+                                <th onClick={() => handleSort('id')} className="cursor-pointer px-2 sm:px-4 py-2 sm:py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-24 sm:w-32 hover:bg-slate-100 transition-colors">
                                     <div className="flex items-center justify-between">Mã NV {renderSortIcon('id')}</div>
                                 </th>
-                                <th onClick={() => handleSort('name')} className="cursor-pointer px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors">
+                                <th onClick={() => handleSort('name')} className="cursor-pointer px-2 sm:px-4 py-2 sm:py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 hover:bg-slate-100 transition-colors">
                                     <div className="flex items-center justify-between">Họ và Tên {renderSortIcon('name')}</div>
                                 </th>
-                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-64 hover:bg-slate-100 transition-colors">
+                                <th className="px-2 sm:px-4 py-2 sm:py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-48 sm:w-64 hover:bg-slate-100 transition-colors">
                                     <div className="flex items-center justify-between cursor-pointer" onClick={() => handleSort('dept')}>
                                         <div className="flex items-center gap-1">Bộ phận {renderSortIcon('dept')}</div>
                                         <div className="relative" onClick={e => e.stopPropagation()}>
@@ -190,13 +191,13 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                         </div>
                                     </div>
                                 </th>
-                                <th className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-24 text-center">Thao tác</th>
+                                <th className="px-2 sm:px-4 py-2 sm:py-3 font-semibold text-slate-600 dark:text-slate-300 border-b border-r border-slate-200 dark:border-slate-700 w-20 sm:w-24 text-center">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
                             {employees.map(emp => (
                                 <tr key={emp.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                    <td className="px-4 py-3 font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-700">{emp.id}</td>
+                                    <td className="px-2 sm:px-4 py-2 sm:py-3 font-medium text-slate-900 dark:text-slate-100 border-r border-slate-200 dark:border-slate-700">{emp.id}</td>
                                     
                                     {editingId === emp.id ? (
                                         <>
@@ -273,16 +274,17 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                 </datalist>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-slate-200 dark:border-slate-700 flex justify-between gap-3 bg-slate-50 dark:bg-slate-900/50">
+                <div className="p-2.5 sm:p-4 border-t border-slate-200 dark:border-slate-700 flex justify-between gap-2 sm:gap-3 bg-slate-50 dark:bg-slate-900/50">
                     <button 
                         onClick={handleRestore} 
-                        className="px-6 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-lg shadow-sm transition-all font-medium flex items-center gap-2"
+                        className="px-3 sm:px-6 py-1.5 sm:py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-lg shadow-sm transition-all font-medium flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
                     >
-                        <Icon name="rotate-ccw" size={4} /> Khôi phục gốc
+                        <Icon name="rotate-ccw" size={3.5} className="sm:hidden" />
+                        <Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục gốc
                     </button>
                     <button 
                         onClick={handleClose} 
-                        className="px-6 py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg shadow-sm transition-all active:scale-95 font-medium"
+                        className="px-3 sm:px-6 py-1.5 sm:py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg shadow-sm transition-all active:scale-95 font-medium text-xs sm:text-sm"
                     >
                         {hasUnsavedChanges ? 'Lưu & Đóng' : 'Đóng'}
                     </button>

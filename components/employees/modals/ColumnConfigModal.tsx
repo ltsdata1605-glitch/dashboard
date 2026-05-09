@@ -277,7 +277,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             maxWidthClass="max-w-4xl"
         >
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
-                <div className="flex-grow p-5 sm:p-6 space-y-6 sm:space-y-8 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar min-h-0">
+                <div className="flex-grow p-3 sm:p-6 space-y-4 sm:space-y-8 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar min-h-0">
                     {feedback && (
                         <div className={`p-3 border rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm ${
                             feedback.type === 'error' 
@@ -290,15 +290,16 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     )}
                     
                     {/* SECTION 1: Cấu trúc Cột */}
-                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm">
-                        <h4 className="flex items-center gap-2 font-bold mb-4 text-slate-800 dark:text-slate-100">
-                            <Icon name="layout" size={4} className="text-indigo-500" /> Cấu trúc cột
+                    <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-5 shadow-sm">
+                        <h4 className="flex items-center gap-2 font-bold mb-3 sm:mb-4 text-sm sm:text-base text-slate-800 dark:text-slate-100">
+                            <Icon name="layout" size={3.5} className="text-indigo-500 sm:hidden" />
+                            <Icon name="layout" size={4} className="text-indigo-500 hidden sm:block" /> Cấu trúc cột
                         </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5">
                             <div ref={headersRef} className="relative z-50">
-                                <label htmlFor="mainHeader" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 flex justify-between">
+                                <label htmlFor="mainHeader" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 flex justify-between">
                                     Tiêu đề nhóm (Cha)
-                                    {existingMainHeaders.length > 0 && <span className="text-xs font-normal text-slate-400">Chọn từ danh sách có sẵn</span>}
+                                    {existingMainHeaders.length > 0 && <span className="text-[10px] sm:text-xs font-normal text-slate-400">Chọn từ danh sách</span>}
                                 </label>
                                 <div className="relative">
                                     <Icon name="layers" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -309,7 +310,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                         onChange={e => { setMainHeader(e.target.value); setShowHeadersList(true); }}
                                         onFocus={() => setShowHeadersList(true)}
                                         placeholder="Tạo nhóm mới hoặc chọn..." 
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-10 pr-10 py-2.5 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm dark:focus:ring-indigo-400" 
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-8 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm dark:focus:ring-indigo-400" 
                                         autoComplete="off"
                                     />
                                     <button 
@@ -339,7 +340,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                 )}
                             </div>
                             <div>
-                                <label htmlFor="columnName" className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tiêu đề cột (Bắt buộc) *</label>
+                                <label htmlFor="columnName" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">Tiêu đề cột (Bắt buộc) *</label>
                                 <div className="relative">
                                     <Icon name="type" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                                     <input 
@@ -348,45 +349,49 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                         value={columnName} 
                                         onChange={e => setColumnName(e.target.value.toUpperCase())} 
                                         placeholder="VD: SL SIM, DT APPLE..." 
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-10 pr-3 py-2.5 text-sm font-bold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm" 
+                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-8 sm:pl-10 pr-3 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm" 
                                         required 
                                     />
                                 </div>
                             </div>
                             
                             <div className="md:col-span-2 mt-1">
-                                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex justify-between">
+                                <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2 flex justify-between">
                                     Phân loại cột
-                                    <span className="font-normal text-xs text-slate-500">Quyết định cách tính toán dữ liệu</span>
+                                    <span className="font-normal text-[10px] sm:text-xs text-slate-500">Quyết định cách tính toán dữ liệu</span>
                                 </label>
-                                <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-xl border border-slate-200 dark:border-slate-700 shadow-inner">
-                                    <button type="button" onClick={() => setColumnType('data')} className={`flex-1 flex flex-col items-center justify-center py-2 px-2 text-sm rounded-lg transition-all ${columnType === 'data' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium'}`}>
-                                        <Icon name="database" size={4} className="mb-1 opacity-80" /> Truy vấn Data
+                                <div className="flex bg-slate-100 dark:bg-slate-900 p-1 sm:p-1.5 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 shadow-inner">
+                                    <button type="button" onClick={() => setColumnType('data')} className={`flex-1 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1.5 sm:px-2 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all ${columnType === 'data' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium'}`}>
+                                        <Icon name="database" size={3.5} className="mb-0.5 sm:mb-1 opacity-80 sm:hidden" />
+                                        <Icon name="database" size={4} className="mb-0.5 sm:mb-1 opacity-80 hidden sm:block" /> Truy vấn Data
                                     </button>
-                                    <button type="button" onClick={() => setColumnType('calculated')} className={`flex-1 flex flex-col items-center justify-center py-2 px-2 text-sm rounded-lg transition-all ${columnType === 'calculated' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium'}`}>
-                                        <Icon name="calculator" size={4} className="mb-1 opacity-80" /> Cột Tính Toán
+                                    <button type="button" onClick={() => setColumnType('calculated')} className={`flex-1 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1.5 sm:px-2 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all ${columnType === 'calculated' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium'}`}>
+                                        <Icon name="calculator" size={3.5} className="mb-0.5 sm:mb-1 opacity-80 sm:hidden" />
+                                        <Icon name="calculator" size={4} className="mb-0.5 sm:mb-1 opacity-80 hidden sm:block" /> Cột Tính Toán
                                     </button>
-                                    <button type="button" onClick={() => setColumnType('target')} className={`flex-1 flex flex-col items-center justify-center py-2 px-2 text-sm rounded-lg transition-all ${columnType === 'target' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium'}`}>
-                                        <Icon name="target" size={4} className="mb-1 opacity-80" /> Thiết lập Target
+                                    <button type="button" onClick={() => setColumnType('target')} className={`flex-1 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1.5 sm:px-2 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all ${columnType === 'target' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium'}`}>
+                                        <Icon name="target" size={3.5} className="mb-0.5 sm:mb-1 opacity-80 sm:hidden" />
+                                        <Icon name="target" size={4} className="mb-0.5 sm:mb-1 opacity-80 hidden sm:block" /> Thiết lập Target
                                     </button>
                                 </div>
                             </div>
                         </div>
 
                         {/* Tùy chỉnh màu */}
-                        <div className="mt-5 border-t border-slate-100 dark:border-slate-700 pt-5">
-                            <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3 flex items-center gap-2">
-                                <Icon name="palette" size={4} className="text-slate-400" />
+                        <div className="mt-3 sm:mt-5 border-t border-slate-100 dark:border-slate-700 pt-3 sm:pt-5">
+                            <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3 flex items-center gap-2">
+                                <Icon name="palette" size={3.5} className="text-slate-400 sm:hidden" />
+                                <Icon name="palette" size={4} className="text-slate-400 hidden sm:block" />
                                 Tùy chỉnh màu nền cho nhóm (Mặc định ngẫu nhiên)
                             </label>
-                            <div className="flex flex-wrap gap-2.5">
+                            <div className="flex flex-wrap gap-2 sm:gap-2.5">
                                 {PASTEL_COLORS.map(c => (
                                     <button
                                         key={c.label}
                                         type="button"
                                         onClick={() => setHeaderColor(c.value)}
                                         title={c.label}
-                                        className={`w-8 h-8 rounded-full transition-all hover:scale-110 flex items-center justify-center shadow-sm ${headerColor === c.value ? 'ring-2 ring-offset-2 ring-indigo-500 scale-110 shadow-md' : 'border border-slate-200 dark:border-slate-600'} ${!c.value ? 'bg-slate-100 dark:bg-slate-800' : ''}`}
+                                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all hover:scale-110 flex items-center justify-center shadow-sm ${headerColor === c.value ? 'ring-2 ring-offset-2 ring-indigo-500 scale-110 shadow-md' : 'border border-slate-200 dark:border-slate-600'} ${!c.value ? 'bg-slate-100 dark:bg-slate-800' : ''}`}
                                         style={c.value ? { backgroundColor: c.value } : {}}
                                     >
                                         {!c.value && <Icon name="shuffle" size={4} className="text-slate-500 dark:text-slate-400" />}
@@ -443,9 +448,9 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                 </div>
                 
                 {/* FOOTER */}
-                <div className="p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                    <button type="button" onClick={onClose} className="py-2.5 px-5 rounded-xl text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-slate-300 focus:outline-none"> Hủy Bỏ </button>
-                    <button type="submit" className="py-2.5 px-8 rounded-xl shadow-md text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 w-full sm:w-auto flex items-center gap-2 justify-center">
+                <div className="p-3 sm:p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
+                    <button type="button" onClick={onClose} className="py-2 sm:py-2.5 px-3 sm:px-5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-slate-300 focus:outline-none"> Hủy Bỏ </button>
+                    <button type="submit" className="py-2 sm:py-2.5 px-4 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-xs sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 w-full sm:w-auto flex items-center gap-1.5 sm:gap-2 justify-center">
                         <Icon name="save" size={4} /> {editingColumn ? "Chấp Nhận Lưu Chỉnh Sửa" : "Lưu & Bắt Đầu Cột Mới"}
                     </button>
                 </div>

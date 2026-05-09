@@ -164,21 +164,22 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                    className="relative bg-white dark:bg-slate-900 rounded-3xl w-full max-w-2xl shadow-2xl shadow-indigo-500/10 overflow-hidden flex flex-col max-h-[85vh] border border-slate-200 dark:border-slate-800"
+                    className="relative bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl w-full max-w-2xl shadow-2xl shadow-indigo-500/10 overflow-hidden flex flex-col max-h-[85vh] border border-slate-200 dark:border-slate-800"
                 >
-                    <div className="flex items-center justify-between p-6 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-2xl">
-                                <Icon name="cloud" size={5} />
+                    <div className="flex items-center justify-between p-3 sm:p-6 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-900/50">
+                        <div className="flex items-center gap-2 sm:gap-3">
+                            <div className="p-1.5 sm:p-2.5 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl sm:rounded-2xl">
+                                <Icon name="cloud" size={4} className="sm:hidden" />
+                                <Icon name="cloud" size={5} className="hidden sm:block" />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold tracking-tight text-slate-800 dark:text-white">
+                                <h3 className="text-base sm:text-xl font-bold tracking-tight text-slate-800 dark:text-white">
                                     Lịch sử trên Mây
                                 </h3>
-                                <p className="text-xs text-slate-500 font-medium">Chọn các báo cáo để xử lý nhanh</p>
+                                <p className="text-[10px] sm:text-xs text-slate-500 font-medium">Chọn các báo cáo để xử lý nhanh</p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1 sm:gap-2">
                             {files.length > 0 && !isLoading && (
                                 <button
                                     onClick={handleDeleteAll}
@@ -198,7 +199,7 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                         </div>
                     </div>
 
-                    <div className="p-6 overflow-y-auto flex-1 custom-scrollbar bg-white dark:bg-slate-900">
+                    <div className="p-3 sm:p-6 overflow-y-auto flex-1 custom-scrollbar bg-white dark:bg-slate-900">
                         {needsReconnect ? (
                             <div className="flex flex-col items-center justify-center py-10 text-slate-500">
                                 <div className="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-full mb-4">
@@ -282,14 +283,14 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                     
                     {/* Fixed Footer */}
                     {files.length > 0 && !isLoading && (
-                        <div className="p-4 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center rounded-b-3xl">
-                            <span className="text-sm font-medium text-slate-500">
+                        <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800/50 bg-slate-50 dark:bg-slate-900/50 flex justify-between items-center rounded-b-2xl sm:rounded-b-3xl">
+                            <span className="text-xs sm:text-sm font-medium text-slate-500">
                                 Đã chọn: <strong className="text-indigo-600 dark:text-indigo-400">{selectedIds.size}</strong> báo cáo
                             </span>
                             <button
                                 onClick={handleDownloadSelected}
                                 disabled={selectedIds.size === 0 || isDownloading}
-                                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-semibold transition-all shadow-sm ${selectedIds.size > 0 && !isDownloading ? 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95' : 'bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400 cursor-not-allowed border border-slate-400/20'}`}
+                                className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all shadow-sm ${selectedIds.size > 0 && !isDownloading ? 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95' : 'bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400 cursor-not-allowed border border-slate-400/20'}`}
                             >
                                 {isDownloading ? (
                                     <><Icon name="loader-2" size={4.5} className="animate-spin" /> Đang xử lý...</>

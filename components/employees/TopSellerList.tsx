@@ -68,15 +68,15 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
 
     return (
         <div ref={ref}>
-            <div className="flex flex-row justify-between items-center gap-2 mb-4 lg:mb-6">
-                <div className="flex items-center gap-2 lg:gap-3 min-w-0">
-                    <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center bg-amber-100 text-amber-600 shrink-0">
-                        <Icon name="trophy" size={4} className="lg:hidden" />
-                        <Icon name="trophy" size={5} className="hidden lg:block" />
+            <div className="flex flex-row justify-between items-center gap-2 mb-3 sm:mb-6">
+                <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                    <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center bg-amber-100 text-amber-600 shrink-0">
+                        <Icon name="trophy" size={3.5} className="sm:hidden" />
+                        <Icon name="trophy" size={5} className="hidden sm:block" />
                     </div>
                     <div className="min-w-0">
-                        <h3 className="text-sm lg:text-lg font-black text-slate-800 dark:text-white leading-tight truncate">Top Nhân Viên</h3>
-                        <p className="text-[10px] lg:text-xs font-medium text-slate-400 leading-tight">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
+                        <h3 className="text-xs sm:text-lg font-black text-slate-800 dark:text-white leading-tight truncate">Top Nhân Viên</h3>
+                        <p className="text-[8px] sm:text-xs font-medium text-slate-400 leading-tight">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-0.5 lg:gap-2 hide-on-export shrink-0">

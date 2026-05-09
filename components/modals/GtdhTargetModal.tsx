@@ -67,13 +67,14 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
             <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden rounded-b-xl">
                 
                 {/* CONFIGURATION FORM */}
-                <div className="p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/50 flex-shrink-0">
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight mb-4 flex items-center gap-2">
-                        <Icon name="plus-circle" size={4} className="text-rose-500" />
+                <div className="p-3 sm:p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/50 flex-shrink-0">
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight mb-3 sm:mb-4 flex items-center gap-2">
+                        <Icon name="plus-circle" size={3.5} className="text-rose-500 sm:hidden" />
+                        <Icon name="plus-circle" size={4} className="text-rose-500 hidden sm:block" />
                         Thêm / Chỉnh Sửa Mục Tiêu
                     </h4>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-end">
                         <div className="w-full">
                             <SearchableSelect
                                 label="Ngành Hàng"
@@ -124,10 +125,11 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                 </div>
 
                 {/* CURRENT TARGETS LIST */}
-                <div className="p-6 bg-slate-50 dark:bg-slate-900 overflow-y-auto flex-1 custom-scrollbar">
-                    <div className="flex justify-between items-center mb-4">
-                        <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight flex items-center gap-2">
-                            <Icon name="list" size={4} className="text-indigo-500" />
+                <div className="p-3 sm:p-6 bg-slate-50 dark:bg-slate-900 overflow-y-auto flex-1 custom-scrollbar">
+                    <div className="flex justify-between items-center mb-3 sm:mb-4">
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-tight flex items-center gap-2">
+                            <Icon name="list" size={3.5} className="text-indigo-500 sm:hidden" />
+                            <Icon name="list" size={4} className="text-indigo-500 hidden sm:block" />
                             Mục Tiêu Đang Áp Dụng
                         </h4>
                         <span className="text-xs font-medium bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded-full">
