@@ -96,7 +96,7 @@ const DashboardView = React.memo(function DashboardView() {
 
     const handleNewFileClick = () => mainFileInputRef.current?.click();
     const handleShiftFileClick = () => shiftFileInputRef.current?.click();
-    
+
     const handleVisibilityChange = (component: keyof VisibilityState, isVisible: boolean) => {
         setVisibleComponents(prev => {
             const newState = { ...prev, [component]: isVisible };
@@ -137,7 +137,7 @@ const DashboardView = React.memo(function DashboardView() {
             e.stopPropagation();
 
             let target = e.target as HTMLElement | null;
-            while(target && !target.hasAttribute('data-debug-id')) {
+            while (target && !target.hasAttribute('data-debug-id')) {
                 target = target.parentElement;
             }
 
@@ -153,7 +153,7 @@ const DashboardView = React.memo(function DashboardView() {
                     }
                 }
             } else {
-                 setDebugInfo(null);
+                setDebugInfo(null);
             }
         };
 
@@ -174,7 +174,7 @@ const DashboardView = React.memo(function DashboardView() {
     useEffect(() => {
         // Lucide icon initialization is now handled by the Icon component using lucide-react
     }, [appState, processedData, activeModal, isExporting, isDebugPanelVisible, uniqueFilterOptions, isProcessing, filterState, isFilterSidebarOpen]);
-    
+
     const showDashboard = appState === 'dashboard' && processedData;
     const showProcessingOverlay = appState === 'loading' || (appState === 'processing' && !processedData);
     const showLanding = appState === 'upload';
@@ -227,73 +227,73 @@ const DashboardView = React.memo(function DashboardView() {
                     </div>
                 </div>
             )}
-            
+
             <div className="w-full mx-auto p-0 sm:p-2.5 lg:p-4 xl:p-8">
                 <DashboardContext.Provider value={logic as any}>
                     <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleFileProcessing(Array.from(e.target.files))} />
                     <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
 
-                <Header 
-                    onNewFile={handleNewFileClick} 
-                    onLoadShiftFile={handleShiftFileClick} 
-                    onClearDepartments={handleClearDepartments} 
-                    isClearingDepartments={isClearingDepartments} 
-                    hasDepartmentData={!!departmentMap} 
-                    showNewFileButton={appState === 'dashboard'} 
-                    fileInfo={fileInfo}
-                    onToggleFilters={() => setIsFilterSidebarOpen(!isFilterSidebarOpen)}
-                    onSelectHistoryFile={handleFileProcessing}
-                />
-                
-                {status.message && status.type === 'error' && <StatusDisplay status={status} />}
-                
-                {logic.kpiCardsConfig && (
-                    <KpiCardConfigModal 
-                        isOpen={isKpiConfigModalOpen} 
-                        onClose={() => setIsKpiConfigModalOpen(false)} 
-                        configs={logic.kpiCardsConfig} 
-                        onSave={logic.updateKpiCardsConfig} 
+                    <Header
+                        onNewFile={handleNewFileClick}
+                        onLoadShiftFile={handleShiftFileClick}
+                        onClearDepartments={handleClearDepartments}
+                        isClearingDepartments={isClearingDepartments}
+                        hasDepartmentData={!!departmentMap}
+                        showNewFileButton={appState === 'dashboard'}
+                        fileInfo={fileInfo}
+                        onToggleFilters={() => setIsFilterSidebarOpen(!isFilterSidebarOpen)}
+                        onSelectHistoryFile={handleFileProcessing}
                     />
-                )}
 
-                {showLanding && (
-                    <LandingPageView 
-                        onProcessFile={handleFileProcessing} 
-                        configUrl={configUrl} 
-                        onConfigUrlChange={setConfigUrl}
-                        isDeduplicationEnabled={isDeduplicationEnabled}
-                        onDeduplicationChange={handleDeduplicationChange}
-                    />
-                )}
-                
-                {showProcessingOverlay && (
-                    <div className="relative w-full">
-                        {/* Banner for Pending Users */}
-                        {userRole === 'pending' && (
-                            <div className="bg-rose-500 text-white px-4 py-3 text-center text-sm font-bold shadow-md shadow-rose-500/20 z-50 sticky top-0 flex items-center justify-center gap-2">
-                                <Icon name="alert-triangle" size={5} />
-                                Tài khoản của bạn hiện CHƯA ĐƯỢC PHÊ DUYỆT hoặc ĐÃ HẾT HẠN. Bạn đang xem giao diện rút gọn. Vui lòng bật "Dữ liệu Mẫu" ở Menu trái để thử nghiệm tính năng!
+                    {status.message && status.type === 'error' && <StatusDisplay status={status} />}
+
+                    {logic.kpiCardsConfig && (
+                        <KpiCardConfigModal
+                            isOpen={isKpiConfigModalOpen}
+                            onClose={() => setIsKpiConfigModalOpen(false)}
+                            configs={logic.kpiCardsConfig}
+                            onSave={logic.updateKpiCardsConfig}
+                        />
+                    )}
+
+                    {showLanding && (
+                        <LandingPageView
+                            onProcessFile={handleFileProcessing}
+                            configUrl={configUrl}
+                            onConfigUrlChange={setConfigUrl}
+                            isDeduplicationEnabled={isDeduplicationEnabled}
+                            onDeduplicationChange={handleDeduplicationChange}
+                        />
+                    )}
+
+                    {showProcessingOverlay && (
+                        <div className="relative w-full">
+                            {/* Banner for Pending Users */}
+                            {userRole === 'pending' && (
+                                <div className="bg-rose-500 text-white px-4 py-3 text-center text-sm font-bold shadow-md shadow-rose-500/20 z-50 sticky top-0 flex items-center justify-center gap-2">
+                                    <Icon name="alert-triangle" size={5} />
+                                    Tài khoản của bạn hiện CHƯA ĐƯỢC PHÊ DUYỆT hoặc ĐÃ HẾT HẠN. Bạn đang xem giao diện rút gọn. Vui lòng bật "Dữ liệu Mẫu" ở Menu trái để thử nghiệm tính năng!
+                                </div>
+                            )}
+                            <div className="container mx-auto px-4 py-4 space-y-6 opacity-40 blur-[3px] pointer-events-none select-none transition-all duration-700">
+                                {/* Fake Filter Bar */}
+                                <div className="h-16 w-full bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse mb-6"></div>
+                                <KpiCardsSkeleton />
+                                <div className="space-y-8">
+                                    <ChartSkeleton height="h-[350px]" />
+                                    <TableSkeleton rows={4} />
+                                </div>
                             </div>
-                        )}
-                        <div className="container mx-auto px-4 py-4 space-y-6 opacity-40 blur-[3px] pointer-events-none select-none transition-all duration-700">
-                            {/* Fake Filter Bar */}
-                            <div className="h-16 w-full bg-slate-200 dark:bg-slate-800 rounded-lg animate-pulse mb-6"></div>
-                            <KpiCardsSkeleton />
-                            <div className="space-y-8">
-                                <ChartSkeleton height="h-[350px]" />
-                                <TableSkeleton rows={4} />
-                            </div>
+                            <ProcessingLoader status={status} processingTime={processingTime} />
                         </div>
-                        <ProcessingLoader status={status} processingTime={processingTime} />
-                    </div>
-                )}
-                
+                    )}
+
                     {showDashboard && (
                         <>
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
                                 <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
                                     <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} />
-                                    
+
                                     {/* Data Coverage Indicator */}
                                     <div className="hidden lg:flex items-center justify-between px-1 lg:px-2 mb-1 lg:mb-2">
                                         <div className="flex items-center gap-2">
@@ -328,7 +328,7 @@ const DashboardView = React.memo(function DashboardView() {
                                             <WarehouseSummary onBatchExport={handleBatchKhoExport} />
                                         </div>
                                     )}
-                                    
+
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-2 lg:space-y-8">
                                         <div ref={kpiCardsOnlyRef} className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-slate-800 overflow-hidden relative rounded-none sm:rounded-xl lg:rounded-none">
                                             {/* Overdue Export Warning Banner */}
@@ -359,24 +359,24 @@ const DashboardView = React.memo(function DashboardView() {
                                                             scheduledDate = new Date(str);
                                                         }
                                                     }
-                                                    
+
                                                     if (scheduledDate && !isNaN(scheduledDate.getTime())) {
                                                         const schedTime = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate()).getTime();
                                                         return todayStart > schedTime;
                                                     }
                                                     return false;
                                                 }) || [];
-                                                
+
                                                 if (overdueOrders.length > 0) {
                                                     return (
-                                                        <div 
+                                                        <div
                                                             onClick={() => setActiveModal('unshipped_overdue')}
                                                             className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20]"
                                                         >
                                                             <div className="flex items-center gap-2 font-bold text-sm">
                                                                 <span className="relative flex h-3 w-3 mr-1">
-                                                                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                                                  <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
                                                                 </span>
                                                                 ĐƠN HÀNG QUÁ HẠN XUẤT ({overdueOrders.length})
                                                             </div>
@@ -388,39 +388,42 @@ const DashboardView = React.memo(function DashboardView() {
                                                 }
                                                 return null;
                                             })()}
-                                            
-                                            <div className="relative z-10 pt-2 lg:pt-8">
-                                                <SectionHeader 
-                                                    title="TỔNG QUAN DOANH THU" 
-                                                    icon="bar-chart-3" 
+
+                                            <div className="relative z-10 pt-1 lg:pt-8">
+                                                <SectionHeader
+                                                    title="TỔNG QUAN DOANH THU"
+                                                    icon="bar-chart-3"
                                                     subtitle={<>
                                                         <span className="hidden md:inline">{processedData.reportSubTitle}</span>
-                                                        {/* Mobile: show Chờ Xuất inline */}
-                                                        <span className="md:hidden inline-flex items-center gap-1">
-                                                            <span>{processedData.reportSubTitle}</span>
+                                                        {/* Mobile: truncated subtitle + inline Chờ Xuất */}
+                                                        <span className="md:hidden inline-flex items-center gap-1.5 max-w-full">
+                                                            <span className="truncate shrink min-w-0">{processedData.reportSubTitle}</span>
                                                             {processedData.kpis && (processedData.kpis as any).doanhThuThucChoXuat > 0 && (
                                                                 <button
                                                                     onClick={(e) => { e.stopPropagation(); openUnshippedModal(); }}
-                                                                    className="inline-flex items-center gap-1 ml-1 px-1.5 py-0.5 rounded-md bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold text-[10px] border border-rose-200 dark:border-rose-800 active:scale-95 transition-transform"
+                                                                    className="inline-flex items-center gap-0.5 shrink-0 text-rose-600 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none"
                                                                 >
-                                                                    <Icon name="archive-restore" size={3} />
+                                                                    <Icon name="archive-restore" size={2.5} />
                                                                     Chờ xuất: {formatCurrency((processedData.kpis as any).doanhThuThucChoXuat)}
                                                                 </button>
                                                             )}
                                                         </span>
                                                     </>}
                                                 >
-                                                        <div className="flex items-center gap-2 hide-on-export">
-                                                            <button onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                                                <Icon name="settings-2" size={5} />
-                                                            </button>
-                                                            <button onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                                                <Icon name="download" size={5} />
-                                                            </button>
-                                                            <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
-                                                                <Icon name="camera" size={5} />
-                                                            </button>
-                                                        </div>
+                                                    <div className="flex items-center gap-0.5 lg:gap-2 hide-on-export">
+                                                        <button onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                            <Icon name="settings-2" size={4} className="lg:hidden" />
+                                                            <Icon name="settings-2" size={5} className="hidden lg:block" />
+                                                        </button>
+                                                        <button onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                            <Icon name="download" size={4} className="lg:hidden" />
+                                                            <Icon name="download" size={5} className="hidden lg:block" />
+                                                        </button>
+                                                        <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                            <Icon name="camera" size={4} className="lg:hidden" />
+                                                            <Icon name="camera" size={5} className="hidden lg:block" />
+                                                        </button>
+                                                    </div>
                                                 </SectionHeader>
                                             </div>
 
@@ -436,20 +439,20 @@ const DashboardView = React.memo(function DashboardView() {
                                                 <TrendChart />
                                             </div>
                                         )}
-                                        
+
                                         {visibleComponents.industryGrid && (
                                             <div data-debug-id="IndustryGrid" data-debug-info={JSON.stringify(debugInitialData.IndustryGrid)} id="industry-grid-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                                 <IndustryGrid />
                                             </div>
                                         )}
-                                        
+
                                         {visibleComponents.employeeAnalysis && (
                                             <div data-debug-id="EmployeeAnalysis" data-debug-info={JSON.stringify(debugInitialData.EmployeeAnalysis)} id="employee-analysis-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                                 <EmployeeAnalysis />
                                             </div>
                                         )}
                                     </div>
-                                    
+
                                     {visibleComponents.summaryTable && (
                                         <div data-debug-id="SummaryTable" data-debug-info={JSON.stringify(debugInitialData.SummaryTable)} id="summary-table-section" className={`transition-opacity duration-200 ${isProcessing ? 'opacity-50 pointer-events-none' : 'opacity-100'}`}>
                                             <SummaryTable />
@@ -464,10 +467,10 @@ const DashboardView = React.memo(function DashboardView() {
                                 <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setIsFilterSidebarOpen(false)}></div>
                                 <div className={`absolute top-0 right-0 h-full w-full max-w-md bg-white dark:bg-slate-900 shadow-2xl transition-transform duration-500 ease-in-out transform ${isFilterSidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                                     <div className="h-full flex flex-col" data-debug-id="FilterSection" data-debug-info={JSON.stringify(debugInitialData.FilterSection)}>
-                                        <FilterSection 
-                                            options={uniqueFilterOptions} 
-                                            visibility={visibleComponents} 
-                                            onVisibilityChange={handleVisibilityChange} 
+                                        <FilterSection
+                                            options={uniqueFilterOptions}
+                                            visibility={visibleComponents}
+                                            onVisibilityChange={handleVisibilityChange}
                                             onClose={() => setIsFilterSidebarOpen(false)}
                                         />
                                     </div>
@@ -475,26 +478,26 @@ const DashboardView = React.memo(function DashboardView() {
                             </div>
                         </>
                     )}
-                    {activeModal === 'performance' && processedData && <PerformanceModal isOpen={true} onClose={() => setActiveModal(null)} employeeName={modalData.employeeName} onExport={handleExport}/>}
+                    {activeModal === 'performance' && processedData && <PerformanceModal isOpen={true} onClose={() => setActiveModal(null)} employeeName={modalData.employeeName} onExport={handleExport} />}
                     {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
                     {activeModal === 'unshipped_overdue' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onlyOverdue={true} />}
                     <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />
-                <DebugPanel 
-                    isVisible={isDebugPanelVisible} 
-                    isInspectorActive={isInspectorActive} 
-                    info={debugInfo} 
-                    onClose={() => setIsDebugPanelVisible(false)} 
-                    onToggleInspector={() => setIsInspectorActive(p => !p)} 
-                />
-                {/* Export Options Modal - Download or Share */}
-                <ExportOptionsModal
-                    isOpen={!!logic.pendingExport}
-                    onClose={logic.handlePendingClose}
-                    onDownload={logic.handlePendingDownload}
-                    onShare={logic.handlePendingShare}
-                    canShare={canShareFiles()}
-                    filename={logic.pendingExport?.filename || ''}
-                />
+                    <DebugPanel
+                        isVisible={isDebugPanelVisible}
+                        isInspectorActive={isInspectorActive}
+                        info={debugInfo}
+                        onClose={() => setIsDebugPanelVisible(false)}
+                        onToggleInspector={() => setIsInspectorActive(p => !p)}
+                    />
+                    {/* Export Options Modal - Download or Share */}
+                    <ExportOptionsModal
+                        isOpen={!!logic.pendingExport}
+                        onClose={logic.handlePendingClose}
+                        onDownload={logic.handlePendingDownload}
+                        onShare={logic.handlePendingShare}
+                        canShare={canShareFiles()}
+                        filename={logic.pendingExport?.filename || ''}
+                    />
                 </DashboardContext.Provider>
             </div>
         </div>

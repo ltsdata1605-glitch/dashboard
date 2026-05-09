@@ -41,27 +41,27 @@ export const isKhoMatch = (row: DataRow, khoFilter: string[]) => {
 
 export const isDepartmentMatch = (row: DataRow, departmentFilter: string[], departmentMap: DepartmentMap | null) => {
     if (!departmentMap || !departmentFilter || departmentFilter.length === 0) return true;
-    
+
     const creator = getRowValue(row, COL.NGUOI_TAO);
     if (!creator) return false;
-    
+
     const dashIdx = creator.indexOf(' - ');
     const creatorId = dashIdx !== -1 ? creator.substring(0, dashIdx).trim() : creator.trim();
-    
+
     const rawDept = departmentMap[creatorId];
     let department = "Chưa xác định";
     if (rawDept) {
         const sepIdx = rawDept.indexOf(';;');
         department = sepIdx !== -1 ? rawDept.substring(0, sepIdx) : rawDept;
     }
-    
+
     return departmentFilter.includes(department);
 };
 
 export const isDateMatch = (row: DataRow, startDate: Date | null, endDate: Date | null, selectedMonths?: string[]) => {
     const rowDate = row.parsedDate;
     if (!rowDate || isNaN(rowDate.getTime())) return false;
-    
+
     if (selectedMonths && selectedMonths.length > 0) {
         const monthNum = rowDate.getMonth() + 1;
         const yearNum = rowDate.getFullYear();
@@ -81,7 +81,7 @@ function processDataForPeriod(
     filters: FilterState,
     departmentMap: DepartmentMap | null
 ): Omit<ProcessedData, 'lastUpdated' | 'reportSubTitle' | 'warehouseSummary'> {
-    
+
     const isRevenueEligible = (row: DataRow) => {
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
         return HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat);
@@ -101,7 +101,7 @@ function processDataForPeriod(
     const employeeData = processEmployeeData(filteredValidSalesData, periodData, productConfig, departmentMap, filters);
     const industryData = processIndustryData(filteredValidSalesData, productConfig, filters);
     const summaryTable = processSummaryTable(filteredValidSalesData, productConfig, filters);
-    
+
     return {
         kpis,
         trendData,
@@ -157,7 +157,7 @@ export function applyFiltersAndProcess(
     if (mainStartDate) mainStartDate.setHours(0, 0, 0, 0);
     const mainEndDate = filters.endDate ? new Date(filters.endDate) : null;
     if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
-    
+
     const calendarSourceData: DataRow[] = [];
     const baseFilteredData: DataRow[] = [];
     const mainPeriodData: DataRow[] = [];
@@ -165,11 +165,11 @@ export function applyFiltersAndProcess(
 
     for (let i = 0, len = sourceData.length; i < len; i++) {
         const row = sourceData[i];
-        
+
         if (!isXuatMatch(row, filters.xuat)) continue;
-        
+
         const mDate = isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths);
-        
+
         if (mDate) {
             warehouseGlobalData.push(row);
         }
@@ -177,9 +177,9 @@ export function applyFiltersAndProcess(
         if (!isTrangThaiMatch(row, filters.trangThai)) continue;
         if (!isNguoiTaoMatch(row, filters.nguoiTao)) continue;
         if (!isDepartmentMatch(row, filters.department, departmentMap)) continue;
-        
+
         calendarSourceData.push(row);
-        
+
         if (!isKhoMatch(row, filters.kho)) continue;
 
         baseFilteredData.push(row);
@@ -190,21 +190,21 @@ export function applyFiltersAndProcess(
     }
 
     const warehouseSummary = calculateWarehouseSummary(warehouseGlobalData, productConfig) || [];
-    
+
     const mainResult = processDataForPeriod(mainPeriodData, productConfig, filters, departmentMap);
-    
+
     const filterParts = [];
     if (filters.kho && filters.kho.length > 0 && !filters.kho.includes('all')) {
         const khoArr = Array.isArray(filters.kho) ? filters.kho : [filters.kho];
         filterParts.push(`Kho: ${khoArr.join(', ')}`);
     }
     if (filters.xuat !== 'all') filterParts.push(`Xuất: ${filters.xuat}`);
-    
+
     const processedData: ProcessedData = {
         ...mainResult,
         warehouseSummary,
         lastUpdated: new Date().toLocaleString('vi-VN'),
-        reportSubTitle: filterParts.length > 0 ? `Lọc theo: ${filterParts.join(' | ')}` : "Dữ liệu được cập nhật dựa trên các bộ lọc đã chọn."
+        reportSubTitle: filterParts.length > 0 ? `Lọc theo: ${filterParts.join(' | ')}` : "Lọc theo kho: Tất cả"
     };
 
     return { processedData, baseFilteredData, warehouseFilteredData: warehouseGlobalData, calendarSourceData };

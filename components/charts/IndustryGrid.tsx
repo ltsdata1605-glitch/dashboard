@@ -248,20 +248,22 @@ const IndustryGrid: React.FC = React.memo(() => {
                 icon="pie-chart"
             >
                 <div className="flex flex-wrap items-center gap-2 hide-on-export">
-                    <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 mr-2">
-                        <button 
-                            onClick={() => setMetricToDisplay('quantity')}
-                            className={`py-1 px-2.5 text-[10px] font-bold rounded-l-lg transition-all uppercase tracking-wider ${metricToDisplay === 'quantity' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
-                        >
-                            Số lượng
-                        </button>
-                        <button 
-                            onClick={() => setMetricToDisplay('revenue')}
-                            className={`py-1 px-2.5 text-[10px] font-bold rounded-r-lg border-l border-slate-200 dark:border-slate-600 transition-all uppercase tracking-wider ${metricToDisplay === 'revenue' ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
-                        >
-                            Doanh thu
-                        </button>
-                    </div>
+                    <button 
+                        onClick={() => setMetricToDisplay('quantity')}
+                        className={`p-1.5 lg:p-2 rounded-md transition-colors ${metricToDisplay === 'quantity' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        title="Số lượng"
+                    >
+                        <Icon name="package" size={4} className="lg:hidden" />
+                        <Icon name="package" size={5} className="hidden lg:block" />
+                    </button>
+                    <button 
+                        onClick={() => setMetricToDisplay('revenue')}
+                        className={`p-1.5 lg:p-2 rounded-md transition-colors ${metricToDisplay === 'revenue' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        title="Doanh thu"
+                    >
+                        <Icon name="circle-dollar-sign" size={4} className="lg:hidden" />
+                        <Icon name="circle-dollar-sign" size={5} className="hidden lg:block" />
+                    </button>
                     {drilldownPath.length > 0 && (
                         <button
                             onClick={() => handleBreadcrumbClick(drilldownPath.length - 1)}

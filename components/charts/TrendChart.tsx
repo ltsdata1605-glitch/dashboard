@@ -458,7 +458,50 @@ const TrendChart: React.FC = React.memo(() => {
               </div>
           ) : (
               <>
-          <div className="inline-flex rounded-lg p-0.5 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
+          {/* Mobile: icon button with popover */}
+          <div className="lg:hidden relative">
+              <button
+                  onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: !prev._filterOpen } as any))}
+                  className={`p-1.5 rounded-md transition-colors relative ${
+                      (trendState as any)._filterOpen 
+                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' 
+                      : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+                  }`}
+                  title="Chọn khoảng thời gian"
+              >
+                  <Icon name="clock" size={4} />
+                  <span className="absolute -top-0.5 -right-0.5 text-[7px] font-black text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 rounded px-0.5 leading-tight uppercase">
+                      {trendState.view === 'shift' ? 'Ca' : trendState.view === 'daily' ? 'N' : trendState.view === 'weekly' ? 'T' : 'Th'}
+                  </span>
+              </button>
+              {(trendState as any)._filterOpen && (
+                  <>
+                      <div className="fixed inset-0 z-[98]" onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: false } as any))} />
+                      <div className="absolute right-0 top-full mt-1 z-[99] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[100px]">
+                          {([
+                              { value: 'shift', label: 'Ca' },
+                              { value: 'daily', label: 'Ngày' },
+                              { value: 'weekly', label: 'Tuần' },
+                              { value: 'monthly', label: 'Tháng' },
+                          ] as const).map((item) => (
+                              <button
+                                  key={item.value}
+                                  onClick={() => setTrendState(prev => ({ ...prev, view: item.value, _filterOpen: false } as any))}
+                                  className={`w-full text-left px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                                      trendState.view === item.value 
+                                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' 
+                                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                                  }`}
+                              >
+                                  {item.label}
+                              </button>
+                          ))}
+                      </div>
+                  </>
+              )}
+          </div>
+          {/* Desktop: button group */}
+          <div className="hidden lg:inline-flex rounded-lg p-0.5 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                     {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
                       <button
                         key={v}
@@ -476,42 +519,43 @@ const TrendChart: React.FC = React.memo(() => {
               </>
           )}
 
-          <div className="inline-flex items-center rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 p-0.5">
-              <button
-                  onClick={() => setDisplayMode('chart')}
-                  className={`py-1 px-1.5 rounded-md transition-colors ${
-                      displayMode === 'chart'
-                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                          : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
-                  }`}
-                  title="Dạng Biểu đồ"
-              >
-                  <Icon name="bar-chart-2" size={5} />
-              </button>
-              <button
-                  onClick={() => setDisplayMode('calendar')}
-                  className={`py-1 px-1.5 rounded-md transition-colors ${
-                      displayMode === 'calendar'
-                          ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                          : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'
-                  }`}
-                  title="Dạng Bảng Lịch"
-              >
-                  <Icon name="calendar" size={5} />
-              </button>
-          </div>
+          <button
+              onClick={() => setDisplayMode('chart')}
+              className={`p-1.5 lg:p-2 rounded-md transition-colors ${
+                  displayMode === 'chart'
+                      ? 'text-indigo-600 dark:text-indigo-400'
+                      : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              title="Dạng Biểu đồ"
+          >
+              <Icon name="bar-chart-2" size={4} className="lg:hidden" />
+              <Icon name="bar-chart-2" size={5} className="hidden lg:block" />
+          </button>
+          <button
+              onClick={() => setDisplayMode('calendar')}
+              className={`p-1.5 lg:p-2 rounded-md transition-colors ${
+                  displayMode === 'calendar'
+                      ? 'text-indigo-600 dark:text-indigo-400'
+                      : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+              title="Dạng Bảng Lịch"
+          >
+              <Icon name="calendar" size={4} className="lg:hidden" />
+              <Icon name="calendar" size={5} className="hidden lg:block" />
+          </button>
 
           <button 
             onClick={handleExportClick}
             disabled={isExporting}
-            className={`p-2 rounded-md transition-colors ${
+            className={`p-1.5 lg:p-2 rounded-md transition-colors ${
               isExporting 
               ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
               : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
             title={displayMode === 'calendar' ? "Xuất ảnh hàng loạt toàn bộ Bảng Lịch" : "Xuất ảnh"}
           >
-            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={5} />}
+            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={4} className="lg:hidden" />}
+            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={5} className="hidden lg:block" />}
           </button>
         </div>
       </SectionHeader>

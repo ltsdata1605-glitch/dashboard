@@ -259,33 +259,36 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     icon="layout-grid" 
                     subtitle="Phân tích hiệu suất từng siêu thị"
                 >
-                    <div className="flex items-center space-x-1 lg:space-x-2 hide-on-export">
+                    <div className="flex items-center space-x-0.5 lg:space-x-2 hide-on-export">
                         {/* Lũy kế button */}
                         <button 
                             onClick={() => handleLuyKeChange(!isLuyKe)}
-                            className={`flex items-center gap-1.5 p-2 rounded-md transition-colors ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
-                            <Icon name="layers" size={5} />
-                            <span className="text-[11px] font-bold uppercase tracking-wider mt-0.5">Lũy kế</span>
+                            <Icon name="layers" size={4} className="lg:hidden" />
+                            <Icon name="layers" size={5} className="hidden lg:block" />
+                            <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider mt-0.5">Lũy kế</span>
                         </button>
 
                         {/* Divider */}
-                        <div className="w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
+                        <div className="hidden lg:block w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
                         {userRole !== 'employee' && (
-                            <button onClick={() => setIsSettingsModalOpen(true)} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
-                                <Icon name="settings-2" size={5} />
+                            <button onClick={() => setIsSettingsModalOpen(true)} className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
+                                <Icon name="settings-2" size={4} className="lg:hidden" />
+                                <Icon name="settings-2" size={5} className="hidden lg:block" />
                             </button>
                         )}
 
                         {uniqueFilterOptions.kho.length > 1 && (
-                            <button onClick={onBatchExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
-                                <Icon name="images" size={5} />
+                            <button onClick={onBatchExport} disabled={isExporting} className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
+                                <Icon name="images" size={4} className="lg:hidden" />
+                                <Icon name="images" size={5} className="hidden lg:block" />
                             </button>
                         )}
-                        <button onClick={handleSingleExport} disabled={isExporting} className="p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
-                            {isExporting ? <Icon name="loader-2" className="animate-spin" size={5} /> : <Icon name="camera" size={5} />}
+                        <button onClick={handleSingleExport} disabled={isExporting} className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
+                            {isExporting ? <Icon name="loader-2" className="animate-spin" size={4} /> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
                         </button>
                     </div>
                 </SectionHeader>

@@ -26,6 +26,7 @@ isSupported().then(yes => {
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
+googleProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
 googleProvider.setCustomParameters({
     prompt: 'select_account'
 });
@@ -40,6 +41,29 @@ export const loginWithGoogle = async () => {
         return result.user;
     } catch (error) {
         console.error("Lỗi đăng nhập Google:", error);
+        throw error;
+    }
+};
+
+/**
+ * Force re-consent to ensure all OAuth scopes (including spreadsheets) are granted.
+ * Use this when the existing token is missing required scopes.
+ */
+export const loginWithGoogleForceConsent = async () => {
+    try {
+        const consentProvider = new GoogleAuthProvider();
+        consentProvider.addScope('https://www.googleapis.com/auth/drive.file');
+        consentProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
+        consentProvider.setCustomParameters({ prompt: 'consent' });
+
+        const result = await signInWithPopup(auth, consentProvider);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        if (credential?.accessToken) {
+            sessionStorage.setItem('googleOAuthToken', credential.accessToken);
+        }
+        return result.user;
+    } catch (error) {
+        console.error("Lỗi đăng nhập Google (consent):", error);
         throw error;
     }
 };

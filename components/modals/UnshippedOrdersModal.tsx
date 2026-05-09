@@ -309,19 +309,152 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         return { industryDataForDisplay, totalUnshippedRevenue, totalUnshippedRevenueQD, creatorData };
     }, [salesData, productConfig]);
 
+    const handleCopyOverdueEmployees = () => {
+        if (creatorData.length === 0) return;
+
+        // Extract employee IDs from creator names (e.g. "107617 - Phạm Anh Nhân" → "@107617")
+        const employeeIds = creatorData.map(creator => {
+            const match = creator.name.match(/^(\d+)/);
+            return match ? `@${match[1]}` : `@${creator.name}`;
+        });
+
+        // Count total unique order IDs
+        let totalOrders = 0;
+        creatorData.forEach(creator => {
+            creator.customers.forEach(customer => {
+                totalOrders += customer.orders.length;
+            });
+        });
+
+        const text = `Danh sách nhân viên có đơn QUÁ HẠN XUẤT:\nSố lượng nhân viên: ${employeeIds.length}\nSố lượng đơn hàng: ${totalOrders}\n\n${employeeIds.join('\n')}`;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const toast = document.createElement('div');
+            toast.textContent = `✓ Đã sao chép ${employeeIds.length} nhân viên, ${totalOrders} đơn hàng`;
+            toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);opacity:0;transition:opacity .2s';
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => { toast.style.opacity = '1'; });
+            setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 200); }, 2000);
+        });
+    };
+
+    const handleExportGoogleSheet = async () => {
+        setIsExporting(true);
+        const toastEl = document.createElement('div');
+        toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
+        toastEl.textContent = '📊 Đang tạo Google Sheet...';
+        document.body.appendChild(toastEl);
+
+        try {
+            // Always force fresh login with consent to guarantee spreadsheets scope
+            toastEl.textContent = '🔑 Đang xác thực Google...';
+            sessionStorage.removeItem('googleOAuthToken');
+            const { loginWithGoogleForceConsent } = await import('../../services/firebase');
+            await loginWithGoogleForceConsent();
+            let token = sessionStorage.getItem('googleOAuthToken');
+            if (!token) throw new Error('Không thể lấy token xác thực.');
+
+            toastEl.textContent = '📊 Đang tạo Google Sheet...';
+            const { exportToGoogleSheet } = await import('../../services/googleSheetsService');
+
+            const finalOrders = salesData.filter(row => (Number(getRowValue(row, COL.PRICE)) || 0) > 0);
+
+            const headers = ['Kho Xuất', 'Người Tạo', 'Tên Khách Hàng', 'Mã Đơn Hàng', 'Tên Sản Phẩm', 'Số Lượng', 'Doanh Thu Thực', 'Doanh Thu QĐ', 'Thời Gian Hẹn', 'Trạng Thái Xuất', 'Giải Trình'];
+            const rows = finalOrders.map(order => {
+                const maNganhHang = getRowValue(order, COL.MA_NGANH_HANG);
+                const maNhomHang = getRowValue(order, COL.MA_NHOM_HANG);
+                const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig || undefined);
+                const price = Number(getRowValue(order, COL.PRICE)) || 0;
+                const revenueQD = price * heso;
+
+                let scheduledDateRaw = order['Thời gian hẹn giao'] || order['TG Hẹn Giao'] || order.parsedDate;
+                let formattedDate = 'N/A';
+                if (scheduledDateRaw) {
+                    let scheduledDate = scheduledDateRaw instanceof Date ? scheduledDateRaw : new Date(scheduledDateRaw);
+                    if (!isNaN(scheduledDate.getTime())) {
+                        formattedDate = scheduledDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                    }
+                }
+
+                return [
+                    getRowValue(order, ['Kho', 'Kho xuất', 'TenKho']) || '',
+                    getRowValue(order, ['NguoiTao', 'Người tạo', 'NV Tạo']) || '',
+                    getRowValue(order, ['TenKhachHang', 'Khách hàng', 'Tên khách hàng']) || 'Khách lẻ',
+                    getRowValue(order, COL.ID) || '',
+                    getRowValue(order, COL.PRODUCT) || '',
+                    Number(getRowValue(order, COL.QUANTITY)) || 0,
+                    price,
+                    Math.round(revenueQD),
+                    formattedDate,
+                    getRowValue(order, ['TrangThaiXuat', 'Trạng thái xuất']) || 'Chưa xuất',
+                    '' // Cột Giải Trình để trống cho NV nhập
+                ] as (string | number)[];
+            });
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+            toastEl.textContent = `📊 Đang ghi ${rows.length} đơn hàng...`;
+
+            const url = await exportToGoogleSheet(token, {
+                title: `Đơn Hàng Chờ Xuất - ${dateStr} ${timeStr}`,
+                headers,
+                rows,
+                sheetName: 'DonHangChoXuat'
+            });
+
+            // Auto-copy link to clipboard
+            await navigator.clipboard.writeText(url);
+
+            toastEl.textContent = `✅ Đã tạo Google Sheet & sao chép link!`;
+            toastEl.style.background = '#16a34a';
+            setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);
+
+            // Open the new spreadsheet
+            window.open(url, '_blank');
+        } catch (err: any) {
+            console.error('Google Sheets export error:', err);
+            const errMsg = (err?.message || '').toLowerCase();
+            if (errMsg.includes('popup') || errMsg.includes('cancel')) {
+                toastEl.textContent = '❌ Đăng nhập bị huỷ.';
+            } else if (errMsg.includes('network') || errMsg.includes('failed to fetch')) {
+                toastEl.textContent = '🌐 Không có kết nối mạng.';
+            } else {
+                toastEl.textContent = `⚠️ Lỗi: ${err?.message || 'Không xác định'}`;
+            }
+            toastEl.style.background = '#dc2626';
+            setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     const controls = (
-        <div className="flex items-center gap-2 hide-on-export">
-            <button onClick={toggleAllDetails} title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'} className="p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center w-10 h-10">
-                <Icon name="chevrons-down-up" size={4} />
+        <div className="flex items-center gap-1 lg:gap-2 hide-on-export">
+            <button onClick={handleCopyOverdueEmployees} title="Copy danh sách NV có đơn quá hạn xuất" className="p-1.5 lg:p-2 border border-amber-300 dark:border-amber-600 rounded-md shadow-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors flex items-center justify-center">
+                <Icon name="clipboard-list" size={3.5} className="lg:hidden" />
+                <Icon name="clipboard-list" size={4} className="hidden lg:block" />
             </button>
-             <button onClick={handleBatchExport} disabled={isExporting} title="Xuất ảnh hàng loạt theo từng nhân viên" className="p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center w-10 h-10">
-                 <Icon name="switch-camera" size={4} />
+            <button onClick={toggleAllDetails} title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'} className="p-1.5 lg:p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center">
+                <Icon name="chevrons-down-up" size={3.5} className="lg:hidden" />
+                <Icon name="chevrons-down-up" size={4} className="hidden lg:block" />
             </button>
-            <button onClick={handleExportAll} disabled={isExporting} title="Xuất ảnh toàn bộ danh sách" className="p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center w-10 h-10">
-                 <Icon name="camera" size={4} />
+             <button onClick={handleBatchExport} disabled={isExporting} title="Xuất ảnh hàng loạt theo từng nhân viên" className="p-1.5 lg:p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center">
+                 <Icon name="switch-camera" size={3.5} className="lg:hidden" />
+                 <Icon name="switch-camera" size={4} className="hidden lg:block" />
             </button>
-            <button onClick={handleExportExcel} disabled={isExporting} title="Xuất File Excel" className="px-3 gap-2 border border-green-300 dark:border-green-600 rounded-md shadow-sm text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors flex items-center justify-center h-10 font-bold text-sm">
-                 <Icon name="file-spreadsheet" size={4} /> Excel
+            <button onClick={handleExportAll} disabled={isExporting} title="Xuất ảnh toàn bộ danh sách" className="p-1.5 lg:p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center">
+                 <Icon name="camera" size={3.5} className="lg:hidden" />
+                 <Icon name="camera" size={4} className="hidden lg:block" />
+            </button>
+            <button onClick={handleExportExcel} disabled={isExporting} title="Xuất File Excel" className="px-2 lg:px-3 gap-1 lg:gap-2 border border-green-300 dark:border-green-600 rounded-md shadow-sm text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors flex items-center justify-center h-8 lg:h-10 font-bold text-xs lg:text-sm">
+                 <Icon name="file-spreadsheet" size={3.5} className="lg:hidden" />
+                 <Icon name="file-spreadsheet" size={4} className="hidden lg:block" /> Excel
+            </button>
+            <button onClick={handleExportGoogleSheet} disabled={isExporting} title="Xuất lên Google Sheet" className="px-2 lg:px-3 gap-1 lg:gap-2 border border-blue-300 dark:border-blue-600 rounded-md shadow-sm text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors flex items-center justify-center h-8 lg:h-10 font-bold text-xs lg:text-sm">
+                 <Icon name="sheet" size={3.5} className="lg:hidden" />
+                 <Icon name="sheet" size={4} className="hidden lg:block" /> Sheet
             </button>
         </div>
     );

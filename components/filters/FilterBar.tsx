@@ -141,8 +141,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                 {/* === MOBILE LAYOUT (<lg): 2 compact rows === */}
                 <div className="lg:hidden space-y-1.5">
                     {/* Row 1: Dropdowns */}
-                    <div className="flex gap-1.5 items-stretch overflow-x-auto no-scrollbar -mx-0.5 px-0.5">
-                        <div className="shrink-0">
+                    <div className="flex gap-1.5 items-stretch w-full">
+                        <div className="flex-1 min-w-0">
                             <MultiSelectDropdown
                                 label="Kho"
                                 options={uniqueFilterOptions.kho}
@@ -151,7 +151,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                                 variant="compact"
                             />
                         </div>
-                        <div className="shrink-0">
+                        <div className="flex-1 min-w-0">
                             <MultiSelectDropdown
                                 label="Tháng"
                                 options={availableMonths}
@@ -168,7 +168,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             />
                         </div>
 
-                        <div className="shrink-0">
+                        <div className="flex-1 min-w-0">
                             <MultiSelectDropdown
                                 label="Bộ phận"
                                 options={uniqueFilterOptions.department}

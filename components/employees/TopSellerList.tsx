@@ -68,33 +68,35 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
 
     return (
         <div ref={ref}>
-            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-3 mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-amber-100 text-amber-600">
-                        <Icon name="trophy" size={5} />
+            <div className="flex flex-row justify-between items-center gap-2 mb-4 lg:mb-6">
+                <div className="flex items-center gap-2 lg:gap-3 min-w-0">
+                    <div className="w-8 h-8 lg:w-10 lg:h-10 rounded-xl flex items-center justify-center bg-amber-100 text-amber-600 shrink-0">
+                        <Icon name="trophy" size={4} className="lg:hidden" />
+                        <Icon name="trophy" size={5} className="hidden lg:block" />
                     </div>
-                    <div>
-                        <h3 className="text-lg font-black text-slate-800 dark:text-white leading-tight">Top Nhân Viên</h3>
-                        <p className="text-xs font-medium text-slate-400">{isExpanded ? 'Toàn bộ danh sách' : 'Top & Bot 20%'}</p>
+                    <div className="min-w-0">
+                        <h3 className="text-sm lg:text-lg font-black text-slate-800 dark:text-white leading-tight truncate">Top Nhân Viên</h3>
+                        <p className="text-[10px] lg:text-xs font-medium text-slate-400 leading-tight">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 hide-on-export">
-                    <div className="flex items-center gap-2">
+                <div className="flex items-center gap-0.5 lg:gap-2 hide-on-export shrink-0">
+                    <div className="flex items-center gap-0.5 lg:gap-2">
                         <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700">
-                            <button onClick={() => setIsExpanded(false)} className={`py-1 px-2.5 text-[10px] font-bold rounded-l-lg transition-all uppercase tracking-wider ${!isExpanded ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>Top & Bot 20%</button>
-                            <button onClick={() => setIsExpanded(true)} className={`py-1 px-2.5 text-[10px] font-bold rounded-r-lg border-l border-slate-200 dark:border-slate-600 transition-all uppercase tracking-wider ${isExpanded ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>Toàn bộ</button>
+                            <button onClick={() => setIsExpanded(false)} className={`py-1 lg:py-1 px-1.5 lg:px-2.5 text-[9px] lg:text-[10px] font-bold rounded-l-lg transition-all uppercase tracking-wider ${!isExpanded ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>Top/Bot 20%</button>
+                            <button onClick={() => setIsExpanded(true)} className={`py-1 lg:py-1 px-1.5 lg:px-2.5 text-[9px] lg:text-[10px] font-bold rounded-r-lg border-l border-slate-200 dark:border-slate-600 transition-all uppercase tracking-wider ${isExpanded ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>All</button>
                         </div>
-                        <div className="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+                        <div className="hidden lg:block h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
                         <button 
                             onClick={handleBatchExportClick}
-                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+                            className="p-1.5 lg:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
                             title="Xuất hàng loạt báo cáo chi tiết"
                         >
-                            <Icon name="switch-camera" size={5} />
+                            <Icon name="switch-camera" size={4} className="lg:hidden" />
+                            <Icon name="switch-camera" size={5} className="hidden lg:block" />
                         </button>
                         {onExport && (
-                            <button onClick={onExport} disabled={isExporting} title="Xuất Ảnh" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
-                                {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
+                            <button onClick={onExport} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 lg:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
+                                {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
                             </button>
                         )}
                     </div>

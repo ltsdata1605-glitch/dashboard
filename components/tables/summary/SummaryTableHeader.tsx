@@ -54,45 +54,31 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                     </div>
                     
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
-                        <div className="inline-flex rounded-lg shadow-sm p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hide-on-export">
+                        <div className="flex items-center hide-on-export">
                             <button 
                                 onClick={() => setTableMode('standard')}
-                                className={`py-1.5 px-3 sm:px-4 text-xs font-bold rounded-lg transition-all ${
+                                className={`p-1.5 lg:p-2 rounded-md transition-colors ${
                                     tableMode === 'standard' 
-                                    ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
-                                    : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
+                                    ? 'text-indigo-600 dark:text-indigo-400' 
+                                    : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
+                                title="Tiêu chuẩn"
                             >
-                                Tiêu chuẩn
+                                <Icon name="table" size={4} className="lg:hidden" />
+                                <Icon name="table" size={5} className="hidden lg:block" />
                             </button>
                             <button 
                                 onClick={() => setTableMode('comparison')}
-                                className={`py-1.5 px-3 sm:px-4 text-xs font-bold rounded-lg transition-all ${
+                                className={`p-1.5 lg:p-2 rounded-md transition-colors ${
                                     tableMode === 'comparison' 
-                                    ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' 
-                                    : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400'
+                                    ? 'text-indigo-600 dark:text-indigo-400' 
+                                    : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
+                                title="So sánh"
                             >
-                                So sánh
+                                <Icon name="columns-2" size={4} className="lg:hidden" />
+                                <Icon name="columns-2" size={5} className="hidden lg:block" />
                             </button>
-                            <button 
-                                onClick={() => setTableMode('cross_selling')}
-                                className={`py-1.5 px-3 sm:px-4 text-xs font-bold rounded-lg transition-all ${
-                                    tableMode === 'cross_selling' 
-                                    ? 'bg-white dark:bg-slate-700 text-emerald-600 shadow-sm' 
-                                    : 'text-slate-500 hover:text-emerald-600 dark:hover:text-emerald-400'
-                                }`}
-                            >
-                                Bán kèm
-                            </button>
-                            {isCrossSellingMode && userRole !== 'employee' && (
-                                <button
-                                    onClick={() => setIsBuilderOpen(true)}
-                                    className="p-1.5 px-3 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition-colors shadow-sm ml-2 hide-on-export shrink-0 flex items-center gap-1"
-                                >
-                                    <Icon name="sliders-horizontal" size={3.5} /> Cấu Hình Bảng
-                                </button>
-                            )}
                         </div>
                         
                         <div className="relative z-[100] hide-on-export shrink-0" ref={columnsPopupRef}>

@@ -62,16 +62,17 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
                 className={`modal-content relative bg-slate-50 dark:bg-slate-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] w-full ${maxWidthClass} flex flex-col border border-white/40 dark:border-slate-700/50 transition-all duration-300 ${isBottom ? `mb-2 sm:mb-0 transform animate-in slide-in-from-bottom-8 sm:zoom-in-95 ${noRounded ? '' : 'rounded-[32px] sm:rounded-2xl'}` : `max-h-[90vh] opacity-100 scale-100 ${noRounded ? 'rounded-none' : 'rounded-2xl'}`}`}
             >
                 {!hideHeader && (
-                    <div className={`flex justify-between items-center p-3 sm:p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl flex-shrink-0 z-10 relative ${noRounded ? '' : 'rounded-t-[32px] sm:rounded-t-2xl'}`}>
+                    <div className={`flex justify-between items-center p-2 sm:p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl flex-shrink-0 z-10 relative ${noRounded ? '' : 'rounded-t-[32px] sm:rounded-t-2xl'}`}>
                         <div>
-                            {subTitle && <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">{subTitle}</p>}
-                            {title && <h3 className={`text-lg sm:text-2xl font-black tracking-tight ${titleColorClass}`}>{title}</h3>}
+                            {subTitle && <p className="text-[10px] sm:text-sm font-medium text-slate-500 dark:text-slate-400">{subTitle}</p>}
+                            {title && <h3 className={`text-base sm:text-2xl font-black tracking-tight leading-tight ${titleColorClass}`}>{title}</h3>}
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1 sm:gap-3">
                             {controls}
                             {!hideCloseButton && (
-                                <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full p-2 transition-all">
-                                   <Icon name="x" size={5} />
+                                <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full p-1.5 sm:p-2 transition-all">
+                                   <Icon name="x" size={4} className="sm:hidden" />
+                                   <Icon name="x" size={5} className="hidden sm:block" />
                                 </button>
                             )}
                         </div>
