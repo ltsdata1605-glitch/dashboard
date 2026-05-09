@@ -22,30 +22,55 @@ interface SummaryTableHeaderProps {
     columnsPopupRef: React.RefObject<HTMLDivElement>;
     isFullScreen?: boolean;
     setIsFullScreen?: (val: boolean) => void;
+    dateDisplay?: { current: string; prev: string };
 }
 
 export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
     displayTitle, displayDescription, filterState, tableMode, setTableMode,
     isCrossSellingMode, userRole, setIsBuilderOpen, isComparisonMode, compMode,
     handleExport, isExporting, activeFilterKey, setActiveFilterKey, visibleColumns,
-    setVisibleColumns, columnsPopupRef, isFullScreen, setIsFullScreen
+    setVisibleColumns, columnsPopupRef, isFullScreen, setIsFullScreen, dateDisplay
 }) => {
     return (
-        <header className="px-3 sm:px-6 py-4 sm:py-5 border-b border-slate-100 dark:border-slate-800">
+        <header className="px-3 sm:px-6 py-2 sm:py-5 border-b border-slate-100 dark:border-slate-800">
             <div className="flex flex-col gap-4 sm:gap-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4">
+                <div className="flex flex-row justify-between items-center gap-2 sm:gap-4">
                     <div className="flex items-center gap-3 sm:gap-4">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-[#0584c7]/10 text-[#0584c7] flex items-center justify-center shadow-sm shrink-0">
-                            <Icon name="table" size={5} />
+                        <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-[#0584c7]/10 text-[#0584c7] flex items-center justify-center shadow-sm shrink-0">
+                            <Icon name="table" size={4} className="sm:hidden" />
+                            <Icon name="table" size={5} className="hidden sm:block" />
                         </div>
-                        <div>
-                            <h1 className="text-base sm:text-xl font-bold tracking-tight text-slate-800 dark:text-white uppercase">
+                        <div className="min-w-0">
+                            {/* Mobile: fixed title + comparison subtitle */}
+                            <h1 className="sm:hidden text-xs font-bold tracking-tight text-slate-800 dark:text-white uppercase truncate">
+                                {isComparisonMode ? 'SO SÁNH MỐC THỜI GIAN' : 'CHI TIẾT NGÀNH HÀNG'}
+                            </h1>
+                            {isComparisonMode && (
+                                <p className="sm:hidden text-[9px] font-semibold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider truncate leading-none mt-0.5">
+                                    {({
+                                        day_adjacent: 'Ngày (Liền kề)',
+                                        day_same_period: 'Ngày (CK tháng trước)',
+                                        week_adjacent: 'Tuần (Liền kề)',
+                                        week_same_period: 'Tuần (CK tháng trước)',
+                                        month_adjacent: 'Tháng (Liền kề)',
+                                        month_same_period_year: 'Tháng (Cùng kỳ năm trước)',
+                                        monthly_trend: 'Tháng (Nhiều tháng Pivot)',
+                                        quarter_adjacent: 'Quý (Liền kề)',
+                                        quarter_same_period_year: 'Quý (Cùng kỳ năm trước)',
+                                        ytd_same_period_year: 'Lũy kế (YTD)',
+                                        custom_range: 'Tùy chỉnh',
+                                    } as Record<string, string>)[compMode] || compMode}
+                                    {dateDisplay && <span className="text-slate-500 dark:text-slate-400"> · {dateDisplay.current}</span>}
+                                </p>
+                            )}
+                            {/* Desktop: original dynamic title */}
+                            <h1 className="hidden sm:block text-xl font-bold tracking-tight text-slate-800 dark:text-white uppercase">
                                 {displayTitle}
                             </h1>
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
+                            <p className="hidden sm:block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mt-1">
                                 {displayDescription}
                             </p>
-                            <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
+                            <p className="hidden sm:block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">
                                 {(filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `KHO: ${filterState.kho.join(', ')} | ` : ''} 
                                 {(filterState.xuat !== 'all') ? `TRẠNG THÁI XUẤT: ${filterState.xuat} | ` : ''}
                                 {filterState.dateRange !== 'all' ? `TỪ ${filterState.startDate.split('T')[0].split('-').reverse().join('/')} ĐẾN ${filterState.endDate.split('T')[0].split('-').reverse().join('/')}` : 'TẤT CẢ THỜI GIAN'}

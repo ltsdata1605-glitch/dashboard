@@ -310,7 +310,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                 <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Không có dữ liệu</p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-3 lg:grid-cols-4 gap-1 lg:gap-2 industry-cards-grid">
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-1 lg:gap-2 industry-cards-grid">
                                 {currentView.data.map(({ name, revenue, quantity, icon, color }) => {
                                     const totalVal = metricToDisplay === 'revenue' ? currentView.totalRevenue : currentView.totalQuantity;
                                     const val = metricToDisplay === 'revenue' ? revenue : quantity;
@@ -325,26 +325,47 @@ const IndustryGrid: React.FC = React.memo(() => {
                                             onClick={isDrillable ? () => handleCardClick(name) : undefined}
                                             onKeyDown={isDrillable ? (e) => { if (e.key === 'Enter') handleCardClick(name); } : undefined}
                                             className={[
-                                                'group relative flex flex-col justify-between p-2 lg:p-2.5',
+                                                'group relative',
                                                 'bg-white dark:bg-[#1c1c1e] border border-slate-100 dark:border-white/5',
                                                 'shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_6px_18px_rgba(0,0,0,0.07)]',
                                                 'transition-all duration-200 hover:-translate-y-0.5 rounded-xl select-none premium-card-shadow',
                                                 isDrillable ? 'cursor-pointer active:scale-[0.97]' : 'cursor-default',
+                                                // Mobile: single row, Desktop: block card
+                                                'flex items-center gap-1.5 p-1.5 lg:flex-col lg:justify-between lg:items-stretch lg:p-2.5',
                                             ].join(' ')}
                                         >
-                                            <div className="flex justify-between items-start mb-1.5">
-                                                <div className={`w-6 h-6 lg:w-6 lg:h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
-                                                    <Icon name={icon} size={3.5} className="lg:hidden" />
-                                                    <Icon name={icon} size={3.5} className="hidden lg:block" />
+                                            {/* Mobile: compact inline row */}
+                                            <div className={`w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} lg:hidden`}>
+                                                <Icon name={icon} size={3} />
+                                            </div>
+                                            <div className="flex items-center gap-1 min-w-0 flex-1 lg:hidden">
+                                                <span className={`text-[9px] font-extrabold uppercase tracking-wide ${iClass.text} truncate`} title={name}>{name}</span>
+                                                <span className="text-[9px] font-black text-slate-800 dark:text-white truncate">
+                                                    {formatCurrency(revenue)}
+                                                </span>
+                                                <span className="text-[8px] text-slate-400 dark:text-slate-500 font-bold whitespace-nowrap">
+                                                    {formatQuantity(quantity)} SP
+                                                </span>
+                                            </div>
+                                            <span className={`text-[7px] font-black px-1 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter shrink-0 lg:hidden`}>
+                                                {pct.toFixed(1)}%
+                                            </span>
+                                            {isDrillable && (
+                                                <Icon name="chevron-right" size={3} className="text-indigo-400 opacity-60 shrink-0 lg:hidden" />
+                                            )}
+
+                                            {/* Desktop: original block layout */}
+                                            <div className="hidden lg:flex justify-between items-start mb-1.5">
+                                                <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
+                                                    <Icon name={icon} size={3.5} />
                                                 </div>
                                                 <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter`}>
                                                     {pct.toFixed(1)}%
                                                 </span>
                                             </div>
-
-                                            <div className="min-w-0">
-                                                <div className={`text-[9px] lg:text-[9px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5 font-bold w-full`} title={name}>{name}</div>
-                                                <div className="text-[10px] lg:text-[11px] font-black tracking-tight leading-none truncate">
+                                            <div className="hidden lg:block min-w-0">
+                                                <div className={`text-[9px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5 w-full`} title={name}>{name}</div>
+                                                <div className="text-[11px] font-black tracking-tight leading-none truncate">
                                                     {metricToDisplay === 'revenue' 
                                                         ? <span className="text-slate-900 dark:text-white">{formatCurrency(revenue)}</span> 
                                                         : <span className={iClass.text}>{`${formatQuantity(quantity)} SP`}</span>
@@ -358,9 +379,8 @@ const IndustryGrid: React.FC = React.memo(() => {
                                                     }
                                                 </div>
                                             </div>
-
                                             {isDrillable && (
-                                                <div className="absolute bottom-1.5 right-1.5 opacity-60 lg:opacity-0 group-hover:opacity-70 transition-opacity">
+                                                <div className="hidden lg:block absolute bottom-1.5 right-1.5 opacity-0 group-hover:opacity-70 transition-opacity">
                                                     <Icon name="chevron-right" size={3} className="text-indigo-400" />
                                                 </div>
                                             )}
@@ -372,7 +392,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                     </div>
 
                     {/* ══════ RIGHT 50%: PIE CHART ══════ */}
-                    <div className="w-full lg:w-1/2 flex flex-col gap-3 bg-white dark:bg-slate-900 rounded-xl" ref={pieRef}>
+                    <div className="w-full lg:w-1/2 flex flex-col gap-1.5 lg:gap-3 bg-white dark:bg-slate-900 rounded-xl" ref={pieRef}>
                         {/* Right Side Header (Pie Chart Title) - always rendered for export */}
                         <div className="hidden lg:flex export-always-show items-center justify-between pr-1 pb-1 border-b border-transparent dark:border-white/5">
                             <div className="flex items-center gap-2">
@@ -396,12 +416,12 @@ const IndustryGrid: React.FC = React.memo(() => {
                             </button>
                         </div>
 
-                        <div className="flex-grow bg-slate-50/70 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-white/5 p-3 flex flex-col" style={{ minHeight: 280 }}>
+                        <div className="flex-grow bg-transparent lg:bg-slate-50/70 dark:lg:bg-slate-800/40 rounded-xl lg:rounded-2xl border-0 lg:border border-slate-100 dark:border-white/5 p-0 lg:p-3 flex flex-col">
                             {pieChartData.length > 0 ? (
                                 <>
-                                    <div className="h-[320px] lg:h-[230px]">
+                                    <div className="h-[180px] lg:h-[230px] -mx-2">
                                         <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
-                                            <PieChart>
+                                            <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
                                                 <Pie
                                                     data={pieChartData}
                                                     dataKey={metricToDisplay}
@@ -409,7 +429,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                                     cx="50%"
                                                     cy="50%"
                                                     innerRadius="40%"
-                                                    outerRadius="74%"
+                                                    outerRadius="80%"
                                                     paddingAngle={2}
                                                     stroke="none"
                                                     cornerRadius={3}

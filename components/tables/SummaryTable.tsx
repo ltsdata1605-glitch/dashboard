@@ -146,6 +146,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                     columnsPopupRef={columnsPopupRef}
                     isFullScreen={isFullScreen}
                     setIsFullScreen={setIsFullScreen}
+                    dateDisplay={dateDisplay}
                 />
 
                 {isComparisonMode && (
