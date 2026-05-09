@@ -241,21 +241,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     // Early returns AFTER all hooks
     if (!data || data.length === 0) return null;
 
-    // Show skeleton while waiting for column config to load from IndexedDB
-    if (!columnsLoaded) {
-        return (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 overflow-hidden mb-2 lg:mb-8 rounded-xl lg:rounded-none">
-                <SectionHeader title="Chi Tiết Theo Kho" icon="layout-grid" subtitle="Phân tích hiệu suất từng siêu thị" />
-                <div className="p-4 lg:p-6 space-y-3">
-                    <div className="h-8 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
-                    {data.slice(0, 3).map((_, i) => (
-                        <div key={i} className="h-10 bg-slate-50 dark:bg-slate-800/60 rounded-lg animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
-                    ))}
-                    <div className="h-10 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
-                </div>
-            </div>
-        );
-    }
+    // Column config loading is no longer a render gate — table renders immediately
+    // with built-in metrics. Custom columns appear after IDB load completes.
 
     return (
         <>

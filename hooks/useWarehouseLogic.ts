@@ -1,5 +1,5 @@
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect, useRef, startTransition } from 'react';
 import type { WarehouseColumnConfig, WarehouseSummaryRow, DataRow, ProductConfig, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
 import { getRowValue, getHeSoQuyDoi } from '../utils/dataUtils';
@@ -25,27 +25,45 @@ export const useWarehouseLogic = ({
         return JSON.stringify(dataCols.map(c => ({ id: c.id, filters: c.filters, productCodes: c.productCodes, metricType: c.metricType })));
     }, [columns]);
 
-    const baseCustomData = useMemo(() => {
-        const results = new Map<string, Map<string, number>>();
+    // Deferred custom column computation — runs async to avoid blocking table render
+    const [baseCustomData, setBaseCustomData] = useState<Map<string, Map<string, number>>>(new Map());
+    const computeVersionRef = useRef(0);
+
+    useEffect(() => {
         const dataRows = originalData as DataRow[];
-        if (!dataRows || !productConfig) return results;
+        if (!dataRows || !dataRows.length || !productConfig) {
+            setBaseCustomData(new Map());
+            return;
+        }
 
-        const customColumns = columns.filter(c => c.isCustom && (c.type || c.productCodes));
-        const dataColumns = customColumns.filter(col => col.type === 'data' || (!col.type && col.productCodes));
+        const customColumns = columns.filter(c => c.isCustom && (c.type === 'data' || (!c.type && c.productCodes)));
+        if (customColumns.length === 0) {
+            setBaseCustomData(new Map());
+            return;
+        }
 
-        customColumns.forEach(c => results.set(c.id, new Map<string, number>()));
+        // Increment version to invalidate any in-flight computation
+        const thisVersion = ++computeVersionRef.current;
 
-        const colFilterCache = dataColumns.map(col => {
-            const industrySet = col.filters?.selectedIndustries?.length ? new Set(col.filters.selectedIndustries) : null;
-            const subgroupSet = col.filters?.selectedSubgroups?.length ? new Set(col.filters.selectedSubgroups) : null;
-            const manufacturerSet = col.filters?.selectedManufacturers?.length ? new Set(col.filters.selectedManufacturers) : null;
-            const productCodes = col.filters?.productCodes || col.productCodes;
-            const productSet = productCodes?.length ? new Set(productCodes) : null;
-            const hasAnyFilter = !!(industrySet || subgroupSet || manufacturerSet || productSet || col.filters?.priceCondition);
-            return { col, industrySet, subgroupSet, manufacturerSet, productSet, hasAnyFilter };
-        });
+        // Yield to main thread, then compute in a startTransition
+        const timer = setTimeout(() => {
+            if (computeVersionRef.current !== thisVersion) return; // stale
 
-        if (dataColumns.length > 0) {
+            const results = new Map<string, Map<string, number>>();
+            const dataColumns = customColumns;
+
+            customColumns.forEach(c => results.set(c.id, new Map<string, number>()));
+
+            const colFilterCache = dataColumns.map(col => {
+                const industrySet = col.filters?.selectedIndustries?.length ? new Set(col.filters.selectedIndustries) : null;
+                const subgroupSet = col.filters?.selectedSubgroups?.length ? new Set(col.filters.selectedSubgroups) : null;
+                const manufacturerSet = col.filters?.selectedManufacturers?.length ? new Set(col.filters.selectedManufacturers) : null;
+                const productCodes = col.filters?.productCodes || col.productCodes;
+                const productSet = productCodes?.length ? new Set(productCodes) : null;
+                const hasAnyFilter = !!(industrySet || subgroupSet || manufacturerSet || productSet || col.filters?.priceCondition);
+                return { col, industrySet, subgroupSet, manufacturerSet, productSet, hasAnyFilter };
+            });
+
             const colCount = colFilterCache.length;
             for (let ri = 0, rLen = dataRows.length; ri < rLen; ri++) {
                 const row = dataRows[ri];
@@ -124,8 +142,16 @@ export const useWarehouseLogic = ({
                     khoMap.set(khoName, (khoMap.get(khoName) || 0) + value);
                 }
             }
-        }
-        return results;
+
+            // Only apply if still the latest computation
+            if (computeVersionRef.current === thisVersion) {
+                startTransition(() => {
+                    setBaseCustomData(results);
+                });
+            }
+        }, 16); // One frame delay to let table render first
+
+        return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [originalData, productConfig, dataColumnsHash]);
 
