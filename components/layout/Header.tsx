@@ -108,39 +108,40 @@ const Header: React.FC<HeaderProps> = ({
                     </div>
                 </div>
             )}
-            <header className="relative flex flex-col lg:hidden justify-between items-start gap-3 mb-3 pb-3 border-b border-slate-200/60 dark:border-slate-800/60">
-            {/* Mobile: Compact file info line */}
-            {fileInfo && (
-                <>
-                <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
-                        <Icon name="calendar-days" size={3} className="opacity-60" />
-                        <span className="text-[9px] font-bold uppercase tracking-wider opacity-80">
-                            Cập nhật: <span className="text-slate-600 dark:text-slate-300 font-extrabold">{fileInfo.savedAt}</span>
-                        </span>
-                    </div>
-                    {(userRole === 'admin' || userRole === 'manager') && (
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={onLoadShiftFile}
-                                className="flex items-center justify-center w-9 h-9 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg transition-all active:scale-95"
-                                title="Tải DS Nhân viên"
-                            >
-                                <Icon name="users-round" size={4} />
-                            </button>
-                            <button
-                                onClick={() => setShowDriveHistory(true)}
-                                className={`flex items-center justify-center w-9 h-9 rounded-lg transition-all active:scale-95 ${syncState === 'error' ? 'bg-red-50 text-red-500 dark:bg-red-900/20 animate-pulse' : 'bg-slate-50 dark:bg-slate-800 text-slate-500 dark:text-slate-400'}`}
-                                title="Lịch sử đám mây"
-                            >
-                                <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={4} />
-                            </button>
-                        </div>
-                    )}
-                </div>
-                </>
+            {/* Portal timestamp into mobile top bar subtitle */}
+            {mounted && fileInfo && document.getElementById('mobile-topbar-subtitle') && createPortal(
+                <>📅 Cập nhật: {fileInfo.savedAt}</>,
+                document.getElementById('mobile-topbar-subtitle')!
             )}
-        </header>
+
+            {/* Portal action buttons into mobile top bar */}
+            {mounted && fileInfo && (userRole === 'admin' || userRole === 'manager') && document.getElementById('mobile-topbar-actions') && createPortal(
+                <>
+                    <button
+                        onClick={onLoadShiftFile}
+                        className="flex items-center justify-center w-8 h-8 text-blue-600 dark:text-blue-400 rounded-lg transition-all active:scale-95"
+                        title="Tải DS Nhân viên"
+                    >
+                        <Icon name="users-round" size={4.5} />
+                    </button>
+                    <a
+                        href="#"
+                        onClick={handleExternalLinkClick}
+                        className="flex items-center justify-center w-8 h-8 text-slate-400 dark:text-slate-500 rounded-lg transition-all active:scale-95"
+                        title="Mở trang quản lý phân ca"
+                    >
+                        <Icon name="calendar-clock" size={4.5} />
+                    </a>
+                    <button
+                        onClick={() => setShowDriveHistory(true)}
+                        className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-95 ${syncState === 'error' ? 'text-red-500 animate-pulse' : 'text-slate-400 dark:text-slate-500'}`}
+                        title="Lịch sử đám mây"
+                    >
+                        <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={4.5} />
+                    </button>
+                </>,
+                document.getElementById('mobile-topbar-actions')!
+            )}
 
         {/* Desktop: Full inline toolbar ported to Global Header */}
         {mounted && document.getElementById('global-header-actions') && createPortal(

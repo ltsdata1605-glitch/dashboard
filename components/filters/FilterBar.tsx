@@ -141,8 +141,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                 {/* === MOBILE LAYOUT (<lg): 2 compact rows === */}
                 <div className="lg:hidden space-y-1.5">
                     {/* Row 1: Dropdowns */}
-                    <div className="flex gap-1.5 items-center">
-                        <div className="flex-1 min-w-0">
+                    <div className="flex gap-1.5 items-stretch overflow-x-auto no-scrollbar -mx-0.5 px-0.5">
+                        <div className="shrink-0">
                             <MultiSelectDropdown
                                 label="Kho"
                                 options={uniqueFilterOptions.kho}
@@ -151,7 +151,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                                 variant="compact"
                             />
                         </div>
-                        <div className="flex-1 min-w-0">
+                        <div className="shrink-0">
                             <MultiSelectDropdown
                                 label="Tháng"
                                 options={availableMonths}
@@ -168,7 +168,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             />
                         </div>
 
-                        <div className="flex-1 min-w-0">
+                        <div className="shrink-0">
                             <MultiSelectDropdown
                                 label="Bộ phận"
                                 options={uniqueFilterOptions.department}
@@ -181,7 +181,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             <button
                                 onClick={onNewFile}
                                 title="Tải YCX lên"
-                                className="flex items-center justify-center w-[44px] h-[44px] bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-xl transition-all active:scale-95 shrink-0"
+                                className="flex items-center justify-center w-[36px] bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
                             >
                                 <Icon name="file-up" size={4} />
                             </button>
@@ -191,21 +191,21 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                             target="_blank"
                             rel="noopener noreferrer"
                             title="Tải dữ liệu báo cáo (BCNB)"
-                            className="hidden sm:flex items-center justify-center w-[44px] h-[44px] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-xl transition-all active:scale-95 shrink-0"
+                            className="flex items-center justify-center w-[36px] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-lg transition-all active:scale-95 shrink-0"
                         >
                             <Icon name="link" size={4} />
                         </a>
                         <button
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
-                            className="flex items-center justify-center w-[44px] h-[44px] bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-xl shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
+                            className="flex items-center justify-center w-[36px] bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-lg shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
                         >
                             <Icon name="settings" size={4} className="group-hover:rotate-90 transition-transform duration-300" />
                         </button>
                     </div>
 
-                    {/* Row 2: Segments — horizontal scroll */}
-                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar -mx-0.5 px-0.5">
+                    {/* Row 2: Segments — moved to filter sidebar on mobile, visible on tablet+ */}
+                    <div className="hidden sm:flex items-center gap-2 overflow-x-auto no-scrollbar -mx-0.5 px-0.5">
                         {/* Date Range Segments */}
                         <div className="flex items-center gap-0.5 bg-slate-100/70 dark:bg-slate-800/60 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-700/50 shrink-0 shadow-sm">
                             {[

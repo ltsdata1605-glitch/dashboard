@@ -131,13 +131,7 @@ function AppContent() {
     
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
 
-    // Smart greeting based on time of day
-    const greeting = React.useMemo(() => {
-        const hour = new Date().getHours();
-        if (hour < 12) return 'Chào buổi sáng \u2600\uFE0F';
-        if (hour < 18) return 'Chào buổi chiều \ud83c\udf05';
-        return 'Chào buổi tối \ud83c\udf19';
-    }, []);
+
 
     React.useEffect(() => {
         getGlobalFont().then(font => {
@@ -177,17 +171,18 @@ function AppContent() {
             <div className="flex-grow flex flex-col min-w-0 w-full relative">
 
                 {/* Mobile Top Bar - Hidden in Desktop View */}
-                <div className="lg:hidden sticky top-0 z-[100] bg-white dark:bg-slate-900 border-b border-transparent topbar-gradient-border flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
+                <div className="lg:hidden sticky top-0 z-[100] bg-white dark:bg-slate-900 flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
                     <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-md shadow-indigo-300/30 dark:shadow-indigo-900/30">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none">{titleData.main} {titleData.highlight}</span>
-                            <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">{greeting}</span>
+                            <span id="mobile-topbar-subtitle" className="text-[9px] font-medium text-slate-400 dark:text-slate-500 mt-0.5"></span>
                         </div>
                     </div>
                     <div className="flex items-center gap-0.5">
+                        <div id="mobile-topbar-actions" className="flex items-center"></div>
                         <NotificationDropdown />
                     </div>
                 </div>
@@ -197,7 +192,7 @@ function AppContent() {
                     <PendingApprovalBanner />
 
                     {/* Global Page Header */}
-                    <div className="lg:sticky lg:top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-6 pb-1 lg:pb-2 border-b border-slate-200/60 dark:border-slate-700/60">
+                    <div className="lg:sticky lg:top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-6 pb-1 lg:pb-2 lg:border-b border-slate-200/60 dark:border-slate-700/60">
                         <div className="flex items-center justify-end lg:justify-between gap-4 w-full flex-wrap">
                             <div className="hidden lg:flex items-center gap-4 shrink-0">
                                 <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />

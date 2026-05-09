@@ -186,40 +186,73 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
             {/* Slide Menu Body */}
             <div className="flex-grow overflow-y-auto custom-scrollbar pb-20">
                 <div className="p-3 space-y-3">
-                    <div className="space-y-1.5 px-1">
-                        <div className="flex items-center gap-2">
-                            <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 rounded-md text-indigo-600 dark:text-indigo-400 shadow-sm">
-                                <Icon name="warehouse" size={3.5} />
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 rounded-md text-indigo-600 dark:text-indigo-400 shadow-sm">
+                                    <Icon name="warehouse" size={3.5} />
+                                </div>
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kho Tạo</label>
                             </div>
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kho Tạo</label>
+                            <MultiSelectDropdown 
+                                label="Kho Tạo" 
+                                options={options.kho} 
+                                selected={localFilters.kho} 
+                                onChange={(sel) => updateLocalFilter({ kho: sel })} 
+                                variant="compact"
+                            />
                         </div>
-                        <MultiSelectDropdown 
-                            label="Kho Tạo" 
-                            options={options.kho} 
-                            selected={localFilters.kho} 
-                            onChange={(sel) => updateLocalFilter({ kho: sel })} 
-                            variant="compact"
-                        />
+
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/30 rounded-md text-emerald-600 dark:text-emerald-400 shadow-sm">
+                                    <Icon name="truck" size={3.5} />
+                                </div>
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">T.Thái Xuất</label>
+                            </div>
+                            <MultiSelectDropdown 
+                                label="T.Thái Xuất" 
+                                options={['Đã', 'Chưa']} 
+                                selected={localFilters.xuat === 'all' ? [] : [localFilters.xuat === 'Đã' ? 'Đã' : 'Chưa']} 
+                                onChange={(sel) => updateLocalFilter({ xuat: sel.length > 0 ? sel[sel.length - 1] : 'all' })} 
+                                variant="compact"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 rounded-md text-amber-600 dark:text-amber-400 shadow-sm">
+                                    <Icon name="user" size={3.5} />
+                                </div>
+                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Người Tạo</label>
+                            </div>
+                            <MultiSelectDropdown 
+                                label="Người Tạo" 
+                                options={options.nguoiTao} 
+                                selected={localFilters.nguoiTao} 
+                                onChange={(sel) => updateLocalFilter({ nguoiTao: sel })} 
+                                variant="compact"
+                            />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                                <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-rose-50 dark:bg-rose-900/30 rounded-md text-rose-600 dark:text-rose-400 shadow-sm">
+                                    <Icon name="file-text" size={3.5} />
+                                </div>
+                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Trạng thái hồ sơ</label>
+                            </div>
+                            <MultiSelectDropdown 
+                                label="Trạng thái hồ sơ" 
+                                options={options.trangThai} 
+                                selected={localFilters.trangThai} 
+                                onChange={(sel) => updateLocalFilter({ trangThai: sel })} 
+                                variant="compact"
+                            />
+                        </div>
                     </div>
 
-                    {/* Trạng Thái Xuất */}
-                    <div className="space-y-1.5 px-1">
-                        <div className="flex items-center gap-2">
-                            <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/30 rounded-md text-emerald-600 dark:text-emerald-400 shadow-sm">
-                                <Icon name="truck" size={3.5} />
-                            </div>
-                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">T.Thái Xuất</label>
-                        </div>
-                        <MultiSelectDropdown 
-                            label="T.Thái Xuất" 
-                            options={['Đã', 'Chưa']} 
-                            selected={localFilters.xuat === 'all' ? [] : [localFilters.xuat === 'Đã' ? 'Đã' : 'Chưa']} 
-                            onChange={(sel) => updateLocalFilter({ xuat: sel.length > 0 ? sel[sel.length - 1] : 'all' })} 
-                            variant="compact"
-                        />
-                    </div>
-
-                    {/* Dropdowns */}
+                    {/* Bộ phận - full width */}
                     {options.department.length > 0 && (
                         <div className="space-y-1.5 px-1">
                             <div className="flex items-center gap-2">
@@ -237,36 +270,6 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                             />
                         </div>
                     )}
-                    <div className="space-y-1.5 px-1">
-                        <div className="flex items-center gap-2">
-                            <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 rounded-md text-amber-600 dark:text-amber-400 shadow-sm">
-                                <Icon name="user" size={3.5} />
-                            </div>
-                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Người Tạo</label>
-                        </div>
-                        <MultiSelectDropdown 
-                            label="Người Tạo" 
-                            options={options.nguoiTao} 
-                            selected={localFilters.nguoiTao} 
-                            onChange={(sel) => updateLocalFilter({ nguoiTao: sel })} 
-                            variant="compact"
-                        />
-                    </div>
-                    <div className="space-y-1.5 px-1">
-                        <div className="flex items-center gap-2">
-                            <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-rose-50 dark:bg-rose-900/30 rounded-md text-rose-600 dark:text-rose-400 shadow-sm">
-                                <Icon name="file-text" size={3.5} />
-                            </div>
-                            <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Trạng thái hồ sơ</label>
-                        </div>
-                        <MultiSelectDropdown 
-                            label="Trạng thái hồ sơ" 
-                            options={options.trangThai} 
-                            selected={localFilters.trangThai} 
-                            onChange={(sel) => updateLocalFilter({ trangThai: sel })} 
-                            variant="compact"
-                        />
-                    </div>
 
                     {/* Date Selection */}
                     <div className="space-y-3 pt-1 px-1">
@@ -314,7 +317,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                     {/* Section Visibility */}
                     <div className="space-y-2 pt-2 px-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hiển Thị Các Khu Vực</label>
-                        <div className="space-y-1.5">
+                        <div className="grid grid-cols-2 gap-1.5">
                             {visibilityOptions.map(opt => (
                                 <ModernSwitch
                                     key={opt.key}
