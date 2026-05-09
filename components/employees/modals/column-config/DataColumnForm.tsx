@@ -53,7 +53,7 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
                         <button type="button" onClick={() => setMetricType('revenueQD')} className={`flex-1 sm:flex-none py-1 sm:py-1.5 px-3 sm:px-6 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'revenueQD' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Doanh thu QĐ</button>
                     </div>
                 </div>
-                <div className="grid grid-cols-3 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
                         <div>
                         <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Ngành hàng</label>
                         <MultiSelectDropdown options={allIndustries} selected={selectedIndustries} onChange={setSelectedIndustries} label="Ngành hàng" variant="compact"/>

@@ -19,9 +19,9 @@ export const getPercentBadge = (pct: number) => {
 
 export const getTraChamBadge = (pct: number, target: number = 45) => {
     if (isNaN(pct)) return 'text-slate-400';
-    if (pct >= target) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 px-2 py-0.5 rounded-lg font-bold';
-    if (pct >= target - 10) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 px-2 py-0.5 rounded-lg font-bold';
-    return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300 px-2 py-0.5 rounded-lg font-bold';
+    if (pct >= target) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold';
+    if (pct >= target - 10) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold';
+    return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300 px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold';
 };
 
 export const getHieuQuaBadge = (pct: number, target: number = 35) => {
@@ -30,11 +30,11 @@ export const getHieuQuaBadge = (pct: number, target: number = 35) => {
 };
 
 export const RankBadge: React.FC<{ rank: number }> = ({ rank }) => {
-    if (rank === 0) return <span className="text-xl leading-none">🥇</span>;
-    if (rank === 1) return <span className="text-xl leading-none">🥈</span>;
-    if (rank === 2) return <span className="text-xl leading-none">🥉</span>;
+    if (rank === 0) return <span className="text-sm sm:text-xl leading-none">🥇</span>;
+    if (rank === 1) return <span className="text-sm sm:text-xl leading-none">🥈</span>;
+    if (rank === 2) return <span className="text-sm sm:text-xl leading-none">🥉</span>;
     return (
-        <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400">
+        <span className="text-[10px] sm:text-[13px] font-bold text-slate-500 dark:text-slate-400">
             #{rank + 1}
         </span>
     );

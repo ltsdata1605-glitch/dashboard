@@ -143,12 +143,13 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                         top: containerRef.current ? containerRef.current.getBoundingClientRect().bottom + 6 : 0,
                         left: containerRef.current ? Math.min(containerRef.current.getBoundingClientRect().left, window.innerWidth - 260) : 0,
                     }}
-                    className="z-[999999] overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-black/40 border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm w-max max-w-[90vw]"
+                    className="z-[999999] overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-black/40 border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm w-max max-w-[85vw] sm:max-w-[90vw]"
                 >
                     {/* Search Field */}
-                    <div className="p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
+                    <div className="p-1.5 sm:p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
                         <div className="relative">
-                            <Icon name="search" size={3.5} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                            <Icon name="search" size={3} className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 sm:hidden" />
+                            <Icon name="search" size={3.5} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 hidden sm:block" />
                             <input
                                 type="text"
                                 placeholder={placeholder}
@@ -162,15 +163,15 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                         }
                                     }
                                 }}
-                                className="w-full text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg pl-8 pr-3 py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                                className="w-full text-[11px] sm:text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
                                 autoFocus
                             />
                         </div>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-slate-700/50">
-                        <label className="flex items-center gap-2 cursor-pointer group">
+                    <div className="flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 border-b border-slate-100 dark:border-slate-700/50">
+                        <label className="flex items-center gap-1.5 sm:gap-2 cursor-pointer group">
                             <div className="relative flex items-center">
                                 <input 
                                     type="checkbox" 
@@ -178,16 +179,17 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                     onChange={handleSelectAll} 
                                     className="peer sr-only" 
                                 />
-                                <div className="w-4 h-4 rounded border-2 border-slate-300 dark:border-slate-600 transition-all peer-checked:bg-indigo-600 peer-checked:border-indigo-600" />
-                                <Icon name="check" size={3} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 transition-opacity" />
+                                <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 border-slate-300 dark:border-slate-600 transition-all peer-checked:bg-indigo-600 peer-checked:border-indigo-600" />
+                                <Icon name="check" size={2.5} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 transition-opacity sm:hidden" />
+                                <Icon name="check" size={3} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 transition-opacity hidden sm:block" />
                             </div>
-                            <span className="text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Tất cả {label}</span>
+                            <span className="text-[10px] sm:text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Tất cả {label}</span>
                         </label>
-                        <span className="text-[10px] font-bold text-slate-400">{filteredOptions.length} / {options.length}</span>
+                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400">{filteredOptions.length} / {options.length}</span>
                     </div>
 
                     {/* Options List */}
-                    <div className="flex-grow overflow-y-auto custom-scrollbar p-1 max-h-48">
+                    <div className="flex-grow overflow-y-auto custom-scrollbar p-0.5 sm:p-1 max-h-48">
                         {filteredOptions.length > 0 ? (
                             <div className="grid grid-cols-1 gap-0.5">
                                 {filteredOptions.slice(0, 200).map(option => {
@@ -197,18 +199,18 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                             type="button"
                                             key={option}
                                             onClick={() => handleToggleOption(option)}
-                                            className={`flex items-center gap-2.5 w-full text-left px-2.5 py-2 rounded-lg transition-all ${
+                                            className={`flex items-center gap-1.5 sm:gap-2.5 w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg transition-all ${
                                                 isSelected 
                                                 ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' 
                                                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                             }`}
                                         >
-                                            <div className={`relative flex items-center justify-center w-4 h-4 rounded border-2 transition-all ${
+                                            <div className={`relative flex items-center justify-center w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 transition-all shrink-0 ${
                                                 isSelected ? 'bg-indigo-600 border-indigo-600 shadow-sm' : 'border-slate-300 dark:border-slate-600'
                                             }`}>
-                                                {isSelected && <Icon name="check" size={3} className="text-white" />}
+                                                {isSelected && <><Icon name="check" size={2.5} className="text-white sm:hidden" /><Icon name="check" size={3} className="text-white hidden sm:block" /></>}
                                             </div>
-                                            <span className={`text-[12px] truncate ${isSelected ? 'font-black' : 'font-medium'}`}>{option}</span>
+                                            <span className={`text-[11px] sm:text-[12px] truncate ${isSelected ? 'font-black' : 'font-medium'}`}>{option}</span>
                                         </button>
                                     );
                                 })}

@@ -114,26 +114,27 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                                     <p className="text-[9px] sm:text-xs font-medium text-slate-400">Bảng thi đua tùy chỉnh</p>
                                 </div>
                             </div>
-                            <div className="px-2 sm:px-6 py-1 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-lg sm:rounded-xl">
-                                <div className="flex items-center gap-2 flex-wrap">
-                                    <button onClick={() => setModalState({ type: 'CREATE_TABLE', data: { tabId: customTab.id }})} title="Tạo Bảng Thi Đua Mới" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
-                                        <Icon name="plus" size={5}/>
+                            <div className="px-1.5 sm:px-6 py-1 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-lg sm:rounded-xl">
+                                <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                                    <button onClick={() => setModalState({ type: 'CREATE_TABLE', data: { tabId: customTab.id }})} title="Tạo Bảng Thi Đua Mới" className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all">
+                                        <Icon name="plus" size={4} className="sm:hidden" /><Icon name="plus" size={5} className="hidden sm:block" />
                                     </button>
-                                    <button onClick={() => setModalState({ type: 'EDIT_TAB', data: { tabId: customTab.id, initialName: customTab.name, initialIcon: customTab.icon }})} title="Sửa Tên Tab" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
-                                        <Icon name="edit-3" size={5}/>
+                                    <button onClick={() => setModalState({ type: 'EDIT_TAB', data: { tabId: customTab.id, initialName: customTab.name, initialIcon: customTab.icon }})} title="Sửa Tên Tab" className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all">
+                                        <Icon name="edit-3" size={4} className="sm:hidden" /><Icon name="edit-3" size={5} className="hidden sm:block" />
                                     </button>
-                                    <button onClick={() => setModalState({ type: 'CONFIRM_DELETE_TAB', data: { tabId: customTab.id, tabName: customTab.name }})} title="Xóa Tab" className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-all">
-                                        <Icon name="trash-2" size={5}/>
+                                    <button onClick={() => setModalState({ type: 'CONFIRM_DELETE_TAB', data: { tabId: customTab.id, tabName: customTab.name }})} title="Xóa Tab" className="p-1.5 sm:p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg sm:rounded-xl transition-all">
+                                        <Icon name="trash-2" size={4} className="sm:hidden" /><Icon name="trash-2" size={5} className="hidden sm:block" />
                                     </button>
-                                    <div className="h-5 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                                    <button onClick={handleMainExport} disabled={isExporting} title="Xuất Ảnh Tab" className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
-                                        {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
+                                    <div className="h-4 sm:h-5 w-px bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
+                                    <button onClick={handleMainExport} disabled={isExporting} title="Xuất Ảnh Tab" className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all">
+                                        {isExporting ? <Icon name="loader-2" size={4} className="animate-spin sm:hidden" /> : <Icon name="camera" size={4} className="sm:hidden" />}
+                                        {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
                                     </button>
                                 </div>
                             </div>
                         </div>
                         {customTab.tables.length === 0 ? (
-                            <p className="text-center text-slate-500 py-8">Chưa có bảng thi đua nào trong tab này.</p>
+                            <p className="text-center text-xs sm:text-sm text-slate-500 py-5 sm:py-8">Chưa có bảng thi đua nào trong tab này.</p>
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {customTab.tables.map((tableConfig, index) => (

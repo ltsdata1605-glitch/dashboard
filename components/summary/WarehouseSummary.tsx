@@ -298,12 +298,12 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
                 {/* === TABLE VIEW (all screen sizes) === */}
                 <div className="overflow-hidden">
-                <section className="overflow-x-auto custom-scrollbar p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative">
-                    <table className="w-full min-w-max text-sm text-center border-collapse border border-slate-200 dark:border-slate-700">
+                <section className="overflow-x-auto custom-scrollbar p-1.5 sm:p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative">
+                    <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700">
                         <thead>
                             {/* Top Level Group Headers */}
-                            <tr className="text-[11px] font-bold uppercase tracking-wider">
-                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-4 py-3 text-center text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
+                            <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
+                                <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[10px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
                                     <div className="flex items-center justify-center gap-1">
                                         MÃ KHO
                                         {sortConfig.key === 'khoName' && (
@@ -317,7 +317,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         return colsInGroup.map((col, idx) => {
                                             const styles = WAREHOUSE_HEADER_COLORS[col.mainHeader] || WAREHOUSE_HEADER_COLORS.DEFAULT;
                                             return (
-                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-2 py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                                     <div className="flex items-center justify-center gap-1">
                                                         {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
                                                         {sortConfig.key === col.id && (
@@ -331,7 +331,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
                                     const styles = WAREHOUSE_HEADER_COLORS[group.name] || WAREHOUSE_HEADER_COLORS.DEFAULT;
                                     return (
-                                        <th key={i} colSpan={group.colSpan} className={`px-2 py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[11px] font-bold border-r text-center align-middle`}>
+                                        <th key={i} colSpan={group.colSpan} className={`px-1 sm:px-2 py-1.5 sm:py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[9px] sm:text-[11px] font-bold border-r text-center align-middle`}>
                                             {group.name}
                                         </th>
                                     );
@@ -345,7 +345,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                     }
                                     const styles = WAREHOUSE_HEADER_COLORS[col.mainHeader] || WAREHOUSE_HEADER_COLORS.DEFAULT;
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-2 py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
                                                 {sortConfig.key === col.id && (
@@ -361,7 +361,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                             {currentData.map((row) => (
                                 <tr key={row.khoName} className="group hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                                     <td 
-                                        className={`px-2 py-3 font-extrabold text-[13px] text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 leading-tight border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${userRole !== 'employee' ? 'cursor-pointer' : ''}`}
+                                        className={`px-1 sm:px-2 py-1.5 sm:py-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 underline decoration-dotted decoration-slate-400 dark:decoration-slate-500 underline-offset-4 sticky left-0 z-10 bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 leading-tight border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${userRole !== 'employee' ? 'cursor-pointer' : ''}`}
                                         onClick={() => handleTargetClick(row.khoName)}
                                     >
                                         {row.khoName}
@@ -465,7 +465,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         }
 
                                         return (
-                                            <td key={`${row.khoName}-${col.id}`} className={`px-2 py-3 ${isStart ? 'border-l border-slate-200 dark:border-slate-700' : ''} leading-tight h-px`}>
+                                            <td key={`${row.khoName}-${col.id}`} className={`px-1 sm:px-2 py-1.5 sm:py-3 ${isStart ? 'border-l border-slate-200 dark:border-slate-700' : ''} leading-tight h-px`}>
                                                 {content}
                                             </td>
                                         );
@@ -476,7 +476,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         {/* Table Footer / Total Row */}
                         <tfoot className="bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
                             <tr className="font-bold text-slate-900 dark:text-slate-100">
-                                <td className="px-2 py-3 uppercase tracking-tight text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tổng</td>
+                                <td className="px-1 sm:px-2 py-1.5 sm:py-3 uppercase tracking-tight text-[9px] sm:text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tổng</td>
                                 {visibleColumns.map((col, index) => {
                                     let value;
                                     if (col.isCustom) {
@@ -530,7 +530,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                     }
 
                                     return (
-                                        <td key={`total-${col.id}`} className={`px-2 py-3 ${isStart ? 'border-l border-slate-200 dark:border-slate-700' : ''} leading-tight h-px bg-slate-100 dark:bg-slate-800`}>
+                                        <td key={`total-${col.id}`} className={`px-1 sm:px-2 py-1.5 sm:py-3 ${isStart ? 'border-l border-slate-200 dark:border-slate-700' : ''} leading-tight h-px bg-slate-100 dark:bg-slate-800`}>
                                             {content}
                                         </td>
                                     );

@@ -64,8 +64,8 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
                 {!hideHeader && (
                     <div className={`flex justify-between items-center p-2 sm:p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl flex-shrink-0 z-10 relative ${noRounded ? '' : 'rounded-t-[32px] sm:rounded-t-2xl'}`}>
                         <div>
-                            {subTitle && <p className="text-[10px] sm:text-sm font-medium text-slate-500 dark:text-slate-400">{subTitle}</p>}
-                            {title && <h3 className={`text-base sm:text-2xl font-black tracking-tight leading-tight ${titleColorClass}`}>{title}</h3>}
+                            {subTitle && <p className="text-[9px] sm:text-sm font-medium text-slate-500 dark:text-slate-400">{subTitle}</p>}
+                            {title && <h3 className={`text-sm sm:text-2xl font-black tracking-tight leading-tight ${titleColorClass}`}>{title}</h3>}
                         </div>
                         <div className="flex items-center gap-1 sm:gap-3">
                             {controls}

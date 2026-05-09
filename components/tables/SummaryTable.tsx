@@ -112,8 +112,8 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
         return <span className={`text-[11px] font-bold ${colorClass}`}>{isPositive ? '+' : '-'}{formattedVal}</span>;
     };
 
-    const footerCellClass = "px-2 py-2 text-center text-[13px]";
-    const footerDeltaCellClass = "px-2 py-2 text-center text-[13px]"; 
+    const footerCellClass = "px-1 sm:px-2 py-1 sm:py-2 text-center text-[11px] sm:text-[13px]";
+    const footerDeltaCellClass = "px-1 sm:px-2 py-1 sm:py-2 text-center text-[11px] sm:text-[13px]"; 
     const separatorClass = "border-r border-slate-200 dark:border-slate-700";
 
     // --- Helper to get options and selected state dynamically ---
@@ -231,7 +231,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`w-auto min-w-[100px] lg:w-[350px] px-2 lg:px-4 py-2 text-center uppercase text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-1 sm:px-2 lg:px-4 py-1 sm:py-2 text-center uppercase text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
                                     >
                                         DANH MỤC
                                     </th>
@@ -250,7 +250,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                         key={`group-${currentGroup}`} 
                                                         colSpan={totalColSpan} 
                                                         scope="col" 
-                                                        className={`px-2 py-2 text-center text-sm font-bold uppercase tracking-wider border-b ${colorClass} ${separatorClass}`}
+                                                        className={`px-2 py-2 text-center text-[10px] sm:text-sm font-bold uppercase tracking-wider border-b ${colorClass} ${separatorClass}`}
                                                     >
                                                         {currentGroup}
                                                     </th>
@@ -263,7 +263,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                             key={`ungrouped-${h.key}`} 
                                                             colSpan={colSpan} 
                                                             scope="col" 
-                                                            className={`px-2 py-2 text-center text-sm font-bold uppercase tracking-wider border-b ${h.colorClass} ${separatorClass}`}
+                                                            className={`px-2 py-2 text-center text-[10px] sm:text-sm font-bold uppercase tracking-wider border-b ${h.colorClass} ${separatorClass}`}
                                                         >
                                                             {h.label}
                                                         </th>
@@ -291,7 +291,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                             return (
                                                 <th 
                                                     key={`${h.key}-delta`}
-                                                    className={`px-2 py-1 text-center text-[10px] font-bold uppercase ${h.colorClass} border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
+                                                    className={`px-1 sm:px-2 py-1 text-center text-[9px] sm:text-[10px] font-bold uppercase ${h.colorClass} border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
                                                     onClick={() => handleSort(h.key, 'delta')}
                                                 >
                                                     <div className="flex items-center justify-center gap-1">
@@ -303,7 +303,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                         return (
                                             <React.Fragment key={`${h.key}-sub`}>
                                             <th 
-                                                className={`px-2 py-1 text-center text-[10px] font-bold uppercase ${h.colorClass} border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
+                                                className={`px-1 sm:px-2 py-1 text-center text-[9px] sm:text-[10px] font-bold uppercase ${h.colorClass} border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
                                                 onClick={() => handleSort(h.key, 'current')}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
@@ -314,7 +314,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                 </div>
                                             </th>
                                             <th 
-                                                className={`px-2 py-1 text-center text-[10px] font-bold uppercase ${h.colorClass} border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 ${separatorClass} cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
+                                                className={`px-1 sm:px-2 py-1 text-center text-[9px] sm:text-[10px] font-bold uppercase ${h.colorClass} border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 ${separatorClass} cursor-pointer hover:bg-teal-100 dark:hover:bg-teal-900/40`}
                                                 onClick={() => handleSort(h.key, 'delta')}
                                             >
                                                 <div className="flex items-center justify-center gap-1">
@@ -335,7 +335,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`w-auto min-w-[100px] lg:w-[350px] px-2 lg:px-4 py-2 text-center uppercase text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-1 sm:px-2 lg:px-4 py-1 sm:py-2 text-center uppercase text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
                                     >
                                         DANH MỤC
                                     </th>
@@ -353,7 +353,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                         key={`group-${currentGroup}`} 
                                                         colSpan={groupChildren.length} 
                                                         scope="col" 
-                                                        className={`px-2 py-2 text-center text-sm font-bold uppercase tracking-wider border-b ${colorClass} ${separatorClass}`}
+                                                        className={`px-2 py-2 text-center text-[10px] sm:text-sm font-bold uppercase tracking-wider border-b ${colorClass} ${separatorClass}`}
                                                     >
                                                         {currentGroup}
                                                     </th>
@@ -366,7 +366,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                                             rowSpan={2} 
                                                             scope="col" 
                                                             onClick={() => handleSort(h.key)} 
-                                                            className={`px-2 py-1 text-center text-xs font-bold uppercase cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/40 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${h.colorClass}`}
+                                                            className={`px-1 sm:px-2 py-1 text-center text-[9px] sm:text-xs font-bold uppercase cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/40 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${h.colorClass}`}
                                                         >
                                                             <div className="flex items-center justify-center gap-1">
                                                                 {h.label}
@@ -397,7 +397,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                             key={h.key} 
                                             scope="col" 
                                             onClick={() => handleSort(h.key)} 
-                                            className={`px-2 py-1 text-center text-xs font-bold uppercase cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/40 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${h.colorClass}`}
+                                            className={`px-1 sm:px-2 py-1 text-center text-[9px] sm:text-xs font-bold uppercase cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/40 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${h.colorClass}`}
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 {h.label}
@@ -437,7 +437,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                         </tbody>
                         <tfoot className="bg-teal-100 dark:bg-teal-900/40 font-bold text-sm border-t-2 border-teal-200 dark:border-teal-800">
                            <tr>
-                                <td className={`px-4 py-2 text-center sticky left-0 z-40 bg-teal-100 dark:bg-teal-900/60 font-extrabold text-[13px] uppercase tracking-widest text-teal-700 dark:text-teal-300 ${separatorClass}`}>TỔNG</td>
+                                <td className={`px-2 sm:px-4 py-1 sm:py-2 text-center sticky left-0 z-40 bg-teal-100 dark:bg-teal-900/60 font-extrabold text-[10px] sm:text-[13px] uppercase tracking-widest text-teal-700 dark:text-teal-300 ${separatorClass}`}>TỔNG</td>
                                 {/* Quantity */}
                                 {visibleColumns.includes('totalQuantity') && (
                                     <>

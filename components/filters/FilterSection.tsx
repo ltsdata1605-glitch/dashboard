@@ -46,18 +46,19 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
     return (
         <label
             htmlFor={`switch-${label}`}
-            className={`flex items-center cursor-pointer justify-between w-full px-3 py-2 rounded-xl ${classes.bg} transition-all duration-200 hover:brightness-95`}
+            className={`flex items-center cursor-pointer justify-between w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl ${classes.bg} transition-all duration-200 hover:brightness-95`}
         >
-            <div className="flex items-center gap-2">
-                <div className={`p-1 rounded-lg transition-colors ${classes.iconBg}`}>
-                    <Icon name={icon} size={3.5} className={`transition-colors ${classes.iconColor}`}/>
+            <div className="flex items-center gap-1.5 sm:gap-2">
+                <div className={`p-0.5 sm:p-1 rounded-md sm:rounded-lg transition-colors ${classes.iconBg}`}>
+                    <Icon name={icon} size={3} className={`transition-colors sm:hidden ${classes.iconColor}`}/>
+                    <Icon name={icon} size={3.5} className={`transition-colors hidden sm:block ${classes.iconColor}`}/>
                 </div>
-                <span className={`font-bold text-[11px] transition-colors ${classes.textColor}`}>{label}</span>
+                <span className={`font-bold text-[10px] sm:text-[11px] transition-colors ${classes.textColor}`}>{label}</span>
             </div>
             <div className="relative">
                 <input id={`switch-${label}`} type="checkbox" className="sr-only" checked={isActive} onChange={onToggle} />
-                <div className={`block w-9 h-5 rounded-full transition-colors ${classes.switchBg}`}></div>
-                <div className={`dot absolute left-[3px] top-[3px] bg-white w-3.5 h-3.5 rounded-full transition-transform duration-200 ease-in-out ${isActive ? 'translate-x-[16px]' : ''}`}></div>
+                <div className={`block w-8 h-[18px] sm:w-9 sm:h-5 rounded-full transition-colors ${classes.switchBg}`}></div>
+                <div className={`dot absolute left-[3px] top-[3px] bg-white w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full transition-transform duration-200 ease-in-out ${isActive ? 'translate-x-[14px] sm:translate-x-[16px]' : ''}`}></div>
             </div>
         </label>
     );
@@ -161,36 +162,39 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
     return (
         <div className="flex flex-col h-full bg-white dark:bg-slate-950">
             {/* Slide Menu Header */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20">
-                <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-5 bg-indigo-600 rounded-full" />
-                    <h2 className="text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Bộ Lọc Phân Tích</h2>
+            <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                    <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-indigo-600 rounded-full" />
+                    <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Bộ Lọc Phân Tích</h2>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 sm:gap-1">
                     <button 
                         onClick={handleResetFilters}
-                        className="p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                         title="Đặt lại bộ lọc"
                     >
-                        <Icon name="rotate-ccw" size={5} />
+                        <Icon name="rotate-ccw" size={4} className="sm:hidden" />
+                        <Icon name="rotate-ccw" size={5} className="hidden sm:block" />
                     </button>
                     <button 
                         onClick={onClose}
-                        className="p-2 text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
+                        className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
                     >
-                        <Icon name="x" size={6} />
+                        <Icon name="x" size={5} className="sm:hidden" />
+                        <Icon name="x" size={6} className="hidden sm:block" />
                     </button>
                 </div>
             </div>
 
             {/* Slide Menu Body */}
             <div className="flex-grow overflow-y-auto custom-scrollbar pb-20">
-                <div className="p-3 space-y-3">
-                    <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 rounded-md text-indigo-600 dark:text-indigo-400 shadow-sm">
-                                    <Icon name="warehouse" size={3.5} />
+                <div className="p-2 sm:p-3 space-y-2 sm:space-y-3">
+                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
+                        <div className="space-y-1 sm:space-y-1.5">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-indigo-50 dark:bg-indigo-900/30 rounded-md text-indigo-600 dark:text-indigo-400 shadow-sm">
+                                    <Icon name="warehouse" size={3} className="sm:hidden" />
+                                    <Icon name="warehouse" size={3.5} className="hidden sm:block" />
                                 </div>
                                 <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kho Tạo</label>
                             </div>
@@ -203,10 +207,11 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                             />
                         </div>
 
-                        <div className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/30 rounded-md text-emerald-600 dark:text-emerald-400 shadow-sm">
-                                    <Icon name="truck" size={3.5} />
+                        <div className="space-y-1 sm:space-y-1.5">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-emerald-50 dark:bg-emerald-900/30 rounded-md text-emerald-600 dark:text-emerald-400 shadow-sm">
+                                    <Icon name="truck" size={3} className="sm:hidden" />
+                                    <Icon name="truck" size={3.5} className="hidden sm:block" />
                                 </div>
                                 <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">T.Thái Xuất</label>
                             </div>
@@ -219,10 +224,11 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                             />
                         </div>
 
-                        <div className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 rounded-md text-amber-600 dark:text-amber-400 shadow-sm">
-                                    <Icon name="user" size={3.5} />
+                        <div className="space-y-1 sm:space-y-1.5">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-amber-50 dark:bg-amber-900/30 rounded-md text-amber-600 dark:text-amber-400 shadow-sm">
+                                    <Icon name="user" size={3} className="sm:hidden" />
+                                    <Icon name="user" size={3.5} className="hidden sm:block" />
                                 </div>
                                 <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Người Tạo</label>
                             </div>
@@ -235,10 +241,11 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                             />
                         </div>
 
-                        <div className="space-y-1.5">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-rose-50 dark:bg-rose-900/30 rounded-md text-rose-600 dark:text-rose-400 shadow-sm">
-                                    <Icon name="file-text" size={3.5} />
+                        <div className="space-y-1 sm:space-y-1.5">
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-rose-50 dark:bg-rose-900/30 rounded-md text-rose-600 dark:text-rose-400 shadow-sm">
+                                    <Icon name="file-text" size={3} className="sm:hidden" />
+                                    <Icon name="file-text" size={3.5} className="hidden sm:block" />
                                 </div>
                                 <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Trạng thái hồ sơ</label>
                             </div>
@@ -255,9 +262,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                     {/* Bộ phận - full width */}
                     {options.department.length > 0 && (
                         <div className="space-y-1.5 px-1">
-                            <div className="flex items-center gap-2">
-                                <div className="p-1 min-w-[24px] min-h-[24px] flex items-center justify-center bg-sky-50 dark:bg-sky-900/30 rounded-md text-sky-600 dark:text-sky-400 shadow-sm">
-                                    <Icon name="users" size={3.5} />
+                            <div className="flex items-center gap-1.5 sm:gap-2">
+                                <div className="p-0.5 sm:p-1 min-w-[20px] min-h-[20px] sm:min-w-[24px] sm:min-h-[24px] flex items-center justify-center bg-sky-50 dark:bg-sky-900/30 rounded-md text-sky-600 dark:text-sky-400 shadow-sm">
+                                    <Icon name="users" size={3} className="sm:hidden" />
+                                    <Icon name="users" size={3.5} className="hidden sm:block" />
                                 </div>
                                 <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Bộ phận</label>
                             </div>
@@ -272,8 +280,8 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                     )}
 
                     {/* Date Selection */}
-                    <div className="space-y-3 pt-1 px-1">
-                        <div className="space-y-1.5">
+                    <div className="space-y-2 sm:space-y-3 pt-1 px-1">
+                        <div className="space-y-1 sm:space-y-1.5">
                             <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Khoảng Thời Gian Nhanh</label>
                             <div className="grid grid-cols-3 gap-1.5">
                                 {[
@@ -299,7 +307,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     type="date" 
                                     value={localFilters.startDate} 
                                     onChange={e => handleDateChange('startDate', e.target.value)} 
-                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[12px] font-bold px-2 py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm" 
+                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] sm:text-[12px] font-bold px-1.5 sm:px-2 py-1 sm:py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm" 
                                 />
                             </div>
                             <div className="space-y-1">
@@ -308,16 +316,16 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     type="date" 
                                     value={localFilters.endDate} 
                                     onChange={e => handleDateChange('endDate', e.target.value)} 
-                                    className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[12px] font-bold px-2 py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm" 
+                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] sm:text-[12px] font-bold px-1.5 sm:px-2 py-1 sm:py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm" 
                                 />
                             </div>
                         </div>
                     </div>
 
                     {/* Section Visibility */}
-                    <div className="space-y-2 pt-2 px-1">
+                    <div className="space-y-1.5 sm:space-y-2 pt-1.5 sm:pt-2 px-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hiển Thị Các Khu Vực</label>
-                        <div className="grid grid-cols-2 gap-1.5">
+                        <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
                             {visibilityOptions.map(opt => (
                                 <ModernSwitch
                                     key={opt.key}
@@ -332,22 +340,24 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                     </div>
 
                     {/* GTĐH Settings */}
-                    <div className="space-y-2.5 pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 pb-6 px-1">
+                    <div className="space-y-2 sm:space-y-2.5 pt-2 sm:pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 pb-4 sm:pb-6 px-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cấu Hình GTĐH Mục Tiêu</label>
                         <button
                             onClick={() => setGtdhModalOpen(true)}
-                            className="w-full flex items-center justify-between px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-all group"
+                            className="w-full flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-all group"
                         >
-                            <div className="flex items-center gap-2.5">
-                                <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/40 rounded-lg text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/60 transition-colors">
-                                    <Icon name="settings-2" size={4} />
+                            <div className="flex items-center gap-2 sm:gap-2.5">
+                                <div className="p-1 sm:p-1.5 bg-indigo-50 dark:bg-indigo-900/40 rounded-md sm:rounded-lg text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/60 transition-colors">
+                                    <Icon name="settings-2" size={3.5} className="sm:hidden" />
+                                    <Icon name="settings-2" size={4} className="hidden sm:block" />
                                 </div>
                                 <div className="flex flex-col items-start leading-tight">
-                                    <span className="text-[13px] font-bold text-slate-800 dark:text-slate-200">Quản lý GTĐH Target</span>
-                                    <span className="text-[9px] whitespace-nowrap font-medium text-slate-500 dark:text-slate-400 mt-[1px]">Thêm/Sửa/Xóa Mục Tiêu AOV</span>
+                                    <span className="text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200">Quản lý GTĐH Target</span>
+                                    <span className="text-[8px] sm:text-[9px] whitespace-nowrap font-medium text-slate-500 dark:text-slate-400 mt-[1px]">Thêm/Sửa/Xóa Mục Tiêu AOV</span>
                                 </div>
                             </div>
-                            <Icon name="chevron-right" size={4} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors" />
+                            <Icon name="chevron-right" size={3.5} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors sm:hidden" />
+                            <Icon name="chevron-right" size={4} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors hidden sm:block" />
                         </button>
                     </div>
                 </div>

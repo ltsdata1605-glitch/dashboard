@@ -4,6 +4,21 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 import Sidebar from './components/layout/Sidebar';
 import MobileBottomNav from './components/layout/MobileBottomNav';
 import { getGlobalFont } from './services/dbService';
+import { 
+    BarChart3, 
+    LayoutDashboard, 
+    Users, 
+    Printer,
+    Calendar,
+    Ticket,
+    Calculator,
+    ClipboardCheck,
+    Settings,
+    HelpCircle,
+    Shield,
+    FileText,
+    Wrench
+} from 'lucide-react';
 
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
 const CheckThuongView = lazy(() => import('./components/views/CheckThuongView'));
@@ -131,7 +146,26 @@ function AppContent() {
     
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
 
-
+    const getTabIcon = () => {
+        switch (activeTab) {
+            case 'analysis': return <BarChart3 size={15} color="white" strokeWidth={2.5} />;
+            case 'check-thuong': return <LayoutDashboard size={15} color="white" strokeWidth={2.5} />;
+            case 'employees': return <Users size={15} color="white" strokeWidth={2.5} />;
+            case 'reports': return <FileText size={15} color="white" strokeWidth={2.5} />;
+            case 'inventory': return <FileText size={15} color="white" strokeWidth={2.5} />;
+            case 'tools-print-sticker': return <Printer size={15} color="white" strokeWidth={2.5} />;
+            case 'tools-phanca': return <Calendar size={15} color="white" strokeWidth={2.5} />;
+            case 'tools-coupon': return <Ticket size={15} color="white" strokeWidth={2.5} />;
+            case 'tools-tax': return <Calculator size={15} color="white" strokeWidth={2.5} />;
+            case 'tools-audit': return <ClipboardCheck size={15} color="white" strokeWidth={2.5} />;
+            case 'settings': return <Settings size={15} color="white" strokeWidth={2.5} />;
+            case 'help': return <HelpCircle size={15} color="white" strokeWidth={2.5} />;
+            case 'pending-approval': return <Shield size={15} color="white" strokeWidth={2.5} />;
+            default:
+                if (activeTab.startsWith('tools')) return <Wrench size={15} color="white" strokeWidth={2.5} />;
+                return <BarChart3 size={15} color="white" strokeWidth={2.5} />;
+        }
+    };
 
     React.useEffect(() => {
         getGlobalFont().then(font => {
@@ -174,7 +208,7 @@ function AppContent() {
                 <div className="lg:hidden sticky top-0 z-[100] bg-white dark:bg-slate-900 flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
                     <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-md shadow-indigo-300/30 dark:shadow-indigo-900/30">
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            {getTabIcon()}
                         </div>
                         <div className="flex flex-col">
                             <span className="font-bold text-slate-800 dark:text-white text-sm tracking-tight leading-none">{titleData.main} {titleData.highlight}</span>

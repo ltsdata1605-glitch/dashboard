@@ -50,9 +50,13 @@ const BiWrapper = React.memo(function BiWrapper() {
     // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
     const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(['dashboard']));
     const [mounted, setMounted] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
     useEffect(() => {
         setMounted(true);
+        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     // Migrate dữ liệu cũ từ ClusterDataDB sang BI_HUB_DATABASE_V2 (chỉ chạy 1 lần)
@@ -82,56 +86,39 @@ const BiWrapper = React.memo(function BiWrapper() {
 
     return (
         <div className="flex flex-col w-full min-h-screen">
-            {mounted && activeTab === 'employees' && document.getElementById('global-header-actions') && createPortal(
-                <div className="flex items-center gap-1 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
+            {mounted && activeTab === 'employees' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
+                <div className={`flex items-center ${isMobile ? 'gap-0.5' : 'gap-1 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm'} animate-in fade-in zoom-in duration-300`}>
                     {navigationLinks.map(tab => {
                         const isActive = activeView === tab.id;
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
-                                className={`flex items-center justify-center gap-2 py-1.5 ${tab.label ? 'px-4' : 'px-2 w-[32px]'} rounded-full font-semibold text-[13px] transition-all whitespace-nowrap shrink-0 focus:outline-none ${
+                                className={`flex items-center justify-center ${isMobile ? 'gap-1 py-1 px-1.5' : 'gap-2 py-1.5 ' + (tab.label ? 'px-4' : 'px-2 w-[32px]')} rounded-full font-semibold ${isMobile ? 'text-[10px]' : 'text-[13px]'} transition-all whitespace-nowrap shrink-0 focus:outline-none ${
                                     isActive
-                                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.1)] border border-slate-200/60 dark:border-slate-700/60'
+                                        ? isMobile 
+                                            ? 'text-indigo-600 dark:text-indigo-400' 
+                                            : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.1)] border border-slate-200/60 dark:border-slate-700/60'
                                         : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                 }`}
                                 title={tab.label || tab.id}
                             >
-                                <Icon name={tab.icon as any} size={4} />
-                                {tab.label && <span>{tab.label}</span>}
+                                <Icon name={tab.icon as any} size={isMobile ? 4.5 : 4} />
+                                {(!isMobile && tab.label) && <span>{tab.label}</span>}
                             </button>
                         );
                     })}
                     
-                    <div className="flex shrink-0 items-center pl-1 border-l border-slate-200 dark:border-slate-700 ml-1">
-                        <div className="rounded-xl overflow-hidden shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                    <div className={`flex shrink-0 items-center ${isMobile ? 'pl-0.5 ml-0.5' : 'pl-1 border-l border-slate-200 dark:border-slate-700 ml-1'}`}>
+                        <div className={`rounded-xl overflow-hidden ${isMobile ? 'scale-90 origin-right' : 'shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
                             <FontSelector />
                         </div>
                     </div>
                 </div>,
-                document.getElementById('global-header-actions')!
+                document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions')!
             )}
 
-            {/* Mobile tab bar — visible only on small screens */}
-            <div className="lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 px-3 py-2 flex items-center gap-1 overflow-x-auto no-scrollbar">
-                {navigationLinks.map(tab => {
-                    const isActive = activeView === tab.id;
-                    return (
-                        <button
-                            key={tab.id}
-                            onClick={() => handleTabChange(tab.id)}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md font-semibold text-xs transition-all whitespace-nowrap shrink-0 ${
-                                isActive
-                                    ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border border-indigo-200/60 dark:border-indigo-700/60'
-                                    : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400'
-                            }`}
-                        >
-                            <Icon name={tab.icon as any} size={3.5} />
-                            {tab.label || 'Cài đặt'}
-                        </button>
-                    );
-                })}
-            </div>
+
 
             {/* Nội dung Module — HIDDEN/BLOCK pattern: mount once, toggle visibility */}
             <main className="p-0 sm:p-4 lg:p-8 space-y-6 mx-auto w-full flex-grow max-w-[960px]">

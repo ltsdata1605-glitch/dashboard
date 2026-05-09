@@ -206,12 +206,12 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                     {/* Thead */}
                     <thead className="sticky top-0 z-20">
                         {/* Group Headers */}
-                        <tr className="text-[11px] font-bold uppercase tracking-wider">
+                        <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
                             <th 
                                 colSpan={2} 
                                 rowSpan={2} 
                                 onClick={() => onSort('name')}
-                                className="px-4 py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-40 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 select-none cursor-pointer h-px hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors group/nhanvien"
+                                className="px-2 sm:px-4 py-1 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-40 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 select-none cursor-pointer h-px hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors group/nhanvien"
                             >
                                 <div className="flex items-center justify-center gap-1">
                                     NHÂN VIÊN
@@ -221,7 +221,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 </div>
                             </th>
                             {groupedHeaders.map((group, i) => (
-                                <th key={i} colSpan={group.colSpan} rowSpan={group.noSubHeader ? 2 : 1} className={`px-2 py-2 ${group.bg} ${group.text} border-r border-slate-200 dark:border-slate-700 text-center h-px relative group/th ${group.noSubHeader ? 'border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600' : 'border-b'}`}
+                                <th key={i} colSpan={group.colSpan} rowSpan={group.noSubHeader ? 2 : 1} className={`px-1 sm:px-2 py-1 sm:py-2 ${group.bg} ${group.text} border-r border-slate-200 dark:border-slate-700 text-center h-px relative group/th ${group.noSubHeader ? 'border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600' : 'border-b'}`}
                                     onClick={() => {
                                         if (group.noSubHeader) {
                                             const targetCol = headers.find(h => h.groupName === group.name);
@@ -239,7 +239,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             ))}
                         </tr>
                         {/* Sub Headers */}
-                        <tr className="bg-white dark:bg-slate-900 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        <tr className="bg-white dark:bg-slate-900 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                             {/* Data cols */}
                             {headers.map(h => {
                                 if (h.noSubHeader) return null;
@@ -252,7 +252,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                             ? (setTempTarget(new Intl.NumberFormat('vi-VN').format(Math.round(targetPerEmployee / 1_000_000))), setIsEditingTarget(true))
                                             : onSort(h.key)
                                         }
-                                        className={`relative px-4 py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity group/th
+                                        className={`relative px-2 sm:px-4 py-1 sm:py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity group/th
                                             ${h.colorClass} ${h.textColor} ${h.align === 'right' ? 'text-right' : h.align === 'center' ? 'text-center' : 'text-left'} h-px`}
                                     >
                                         {isTarget && isEditingTarget ? (
@@ -313,10 +313,10 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     {/* Department row */}
                                     {showDeptHeaders && (
                                         <tr>
-                                            <td colSpan={2 + headers.length} className={`px-4 py-1.5 ${dc.strip} border-y border-slate-200 dark:border-slate-700`}>
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`w-2 h-4 rounded-full ${dc.badge} flex-shrink-0`} />
-                                                    <span className={`text-[10px] font-black uppercase tracking-widest ${dc.text}`}>
+                                            <td colSpan={2 + headers.length} className={`px-2 sm:px-4 py-1 sm:py-1.5 ${dc.strip} border-y border-slate-200 dark:border-slate-700`}>
+                                                <div className="flex items-center gap-1.5 sm:gap-2">
+                                                    <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${dc.badge} flex-shrink-0`} />
+                                                    <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${dc.text}`}>
                                                         {dept || 'Không Phân Ca'} — {employees.length} người
                                                     </span>
                                                 </div>
@@ -340,12 +340,12 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                 </td>
 
                                                 {/* Name */}
-                                                <td className="px-3 py-1 border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10 outline outline-1 outline-transparent">
+                                                <td className="px-1.5 sm:px-3 py-1 border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10 outline outline-1 outline-transparent">
                                                     <button
                                                         onClick={() => onEmployeeClick(emp.name)}
-                                                        className="flex items-center gap-2 min-w-0 group/name"
+                                                        className="flex items-center gap-1 sm:gap-2 min-w-0 group/name"
                                                     >
-                                                        <span className="text-[13px] font-bold text-slate-700 dark:text-slate-200 group-hover/name:text-primary-600 dark:group-hover/name:text-primary-400 transition-colors truncate max-w-[140px]">
+                                                        <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 group-hover/name:text-primary-600 dark:group-hover/name:text-primary-400 transition-colors truncate max-w-[100px] sm:max-w-[140px]">
                                                             {abbreviateName(emp.name)}
                                                         </span>
                                                     </button>
@@ -353,7 +353,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
 
                                                 {/* Data cells */}
                                                 {headers.map(h => (
-                                                    <td key={h.key} className={`px-2 py-1 text-[13px] border-r border-slate-200 dark:border-slate-700 ${h.align === 'right' ? 'text-right' : h.align === 'center' ? 'text-center' : 'text-left'}`}>
+                                                    <td key={h.key} className={`px-1 sm:px-2 py-1 text-[11px] sm:text-[13px] border-r border-slate-200 dark:border-slate-700 ${h.align === 'right' ? 'text-right' : h.align === 'center' ? 'text-center' : 'text-left'}`}>
 
                                                         {h.key === 'doanhThuThuc' && (
                                                             <span className="text-slate-500 dark:text-slate-400 font-medium">{formatCurrency(emp.doanhThuThuc)}</span>
@@ -427,13 +427,13 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                     </tbody>
 
                     {/* ── Footer ── */}
-                    <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[13px] border-t border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100">
+                    <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100">
                         <tr>
-                            <td colSpan={2} className="px-4 py-1.5 text-center sticky left-0 z-10 bg-inherit font-extrabold text-[12px] uppercase tracking-widest text-teal-700 dark:text-teal-300 border-r border-slate-200 dark:border-slate-700">
-                                ∑ Tổng cộng
+                            <td colSpan={2} className="px-2 sm:px-4 py-1 sm:py-1.5 text-center sticky left-0 z-10 bg-inherit font-extrabold text-[10px] sm:text-[12px] uppercase tracking-widest text-teal-700 dark:text-teal-300 border-r border-slate-200 dark:border-slate-700">
+                                ∑ Tổng
                             </td>
                             {headers.map(h => (
-                                <td key={h.key} className={`px-2 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 ${h.align === 'right' ? 'text-right' : h.align === 'center' ? 'text-center' : 'text-left'}`}>
+                                <td key={h.key} className={`px-1 sm:px-2 py-1 sm:py-1.5 text-center border-r border-slate-200 dark:border-slate-700 ${h.align === 'right' ? 'text-right' : h.align === 'center' ? 'text-center' : 'text-left'}`}>
                                     <span style={{ color: h.textColor.includes('text') ? undefined : h.textColor }} className={h.textColor}>
                                         {h.key === 'doanhThuThuc' && formatCurrency(grandTotal?.doanhThuThuc ?? 0)}
                                         {h.key === 'doanhThuQD' && formatCurrency(grandTotal?.doanhThuQD ?? 0)}

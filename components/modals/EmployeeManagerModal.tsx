@@ -201,53 +201,53 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                     
                                     {editingId === emp.id ? (
                                         <>
-                                            <td className="px-4 py-2 border-r border-slate-200 dark:border-slate-700">
+                                            <td className="px-2 sm:px-4 py-1.5 sm:py-2 border-r border-slate-200 dark:border-slate-700">
                                                 <input 
                                                     type="text" 
                                                     value={editName} 
                                                     onChange={e => setEditName(e.target.value)} 
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-                                                    className="w-full px-2 py-1 text-sm border border-indigo-300 rounded focus:ring-indigo-500 dark:bg-slate-700 dark:border-indigo-500 dark:text-white"
+                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs sm:text-sm border border-indigo-300 rounded focus:ring-indigo-500 dark:bg-slate-700 dark:border-indigo-500 dark:text-white"
                                                     autoFocus
                                                 />
                                             </td>
-                                            <td className="px-4 py-2 border-r border-slate-200 dark:border-slate-700">
+                                            <td className="px-2 sm:px-4 py-1.5 sm:py-2 border-r border-slate-200 dark:border-slate-700">
                                                 <input 
                                                     list="department-options"
                                                     type="text" 
                                                     value={editDept} 
                                                     onChange={e => setEditDept(e.target.value)} 
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-                                                    className="w-full px-2 py-1 text-sm border border-indigo-300 rounded focus:ring-indigo-500 dark:bg-slate-700 dark:border-indigo-500 dark:text-white"
+                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs sm:text-sm border border-indigo-300 rounded focus:ring-indigo-500 dark:bg-slate-700 dark:border-indigo-500 dark:text-white"
                                                     placeholder="Chọn hoặc nhập phòng ban..."
                                                 />
                                             </td>
-                                            <td className="px-4 py-3 text-center border-r border-slate-200 dark:border-slate-700">
-                                                <div className="flex justify-center gap-2">
-                                                    <button onClick={handleSave} className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
-                                                        <Icon name="check" size={4} />
+                                            <td className="px-2 sm:px-4 py-1.5 sm:py-3 text-center border-r border-slate-200 dark:border-slate-700">
+                                                <div className="flex justify-center gap-1 sm:gap-2">
+                                                    <button onClick={handleSave} className="p-1 sm:p-1.5 text-emerald-600 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
+                                                        <Icon name="check" size={3.5} className="sm:hidden" /><Icon name="check" size={4} className="hidden sm:block" />
                                                     </button>
-                                                    <button onClick={() => setEditingId(null)} className="p-1.5 text-rose-600 hover:bg-rose-50 rounded dark:text-rose-400 dark:hover:bg-rose-900/30" title="Hủy">
-                                                        <Icon name="x" size={4} />
+                                                    <button onClick={() => setEditingId(null)} className="p-1 sm:p-1.5 text-rose-600 hover:bg-rose-50 rounded dark:text-rose-400 dark:hover:bg-rose-900/30" title="Hủy">
+                                                        <Icon name="x" size={3.5} className="sm:hidden" /><Icon name="x" size={4} className="hidden sm:block" />
                                                     </button>
                                                 </div>
                                             </td>
                                         </>
                                     ) : (
                                         <>
-                                            <td className="px-4 py-3 text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">{emp.name}</td>
-                                            <td className="px-4 py-3 text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-700">
-                                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
+                                            <td className="px-2 sm:px-4 py-1.5 sm:py-3 text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">{emp.name}</td>
+                                            <td className="px-2 sm:px-4 py-1.5 sm:py-3 text-slate-600 dark:text-slate-400 border-r border-slate-200 dark:border-slate-700">
+                                                <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded text-[10px] sm:text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200">
                                                     {emp.dept}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3 text-center border-r border-slate-200 dark:border-slate-700">
-                                                <div className="flex justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ opacity: 1 }}>
-                                                    <button onClick={() => handleEdit(emp)} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Sửa">
-                                                        <Icon name="pencil" size={4} />
+                                            <td className="px-2 sm:px-4 py-1.5 sm:py-3 text-center border-r border-slate-200 dark:border-slate-700">
+                                                <div className="flex justify-center gap-1" style={{ opacity: 1 }}>
+                                                    <button onClick={() => handleEdit(emp)} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Sửa">
+                                                        <Icon name="pencil" size={3.5} className="sm:hidden" /><Icon name="pencil" size={4} className="hidden sm:block" />
                                                     </button>
-                                                    <button onClick={() => handleDelete(emp.id)} className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors" title="Xóa">
-                                                        <Icon name="trash-2" size={4} />
+                                                    <button onClick={() => handleDelete(emp.id)} className="p-1 sm:p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors" title="Xóa">
+                                                        <Icon name="trash-2" size={3.5} className="sm:hidden" /><Icon name="trash-2" size={4} className="hidden sm:block" />
                                                     </button>
                                                 </div>
                                             </td>

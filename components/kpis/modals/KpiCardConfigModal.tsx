@@ -228,8 +228,8 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                     <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 h-10 sm:h-14 flex items-center">
                         <h3 className="font-semibold text-[10px] sm:text-base text-slate-700 dark:text-slate-300">{editingCard ? 'Chi Tiết Thẻ' : 'Chọn thẻ bên trái để tùy chỉnh giao diện và dữ liệu'}</h3>
                         {editingCard && (
-                            <button onClick={() => deleteCard(editingCard.id)} className="ml-auto text-rose-500 hover:text-rose-700 text-sm font-semibold flex items-center gap-1 px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10">
-                                <Icon name="trash-2" size={4} /> Xóa thẻ
+                            <button onClick={() => deleteCard(editingCard.id)} className="ml-auto text-rose-500 hover:text-rose-700 text-[10px] sm:text-sm font-semibold flex items-center gap-0.5 sm:gap-1 px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10">
+                                <Icon name="trash-2" size={3.5} className="sm:hidden" /><Icon name="trash-2" size={4} className="hidden sm:block" /> Xóa thẻ
                             </button>
                         )}
                     </div>
@@ -292,7 +292,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             <span>Thẻ này sẽ lọc dữ liệu trên danh sách Đơn Hàng qua Kho được chọn.</span>
                                         </div>
                                         
-                                        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-4">
                                             <div className="bg-slate-50 dark:bg-slate-800/50 p-2.5 sm:p-4 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 h-fit">
                                                 <label className="block text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Loại Chỉ Số:</label>
                                                 <select 
@@ -354,12 +354,12 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
 
                                 {/* Calculated rendering */}
                                 {editingCard.type === 'calculated' && (
-                                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg sm:rounded-xl p-2.5 sm:p-4">
-                                        <div className="flex items-center gap-2 sm:gap-4">
+                                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800/30 rounded-lg sm:rounded-xl p-2 sm:p-4">
+                                        <div className="flex items-center gap-1.5 sm:gap-4">
                                             <select 
                                                 value={editingCard.operand1_cardId || ''}
                                                 onChange={(e) => updateEditingCard({ operand1_cardId: e.target.value })}
-                                                className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm"
+                                                className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 sm:p-2 text-[10px] sm:text-sm"
                                             >
                                                 <option value="" disabled>-- Chọn Thẻ 1 --</option>
                                                 {internalConfigs.filter(c => c.id !== editingCard.id).map(c => (
@@ -370,7 +370,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             <select 
                                                 value={editingCard.operation || '+'}
                                                 onChange={(e) => updateEditingCard({ operation: e.target.value as any })}
-                                                className="w-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-center font-bold text-indigo-600 text-lg"
+                                                className="w-10 sm:w-16 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 sm:p-2 text-center font-bold text-indigo-600 text-sm sm:text-lg"
                                             >
                                                 <option value="+">+</option>
                                                 <option value="-">-</option>
@@ -381,7 +381,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             <select 
                                                 value={editingCard.operand2_cardId || ''}
                                                 onChange={(e) => updateEditingCard({ operand2_cardId: e.target.value })}
-                                                className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2 text-sm"
+                                                className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 sm:p-2 text-[10px] sm:text-sm"
                                             >
                                                 <option value="" disabled>-- Chọn Thẻ 2 --</option>
                                                 {internalConfigs.filter(c => c.id !== editingCard.id).map(c => (
@@ -390,13 +390,13 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             </select>
                                         </div>
                                         
-                                        <div className="mt-4 flex gap-4">
+                                        <div className="mt-2.5 sm:mt-4 flex gap-2 sm:gap-4">
                                             <div>
-                                                <label className="text-xs font-semibold text-slate-500">Định dạng hiển thị</label>
+                                                <label className="text-[10px] sm:text-xs font-semibold text-slate-500">Định dạng hiển thị</label>
                                                 <select
                                                     value={editingCard.format}
                                                     onChange={(e) => updateEditingCard({ format: e.target.value as any })}
-                                                    className="block mt-1 w-32 bg-white border border-slate-200 rounded p-1.5 text-sm"
+                                                    className="block mt-0.5 sm:mt-1 w-28 sm:w-32 bg-white border border-slate-200 rounded p-1 sm:p-1.5 text-[10px] sm:text-sm"
                                                 >
                                                     <option value="percentage">Phần Trăm (%)</option>
                                                     <option value="currency">Tiền VNĐ</option>

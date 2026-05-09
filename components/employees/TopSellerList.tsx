@@ -102,7 +102,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                     </div>
                 </div>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-2 sm:space-y-4">
                 {sortedDepartments.length === 0 ? (
                     <p className="text-center text-slate-500 dark:text-slate-400 py-8">Không có dữ liệu nhân viên cho bộ phận đã chọn.</p>
                 ) : (
@@ -121,38 +121,38 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                         </h3>
                                     </div>
                                 )}
-                                <div className="space-y-2">
+                                <div className="space-y-1 sm:space-y-2">
                                     {groupedSellers[dept].map((seller) => {
                                         const rankIndex = sortedSellers.findIndex(s => s.name === seller.name);
                                         const medal = rankIndex < 3 ? medals[rankIndex] : null;
                                         
                                         let rankDisplay;
                                         if (medal) {
-                                            rankDisplay = <div className="w-6 sm:w-8 text-lg sm:text-2xl font-bold text-center">{medal}</div>;
+                                            rankDisplay = <div className="w-5 sm:w-8 text-sm sm:text-2xl font-bold text-center">{medal}</div>;
                                         } else {
-                                            rankDisplay = <div className="w-6 sm:w-8 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-semibold text-center">#{rankIndex + 1}</div>
+                                            rankDisplay = <div className="w-5 sm:w-8 text-[10px] sm:text-sm text-slate-500 dark:text-slate-400 font-semibold text-center">#{rankIndex + 1}</div>
                                         }
 
                                         const hieuQuaClass = Number(seller.hieuQuaValue || 0) < 35 ? 'text-red-500 font-bold' : 'text-green-500 font-bold';
                                         const traChamClass = getTraChamPercentClass(Number(seller.traChamPercent || 0));
 
                                         return (
-                                            <div key={seller.name} onClick={() => onEmployeeClick(seller.name)} className="p-2 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 transition-shadow hover:shadow-md cursor-pointer">
-                                                    <div className="flex items-center gap-1.5 sm:gap-2">
+                                            <div key={seller.name} onClick={() => onEmployeeClick(seller.name)} className="p-1.5 sm:p-2 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 transition-shadow hover:shadow-md cursor-pointer">
+                                                    <div className="flex items-center gap-1 sm:gap-1.5">
                                                     {rankDisplay}
                                                     <div className="flex-grow min-w-0">
-                                                        <p className="font-bold text-slate-800 dark:text-slate-100 text-xs sm:text-sm truncate">{abbreviateName(seller.name)}</p>
-                                                        <div className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-2 sm:gap-x-3 gap-y-0.5 mt-0.5 sm:mt-1">
+                                                        <p className="font-bold text-slate-800 dark:text-slate-100 text-[11px] sm:text-sm truncate">{abbreviateName(seller.name)}</p>
+                                                        <div className="text-[9px] sm:text-xs text-slate-500 dark:text-slate-400 flex flex-wrap gap-x-1.5 sm:gap-x-3 gap-y-0 sm:gap-y-0.5 mt-0 sm:mt-1">
                                                             <span><strong className="text-slate-600 dark:text-slate-300">Thực:</strong> {formatCurrency(seller.doanhThuThuc, 0)}</span>
-                                                            <span className="inline-flex items-center"><strong className="text-slate-600 dark:text-slate-300">HQQĐ:</strong><span className={`ml-1 ${hieuQuaClass}`}>{Number(seller.hieuQuaValue || 0).toFixed(0)}%</span></span>
+                                                            <span className="inline-flex items-center"><strong className="text-slate-600 dark:text-slate-300">HQQĐ:</strong><span className={`ml-0.5 ${hieuQuaClass}`}>{Number(seller.hieuQuaValue || 0).toFixed(0)}%</span></span>
                                                             <span><strong className="text-slate-600 dark:text-slate-300">T.Cận:</strong> {formatQuantity(seller.slTiepCan)}</span>
                                                             <span><strong className="text-slate-600 dark:text-slate-300">T.Chậm:</strong> <span className={traChamClass}>{Number(seller.traChamPercent || 0).toFixed(0)}%</span></span>
                                                             <span><strong className="text-slate-600 dark:text-slate-300">T.Hộ:</strong> {formatQuantity(seller.slThuHo)}</span>
                                                         </div>
                                                     </div>
                                                     <div className="text-right flex-shrink-0">
-                                                        <p className="text-[9px] sm:text-xs text-slate-500 dark:text-slate-400">DTQĐ</p>
-                                                        <p className="font-bold text-base sm:text-lg text-indigo-600 dark:text-indigo-400">{formatCurrency(seller.doanhThuQD, 0)}</p>
+                                                        <p className="text-[8px] sm:text-xs text-slate-500 dark:text-slate-400">DTQĐ</p>
+                                                        <p className="font-bold text-sm sm:text-lg text-indigo-600 dark:text-indigo-400">{formatCurrency(seller.doanhThuQD, 0)}</p>
                                                     </div>
                                                 </div>
                                             </div>

@@ -94,7 +94,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                             />
                         </div>
                         <div className="w-full">
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mục Tiêu GTĐH (Đvt: Triệu VNĐ)</label>
+                            <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mục Tiêu GTĐH (Đvt: Triệu VNĐ)</label>
                             <input 
                                 type="text"
                                 value={targetValue}
@@ -104,20 +104,20 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                                     setTargetValue(raw);
                                 }}
                                 placeholder="Ví dụ: 9.5"
-                                className="w-full h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-bold text-rose-600 dark:text-rose-400"
+                                className="w-full h-9 sm:h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 sm:px-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm font-bold text-rose-600 dark:text-rose-400"
                             />
                         </div>
                         <div className="w-full">
                             <button
                                 onClick={handleSave}
                                 disabled={!selectedNhomHang || !targetValue}
-                                className={`w-full h-11 font-bold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 flex justify-center items-center gap-2 ${
+                                className={`w-full h-9 sm:h-11 text-xs sm:text-sm font-bold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 flex justify-center items-center gap-1.5 sm:gap-2 ${
                                     !selectedNhomHang || !targetValue
                                      ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
                                      : 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500 dark:focus:ring-offset-slate-900 border border-transparent'
                                 }`}
                             >
-                                <Icon name="save" size={4} />
+                                <Icon name="save" size={3.5} className="sm:hidden" /><Icon name="save" size={4} className="hidden sm:block" />
                                 LƯU MỤC TIÊU
                             </button>
                         </div>
@@ -146,12 +146,12 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                             {gtdhList.map(([nhom, value]) => (
-                                <div key={nhom} className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-lg shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500 transition-colors group">
+                                <div key={nhom} className="flex justify-between items-center bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-2 sm:p-3 rounded-lg shadow-sm hover:border-indigo-300 dark:hover:border-indigo-500 transition-colors group">
                                     <div className="flex flex-col overflow-hidden pr-2">
-                                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={nhom}>
+                                        <span className="text-[10px] sm:text-xs font-bold text-slate-800 dark:text-slate-200 truncate" title={nhom}>
                                             {nhom}
                                         </span>
-                                        <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 mt-0.5">
+                                        <span className="text-[10px] sm:text-[11px] font-semibold text-rose-600 dark:text-rose-400 mt-0.5">
                                             GTĐH: {formatCurrency(value / 1000000)} T
                                         </span>
                                     </div>

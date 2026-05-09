@@ -42,41 +42,42 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
 
     return (
         <div ref={wrapperRef}>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{label}</label>
+            <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{label}</label>
             <div className="relative">
                 <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-full h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 pl-3 pr-10 text-left shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                    className="w-full h-9 sm:h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 pl-2.5 sm:pl-3 pr-8 sm:pr-10 text-left shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm"
                 >
                     <span className={`truncate ${value ? 'text-slate-800 dark:text-slate-100' : 'text-slate-500'}`}>
                         {displayValue}
                     </span>
                     <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-                        <Icon name="chevrons-up-down" size={4} className="text-slate-400" />
+                        <Icon name="chevrons-up-down" size={3.5} className="text-slate-400 sm:hidden" />
+                        <Icon name="chevrons-up-down" size={4} className="text-slate-400 hidden sm:block" />
                     </span>
                 </button>
                 {isOpen && (
                     <div className="absolute z-20 mt-1 w-full bg-white dark:bg-slate-800 rounded-md shadow-lg border border-slate-200 dark:border-slate-700 max-h-60 flex flex-col">
-                        <div className="p-2 border-b border-slate-200 dark:border-slate-700">
+                        <div className="p-1.5 sm:p-2 border-b border-slate-200 dark:border-slate-700">
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 placeholder="Tìm kiếm..."
-                                className="w-full h-9 block rounded-md border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 pl-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                className="w-full h-8 sm:h-9 block rounded-md border-slate-300 dark:border-slate-600 bg-slate-100 dark:bg-slate-700 pl-2.5 sm:pl-3 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm"
                                 autoFocus
                             />
                         </div>
                         <ul className="overflow-y-auto flex-grow">
                              <li
                                 onClick={() => handleSelect('')}
-                                className="cursor-pointer select-none relative py-2 pl-3 pr-9 text-slate-500 dark:text-slate-400 hover:bg-indigo-100 dark:hover:bg-slate-700"
+                                className="cursor-pointer select-none relative py-1.5 sm:py-2 pl-2.5 sm:pl-3 pr-8 sm:pr-9 text-xs sm:text-sm text-slate-500 dark:text-slate-400 hover:bg-indigo-100 dark:hover:bg-slate-700"
                             >
                                 <span className="block truncate italic">{placeholder}</span>
                                 {!value && (
-                                    <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
-                                        <Icon name="check" size={4} />
+                                    <span className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-indigo-600">
+                                        <Icon name="check" size={3.5} className="sm:hidden" /><Icon name="check" size={4} className="hidden sm:block" />
                                     </span>
                                 )}
                             </li>
@@ -85,12 +86,12 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
                                     <li
                                         key={opt}
                                         onClick={() => handleSelect(opt)}
-                                        className="cursor-pointer select-none relative py-2 pl-3 pr-9 text-slate-800 dark:text-slate-200 hover:bg-indigo-100 dark:hover:bg-slate-700"
+                                        className="cursor-pointer select-none relative py-1.5 sm:py-2 pl-2.5 sm:pl-3 pr-8 sm:pr-9 text-xs sm:text-sm text-slate-800 dark:text-slate-200 hover:bg-indigo-100 dark:hover:bg-slate-700"
                                     >
                                         <span className="block truncate">{opt}</span>
                                         {value === opt && (
-                                            <span className="absolute inset-y-0 right-0 flex items-center pr-4 text-indigo-600">
-                                                <Icon name="check" size={4} />
+                                            <span className="absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-indigo-600">
+                                                <Icon name="check" size={3.5} className="sm:hidden" /><Icon name="check" size={4} className="hidden sm:block" />
                                             </span>
                                         )}
                                     </li>
@@ -104,7 +105,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
                                         <span className="block truncate">Sử dụng "{searchTerm.trim()}"</span>
                                     </li>
                                 ) : (
-                                    <li className="text-center text-slate-500 py-2 text-sm">Không có kết quả.</li>
+                                    <li className="text-center text-slate-500 py-2 text-xs">Không có kết quả.</li>
                                 )
                             )}
                         </ul>

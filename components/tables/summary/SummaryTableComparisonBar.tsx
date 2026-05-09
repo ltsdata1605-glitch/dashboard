@@ -42,7 +42,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                     <select 
                         value={compMode} 
                         onChange={(e) => setCompMode(e.target.value as ComparisonMode)} 
-                        className="text-xs font-bold text-indigo-700 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-800 dark:text-indigo-400 dark:border-slate-700 py-1.5 pl-3 pr-8 cursor-pointer hover:bg-white transition-colors"
+                        className="text-[10px] sm:text-xs font-bold text-indigo-700 bg-slate-50 border border-slate-200 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 dark:bg-slate-800 dark:text-indigo-400 dark:border-slate-700 py-1 sm:py-1.5 pl-2 sm:pl-3 pr-6 sm:pr-8 cursor-pointer hover:bg-white transition-colors"
                     >
                         <option value="day_adjacent">Ngày (Liền kề)</option>
                         <option value="day_same_period">Ngày (CK tháng trước)</option>
@@ -64,7 +64,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                 type="date" 
                                 value={selectedDate} 
                                 onChange={e => setSelectedDate(e.target.value)} 
-                                className="text-xs border-slate-300 rounded shadow-sm focus:ring-teal-500 focus:border-teal-500 dark:bg-slate-700 dark:border-slate-600 py-1 px-2" 
+                                className="text-[10px] sm:text-xs border-slate-300 rounded shadow-sm focus:ring-teal-500 focus:border-teal-500 dark:bg-slate-700 dark:border-slate-600 py-1 px-1.5 sm:px-2" 
                             />
                         </div>
                     )}
@@ -74,7 +74,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                             type="month" 
                             value={selectedMonth} 
                             onChange={e => setSelectedMonth(e.target.value)} 
-                            className="text-xs border-slate-300 rounded shadow-sm focus:ring-teal-500 focus:border-teal-500 dark:bg-slate-700 dark:border-slate-600 py-1 px-2" 
+                            className="text-[10px] sm:text-xs border-slate-300 rounded shadow-sm focus:ring-teal-500 focus:border-teal-500 dark:bg-slate-700 dark:border-slate-600 py-1 px-1.5 sm:px-2" 
                         />
                     )}
 
@@ -88,7 +88,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                     const y = selectedMonth.split('-')[0];
                                     setSelectedMonth(`${y}-${String(m).padStart(2, '0')}`);
                                 }}
-                                className="text-xs font-semibold text-slate-700 border-slate-300 rounded shadow-sm focus:ring-teal-500 focus:border-teal-500 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 py-1 px-1.5"
+                                className="text-[10px] sm:text-xs font-semibold text-slate-700 border-slate-300 rounded shadow-sm focus:ring-teal-500 focus:border-teal-500 dark:bg-slate-700 dark:text-slate-200 dark:border-slate-600 py-1 px-1 sm:px-1.5"
                             >
                                 <option value={1}>Quý 1</option>
                                 <option value={2}>Quý 2</option>
@@ -102,7 +102,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                     const m = selectedMonth.split('-')[1] || '01';
                                     setSelectedMonth(`${e.target.value}-${m}`);
                                 }} 
-                                className="text-xs font-semibold border-slate-300 w-16 rounded shadow-sm focus:ring-teal-500 focus:border-teal-500 dark:bg-slate-700 dark:border-slate-600 py-1 px-1.5" 
+                                className="text-[10px] sm:text-xs font-semibold border-slate-300 w-14 sm:w-16 rounded shadow-sm focus:ring-teal-500 focus:border-teal-500 dark:bg-slate-700 dark:border-slate-600 py-1 px-1 sm:px-1.5" 
                             />
                         </div>
                     )}
@@ -138,7 +138,7 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                                 onChange={(e) => setCompareUpToCurrentDay(e.target.checked)}
                                 className="w-3.5 h-3.5 text-teal-600 rounded border-slate-300 focus:ring-teal-500 cursor-pointer"
                             />
-                            <label htmlFor="compareUpToCurrentDay" className="text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer hover:text-slate-800 transition-colors">
+                            <label htmlFor="compareUpToCurrentDay" className="text-[10px] sm:text-xs font-medium text-slate-600 dark:text-slate-400 cursor-pointer hover:text-slate-800 transition-colors">
                                 Chỉ so sánh ngang tiến độ (đến ngày báo cáo mới nhất)
                             </label>
                         </div>

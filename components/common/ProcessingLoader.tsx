@@ -18,7 +18,7 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
             <div className="absolute inset-0 bg-slate-900/50 dark:bg-slate-950/80 backdrop-blur-xl transition-all duration-500"></div>
 
             {/* Premium Glassmorphism Card */}
-            <div className="relative w-full max-w-[400px] bg-white/90 dark:bg-slate-900/80 backdrop-blur-3xl border border-white/60 dark:border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] rounded-3xl p-8 flex flex-col items-center overflow-hidden">
+            <div className="relative w-full max-w-[320px] sm:max-w-[400px] bg-white/90 dark:bg-slate-900/80 backdrop-blur-3xl border border-white/60 dark:border-white/10 shadow-[0_30px_60px_-15px_rgba(0,0,0,0.3)] rounded-2xl sm:rounded-3xl p-5 sm:p-8 flex flex-col items-center overflow-hidden">
                 
                 {/* Subtle top glare/gradient accent */}
                 <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-indigo-500 to-transparent opacity-60"></div>
@@ -26,46 +26,47 @@ const ProcessingLoader: React.FC<ProcessingLoaderProps> = ({ status, processingT
                 <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-purple-500/20 rounded-full blur-[40px] pointer-events-none"></div>
 
                 {/* Modern Loader Icon */}
-                <div className="relative w-20 h-20 mb-6 flex items-center justify-center">
+                <div className="relative w-14 h-14 sm:w-20 sm:h-20 mb-4 sm:mb-6 flex items-center justify-center">
                     {/* Rotating outer ring */}
-                    <div className="absolute inset-0 rounded-full border-[3px] border-indigo-100 dark:border-slate-800"></div>
-                    <div className="absolute inset-0 rounded-full border-[3px] border-indigo-600 dark:border-indigo-400 border-t-transparent border-r-transparent animate-spin" style={{ animationDuration: '1.2s' }}></div>
+                    <div className="absolute inset-0 rounded-full border-[2px] sm:border-[3px] border-indigo-100 dark:border-slate-800"></div>
+                    <div className="absolute inset-0 rounded-full border-[2px] sm:border-[3px] border-indigo-600 dark:border-indigo-400 border-t-transparent border-r-transparent animate-spin" style={{ animationDuration: '1.2s' }}></div>
                     
                     {/* Inner glowing icon block */}
-                    <div className="relative bg-gradient-to-br from-indigo-500 to-purple-600 w-12 h-12 rounded-xl shadow-lg shadow-indigo-500/40 flex items-center justify-center text-white transform rotate-3">
-                        <Icon name="cpu" size={5.5} className="animate-pulse" />
+                    <div className="relative bg-gradient-to-br from-indigo-500 to-purple-600 w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl shadow-lg shadow-indigo-500/40 flex items-center justify-center text-white transform rotate-3">
+                        <Icon name="cpu" size={4} className="animate-pulse sm:hidden" />
+                        <Icon name="cpu" size={5.5} className="animate-pulse hidden sm:block" />
                     </div>
                 </div>
 
                 {/* Badge & Status Text */}
-                <div className="flex flex-col items-center mb-8 w-full text-center relative z-10">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 mb-3 shadow-inner">
+                <div className="flex flex-col items-center mb-5 sm:mb-8 w-full text-center relative z-10">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/50 mb-2 sm:mb-3 shadow-inner">
                         <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-ping"></div>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300">
+                        <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-300">
                             AI Engine Processing
                         </span>
                     </div>
-                    <h3 className="text-[17px] font-semibold text-slate-800 dark:text-white leading-snug px-2">
+                    <h3 className="text-[14px] sm:text-[17px] font-semibold text-slate-800 dark:text-white leading-snug px-2">
                         {status.message || "Đang tổng hợp dữ liệu báo cáo..."}
                     </h3>
                 </div>
 
                 {/* Progress & Time Section */}
-                <div className="w-full space-y-3 relative z-10">
+                <div className="w-full space-y-2 sm:space-y-3 relative z-10">
                     <div className="flex items-end justify-between px-1">
                         <div className="flex items-baseline mb-0.5">
-                            <span className="text-3xl font-mono tabular-nums font-light tracking-tight text-indigo-600 dark:text-indigo-400 leading-none">
+                            <span className="text-2xl sm:text-3xl font-mono tabular-nums font-light tracking-tight text-indigo-600 dark:text-indigo-400 leading-none">
                                 {seconds}
                             </span>
-                            <span className="text-sm font-medium text-slate-400 dark:text-slate-500 ml-1 leading-none uppercase tracking-widest">
+                            <span className="text-xs sm:text-sm font-medium text-slate-400 dark:text-slate-500 ml-1 leading-none uppercase tracking-widest">
                                 s
                             </span>
                         </div>
                         <div className="flex items-baseline mb-0.5">
-                            <span className="text-2xl font-bold text-slate-800 dark:text-slate-100 leading-none">
+                            <span className="text-xl sm:text-2xl font-bold text-slate-800 dark:text-slate-100 leading-none">
                                 {Math.round(status.progress)}
                             </span>
-                            <span className="text-sm font-bold text-slate-400 dark:text-slate-500 leading-none">
+                            <span className="text-xs sm:text-sm font-bold text-slate-400 dark:text-slate-500 leading-none">
                                 %
                             </span>
                         </div>

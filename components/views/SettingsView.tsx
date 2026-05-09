@@ -32,8 +32,14 @@ const SettingsView: React.FC = () => {
     const [activeTab, setActiveTab] = useState<SettingsTab>('account');
     const { activeTab: globalActiveTab } = useActiveTab();
     const [mounted, setMounted] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
 
-    useEffect(() => { setMounted(true); }, []);
+    useEffect(() => { 
+        setMounted(true); 
+        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
     const [font, setFont] = useState('Plus Jakarta Sans');
     const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(true);
     const [configUrl, setConfigUrl] = useState('');
@@ -201,33 +207,33 @@ const SettingsView: React.FC = () => {
     return (
         <>
             {/* Portal tabs to global header — same pattern as BiWrapper / Phân tích YCX */}
-            {mounted && globalActiveTab === 'settings' && document.getElementById('global-header-actions') && createPortal(
-                <div className="flex items-center gap-1 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
+            {mounted && globalActiveTab === 'settings' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
+                <div className={`flex items-center gap-1 ${isMobile ? '' : 'bg-white/60 dark:bg-slate-900/60 p-1 sm:p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm'} animate-in fade-in zoom-in duration-300 max-w-full overflow-x-auto no-scrollbar`}>
                     {tabs.map(tab => {
                         const isActive = activeTab === tab.id;
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id as SettingsTab)}
-                                className={`flex items-center gap-2 px-4 py-1.5 rounded-full font-semibold text-[13px] transition-all whitespace-nowrap shrink-0 ${
+                                className={`flex items-center ${isMobile ? 'gap-1 px-2 py-1' : 'gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5'} rounded-full font-semibold ${isMobile ? 'text-[10px]' : 'text-xs sm:text-[13px]'} transition-all whitespace-nowrap shrink-0 ${
                                     isActive
                                         ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.1)] border border-slate-200/60 dark:border-slate-700/60'
                                         : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                 }`}
                             >
-                                <Icon name={tab.icon as any} size={4} />
-                                <span>{tab.label}</span>
+                                <Icon name={tab.icon as any} size={isMobile ? 4.5 : 4} />
+                                {!isMobile && <span>{tab.label}</span>}
                             </button>
                         );
                     })}
                 </div>,
-                document.getElementById('global-header-actions')!
+                document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions')!
             )}
 
-            <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 min-h-screen p-4 sm:p-6 overflow-y-auto">
+            <div className="flex-1 bg-slate-50 dark:bg-slate-900/50 min-h-screen p-2 sm:p-6 overflow-y-auto">
             <div className="max-w-5xl mx-auto">
                 {/* Settings Content */}
-                <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700/50 p-6 sm:p-8 rounded-xl">
+                <div className="bg-white dark:bg-slate-800 shadow-sm border border-slate-200 dark:border-slate-700/50 p-3 sm:p-8 rounded-xl">
                         <AnimatePresence mode="wait">
                             {/* APPROVAL / PHÂN QUYỀN */}
                             {activeTab === 'approval_link' && (
@@ -305,9 +311,9 @@ const SettingsView: React.FC = () => {
                                     className="space-y-8"
                                 >
                                     <div>
-                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Cấu Hình Kết Xuất Base Data</h3>
+                                        <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-2 sm:mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Cấu Hình Kết Xuất Base Data</h3>
                                         
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-5 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg">
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-5 border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-lg">
                                             <div>
                                                 <h4 className="font-bold text-slate-800 dark:text-white text-base">Gộp Đơn Cùng Chứng Từ (Deduplication)</h4>
                                                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-md">Các MÃ CHỨNG TỪ giống nhau sẽ bị gộp thành 1 dòng (tổng hợp doanh thu) để tránh làm trùng lặp khi xoay Pivot theo Đơn.</p>
@@ -322,8 +328,8 @@ const SettingsView: React.FC = () => {
                                     </div>
 
                                     <div>
-                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Kết Nối Đám Mây</h3>
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-5 border border-slate-200 dark:border-slate-700 rounded-lg">
+                                        <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-2 sm:mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Kết Nối Đám Mây</h3>
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-5 border border-slate-200 dark:border-slate-700 rounded-lg">
                                             <h4 className="font-bold text-slate-800 dark:text-white text-base mb-2">Google Sheet File CSV</h4>
                                             <input 
                                                 type="text" 
@@ -336,8 +342,8 @@ const SettingsView: React.FC = () => {
                                     </div>
 
                                     <div>
-                                        <h3 className="text-lg font-bold text-rose-600 dark:text-rose-400 mb-4 border-b border-rose-100 dark:border-rose-900/30 pb-2">Khu Vực Nguy Hiểm</h3>
-                                        <div className="bg-rose-50 dark:bg-rose-900/10 p-5 border border-rose-200 dark:border-rose-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-lg">
+                                        <h3 className="text-base sm:text-lg font-bold text-rose-600 dark:text-rose-400 mb-2 sm:mb-4 border-b border-rose-100 dark:border-rose-900/30 pb-2">Khu Vực Nguy Hiểm</h3>
+                                        <div className="bg-rose-50 dark:bg-rose-900/10 p-3 sm:p-5 border border-rose-200 dark:border-rose-800/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 rounded-lg">
                                             <div>
                                                 <h4 className="font-bold text-rose-800 dark:text-rose-400 text-base">Xóa Cứng Toàn Bộ Bộ Nhớ Tạm</h4>
                                                 <p className="text-sm text-rose-600/80 dark:text-rose-400/70 mt-1 max-w-md">Xóa sạch Dữ Liệu YCX (Sales Data), Cấu Hình, Sơ đồ Kho lưu trong Local Database của Trình duyệt. Bạn sẽ cần tải YCX lại từ đầu.</p>
@@ -364,12 +370,12 @@ const SettingsView: React.FC = () => {
                                     className="space-y-8"
                                 >
                                     <div>
-                                        <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Hồ Sơ Định Danh & Quyền Hạn</h3>
+                                        <h3 className="text-base sm:text-lg font-bold text-slate-800 dark:text-white mb-4 sm:mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">Hồ Sơ Định Danh & Quyền Hạn</h3>
                                         
-                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-6 rounded-lg">
+                                        <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-4 sm:gap-6 rounded-lg">
                                             {/* Top: Avatar & Basic Info */}
-                                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6 border-b border-slate-200 dark:border-slate-700/50 pb-6">
-                                                <div className="w-24 h-24 overflow-hidden shadow-md bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 relative group rounded-xl">
+                                            <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-6 border-b border-slate-200 dark:border-slate-700/50 pb-4 sm:pb-6">
+                                                <div className="w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 relative group rounded-xl">
                                                     {user?.photoURL ? (
                                                         <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                                                     ) : (
@@ -377,9 +383,9 @@ const SettingsView: React.FC = () => {
                                                     )}
                                                 </div>
                                                 
-                                                <div className="flex-1 text-center sm:text-left flex flex-col justify-center h-full mt-2 sm:mt-0">
-                                                    <h4 className="text-2xl font-black text-slate-800 dark:text-white">{user?.displayName || 'Thành viên YCX'}</h4>
-                                                    <p className="text-slate-500 dark:text-slate-400 font-medium mb-3">{user?.email}</p>
+                                                <div className="flex-1 text-center sm:text-left flex flex-col justify-center h-full mt-1 sm:mt-0">
+                                                    <h4 className="text-lg sm:text-2xl font-black text-slate-800 dark:text-white leading-tight mb-1">{user?.displayName || 'Thành viên YCX'}</h4>
+                                                    <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mb-2">{user?.email}</p>
                                                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                                                         <span className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 rounded-md ${
                                                             userRole === 'admin' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400' :
@@ -443,20 +449,20 @@ const SettingsView: React.FC = () => {
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                    <div className="bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5 rounded-lg">
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                                                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1 rounded-lg">
                                                         <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="map-pin" size={3.5} /> Danh sách Mã Kho</span>
                                                         <span className="font-mono font-bold text-slate-700 dark:text-slate-300 text-sm truncate uppercase">{departmentId || 'Chưa Đăng Ký'}</span>
                                                     </div>
-                                                    <div className="bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5 rounded-lg">
+                                                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1 rounded-lg">
                                                         <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="user-check" size={3.5} /> Tên Đối Chiếu NV</span>
                                                         <span className="font-bold text-amber-600 dark:text-amber-400 text-sm truncate px-1 italic">{employeeName || 'Không áp dụng'}</span>
                                                     </div>
-                                                    <div className="bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5 rounded-lg">
+                                                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1 rounded-lg">
                                                         <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="shield" size={3.5} /> Chức năng khả dụng</span>
                                                         <span className="font-bold text-slate-700 dark:text-slate-300 text-sm truncate">{userRole === 'admin' ? 'Toàn bộ tính năng' : userRole === 'manager' ? 'Quản Lý Doanh Thu Kho' : 'Xem Báo Cáo Cá Nhân'}</span>
                                                     </div>
-                                                    <div className="bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1.5 rounded-lg">
+                                                    <div className="bg-white dark:bg-slate-800 p-3 sm:p-4 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-1 rounded-lg">
                                                         <span className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1.5"><Icon name="calendar" size={3.5} /> Thời hạn Cấp Phép</span>
                                                         <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm truncate">{expiresAt ? expiresAt.toLocaleDateString('vi-VN') : 'Vô Thời Hạn'}</span>
                                                     </div>

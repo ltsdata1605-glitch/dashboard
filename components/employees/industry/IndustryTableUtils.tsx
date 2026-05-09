@@ -46,7 +46,7 @@ export const HeaderCell: React.FC<{
     return (
         <th
             onClick={() => onSort(sortKey)}
-            className={`px-3 py-2 text-[11px] font-bold cursor-pointer select-none text-center uppercase tracking-wider border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${bgClass} ${textClass} hover:opacity-80 transition-opacity ${className || ''} h-px relative group/th`}
+            className={`px-1.5 sm:px-3 py-1 sm:py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer select-none text-center uppercase tracking-wider border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${bgClass} ${textClass} hover:opacity-80 transition-opacity ${className || ''} h-px relative group/th`}
         >
             <div className="flex items-center justify-center gap-1">
                 {label}
@@ -58,6 +58,6 @@ export const HeaderCell: React.FC<{
 
 export const getHeatmapClass = (value: number, threshold: number) => {
     if (value === 0) return 'text-slate-300 dark:text-slate-600';
-    if (value < threshold) return 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-1 rounded-lg border border-rose-100 dark:border-rose-800/50';
-    return 'text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-900/20 px-2 py-1 rounded-lg border border-emerald-100 dark:border-emerald-800/50';
+    if (value < threshold) return 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-1 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-rose-100 dark:border-rose-800/50';
+    return 'text-emerald-600 dark:text-emerald-400 font-bold bg-emerald-50 dark:bg-emerald-900/20 px-1 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg border border-emerald-100 dark:border-emerald-800/50';
 };

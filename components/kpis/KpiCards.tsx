@@ -126,19 +126,23 @@ const KpiCard: React.FC<{
             {/* Gradient accent strip */}
             <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />
 
-            <div className="px-2.5 py-2 lg:px-4 lg:py-3.5 flex flex-col flex-1">
-                {/* Header: Icon + Title */}
-                <div className="flex items-center gap-1.5 lg:gap-2 mb-1.5 lg:mb-3">
-                    <div className={`w-7 h-7 lg:w-9 lg:h-9 rounded-lg lg:rounded-lg flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
+            <div className="px-2.5 py-1.5 lg:px-4 lg:py-3.5 flex flex-col flex-1">
+                {/* Mobile: Icon + Title + Value in one row */}
+                <div className="flex items-center gap-1.5 lg:gap-2 mb-1 lg:mb-3">
+                    <div className={`w-6 h-6 lg:w-9 lg:h-9 rounded-md lg:rounded-lg flex items-center justify-center ${style.iconBg} ${style.iconText} shadow-sm ${style.glowColor} shrink-0 transition-all duration-300 group-hover:scale-110 group-hover:shadow-md ${isGood && clampedProgress !== undefined && clampedProgress >= 100 ? 'animate-pulse-glow-green' : ''}`}>
                         <Icon name={icon} size={3} className="lg:hidden" />
                         <Icon name={icon} size={4.5} className="hidden lg:block" />
                     </div>
-                    <h3 className="text-[9px] lg:text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-2">{title}</h3>
+                    <h3 className="text-[9px] lg:text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-1 lg:line-clamp-2 flex-1 min-w-0">{title}</h3>
+                    {/* Mobile inline value */}
+                    <div className="lg:hidden shrink-0">
+                        {children}
+                    </div>
                 </div>
 
-                {/* Value */}
+                {/* Desktop: Value on separate line */}
                 <div className="mt-auto">
-                    <div className="flex flex-col">
+                    <div className="hidden lg:flex flex-col">
                         {children}
                     </div>
 
@@ -561,7 +565,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                             progressPercent={progressPercent}
                             isGood={isGood}
                         >
-                            <div className={`text-[19px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight ${valueColor}`}>
+                            <div className={`text-[15px] lg:text-2xl xl:text-[28px] font-extrabold leading-none tracking-tight ${valueColor}`}>
                                 {displayValue}
                             </div>
                         </KpiCard>
