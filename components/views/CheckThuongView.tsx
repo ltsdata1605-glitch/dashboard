@@ -2392,7 +2392,7 @@ export const CheckThuongView: React.FC = () => {
     );
 
     return (
-        <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute inset-0">
+        <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0">
             {mounted && activeTab === 'check-thuong' && hasData && document.getElementById('global-header-actions') && createPortal(
                 renderSearchBar(false),
                 document.getElementById('global-header-actions')!
@@ -2406,7 +2406,7 @@ export const CheckThuongView: React.FC = () => {
                 srcDoc={htmlContent}
                 title="Bảng Tra Cứu Thưởng Thi Đua"
                 className="w-full h-full border-none flex-grow"
-                style={{ width: '100%', height: '100%', minHeight: '100vh', border: 'none' }}
+                style={{ width: '100%', height: '100%', border: 'none' }}
                 sandbox="allow-scripts allow-same-origin allow-forms allow-downloads"
             />
         </div>

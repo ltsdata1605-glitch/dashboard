@@ -16,9 +16,9 @@ const TABS: { tab: SubTab; label: string; icon: React.ReactNode }[] = [
 
 const DashboardToolbar: React.FC<DashboardToolbarProps> = ({ id, activeSubTab, setActiveSubTab }) => {
     return (
-        <div id={id} className="mb-5 flex justify-center sm:justify-start">
+        <div id={id} className="mb-2 sm:mb-5 flex justify-center sm:justify-start">
             <nav
-                className="inline-flex rounded-xl shadow-sm p-1.5 bg-sky-50/50 dark:bg-slate-800/50 border border-sky-100/50 dark:border-slate-700 mr-2 flex-shrink-0"
+                className="inline-flex rounded-xl shadow-sm p-1 sm:p-1.5 bg-sky-50/50 dark:bg-slate-800/50 border border-sky-100/50 dark:border-slate-700 mr-2 flex-shrink-0"
                 aria-label="Dashboard Tabs"
             >
                 {TABS.map(({ tab, label }) => {
@@ -27,7 +27,7 @@ const DashboardToolbar: React.FC<DashboardToolbarProps> = ({ id, activeSubTab, s
                         <button
                             key={tab}
                             onClick={() => setActiveSubTab(tab)}
-                            className={`py-1.5 px-4 sm:px-6 text-[10px] sm:text-[11px] font-black rounded-lg transition-all uppercase tracking-widest ${isActive ? 'bg-white dark:bg-slate-700 text-sky-600 shadow-sm border border-sky-100/50 relative' : 'text-slate-500 hover:text-sky-600 dark:hover:text-sky-400'}`}
+                            className={`py-1 px-3 sm:py-1.5 sm:px-6 text-[9px] sm:text-[11px] font-black rounded-lg transition-all uppercase tracking-widest ${isActive ? 'bg-white dark:bg-slate-700 text-sky-600 shadow-sm border border-sky-100/50 relative' : 'text-slate-500 hover:text-sky-600 dark:hover:text-sky-400'}`}
                         >
                             {label}
                         </button>

@@ -40,8 +40,26 @@ export async function exportToGoogleSheet(
 
     if (!createRes.ok) {
         const errBody = await createRes.text();
-        if (createRes.status === 401 || createRes.status === 403) {
+        console.error(`Google Sheets API error (${createRes.status}):`, errBody);
+        if (createRes.status === 401) {
             throw new Error('AUTH_EXPIRED');
+        }
+        if (createRes.status === 403) {
+            // Parse the actual reason — could be "API not enabled", "insufficient scope", etc.
+            try {
+                const errJson = JSON.parse(errBody);
+                const reason = errJson?.error?.message || errJson?.error?.errors?.[0]?.message || errBody;
+                if (reason.toLowerCase().includes('not been used') || reason.toLowerCase().includes('disabled')) {
+                    throw new Error(`Google Sheets API chưa được bật. Vui lòng bật tại Google Cloud Console. (${reason})`);
+                }
+                if (reason.toLowerCase().includes('insufficient') || reason.toLowerCase().includes('scope')) {
+                    throw new Error(`Thiếu quyền truy cập Google Sheets. Vui lòng đăng nhập lại và cấp quyền. (${reason})`);
+                }
+                throw new Error(`Lỗi quyền truy cập (403): ${reason}`);
+            } catch (parseErr) {
+                if ((parseErr as Error).message.startsWith('Lỗi') || (parseErr as Error).message.startsWith('Google') || (parseErr as Error).message.startsWith('Thiếu')) throw parseErr;
+                throw new Error('AUTH_EXPIRED');
+            }
         }
         throw new Error(`Không thể tạo Google Sheet: ${errBody}`);
     }

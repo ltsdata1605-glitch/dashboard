@@ -258,6 +258,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                     customExploitationTabs={customExploitationTabs}
                     setCustomExploitationTabs={setCustomExploitationTabs}
                     baseFilteredData={filteredEmployeeAnalysisData?.filteredBaseData || baseFilteredData}
+                    allDatesBaseFilteredData={baseFilteredData}
                     productConfig={productConfig}
                     isExporting={isExporting}
                     handleMainExport={handleMainExport}

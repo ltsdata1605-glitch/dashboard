@@ -72,6 +72,7 @@ const TrendChart: React.FC = React.memo(() => {
       getCustomCalendars().then(cals => {
           if (cals && cals.length > 0) {
               setSavedCalendars(cals);
+              setActiveCalendarTab(cals[0].id);
           } else {
               // Mặc định sinh 3 bảng lịch - month sẽ được điền sau khi availableMonths sẵn sàng
               const defaultCals = [
@@ -572,7 +573,46 @@ const TrendChart: React.FC = React.memo(() => {
                         </div>
                     )}
 
-                    {/* Uniform Grid: Draft + Saved Calendars */}
+                    {/* Tab bar for saved calendars */}
+                    {savedCalendars.length > 0 && (
+                        <div className="flex items-center gap-1 overflow-x-auto no-scrollbar hide-on-export">
+                            <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                                {savedCalendars.map((cal) => {
+                                    const pg = Array.isArray(cal.parentGroup) ? cal.parentGroup : [];
+                                    const cg = Array.isArray(cal.childGroup) ? cal.childGroup : [];
+                                    let tabLabel = '';
+                                    if (pg.length > 0 || cg.length > 0) {
+                                        tabLabel = pg.length > 0 && cg.length > 0
+                                            ? `${pg.join(', ')} - ${cg.join(', ')}`
+                                            : cg.length > 0 ? cg.join(', ') : pg.join(', ');
+                                    } else {
+                                        if (cal.metric === 'revenue') tabLabel = 'DOANH THU';
+                                        else if (cal.metric === 'revenueQD') tabLabel = 'DT QĐ';
+                                        else if (cal.metric === 'traChamPercent') tabLabel = 'TRẢ CHẬM';
+                                        else if (cal.metric === 'quantity') tabLabel = 'SỐ LƯỢNG';
+                                        else tabLabel = 'LỊCH';
+                                    }
+                                    const isActive = activeCalendarTab === cal.id;
+                                    return (
+                                        <button
+                                            key={cal.id}
+                                            onClick={() => setActiveCalendarTab(cal.id)}
+                                            className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-lg transition-all ${
+                                                isActive
+                                                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-200 dark:border-indigo-700'
+                                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 border border-transparent'
+                                            }`}
+                                            title={tabLabel}
+                                        >
+                                            {tabLabel}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Draft + Active Saved Calendar */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {/* Draft Calendar */}
                         <div ref={draftCalendarRef} className="border border-slate-200 dark:border-slate-800 overflow-hidden relative z-10 w-full pb-2 bg-slate-50 dark:bg-[#121212] calendar-export-target">
@@ -620,8 +660,8 @@ const TrendChart: React.FC = React.memo(() => {
                             />
                         </div>
 
-                        {/* Saved Calendars — same design as Draft */}
-                        {savedCalendars.map(cal => {
+                        {/* Active Saved Calendar */}
+                        {savedCalendars.filter(cal => cal.id === activeCalendarTab).map(cal => {
                             const pg = Array.isArray(cal.parentGroup) ? cal.parentGroup : [];
                             const cg = Array.isArray(cal.childGroup) ? cal.childGroup : [];
                             let badgeLabel = '';

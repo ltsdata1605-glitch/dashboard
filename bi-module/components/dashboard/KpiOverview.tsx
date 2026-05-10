@@ -74,16 +74,16 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         rightEl?: React.ReactNode;
     }) => {
         return (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-2.5 sm:p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
                 {/* Top styling bar like in image */}
                 <div className={`absolute top-0 left-0 w-full h-1 ${props.iconBg.split(' ')[0]} opacity-50`}></div>
                 
-                <div className="flex justify-between items-start mb-3">
+                <div className="flex justify-between items-start mb-1.5 sm:mb-3">
                     <div className="flex items-center gap-2">
                         <div className={`p-1.5 rounded-lg ${props.iconBg}`}>
                             {props.icon}
                         </div>
-                        <span className={`text-[11px] font-bold uppercase tracking-wider ${props.titleColor}`}>
+                        <span className={`text-[9px] sm:text-[11px] font-bold uppercase tracking-wider ${props.titleColor}`}>
                             {props.title}
                         </span>
                     </div>
@@ -91,11 +91,11 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 </div>
 
                 <div className="flex justify-between items-end mb-2">
-                    <span className={`text-3xl font-black tracking-tight leading-none ${props.valueColor}`}>
+                    <span className={`text-xl sm:text-3xl font-black tracking-tight leading-none ${props.valueColor}`}>
                         {props.value}
                     </span>
                     {props.progressPct !== undefined && (
-                        <span className={`text-sm font-bold tabular-nums mb-1 ${props.valueColor}`}>
+                        <span className={`text-xs sm:text-sm font-bold tabular-nums mb-1 ${props.valueColor}`}>
                             {props.progressPct}%
                         </span>
                     )}
@@ -120,7 +120,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
     return (
         <div className="js-kpi-overview-container space-y-4">
             {/* ROW 1: DOANH THU & CHỈ SỐ LỚN */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                 
                 {/* Card 1: DT THỰC */}
                 {renderCard({
@@ -184,7 +184,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
             </div>
 
             {/* ROW 2: EXTRA METRICS — mỗi thẻ 1 màu pastel riêng */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                 {/* Extra 1: Lượt Khách — Blue Pastel */}
                 {renderCard({
                     title: 'LƯỢT KHÁCH',

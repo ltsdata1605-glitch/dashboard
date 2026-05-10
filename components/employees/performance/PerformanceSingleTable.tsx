@@ -222,6 +222,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             </th>
                             {groupedHeaders.map((group, i) => (
                                 <th key={i} colSpan={group.colSpan} rowSpan={group.noSubHeader ? 2 : 1} className={`px-1 sm:px-2 py-1 sm:py-2 ${group.bg} ${group.text} border-r border-slate-200 dark:border-slate-700 text-center h-px relative group/th ${group.noSubHeader ? 'border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600' : 'border-b'}`}
+                                    style={{ maxWidth: group.colSpan === 1 ? '60px' : undefined }}
                                     onClick={() => {
                                         if (group.noSubHeader) {
                                             const targetCol = headers.find(h => h.groupName === group.name);
@@ -229,7 +230,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                         }
                                     }}
                                 >
-                                    <div className="flex items-center justify-center gap-1">
+                                    <div className="flex items-center justify-center gap-1 whitespace-normal leading-tight">
                                         {group.name}
                                         {group.noSubHeader && sortConfig.key === headers.find(h => h.groupName === group.name)?.key && showSortArrow && (
                                             <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
@@ -327,12 +328,11 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     {/* Employee rows */}
                                     {employees.map((emp: any, idx: number) => {
                                         if (!emp) return null;
-                                        const isTopThree = idx < 3;
 
                                         return (
                                             <tr
                                                 key={`${dept}-${emp.name}-${idx}`}
-                                                className={`group border-b border-slate-200 dark:border-slate-700 transition-colors duration-100 hover:bg-slate-100 dark:hover:bg-slate-800 ${isTopThree ? dc.row : idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800'}`}
+                                                className={`group border-b border-slate-200 dark:border-slate-700 transition-colors duration-100 hover:bg-slate-100 dark:hover:bg-slate-800 ${idx % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800'}`}
                                             >
                                                 {/* Rank */}
                                                 <td className="px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-inherit z-10 outline outline-1 outline-transparent">

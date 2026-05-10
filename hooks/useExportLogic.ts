@@ -144,7 +144,7 @@ export const useExportLogic = ({
             await new Promise(resolve => setTimeout(resolve, 1500));
             await exportElementAsImage(warehouseElement, `bao-cao-kho-tong-hop.png`, {
                 elementsToHide: ['.hide-on-export'],
-                captureAsDisplayed: true,
+                isCompactTable: true,
             });
             await new Promise(resolve => setTimeout(resolve, 800));
     

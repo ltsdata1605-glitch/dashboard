@@ -700,8 +700,9 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
         // Use getBoundingClientRect for better accuracy on scaled/cloned elements
         const rect = clone.getBoundingClientRect();
-        const finalWidth = captureAsDisplayed ? element.clientWidth : (rect.width || clone.scrollWidth);
-        let finalHeight = rect.height || clone.scrollHeight;
+        const exportPadding = 8; // px on each side — must match the padding in htmlToImage style below
+        const finalWidth = (captureAsDisplayed ? element.clientWidth : (rect.width || clone.scrollWidth)) + exportPadding * 2;
+        let finalHeight = (rect.height || clone.scrollHeight) + exportPadding * 2;
         
         // Safety: small padding to prevent content clipping at edges
         finalHeight += 4;
@@ -724,7 +725,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             height: finalHeight,
             style: {
                 margin: '0',
-                padding: '4px',
+                padding: '8px',
             }
         });
 

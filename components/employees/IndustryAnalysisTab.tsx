@@ -294,9 +294,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                 )}
                                  {(employees as (ExploitationData & { slSPChinh_Tong: number, belowAverageCount: number })[]).map((employee, index) => {
                                     const rankIndex = (processedData[dept] as any[]).findIndex(e => e.name === employee.name);
-                                    let rankDisplay = rankIndex < 3 
-                                        ? <span className="text-sm sm:text-lg w-5 sm:w-6 text-center inline-block">{['🥇', '🥈', '🥉'][rankIndex]}</span> 
-                                        : <span className="text-[10px] sm:text-[13px] w-5 sm:w-6 text-center inline-block text-slate-500 font-bold">#{rankIndex + 1}</span>;
+                                    let rankDisplay = <span className="text-[10px] sm:text-[13px] w-5 sm:w-6 text-center inline-block text-slate-500 font-bold">{`#${rankIndex + 1}`}</span>;
 
                                     return (
                                         <tr key={employee.name} className={`group transition-colors hover:bg-teal-50/50 dark:hover:bg-slate-800 ${index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/30 dark:bg-slate-800/20'}`}>

@@ -254,19 +254,19 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
 
     const cardTitle = (
         <div className="card-title-text flex flex-col items-start w-full">
-            <span className="text-xl font-black uppercase text-primary-700 dark:text-primary-400 leading-none tracking-tight">
+            <span className="text-sm sm:text-xl font-black uppercase text-primary-700 dark:text-primary-400 leading-none tracking-tight">
                 {processedTable.title}
             </span>
             {updateTimestamp && !isCumulative && (
-                <div className="flex items-center gap-1 mt-1.5 opacity-60 no-print">
+                <div className="flex items-center gap-1 mt-1 sm:mt-1.5 opacity-60 no-print">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                    <span className="text-[9px] font-bold uppercase tracking-widest text-slate-500">{updateTimestamp}</span>
+                    <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-slate-500">{updateTimestamp}</span>
                 </div>
             )}
         </div>
     );
 
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
 
     // Helper: lấy % HT key tuỳ loại báo cáo
     const getHtKey = () => isCumulative
@@ -326,117 +326,9 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 rounded={false} noPadding
             >
                 <div className="overflow-x-auto -webkit-overflow-scrolling-touch">
-                    {isMobile ? (
-                        /* ─── MOBILE CARD VIEW ─── */
-                        <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                            {processedTable.allRows.map((row, rIdx) => {
-                                const nameIdx = processedTable.allHeaders.indexOf('Tên miền');
-                                const isTotal = row[nameIdx] === 'Tổng';
-                                const isSel = !isTotal && row[nameIdx] === activeSupermarket;
-                                const htIdx = processedTable.allHeaders.indexOf(htKey);
-                                const htPct = htIdx !== -1 ? roundUp(parseNumber(row[htIdx])) : 0;
-                                const htColors = getHtColor(htPct);
-                                const dtqdIdx = processedTable.allHeaders.indexOf('DTQĐ');
-                                const dtqdVal = dtqdIdx !== -1 ? roundUp(parseNumber(row[dtqdIdx])) : 0;
-
-                                /* Hàng TỔNG */
-                                if (isTotal) {
-                                    return (
-                                        <div key={rIdx} className="bg-slate-100 dark:bg-slate-800/80 px-4 py-3 flex items-center justify-between border-t-2 border-slate-300 dark:border-slate-600">
-                                            <span className="text-xs font-black text-slate-700 dark:text-white uppercase tracking-wider">Tổng cụm</span>
-                                            <div className="flex items-center gap-3">
-                                                <div className="text-right">
-                                                    <p className="text-[10px] font-bold text-slate-400 uppercase">DTQĐ</p>
-                                                    <p className="text-sm font-black text-primary-600 dark:text-primary-400 tabular-nums">{f.format(dtqdVal)}</p>
-                                                </div>
-                                                <span className={`text-xs font-black px-2.5 py-1 rounded-full ${htColors.badge}`}>
-                                                    {htPct}%
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                }
-
-                                /* Hàng siêu thị */
-                                return (
-                                    <div key={rIdx} className={`px-4 py-3 ${
-                                        isSel ? 'bg-primary-50/60 dark:bg-primary-900/10' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
-                                    } transition-colors`}>
-                                        {/* Header row: tên + % HT badge */}
-                                        <div className="flex items-center justify-between mb-2">
-                                            <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
-                                                {shortenSupermarketName(String(row[nameIdx])).toUpperCase()}
-                                            </span>
-                                            <div className="flex items-center gap-2">
-                                                {/* Progress pill */}
-                                                <div className="flex items-center gap-1.5">
-                                                    <div className="w-16 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                                                        <div
-                                                            className={`h-full rounded-full ${htColors.bg} transition-all duration-500`}
-                                                            style={{ width: `${Math.min(htPct, 100)}%` }}
-                                                        />
-                                                    </div>
-                                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${htColors.badge}`}>
-                                                        {htPct}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Hero: DTQĐ */}
-                                        <div className="flex items-baseline gap-2 mb-2.5">
-                                            <span className="text-[1.6rem] font-black text-primary-600 dark:text-primary-400 tabular-nums leading-none">
-                                                {f.format(dtqdVal)}
-                                            </span>
-                                            <span className="text-[10px] font-bold text-slate-400">triệu QĐ</span>
-                                            {/* DT Thực */}
-                                            {processedTable.allHeaders.indexOf('DTLK') !== -1 && (
-                                                <span className="ml-auto text-xs font-bold text-[#b91c1c] dark:text-red-400 tabular-nums">
-                                                    {f.format(roundUp(parseNumber(row[processedTable.allHeaders.indexOf('DTLK')])))}
-                                                    <span className="text-[9px] font-medium text-slate-400 ml-0.5">thực</span>
-                                                </span>
-                                            )}
-                                        </div>
-
-                                        {/* Mini grid: các chỉ số khác */}
-                                        <div className="grid grid-cols-3 gap-1.5">
-                                            {orderedHeaders.filter(h => !['Tên miền', 'DTLK', 'DTQĐ'].includes(h)).slice(0, 6).map(h => {
-                                                if (!visibleColumns.has(h)) return null;
-                                                const oIdx = processedTable.allHeaders.indexOf(h);
-                                                if (oIdx === -1) return null;
-                                                const cell = row[oIdx];
-                                                const val = parseNumber(cell?.isMerged ? cell.value : cell);
-                                                const isHtCol = h.includes('%HT') || h === '%HT V.Trội';
-                                                const htC = isHtCol ? getHtColor(val) : null;
-                                                return (
-                                                    <div key={h} className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                                                        <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5"
-                                                            dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
-                                                        />
-                                                        <p className={`text-[11px] font-black tabular-nums leading-none ${
-                                                            htC ? htC.badge.split(' ').filter(c => c.startsWith('text-')).join(' ') : ''
-                                                        }`}>
-                                                            {cell?.isMerged
-                                                                ? (cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val)))
-                                                                : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))}
-                                                        </p>
-                                                        {cell?.isMerged && (
-                                                            <p className={`text-[7px] font-bold mt-0.5 ${parseNumber(cell.growth) >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                                                                {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    ) : (
-                        /* ─── DESKTOP TABLE VIEW ─── */
-                        <div className="overflow-x-auto m-4 mb-6 pb-4 custom-scrollbar">
-                            <table className="w-full border-collapse compact-export-table border border-slate-200 dark:border-slate-700 min-w-max">
+                        {/* ─── TABLE VIEW (always rendered, responsive sizing) ─── */}
+                        <div className="overflow-x-auto m-2 mb-3 pb-2 sm:m-4 sm:mb-6 sm:pb-4 custom-scrollbar">
+                            <table className="w-full border-collapse compact-export-table border border-slate-200 dark:border-slate-700 min-w-max text-[9px] sm:text-[12px]">
                                 <thead>
                                     {/* TIER 1: GROUP HEADERS */}
                                     <tr className="text-[11px] font-bold uppercase tracking-wider">
@@ -445,7 +337,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                             <th
                                                 rowSpan={2}
                                                 className={`
-                                                    px-4 py-2.5 text-center text-[12px] font-bold
+                                                    px-2 py-1.5 sm:px-4 sm:py-2.5 text-center text-[10px] sm:text-[12px] font-bold
                                                     text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30
                                                     border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
                                                     border-r border-slate-200 dark:border-slate-700
@@ -464,7 +356,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         key={`group-${idx}`}
                                                         rowSpan={2}
                                                         className={`
-                                                            py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider text-center
+                                                            py-1.5 px-1 sm:py-2.5 sm:px-2 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-center
                                                             align-middle whitespace-nowrap
                                                             border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
                                                             border-r border-slate-200 dark:border-slate-700
@@ -480,7 +372,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                     key={`group-${idx}`}
                                                     colSpan={g.colspan}
                                                     className={`
-                                                        py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider text-center 
+                                                        py-1.5 px-1 sm:py-2.5 sm:px-2 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-center 
                                                         border-b border-r border-slate-200 dark:border-slate-700
                                                         ${g.bg} ${g.text}
                                                     `}
@@ -504,7 +396,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 <th
                                                     key={h}
                                                     className={`
-                                                        px-2 py-2.5 text-[11px] font-bold uppercase
+                                                        px-1 py-1.5 sm:px-2 sm:py-2.5 text-[9px] sm:text-[11px] font-bold uppercase
                                                         tracking-wider border-r border-slate-200 dark:border-slate-700
                                                         border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
                                                         text-center align-middle whitespace-nowrap
@@ -554,7 +446,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         <td
                                                             key={h}
                                                             className={`
-                                                                px-2 py-2.5 whitespace-nowrap text-[12px]
+                                                                px-1 py-1.5 sm:px-2 sm:py-2.5 whitespace-nowrap
                                                                 leading-tight h-px
                                                                 tabular-nums align-middle
                                                                 ${isTotal ? 'font-bold text-slate-900 dark:text-slate-100' : 'font-semibold text-slate-600 dark:text-slate-300'}
@@ -594,7 +486,6 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                 </tbody>
                             </table>
                         </div>
-                    )}
                 </div>
             </Card>
         </div>

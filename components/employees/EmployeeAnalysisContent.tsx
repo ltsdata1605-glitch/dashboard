@@ -17,6 +17,7 @@ interface EmployeeAnalysisContentProps {
     customExploitationTabs: any[];
     setCustomExploitationTabs: React.Dispatch<React.SetStateAction<any[]>>;
     baseFilteredData: any[];
+    allDatesBaseFilteredData: any[];
     productConfig: any;
     isExporting: boolean;
     handleMainExport: () => Promise<void>;
@@ -40,6 +41,7 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
     customExploitationTabs,
     setCustomExploitationTabs,
     baseFilteredData,
+    allDatesBaseFilteredData,
     productConfig,
     isExporting,
     handleMainExport,
@@ -96,7 +98,7 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                 </div>
             );
         case 'headToHead': 
-            return <HeadToHeadTab ref={exportRef} baseFilteredData={baseFilteredData} productConfig={productConfig!} employeeData={filteredEmployeeAnalysisData.fullSellerArray} onExport={handleMainExport} isExporting={isExporting} colorThemes={colorThemes} />;
+            return <HeadToHeadTab ref={exportRef} baseFilteredData={allDatesBaseFilteredData} productConfig={productConfig!} employeeData={filteredEmployeeAnalysisData.fullSellerArray} onExport={handleMainExport} isExporting={isExporting} colorThemes={colorThemes} />;
 
         default:
             const customTab = customTabs.find(t => t.id === activeTab);

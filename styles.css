@@ -81,6 +81,9 @@
   .compact-export-table td {
     @apply px-1 py-1 text-[10px];
   }
+  .compact-export-table tfoot td {
+    @apply text-[11px];
+  }
 
   /* Report BI — tiêu đề & chú thích mặc định dùng UTM Avo */
   .js-report-title {

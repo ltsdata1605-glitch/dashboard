@@ -278,10 +278,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
 
     return (
         <ExportOptionsProvider value={{ showExportOptions: exportOptions.showExportOptions }}>
-        <div className="space-y-6">
+        <div className="space-y-3 sm:space-y-6">
             <DashboardHeader title="Tổng quan Siêu thị" activeMainTab={activeMainTab} setActiveMainTab={setActiveMainTab} />
             
-            <div className="mt-8">
+            <div className="mt-3 sm:mt-8">
                 <DashboardToolbar 
                     id={isRealtimeView ? "realtime-controls" : "cumulative-controls"}
                     activeSubTab={activeSubTab}
@@ -299,9 +299,9 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                     isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
                 />
 
-                <div className="mt-8">
+                <div className="mt-3 sm:mt-8">
                     {activeSubTab === 'revenue' && (
-                        <div ref={printableRef} className="space-y-6">
+                        <div ref={printableRef} className="space-y-3 sm:space-y-6">
                             <SummaryTableView 
                                 ref={summaryTableRef}
                                 data={isRealtimeView ? summaryRealtimeParsed.table : summaryLuyKeParsed.table} 

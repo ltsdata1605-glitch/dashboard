@@ -17,7 +17,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(({ title, actionButton, child
         rounded ? 'rounded-3xl' : 'rounded-none'
       }`}
     >
-      <div className={`flex flex-col sm:flex-row justify-between sm:items-center px-4 py-2.5 gap-2 border-b border-slate-50 dark:border-slate-800/40 card-header-container bg-slate-50/20 dark:bg-slate-900/10`}>
+      <div className={`flex flex-col sm:flex-row justify-between sm:items-center px-2.5 py-2 sm:px-4 sm:py-2.5 gap-1.5 sm:gap-2 border-b border-slate-50 dark:border-slate-800/40 card-header-container bg-slate-50/20 dark:bg-slate-900/10`}>
         <div className="text-base font-black text-slate-800 dark:text-slate-100 tracking-tight uppercase">
           {title}
         </div>

@@ -158,7 +158,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
             }
 
             return {
-                'Kho Xuất': getRowValue(order, ['Kho', 'Kho xuất', 'TenKho']),
+                'Kho Xuất': getRowValue(order, COL.KHO),
                 'Người Tạo': getRowValue(order, ['NguoiTao', 'Người tạo', 'NV Tạo']),
                 'Tên Khách Hàng': getRowValue(order, ['TenKhachHang', 'Khách hàng', 'Tên khách hàng']) || 'Khách lẻ',
                 'Mã Đơn Hàng': getRowValue(order, COL.ID),
@@ -345,7 +345,7 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         toastEl.textContent = '📊 Đang tạo Google Sheet...';
         document.body.appendChild(toastEl);
 
-        try {
+        const attemptExport = async (retryCount = 0): Promise<void> => {
             // Always force fresh login with consent to guarantee spreadsheets scope
             toastEl.textContent = '🔑 Đang xác thực Google...';
             sessionStorage.removeItem('googleOAuthToken');
@@ -359,13 +359,9 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
 
             const finalOrders = salesData.filter(row => (Number(getRowValue(row, COL.PRICE)) || 0) > 0);
 
-            const headers = ['Kho Xuất', 'Người Tạo', 'Tên Khách Hàng', 'Mã Đơn Hàng', 'Tên Sản Phẩm', 'Số Lượng', 'Doanh Thu Thực', 'Doanh Thu QĐ', 'Thời Gian Hẹn', 'Trạng Thái Xuất', 'Giải Trình'];
+            const headers = ['Kho Xuất', 'Người Tạo', 'Tên Khách Hàng', 'Mã Đơn Hàng', 'Tên Sản Phẩm', 'Số Lượng', 'Doanh Thu Thực', 'Thời Gian Hẹn', 'Trạng Thái Xuất', 'Giải Trình'];
             const rows = finalOrders.map(order => {
-                const maNganhHang = getRowValue(order, COL.MA_NGANH_HANG);
-                const maNhomHang = getRowValue(order, COL.MA_NHOM_HANG);
-                const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig || undefined);
                 const price = Number(getRowValue(order, COL.PRICE)) || 0;
-                const revenueQD = price * heso;
 
                 let scheduledDateRaw = order['Thời gian hẹn giao'] || order['TG Hẹn Giao'] || order.parsedDate;
                 let formattedDate = 'N/A';
@@ -377,14 +373,13 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                 }
 
                 return [
-                    getRowValue(order, ['Kho', 'Kho xuất', 'TenKho']) || '',
+                    getRowValue(order, COL.KHO) || '',
                     getRowValue(order, ['NguoiTao', 'Người tạo', 'NV Tạo']) || '',
                     getRowValue(order, ['TenKhachHang', 'Khách hàng', 'Tên khách hàng']) || 'Khách lẻ',
                     getRowValue(order, COL.ID) || '',
                     getRowValue(order, COL.PRODUCT) || '',
                     Number(getRowValue(order, COL.QUANTITY)) || 0,
                     price,
-                    Math.round(revenueQD),
                     formattedDate,
                     getRowValue(order, ['TrangThaiXuat', 'Trạng thái xuất']) || 'Chưa xuất',
                     '' // Cột Giải Trình để trống cho NV nhập
@@ -397,22 +392,69 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
 
             toastEl.textContent = `📊 Đang ghi ${rows.length} đơn hàng...`;
 
-            const url = await exportToGoogleSheet(token, {
-                title: `Đơn Hàng Chờ Xuất - ${dateStr} ${timeStr}`,
-                headers,
-                rows,
-                sheetName: 'DonHangChoXuat'
-            });
+            try {
+                const url = await exportToGoogleSheet(token, {
+                    title: `Đơn Hàng Quá Hạn chưa xuất - ${dateStr} ${timeStr}`,
+                    headers,
+                    rows,
+                    sheetName: 'DonHangChoXuat'
+                });
 
-            // Auto-copy link to clipboard
-            await navigator.clipboard.writeText(url);
+                // Build formatted clipboard message with @user tags
+                const employeeTags = creatorData.map(creator => {
+                    const match = creator.name.match(/^(\d+)/);
+                    return match ? `@${match[1]}` : `@${creator.name}`;
+                });
 
-            toastEl.textContent = `✅ Đã tạo Google Sheet & sao chép link!`;
-            toastEl.style.background = '#16a34a';
-            setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);
+                const clipboardMessage = `Các bạn hoàn tất xử lý và giải trình đơn QUÁ HẠN CHƯA XUẤT:
 
-            // Open the new spreadsheet
-            window.open(url, '_blank');
+Hoàn tất xuất và giải trình xoá tên:
+${employeeTags.join('\n')}
+
+Link: ${url}`;
+
+                await navigator.clipboard.writeText(clipboardMessage);
+
+                // Show success toast with link button (don't auto-open)
+                toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:14px 20px;border-radius:12px;font-size:13px;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .2s;display:flex;flex-direction:column;gap:10px;max-width:420px;width:90vw';
+                toastEl.innerHTML = '';
+
+                const msgDiv = document.createElement('div');
+                msgDiv.textContent = '✅ Đã tạo Google Sheet & sao chép tin nhắn!';
+                msgDiv.style.fontWeight = '600';
+                toastEl.appendChild(msgDiv);
+
+                const btnRow = document.createElement('div');
+                btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
+
+                const openBtn = document.createElement('a');
+                openBtn.href = url;
+                openBtn.target = '_blank';
+                openBtn.textContent = '📄 Mở Sheet';
+                openBtn.style.cssText = 'padding:6px 14px;background:#fff;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;cursor:pointer';
+
+                const closeBtn = document.createElement('button');
+                closeBtn.textContent = 'Đóng';
+                closeBtn.style.cssText = 'padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer';
+                closeBtn.onclick = () => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); };
+
+                btnRow.appendChild(openBtn);
+                btnRow.appendChild(closeBtn);
+                toastEl.appendChild(btnRow);
+
+                setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 15000);
+            } catch (apiErr: any) {
+                // If AUTH_EXPIRED and haven't retried yet, re-login and try once more
+                if (apiErr?.message === 'AUTH_EXPIRED' && retryCount < 1) {
+                    toastEl.textContent = '🔄 Token hết hạn, đang xác thực lại...';
+                    return attemptExport(retryCount + 1);
+                }
+                throw apiErr;
+            }
+        };
+
+        try {
+            await attemptExport();
         } catch (err: any) {
             console.error('Google Sheets export error:', err);
             const errMsg = (err?.message || '').toLowerCase();
@@ -420,6 +462,8 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                 toastEl.textContent = '❌ Đăng nhập bị huỷ.';
             } else if (errMsg.includes('network') || errMsg.includes('failed to fetch')) {
                 toastEl.textContent = '🌐 Không có kết nối mạng.';
+            } else if (errMsg === 'auth_expired') {
+                toastEl.textContent = '🔑 Phiên đăng nhập hết hạn. Vui lòng thử lại.';
             } else {
                 toastEl.textContent = `⚠️ Lỗi: ${err?.message || 'Không xác định'}`;
             }

@@ -226,7 +226,7 @@ function AppContent() {
                     <PendingApprovalBanner />
 
                     {/* Global Page Header */}
-                    <div className="lg:sticky lg:top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-6 pb-1 lg:pb-2 lg:border-b border-slate-200/60 dark:border-slate-700/60">
+                    <div className="hidden lg:block lg:sticky lg:top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-6 pb-1 lg:pb-2 lg:border-b border-slate-200/60 dark:border-slate-700/60">
                         <div className="flex items-center justify-end lg:justify-between gap-4 w-full flex-wrap">
                             <div className="hidden lg:flex items-center gap-4 shrink-0">
                                 <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
@@ -240,7 +240,7 @@ function AppContent() {
 
                     {/* Desktop Notification Center has been moved into the Header component to prevent layout overlap */}
                     
-                    <div className="w-full relative">
+                    <div className="w-full relative flex-grow min-h-0 pb-20 lg:pb-0">
                         <ErrorBoundary name="MainContent">
                             <Suspense fallback={
                                 <div className="flex items-center justify-center min-h-[50vh]">
