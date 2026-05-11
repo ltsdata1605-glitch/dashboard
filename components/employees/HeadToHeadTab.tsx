@@ -31,6 +31,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
     const [modalState, setModalState] = useState<{ type: 'ADD' | 'EDIT' | 'DELETE' | null, data?: HeadToHeadTableConfig }>({ type: null });
     const [isBatchExporting, setIsBatchExporting] = useState(false);
     const [activeTableId, setActiveTableId] = useState<string | null>(null);
+    const [includeToday, setIncludeToday] = useState(true);
     const { filterState } = useDashboardContext();
     
     const tableRefs = React.useRef<(HTMLDivElement | null)[]>([]);
@@ -131,7 +132,8 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                 const safeTabName = tableConfig.tableName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
                 await exportElementAsImage(tableElement, `${prefix}-7-ngay-${safeTabName}.png`, {
                     elementsToHide: ['.hide-on-export'],
-                    isCompactTable: true
+                    isCompactTable: true,
+                    fitAllColumns: true
                 });
                 await new Promise(resolve => setTimeout(resolve, 300));
             }
@@ -141,23 +143,71 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
 
     const suggestionBoxTheme = colorThemes[4] || colorThemes[0]; // Indigo or fallback
 
+    const activeTable = tables.find(t => t.id === activeTableId);
+
     return (
         <div ref={ref}>
-            {/* Header */}
-            <div className="flex justify-between items-center mb-3 sm:mb-6">
-                <div className="flex items-center gap-2 sm:gap-4">
-                    <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400`}>
-                        <Icon name="calendar-days" size={4} className="sm:hidden" />
-                        <Icon name="calendar-days" size={6} className="hidden sm:block" />
+            {/* Merged Header */}
+            <div className="mb-3 sm:mb-4">
+                <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400">
+                            <Icon name="calendar-days" size={4} className="sm:hidden" />
+                            <Icon name="calendar-days" size={5} className="hidden sm:block" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm sm:text-base font-black text-slate-800 dark:text-white leading-tight uppercase">
+                                {activeTable ? activeTable.tableName : '7 Ngày'}
+                            </h3>
+                            <p className="text-[9px] sm:text-[11px] font-medium text-slate-400">7 ngày gần nhất</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className="text-sm sm:text-lg font-black text-slate-800 dark:text-white leading-tight">7 Ngày</h3>
-                        <p className="text-[9px] sm:text-xs font-medium text-slate-400">Phân tích hiệu suất 7 ngày gần nhất</p>
+                    <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
+                        <button
+                            type="button"
+                            onClick={() => setIncludeToday(p => !p)}
+                            className={`p-1 sm:p-1.5 rounded-lg transition-all ${
+                                includeToday 
+                                ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400' 
+                                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }`}
+                            title={includeToday ? 'Đang bao gồm hôm nay — Nhấn để loại bỏ' : 'Không bao gồm hôm nay — Nhấn để thêm'}
+                        >
+                            <Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={4} />
+                        </button>
+                        {activeTable && (
+                            <>
+                                <button onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
+                                    <Icon name="pencil" size={3.5} className="sm:hidden"/><Icon name="pencil" size={4} className="hidden sm:block"/>
+                                </button>
+                                <button onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                                    <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={4} className="hidden sm:block"/>
+                                </button>
+                            </>
+                        )}
+                        <button onClick={() => setModalState({ type: 'ADD' })} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Tạo bảng 7 Ngày mới">
+                            <Icon name="plus" size={3.5} className="sm:hidden" /><Icon name="plus" size={4} className="hidden sm:block" />
+                        </button>
+                        {onExport && (
+                            <button onClick={onExport} disabled={isExporting} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
+                                {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} />}
+                            </button>
+                        )}
+                        <button 
+                            onClick={handleBatchExport} 
+                            disabled={isBatchExporting || tables.length === 0}
+                            className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all"
+                            title="Xuất hàng loạt ảnh toàn bộ bảng 7 ngày"
+                        >
+                            {isBatchExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="images" size={4} />}
+                        </button>
                     </div>
                 </div>
-                <div className="flex items-center gap-2 hide-on-export overflow-x-auto no-scrollbar py-1">
-                    {!isBatchExporting && tables.length > 0 && (
-                        <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+
+                {/* Tabs below title */}
+                {!isBatchExporting && tables.length > 1 && (
+                    <div className="mt-2 sm:mt-3 overflow-x-auto no-scrollbar hide-on-export">
+                        <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 w-fit">
                             {tables.map((t, index) => {
                                 const theme = colorThemes[index % colorThemes.length];
                                 const isActive = activeTableId === t.id;
@@ -176,28 +226,8 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                                 </button>
                             )})}
                         </div>
-                    )}
-                    
-                    <div className="flex items-center gap-0.5 sm:gap-1 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-1 sm:p-1.5 rounded-lg sm:rounded-xl shrink-0 shadow-sm">
-                        <button onClick={() => setModalState({ type: 'ADD' })} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Tạo bảng 7 Ngày mới">
-                            <Icon name="plus" size={3.5} className="sm:hidden" /><Icon name="plus" size={4.5} className="hidden sm:block" />
-                        </button>
-                        <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
-                        {onExport && (
-                            <button onClick={onExport} disabled={isExporting} className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
-                                {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin" /> : <Icon name="camera" size={4.5} />}
-                            </button>
-                        )}
-                        <button 
-                            onClick={handleBatchExport} 
-                            disabled={isBatchExporting || tables.length === 0}
-                            className="p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all"
-                            title="Xuất hàng loạt ảnh toàn bộ bảng 7 ngày"
-                        >
-                            {isBatchExporting ? <Icon name="loader-2" size={4.5} className="animate-spin" /> : <Icon name="images" size={4.5} />}
-                        </button>
                     </div>
-                </div>
+                )}
             </div>
 
             <div className="grid grid-cols-1 gap-6">
@@ -216,6 +246,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                                     onEdit={() => setModalState({ type: 'EDIT', data: tableConfig })}
                                     onDelete={() => setModalState({ type: 'DELETE', data: tableConfig })}
                                     tableColorTheme={currentTheme}
+                                    includeToday={includeToday}
                                 />
                             </div>
                         </div>

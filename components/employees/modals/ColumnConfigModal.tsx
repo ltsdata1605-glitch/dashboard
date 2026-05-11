@@ -6,6 +6,7 @@ import { DataColumnForm } from './column-config/DataColumnForm';
 import { CalculatedColumnForm } from './column-config/CalculatedColumnForm';
 import { TargetColumnForm } from './column-config/TargetColumnForm';
 import { FormattingRulesForm } from './column-config/FormattingRulesForm';
+import { DATA_STATUS_COLORS } from '../../../constants';
 
 interface ColumnModalProps {
     isOpen: boolean;
@@ -46,7 +47,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
 
     const [headerColor, setHeaderColor] = useState<string>('');
 
-    const [formattingRules, setFormattingRules] = useState<{ id: number; condition: string; value1: string; value2: string; color: string; }[]>([]);
+    const [formattingRules, setFormattingRules] = useState<{ id: number; condition: string; value1: string; value2: string; color: string; textColor: string; }[]>([]);
     
     const [feedback, setFeedback] = useState<{type: 'error' | 'success', message: string} | null>(null);
     const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -112,7 +113,8 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                         condition: rule.condition,
                         value1: String(rule.value1),
                         value2: String(rule.value2 || ''),
-                        color: rule.color
+                        color: rule.color,
+                        textColor: (rule as any).textColor || '#000000'
                     })));
                 } else {
                     setFormattingRules([]);
@@ -162,12 +164,29 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
         feedbackTimer.current = setTimeout(() => setFeedback(null), 3500);
     };
 
+    const getDefaultColorsForCondition = (condition: string) => {
+        if (condition === '<' || condition === '<avg') {
+            return { color: DATA_STATUS_COLORS.negative.bg, textColor: DATA_STATUS_COLORS.negative.text };
+        }
+        return { color: DATA_STATUS_COLORS.positive.bg, textColor: DATA_STATUS_COLORS.positive.text };
+    };
+
     const addFormattingRule = () => {
-        setFormattingRules(prev => [...prev, { id: Date.now(), condition: '>', value1: '', value2: '', color: '#ef4444' }]);
+        const defaults = getDefaultColorsForCondition('<avg');
+        setFormattingRules(prev => [...prev, { id: Date.now(), condition: '<avg', value1: '', value2: '', ...defaults }]);
     };
 
     const updateFormattingRule = (id: number, field: string, value: string) => {
-        setFormattingRules(prev => prev.map(rule => rule.id === id ? { ...rule, [field]: value } : rule));
+        setFormattingRules(prev => prev.map(rule => {
+            if (rule.id !== id) return rule;
+            const updated = { ...rule, [field]: value };
+            if (field === 'condition') {
+                const defaults = getDefaultColorsForCondition(value);
+                updated.color = defaults.color;
+                updated.textColor = defaults.textColor;
+            }
+            return updated;
+        }));
     };
 
     const removeFormattingRule = (id: number) => {

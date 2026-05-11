@@ -4,6 +4,7 @@ import type { Employee } from '../../types';
 import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { saveTopSellerAnalysis } from '../../services/dbService';
+import { RankBadge } from './performance/PerformanceTableUtils';
 
 interface TopSellerListProps {
     fullSellerArray: Employee[];
@@ -59,7 +60,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
 
     const sortedDepartments = useMemo(() => Object.keys(groupedSellers).sort(), [groupedSellers]);
     
-    const medals = ['🥇', '🥈', '🥉'];
+
 
     const handleBatchExportClick = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -111,33 +112,23 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                         return (
                             <div key={dept}>
                                 {showHeader && (
-                                    <div className="flex items-center gap-1.5 sm:gap-2.5 bg-gradient-to-r from-sky-50 to-indigo-50/40 dark:from-sky-900/40 dark:to-indigo-900/20 px-2 sm:px-3 py-1.5 sm:py-2.5 border-l-4 border-sky-400 dark:border-sky-500 rounded-r-lg shadow-sm border-t border-r border-b border-white dark:border-slate-800 mb-2 sm:mb-3 ml-0.5">
-                                        <div className="text-sky-600 dark:text-sky-400">
-                                            <Icon name="users-round" size={3.5} className="sm:hidden" />
-                                            <Icon name="users-round" size={4.5} className="hidden sm:block" />
-                                        </div>
-                                        <h3 className="text-[11px] sm:text-[15px] font-bold text-sky-900 dark:text-sky-100 uppercase tracking-wide translate-y-[0.5px]">
-                                            {dept}
-                                        </h3>
+                                    <div className="flex items-center gap-1.5 sm:gap-2 bg-slate-50/80 dark:bg-slate-800/50 px-2 sm:px-3 py-1 sm:py-1.5 mb-1 sm:mb-2">
+                                        <span className="w-1 sm:w-1.5 h-3 sm:h-4 rounded-full flex-shrink-0" style={{background: '#3b82f6'}} />
+                                        <span className="text-[9px] sm:text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-widest leading-none">
+                                            {dept} <span className="opacity-60 ml-1 sm:ml-2 font-medium bg-slate-200/50 dark:bg-slate-700 px-1.5 sm:px-2 py-0.5 rounded-full">{groupedSellers[dept].length} NS</span>
+                                        </span>
                                     </div>
                                 )}
                                 <div className="space-y-1 sm:space-y-2">
                                     {groupedSellers[dept].map((seller) => {
                                         const rankIndex = sortedSellers.findIndex(s => s.name === seller.name);
-                                        const medal = rankIndex < 3 ? medals[rankIndex] : null;
-                                        
-                                        let rankDisplay;
-                                        if (medal) {
-                                            rankDisplay = <div className="w-5 sm:w-8 text-sm sm:text-2xl font-bold text-center">{medal}</div>;
-                                        } else {
-                                            rankDisplay = <div className="w-5 sm:w-8 text-[10px] sm:text-sm text-slate-500 dark:text-slate-400 font-semibold text-center">#{rankIndex + 1}</div>
-                                        }
+                                        let rankDisplay = <div className="w-5 sm:w-8 text-center"><RankBadge rank={rankIndex} /></div>;
 
                                         const hieuQuaClass = Number(seller.hieuQuaValue || 0) < 35 ? 'text-red-500 font-bold' : 'text-green-500 font-bold';
                                         const traChamClass = getTraChamPercentClass(Number(seller.traChamPercent || 0));
 
                                         return (
-                                            <div key={seller.name} onClick={() => onEmployeeClick(seller.name)} className="p-1.5 sm:p-2 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 transition-shadow hover:shadow-md cursor-pointer">
+                                            <div key={seller.name} onClick={() => onEmployeeClick(seller.name)} className="p-1.5 sm:p-2 border bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg transition-shadow hover:shadow-md cursor-pointer">
                                                     <div className="flex items-center gap-1 sm:gap-1.5">
                                                     {rankDisplay}
                                                     <div className="flex-grow min-w-0">

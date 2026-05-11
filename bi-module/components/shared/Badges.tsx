@@ -2,7 +2,11 @@ import React from 'react';
 
 export const MedalBadge: React.FC<{ rank?: number }> = ({ rank }) => {
     if (!rank) return <div className="w-7" />;
-    return <span className="text-slate-400 font-bold w-7 text-center text-xs tabular-nums">#{rank}</span>;
+    const base = "w-7 text-center text-[13px] font-black tabular-nums";
+    if (rank === 1) return <span className={`${base} text-amber-500`} title="TOP 1">#1</span>;
+    if (rank === 2) return <span className={`${base} text-slate-400`} title="TOP 2">#2</span>;
+    if (rank === 3) return <span className={`${base} text-amber-700`} title="TOP 3">#3</span>;
+    return <span className={`${base} text-slate-400`}>#{rank}</span>;
 };
 
 export const DeltaBadge: React.FC<{ current: number, previous?: number, isPercent?: boolean, isCurrency?: boolean }> = ({ current, previous, isPercent = false, isCurrency = false }) => {

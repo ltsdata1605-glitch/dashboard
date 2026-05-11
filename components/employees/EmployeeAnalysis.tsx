@@ -151,7 +151,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
             const filename = `${prefix}-Phan-tich-nhan-vien-${safeTabName}.png`;
             const compactTabs = ['performanceTable', 'headToHead', 'summarySynthesis', 'industryAnalysis'];
             const isCustomTab = !defaultTabs.find(t => t.id === activeTab);
-            const options = (compactTabs.includes(activeTab) || isCustomTab) ? { isCompactTable: true } : {};
+            const options = (compactTabs.includes(activeTab) || isCustomTab) ? { isCompactTable: true, ...((activeTab === 'performanceTable' || activeTab === 'industryAnalysis') ? { fitAllColumns: true } : {}) } : {};
             await handleExport(exportRef.current, filename, options);
         }
     };
@@ -160,7 +160,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
          if (industryAnalysisTabRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
             const filename = `${prefix}-Phan-tich-nhan-vien-Khai-thac.png`;
-            await handleExport(industryAnalysisTabRef.current, filename, { isCompactTable: true });
+            await handleExport(industryAnalysisTabRef.current, filename, { isCompactTable: true, fitAllColumns: true });
         }
     };
 

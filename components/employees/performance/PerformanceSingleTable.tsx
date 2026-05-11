@@ -216,7 +216,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 <div className="flex items-center justify-center gap-1">
                                     NHÂN VIÊN
                                     {(sortConfig.key === 'name' && showSortArrow) && (
-                                        <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                        <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} /></span>
                                     )}
                                 </div>
                             </th>
@@ -233,7 +233,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     <div className="flex items-center justify-center gap-1 whitespace-normal leading-tight">
                                         {group.name}
                                         {group.noSubHeader && sortConfig.key === headers.find(h => h.groupName === group.name)?.key && showSortArrow && (
-                                            <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
+                                            <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
                                         )}
                                     </div>
                                 </th>
@@ -284,17 +284,17 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                             <div className={`flex items-center gap-1 ${h.align === 'center' ? 'justify-center' : h.align === 'right' ? 'justify-end' : 'justify-start'}`}>
                                                 {h.sos ? <Icon name="alert-triangle" size={3} /> : null}
                                                 {h.label}
-                                                {isTarget && <Icon name="edit-3" size={2.5} className="opacity-60 group-hover/th:opacity-100 ml-0.5 text-indigo-500" />}
+                                                {isTarget && <Icon name="edit-3" size={2.5} className="opacity-60 group-hover/th:opacity-100 ml-0.5 text-indigo-500 hide-on-export" />}
                                                 {canCopyKeys.has(h.key) && (
-                                                    <button onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-0 group-hover/th:opacity-100 ml-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-opacity shrink-0">
+                                                    <button onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-0 group-hover/th:opacity-100 ml-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-opacity shrink-0 hide-on-export">
                                                         <Icon name="copy" size={3} />
                                                     </button>
                                                 )}
                                                 {(sortConfig.key === h.key && showSortArrow) && (
-                                                    <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
+                                                    <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
                                                 )}
                                                 {copyKey === h.key && (
-                                                    <span className="ml-1 text-emerald-600 text-[10px] font-bold animate-pulse absolute -top-1 right-1">✓</span>
+                                                    <span className="ml-1 text-emerald-600 text-[10px] font-bold animate-pulse absolute -top-1 right-1 hide-on-export">✓</span>
                                                 )}
                                             </div>
                                         )}

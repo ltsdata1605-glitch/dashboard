@@ -50,7 +50,7 @@ export const HeaderCell: React.FC<{
         >
             <div className="flex items-center justify-center gap-1">
                 {label}
-                {isActive && <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />}
+                {isActive && <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} /></span>}
             </div>
         </th>
     );

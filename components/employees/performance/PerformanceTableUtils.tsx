@@ -1,4 +1,5 @@
 import React from 'react';
+import { DATA_STATUS_COLORS } from '../../../constants';
 
 export type SortDirection = 'asc' | 'desc';
 export type GroupType = 'doanhThu' | 'khaiThac' | 'vuotTroi';
@@ -11,30 +12,30 @@ export const getProgressBarColor = (pct: number) => {
 };
 
 export const getPercentBadge = (pct: number) => {
-    if (pct >= 100) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300';
+    if (pct >= 100) return DATA_STATUS_COLORS.positive.tailwind;
     if (pct >= 80) return 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300';
     if (pct >= 50) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300';
-    return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300';
+    return DATA_STATUS_COLORS.negative.tailwind;
 };
 
 export const getTraChamBadge = (pct: number, target: number = 45) => {
     if (isNaN(pct)) return 'text-slate-400';
-    if (pct >= target) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300 px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold';
+    if (pct >= target) return `${DATA_STATUS_COLORS.positive.tailwind} px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold`;
     if (pct >= target - 10) return 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-300 px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold';
-    return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300 px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold';
+    return `${DATA_STATUS_COLORS.negative.tailwind} px-1 sm:px-2 py-0.5 rounded-md sm:rounded-lg font-bold`;
 };
 
 export const getHieuQuaBadge = (pct: number, target: number = 35) => {
-    if (pct >= target) return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-300';
-    return 'bg-rose-100 text-rose-700 dark:bg-rose-500/20 dark:text-rose-300';
+    if (pct >= target) return DATA_STATUS_COLORS.positive.tailwind;
+    return DATA_STATUS_COLORS.negative.tailwind;
 };
 
 export const RankBadge: React.FC<{ rank: number }> = ({ rank }) => {
-    if (rank === 0) return <span className="text-sm sm:text-xl leading-none">🥇</span>;
-    if (rank === 1) return <span className="text-sm sm:text-xl leading-none">🥈</span>;
-    if (rank === 2) return <span className="text-sm sm:text-xl leading-none">🥉</span>;
+    if (rank === 0) return <span className="text-[11px] sm:text-[14px] font-black text-amber-500">#1</span>;
+    if (rank === 1) return <span className="text-[11px] sm:text-[14px] font-black text-slate-400">#2</span>;
+    if (rank === 2) return <span className="text-[11px] sm:text-[14px] font-black text-amber-700">#3</span>;
     return (
-        <span className="text-[10px] sm:text-[13px] font-bold text-slate-500 dark:text-slate-400">
+        <span className="text-[10px] sm:text-[13px] font-bold text-slate-400 dark:text-slate-500">
             #{rank + 1}
         </span>
     );

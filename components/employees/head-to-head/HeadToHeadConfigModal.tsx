@@ -6,6 +6,7 @@ import { DataColumnForm } from '../modals/column-config/DataColumnForm';
 import { CalculatedColumnForm } from '../modals/column-config/CalculatedColumnForm';
 import { TargetColumnForm } from '../modals/column-config/TargetColumnForm';
 import { FormattingRulesForm } from '../modals/column-config/FormattingRulesForm';
+import { DATA_STATUS_COLORS } from '../../../constants';
 
 interface ConfigModalProps {
     isOpen: boolean;
@@ -51,7 +52,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
     const [targetValue, setTargetValue] = useState('');
     
     // Formatting rules state
-    const [formattingRules, setFormattingRules] = useState<{ id: number; condition: string; value1: string; value2: string; color: string; }[]>([]);
+    const [formattingRules, setFormattingRules] = useState<{ id: number; condition: string; value1: string; value2: string; color: string; textColor: string; }[]>([]);
 
     const [feedback, setFeedback] = useState<{type: 'error' | 'success', message: string} | null>(null);
     const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -119,7 +120,8 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                         condition: rule.operator === '=' ? '=' : (rule.operator === '>' ? (rule.criteria === 'column_dept_avg' ? '>avg' : '>') : (rule.criteria === 'column_dept_avg' ? '<avg' : '<')),
                         value1: rule.criteria === 'specific_value' ? String(rule.value) : '',
                         value2: '',
-                        color: rule.backgroundColor || '#ef4444'
+                        color: rule.backgroundColor || '#ef4444',
+                        textColor: rule.textColor || '#000000'
                     })));
                 } else {
                     setFormattingRules([]);
@@ -177,12 +179,30 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
         feedbackTimer.current = setTimeout(() => setFeedback(null), 3500);
     };
 
+    const getDefaultColorsForCondition = (condition: string) => {
+        if (condition === '<' || condition === '<avg') {
+            return { color: DATA_STATUS_COLORS.negative.bg, textColor: DATA_STATUS_COLORS.negative.text };
+        }
+        return { color: DATA_STATUS_COLORS.positive.bg, textColor: DATA_STATUS_COLORS.positive.text };
+    };
+
     const addFormattingRule = () => {
-        setFormattingRules(prev => [...prev, { id: Date.now(), condition: '>', value1: '', value2: '', color: '#ef4444' }]);
+        const defaults = getDefaultColorsForCondition('<avg');
+        setFormattingRules(prev => [...prev, { id: Date.now(), condition: '<avg', value1: '', value2: '', ...defaults }]);
     };
 
     const updateFormattingRule = (id: number, field: string, value: string) => {
-        setFormattingRules(prev => prev.map(rule => rule.id === id ? { ...rule, [field]: value } : rule));
+        setFormattingRules(prev => prev.map(rule => {
+            if (rule.id !== id) return rule;
+            const updated = { ...rule, [field]: value };
+            // Auto-update colors when condition changes
+            if (field === 'condition') {
+                const defaults = getDefaultColorsForCondition(value);
+                updated.color = defaults.color;
+                updated.textColor = defaults.textColor;
+            }
+            return updated;
+        }));
     };
 
     const removeFormattingRule = (id: number) => {
@@ -194,9 +214,16 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
         
         let finalHeaderColor = headerColor;
         if (!finalHeaderColor && !editingConfig) {
-            const validColors = PASTEL_COLORS.filter(c => c.value !== '');
-            const randomColor = validColors[Math.floor(Math.random() * validColors.length)];
-            finalHeaderColor = randomColor.value;
+            // Auto-pick: first color not used by existing tables
+            const usedColors = new Set(existingTables.map(t => t.headerColor).filter(Boolean));
+            const validColors = PASTEL_COLORS.filter(c => c.value !== '' && !usedColors.has(c.value));
+            if (validColors.length > 0) {
+                finalHeaderColor = validColors[0].value;
+            } else {
+                // All colors used, fallback to random
+                const allValid = PASTEL_COLORS.filter(c => c.value !== '');
+                finalHeaderColor = allValid[Math.floor(Math.random() * allValid.length)].value;
+            }
         }
 
         if (!tableName.trim()) {
@@ -226,7 +253,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                     criteria,
                     operator,
                     value: rule.condition === 'between' || rule.condition.includes('avg') ? 0 : parseFloat(rule.value1),
-                    textColor: '#000000',
+                    textColor: rule.textColor || '#000000',
                     backgroundColor: rule.color
                 };
             });
@@ -393,29 +420,6 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                             </div>
                         </div>
 
-                        {/* Tùy chỉnh màu */}
-                        <div className="mt-3 sm:mt-5 border-t border-slate-100 dark:border-slate-700 pt-3 sm:pt-5">
-                            <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 sm:mb-3 flex items-center gap-1.5 sm:gap-2">
-                                <Icon name="palette" size={3.5} className="text-slate-400 sm:hidden" /><Icon name="palette" size={4} className="text-slate-400 hidden sm:block" />
-                                Tùy chỉnh màu nền (Mặc định ngẫu nhiên)
-                            </label>
-                            <div className="flex flex-wrap gap-2 sm:gap-2.5">
-                                {PASTEL_COLORS.map(c => (
-                                    <button
-                                        key={c.label}
-                                        type="button"
-                                        onClick={() => setHeaderColor(c.value)}
-                                        title={c.label}
-                                        className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all hover:scale-110 flex items-center justify-center shadow-sm ${headerColor === c.value ? 'ring-2 ring-offset-2 ring-indigo-500 scale-110 shadow-md' : 'border border-slate-200'} ${!c.value ? 'bg-slate-100' : ''}`}
-                                        style={c.value ? { backgroundColor: c.value } : {}}
-                                    >
-                                        {!c.value && <Icon name="shuffle" size={3.5} className="text-slate-500 sm:hidden" />}
-                                        {!c.value && <Icon name="shuffle" size={4} className="text-slate-500 hidden sm:block" />}
-                                        {headerColor === c.value && c.value && <Icon name="check" size={4} className="text-slate-800 opacity-70" />}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
                     </div>
 
                     {/* SECTION 2: Cấu trúc chi tiết */}

@@ -5,6 +5,7 @@ import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { Icon } from '../common/Icon';
 import { exportElementAsImage } from '../../services/uiService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
+import { DEPT_COLORS, RankBadge } from './performance/PerformanceTableUtils';
 
 interface ContestTableProps {
     config: ContestTableConfig;
@@ -329,7 +330,8 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
             const safeTabName = config.tableName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
             await exportElementAsImage(exportRef.current, `${prefix}-${safeTabName}.png`, {
                 elementsToHide: ['.hide-on-export'],
-                isCompactTable: true
+                isCompactTable: true,
+                fitAllColumns: true
             });
             setIsExporting(false);
         }
@@ -405,7 +407,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     <div className="flex items-center justify-center gap-1">
                                         NHÂN VIÊN
                                         {sortConfig.key === 'name' && (
-                                            <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} />
+                                            <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} /></span>
                                         )}
                                     </div>
                                 </th>
@@ -438,7 +440,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
-                                                    <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
+                                                    <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
                                                 )}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
@@ -466,7 +468,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
-                                                    <Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} />
+                                                    <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
                                                 )}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
@@ -487,12 +489,10 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     <React.Fragment key={department}>
                                         {showDeptHeaders && (
                                             <tr>
-                                                <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className="px-3 py-2 border-y border-slate-200 dark:border-slate-700 bg-slate-50/80">
-                                                    <div className="flex items-center gap-2">
-                                                        <span className={`w-2 h-3.5 rounded-full flex-shrink-0 ${getPastelColor(deptIndex).replace('bg-', 'bg-').replace('/80', '-500')}`} style={{background: ['#3b82f6','#10b981','#f59e0b','#f43f5e','#6366f1','#14b8a6','#f97316','#a855f7'][deptIndex % 8]}} />
-                                                        <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-                                                            {department} — {rows.length} người
-                                                        </span>
+                                                <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className={`px-2 sm:px-3 py-1 sm:py-1.5 ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].strip} border-y border-slate-200 dark:border-slate-700`}>
+                                                    <div className="flex items-center gap-1.5 sm:gap-2">
+                                                        <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].badge} flex-shrink-0`} />
+                                                        <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].text}`}>{department} — {rows.length} người</span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -500,28 +500,25 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                         {rows.map((row, rowIndex) => {
                                             const rowClass = rowIndex % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/30 dark:bg-slate-800/20';
                                             return (
-                                                <tr key={row.name} className={`${rowClass} hover:bg-teal-50/50 dark:hover:bg-slate-800 transition-colors border-b border-slate-200 dark:border-slate-700`}>
-                                                    <td className="px-3 py-2 text-center border-r border-slate-200 dark:border-slate-700">
-                                                        {rowIndex < 3
-                                                            ? <span className="text-base leading-none">{['🥇','🥈','🥉'][rowIndex]}</span>
-                                                            : <span className="text-[13px] font-bold text-slate-500 dark:text-slate-400 whitespace-nowrap">#{rowIndex + 1}</span>
-                                                        }
+                                                <tr key={row.name} className={`group border-b border-slate-200 dark:border-slate-700 transition-colors duration-100 hover:bg-slate-100 dark:hover:bg-slate-800 ${rowIndex % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800'}`}>
+                                                    <td className="px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-inherit z-10">
+                                                        <RankBadge rank={rowIndex} />
                                                     </td>
-                                                    <td className="px-4 py-2 font-bold text-[13px] text-slate-800 dark:text-slate-100 whitespace-nowrap text-left border-r border-slate-200 dark:border-slate-700">{abbreviateName(row.name)}</td>
+                                                    <td className="px-1.5 sm:px-3 py-1 font-bold text-[11px] sm:text-[13px] text-slate-700 dark:text-slate-200 whitespace-nowrap text-left border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10">{abbreviateName(row.name)}</td>
                                                     {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
                                                         const value = row.columnValues.get(col.id);
                                                         const average = averages.get(col.id);
                                                         const style = getConditionalStyle(value, col, average);
-                                                        return <td key={col.id} className="px-3 py-2 text-center text-[13px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700" style={style}>{formatValue(value, col)}</td>;
+                                                        return <td key={col.id} className="px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700" style={style}>{formatValue(value, col)}</td>;
                                                     })}
                                                 </tr>
                                             );
                                         })}
                                         {sortedDepartments.length > 1 && deptTotals && (
-                                            <tr className="bg-teal-50/30 dark:bg-teal-900/10 font-bold">
-                                                <td colSpan={2} className="px-3 py-2 text-center text-[11px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700">∑ {department}</td>
+                                            <tr className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 font-bold">
+                                                <td colSpan={2} className="px-2 sm:px-3 py-1 sm:py-1.5 text-center text-[10px] sm:text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10">Tổng {department}</td>
                                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => (
-                                                    <td key={col.id} className="px-3 py-2 text-center text-[13px] font-extrabold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
+                                                    <td key={col.id} className="px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
                                                         {formatValue(deptTotals.get(col.id), col)}
                                                     </td>
                                                 ))}
@@ -531,14 +528,14 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                 );
                             })}
                         </tbody>
-                        <tfoot className="bg-teal-100 dark:bg-teal-900/40 border-t border-slate-200 dark:border-slate-700">
+                        <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700">
                              <tr>
-                                <td colSpan={2} className="px-4 py-2.5 text-center text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700">∑ TỔNG CỘNG</td>
+                                <td colSpan={2} className="px-2 sm:px-3 py-1 sm:py-1.5 text-center text-[10px] sm:text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10">∑ Tổng</td>
                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
                                     const value = totals.get(col.id);
                                     const average = averages.get(col.id);
                                     const style = getConditionalStyle(value, col, average);
-                                    return <td key={col.id} className="px-3 py-2.5 text-center text-[13px] font-extrabold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700" style={style}>{formatValue(value, col)}</td>;
+                                    return <td key={col.id} className="px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700" style={style}>{formatValue(value, col)}</td>;
                                 })}
                             </tr>
                         </tfoot>

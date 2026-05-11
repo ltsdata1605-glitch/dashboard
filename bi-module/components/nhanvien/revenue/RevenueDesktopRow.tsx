@@ -38,7 +38,7 @@ export const RevenueDesktopRow = React.memo(({
 
                     <div className="flex flex-col min-w-0" onClick={() => onHighlightToggle(row.originalName!)}>
                         <div className="flex items-center gap-2">
-                            <button onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="text-left font-bold text-sky-600 dark:text-sky-400 text-[14px] hover:text-sky-700 dark:hover:text-sky-300 transition-colors whitespace-normal break-words">{row.name}</button>
+                            <button onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="text-left font-bold text-sky-600 dark:text-sky-400 text-[13px] hover:text-sky-700 dark:hover:text-sky-300 transition-colors whitespace-normal break-words">{row.name}</button>
                         </div>
 
                     </div>
@@ -52,7 +52,7 @@ export const RevenueDesktopRow = React.memo(({
                 <div>{f.format(roundUp(row.dtqd))}</div>
                 <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
             </td>
-            <td className="px-3 py-1 text-[12px] text-center font-black text-slate-400 dark:text-slate-500 border-r border-slate-100 dark:border-slate-800/60">
+            <td className="px-3 py-1 text-[13px] text-center font-black text-slate-400 dark:text-slate-500 border-r border-slate-100 dark:border-slate-800/60">
                 <div>{f.format(roundUp(row.calculatedTarget || 0))}</div>
                 <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
             </td>

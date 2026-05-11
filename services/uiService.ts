@@ -549,19 +549,38 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             });
         });
 
-        // Make all th and td cells shrink to content
+        // Make all cells shrink to content
         const allCells = clone.querySelectorAll('th, td');
         allCells.forEach(el => {
             if (el instanceof HTMLElement) {
                 el.style.setProperty('width', 'auto', 'important');
                 el.style.setProperty('min-width', '0', 'important');
                 el.style.setProperty('white-space', 'nowrap', 'important');
-                // Remove any fixed width classes
+                // Remove any fixed width / padding classes
                 el.classList.forEach(cls => {
-                    if (cls.startsWith('w-[') || cls.startsWith('w-') || cls.startsWith('min-w-') || cls.startsWith('lg:w-') || cls.startsWith('md:w-')) {
+                    if (cls.startsWith('w-[') || cls.startsWith('w-') || cls.startsWith('min-w-') || cls.startsWith('lg:w-') || cls.startsWith('md:w-') || cls.startsWith('px-') || cls.startsWith('py-') || cls.startsWith('sm:px-') || cls.startsWith('sm:py-') || cls.startsWith('p-')) {
                         el.classList.remove(cls);
                     }
                 });
+            }
+        });
+
+        // Apply differentiated padding: headers keep comfortable spacing, data rows are compact
+        clone.querySelectorAll('thead th').forEach(el => {
+            if (el instanceof HTMLElement) {
+                el.style.setProperty('padding', '4px 10px', 'important');
+                el.style.setProperty('font-size', '13px', 'important');
+            }
+        });
+        clone.querySelectorAll('tbody td').forEach(el => {
+            if (el instanceof HTMLElement) {
+                el.style.setProperty('padding', '2px 6px', 'important');
+            }
+        });
+        clone.querySelectorAll('tfoot td').forEach(el => {
+            if (el instanceof HTMLElement) {
+                el.style.setProperty('padding', '3px 8px', 'important');
+                el.style.setProperty('font-size', '13px', 'important');
             }
         });
 
