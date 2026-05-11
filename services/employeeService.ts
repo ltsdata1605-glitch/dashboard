@@ -315,7 +315,7 @@ export function processEmployeeData(
             stats.doanhThuGiaDung! += revenue;
             stats.slGiaDung! += weightedQuantity; 
             if (childGroup === 'Máy lọc nước') stats.slMayLocNuoc! += weightedQuantity;
-            else if (childGroup === 'NC đ.tử/cao tần' || childGroup === 'NC nắp gài/rời') stats.slNoiCom! += weightedQuantity;
+            else if (childGroup === 'Nồi cơm') stats.slNoiCom! += weightedQuantity;
             else if (childGroup === 'Nồi chiên') stats.slNoiChien! += weightedQuantity;
             else if (childGroup === 'Quạt điện') stats.slQuatDien! += weightedQuantity;
         }

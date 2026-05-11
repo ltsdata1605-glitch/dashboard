@@ -6,7 +6,7 @@ import { exportElementAsImage } from '../../services/uiService';
 import { getHeadToHeadCustomTables, saveHeadToHeadCustomTables } from '../../services/dbService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getExportFilenamePrefix, getRowValue } from '../../utils/dataUtils';
-import { COL } from '../../constants';
+import { COL, DATA_STATUS_COLORS } from '../../constants';
 import ModalWrapper from '../modals/ModalWrapper';
 
 // Import refactored components
@@ -61,14 +61,85 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
     useEffect(() => {
         const loadTables = async () => {
             let savedTables = await getHeadToHeadCustomTables();
+            const now = Date.now();
+            const belowAvgRule: any = {
+                id: `rule-below-avg-${now}`,
+                criteria: 'column_dept_avg',
+                operator: '<',
+                value: 0,
+                backgroundColor: DATA_STATUS_COLORS.negative.bg,
+                textColor: DATA_STATUS_COLORS.negative.text
+            };
+
+            const top3Rule: any = {
+                id: `rule-top-3-${now}`,
+                criteria: 'top_3',
+                operator: '=',
+                value: 0,
+                backgroundColor: DATA_STATUS_COLORS.positive.bg,
+                textColor: DATA_STATUS_COLORS.positive.text
+            };
+
+            const fullDefaults: HeadToHeadTableConfig[] = [
+                { id: `h2h-default-${now}-1`, tableName: "DT THỰC", type: 'data', metricType: 'revenue', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-2`, tableName: "DTQĐ", type: 'data', metricType: 'revenueQD', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-3`, tableName: "HQQĐ", type: 'data', metricType: 'hieuQuaQD', totalCalculationMethod: 'average', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-4`, tableName: "SIM", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: ['Sim'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-5`, tableName: "VIEON", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: ['Vieon'], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-6`, tableName: "ĐHTT", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: ['Đồng hồ', 'Wearable'], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-7`, tableName: "CAMERA", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: ['Camera'], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-8`, tableName: "SDP", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: ['Pin SDP'], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-9`, tableName: "ĐÈN", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: ['Đèn NLMT'], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-10`, tableName: "TAI NGHE", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: ['Tai nghe BLT'], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-11`, tableName: "MLN", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: ['Máy lọc nước'], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-12`, tableName: "QĐH", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: ['Quạt điều hòa'], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-13`, tableName: "QUẠT", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: ['Quạt điện'], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+                { id: `h2h-default-${now}-14`, tableName: "N.CƠM", type: 'data', metricType: 'quantity', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: ['Nồi cơm'], selectedManufacturers: [], productCodes: [] }, conditionalFormats: [belowAvgRule, top3Rule] },
+            ];
+
             if (!savedTables || savedTables.length === 0) {
-                const now = Date.now();
-                savedTables = [
-                    { id: `h2h-default-${now}-1`, tableName: "7 NGÀY - DOANH THU", type: 'data', metricType: 'revenue', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } },
-                    { id: `h2h-default-${now}-2`, tableName: "7 NGÀY - DOANH THU QĐ", type: 'data', metricType: 'revenueQD', totalCalculationMethod: 'sum', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } },
-                    { id: `h2h-default-${now}-3`, tableName: "7 NGÀY - HIỆU QUẢ QĐ", type: 'data', metricType: 'hieuQuaQD', totalCalculationMethod: 'average', filters: { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] } }
-                ];
+                savedTables = fullDefaults;
+            } else {
+                if (!localStorage.getItem('h2h_v2_migrated_1')) {
+                    savedTables = savedTables.map((t: HeadToHeadTableConfig) => {
+                        if (t.tableName === "7 NGÀY - DOANH THU") return { ...t, tableName: "DT THỰC" };
+                        if (t.tableName === "7 NGÀY - DOANH THU QĐ") return { ...t, tableName: "DTQĐ" };
+                        if (t.tableName === "7 NGÀY - HIỆU QUẢ QĐ") return { ...t, tableName: "HQQĐ" };
+                        return t;
+                    });
+                    
+                    const existingNames = new Set(savedTables.map(t => t.tableName));
+                    const toAppend = fullDefaults.slice(3).filter(t => !existingNames.has(t.tableName));
+                    savedTables = [...savedTables, ...toAppend];
+                    
+                    localStorage.setItem('h2h_v2_migrated_1', 'true');
+                }
+                if (!localStorage.getItem('h2h_v2_migrated_3')) {
+                    savedTables = savedTables.map((t: HeadToHeadTableConfig) => {
+                        return {
+                            ...t,
+                            conditionalFormats: [belowAvgRule, top3Rule]
+                        };
+                    });
+                    localStorage.setItem('h2h_v2_migrated_3', 'true');
+                }
+                if (!localStorage.getItem('h2h_v2_migrated_5')) {
+                    savedTables = savedTables.map((t: HeadToHeadTableConfig) => {
+                        if (t.tableName === "N.CƠM" && t.filters) {
+                            return {
+                                ...t,
+                                filters: {
+                                    ...t.filters,
+                                    selectedSubgroups: ['Nồi cơm']
+                                }
+                            };
+                        }
+                        return t;
+                    });
+                    localStorage.setItem('h2h_v2_migrated_5', 'true');
+                }
             }
+            
             setTables(savedTables);
             if (savedTables.length > 0) setActiveTableId(savedTables[0].id);
             setIsInitialLoad(false);

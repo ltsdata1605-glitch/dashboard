@@ -91,8 +91,8 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
         return formatQuantity(value);
     };
 
-    const getCellStyle = (value: number, row: any, dateKey: string): React.CSSProperties => {
-        if (!config.conditionalFormats || value === 0) return {};
+    const getCellStyle = (value: number, row: any, dateKey: string | 'total'): React.CSSProperties => {
+        if (!config.conditionalFormats) return {};
         let finalStyle: React.CSSProperties = {};
 
         for(const rule of config.conditionalFormats) {
@@ -100,14 +100,28 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
             switch(rule.criteria) {
                 case 'specific_value': targetValue = rule.value; break;
                 case 'row_avg': targetValue = row.rowAverage; break;
-                case 'column_dept_avg': targetValue = conditionalFormatData.deptAvgByDate.get(dateKey)?.get(row.department) ?? 0; break;
+                case 'column_dept_avg': 
+                    targetValue = dateKey === 'total' 
+                        ? (conditionalFormatData.deptAvgTotal?.get(row.department) ?? 0)
+                        : (conditionalFormatData.deptAvgByDate.get(dateKey)?.get(row.department) ?? 0); 
+                    break;
+                case 'top_3':
+                    targetValue = 0; // Handled separately
+                    break;
                 default: continue;
             }
 
             let conditionMet = false;
-            if (rule.operator === '>' && value > targetValue) conditionMet = true;
-            if (rule.operator === '<' && value < targetValue) conditionMet = true;
-            if (rule.operator === '=' && value === targetValue) conditionMet = true;
+            if (rule.criteria === 'top_3') {
+                const top3Array = dateKey === 'total'
+                    ? (conditionalFormatData.deptTop3Total?.get(row.department) ?? [])
+                    : (conditionalFormatData.deptTop3ByDate?.get(dateKey)?.get(row.department) ?? []);
+                if (top3Array.includes(value)) conditionMet = true;
+            } else {
+                if (rule.operator === '>' && value > targetValue) conditionMet = true;
+                if (rule.operator === '<' && value < targetValue) conditionMet = true;
+                if (rule.operator === '=' && value === targetValue) conditionMet = true;
+            }
 
             if (conditionMet) {
                 finalStyle.backgroundColor = rule.backgroundColor;
@@ -197,7 +211,11 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
                                                         </td>
                                                     );
                                                 })}
-                                                <td className={`px-1.5 sm:px-3 py-1 text-center font-black text-indigo-600 dark:text-indigo-400 text-[11px] sm:text-[13px] border-r border-slate-200 dark:border-slate-700 bg-indigo-50/20`}>{formatValue(row.total)}</td>
+                                                <td className={`px-1.5 sm:px-3 py-1 text-center font-black text-indigo-600 dark:text-indigo-400 text-[11px] sm:text-[13px] border-r border-slate-200 dark:border-slate-700 bg-indigo-50/20`}>
+                                                    <div className="inline-block px-1 sm:px-1.5 py-0.5" style={getCellStyle(row.total, row, 'total')}>
+                                                        {formatValue(row.total)}
+                                                    </div>
+                                                </td>
                                                 <td className="px-1.5 sm:px-3 py-1 text-center border-r border-slate-200 dark:border-slate-700 bg-rose-50/20">
                                                     {row.daysWithNoSales > 0 ? (
                                                         <span className={`inline-flex items-center justify-center w-5 h-5 sm:w-6 sm:h-6 rounded-full text-[11px] sm:text-[13px] font-black shadow-sm border ${row.daysWithNoSales >= 4 ? 'bg-red-100/80 text-red-600 border-red-200' : 'bg-white text-slate-500 border-slate-200'}`}>

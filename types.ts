@@ -403,6 +403,7 @@ export interface IndustryColumnConfig extends ColumnConfig {
 export interface ContestTableConfig {
     id: string;
     tableName: string;
+    icon?: string;
     columns: ColumnConfig[];
     defaultSortColumnId?: string;
 }
@@ -416,7 +417,7 @@ export interface CustomContestTab {
 
 export interface HeadToHeadConditionalFormatRule {
   id: string;
-  criteria: 'specific_value' | 'column_dept_avg' | 'row_avg';
+  criteria: 'specific_value' | 'column_dept_avg' | 'row_avg' | 'top_3';
   operator: '>' | '<' | '=';
   value: number;
   textColor: string;

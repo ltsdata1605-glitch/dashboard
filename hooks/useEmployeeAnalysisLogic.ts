@@ -143,7 +143,9 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
             if (tableId) { // Editing existing table
                 return prevTables.map(t => t.id === tableId ? { ...t, tableName, defaultSortColumnId: defaultSortColumnId || t.defaultSortColumnId } : t);
             } else { // Creating new table
-                const newTable: ContestTableConfig = { id: `table-${Date.now()}`, tableName, columns: [], defaultSortColumnId: defaultSortColumnId || undefined };
+                const iconOptions = ['target', 'trophy', 'star', 'award', 'zap', 'flame', 'trending-up', 'check-circle', 'crown', 'medal', 'rocket', 'shield'];
+                const randomIcon = iconOptions[Math.floor(Math.random() * iconOptions.length)];
+                const newTable: ContestTableConfig = { id: `table-${Date.now()}`, tableName, icon: randomIcon, columns: [], defaultSortColumnId: defaultSortColumnId || undefined };
                 return [...prevTables, newTable];
             }
         };
@@ -296,7 +298,12 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
     const handleSaveCustomExploitationTab = useCallback((tabConfig: any) => {
         setCustomExploitationTabs(prev => {
             if (tabConfig.id) {
-                return prev.map(t => t.id === tabConfig.id ? tabConfig : t);
+                const existing = prev.find(t => t.id === tabConfig.id);
+                if (existing) {
+                    return prev.map(t => t.id === tabConfig.id ? tabConfig : t);
+                } else {
+                    return [...prev, { ...tabConfig, order: prev.length }];
+                }
             } else {
                 return [...prev, { ...tabConfig, id: `custom-${crypto.randomUUID()}`, order: prev.length }];
             }

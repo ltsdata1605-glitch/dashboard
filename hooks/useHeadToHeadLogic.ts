@@ -262,19 +262,62 @@ export const useHeadToHeadLogic = ({
         }
 
         const deptAvgByDate = new Map<string, Map<string, number>>();
+        const deptAvgTotal = new Map<string, number>();
+        const deptTotalStats = new Map<string, {sum:number, count:number}>();
+        
+        const deptTop3ByDate = new Map<string, Map<string, number[]>>();
+        const deptTop3Total = new Map<string, number[]>();
+
         dateHeaders.forEach(date => {
             const dateKey = toLocalISOString(date);
             const dStats = new Map<string, {sum:number, count:number}>();
+            const dValues = new Map<string, Set<number>>();
+            
             tableRows.forEach(r => {
                 const val = r.dailyValues[dateKey] || 0;
                 if (!dStats.has(r.department)) dStats.set(r.department, {sum:0, count:0});
-                dStats.get(r.department)!.sum += val;
-                dStats.get(r.department)!.count++;
+                if (!dValues.has(r.department)) dValues.set(r.department, new Set());
+                
+                if (val > 0) {
+                    dStats.get(r.department)!.sum += val;
+                    dStats.get(r.department)!.count++;
+                    dValues.get(r.department)!.add(val);
+                }
+                
+                // Track total column stats only once per row
+                if (dateHeaders.indexOf(date) === 0) {
+                    if (!deptTotalStats.has(r.department)) deptTotalStats.set(r.department, {sum:0, count:0});
+                    if (r.total > 0) {
+                        deptTotalStats.get(r.department)!.sum += r.total;
+                        deptTotalStats.get(r.department)!.count++;
+                    }
+                }
             });
             const avgMap = new Map<string, number>();
+            const top3Map = new Map<string, number[]>();
+            
             dStats.forEach((s, d) => avgMap.set(d, s.count > 0 ? s.sum / s.count : 0));
+            dValues.forEach((set, d) => {
+                top3Map.set(d, Array.from(set).sort((a,b)=>b-a).slice(0, 3));
+            });
+            
             deptAvgByDate.set(dateKey, avgMap);
+            deptTop3ByDate.set(dateKey, top3Map);
         });
+
+        deptTotalStats.forEach((s, d) => deptAvgTotal.set(d, s.count > 0 ? s.sum / s.count : 0));
+        
+        // Calculate Top 3 Total for each dept
+        const dTotalValues = new Map<string, Set<number>>();
+        tableRows.forEach(r => {
+            if (!dTotalValues.has(r.department)) dTotalValues.set(r.department, new Set());
+            if (r.total > 0) dTotalValues.get(r.department)!.add(r.total);
+        });
+        dTotalValues.forEach((set, d) => {
+            deptTop3Total.set(d, Array.from(set).sort((a,b)=>b-a).slice(0, 3));
+        });
+
+        deptTotalStats.forEach((s, d) => deptAvgTotal.set(d, s.count > 0 ? s.sum / s.count : 0));
 
         tableRows.sort((a, b) => {
             const valA = a[sortConfig.key];
@@ -335,7 +378,7 @@ export const useHeadToHeadLogic = ({
 
         return {
             processedData: { tableRows, dateHeaders, dateRangeString, totals, top30PercentNoSalesNames, groupedRows, sortedDepartments },
-            conditionalFormatData: { deptAvgByDate },
+            conditionalFormatData: { deptAvgByDate, deptAvgTotal, deptTop3ByDate, deptTop3Total },
             departmentTotals
         };
     }, [config, allConfigs, baseFilteredData, productConfig, employeeData, includeToday, sortConfig]);

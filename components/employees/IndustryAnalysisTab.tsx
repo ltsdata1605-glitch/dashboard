@@ -5,6 +5,7 @@ import type { ExploitationData } from '../../types';
 import { detailQuickFilters, detailHeaderGroups, HeaderCell, getHeatmapClass, SortConfig } from './industry/IndustryTableUtils';
 import { useIndustryAnalysisLogic } from './industry/useIndustryAnalysisLogic';
 import { DEPT_COLORS, RankBadge } from './performance/PerformanceTableUtils';
+import { DATA_STATUS_COLORS } from '../../constants';
 
 
 interface IndustryAnalysisTabProps {
@@ -44,25 +45,124 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     
     // ----------------------------
 
-    const renderDetailModeCells = (rowData: any) => (
+    const renderDetailModeCells = (rowData: any, employeesInGroup?: any[]) => (
         <>
             {Array.from(visibleGroups).map(key => {
                 if (key === 'doanhThu') {
+                    let styleDT: React.CSSProperties = {};
+                    let styleQD: React.CSSProperties = {};
+                    let styleHQ: React.CSSProperties = {};
+                    
+                    if (employeesInGroup && employeesInGroup.length > 0) {
+                        const getStyle = (field: string, val: number) => {
+                            const validValues = employeesInGroup.map(emp => emp[field] || 0);
+                            const average = validValues.reduce((sum, v) => sum + v, 0) / validValues.length;
+                            const sortedVals = [...new Set(validValues)].sort((a, b) => b - a);
+                            const rank = sortedVals.indexOf(val) + 1;
+                            
+                            if (val > 0 && rank <= 3) return { backgroundColor: DATA_STATUS_COLORS.positive.bg, color: DATA_STATUS_COLORS.positive.text, fontWeight: 'bold' };
+                            if (val < average) return { backgroundColor: DATA_STATUS_COLORS.negative.bg, color: DATA_STATUS_COLORS.negative.text, fontWeight: 'bold' };
+                            return {};
+                        };
+                        styleDT = getStyle('doanhThuThuc', rowData.doanhThuThuc || 0);
+                        styleQD = getStyle('doanhThuQD', rowData.doanhThuQD || 0);
+                        styleHQ = getStyle('hieuQuaQD', rowData.hieuQuaQD || 0);
+                    }
+
+                    const subHeaders = dynamicHeaderGroups[key]?.subHeaders || [];
+                    const showDT = subHeaders.some((sh: any) => sh.key === 'doanhThuThuc');
+                    const showQD = subHeaders.some((sh: any) => sh.key === 'doanhThuQD');
+                    const showHQ = subHeaders.some((sh: any) => sh.key === 'hieuQuaQD');
+
                     return (
                         <React.Fragment key={key}>
-                            <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuThuc)}</td>
-                            <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(rowData.doanhThuQD)}</td>
-                            <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-black text-indigo-600 dark:text-indigo-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatPct(rowData.hieuQuaQD)}</td>
+                            {showDT && (
+                                <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">
+                                    <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(styleDT).length > 0 ? 'rounded-md' : ''}`} style={styleDT}>
+                                        {formatC(rowData.doanhThuThuc)}
+                                    </div>
+                                </td>
+                            )}
+                            {showQD && (
+                                <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">
+                                    <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(styleQD).length > 0 ? 'rounded-md' : ''}`} style={styleQD}>
+                                        {formatC(rowData.doanhThuQD)}
+                                    </div>
+                                </td>
+                            )}
+                            {showHQ && (
+                                <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-black border-b border-r border-slate-200 dark:border-slate-700">
+                                    {Object.keys(styleHQ).length > 0 ? (
+                                        <div className="inline-block px-1 sm:px-1.5 py-0.5 rounded-md" style={styleHQ}>
+                                            {formatPct(rowData.hieuQuaQD)}
+                                        </div>
+                                    ) : (
+                                        <span className="text-indigo-600 dark:text-indigo-400">{formatPct(rowData.hieuQuaQD)}</span>
+                                    )}
+                                </td>
+                            )}
                         </React.Fragment>
                     );
                 }
                 if (key === 'spChinh') {
+                    let styleICT: React.CSSProperties = {};
+                    let styleCE: React.CSSProperties = {};
+                    let styleGD: React.CSSProperties = {};
+                    let styleTong: React.CSSProperties = {};
+                    
+                    if (employeesInGroup && employeesInGroup.length > 0) {
+                        const getStyle = (field: string, val: number) => {
+                            const validValues = employeesInGroup.map(emp => emp[field] || 0);
+                            const average = validValues.reduce((sum, v) => sum + v, 0) / validValues.length;
+                            const sortedVals = [...new Set(validValues)].sort((a, b) => b - a);
+                            const rank = sortedVals.indexOf(val) + 1;
+                            
+                            if (val > 0 && rank <= 3) return { backgroundColor: DATA_STATUS_COLORS.positive.bg, color: DATA_STATUS_COLORS.positive.text, fontWeight: 'bold' };
+                            if (val < average) return { backgroundColor: DATA_STATUS_COLORS.negative.bg, color: DATA_STATUS_COLORS.negative.text, fontWeight: 'bold' };
+                            return {};
+                        };
+                        styleICT = getStyle('slICT', rowData.slICT || 0);
+                        styleCE = getStyle('slCE_main', rowData.slCE_main || 0);
+                        styleGD = getStyle('slGiaDung_main', rowData.slGiaDung_main || 0);
+                        styleTong = getStyle('slSPChinh_Tong', rowData.slSPChinh_Tong || 0);
+                    }
+
+                    const subHeaders = dynamicHeaderGroups[key]?.subHeaders || [];
+                    const showICT = subHeaders.some((sh: any) => sh.key === 'slICT');
+                    const showCE = subHeaders.some((sh: any) => sh.key === 'slCE_main');
+                    const showGD = subHeaders.some((sh: any) => sh.key === 'slGiaDung_main');
+                    const showTong = subHeaders.some((sh: any) => sh.key === 'slSPChinh_Tong');
+
                     return (
                         <React.Fragment key={key}>
-                            <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slICT)}</td>
-                            <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slCE_main)}</td>
-                            <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slGiaDung_main)}</td>
-                            <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-black text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-800/50 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(rowData.slSPChinh_Tong)}</td>
+                            {showICT && (
+                                <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">
+                                    <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(styleICT).length > 0 ? 'rounded-md' : ''}`} style={styleICT}>
+                                        {formatNum(rowData.slICT)}
+                                    </div>
+                                </td>
+                            )}
+                            {showCE && (
+                                <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">
+                                    <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(styleCE).length > 0 ? 'rounded-md' : ''}`} style={styleCE}>
+                                        {formatNum(rowData.slCE_main)}
+                                    </div>
+                                </td>
+                            )}
+                            {showGD && (
+                                <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">
+                                    <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(styleGD).length > 0 ? 'rounded-md' : ''}`} style={styleGD}>
+                                        {formatNum(rowData.slGiaDung_main)}
+                                    </div>
+                                </td>
+                            )}
+                            {showTong && (
+                                <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-black text-slate-900 dark:text-white bg-slate-50/50 dark:bg-slate-800/50 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">
+                                    <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(styleTong).length > 0 ? 'rounded-md' : ''}`} style={styleTong}>
+                                        {formatNum(rowData.slSPChinh_Tong)}
+                                    </div>
+                                </td>
+                            )}
                         </React.Fragment>
                     );
                 }
@@ -79,15 +179,49 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                         <React.Fragment key={tab.id}>
                             {cols.map(col => {
                                 const val = rowData[`val_${tab.id}_${col.id}`] || 0;
+                                let badgeStyle: React.CSSProperties = {};
+                                
+                                if (employeesInGroup && employeesInGroup.length > 0) {
+                                    const average = employeesInGroup.reduce((sum, emp) => sum + (emp[`val_${tab.id}_${col.id}`] || 0), 0) / employeesInGroup.length;
+                                    const sortedVals = [...new Set(employeesInGroup.map(emp => emp[`val_${tab.id}_${col.id}`] || 0))].sort((a, b) => b - a);
+                                    const rank = sortedVals.indexOf(val) + 1;
+                                    
+                                    if (val > 0 && rank <= 3) {
+                                        badgeStyle = { backgroundColor: DATA_STATUS_COLORS.positive.bg, color: DATA_STATUS_COLORS.positive.text, fontWeight: 'bold' };
+                                    } else if (val < average) {
+                                        badgeStyle = { backgroundColor: DATA_STATUS_COLORS.negative.bg, color: DATA_STATUS_COLORS.negative.text, fontWeight: 'bold' };
+                                    }
+                                }
+
+                                const hasStyle = Object.keys(badgeStyle).length > 0;
+
                                 if (col.type === 'quantity') {
-                                    return <td key={col.id} className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(val)}</td>;
+                                    return (
+                                        <td key={col.id} className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-600 dark:text-slate-400 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">
+                                            <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${hasStyle ? 'rounded-md' : ''}`} style={badgeStyle}>
+                                                {formatNum(val)}
+                                            </div>
+                                        </td>
+                                    );
                                 }
                                 if (col.type === 'revenue') {
-                                    return <td key={col.id} className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatC(val)}</td>;
+                                    return (
+                                        <td key={col.id} className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">
+                                            <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${hasStyle ? 'rounded-md' : ''}`} style={badgeStyle}>
+                                                {formatC(val)}
+                                            </div>
+                                        </td>
+                                    );
                                 }
                                 return (
-                                    <td key={col.id} className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] border-b border-r border-slate-200 dark:border-slate-700">
-                                        <span className={getHeatmapClass(val, 30)}>{formatPct(val)}</span>
+                                    <td key={col.id} className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold border-b border-r border-slate-200 dark:border-slate-700">
+                                        {hasStyle ? (
+                                            <div className="inline-block px-1 sm:px-1.5 py-0.5 rounded-md" style={badgeStyle}>
+                                                {formatPct(val)}
+                                            </div>
+                                        ) : (
+                                            <span className={getHeatmapClass(val, 30)}>{formatPct(val)}</span>
+                                        )}
                                     </td>
                                 );
                             })}
@@ -213,12 +347,10 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                             <div className="flex items-center justify-center gap-1">
                                                 {dynamicHeaderGroups[f.key]?.label || f.label}
                                             </div>
-                                            {f.isCustom && (
-                                                <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                    {onEditCustomTab && <button onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key); }} className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3}/></button>}
-                                                    {onDeleteCustomTab && <button onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3}/></button>}
-                                                </div>
-                                            )}
+                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
+                                                {onEditCustomTab && <button onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key); }} className="p-1.5 text-slate-400 hover:text-indigo-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3}/></button>}
+                                                {f.isCustom && onDeleteCustomTab && <button onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3}/></button>}
+                                            </div>
                                         </th>
                                     )})}
                                 </tr>
@@ -315,7 +447,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                                     <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors truncate max-w-[100px] sm:max-w-[140px]">{abbreviateName(employee.name)}</span>
                                                 </div>
                                             </td>
-                                            {viewMode === 'detail' ? renderDetailModeCells(employee) : viewMode === 'efficiency' ? (
+                                            {viewMode === 'detail' ? renderDetailModeCells(employee, employees as any[]) : viewMode === 'efficiency' ? (
                                                 <>
                                                     <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slICT)}</td>
                                                     <td className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-[11px] sm:text-[13px] font-bold text-slate-500 tabular-nums border-b border-r border-slate-200 dark:border-slate-700">{formatNum(employee.slCE_main)}</td>

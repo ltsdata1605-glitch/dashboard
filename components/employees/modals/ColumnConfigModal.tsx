@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import toast from 'react-hot-toast';
 import ModalWrapper from '../../modals/ModalWrapper';
 import { Icon } from '../../common/Icon';
 import type { ColumnConfig } from '../../../types';
@@ -49,9 +50,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
 
     const [formattingRules, setFormattingRules] = useState<{ id: number; condition: string; value1: string; value2: string; color: string; textColor: string; }[]>([]);
     
-    const [feedback, setFeedback] = useState<{type: 'error' | 'success', message: string} | null>(null);
-    const feedbackTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-    
+
     const [showHeadersList, setShowHeadersList] = useState(false);
     const headersRef = useRef<HTMLDivElement>(null);
 
@@ -142,7 +141,6 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             } else {
                 resetForm();
             }
-            setFeedback(null);
         }
     }, [isOpen, editingColumn]);
 
@@ -157,12 +155,6 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
     }, []);
 
     const existingMainHeaders = Array.from(new Set(existingColumns.map(c => c.mainHeader).filter(Boolean))).sort();
-
-    const showFeedback = (type: 'error' | 'success', message: string) => {
-        setFeedback({ type, message });
-        if (feedbackTimer.current) clearTimeout(feedbackTimer.current);
-        feedbackTimer.current = setTimeout(() => setFeedback(null), 3500);
-    };
 
     const getDefaultColorsForCondition = (condition: string) => {
         if (condition === '<' || condition === '<avg') {
@@ -204,7 +196,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
         }
 
         if (!columnName.trim()) {
-            showFeedback('error', 'Vui lòng nhập Tiêu đề phụ.');
+            toast.error('Vui lòng nhập Tiêu đề phụ.');
             return;
         }
         
@@ -241,7 +233,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
         } else if (columnType === 'target') {
             const parsedTarget = parseFloat(targetValue.replace(/[^\d.-]/g, ''));
             if (isNaN(parsedTarget)) {
-                showFeedback('error', 'Vui lòng nhập giá trị chỉ tiêu hợp lệ.');
+                toast.error('Vui lòng nhập giá trị chỉ tiêu hợp lệ.');
                 return;
             }
             newColumn = {
@@ -256,7 +248,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             };
         } else { // calculated
             if (!operand1 || !operand2) {
-                showFeedback('error', 'Vui lòng chọn đủ 2 cột để thực hiện phép tính.');
+                toast.error('Vui lòng chọn đủ 2 cột để thực hiện phép tính.');
                 return;
             }
             newColumn = {
@@ -280,7 +272,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             // Parent will close modal automatically
         } else {
             resetForm();
-            showFeedback('success', `Đã lưu cột "${newColumn.columnName}". Bạn có thể thêm cột tiếp theo.`);
+            toast.success(`Đã lưu cột "${newColumn.columnName}". Bạn có thể thêm cột tiếp theo.`);
         }
     };
     
@@ -297,17 +289,6 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
         >
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
                 <div className="flex-grow p-3 sm:p-6 space-y-4 sm:space-y-8 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar min-h-0">
-                    {feedback && (
-                        <div className={`p-3 border rounded-xl text-sm font-semibold flex items-center gap-2 shadow-sm ${
-                            feedback.type === 'error' 
-                            ? 'bg-rose-50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300'
-                            : 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
-                        }`}>
-                           <Icon name={feedback.type === 'error' ? 'alert-triangle' : 'check-circle'} size={4} />
-                           {feedback.message}
-                        </div>
-                    )}
-                    
                     {/* SECTION 1: Cấu trúc Cột */}
                     <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-5 shadow-sm">
                         <h4 className="flex items-center gap-2 font-bold mb-3 sm:mb-4 text-sm sm:text-base text-slate-800 dark:text-slate-100">

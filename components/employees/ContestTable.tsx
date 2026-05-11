@@ -20,6 +20,8 @@ interface ContestTableProps {
     onTriggerDeleteColumn: (columnId: string) => void;
 }
 
+import { DATA_STATUS_COLORS } from '../../constants';
+
 const getConditionalStyle = (value: number | undefined, column: ColumnConfig, average: number | undefined): React.CSSProperties => {
     if (value === undefined || !column.conditionalFormatting || column.conditionalFormatting.length === 0) {
         return {};
@@ -50,7 +52,15 @@ const getConditionalStyle = (value: number | undefined, column: ColumnConfig, av
                 break;
         }
         if (match) {
-            return { color: rule.color, fontWeight: 'bold' };
+            // Determine colors from standard constants
+            const isNegative = rule.condition === '<' || rule.condition === '<avg';
+            const statusColor = isNegative ? DATA_STATUS_COLORS.negative : DATA_STATUS_COLORS.positive;
+            
+            return { 
+                backgroundColor: statusColor.bg, 
+                color: statusColor.text, 
+                fontWeight: 'bold' 
+            };
         }
     }
     return {};
@@ -383,18 +393,26 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         <div ref={exportRef} className="rounded-none border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="overflow-hidden">
                 <div
-                    className="px-4 py-3 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700"
+                    className="px-2 sm:px-4 py-1.5 sm:py-3 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 gap-2"
                 >
-                    <h3 className="text-sm font-extrabold uppercase flex items-center gap-2 text-slate-800 dark:text-white">
-                        <Icon name="target" size={4} className="text-primary-500" />
-                        <span>{config.tableName}</span>
+                    <h3 className="text-[11px] sm:text-sm font-extrabold uppercase flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-white tracking-tight truncate">
+                        <Icon name={config.icon || "target"} size={3.5} className="text-primary-500 sm:hidden shrink-0" />
+                        <Icon name={config.icon || "target"} size={4} className="text-primary-500 hidden sm:block shrink-0" />
+                        <span className="truncate">{config.tableName}</span>
                     </h3>
-                    <div className="flex items-center gap-1 hide-on-export">
-                        <button onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"><Icon name="plus-circle" size={4}/></button>
-                        <button onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors"><Icon name="settings-2" size={4}/></button>
-                        <button onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"><Icon name="trash-2" size={4}/></button>
-                        <button onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} />}
+                    <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
+                        <button onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            <Icon name="plus-circle" size={3.5} className="sm:hidden"/><Icon name="plus-circle" size={4} className="hidden sm:block"/>
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            <Icon name="settings-2" size={3.5} className="sm:hidden"/><Icon name="settings-2" size={4} className="hidden sm:block"/>
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                            <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={4} className="hidden sm:block"/>
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
+                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={4} className="hidden sm:block" />}
                         </button>
                     </div>
                 </div>
@@ -403,7 +421,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                     <table className="min-w-full text-sm compact-export-table border-collapse">
                         <thead className="uppercase">
                             <tr>
-                                <th rowSpan={2} colSpan={2} onClick={() => handleSort('name')} className="px-4 py-3 text-center text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle min-w-[140px] tracking-wider sticky left-0 z-20 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                                <th rowSpan={2} colSpan={2} onClick={() => handleSort('name')} className="px-2 sm:px-4 py-1.5 sm:py-3 text-center text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle min-w-[140px] tracking-wider sticky left-0 z-20 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
                                     <div className="flex items-center justify-center gap-1">
                                         NHÂN VIÊN
                                         {sortConfig.key === 'name' && (
@@ -422,7 +440,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     ];
                                     const config = colorConfigs[gIdx % colorConfigs.length];
                                     return (
-                                        <th key={group.name} colSpan={group.columns.length} className={`px-2 py-3 text-center text-[11px] uppercase tracking-wider font-bold border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text}`}>
+                                        <th key={group.name} colSpan={group.columns.length} className={`px-1.5 sm:px-2 py-1.5 sm:py-3 text-center text-[11px] uppercase tracking-wider font-bold border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text}`}>
                                             {group.name}
                                         </th>
                                     );
@@ -436,7 +454,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     ];
                                     const config = colorConfigs[cIdx % colorConfigs.length];
                                     return (
-                                        <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-3 py-3 text-center text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none group/th relative align-middle border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
+                                        <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1.5 sm:px-3 py-1.5 sm:py-3 text-center text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none group/th relative align-middle border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
@@ -464,7 +482,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     ];
                                     const config = colorConfigs[Math.max(0, groupIdx) % colorConfigs.length];
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-3 py-2 text-center text-[11px] h-px font-bold uppercase tracking-wider cursor-pointer select-none group/th relative border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-center text-[11px] h-px font-bold uppercase tracking-wider cursor-pointer select-none group/th relative border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
@@ -509,7 +527,13 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                                         const value = row.columnValues.get(col.id);
                                                         const average = averages.get(col.id);
                                                         const style = getConditionalStyle(value, col, average);
-                                                        return <td key={col.id} className="px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700" style={style}>{formatValue(value, col)}</td>;
+                                                        return (
+                                                            <td key={col.id} className="px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
+                                                                <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(style).length > 0 ? 'rounded-md' : ''}`} style={style}>
+                                                                    {formatValue(value, col)}
+                                                                </div>
+                                                            </td>
+                                                        );
                                                     })}
                                                 </tr>
                                             );
@@ -535,7 +559,13 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     const value = totals.get(col.id);
                                     const average = averages.get(col.id);
                                     const style = getConditionalStyle(value, col, average);
-                                    return <td key={col.id} className="px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700" style={style}>{formatValue(value, col)}</td>;
+                                    return (
+                                        <td key={col.id} className="px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700">
+                                            <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(style).length > 0 ? 'rounded-md' : ''}`} style={style}>
+                                                {formatValue(value, col)}
+                                            </div>
+                                        </td>
+                                    );
                                 })}
                             </tr>
                         </tfoot>

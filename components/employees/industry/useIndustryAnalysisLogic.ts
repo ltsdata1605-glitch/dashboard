@@ -37,15 +37,49 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
     }, [viewMode]);
 
     const dynamicQuickFilters = useMemo(() => {
-        const baseFilters: any[] = [...detailQuickFilters];
+        const baseFilters: any[] = [...detailQuickFilters].map(f => {
+            const override = customExploitationTabs?.find(t => t.id === f.key);
+            if (override) {
+                return { ...f, label: override.name };
+            }
+            return f;
+        });
         (customExploitationTabs || []).forEach(tab => {
+            if (tab.id === 'doanhThu' || tab.id === 'spChinh') return;
             baseFilters.push({ key: tab.id, label: tab.name, isCustom: true });
         });
         return baseFilters;
     }, [customExploitationTabs]);
 
-    const dynamicHeaderGroups = useMemo(() => {
+        const dynamicHeaderGroups = useMemo(() => {
         const baseGroups: any = { ...detailHeaderGroups };
+        
+        // Apply overrides for doanhThu and spChinh if they were edited
+        ['doanhThu', 'spChinh'].forEach(key => {
+            const tabOverride = customExploitationTabs?.find(t => t.id === key);
+            if (tabOverride && baseGroups[key]) {
+                baseGroups[key].label = tabOverride.name;
+                // Filter subHeaders based on hidden columns
+                const originalSubHeaders = detailHeaderGroups[key].subHeaders;
+                baseGroups[key].subHeaders = originalSubHeaders.filter(sh => {
+                    const colConfig = tabOverride.columns?.find(c => {
+                        // Match by id or fallback mapping
+                        if (c.id === sh.key) return true;
+                        if (key === 'doanhThu' && sh.key === 'doanhThuThuc' && c.id === 'dtThuc') return true;
+                        return false;
+                    });
+                    // If colConfig exists and is hidden, filter it out. Otherwise keep it.
+                    if (colConfig && colConfig.hidden) return false;
+                    // If the column wasn't in the override at all, we assume it's hidden (since the user deleted it)
+                    if (tabOverride.columns && !tabOverride.columns.some(c => c.id === sh.key || (key === 'doanhThu' && sh.key === 'doanhThuThuc' && c.id === 'dtThuc'))) {
+                        return false;
+                    }
+                    return true;
+                });
+                baseGroups[key].colSpan = baseGroups[key].subHeaders.length;
+            }
+        });
+
         const pastelColors = [
             { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300' },
             { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300' },
@@ -56,6 +90,8 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
         ];
 
         (customExploitationTabs || []).forEach((tab, index) => {
+            if (tab.id === 'doanhThu' || tab.id === 'spChinh') return; // Handled above
+            
             const color = pastelColors[index % pastelColors.length];
             const subHeaders = (tab.columns || []).filter(c => !c.hidden).map(col => ({
                 label: col.name.toUpperCase(),

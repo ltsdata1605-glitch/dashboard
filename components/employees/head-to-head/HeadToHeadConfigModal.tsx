@@ -102,7 +102,8 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
         setDecimalPlaces(0);
         
         setTargetValue('');
-        setFormattingRules([]);
+        const defaults = getDefaultColorsForCondition('<avg');
+        setFormattingRules([{ id: Date.now(), condition: '<avg', value1: '', value2: '', ...defaults }]);
     };
 
     useEffect(() => {
@@ -323,7 +324,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
             maxWidthClass="max-w-4xl"
         >
             <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0">
-                <div className="flex-grow p-3 sm:p-6 space-y-4 sm:space-y-8 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar min-h-0">
+                <div className="flex-grow p-3 sm:p-4 space-y-3 sm:space-y-4 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar min-h-0">
                     {feedback && (
                         <div className={`p-2.5 sm:p-3 border rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
                             feedback.type === 'error' 
@@ -337,11 +338,11 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                     )}
                     
                     {/* SECTION 1: Cấu trúc Bảng */}
-                    <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-5 shadow-sm">
-                        <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold mb-3 sm:mb-4 text-xs sm:text-base text-slate-800 dark:text-slate-100">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 shadow-sm">
+                        <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold mb-2 sm:mb-3 text-xs sm:text-base text-slate-800 dark:text-slate-100">
                             <Icon name="layout" size={3.5} className="text-indigo-500 sm:hidden" /><Icon name="layout" size={4} className="text-indigo-500 hidden sm:block" /> Cấu trúc Bảng
                         </h4>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                             <div ref={headersRef} className="relative z-50">
                                 <label htmlFor="mainHeader" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 flex justify-between">
                                     Tiêu đề nhóm (Cha)
@@ -459,7 +460,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                     </div>
                     
                     {/* SECTION 2.5: Total Calculation */}
-                    <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-3 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
                          <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-base text-slate-800 dark:text-slate-100">
                              <Icon name="calculator" size={3.5} className="text-indigo-500 sm:hidden" /><Icon name="calculator" size={4} className="text-indigo-500 hidden sm:block" /> Cột tổng chốt cuối bảng
                          </h4>
