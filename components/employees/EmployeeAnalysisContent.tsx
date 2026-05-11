@@ -107,13 +107,13 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                     <div ref={exportRef}>
                         <div className="flex justify-between items-center mb-3 sm:mb-6">
                             <div className="flex items-center gap-2 sm:gap-4">
-                                <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
-                                    <Icon name={customTab.icon || 'folder'} size={4} className="sm:hidden" />
-                                    <Icon name={customTab.icon || 'folder'} size={6} className="hidden sm:block" />
+                                <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400">
+                                    <Icon name={customTab.icon || 'folder'} size={3.5} className="sm:hidden" />
+                                    <Icon name={customTab.icon || 'folder'} size={5} className="hidden sm:block" />
                                 </div>
-                                <div>
-                                    <h3 className="text-sm sm:text-lg font-black text-slate-800 dark:text-white leading-tight">{customTab.name}</h3>
-                                    <p className="text-[9px] sm:text-xs font-medium text-slate-400">Bảng thi đua tùy chỉnh</p>
+                                <div className="min-w-0">
+                                    <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">{customTab.name}</h3>
+                                    <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Bảng thi đua tùy chỉnh</p>
                                 </div>
                             </div>
                             <div className="px-1.5 sm:px-6 py-1 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-lg sm:rounded-xl">

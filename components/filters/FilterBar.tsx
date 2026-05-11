@@ -136,7 +136,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
 
     return (
         <div className="w-full mb-4 z-[90] lg:z-[100] sticky top-[44px] lg:top-1.5 hide-on-export">
-            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-y sm:border border-slate-200/80 dark:border-slate-700/60 rounded-none sm:rounded-xl lg:rounded-full shadow-sm p-1.5 lg:px-3 lg:py-2 transition-all">
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-y sm:border border-slate-200/80 dark:border-slate-700/60 rounded-none sm:rounded-xl lg:rounded-full p-1.5 lg:px-3 lg:py-2 transition-all">
 
                 {/* === MOBILE LAYOUT (<lg): 2 compact rows === */}
                 <div className="lg:hidden space-y-1.5">
@@ -207,7 +207,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                     {/* Row 2: Segments — moved to filter sidebar on mobile, visible on tablet+ */}
                     <div className="hidden sm:flex items-center gap-2 overflow-x-auto no-scrollbar -mx-0.5 px-0.5">
                         {/* Date Range Segments */}
-                        <div className="flex items-center gap-0.5 bg-slate-100/70 dark:bg-slate-800/60 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-700/50 shrink-0 shadow-sm">
+                        <div className="flex items-center gap-0.5 bg-slate-100/70 dark:bg-slate-800/60 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-700/50 shrink-0">
                             {[
                                 { range: 'week', label: 'Tuần' },
                                 { range: 'today', label: 'H.nay' },

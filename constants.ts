@@ -59,7 +59,6 @@ export const WAREHOUSE_HEADER_COLORS: Record<string, { border: string; sub: stri
     'TRAFFIC': { border: 'border-slate-200 dark:border-slate-800', sub: 'bg-slate-50 dark:bg-slate-900/30', text: 'text-slate-600 dark:text-slate-400' },
     'SL PHỤ KIỆN': { border: 'border-purple-200 dark:border-purple-800', sub: 'bg-purple-50 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300' },
     'SL GIA DỤNG': { border: 'border-amber-200 dark:border-amber-800', sub: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300' },
-    'DT THỰC': { border: 'border-fuchsia-200 dark:border-fuchsia-800', sub: 'bg-fuchsia-50 dark:bg-fuchsia-900/30', text: 'text-fuchsia-700 dark:text-fuchsia-300' },
     'DEFAULT': { border: 'border-slate-200 dark:border-slate-700', sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' },
 };
 
@@ -104,10 +103,6 @@ export const DEFAULT_WAREHOUSE_COLUMNS: WarehouseColumnConfig[] = [
     { id: 'gd_qdien', order: 32, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Quạt điện', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'Q.Điện' },
     { id: 'gd_ncom', order: 33, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Nồi cơm', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'N.Cơm' },
     { id: 'gd_nchien', order: 34, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Nồi chiên', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'N.Chiên' },
-    // --- DT THỰC (NhomCha - Mặc định ẩn) ---
-    { id: 'dthh_bh', order: 35, isVisible: false, isCustom: false, categoryType: 'industry', categoryName: 'Bảo hiểm', metricType: 'revenue', mainHeader: 'DT THỰC', subHeader: 'B.HIỂM' },
-    { id: 'dthh_pk', order: 36, isVisible: false, isCustom: false, categoryType: 'industry', categoryName: 'Phụ kiện', metricType: 'revenue', mainHeader: 'DT THỰC', subHeader: 'P.KIỆN' },
-    { id: 'dthh_dgd', order: 37, isVisible: false, isCustom: false, categoryType: 'industry', categoryName: 'Gia dụng', metricType: 'revenue', mainHeader: 'DT THỰC', subHeader: 'ĐGD' },
 ];
 
 export const DEFAULT_INDUSTRY_COLUMNS: any[] = [

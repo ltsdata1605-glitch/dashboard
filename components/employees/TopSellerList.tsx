@@ -71,29 +71,33 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
         <div ref={ref}>
             <div className="flex flex-row justify-between items-center gap-2 mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-                    <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center bg-amber-100 text-amber-600 shrink-0">
+                    <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center bg-amber-100 text-amber-600 shrink-0">
                         <Icon name="trophy" size={3.5} className="sm:hidden" />
                         <Icon name="trophy" size={5} className="hidden sm:block" />
                     </div>
                     <div className="min-w-0">
-                        <h3 className="text-xs sm:text-lg font-black text-slate-800 dark:text-white leading-tight truncate">Top Nhân Viên</h3>
-                        <p className="text-[8px] sm:text-xs font-medium text-slate-400 leading-tight">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
+                        <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">Top Nhân Viên</h3>
+                        <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{isExpanded ? 'All' : 'Top/Bot 20%'}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-0.5 lg:gap-2 hide-on-export shrink-0">
                     <div className="flex items-center gap-0.5 lg:gap-2">
-                        <div className="inline-flex rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700">
-                            <button onClick={() => setIsExpanded(false)} className={`py-1 lg:py-1 px-1.5 lg:px-2.5 text-[9px] lg:text-[10px] font-bold rounded-l-lg transition-all uppercase tracking-wider ${!isExpanded ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>Top/Bot 20%</button>
-                            <button onClick={() => setIsExpanded(true)} className={`py-1 lg:py-1 px-1.5 lg:px-2.5 text-[9px] lg:text-[10px] font-bold rounded-r-lg border-l border-slate-200 dark:border-slate-600 transition-all uppercase tracking-wider ${isExpanded ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}>All</button>
+                        <div className="inline-flex">
+                            <button onClick={() => setIsExpanded(false)} className={`p-1 lg:p-1.5 transition-all ${!isExpanded ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Top/Bot 20%">
+                                <Icon name="percent" size={3.5} className="lg:hidden" /><Icon name="percent" size={4} className="hidden lg:block" />
+                            </button>
+                            <button onClick={() => setIsExpanded(true)} className={`p-1 lg:p-1.5 transition-all ${isExpanded ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Tất cả">
+                                <Icon name="layout-list" size={3.5} className="lg:hidden" /><Icon name="layout-list" size={4} className="hidden lg:block" />
+                            </button>
                         </div>
-                        <div className="hidden lg:block h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+                        <div className="h-4 lg:h-6 w-px bg-slate-300 dark:bg-slate-700 mx-0.5 lg:mx-1"></div>
                         <button 
                             onClick={handleBatchExportClick}
                             className="p-1.5 lg:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
                             title="Xuất hàng loạt báo cáo chi tiết"
                         >
-                            <Icon name="switch-camera" size={4} className="lg:hidden" />
-                            <Icon name="switch-camera" size={5} className="hidden lg:block" />
+                            <Icon name="images" size={4} className="lg:hidden" />
+                            <Icon name="images" size={5} className="hidden lg:block" />
                         </button>
                         {onExport && (
                             <button onClick={onExport} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 lg:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">

@@ -151,18 +151,37 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             <div className="mb-3 sm:mb-4">
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl flex items-center justify-center bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400">
-                            <Icon name="calendar-days" size={4} className="sm:hidden" />
+                        <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400">
+                            <Icon name="calendar-days" size={3.5} className="sm:hidden" />
                             <Icon name="calendar-days" size={5} className="hidden sm:block" />
                         </div>
-                        <div>
-                            <h3 className="text-sm sm:text-base font-black text-slate-800 dark:text-white leading-tight uppercase">
+                        <div className="min-w-0">
+                            <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
                                 {activeTable ? activeTable.tableName : '7 Ngày'}
                             </h3>
-                            <p className="text-[9px] sm:text-[11px] font-medium text-slate-400">7 ngày gần nhất</p>
+                            <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">7 ngày gần nhất</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
+                        {/* Group 1 (LEFT): CRUD actions — Add, Edit, Delete */}
+                        <button onClick={() => setModalState({ type: 'ADD' })} className="p-1 sm:p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all" title="Tạo bảng 7 Ngày mới">
+                            <Icon name="plus" size={3.5} className="sm:hidden" /><Icon name="plus" size={4} className="hidden sm:block" />
+                        </button>
+                        {activeTable && (
+                            <>
+                                <button onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
+                                    <Icon name="pencil" size={3.5} className="sm:hidden"/><Icon name="pencil" size={4} className="hidden sm:block"/>
+                                </button>
+                                <button onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                                    <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={4} className="hidden sm:block"/>
+                                </button>
+                            </>
+                        )}
+
+                        {/* Separator */}
+                        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+
+                        {/* Group 2 (RIGHT): Calendar → Batch export → Camera */}
                         <button
                             type="button"
                             onClick={() => setIncludeToday(p => !p)}
@@ -175,24 +194,6 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                         >
                             <Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={4} />
                         </button>
-                        {activeTable && (
-                            <>
-                                <button onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
-                                    <Icon name="pencil" size={3.5} className="sm:hidden"/><Icon name="pencil" size={4} className="hidden sm:block"/>
-                                </button>
-                                <button onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
-                                    <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={4} className="hidden sm:block"/>
-                                </button>
-                            </>
-                        )}
-                        <button onClick={() => setModalState({ type: 'ADD' })} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Tạo bảng 7 Ngày mới">
-                            <Icon name="plus" size={3.5} className="sm:hidden" /><Icon name="plus" size={4} className="hidden sm:block" />
-                        </button>
-                        {onExport && (
-                            <button onClick={onExport} disabled={isExporting} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
-                                {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} />}
-                            </button>
-                        )}
                         <button 
                             onClick={handleBatchExport} 
                             disabled={isBatchExporting || tables.length === 0}
@@ -201,28 +202,35 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                         >
                             {isBatchExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="images" size={4} />}
                         </button>
+                        {onExport && (
+                            <button onClick={onExport} disabled={isExporting} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
+                                {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} />}
+                            </button>
+                        )}
                     </div>
                 </div>
 
                 {/* Tabs below title */}
                 {!isBatchExporting && tables.length > 1 && (
-                    <div className="mt-2 sm:mt-3 overflow-x-auto no-scrollbar hide-on-export">
-                        <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 w-fit">
-                            {tables.map((t, index) => {
-                                const theme = colorThemes[index % colorThemes.length];
+                    <div className="mt-1.5 sm:mt-2 overflow-x-auto no-scrollbar hide-on-export">
+                        <div className="flex gap-0 border-b border-slate-200 dark:border-slate-700/60 w-max sm:w-auto">
+                            {tables.map((t) => {
                                 const isActive = activeTableId === t.id;
                                 return (
                                 <button
                                     key={`tab-${t.id}`}
                                     onClick={() => setActiveTableId(t.id)}
-                                    className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-lg transition-all ${
+                                    className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
                                         isActive
-                                        ? `${theme.header} shadow-sm border ${theme.border}`
-                                        : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 border border-transparent'
+                                        ? 'text-slate-800 dark:text-white'
+                                        : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
                                     }`}
                                     title={t.tableName}
                                 >
                                     {t.tableName.replace(/7 NGÀY\s*-\s*/i, '')}
+                                    {isActive && (
+                                        <span className="absolute bottom-0 left-1 right-1 h-[2.5px] bg-sky-400 dark:bg-sky-400 rounded-full" />
+                                    )}
                                 </button>
                             )})}
                         </div>

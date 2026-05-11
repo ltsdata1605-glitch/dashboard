@@ -113,8 +113,8 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     variant === 'compact' ? 'px-2 py-1.5' : 'px-3 py-1.5 min-h-[38px]'
                 } ${
                     isOpen 
-                    ? 'border-indigo-500 bg-white dark:bg-slate-800 shadow-md ring-2 ring-indigo-500/10' 
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 shadow-sm'
+                    ? 'border-indigo-500 bg-white dark:bg-slate-800 ring-2 ring-indigo-500/10' 
+                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
             >
                 <div className="flex-grow flex items-center overflow-hidden">

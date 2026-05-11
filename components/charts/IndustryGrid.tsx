@@ -399,7 +399,7 @@ const IndustryGrid: React.FC = React.memo(() => {
                                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-xs font-extrabold uppercase tracking-widest border border-emerald-100 dark:border-emerald-800/40">
                                     <Icon name="pie-chart" size={3.5} />
                                     {drilldownPath.length === 0
-                                        ? 'Tỷ trọng doanh thu'
+                                        ? (metricToDisplay === 'revenue' ? 'Tỷ trọng doanh thu' : 'Tỷ trọng số lượng')
                                         : `Top — ${drilldownPath[drilldownPath.length - 1]}`}
                                 </span>
                                 <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-full">

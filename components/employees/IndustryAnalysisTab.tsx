@@ -69,7 +69,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
 
                 const tab = (customExploitationTabs || []).find(t => t.id === key);
                 if (tab) {
-                    const cols = tab.columns || [];
+                    const cols = (tab.columns || []).filter(c => !c.hidden);
                     
                     if (cols.length === 0) {
                         return <td key={tab.id} className="px-1.5 sm:px-3 py-1 sm:py-2 text-center text-slate-400 border-b border-r border-slate-200 dark:border-slate-700">-</td>;
@@ -117,33 +117,38 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     return (
         <div ref={ref} className="overflow-hidden flex flex-col h-full bg-transparent">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2 sm:gap-3 mb-3 sm:mb-6">
+            <div className="flex justify-between items-center mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-4">
-                    <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400`}>
-                        <Icon name="gantt-chart-square" size={4} className="sm:hidden" />
-                        <Icon name="gantt-chart-square" size={6} className="hidden sm:block" />
+                    <div className={`w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400`}>
+                        <Icon name="gantt-chart-square" size={3.5} className="sm:hidden" />
+                        <Icon name="gantt-chart-square" size={5} className="hidden sm:block" />
                     </div>
-                    <div>
-                        <h3 className="text-sm sm:text-lg font-black text-slate-800 dark:text-white leading-tight">Phân Tích Khai Thác</h3>
-                        <p className="text-[9px] sm:text-xs font-medium text-slate-400">Chi tiết sản phẩm & hiệu quả bán kèm</p>
+                    <div className="min-w-0">
+                        <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">Phân Tích Khai Thác</h3>
+                        <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">Chi tiết sản phẩm & hiệu quả bán kèm</p>
                     </div>
                 </div>
-                <div className="px-2 sm:px-6 py-1 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-lg sm:rounded-xl">
-                    <div className="flex items-center gap-1.5 sm:gap-2">
-                        <div className="inline-flex rounded-md sm:rounded-lg shadow-sm p-0.5 sm:p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 shrink-0">
-                            <button onClick={() => setViewMode('detail')} className={`py-1 sm:py-1.5 px-1.5 sm:px-3 text-[9px] sm:text-xs font-bold rounded-md sm:rounded-lg transition-all whitespace-nowrap ${viewMode === 'detail' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Chi tiết</button>
-                            <button onClick={() => setViewMode('efficiency')} className={`py-1 sm:py-1.5 px-1.5 sm:px-3 text-[9px] sm:text-xs font-bold rounded-md sm:rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Hiệu quả %</button>
-                            <button onClick={() => setViewMode('efficiency_dt_sl')} className={`py-1 sm:py-1.5 px-1.5 sm:px-3 text-[9px] sm:text-xs font-bold rounded-md sm:rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency_dt_sl' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Doanh thu</button>
-                            <button onClick={() => setViewMode('efficiency_quantity')} className={`py-1 sm:py-1.5 px-1.5 sm:px-3 text-[9px] sm:text-xs font-bold rounded-md sm:rounded-lg transition-all whitespace-nowrap ${viewMode === 'efficiency_quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}>Số lượng</button>
+                <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export overflow-x-auto">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                        <div className="inline-flex gap-0.5 sm:gap-1 shrink-0">
+                            <button onClick={() => setViewMode('detail')} className={`p-1 sm:py-1.5 sm:px-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'detail' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Chi tiết">
+                                <Icon name="list" size={3.5} />
+                                <span className="hidden sm:inline">Chi tiết</span>
+                            </button>
+                            <button onClick={() => setViewMode('efficiency')} className={`p-1 sm:py-1.5 sm:px-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${viewMode === 'efficiency' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Hiệu quả %">
+                                <Icon name="percent" size={3.5} />
+                                <span className="hidden sm:inline">Hiệu quả %</span>
+                            </button>
                         </div>
-                        <div className="hidden sm:block h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1 shrink-0"></div>
+                        <div className="h-4 sm:h-6 w-px bg-slate-200 dark:bg-slate-800 mx-0.5 sm:mx-1 shrink-0"></div>
                          <button onClick={() => onBatchExport(data)} title="Xuất hàng loạt báo cáo chi tiết" className="p-1.5 sm:p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg sm:rounded-xl transition-all shrink-0">
-                            <Icon name="switch-camera" size={4} className="sm:hidden" />
-                            <Icon name="switch-camera" size={5} className="hidden sm:block" />
+                            <Icon name="images" size={3.5} className="sm:hidden" />
+                            <Icon name="images" size={5} className="hidden sm:block" />
                         </button>
                         {onExport && (
                             <button onClick={(e) => { e.stopPropagation(); onExport?.(); }} disabled={isExporting} title="Xuất Ảnh Tab" className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all shrink-0">
-                                {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <><Icon name="camera" size={4} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
+                                {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
+                                {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
                             </button>
                         )}
                     </div>
@@ -151,31 +156,34 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
             </div>
             
             {viewMode === 'detail' && (
-                <div className="pb-2 hide-on-export overflow-x-auto">
-                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                        <span className="text-[8px] sm:text-[10px] font-black uppercase text-slate-400 tracking-wider mr-1 sm:mr-2">Hiển thị:</span>
-                        {dynamicQuickFilters.map(f => (
+                <div className="mt-1 sm:mt-2 mb-2 overflow-x-auto no-scrollbar hide-on-export">
+                    <div className="flex gap-0 border-b border-slate-200 dark:border-slate-700/60 w-max sm:w-auto">
+                        {dynamicQuickFilters.map(f => {
+                            const isActive = visibleGroups.has(f.key);
+                            return (
                             <button 
                                 key={f.key} 
                                 onClick={() => handleToggleGroup(f.key)}
-                                className={`px-1.5 sm:px-3 py-0.5 sm:py-1.5 text-[8px] sm:text-[10px] font-bold uppercase rounded-md sm:rounded-lg transition-all border ${
-                                    visibleGroups.has(f.key)
-                                    ? 'bg-white dark:bg-slate-800 text-indigo-600 border-indigo-200 dark:border-indigo-800 shadow-sm'
-                                    : 'bg-transparent text-slate-500 border-transparent hover:bg-white hover:shadow-sm'
+                                className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
+                                    isActive
+                                    ? 'text-slate-800 dark:text-white'
+                                    : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
                                 }`}
                             >
                                 {f.label}
+                                {isActive && (
+                                    <span className="absolute bottom-0 left-1 right-1 h-[2.5px] bg-sky-400 dark:bg-sky-400 rounded-full" />
+                                )}
                             </button>
-                        ))}
+                        )})}
                         {onManageCustomTabs && (
                              <button 
                                  onClick={onManageCustomTabs}
                                  title="Tạo thẻ mới"
-                                 className="px-1.5 sm:px-3 py-0.5 sm:py-1 text-[8px] sm:text-[10px] font-bold uppercase rounded-md sm:rounded-lg transition-all border border-dashed border-slate-300 text-slate-500 hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-300 flex items-center justify-center gap-0.5 sm:gap-1 min-h-[22px] sm:min-h-[30px]"
+                                 className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors text-slate-400 hover:text-indigo-600 flex items-center justify-center gap-1 shrink-0"
                              >
-                                 <Icon name="plus" size={3} className="inline-block sm:hidden" />
-                                 <Icon name="plus" size={3.5} className="hidden sm:inline-block" />
-                                 Thêm thẻ
+                                 <Icon name="plus" size={3.5} />
+                                 <span className="hidden sm:inline">Thêm thẻ</span>
                              </button>
                         )}
                     </div>

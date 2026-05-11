@@ -151,38 +151,43 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
             {/* Header */}
             <div className="flex justify-between items-center mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-4">
-                    <div className={`w-8 h-8 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center ${theme.iconBlockBg} ${theme.iconBlockText}`}>
-                        <Icon name={theme.icon} size={4} className="sm:hidden" />
-                        <Icon name={theme.icon} size={6} className="hidden sm:block" />
+                    <div className={`w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 ${theme.iconBlockBg} ${theme.iconBlockText}`}>
+                        <Icon name={theme.icon} size={3.5} className="sm:hidden" />
+                        <Icon name={theme.icon} size={5} className="hidden sm:block" />
                     </div>
-                    <div>
-                        <h3 className="text-sm sm:text-lg font-black text-slate-800 dark:text-white leading-tight">{theme.title}</h3>
-                        <p className="text-[9px] sm:text-xs font-medium text-slate-400">{theme.subtitle}</p>
+                    <div className="min-w-0">
+                        <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">{theme.title}</h3>
+                        <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{theme.subtitle}</p>
                     </div>
                 </div>
 
                 {/* Tab switcher + export */}
-                <div className="px-2 sm:px-6 py-1 sm:py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-900/30 hide-on-export overflow-x-auto rounded-lg sm:rounded-xl">
-                    <div className="flex items-center gap-2 flex-wrap">
-                        <div className="inline-flex rounded-md sm:rounded-lg shadow-sm p-0.5 sm:p-1 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-                            {(['doanhThu', 'khaiThac', 'vuotTroi'] as GroupType[]).map(tab => (
+                <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 sm:bg-slate-50/30 dark:sm:bg-slate-900/30 hide-on-export overflow-x-auto sm:rounded-xl">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                        <div className="inline-flex gap-0.5 sm:gap-0 sm:rounded-lg sm:shadow-sm sm:p-1 sm:bg-slate-100/50 dark:sm:bg-slate-800/50 sm:border sm:border-slate-200 dark:sm:border-slate-700">
+                            {(['doanhThu', 'khaiThac', 'vuotTroi'] as GroupType[]).map(tab => {
+                                const tabIcon = TAB_THEMES[tab].icon;
+                                const tabLabel = tab === 'doanhThu' ? 'Doanh Thu' : tab === 'khaiThac' ? 'Trả Chậm' : 'Vượt Trội';
+                                return (
                                 <button
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
-                                    className={`py-1 sm:py-1.5 px-2 sm:px-3 text-[10px] sm:text-xs font-bold rounded-md sm:rounded-lg transition-all whitespace-nowrap ${groupType === tab ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-indigo-600'}`}
+                                    className={`p-1.5 sm:py-1.5 sm:px-3 text-[10px] sm:text-xs font-bold sm:rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400 sm:bg-white dark:sm:bg-slate-700 sm:shadow-sm' : 'text-slate-400 hover:text-indigo-600'}`}
+                                    title={tabLabel}
                                 >
-                                    {tab === 'doanhThu' ? 'Doanh Thu' : tab === 'khaiThac' ? 'Trả Chậm' : 'Vượt Trội'}
+                                    <Icon name={tabIcon} size={3.5} />
+                                    <span className="hidden sm:inline">{tabLabel}</span>
                                 </button>
-                            ))}
+                            )})}
                         </div>
-                        <div className="hidden sm:block h-6 w-px bg-slate-200 dark:bg-slate-800 mx-1"></div>
+                        <div className="h-4 sm:h-6 w-px bg-slate-300 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
                         <button
                             onClick={e => { e.stopPropagation(); onSingleExport(); }}
                             disabled={isExporting}
-                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+                            className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 transition-all"
                             title="Xuất Ảnh Tab Hiện Tại"
                         >
-                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <><Icon name="camera" size={4} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
+                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <><Icon name="camera" size={3.5} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
                         </button>
                         <button
                             onClick={async (e) => { 
@@ -190,10 +195,10 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 onBatchExport();
                             }}
                             disabled={isExporting}
-                            className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+                            className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 transition-all"
                             title="Xuất Ảnh Tất Cả Tab (3 Tab)"
                         >
-                            <Icon name="images" size={4} className="sm:hidden" /><Icon name="images" size={5} className="hidden sm:block" />
+                            <Icon name="images" size={3.5} className="sm:hidden" /><Icon name="images" size={5} className="hidden sm:block" />
                         </button>
                     </div>
                 </div>

@@ -57,7 +57,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
 
         (customExploitationTabs || []).forEach((tab, index) => {
             const color = pastelColors[index % pastelColors.length];
-            const subHeaders = (tab.columns || []).map(col => ({
+            const subHeaders = (tab.columns || []).filter(c => !c.hidden).map(col => ({
                 label: col.name.toUpperCase(),
                 key: `val_${tab.id}_${col.id}`
             }));

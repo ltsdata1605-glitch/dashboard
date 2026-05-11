@@ -485,8 +485,8 @@ Link: ${url}`;
                 <Icon name="chevrons-down-up" size={4} className="hidden lg:block" />
             </button>
              <button onClick={handleBatchExport} disabled={isExporting} title="Xuất ảnh hàng loạt theo từng nhân viên" className="p-1.5 lg:p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center">
-                 <Icon name="switch-camera" size={3.5} className="lg:hidden" />
-                 <Icon name="switch-camera" size={4} className="hidden lg:block" />
+                 <Icon name="images" size={3.5} className="lg:hidden" />
+                 <Icon name="images" size={4} className="hidden lg:block" />
             </button>
             <button onClick={handleExportAll} disabled={isExporting} title="Xuất ảnh toàn bộ danh sách" className="p-1.5 lg:p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center">
                  <Icon name="camera" size={3.5} className="lg:hidden" />
