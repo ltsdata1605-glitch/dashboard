@@ -162,33 +162,26 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                 </div>
 
                 {/* Tab switcher + export */}
-                <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 sm:bg-slate-50/30 dark:sm:bg-slate-900/30 hide-on-export overflow-x-auto sm:rounded-xl">
+                <div className="px-0 sm:px-6 py-0 sm:py-2 sm:border-b sm:border-slate-100 dark:sm:border-slate-800 bg-transparent hide-on-export overflow-x-auto">
                     <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
-                        <div className="inline-flex gap-0.5 sm:gap-0 sm:rounded-lg sm:shadow-sm sm:p-1 sm:bg-slate-100/50 dark:sm:bg-slate-800/50 sm:border sm:border-slate-200 dark:sm:border-slate-700">
+                        <div className="inline-flex gap-0.5 sm:gap-1 shrink-0">
                             {(['doanhThu', 'khaiThac', 'vuotTroi'] as GroupType[]).map(tab => {
                                 const tabIcon = TAB_THEMES[tab].icon;
-                                const tabLabel = tab === 'doanhThu' ? 'Doanh Thu' : tab === 'khaiThac' ? 'Trả Chậm' : 'Vượt Trội';
+                                const tabLabel = tab === 'doanhThu' ? 'D.Thu' : tab === 'khaiThac' ? 'T.Chậm' : 'V.Trội';
                                 return (
                                 <button
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
-                                    className={`p-1.5 sm:py-1.5 sm:px-3 text-[10px] sm:text-xs font-bold sm:rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400 sm:bg-white dark:sm:bg-slate-700 sm:shadow-sm' : 'text-slate-400 hover:text-indigo-600'}`}
+                                    className={`p-1.5 sm:p-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                                     title={tabLabel}
                                 >
-                                    <Icon name={tabIcon} size={3.5} />
+                                    <Icon name={tabIcon} size={3.5} className="sm:hidden" />
+                                    <Icon name={tabIcon} size={5} className="hidden sm:block" />
                                     <span className="hidden sm:inline">{tabLabel}</span>
                                 </button>
                             )})}
                         </div>
                         <div className="h-4 sm:h-6 w-px bg-slate-300 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
-                        <button
-                            onClick={e => { e.stopPropagation(); onSingleExport(); }}
-                            disabled={isExporting}
-                            className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 transition-all"
-                            title="Xuất Ảnh Tab Hiện Tại"
-                        >
-                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <><Icon name="camera" size={3.5} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
-                        </button>
                         <button
                             onClick={async (e) => { 
                                 e.stopPropagation(); 
@@ -199,6 +192,14 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             title="Xuất Ảnh Tất Cả Tab (3 Tab)"
                         >
                             <Icon name="images" size={3.5} className="sm:hidden" /><Icon name="images" size={5} className="hidden sm:block" />
+                        </button>
+                        <button
+                            onClick={e => { e.stopPropagation(); onSingleExport(); }}
+                            disabled={isExporting}
+                            className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 transition-all"
+                            title="Xuất Ảnh Tab Hiện Tại"
+                        >
+                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <><Icon name="camera" size={3.5} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
                         </button>
                     </div>
                 </div>

@@ -138,6 +138,31 @@ export async function importAllSettings(settings: Record<string, any>): Promise<
     });
 }
 
+export async function mergeSettings(settings: Record<string, any>): Promise<void> {
+    const db = await getDb();
+    return new Promise((resolve, reject) => {
+        try {
+            const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+            const store = tx.objectStore(SETTINGS_STORE);
+            for (const [key, value] of Object.entries(settings)) {
+                store.put(value, key);
+            }
+            tx.oncomplete = () => {
+                if (typeof window !== 'undefined') {
+                    for (const key of Object.keys(settings)) {
+                        window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                    }
+                }
+                resolve();
+            };
+            tx.onerror = () => reject(tx.error);
+        } catch (error) {
+            console.error('IndexedDB Error in mergeSettings:', error);
+            reject(error);
+        }
+    });
+}
+
 export async function getSetting<T>(key: string): Promise<T | null> {
     const db = await getDb();
     return new Promise((resolve, reject) => {

@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth, db, loginWithGoogle as loginProvider, logoutUser as logoutProvider } from '../services/firebase';
-import { getSetting, saveSetting } from '../services/dbService';
+import { getSetting, saveSetting, mergeSettings } from '../services/dbService';
+import { initSyncListeners } from '../services/syncService';
 
 interface AuthContextType {
     user: User | null;
@@ -100,6 +101,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                             setExpiresAt(null);
                         }
 
+                        // Tích hợp đồng bộ cài đặt cá nhân từ mây xuống máy
+                        if (data.settings) {
+                            mergeSettings(data.settings).catch(e => console.warn('Sync merge failed:', e));
+                        }
+
                         setUserRole(currentRole);
                         setDepartmentId(data.departmentId);
                         setEmployeeName(data.employeeName);
@@ -175,13 +181,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 saveSetting('cached_dept_id', null).catch(() => {});
                 saveSetting('cached_emp_name', null).catch(() => {});
             }
-            clearTimeout(fallbackTimer);
         });
 
+        // Kích hoạt đồng bộ ngầm khi auth khởi tạo xong (lưu lại cleanup function)
+        const cleanupSyncListeners = initSyncListeners();
+
         return () => {
-            window.removeEventListener('google-auth-expired', handleAuthExpired);
             clearTimeout(fallbackTimer);
             unsubscribe();
+            window.removeEventListener('google-auth-expired', handleAuthExpired);
+            cleanupSyncListeners();
         };
     }, []);
 

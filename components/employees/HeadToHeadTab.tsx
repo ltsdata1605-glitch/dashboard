@@ -262,47 +262,49 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
                         {/* Group 1 (LEFT): CRUD actions — Add, Edit, Delete */}
-                        <button onClick={() => setModalState({ type: 'ADD' })} className="p-1 sm:p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-all" title="Tạo bảng 7 Ngày mới">
-                            <Icon name="plus" size={3.5} className="sm:hidden" /><Icon name="plus" size={4} className="hidden sm:block" />
+                        <button onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors">
+                            <Icon name="plus" size={3.5} className="sm:hidden"/><Icon name="plus" size={5} className="hidden sm:block"/>
                         </button>
                         {activeTable && (
                             <>
-                                <button onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
-                                    <Icon name="pencil" size={3.5} className="sm:hidden"/><Icon name="pencil" size={4} className="hidden sm:block"/>
+                                <button onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
+                                    <Icon name="pencil" size={3.5} className="sm:hidden"/><Icon name="pencil" size={5} className="hidden sm:block"/>
                                 </button>
-                                <button onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
-                                    <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={4} className="hidden sm:block"/>
+                                <button onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                                    <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={5} className="hidden sm:block"/>
                                 </button>
                             </>
                         )}
 
                         {/* Separator */}
-                        <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
+                        <div className="w-px h-4 sm:h-6 bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1" />
 
                         {/* Group 2 (RIGHT): Calendar → Batch export → Camera */}
                         <button
                             type="button"
                             onClick={() => setIncludeToday(p => !p)}
-                            className={`p-1 sm:p-1.5 rounded-lg transition-all ${
+                            className={`p-1.5 sm:p-2 rounded-lg transition-all ${
                                 includeToday 
                                 ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400' 
                                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
                             title={includeToday ? 'Đang bao gồm hôm nay — Nhấn để loại bỏ' : 'Không bao gồm hôm nay — Nhấn để thêm'}
                         >
-                            <Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={4} />
+                            <Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={3.5} className="sm:hidden"/><Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={5} className="hidden sm:block"/>
                         </button>
                         <button 
                             onClick={handleBatchExport} 
                             disabled={isBatchExporting || tables.length === 0}
-                            className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all"
+                            className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all"
                             title="Xuất hàng loạt ảnh toàn bộ bảng 7 ngày"
                         >
-                            {isBatchExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="images" size={4} />}
+                            {isBatchExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="images" size={3.5} className="sm:hidden" />}
+                            {isBatchExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="images" size={5} className="hidden sm:block" />}
                         </button>
                         {onExport && (
-                            <button onClick={onExport} disabled={isExporting} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
-                                {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="camera" size={4} />}
+                            <button onClick={onExport} disabled={isExporting} className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
+                                {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
+                                {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
                             </button>
                         )}
                     </div>

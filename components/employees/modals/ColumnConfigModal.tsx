@@ -84,7 +84,14 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
         setDisplayAs('number');
         setDecimalPlaces(0);
         setTargetValue('');
-        setFormattingRules([]);
+        setFormattingRules([{
+            id: Date.now(),
+            condition: '<avg',
+            value1: '',
+            value2: '',
+            color: 'rose',
+            textColor: 'text-rose-700'
+        }]);
     };
 
     const columnNameInputRef = useRef<HTMLInputElement>(null);

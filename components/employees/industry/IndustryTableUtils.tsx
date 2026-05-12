@@ -8,7 +8,7 @@ export type SortConfig = {
 };
 
 export const detailQuickFilters: { key: string; label: string }[] = [
-    { key: 'doanhThu', label: 'Doanh Thu' },
+    { key: 'doanhThu', label: 'D.Thu' },
     { key: 'spChinh', label: 'SP Chính' },
 ];
 
@@ -18,7 +18,7 @@ export const groupToSortKeyMap: Record<string, SortConfig['key']> = {
 
 // Data structure for detail view headers
 export const detailHeaderGroups: Record<string, { label: string; colSpan: number; bg: string; text: string; subHeaders: { label: string; key: SortConfig['key'] }[] }> = {
-    doanhThu: { label: 'DOANH THU', colSpan: 3, bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300', subHeaders: [
+    doanhThu: { label: 'D.THU', colSpan: 3, bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300', subHeaders: [
         { label: 'DT Thực', key: 'doanhThuThuc' },
         { label: 'DTQĐ', key: 'doanhThuQD' },
         { label: 'HQQĐ', key: 'hieuQuaQD' as any }

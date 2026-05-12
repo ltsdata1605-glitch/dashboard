@@ -35,7 +35,10 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
             let finalExploitationTabs: CustomExploitationTabConfig[] = [];
             
             if (savedExploitationTabs) {
-                finalExploitationTabs = savedExploitationTabs.map(tab => {
+                // Filter out old presets per user request to delete BẢO HIỂM, SIM, ĐỒNG HỒ, PHỤ KIỆN, GIA DỤNG
+                const filteredExploitationTabs = savedExploitationTabs.filter(tab => !tab.id.startsWith('preset_'));
+                
+                finalExploitationTabs = filteredExploitationTabs.map(tab => {
                     if (tab.columns && Array.isArray(tab.columns)) return tab;
                     
                     const columns: any[] = [];
@@ -64,11 +67,9 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 });
             }
 
-            // Migration logic for preset tabs
+            // Xoá logic nạp presets
             const hasMigratedPresets = await getSetting('presetTabsMigrated') === true;
             if (!hasMigratedPresets) {
-                // Prepend preset tabs
-                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
                 await saveSetting('presetTabsMigrated', true);
             }
 

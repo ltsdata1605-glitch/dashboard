@@ -81,30 +81,29 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                     </div>
                 </div>
                 <div className="flex items-center gap-0.5 lg:gap-2 hide-on-export shrink-0">
-                    <div className="flex items-center gap-0.5 lg:gap-2">
-                        <div className="inline-flex">
-                            <button onClick={() => setIsExpanded(false)} className={`p-1 lg:p-1.5 transition-all ${!isExpanded ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Top/Bot 20%">
-                                <Icon name="percent" size={3.5} className="lg:hidden" /><Icon name="percent" size={4} className="hidden lg:block" />
+                        <div className="inline-flex gap-0.5 sm:gap-1">
+                            <button onClick={() => setIsExpanded(false)} className={`p-1.5 sm:p-2 transition-all rounded-lg ${!isExpanded ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Top/Bot 20%">
+                                <Icon name="percent" size={3.5} className="sm:hidden" /><Icon name="percent" size={5} className="hidden sm:block" />
                             </button>
-                            <button onClick={() => setIsExpanded(true)} className={`p-1 lg:p-1.5 transition-all ${isExpanded ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Tất cả">
-                                <Icon name="layout-list" size={3.5} className="lg:hidden" /><Icon name="layout-list" size={4} className="hidden lg:block" />
+                            <button onClick={() => setIsExpanded(true)} className={`p-1.5 sm:p-2 transition-all rounded-lg ${isExpanded ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Tất cả">
+                                <Icon name="layout-list" size={3.5} className="sm:hidden" /><Icon name="layout-list" size={5} className="hidden sm:block" />
                             </button>
                         </div>
-                        <div className="h-4 lg:h-6 w-px bg-slate-300 dark:bg-slate-700 mx-0.5 lg:mx-1"></div>
+                        <div className="h-4 sm:h-6 w-px bg-slate-300 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
                         <button 
                             onClick={handleBatchExportClick}
-                            className="p-1.5 lg:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all"
+                            className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all"
                             title="Xuất hàng loạt báo cáo chi tiết"
                         >
-                            <Icon name="images" size={4} className="lg:hidden" />
-                            <Icon name="images" size={5} className="hidden lg:block" />
+                            <Icon name="images" size={3.5} className="sm:hidden" />
+                            <Icon name="images" size={5} className="hidden sm:block" />
                         </button>
                         {onExport && (
-                            <button onClick={onExport} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 lg:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-all">
-                                {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
+                            <button onClick={onExport} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all">
+                                {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
+                                {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
                             </button>
                         )}
-                    </div>
                 </div>
             </div>
             <div className="space-y-2 sm:space-y-4">

@@ -80,8 +80,6 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
             const prefix = getExportFilenamePrefix(filterState.kho);
             await handleExport(summaryRef.current, `${prefix}-Chi-tiet-theo-kho.png`, {
                 elementsToHide: ['.hide-on-export'],
-                isCompactTable: true,
-                fitAllColumns: true,
                 scale: 2
             });
         }

@@ -301,7 +301,7 @@ export function processEmployeeData(
         } else if (parentGroup === 'Sim') {
             stats.slSim! += weightedQuantity;
             stats.doanhThuSim! += revenue;
-        } else if (parentGroup === 'Đồng hồ' || parentGroup === 'Wearable') { 
+        } else if (parentGroup === 'Đồng hồ') { 
             stats.slDongHo! += weightedQuantity;
             stats.doanhThuDongHo! += revenue;
         } else if (parentGroup === 'Phụ kiện') {

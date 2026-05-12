@@ -6,41 +6,48 @@ import { COL, HINH_THUC_XUAT_THU_HO } from '../../../constants';
 import { getRowValue } from '../../../utils/dataUtils';
 
 export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: any[], productConfig?: any, customExploitationTabs?: CustomExploitationTabConfig[]) => {
-    const [viewMode, setViewMode] = useState<'detail' | 'efficiency' | 'efficiency_dt_sl' | 'efficiency_quantity'>('detail');
-    const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
+    const [viewMode, setViewMode] = useState<'detail' | 'efficiency'>('detail');
+    const [visibleGroupsDetail, setVisibleGroupsDetail] = useState<Set<string>>(new Set());
+    const [visibleGroupsEfficiency, setVisibleGroupsEfficiency] = useState<Set<string>>(new Set());
     const [initialGroupsLoaded, setInitialGroupsLoaded] = useState(false);
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'percentBaoHiem', direction: 'desc' });
     
     useEffect(() => {
-        getIndustryVisibleGroups().then(savedGroups => {
-            if (savedGroups && savedGroups.length > 0) {
-                setVisibleGroups(new Set(savedGroups));
+        Promise.all([
+            getIndustryVisibleGroups(),
+            getIndustryVisibleGroups() // Temporary fallback for efficiency if missing
+        ]).then(([savedDetail]) => {
+            if (savedDetail && savedDetail.length > 0) {
+                setVisibleGroupsDetail(new Set(savedDetail));
+                setVisibleGroupsEfficiency(new Set(savedDetail));
             } else {
-                setVisibleGroups(new Set(['spChinh', 'baoHiem']));
+                setVisibleGroupsDetail(new Set(['spChinh']));
+                setVisibleGroupsEfficiency(new Set(['spChinh']));
             }
             setInitialGroupsLoaded(true);
         });
     }, []);
 
+    const visibleGroups = viewMode === 'detail' ? visibleGroupsDetail : visibleGroupsEfficiency;
+
     useEffect(() => {
         if (initialGroupsLoaded) {
-            saveIndustryVisibleGroups(Array.from(visibleGroups) as string[]);
+            saveIndustryVisibleGroups(Array.from(visibleGroupsDetail));
         }
-    }, [visibleGroups, initialGroupsLoaded]);
+    }, [visibleGroupsDetail, initialGroupsLoaded]);
     
     useEffect(() => {
-        if (viewMode === 'efficiency' || viewMode === 'efficiency_dt_sl' || viewMode === 'efficiency_quantity') {
-            setSortConfig({ key: 'slSPChinh_Tong', direction: 'desc' });
-        } else {
-            setSortConfig({ key: 'percentBaoHiem', direction: 'desc' });
-        }
+        setSortConfig({ key: 'percentBaoHiem', direction: 'desc' });
     }, [viewMode]);
 
     const dynamicQuickFilters = useMemo(() => {
         const baseFilters: any[] = [...detailQuickFilters].map(f => {
             const override = customExploitationTabs?.find(t => t.id === f.key);
             if (override) {
-                return { ...f, label: override.name };
+                let name = override.name;
+                if (f.key === 'doanhThu' && name === 'DOANH THU') name = 'D.Thu';
+                if (f.key === 'spChinh' && name === 'SẢN PHẨM CHÍNH') name = 'SP Chính';
+                return { ...f, label: name };
             }
             return f;
         });
@@ -59,23 +66,23 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             const tabOverride = customExploitationTabs?.find(t => t.id === key);
             if (tabOverride && baseGroups[key]) {
                 baseGroups[key].label = tabOverride.name;
-                // Filter subHeaders based on hidden columns
-                const originalSubHeaders = detailHeaderGroups[key].subHeaders;
-                baseGroups[key].subHeaders = originalSubHeaders.filter(sh => {
-                    const colConfig = tabOverride.columns?.find(c => {
-                        // Match by id or fallback mapping
-                        if (c.id === sh.key) return true;
-                        if (key === 'doanhThu' && sh.key === 'doanhThuThuc' && c.id === 'dtThuc') return true;
-                        return false;
-                    });
-                    // If colConfig exists and is hidden, filter it out. Otherwise keep it.
-                    if (colConfig && colConfig.hidden) return false;
-                    // If the column wasn't in the override at all, we assume it's hidden (since the user deleted it)
-                    if (tabOverride.columns && !tabOverride.columns.some(c => c.id === sh.key || (key === 'doanhThu' && sh.key === 'doanhThuThuc' && c.id === 'dtThuc'))) {
-                        return false;
-                    }
-                    return true;
-                });
+                // Use tabOverride columns to define subHeaders exactly as configured by user
+                if (tabOverride.columns) {
+                    baseGroups[key].subHeaders = tabOverride.columns
+                        .filter(c => !c.hidden)
+                        .map(c => {
+                            const originalSubHeaders = detailHeaderGroups[key].subHeaders;
+                            const isStandard = originalSubHeaders.some(sh => sh.key === c.id || (key === 'doanhThu' && sh.key === 'doanhThuThuc' && c.id === 'dtThuc'));
+                            let finalKey = c.id;
+                            if (key === 'doanhThu' && c.id === 'dtThuc') finalKey = 'doanhThuThuc';
+                            if (!isStandard) {
+                                finalKey = `val_${key}_${c.id}`;
+                            }
+                            return { label: c.name.toUpperCase(), key: finalKey as any, originalColId: c.id, originalType: c.type };
+                        });
+                } else {
+                    baseGroups[key].subHeaders = detailHeaderGroups[key].subHeaders;
+                }
                 baseGroups[key].colSpan = baseGroups[key].subHeaders.length;
             }
         });
@@ -118,7 +125,10 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
     }, [customExploitationTabs]);
 
     const handleToggleGroup = (groupKey: string) => {
-        const newVisibleGroups = new Set(visibleGroups);
+        const currentGroups = viewMode === 'detail' ? visibleGroupsDetail : visibleGroupsEfficiency;
+        const setGroups = viewMode === 'detail' ? setVisibleGroupsDetail : setVisibleGroupsEfficiency;
+
+        const newVisibleGroups = new Set(currentGroups);
         const wasAdded = !newVisibleGroups.has(groupKey);
 
         if (wasAdded) {
@@ -131,8 +141,8 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
         
         const setsAreEqual = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every(value => b.has(value));
 
-        if (!setsAreEqual(visibleGroups as Set<string>, newVisibleGroups as Set<string>)) {
-            setVisibleGroups(newVisibleGroups);
+        if (!setsAreEqual(currentGroups, newVisibleGroups)) {
+            setGroups(newVisibleGroups);
 
             const sortKeyForToggledGroup = groupToSortKeyMap[groupKey];
             if (wasAdded && sortKeyForToggledGroup) {
@@ -144,11 +154,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                     const newSortKey = groupToSortKeyMap[firstKey];
                     if(newSortKey) setSortConfig({ key: newSortKey, direction: 'desc' });
                 } else {
-                    if (viewMode !== 'detail') {
-                        setSortConfig({ key: 'slSPChinh_Tong', direction: 'desc' });
-                    } else {
-                        setSortConfig({ key: 'percentBaoHiem', direction: 'desc' });
-                    }
+                    setSortConfig({ key: 'percentBaoHiem', direction: 'desc' });
                 }
             }
         }
