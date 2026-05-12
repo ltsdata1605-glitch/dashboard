@@ -419,9 +419,9 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 
                 <div className="overflow-x-auto table-container">
                     <table className="min-w-full text-sm compact-export-table border-collapse">
-                        <thead className="uppercase">
+                        <thead className="uppercase sticky top-0 z-30 bg-white dark:bg-slate-900 shadow-sm border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600">
                             <tr>
-                                <th rowSpan={2} colSpan={2} onClick={() => handleSort('name')} className="px-2 sm:px-4 py-1.5 sm:py-3 text-center text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle min-w-[140px] tracking-wider sticky left-0 z-20 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                                <th rowSpan={2} colSpan={2} onClick={() => handleSort('name')} className="px-2 sm:px-4 py-1.5 sm:py-3 text-center text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle min-w-[140px] tracking-wider sticky left-0 z-40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
                                     <div className="flex items-center justify-center gap-1">
                                         NHÂN VIÊN
                                         {sortConfig.key === 'name' && (

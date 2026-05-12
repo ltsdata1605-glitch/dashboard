@@ -59,6 +59,7 @@ const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({
                 tabId={modalState.data?.tabId}
                 initialName={modalState.data?.initialName}
                 initialColumns={modalState.data?.initialColumns}
+                initialIcon={modalState.data?.initialIcon}
             />
 
             <TableModal

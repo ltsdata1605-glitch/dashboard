@@ -179,6 +179,7 @@ export interface CustomColumnConfig {
 export interface CustomExploitationTabConfig {
     id: string; // unique UUID
     name: string; // Tên hiển thị tab
+    icon?: string; // Tab icon
     order: number;
     columns: CustomColumnConfig[];
     
@@ -428,6 +429,7 @@ export interface HeadToHeadTableConfig {
     id: string;
     mainHeader?: string;
     tableName: string;
+    icon?: string;
     headerColor?: string;
     type?: 'data' | 'calculated' | 'target';
     

@@ -80,7 +80,7 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                                 tab = { id: 'spChinh', name: 'SẢN PHẨM CHÍNH', columns: [ { id: 'slICT', name: 'ICT', type: 'quantity', filters: {} as any }, { id: 'slCE_main', name: 'CE', type: 'quantity', filters: {} as any }, { id: 'slGiaDung_main', name: 'ĐGD', type: 'quantity', filters: {} as any }, { id: 'slSPChinh_Tong', name: 'Tổng', type: 'quantity', filters: {} as any } ] };
                             }
                             if (tab) {
-                                setModalState({ type: 'EDIT_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, initialName: tab.name, initialColumns: tab.columns } });
+                                setModalState({ type: 'EDIT_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, initialName: tab.name, initialColumns: tab.columns, initialIcon: tab.icon } });
                             }
                         }}
                         onDeleteCustomTab={(tabId: string) => {

@@ -259,9 +259,13 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                 };
             });
 
+        const icons = ['pie-chart', 'bar-chart-2', 'line-chart', 'trending-up', 'activity', 'box', 'layers', 'database', 'layout', 'grid', 'server', 'shield', 'target', 'compass', 'award'];
+        const iconToSave = editingConfig?.icon || icons[Math.floor(Math.random() * icons.length)];
+
         const newConfig: Omit<HeadToHeadTableConfig, 'id'> = {
             mainHeader: mainHeader.trim() || undefined,
             tableName: finalTableName,
+            icon: iconToSave,
             headerColor: finalHeaderColor || undefined,
             type: tableType,
             totalCalculationMethod,
