@@ -121,13 +121,13 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
     const cardTitle = (
         <div className="card-title-text flex flex-col items-center justify-center w-full">
-            <span className="text-xl font-black uppercase text-primary-700 dark:text-primary-400 text-center leading-none tracking-tight">
+            <span className="text-xl font-semibold uppercase text-primary-700 dark:text-primary-400 text-center leading-none tracking-tight">
                 {isRealtime ? 'REALTIME THI ĐUA' : 'LUỸ KẾ THI ĐUA'} - {activeSupermarket === 'Tổng' ? 'TỔNG QUAN' : shortenSupermarketName(activeSupermarket).toUpperCase()}
             </span>
             {updateTimestamp && (
                 <div className="flex items-center justify-center gap-1.5 mt-1.5 no-print bg-slate-50 dark:bg-slate-800/50 px-3 py-0.5 rounded-full border border-slate-100 dark:border-slate-700/50">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                    <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
                         Cập nhật lúc: {updateTimestamp}
                     </span>
                 </div>

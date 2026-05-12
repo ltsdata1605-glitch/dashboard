@@ -126,11 +126,11 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                     })}
                 </div>
             ) : (
-                <table className="min-w-full text-[14px] border-collapse">
+                <table className="min-w-full text-[13px] border-collapse compact-export-table">
                     <thead>
-                        <tr className="bg-sky-50 dark:bg-slate-800 text-sky-900 dark:text-sky-100 font-bold uppercase tracking-tight border-b-2 border-sky-200 dark:border-slate-700 shadow-sm">
-                            <th className="px-4 py-4 text-center border-r border-sky-100 dark:border-slate-700/50 w-12 text-[11px]">#</th>
-                            <th className="px-4 py-4 text-left cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors border-r border-sky-100 dark:border-slate-700/50 min-w-[220px] text-[11px]" onClick={() => handleSort(-1)}>
+                        <tr className="bg-sky-50 dark:bg-slate-800 text-sky-900 dark:text-sky-100 font-bold uppercase tracking-tight border-b-[3px] border-sky-200 dark:border-slate-700 shadow-sm">
+                            <th className="px-2 py-1.5 text-center border-r border-sky-100 dark:border-slate-700/50 w-10 text-[11px] align-middle">#</th>
+                            <th className="px-2 py-1.5 text-left cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors border-r border-sky-100 dark:border-slate-700/50 whitespace-nowrap text-[11px] align-middle" onClick={() => handleSort(-1)}>
                                 NHÓM THI ĐUA
                             </th>
                             {headers.map((header, index) => {
@@ -139,7 +139,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                     <th 
                                         key={index} 
                                         onClick={() => handleSort(index)}
-                                        className="px-2 py-4 text-center whitespace-nowrap cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors border-r border-sky-100 dark:border-slate-700/50 last:border-r-0 text-[11px] align-middle"
+                                        className="px-2 py-1.5 text-center whitespace-nowrap cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors border-r border-sky-100 dark:border-slate-700/50 last:border-r-0 text-[11px] align-middle"
                                         dangerouslySetInnerHTML={{ __html: getFormattedHeader(header) }}
                                     />
                                 )
@@ -148,7 +148,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                             { !hiddenColumns.includes('Còn Lại') && (
                                     <th 
                                     onClick={() => handleSort('conLai')}
-                                    className="px-4 py-4 text-center whitespace-nowrap cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors text-[11px] align-middle"
+                                    className="px-2 py-1.5 text-center whitespace-nowrap cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors text-[11px] align-middle"
                                     dangerouslySetInnerHTML={{ __html: getFormattedHeader('Còn Lại') }}
                                 />
                             )}
@@ -162,7 +162,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                         return (
                             <tbody key={criterion} className="divide-y divide-slate-100 dark:divide-slate-800">
                                 <tr className={`${theme.main} text-white`}>
-                                    <th colSpan={100} className="px-4 py-2.5 text-left text-[12px] font-semibold uppercase tracking-widest">
+                                    <th colSpan={100} className="px-2 py-1 text-left text-[11px] font-semibold uppercase tracking-widest">
                                         <div className="flex items-center gap-2">
                                             <span className="bg-white/20 px-2 py-0.5 rounded text-[9px] backdrop-blur-sm">TIÊU CHÍ</span>
                                             {criterion}
@@ -176,8 +176,8 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
 
                                     return (
                                         <tr key={program.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group">
-                                            <td className="px-4 py-3.5 text-center text-slate-400 font-medium border-r border-slate-100 dark:border-slate-800 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
-                                            <td className="px-4 py-3.5 font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap border-r border-slate-100 dark:border-slate-800 uppercase tracking-tight">
+                                            <td className="px-2 py-1 text-center text-slate-500 dark:text-slate-400 font-bold border-r border-slate-100 dark:border-slate-800 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
+                                            <td className="px-2 py-1 font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap border-r border-slate-100 dark:border-slate-800 uppercase tracking-tight">
                                                 <div className="flex items-center gap-2">
                                                   {shortenName(program.name, nameOverrides)}
                                                 </div>
@@ -214,27 +214,27 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
 
                                                         return (
                                                             <div className="flex items-center justify-center gap-3 tabular-nums">
-                                                                <span className={`font-semibold w-10 text-right ${colorClass}`}>{`${roundUp(htValue)}%`}</span>
+                                                                <span className={`font-bold w-10 text-right ${colorClass}`}>{`${roundUp(htValue)}%`}</span>
                                                                 <div className="w-10 hidden sm:block"> <ProgressBar value={htValue} /> </div>
                                                             </div>
                                                         );
                                                     }
                                                     
                                                     const isActualCol = header.startsWith('L.Kế') || header.startsWith('Realtime');
-                                                    if (isActualCol) return <span className="font-semibold text-slate-900 dark:text-white">{cellDisplayValue}</span>;
+                                                    if (isActualCol) return <span className="font-bold text-slate-900 dark:text-white">{cellDisplayValue}</span>;
 
-                                                    return <span className="text-slate-600 dark:text-slate-400 font-medium">{cellDisplayValue}</span>;
+                                                    return <span className="text-slate-600 dark:text-slate-400 font-bold">{cellDisplayValue}</span>;
                                                 };
 
                                                 return (
-                                                    <td key={cIdx} className="px-2 py-3.5 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800 last:border-r-0 tabular-nums">
+                                                    <td key={cIdx} className="px-2 py-1 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800 last:border-r-0 tabular-nums">
                                                         {cellContent()}
                                                     </td>
                                                 )
                                             })}
                                             
                                             { !hiddenColumns.includes('Còn Lại') && (
-                                                <td className={`px-4 py-3.5 text-center font-semibold whitespace-nowrap border-slate-100 dark:border-slate-800 tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}`}>
+                                                <td className={`px-2 py-1 text-center font-bold whitespace-nowrap border-slate-100 dark:border-slate-800 tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}`}>
                                                     {conLai !== null ? new Intl.NumberFormat('vi-VN').format(Math.ceil(conLai)) : '-'}
                                                 </td>
                                             )}

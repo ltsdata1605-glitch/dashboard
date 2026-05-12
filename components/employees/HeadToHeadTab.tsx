@@ -3,7 +3,7 @@ import React, { useState, useMemo, forwardRef, useEffect } from 'react';
 import { Icon } from '../common/Icon';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../../types';
 import { exportElementAsImage } from '../../services/uiService';
-import { getHeadToHeadCustomTables, saveHeadToHeadCustomTables } from '../../services/dbService';
+import { getHeadToHeadCustomTables, saveHeadToHeadCustomTables, getSetting, saveSetting } from '../../services/dbService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getExportFilenamePrefix, getRowValue } from '../../utils/dataUtils';
 import { COL, DATA_STATUS_COLORS } from '../../constants';
@@ -100,7 +100,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             if (!savedTables || savedTables.length === 0) {
                 savedTables = fullDefaults;
             } else {
-                if (!localStorage.getItem('h2h_v2_migrated_1')) {
+                if (!(await getSetting('h2h_v2_migrated_1'))) {
                     savedTables = savedTables.map((t: HeadToHeadTableConfig) => {
                         if (t.tableName === "7 NGÀY - DOANH THU") return { ...t, tableName: "DT THỰC" };
                         if (t.tableName === "7 NGÀY - DOANH THU QĐ") return { ...t, tableName: "DTQĐ" };
@@ -112,18 +112,18 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     const toAppend = fullDefaults.slice(3).filter(t => !existingNames.has(t.tableName));
                     savedTables = [...savedTables, ...toAppend];
                     
-                    localStorage.setItem('h2h_v2_migrated_1', 'true');
+                    await saveSetting('h2h_v2_migrated_1', true);
                 }
-                if (!localStorage.getItem('h2h_v2_migrated_3')) {
+                if (!(await getSetting('h2h_v2_migrated_3'))) {
                     savedTables = savedTables.map((t: HeadToHeadTableConfig) => {
                         return {
                             ...t,
                             conditionalFormats: [belowAvgRule, top3Rule]
                         };
                     });
-                    localStorage.setItem('h2h_v2_migrated_3', 'true');
+                    await saveSetting('h2h_v2_migrated_3', true);
                 }
-                if (!localStorage.getItem('h2h_v2_migrated_5')) {
+                if (!(await getSetting('h2h_v2_migrated_5'))) {
                     savedTables = savedTables.map((t: HeadToHeadTableConfig) => {
                         if (t.tableName === "N.CƠM" && t.filters) {
                             return {
@@ -136,9 +136,9 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                         }
                         return t;
                     });
-                    localStorage.setItem('h2h_v2_migrated_5', 'true');
+                    await saveSetting('h2h_v2_migrated_5', true);
                 }
-                if (!localStorage.getItem('h2h_v2_migrated_6')) {
+                if (!(await getSetting('h2h_v2_migrated_6'))) {
                     savedTables = savedTables.map((t: HeadToHeadTableConfig) => {
                         let newT = { ...t };
                         if (newT.selectedParentGroups || newT.selectedSubgroups) {
@@ -163,7 +163,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                         
                         return newT;
                     });
-                    localStorage.setItem('h2h_v2_migrated_6', 'true');
+                    await saveSetting('h2h_v2_migrated_6', true);
                 }
             }
             
@@ -312,23 +312,21 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                 {!isBatchExporting && tables.length > 1 && (
                     <div className="mt-1.5 sm:mt-2 overflow-x-auto no-scrollbar hide-on-export">
                         <div className="flex gap-0 border-b border-slate-200 dark:border-slate-700/60 w-max sm:w-auto">
-                            {tables.map((t) => {
+                            {tables.map((t, tabIndex) => {
                                 const isActive = activeTableId === t.id;
+                                const theme = colorThemes[tabIndex % colorThemes.length];
                                 return (
                                 <button
                                     key={`tab-${t.id}`}
                                     onClick={() => setActiveTableId(t.id)}
                                     className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
                                         isActive
-                                        ? 'text-slate-800 dark:text-white'
+                                        ? theme.activeTab || 'bg-slate-50 text-slate-800 dark:bg-slate-800 dark:text-white border-b-[2.5px] border-slate-800 dark:border-white'
                                         : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
                                     }`}
                                     title={t.tableName}
                                 >
                                     {t.tableName.replace(/7 NGÀY\s*-\s*/i, '')}
-                                    {isActive && (
-                                        <span className="absolute bottom-0 left-1 right-1 h-[2.5px] bg-sky-400 dark:bg-sky-400 rounded-full" />
-                                    )}
                                 </button>
                             )})}
                         </div>

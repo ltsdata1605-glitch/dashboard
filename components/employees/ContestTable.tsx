@@ -55,11 +55,11 @@ const getConditionalStyle = (value: number | undefined, column: ColumnConfig, av
             // Determine colors from standard constants
             const isNegative = rule.condition === '<' || rule.condition === '<avg';
             const statusColor = isNegative ? DATA_STATUS_COLORS.negative : DATA_STATUS_COLORS.positive;
-            
-            return { 
-                backgroundColor: statusColor.bg, 
-                color: statusColor.text, 
-                fontWeight: 'bold' 
+
+            return {
+                backgroundColor: statusColor.bg,
+                color: statusColor.text,
+                fontWeight: 'bold'
             };
         }
     }
@@ -113,7 +113,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 const industryMatch = filters.selectedIndustries.length === 0 || filters.selectedIndustries.includes(industry);
                 const subgroupMatch = filters.selectedSubgroups.length === 0 || filters.selectedSubgroups.includes(subgroup);
                 const manufacturerMatch = filters.selectedManufacturers.length === 0 || filters.selectedManufacturers.includes(manufacturer);
-                
+
                 let productCodeMatch = filters.productCodes.length === 0;
                 if (!productCodeMatch) {
                     for (const code of filters.productCodes) {
@@ -158,9 +158,9 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 if (!rawCreator) return;
 
                 // Resolve raw creator to the display name used in allEmployees
-                const employee = creatorToDisplayName.get(rawCreator) || 
-                                 creatorToDisplayName.get(rawCreator.split(' - ')[0].trim()) || 
-                                 rawCreator;
+                const employee = creatorToDisplayName.get(rawCreator) ||
+                    creatorToDisplayName.get(rawCreator.split(' - ')[0].trim()) ||
+                    rawCreator;
 
                 if (!employeeColumnValues.has(employee)) {
                     employeeColumnValues.set(employee, new Map<string, number>());
@@ -182,7 +182,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                     const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig);
                     value = (revenue * heso) / 1000000;
                 }
-                
+
                 employeeValues.set(col.id, (employeeValues.get(col.id) || 0) + value);
             });
         });
@@ -192,7 +192,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         config.columns.forEach(col => {
             if (col.type !== 'target') return;
             const valuePerEmployee = validEmployeesCount > 0 ? (col.targetValue || 0) / validEmployeesCount : 0;
-            
+
             allEmployees.forEach(emp => {
                 if (!employeeColumnValues.has(emp.name)) {
                     employeeColumnValues.set(emp.name, new Map<string, number>());
@@ -244,13 +244,13 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         const totals = new Map<string, number>();
         const averages = new Map<string, number>();
         const validRowCount = processedRows.length > 0 ? processedRows.length : 1;
-        
+
         config.columns.forEach(col => {
             const total = processedRows.reduce((sum, row) => sum + (row.columnValues.get(col.id) || 0), 0);
             totals.set(col.id, total);
             averages.set(col.id, total / validRowCount);
         });
-        
+
         // Re-calculate totals and averages for calculated percentage columns to be accurate
         config.columns.forEach(col => {
             if (col.type === 'calculated' && col.operation === '/' && col.displayAs === 'percentage' && col.operand1_columnId && col.operand2_columnId) {
@@ -282,9 +282,9 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
             }
             grouped.get(mainHeader)!.push(col);
         });
-        
+
         const mainHeaderOrder: string[] = Array.from(new Set(config.columns.map(c => c.mainHeader || '')));
-        
+
         const sortedAndGroupedColumns = mainHeaderOrder.map(header => ({
             name: header,
             columns: grouped.get(header) || [],
@@ -346,7 +346,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
             setIsExporting(false);
         }
     };
-    
+
     const formatValue = (value: number | undefined, column: ColumnConfig): string => {
         if (value == null || isNaN(value)) return '-';
 
@@ -357,15 +357,15 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
             }
             return value.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
         }
-        
+
         const metricType = column.metricType;
         if (metricType === 'revenue' || metricType === 'revenueQD') {
             return formatCurrency(Math.round(value), 0);
         }
-        
+
         return formatQuantity(Math.round(value));
     };
-    
+
     const groupsWithHeader = sortedAndGroupedColumns.filter(g => g.name);
     const groupsWithoutHeader = sortedAndGroupedColumns.find(g => !g.name);
     const columnsWithoutHeader = groupsWithoutHeader ? groupsWithoutHeader.columns : [];
@@ -393,7 +393,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         <div ref={exportRef} className="rounded-none border border-slate-200 dark:border-slate-700 overflow-hidden">
             <div className="overflow-hidden">
                 <div
-                    className="px-2 sm:px-4 py-1.5 sm:py-3 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 gap-2"
+                    className="px-2 py-1 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 gap-2"
                 >
                     <h3 className="text-[11px] sm:text-sm font-extrabold uppercase flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-white tracking-tight truncate">
                         <Icon name={config.icon || "target"} size={3.5} className="text-primary-500 sm:hidden shrink-0" />
@@ -402,13 +402,13 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                     </h3>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
                         <button onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            <Icon name="plus-circle" size={3.5} className="sm:hidden"/><Icon name="plus-circle" size={4} className="hidden sm:block"/>
+                            <Icon name="plus-circle" size={3.5} className="sm:hidden" /><Icon name="plus-circle" size={4} className="hidden sm:block" />
                         </button>
                         <button onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
-                            <Icon name="settings-2" size={3.5} className="sm:hidden"/><Icon name="settings-2" size={4} className="hidden sm:block"/>
+                            <Icon name="settings-2" size={3.5} className="sm:hidden" /><Icon name="settings-2" size={4} className="hidden sm:block" />
                         </button>
                         <button onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
-                            <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={4} className="hidden sm:block"/>
+                            <Icon name="trash-2" size={3.5} className="sm:hidden" /><Icon name="trash-2" size={4} className="hidden sm:block" />
                         </button>
                         <button onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
                             {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
@@ -416,12 +416,12 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                         </button>
                     </div>
                 </div>
-                
+
                 <div className="overflow-x-auto table-container">
-                    <table className="min-w-full text-sm compact-export-table border-collapse">
+                    <table className="min-w-full text-sm compact-export-table border-collapse whitespace-nowrap">
                         <thead className="uppercase sticky top-0 z-30 bg-white dark:bg-slate-900 shadow-sm border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600">
                             <tr>
-                                <th rowSpan={2} colSpan={2} onClick={() => handleSort('name')} className="px-2 sm:px-4 py-1.5 sm:py-3 text-center text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle min-w-[140px] tracking-wider sticky left-0 z-40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                                <th rowSpan={2} colSpan={2} onClick={() => handleSort('name')} className="px-2 py-1 text-center text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle min-w-[140px] tracking-wider sticky left-0 z-40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
                                     <div className="flex items-center justify-center gap-1">
                                         NHÂN VIÊN
                                         {sortConfig.key === 'name' && (
@@ -429,7 +429,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                         )}
                                     </div>
                                 </th>
-                                
+
                                 {groupsWithHeader.map((group, gIdx) => {
                                     const colorConfigs = [
                                         { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300' },
@@ -440,7 +440,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     ];
                                     const config = colorConfigs[gIdx % colorConfigs.length];
                                     return (
-                                        <th key={group.name} colSpan={group.columns.length} className={`px-1.5 sm:px-2 py-1.5 sm:py-3 text-center text-[11px] uppercase tracking-wider font-bold border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text}`}>
+                                        <th key={group.name} colSpan={group.columns.length} className={`px-2 py-1 text-center text-[11px] uppercase tracking-wider font-bold border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text}`}>
                                             {group.name}
                                         </th>
                                     );
@@ -454,7 +454,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     ];
                                     const config = colorConfigs[cIdx % colorConfigs.length];
                                     return (
-                                        <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1.5 sm:px-3 py-1.5 sm:py-3 text-center text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none group/th relative align-middle border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
+                                        <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none group/th relative align-middle border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
@@ -462,8 +462,8 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                                 )}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3}/></button>
-                                                <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3}/></button>
+                                                <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3} /></button>
                                             </div>
                                         </th>
                                     );
@@ -482,7 +482,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     ];
                                     const config = colorConfigs[Math.max(0, groupIdx) % colorConfigs.length];
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1.5 sm:px-3 py-1.5 sm:py-2 text-center text-[11px] h-px font-bold uppercase tracking-wider cursor-pointer select-none group/th relative border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-2 py-1 text-center text-[11px] h-px font-bold uppercase tracking-wider cursor-pointer select-none group/th relative border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.columnName}
                                                 {sortConfig.key === col.id && (
@@ -490,8 +490,8 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                                 )}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3}/></button>
-                                                <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3}/></button>
+                                                <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3} /></button>
                                             </div>
                                         </th>
                                     );
@@ -507,7 +507,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                     <React.Fragment key={department}>
                                         {showDeptHeaders && (
                                             <tr>
-                                                <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className={`px-2 sm:px-3 py-1 sm:py-1.5 ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].strip} border-y border-slate-200 dark:border-slate-700`}>
+                                                <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className={`px-2 py-1 ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].strip} border-y border-slate-200 dark:border-slate-700`}>
                                                     <div className="flex items-center gap-1.5 sm:gap-2">
                                                         <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].badge} flex-shrink-0`} />
                                                         <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].text}`}>{department} — {rows.length} người</span>
@@ -522,13 +522,13 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                                     <td className="px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-inherit z-10">
                                                         <RankBadge rank={rowIndex} />
                                                     </td>
-                                                    <td className="px-1.5 sm:px-3 py-1 font-bold text-[11px] sm:text-[13px] text-slate-700 dark:text-slate-200 whitespace-nowrap text-left border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10">{abbreviateName(row.name)}</td>
+                                                    <td className="px-2 py-1 font-bold text-[11px] sm:text-[13px] text-slate-700 dark:text-slate-200 whitespace-nowrap text-left border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10">{abbreviateName(row.name)}</td>
                                                     {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
                                                         const value = row.columnValues.get(col.id);
                                                         const average = averages.get(col.id);
                                                         const style = getConditionalStyle(value, col, average);
                                                         return (
-                                                            <td key={col.id} className="px-1 sm:px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
+                                                            <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
                                                                 <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(style).length > 0 ? 'rounded-md' : ''}`} style={style}>
                                                                     {formatValue(value, col)}
                                                                 </div>
@@ -540,9 +540,9 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                         })}
                                         {sortedDepartments.length > 1 && deptTotals && (
                                             <tr className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 font-bold">
-                                                <td colSpan={2} className="px-2 sm:px-3 py-1 sm:py-1.5 text-center text-[10px] sm:text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10">Tổng {department}</td>
+                                                <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10">Tổng {department}</td>
                                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => (
-                                                    <td key={col.id} className="px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
+                                                    <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
                                                         {formatValue(deptTotals.get(col.id), col)}
                                                     </td>
                                                 ))}
@@ -553,14 +553,14 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                             })}
                         </tbody>
                         <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700">
-                             <tr>
-                                <td colSpan={2} className="px-2 sm:px-3 py-1 sm:py-1.5 text-center text-[10px] sm:text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10">∑ Tổng</td>
+                            <tr>
+                                <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10">∑ Tổng</td>
                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
                                     const value = totals.get(col.id);
                                     const average = averages.get(col.id);
                                     const style = getConditionalStyle(value, col, average);
                                     return (
-                                        <td key={col.id} className="px-1 sm:px-2 py-1 sm:py-1.5 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700">
+                                        <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700">
                                             <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(style).length > 0 ? 'rounded-md' : ''}`} style={style}>
                                                 {formatValue(value, col)}
                                             </div>

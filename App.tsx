@@ -266,7 +266,7 @@ export default function App() {
             <LayoutProvider>
                 <ErrorBoundary name="App_Root">
                     <AppContent />
-                    <Toaster position="bottom-right" />
+                    <Toaster position="bottom-right" containerStyle={{ zIndex: 999999 }} />
                 </ErrorBoundary>
             </LayoutProvider>
         </AuthProvider>

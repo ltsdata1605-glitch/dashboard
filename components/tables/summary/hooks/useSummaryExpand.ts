@@ -1,46 +1,35 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { SummaryTableNode } from '../../../../types';
+import { getSetting, saveSetting } from '../../../../services/dbService';
 
 const STORAGE_KEY = 'summaryTableExpandedIds';
 
-// Lazy initializer: read from localStorage synchronously during first render
-// to avoid the flash of collapsed state → expanded state.
-function loadInitialExpandedIds(): Set<string> {
-    try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            if (Array.isArray(parsed) && parsed.length > 0) {
-                return new Set<string>(parsed);
-            }
-        }
-    } catch (e) {
-        // Ignore parse errors
-    }
-    return new Set<string>();
-}
-
 export const useSummaryExpand = (startTransition: any) => {
-    // Initialize directly from localStorage (synchronous, no race condition)
-    const [expandedIds, setExpandedIds] = useState<Set<string>>(loadInitialExpandedIds);
+    const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
     const [expandLevel, setExpandLevel] = useState<number>(0);
     const [isExpanding, setIsExpanding] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    // Track whether the state has been hydrated to avoid saving empty state on mount
+    useEffect(() => {
+        getSetting<string[]>(STORAGE_KEY).then(saved => {
+            if (saved && Array.isArray(saved) && saved.length > 0) {
+                setExpandedIds(new Set(saved));
+            }
+            setIsLoaded(true);
+        }).catch(() => setIsLoaded(true));
+    }, []);
+
     const isHydratedRef = useRef(false);
 
     useEffect(() => {
-        // Skip the very first render's save — the state was just loaded from localStorage.
+        if (!isLoaded) return;
+        // Skip the very first render's save — the state was just loaded from IndexedDB.
         if (!isHydratedRef.current) {
             isHydratedRef.current = true;
             return;
         }
-        try {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(expandedIds)));
-        } catch (e) {
-            // Ignore storage errors (e.g., quota exceeded)
-        }
-    }, [expandedIds]);
+        saveSetting(STORAGE_KEY, Array.from(expandedIds)).catch(() => {});
+    }, [expandedIds, isLoaded]);
 
     const toggleExpand = useCallback((id: string) => {
         setExpandedIds(prev => {

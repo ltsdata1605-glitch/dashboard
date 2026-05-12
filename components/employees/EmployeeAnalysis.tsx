@@ -127,17 +127,20 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
     }, [isClosingModal]);
 
     const colorThemes = useMemo(() => [
-        { header: 'bg-primary-100 dark:bg-primary-900/50 text-primary-900 dark:text-primary-200', row: 'bg-primary-100/50 dark:bg-primary-900/30', border: 'border-primary-500' },
-        { header: 'bg-primary-100 dark:bg-primary-900/50 text-primary-900 dark:text-primary-200', row: 'bg-primary-100/50 dark:bg-primary-900/30', border: 'border-primary-500' },
-        { header: 'bg-purple-100 dark:bg-purple-900/50 text-purple-900 dark:text-purple-200', row: 'bg-purple-100/50 dark:bg-purple-900/30', border: 'border-purple-500' },
-        { header: 'bg-amber-100 dark:bg-amber-900/50 text-amber-900 dark:text-amber-200', row: 'bg-amber-100/50 dark:bg-amber-900/30', border: 'border-amber-500' },
-        { header: 'bg-rose-100 dark:bg-rose-900/50 text-rose-900 dark:text-rose-200', row: 'bg-rose-100/50 dark:bg-rose-900/30', border: 'border-rose-500' },
-        { header: 'bg-violet-100 dark:bg-violet-900/50 text-violet-900 dark:text-violet-200', row: 'bg-violet-100/50 dark:bg-violet-900/30', border: 'border-violet-500' },
-        { header: 'bg-primary-100 dark:bg-primary-900/50 text-primary-900 dark:text-primary-200', row: 'bg-primary-100/50 dark:bg-primary-900/30', border: 'border-primary-500' },
-        { header: 'bg-primary-100 dark:bg-primary-900/50 text-primary-900 dark:text-primary-200', row: 'bg-primary-100/50 dark:bg-primary-900/30', border: 'border-primary-500' },
-        { header: 'bg-pink-100 dark:bg-pink-900/50 text-pink-900 dark:text-pink-200', row: 'bg-pink-100/50 dark:bg-pink-900/30', border: 'border-pink-500' },
-        { header: 'bg-fuchsia-100 dark:bg-fuchsia-900/50 text-fuchsia-900 dark:text-fuchsia-200', row: 'bg-fuchsia-100/50 dark:bg-fuchsia-900/30', border: 'border-fuchsia-500' },
-        { header: 'bg-sky-100 dark:bg-sky-900/50 text-sky-900 dark:text-sky-200', row: 'bg-sky-100/50 dark:bg-sky-900/30', border: 'border-sky-500' },
+        { header: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400', activeTab: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-b-[2.5px] border-emerald-400', row: '', border: '' },
+        { header: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400', activeTab: 'bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-400 border-b-[2.5px] border-sky-400', row: '', border: '' },
+        { header: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400', activeTab: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-b-[2.5px] border-amber-400', row: '', border: '' },
+        { header: 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400', activeTab: 'bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-400 border-b-[2.5px] border-violet-400', row: '', border: '' },
+        { header: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400', activeTab: 'bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-400 border-b-[2.5px] border-rose-400', row: '', border: '' },
+        { header: 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400', activeTab: 'bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-400 border-b-[2.5px] border-teal-400', row: '', border: '' },
+        { header: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400', activeTab: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/10 dark:text-indigo-400 border-b-[2.5px] border-indigo-400', row: '', border: '' },
+        { header: 'bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-500/10 dark:text-fuchsia-400', activeTab: 'bg-fuchsia-50 text-fuchsia-700 dark:bg-fuchsia-500/10 dark:text-fuchsia-400 border-b-[2.5px] border-fuchsia-400', row: '', border: '' },
+        { header: 'bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400', activeTab: 'bg-orange-50 text-orange-700 dark:bg-orange-500/10 dark:text-orange-400 border-b-[2.5px] border-orange-400', row: '', border: '' },
+        { header: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400', activeTab: 'bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-400 border-b-[2.5px] border-cyan-400', row: '', border: '' },
+        { header: 'bg-pink-50 text-pink-700 dark:bg-pink-500/10 dark:text-pink-400', activeTab: 'bg-pink-50 text-pink-700 dark:bg-pink-500/10 dark:text-pink-400 border-b-[2.5px] border-pink-400', row: '', border: '' },
+        { header: 'bg-lime-50 text-lime-700 dark:bg-lime-500/10 dark:text-lime-400', activeTab: 'bg-lime-50 text-lime-700 dark:bg-lime-500/10 dark:text-lime-400 border-b-[2.5px] border-lime-400', row: '', border: '' },
+        { header: 'bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400', activeTab: 'bg-purple-50 text-purple-700 dark:bg-purple-500/10 dark:text-purple-400 border-b-[2.5px] border-purple-400', row: '', border: '' },
+        { header: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400', activeTab: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border-b-[2.5px] border-blue-400', row: '', border: '' },
     ], []);
 
     const handleMainExport = async () => {
@@ -151,7 +154,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
             const filename = `${prefix}-Phan-tich-nhan-vien-${safeTabName}.png`;
             const compactTabs = ['performanceTable', 'headToHead', 'summarySynthesis', 'industryAnalysis'];
             const isCustomTab = !defaultTabs.find(t => t.id === activeTab);
-            const options = (compactTabs.includes(activeTab) || isCustomTab) ? { isCompactTable: true, ...((activeTab === 'performanceTable' || activeTab === 'industryAnalysis') ? { fitAllColumns: true } : {}) } : {};
+            const options = (compactTabs.includes(activeTab) || isCustomTab) ? { isCompactTable: true, fitAllColumns: true } : {};
             await handleExport(exportRef.current, filename, options);
         }
     };

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth, db, loginWithGoogle as loginProvider, logoutUser as logoutProvider } from '../services/firebase';
+import { getSetting, saveSetting } from '../services/dbService';
 
 interface AuthContextType {
     user: User | null;
@@ -21,19 +22,25 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [userRole, setUserRole] = useState<'admin' | 'manager' | 'employee' | 'pending' | null>(() => {
-        return (localStorage.getItem('cached_user_role') as any) || null;
-    });
-    const [departmentId, setDepartmentId] = useState<string | undefined>(() => {
-        return localStorage.getItem('cached_dept_id') || undefined;
-    });
-    const [employeeName, setEmployeeName] = useState<string | undefined>(() => {
-        return localStorage.getItem('cached_emp_name') || undefined;
-    });
+    const [userRole, setUserRole] = useState<'admin' | 'manager' | 'employee' | 'pending' | null>(null);
+    const [departmentId, setDepartmentId] = useState<string | undefined>(undefined);
+    const [employeeName, setEmployeeName] = useState<string | undefined>(undefined);
     const [expiresAt, setExpiresAt] = useState<Date | null>(null);
-    const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'new' | 'expired'>(() => {
-        return (localStorage.getItem('cached_user_status') as any) || 'new';
-    });
+    const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'new' | 'expired'>('new');
+    
+    useEffect(() => {
+        Promise.all([
+            getSetting<any>('cached_user_role'),
+            getSetting<string>('cached_dept_id'),
+            getSetting<string>('cached_emp_name'),
+            getSetting<any>('cached_user_status')
+        ]).then(([r, d, e, s]) => {
+            if (r) setUserRole(r);
+            if (d) setDepartmentId(d);
+            if (e) setEmployeeName(e);
+            if (s) setStatus(s);
+        }).catch(console.error);
+    }, []);
     
     const [isLoading, setIsLoading] = useState(true);
     const [isDemoMode, setDemoMode] = useState(false);
@@ -99,10 +106,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setStatus(currentStatus);
                         
                         // Cache values for next fast-load
-                        localStorage.setItem('cached_user_role', currentRole);
-                        localStorage.setItem('cached_user_status', currentStatus);
-                        if (data.departmentId) localStorage.setItem('cached_dept_id', data.departmentId);
-                        if (data.employeeName) localStorage.setItem('cached_emp_name', data.employeeName);
+                        saveSetting('cached_user_role', currentRole).catch(() => {});
+                        saveSetting('cached_user_status', currentStatus).catch(() => {});
+                        if (data.departmentId) saveSetting('cached_dept_id', data.departmentId).catch(() => {});
+                        if (data.employeeName) saveSetting('cached_emp_name', data.employeeName).catch(() => {});
 
                         // Increment login count & update lastLogin (once per session)
                         const sessionKey = `login_counted_${currentUser.uid}`;
@@ -140,9 +147,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setStatus(initialStatus);
                         setDepartmentId(initialDept);
                         
-                        localStorage.setItem('cached_user_role', initialRole);
-                        localStorage.setItem('cached_user_status', initialStatus);
-                        if (initialDept) localStorage.setItem('cached_dept_id', initialDept);
+                        saveSetting('cached_user_role', initialRole).catch(() => {});
+                        saveSetting('cached_user_status', initialStatus).catch(() => {});
+                        if (initialDept) saveSetting('cached_dept_id', initialDept).catch(() => {});
                     }
                 } catch (error) {
                     console.error("Lỗi lấy thông tin người dùng:", error);
@@ -151,9 +158,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setUserRole('admin');
                         setStatus('approved');
                         setDepartmentId('ALL (Super Admin)');
-                        localStorage.setItem('cached_user_role', 'admin');
-                        localStorage.setItem('cached_user_status', 'approved');
-                        localStorage.setItem('cached_dept_id', 'ALL (Super Admin)');
+                        saveSetting('cached_user_role', 'admin').catch(() => {});
+                        saveSetting('cached_user_status', 'approved').catch(() => {});
+                        saveSetting('cached_dept_id', 'ALL (Super Admin)').catch(() => {});
                     }
                     // Do not overwrite cached role on network error for other users to allow offline use
                 }
@@ -163,10 +170,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setEmployeeName(undefined);
                 setExpiresAt(null);
                 setStatus('new');
-                localStorage.removeItem('cached_user_role');
-                localStorage.removeItem('cached_user_status');
-                localStorage.removeItem('cached_dept_id');
-                localStorage.removeItem('cached_emp_name');
+                saveSetting('cached_user_role', null).catch(() => {});
+                saveSetting('cached_user_status', null).catch(() => {});
+                saveSetting('cached_dept_id', null).catch(() => {});
+                saveSetting('cached_emp_name', null).catch(() => {});
             }
             clearTimeout(fallbackTimer);
         });

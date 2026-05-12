@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useState, useEffect, useCallback, startTransition, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, startTransition, useMemo, useRef } from 'react';
+import { getSetting, saveSetting } from '../services/dbService';
 
 // --- Separate context for activeTab to avoid cascading re-renders ---
 interface TabContextType {
@@ -22,43 +23,28 @@ const TabContext = createContext<TabContextType | undefined>(undefined);
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 
 export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-    const [activeTab, setActiveTabRaw] = useState(() => {
-        if (typeof window !== 'undefined') {
-            try {
-                return localStorage.getItem('active_tab') || 'analysis';
-            } catch (e) {
-                return 'analysis';
-            }
-        }
-        return 'analysis';
-    });
-    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
-        if (typeof window !== 'undefined') {
-            try {
-                const saved = localStorage.getItem('sidebar_collapsed');
-                return saved ? JSON.parse(saved) : true;
-            } catch (e) {
-                console.warn("localStorage not available:", e);
-                return true;
-            }
-        }
-        return true;
-    });
-
+    const [activeTab, setActiveTabRaw] = useState('analysis');
+    const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [isLoaded, setIsLoaded] = useState(false);
 
-    const [isDarkMode, setIsDarkMode] = useState(() => {
-        if (typeof window !== 'undefined') {
-            try {
-                const saved = localStorage.getItem('dark_mode');
-                if (saved !== null) return JSON.parse(saved);
-            } catch (e) {
-                console.warn("localStorage not available for dark mode:", e);
+    useEffect(() => {
+        Promise.all([
+            getSetting<string>('active_tab'),
+            getSetting<boolean>('sidebar_collapsed'),
+            getSetting<boolean>('dark_mode')
+        ]).then(([savedTab, savedSidebar, savedDark]) => {
+            if (savedTab) setActiveTabRaw(savedTab);
+            if (savedSidebar !== undefined && savedSidebar !== null) setIsSidebarCollapsed(savedSidebar);
+            if (savedDark !== undefined && savedDark !== null) {
+                setIsDarkMode(savedDark);
+            } else {
+                setIsDarkMode(typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches);
             }
-            return window.matchMedia('(prefers-color-scheme: dark)').matches;
-        }
-        return false;
-    });
+            setIsLoaded(true);
+        }).catch(() => setIsLoaded(true));
+    }, []);
 
     // Wrap tab switch in startTransition so the bottom nav stays responsive
     // while heavy views render in background
@@ -66,21 +52,17 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         startTransition(() => {
             setActiveTabRaw(tab);
         });
-        try {
-            localStorage.setItem('active_tab', tab);
-        } catch (e) {}
+        saveSetting('active_tab', tab).catch(() => {});
     }, []);
 
     useEffect(() => {
-        try {
-            localStorage.setItem('sidebar_collapsed', JSON.stringify(isSidebarCollapsed));
-        } catch (e) {}
-    }, [isSidebarCollapsed]);
+        if (!isLoaded) return;
+        saveSetting('sidebar_collapsed', isSidebarCollapsed).catch(() => {});
+    }, [isSidebarCollapsed, isLoaded]);
 
     useEffect(() => {
-        try {
-            localStorage.setItem('dark_mode', JSON.stringify(isDarkMode));
-        } catch (e) {}
+        if (!isLoaded) return;
+        saveSetting('dark_mode', isDarkMode).catch(() => {});
         if (isDarkMode) {
             document.documentElement.classList.add('dark');
             document.documentElement.classList.remove('light');
@@ -88,7 +70,7 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             document.documentElement.classList.remove('dark');
             document.documentElement.classList.add('light');
         }
-    }, [isDarkMode]);
+    }, [isDarkMode, isLoaded]);
 
     const toggleDarkMode = () => setIsDarkMode(!isDarkMode);
 

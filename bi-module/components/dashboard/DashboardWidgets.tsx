@@ -181,7 +181,7 @@ export const SupermarketNavBar: React.FC<{
                         key={sm}
                         onClick={() => setActiveSupermarket(sm)}
                         className={`
-                            shrink-0 px-3 py-1.5 sm:px-5 sm:py-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest rounded-xl transition-all duration-300 border
+                            shrink-0 px-3 py-1.5 sm:px-5 sm:py-2 text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 border
                             ${activeSupermarket === sm
                                 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-800 shadow-sm'
                                 : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-700 border-slate-200 dark:border-slate-700'}
@@ -194,7 +194,7 @@ export const SupermarketNavBar: React.FC<{
             <button
                 onClick={onBatchExport}
                 disabled={isBatchExporting}
-                className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 transition-all duration-300 px-3 py-1.5 sm:px-5 sm:py-2 rounded-xl disabled:opacity-50 disabled:cursor-wait ml-auto sm:ml-0 shadow-sm active:scale-95"
+                className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 transition-all duration-300 px-3 py-1.5 sm:px-5 sm:py-2 rounded-xl disabled:opacity-50 disabled:cursor-wait ml-auto sm:ml-0 shadow-sm active:scale-95"
                 title="Xuất hàng loạt ảnh cho tất cả siêu thị"
             >
                 {isBatchExporting ? <SpinnerIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <CameraIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}

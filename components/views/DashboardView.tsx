@@ -6,6 +6,7 @@ import { DashboardContext } from '../../contexts/DashboardContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 import { usePendingApprovalCount } from '../../hooks/usePendingApprovalCount';
+import { getSetting, saveSetting } from '../../services/dbService';
 
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
@@ -73,14 +74,15 @@ const DashboardView = React.memo(function DashboardView() {
     const { totalVisits, onlineUsers } = useSystemTraffic();
     const pendingRequestsCount = usePendingApprovalCount();
 
-    const [visibleComponents, setVisibleComponents] = useState<VisibilityState>(() => {
-        try {
-            const saved = localStorage.getItem('dashboard_visibleComponents');
-            return saved ? JSON.parse(saved) : defaultVisibilityState;
-        } catch (e) {
-            return defaultVisibilityState;
-        }
-    });
+    const [visibleComponents, setVisibleComponents] = useState<VisibilityState>(defaultVisibilityState);
+    const [isVisibleComponentsLoaded, setIsVisibleComponentsLoaded] = useState(false);
+
+    useEffect(() => {
+        getSetting<VisibilityState>('dashboard_visibleComponents').then(saved => {
+            if (saved) setVisibleComponents(saved);
+            setIsVisibleComponentsLoaded(true);
+        }).catch(() => setIsVisibleComponentsLoaded(true));
+    }, []);
 
     const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
     const [isDebugPanelVisible, setIsDebugPanelVisible] = useState(false);
@@ -100,7 +102,7 @@ const DashboardView = React.memo(function DashboardView() {
     const handleVisibilityChange = (component: keyof VisibilityState, isVisible: boolean) => {
         setVisibleComponents(prev => {
             const newState = { ...prev, [component]: isVisible };
-            localStorage.setItem('dashboard_visibleComponents', JSON.stringify(newState));
+            saveSetting('dashboard_visibleComponents', newState);
             return newState;
         });
     };

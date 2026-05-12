@@ -4,24 +4,26 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 export const useEmployeeAnalysisTabs = (allAvailableTabs: any[], isInitialTabsLoaded: boolean, activeTab: string, setActiveTab: (id: string) => void) => {
     const prevAllIdsRef = useRef<Set<string>>(new Set());
     
-    const [visibleTabs, setVisibleTabs] = useState<Set<string>>(() => {
-        try {
-            const saved = localStorage.getItem('employeeAnalysis_visibleTabs');
-            if (saved) {
-                const parsed = JSON.parse(saved);
-                if (Array.isArray(parsed)) {
-                    return new Set(parsed);
-                }
-            }
-        } catch (e) {
-            console.error("Failed to load visible tabs from localStorage", e);
-        }
-        return new Set();
-    });
+    const [visibleTabs, setVisibleTabs] = useState<Set<string>>(new Set());
+    const [isLoaded, setIsLoaded] = useState(false);
     
     useEffect(() => {
-        if (isInitialTabsLoaded) {
-            const savedStateExists = localStorage.getItem('employeeAnalysis_visibleTabs') !== null;
+        import('../services/dbService').then(({ getSetting }) => {
+            getSetting<string[]>('employeeAnalysis_visibleTabs').then(saved => {
+                if (saved && Array.isArray(saved) && saved.length > 0) {
+                    setVisibleTabs(new Set(saved));
+                }
+                setIsLoaded(true);
+            }).catch(e => {
+                console.error("Failed to load visible tabs from IndexedDB", e);
+                setIsLoaded(true);
+            });
+        });
+    }, []);
+    
+    useEffect(() => {
+        if (isInitialTabsLoaded && isLoaded) {
+            const savedStateExists = visibleTabs.size > 0;
             const allIds = new Set(allAvailableTabs.map(t => t.id));
 
             if (!savedStateExists && visibleTabs.size === 0) {
@@ -56,17 +58,17 @@ export const useEmployeeAnalysisTabs = (allAvailableTabs: any[], isInitialTabsLo
                 prevAllIdsRef.current = allIds;
             }
         }
-    }, [isInitialTabsLoaded, allAvailableTabs]);
+    }, [isInitialTabsLoaded, allAvailableTabs, isLoaded]);
 
     useEffect(() => {
-        if (isInitialTabsLoaded && visibleTabs.size > 0) {
-            try {
-                localStorage.setItem('employeeAnalysis_visibleTabs', JSON.stringify(Array.from(visibleTabs)));
-            } catch (e) {
-                console.error("Failed to save visible tabs to localStorage", e);
-            }
+        if (isInitialTabsLoaded && isLoaded && visibleTabs.size > 0) {
+            import('../services/dbService').then(({ saveSetting }) => {
+                saveSetting('employeeAnalysis_visibleTabs', Array.from(visibleTabs)).catch(e => {
+                    console.error("Failed to save visible tabs to IndexedDB", e);
+                });
+            });
         }
-    }, [visibleTabs, isInitialTabsLoaded]);
+    }, [visibleTabs, isInitialTabsLoaded, isLoaded]);
 
     const handleToggleTabVisibility = useCallback((tabId: string) => {
         setVisibleTabs(prev => {

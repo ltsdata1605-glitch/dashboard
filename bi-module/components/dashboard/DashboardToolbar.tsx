@@ -27,7 +27,7 @@ const DashboardToolbar: React.FC<DashboardToolbarProps> = ({ id, activeSubTab, s
                         <button
                             key={tab}
                             onClick={() => setActiveSubTab(tab)}
-                            className={`py-1 px-3 sm:py-1.5 sm:px-6 text-[9px] sm:text-[11px] font-black rounded-lg transition-all uppercase tracking-widest ${isActive ? 'bg-white dark:bg-slate-700 text-sky-600 shadow-sm border border-sky-100/50 relative' : 'text-slate-500 hover:text-sky-600 dark:hover:text-sky-400'}`}
+                            className={`py-1 px-3 sm:py-1.5 sm:px-6 text-[9px] sm:text-[11px] font-semibold rounded-lg transition-all uppercase tracking-widest ${isActive ? 'bg-white dark:bg-slate-700 text-sky-600 shadow-sm border border-sky-100/50 relative' : 'text-slate-500 hover:text-sky-600 dark:hover:text-sky-400'}`}
                         >
                             {label}
                         </button>

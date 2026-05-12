@@ -81,6 +81,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
             await handleExport(summaryRef.current, `${prefix}-Chi-tiet-theo-kho.png`, {
                 elementsToHide: ['.hide-on-export'],
                 isCompactTable: true,
+                fitAllColumns: true,
                 scale: 2
             });
         }
@@ -201,6 +202,38 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         return groups;
     }, [visibleColumns]);
 
+    const PASTEL_THEMES = [
+        { sub: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400' },
+        { sub: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
+        { sub: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-700 dark:text-amber-400' },
+        { sub: 'bg-violet-50 dark:bg-violet-500/10', text: 'text-violet-700 dark:text-violet-400' },
+        { sub: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-700 dark:text-rose-400' },
+        { sub: 'bg-teal-50 dark:bg-teal-500/10', text: 'text-teal-700 dark:text-teal-400' },
+        { sub: 'bg-indigo-50 dark:bg-indigo-500/10', text: 'text-indigo-700 dark:text-indigo-400' },
+        { sub: 'bg-fuchsia-50 dark:bg-fuchsia-500/10', text: 'text-fuchsia-700 dark:text-fuchsia-400' },
+        { sub: 'bg-orange-50 dark:bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400' },
+        { sub: 'bg-cyan-50 dark:bg-cyan-500/10', text: 'text-cyan-700 dark:text-cyan-400' },
+        { sub: 'bg-pink-50 dark:bg-pink-500/10', text: 'text-pink-700 dark:text-pink-400' },
+        { sub: 'bg-lime-50 dark:bg-lime-500/10', text: 'text-lime-700 dark:text-lime-400' },
+        { sub: 'bg-purple-50 dark:bg-purple-500/10', text: 'text-purple-700 dark:text-purple-400' },
+        { sub: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400' }
+    ];
+
+    // Helper map to consistently assign the same color to the same group name based on order of appearance
+    const groupColorMap = useMemo(() => {
+        const map: Record<string, typeof PASTEL_THEMES[0]> = {};
+        let colorIndex = 0;
+        groupedHeaders.forEach(group => {
+            if (group.name && group.name !== '-' && group.name !== '') {
+                if (!map[group.name]) {
+                    map[group.name] = PASTEL_THEMES[colorIndex % PASTEL_THEMES.length];
+                    colorIndex++;
+                }
+            }
+        });
+        return map;
+    }, [groupedHeaders]);
+
     // Helper to check if a column is the start of a new group to apply the vertical separator
     const isGroupStart = (index: number) => {
         if (index === 0) return true;
@@ -299,7 +332,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                 {/* === TABLE VIEW (all screen sizes) === */}
                 <div className="overflow-hidden">
                 <section className="overflow-x-auto custom-scrollbar p-1.5 sm:p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative">
-                    <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700">
+                    <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap">
                         <thead>
                             {/* Top Level Group Headers */}
                             <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
@@ -315,7 +348,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                     if (!group.name || group.name.trim() === '' || group.name === '-') {
                                         const colsInGroup = visibleColumns.slice(group.startIndex, group.startIndex + group.colSpan);
                                         return colsInGroup.map((col, idx) => {
-                                            const styles = WAREHOUSE_HEADER_COLORS[col.mainHeader] || WAREHOUSE_HEADER_COLORS.DEFAULT;
+                                            const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                             return (
                                                 <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                                     <div className="flex items-center justify-center gap-1">
@@ -329,7 +362,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         });
                                     }
 
-                                    const styles = WAREHOUSE_HEADER_COLORS[group.name] || WAREHOUSE_HEADER_COLORS.DEFAULT;
+                                    const styles = groupColorMap[group.name] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                     return (
                                         <th key={i} colSpan={group.colSpan} className={`px-1 sm:px-2 py-1.5 sm:py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[9px] sm:text-[11px] font-bold border-r text-center align-middle`}>
                                             {group.name}
@@ -343,7 +376,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                     if (!col.mainHeader || col.mainHeader.trim() === '' || col.mainHeader === '-') {
                                         return null;
                                     }
-                                    const styles = WAREHOUSE_HEADER_COLORS[col.mainHeader] || WAREHOUSE_HEADER_COLORS.DEFAULT;
+                                    const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                     return (
                                         <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                             <div className="flex items-center justify-center gap-1">

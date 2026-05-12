@@ -358,17 +358,17 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                             </div>
                         ) : (
                         <table className="w-full border-collapse compact-export-table">
-                            <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
+                            <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[11px] font-bold text-slate-500 tracking-wider">
                                 <tr>
-                                    <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-12 align-middle">#</th>
-                                    <th className="text-left px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 min-w-[200px] align-middle">NHÓM THI ĐUA</th>
-                                    <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">MỤC TIÊU</th>
-                                    <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">THỰC HIỆN</th>
-                                    <th className="text-center px-3 py-2 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-40 align-middle">% HOÀN THÀNH</th>
-                                    <th className="text-center px-3 py-2 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">CÒN LẠI</th>
+                                    <th className="text-center px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-10 align-middle">#</th>
+                                    <th className="text-left px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle whitespace-nowrap">NHÓM THI ĐUA</th>
+                                    <th className="text-center px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle whitespace-nowrap">MỤC TIÊU</th>
+                                    <th className="text-center px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle whitespace-nowrap">THỰC HIỆN</th>
+                                    <th className="text-center px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-32 align-middle whitespace-nowrap">% HOÀN THÀNH</th>
+                                    <th className="text-center px-2 py-1.5 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle whitespace-nowrap">CÒN LẠI</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white dark:bg-[#1c1c1e] divide-y divide-slate-100 dark:divide-slate-700 text-[12px]">
+                            <tbody className="bg-white dark:bg-[#1c1c1e] divide-y divide-slate-100 dark:divide-slate-700 text-[13px]">
                                {(['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map((criterion, _criterionIndex) => {
                                    const items = groupedPerformanceData[criterion];
                                    if (!items || items.length === 0) return null;
@@ -376,29 +376,29 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                                    return (
                                        <React.Fragment key={criterion}>
                                            <tr className={`${cStyle.bg} ${cStyle.text} shadow-inner font-extrabold border-t-[3px] ${cStyle.border}`}>
-                                               <td colSpan={6} className="px-3 py-2 text-[11px] uppercase tracking-wider">
-                                                   <span className={`px-2 py-1 rounded mr-2 ${cStyle.badge}`}>Tiêu chí</span> {criterion}
+                                               <td colSpan={6} className="px-2 py-1 text-[11px] uppercase tracking-wider">
+                                                   <span className={`px-2 py-0.5 rounded mr-2 ${cStyle.badge}`}>Tiêu chí</span> {criterion}
                                                </td>
                                            </tr>
                                            {items.map((item, index) => {
                                                const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400';
                                                return (
                                                    <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-all cursor-pointer">
-                                                       <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50">{index + 1}</td>
-                                                       <td className="px-3 py-2 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
+                                                       <td className="px-2 py-1 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50">{index + 1}</td>
+                                                       <td className="px-2 py-1 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
                                                            {item.name}
                                                        </td>
-                                                       <td className="px-3 py-2 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{f.format(roundUp(item.target))}</td>
-                                                       <td className="px-3 py-2 text-center font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{f.format(roundUp(item.actual))}</td>
-                                                       <td className="px-3 py-2 text-center w-40 border-r border-slate-100 dark:border-slate-700/50 tabular-nums"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-16 hidden sm:block"><ProgressBar value={item.completion} /></div></div></td>
-                                                       <td className={`px-3 py-2 text-center font-semibold ${remainingColor} tabular-nums`}>{f.format(roundUp(item.remaining))}</td>
+                                                       <td className="px-2 py-1 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.target))}</td>
+                                                       <td className="px-2 py-1 text-center font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.actual))}</td>
+                                                       <td className="px-2 py-1 text-center w-32 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-16 hidden sm:block"><ProgressBar value={item.completion} /></div></div></td>
+                                                       <td className={`px-2 py-1 text-center font-semibold ${remainingColor} tabular-nums whitespace-nowrap`}>{f.format(roundUp(item.remaining))}</td>
                                                    </tr>
                                                );
                                            })}
                                        </React.Fragment>
                                    )
                                })}
-                               {Object.keys(groupedPerformanceData).length === 0 && (<tr><td colSpan={6} className="px-3 py-8 text-center text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">Chưa có chương trình thi đua nào được chọn từ bộ lọc hoặc không có dữ liệu cho nhân viên này.</td></tr>)}
+                               {Object.keys(groupedPerformanceData).length === 0 && (<tr><td colSpan={6} className="px-2 py-4 text-center text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">Chưa có chương trình thi đua nào được chọn từ bộ lọc hoặc không có dữ liệu cho nhân viên này.</td></tr>)}
                             </tbody>
                         </table>
                         )}

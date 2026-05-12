@@ -65,11 +65,11 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
             }
 
             // Migration logic for preset tabs
-            const hasMigratedPresets = localStorage.getItem('presetTabsMigrated') === 'true';
+            const hasMigratedPresets = await getSetting('presetTabsMigrated') === true;
             if (!hasMigratedPresets) {
                 // Prepend preset tabs
                 finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                localStorage.setItem('presetTabsMigrated', 'true');
+                await saveSetting('presetTabsMigrated', true);
             }
 
             if (finalExploitationTabs.length > 0) {

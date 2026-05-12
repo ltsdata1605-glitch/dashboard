@@ -5,6 +5,7 @@ import { PrintSettings, defaultModernPositions, ModernLayoutPositions } from './
 import { parseProductFile, saveData, loadData, clearData, saveEmployeeName, parseCurrency, saveDisplayedProducts, parseInventoryFile, saveInventoryData } from './services/fileParser';
 import { uploadProductsToFirestore, uploadInventoryToFirestore, fetchProductsFromFirestore, fetchInventoryFromFirestore, saveListToFirestore, saveUserState, fetchUserState, saveManualProduct, fetchManualProducts, deleteManualProduct, ManualProductDoc } from './services/firebaseService';
 import { printPriceTags } from './services/printService';
+import { getSetting, saveSetting } from '../../../services/dbService';
 import * as XLSX from 'xlsx';
 import html2canvas from 'html2canvas';
 import ResultsDisplay from './ResultsDisplay';
@@ -149,57 +150,58 @@ export default function App(): React.JSX.Element {
   const saveDisplayedProductsTimeoutRef = useRef<number | null>(null);
 
   const [isPrintSettingsOpen, setIsPrintSettingsOpen] = useState(false);
-  const [modernPositions, setModernPositions] = useState<ModernLayoutPositions>(() => {
-    const saved = localStorage.getItem('modernPositions');
-    return saved ? JSON.parse(saved) : defaultModernPositions;
-  });
+  const [modernPositions, setModernPositions] = useState<ModernLayoutPositions>(defaultModernPositions);
+  const [isModernPositionsLoaded, setIsModernPositionsLoaded] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem('modernPositions', JSON.stringify(modernPositions));
-  }, [modernPositions]);
+      getSetting<ModernLayoutPositions>('modernPositions').then(saved => {
+          if (saved) setModernPositions(saved);
+          setIsModernPositionsLoaded(true);
+      });
+  }, []);
 
-  const [printSettings, setPrintSettings] = useState<PrintSettings>(() => {
-    // Default settings with all options enabled.
-    const masterDefaults: PrintSettings = {
-        showOriginalPrice: true,
-        showPromotion: true,
-        showBonus: true,
-        showQrCode: true,
-        showEmployeeName: true,
-        sortByName: true,
-        shortenPrice: true,
-        tagsPerPage: 4, // Default layout if nothing is saved
-        customFontData: null,
-        customFontName: null,
-        customSecondaryFontData: null,
-        customSecondaryFontName: null,
-        stickerStyle: 'default'
-    };
-
-    try {
-        const savedSettingsJSON = localStorage.getItem('printSettings');
-        if (savedSettingsJSON) {
-            const savedSettings = JSON.parse(savedSettingsJSON);
-            // Override all boolean settings with master defaults, but keep saved layout and font info.
-            return {
-                ...masterDefaults,
-                shortenPrice: typeof savedSettings.shortenPrice === 'boolean' ? savedSettings.shortenPrice : masterDefaults.shortenPrice,
-                tagsPerPage: savedSettings.tagsPerPage || masterDefaults.tagsPerPage,
-                customFontData: savedSettings.customFontData || null,
-                customFontName: savedSettings.customFontName || null,
-                customSecondaryFontData: savedSettings.customSecondaryFontData || null,
-                customSecondaryFontName: savedSettings.customSecondaryFontName || null,
-                stickerStyle: savedSettings.stickerStyle || 'default'
-            };
-        }
-    } catch (e) {
-        console.error("Could not load print settings from localStorage", e);
+  useEffect(() => {
+    if (isModernPositionsLoaded) {
+        saveSetting('modernPositions', modernPositions);
     }
-    
-    // Return master defaults for a new session.
-    return masterDefaults;
-  });
-  
+  }, [modernPositions, isModernPositionsLoaded]);
+
+  const masterDefaults: PrintSettings = useMemo(() => ({
+      showOriginalPrice: true,
+      showPromotion: true,
+      showBonus: true,
+      showQrCode: true,
+      showEmployeeName: true,
+      sortByName: true,
+      shortenPrice: true,
+      tagsPerPage: 4,
+      customFontData: null,
+      customFontName: null,
+      customSecondaryFontData: null,
+      customSecondaryFontName: null,
+      stickerStyle: 'default'
+  }), []);
+
+  const [printSettings, setPrintSettings] = useState<PrintSettings>(masterDefaults);
+  const [isPrintSettingsLoaded, setIsPrintSettingsLoaded] = useState(false);
+
+  useEffect(() => {
+      getSetting<any>('printSettings').then(savedSettings => {
+          if (savedSettings) {
+              setPrintSettings({
+                  ...masterDefaults,
+                  shortenPrice: typeof savedSettings.shortenPrice === 'boolean' ? savedSettings.shortenPrice : masterDefaults.shortenPrice,
+                  tagsPerPage: savedSettings.tagsPerPage || masterDefaults.tagsPerPage,
+                  customFontData: savedSettings.customFontData || null,
+                  customFontName: savedSettings.customFontName || null,
+                  customSecondaryFontData: savedSettings.customSecondaryFontData || null,
+                  customSecondaryFontName: savedSettings.customSecondaryFontName || null,
+                  stickerStyle: savedSettings.stickerStyle || 'default'
+              });
+          }
+          setIsPrintSettingsLoaded(true);
+      });
+  }, [masterDefaults]);
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
   const [printAction, setPrintAction] = useState<'selected' | 'all' | 'manual' | null>(null);
   const [productToPrint, setProductToPrint] = useState<Product | null>(null);
@@ -213,12 +215,12 @@ export default function App(): React.JSX.Element {
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
 
   useEffect(() => {
-    try {
-        localStorage.setItem('printSettings', JSON.stringify(printSettings));
-    } catch (e) {
-        console.error("Could not save print settings to localStorage", e);
+    if (isPrintSettingsLoaded) {
+        saveSetting('printSettings', printSettings).catch(e => {
+            console.error("Could not save print settings to IndexedDB", e);
+        });
     }
-  }, [printSettings]);
+  }, [printSettings, isPrintSettingsLoaded]);
 
   useEffect(() => {
     const initialize = async () => {
