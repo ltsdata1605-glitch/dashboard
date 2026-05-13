@@ -16,7 +16,9 @@ import {
     HelpCircle,
     Shield,
     Printer,
-    Calendar
+    Calendar,
+    Package,
+    FileText
 } from 'lucide-react';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -35,6 +37,8 @@ const MobileBottomNav: React.FC = React.memo(() => {
     ];
 
     const moreTabs = [
+        { id: 'inventory', label: 'Kho hàng', icon: Package },
+        { id: 'reports', label: 'Báo cáo', icon: FileText },
         { id: 'tools-print-sticker', label: 'In Sticker', icon: Printer },
         { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
         { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket },

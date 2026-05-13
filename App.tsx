@@ -79,7 +79,7 @@ const TabContent = React.memo(() => {
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
         { id: 'reports', className: 'w-full h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative flex flex-col', component: <BaoCaoKhaiThacView /> },
-        { id: 'tools-audit', className: 'w-full h-full bg-slate-100 dark:bg-slate-900 overflow-hidden', component: <KiemQuyView /> },
+        { id: 'tools-audit', className: 'w-full h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative flex flex-col', component: <KiemQuyView /> },
     ], []);
 
     return (

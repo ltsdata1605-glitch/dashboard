@@ -753,40 +753,172 @@ export default function BaoCaoKhaiThacView() {
                           {h.data.staffName || 'Vô danh'}
                         </span>
                       </div>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 text-xs">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Tiền mặt:</span>
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">{h.data.cash || '0'}</span>
+                      {/* Doanh thu */}
+                      <div className="grid grid-cols-2 gap-2 text-xs mb-2">
+                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-lg p-2">
+                          <div className="text-[9px] text-slate-400 uppercase font-bold mb-0.5">Tiền mặt</div>
+                          <div className="font-bold text-slate-700 dark:text-slate-300">{h.data.cash || '0'}</div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Trả chậm:</span>
-                          <span className="font-semibold text-slate-700 dark:text-slate-300">{h.data.installment || '0'}</span>
+                        <div className="bg-slate-50 dark:bg-slate-900/40 rounded-lg p-2">
+                          <div className="text-[9px] text-slate-400 uppercase font-bold mb-0.5">Trả chậm</div>
+                          <div className="font-bold text-blue-600 dark:text-blue-400">{h.data.installment || '0'}</div>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">SP Chính:</span>
-                          <span className="font-semibold text-blue-600 dark:text-blue-400">
-                            {h.data.products.tivi + h.data.products.tuLanh + h.data.products.mayGiat + h.data.products.mayLanh + h.data.products.smpTab + h.data.products.laptop + h.data.products.otherCount}
+                      </div>
+
+                      {/* SP Chính */}
+                      <div className="mb-2">
+                        <div className="text-[9px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                          <Tv size={10} /> SP CHÍNH
+                          <span className="ml-auto bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded-full text-[9px] font-bold">
+                            {h.data.products.tivi + h.data.products.tuLanh + h.data.products.mayGiat + h.data.products.mayLanh + h.data.products.smpTab + h.data.products.laptop + (h.data.products.otherCount || 0)}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Gia dụng:</span>
-                          <span className="font-semibold text-blue-600 dark:text-blue-400">
-                            {h.data.household.mln + h.data.household.qdh + h.data.household.quat + h.data.household.noiCom + h.data.household.locKk + h.data.household.otherCount}
+                        <div className="grid grid-cols-3 gap-1 text-[10px]">
+                          {[
+                            { label: 'Tivi', val: h.data.products.tivi },
+                            { label: 'Tủ lạnh', val: h.data.products.tuLanh },
+                            { label: 'Máy giặt', val: h.data.products.mayGiat },
+                            { label: 'Máy lạnh', val: h.data.products.mayLanh },
+                            { label: 'SMP/Tab', val: h.data.products.smpTab },
+                            { label: 'Laptop', val: h.data.products.laptop },
+                          ].filter(x => x.val > 0).map(x => (
+                            <div key={x.label} className="bg-blue-50/50 dark:bg-blue-900/10 rounded px-1.5 py-1 flex justify-between">
+                              <span className="text-slate-500">{x.label}</span>
+                              <span className="font-bold text-blue-600 dark:text-blue-400">{x.val}</span>
+                            </div>
+                          ))}
+                          {h.data.products.otherCount > 0 && (
+                            <div className="bg-blue-50/50 dark:bg-blue-900/10 rounded px-1.5 py-1 flex justify-between col-span-2">
+                              <span className="text-slate-500 truncate">{h.data.products.otherName || 'Khác'}</span>
+                              <span className="font-bold text-blue-600 dark:text-blue-400">{h.data.products.otherCount}</span>
+                            </div>
+                          )}
+                          {h.data.products.tivi + h.data.products.tuLanh + h.data.products.mayGiat + h.data.products.mayLanh + h.data.products.smpTab + h.data.products.laptop + (h.data.products.otherCount || 0) === 0 && (
+                            <div className="col-span-3 text-center text-slate-300 dark:text-slate-600 py-0.5 text-[9px]">Không có</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Gia dụng */}
+                      <div className="mb-2">
+                        <div className="text-[9px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                          <Fan size={10} /> GIA DỤNG
+                          <span className="ml-auto bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded-full text-[9px] font-bold">
+                            {h.data.household.mln + h.data.household.qdh + h.data.household.quat + h.data.household.noiCom + h.data.household.locKk + (h.data.household.otherCount || 0)}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Dịch vụ:</span>
-                          <span className="font-semibold text-amber-600 dark:text-amber-400">
+                        <div className="grid grid-cols-3 gap-1 text-[10px]">
+                          {[
+                            { label: 'MLN', val: h.data.household.mln },
+                            { label: 'QĐH', val: h.data.household.qdh },
+                            { label: 'Quạt', val: h.data.household.quat },
+                            { label: 'Nồi cơm', val: h.data.household.noiCom },
+                            { label: 'Lọc KK', val: h.data.household.locKk },
+                          ].filter(x => x.val > 0).map(x => (
+                            <div key={x.label} className="bg-emerald-50/50 dark:bg-emerald-900/10 rounded px-1.5 py-1 flex justify-between">
+                              <span className="text-slate-500">{x.label}</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">{x.val}</span>
+                            </div>
+                          ))}
+                          {h.data.household.otherCount > 0 && (
+                            <div className="bg-emerald-50/50 dark:bg-emerald-900/10 rounded px-1.5 py-1 flex justify-between col-span-2">
+                              <span className="text-slate-500 truncate">{h.data.household.otherName || 'Khác'}</span>
+                              <span className="font-bold text-emerald-600 dark:text-emerald-400">{h.data.household.otherCount}</span>
+                            </div>
+                          )}
+                          {h.data.household.mln + h.data.household.qdh + h.data.household.quat + h.data.household.noiCom + h.data.household.locKk + (h.data.household.otherCount || 0) === 0 && (
+                            <div className="col-span-3 text-center text-slate-300 dark:text-slate-600 py-0.5 text-[9px]">Không có</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Dịch vụ */}
+                      <div className="mb-2">
+                        <div className="text-[9px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                          <ShieldCheck size={10} /> DỊCH VỤ
+                          <span className="ml-auto bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-1.5 py-0.5 rounded-full text-[9px] font-bold">
                             {(Number(h.data.services.insurance) || 0) + (Number(h.data.services.maintenance) || 0) + h.data.services.vieon + h.data.services.sim}
                           </span>
                         </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Phụ kiện:</span>
-                          <span className="font-semibold text-amber-600 dark:text-amber-400">
+                        <div className="grid grid-cols-2 gap-1 text-[10px]">
+                          {[
+                            { label: 'Bảo hiểm', val: Number(h.data.services.insurance) || 0 },
+                            { label: 'Bảo hành MR', val: Number(h.data.services.maintenance) || 0 },
+                            { label: 'Vieon', val: h.data.services.vieon },
+                            { label: 'SIM', val: h.data.services.sim },
+                          ].filter(x => x.val > 0).map(x => (
+                            <div key={x.label} className="bg-amber-50/50 dark:bg-amber-900/10 rounded px-1.5 py-1 flex justify-between">
+                              <span className="text-slate-500">{x.label}</span>
+                              <span className="font-bold text-amber-600 dark:text-amber-400">{x.val}</span>
+                            </div>
+                          ))}
+                          {(Number(h.data.services.insurance) || 0) + (Number(h.data.services.maintenance) || 0) + h.data.services.vieon + h.data.services.sim === 0 && (
+                            <div className="col-span-2 text-center text-slate-300 dark:text-slate-600 py-0.5 text-[9px]">Không có</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Phụ kiện */}
+                      <div className="mb-1">
+                        <div className="text-[9px] font-black text-violet-600 dark:text-violet-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                          <Camera size={10} /> PHỤ KIỆN
+                          <span className="ml-auto bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400 px-1.5 py-0.5 rounded-full text-[9px] font-bold">
                             {h.data.accessories.camera + h.data.accessories.sdp + h.data.accessories.taiNghe + h.data.accessories.den + h.data.accessories.dongHo}
                           </span>
                         </div>
+                        <div className="grid grid-cols-3 gap-1 text-[10px]">
+                          {[
+                            { label: 'Camera', val: h.data.accessories.camera },
+                            { label: 'SDP', val: h.data.accessories.sdp },
+                            { label: 'Tai nghe', val: h.data.accessories.taiNghe },
+                            { label: 'Đèn', val: h.data.accessories.den },
+                            { label: 'Đồng hồ', val: h.data.accessories.dongHo },
+                          ].filter(x => x.val > 0).map(x => (
+                            <div key={x.label} className="bg-violet-50/50 dark:bg-violet-900/10 rounded px-1.5 py-1 flex justify-between">
+                              <span className="text-slate-500">{x.label}</span>
+                              <span className="font-bold text-violet-600 dark:text-violet-400">{x.val}</span>
+                            </div>
+                          ))}
+                          {h.data.accessories.camera + h.data.accessories.sdp + h.data.accessories.taiNghe + h.data.accessories.den + h.data.accessories.dongHo === 0 && (
+                            <div className="col-span-3 text-center text-slate-300 dark:text-slate-600 py-0.5 text-[9px]">Không có</div>
+                          )}
+                        </div>
                       </div>
+
+                      {/* Chiến giá */}
+                      {h.data.priceWar && (h.data.priceWar.ce?.tc || h.data.priceWar.ict?.tc) && (
+                        <div className="mb-1 pt-2 border-t border-slate-100 dark:border-slate-700/50">
+                          <div className="text-[9px] font-black text-red-600 dark:text-red-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                            <Sword size={10} /> CHIẾN GIÁ
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-[10px]">
+                            {h.data.priceWar.ce?.tc && (
+                              <div className="bg-red-50/50 dark:bg-red-900/10 rounded p-1.5">
+                                <div className="text-[8px] text-red-500 font-bold mb-1">CE (Điện máy)</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {h.data.priceWar.ce.tc && <span className="text-slate-600">TC:{h.data.priceWar.ce.tc}</span>}
+                                  {h.data.priceWar.ce.ss && <span className="text-slate-600">SS:{h.data.priceWar.ce.ss}</span>}
+                                  {h.data.priceWar.ce.ch && <span className="text-slate-600">CH:{h.data.priceWar.ce.ch}</span>}
+                                  {h.data.priceWar.ce.bo && <span className="text-slate-600">BỎ:{h.data.priceWar.ce.bo}</span>}
+                                  {h.data.priceWar.ce.xtt && <span className="text-slate-600">XTT:{h.data.priceWar.ce.xtt}</span>}
+                                </div>
+                              </div>
+                            )}
+                            {h.data.priceWar.ict?.tc && (
+                              <div className="bg-slate-100/50 dark:bg-slate-900/30 rounded p-1.5">
+                                <div className="text-[8px] text-slate-500 font-bold mb-1">ICT (Điện thoại)</div>
+                                <div className="flex flex-wrap gap-1">
+                                  {h.data.priceWar.ict.tc && <span className="text-slate-600">TC:{h.data.priceWar.ict.tc}</span>}
+                                  {h.data.priceWar.ict.ss && <span className="text-slate-600">SS:{h.data.priceWar.ict.ss}</span>}
+                                  {h.data.priceWar.ict.ch && <span className="text-slate-600">CH:{h.data.priceWar.ict.ch}</span>}
+                                  {h.data.priceWar.ict.bo && <span className="text-slate-600">BỎ:{h.data.priceWar.ict.bo}</span>}
+                                  {h.data.priceWar.ict.xtt && <span className="text-slate-600">XTT:{h.data.priceWar.ict.xtt}</span>}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                       
                       {h.data.leads && h.data.leads.length > 0 && (
                         <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700/50">
