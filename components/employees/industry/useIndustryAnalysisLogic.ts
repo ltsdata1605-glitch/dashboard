@@ -5,8 +5,9 @@ import { SortConfig, detailQuickFilters, groupToSortKeyMap, detailHeaderGroups }
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../../constants';
 import { getRowValue } from '../../../utils/dataUtils';
 
-export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: any[], productConfig?: any, customExploitationTabs?: CustomExploitationTabConfig[]) => {
+export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: any[], productConfig?: any, customExploitationTabs?: CustomExploitationTabConfig[], efficiencyExploitationTabs?: CustomExploitationTabConfig[]) => {
     const [viewMode, setViewMode] = useState<'detail' | 'efficiency'>('detail');
+    const activeTabs = viewMode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
     const [visibleGroupsDetail, setVisibleGroupsDetail] = useState<Set<string>>(new Set());
     const [visibleGroupsEfficiency, setVisibleGroupsEfficiency] = useState<Set<string>>(new Set());
     const [initialGroupsLoaded, setInitialGroupsLoaded] = useState(false);
@@ -42,7 +43,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
 
     const dynamicQuickFilters = useMemo(() => {
         const baseFilters: any[] = [...detailQuickFilters].map(f => {
-            const override = customExploitationTabs?.find(t => t.id === f.key);
+            const override = activeTabs?.find(t => t.id === f.key);
             if (override) {
                 let name = override.name;
                 if (f.key === 'doanhThu' && name === 'DOANH THU') name = 'D.Thu';
@@ -51,19 +52,19 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             }
             return f;
         });
-        (customExploitationTabs || []).forEach(tab => {
+        (activeTabs || []).forEach(tab => {
             if (tab.id === 'doanhThu' || tab.id === 'spChinh') return;
             baseFilters.push({ key: tab.id, label: tab.name, isCustom: true });
         });
         return baseFilters;
-    }, [customExploitationTabs]);
+    }, [activeTabs]);
 
         const dynamicHeaderGroups = useMemo(() => {
         const baseGroups: any = { ...detailHeaderGroups };
         
         // Apply overrides for doanhThu and spChinh if they were edited
         ['doanhThu', 'spChinh'].forEach(key => {
-            const tabOverride = customExploitationTabs?.find(t => t.id === key);
+            const tabOverride = activeTabs?.find(t => t.id === key);
             if (tabOverride && baseGroups[key]) {
                 baseGroups[key].label = tabOverride.name;
                 // Use tabOverride columns to define subHeaders exactly as configured by user
@@ -104,7 +105,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400' }
         ];
 
-        (customExploitationTabs || []).forEach((tab, index) => {
+        (activeTabs || []).forEach((tab, index) => {
             if (tab.id === 'doanhThu' || tab.id === 'spChinh') return; // Handled above
             
             const color = pastelColors[index % pastelColors.length];
@@ -122,7 +123,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             };
         });
         return baseGroups;
-    }, [customExploitationTabs]);
+    }, [activeTabs]);
 
     const handleToggleGroup = (groupKey: string) => {
         const currentGroups = viewMode === 'detail' ? visibleGroupsDetail : visibleGroupsEfficiency;
@@ -162,8 +163,9 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
     
     const customTabData = useMemo(() => {
         const customData = new Map<string, { [tabId: string]: { [colId: string]: { mainSl: number, mainDt: number, baseSl: number, baseDt: number } } }>();
+        const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
 
-        if (!baseFilteredData || !customExploitationTabs || !productConfig) return customData;
+        if (!baseFilteredData || !productConfig || allTabs.length === 0) return customData;
 
         try {
             const validData = baseFilteredData.filter(row => !HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT)));
@@ -186,7 +188,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 return industryMatch && subgroupMatch && manufacturerMatch && productCodeMatch;
             };
 
-            customExploitationTabs.forEach(tab => {
+            allTabs.forEach(tab => {
                 const cols = tab.columns || [];
                 if (cols.length === 0) return;
 
@@ -243,7 +245,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             console.error("Lỗi custom tabs", e);
         }
         return customData;
-    }, [baseFilteredData, customExploitationTabs, productConfig]);
+    }, [baseFilteredData, customExploitationTabs, efficiencyExploitationTabs, productConfig]);
 
     const { processedData, groupTotals, grandTotal } = useMemo(() => {
         const thresholds = { percentBaoHiem: 40, percentSimKT: 30, percentDongHoKT: 20, percentPhuKienKT: 10, percentGiaDungKT: 30 };
@@ -253,8 +255,9 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             
             const empId = item.name.split(' - ')[0].trim();
             const customFields: Record<string, number> = {};
-            if (customExploitationTabs) {
-                customExploitationTabs.forEach(tab => {
+            const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+            if (allTabs.length > 0) {
+                allTabs.forEach(tab => {
                     const empData1 = customTabData.get(empId);
                     const empData2 = customTabData.get(item.name);
                     const tData = (empData1 && empData1[tab.id]) || (empData2 && empData2[tab.id]) || {};
@@ -283,7 +286,8 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             }
 
             const getCustomTabVal = (tabId: string, colType: string) => {
-                const tab = customExploitationTabs?.find(t => t.id === tabId);
+                const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+                const tab = allTabs.find(t => t.id === tabId);
                 if (!tab) return 0;
                 const col = tab.columns?.find(c => c.type === colType) || tab.columns?.[0];
                 if (!col) return 0;
@@ -291,7 +295,8 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             };
 
             const getCustomTabSumQuantity = (tabId: string) => {
-                const tab = customExploitationTabs?.find(t => t.id === tabId);
+                const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+                const tab = allTabs.find(t => t.id === tabId);
                 if (!tab) return 0;
                 return tab.columns?.filter(c => c.type === 'quantity').reduce((sum, col) => sum + (customFields[`val_${tab.id}_${col.id}`] || 0), 0) || 0;
             };
@@ -370,8 +375,9 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 belowAverageCount: 0
             };
             
-            if (customExploitationTabs) {
-                 customExploitationTabs.forEach(tab => {
+            const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+            if (allTabs.length > 0) {
+                 allTabs.forEach(tab => {
                      const cols = tab.columns || [];
                      cols.forEach(col => {
                          initialTotals[`raw_mainSl_${tab.id}_${col.id}`] = 0;
@@ -396,8 +402,8 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             
             const hieuQuaQD = t.doanhThuThuc > 0 ? (t.doanhThuQD - t.doanhThuThuc) / t.doanhThuThuc * 100 : 0;
             const slSPChinh_Tong = t.slICT + t.slCE_main + t.slGiaDung_main;
-            if (customExploitationTabs) {
-                 customExploitationTabs.forEach(tab => {
+            if (allTabs.length > 0) {
+                 allTabs.forEach(tab => {
                      const cols = tab.columns || [];
                      cols.forEach(col => {
                          let val = 0;
@@ -414,7 +420,8 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             }
             
             const getCustomTabValTotal = (tabId: string, colType: string) => {
-                const tab = customExploitationTabs?.find(tb => tb.id === tabId);
+                const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+                const tab = allTabs.find(tb => tb.id === tabId);
                 if (!tab) return 0;
                 const col = tab.columns?.find(c => c.type === colType) || tab.columns?.[0];
                 if (!col) return 0;
@@ -435,7 +442,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
         const grandTotal = calculateTotals(enhancedData);
 
         return { processedData: finalGroupedData, groupTotals, grandTotal };
-    }, [data, sortConfig, customTabData, customExploitationTabs]);
+    }, [data, sortConfig, customTabData, customExploitationTabs, efficiencyExploitationTabs]);
 
     const handleSort = (key: string) => {
         let direction: 'asc' | 'desc' = 'desc';

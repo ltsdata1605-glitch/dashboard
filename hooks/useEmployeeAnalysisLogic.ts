@@ -7,6 +7,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
     const [customTabs, setCustomTabs] = useState<CustomContestTab[]>([]);
     const [industryAnalysisTabs, setIndustryAnalysisTabs] = useState<CustomContestTab[]>([]);
     const [customExploitationTabs, setCustomExploitationTabs] = useState<CustomExploitationTabConfig[]>([]);
+    const [efficiencyExploitationTabs, setEfficiencyExploitationTabs] = useState<CustomExploitationTabConfig[]>([]);
     const [isInitialTabsLoaded, setIsInitialTabsLoaded] = useState(false);
     const isHydratedRef = useRef(false);
     
@@ -31,6 +32,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 setIndustryAnalysisTabs(savedIndustryTabs);
             }
             const savedExploitationTabs = await getSetting<CustomExploitationTabConfig[]>('customExploitationTabs');
+            const savedEfficiencyTabs = await getSetting<CustomExploitationTabConfig[]>('efficiencyExploitationTabs');
             
             let finalExploitationTabs: CustomExploitationTabConfig[] = [];
             
@@ -67,18 +69,25 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 });
             }
 
-            // Migration logic for V2 preset tabs
-            const hasMigratedPresetsV2 = await getSetting('presetTabsMigratedV2') === true;
-            if (!hasMigratedPresetsV2) {
+            // Migration logic for V4 preset tabs (Fix duplication)
+            const hasMigratedPresetsV4 = await getSetting('presetTabsMigratedV4') === true;
+            if (!hasMigratedPresetsV4) {
+                // Filter out previous default tabs to prevent duplication
+                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
                 // Thêm preset mới vào mảng
                 finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV2', true);
+                await saveSetting('presetTabsMigratedV4', true);
             }
 
             if (finalExploitationTabs.length > 0) {
                 setCustomExploitationTabs(finalExploitationTabs);
             }
             
+            if (savedEfficiencyTabs) {
+                setEfficiencyExploitationTabs(savedEfficiencyTabs);
+            } else {
+                setEfficiencyExploitationTabs([]);
+            }
             
             // Wait for React to apply state updates before marking as loaded and enabling saves
             setTimeout(() => {
@@ -95,8 +104,9 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
             saveCustomTabs(customTabs);
             saveIndustryAnalysisCustomTabs(industryAnalysisTabs);
             saveSetting('customExploitationTabs', customExploitationTabs);
+            saveSetting('efficiencyExploitationTabs', efficiencyExploitationTabs);
         }
-    }, [customTabs, industryAnalysisTabs, customExploitationTabs, isInitialTabsLoaded]);
+    }, [customTabs, industryAnalysisTabs, customExploitationTabs, efficiencyExploitationTabs, isInitialTabsLoaded]);
 
     const getIconForTabName = (name: string): string => {
         const lowerName = name.toLowerCase();
@@ -299,7 +309,9 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
     }, [modalState.data]);
 
     const handleSaveCustomExploitationTab = useCallback((tabConfig: any) => {
-        setCustomExploitationTabs(prev => {
+        const targetMode = modalState.data?.targetMode || 'detail';
+        const setTabs = targetMode === 'detail' ? setCustomExploitationTabs : setEfficiencyExploitationTabs;
+        setTabs(prev => {
             if (tabConfig.id) {
                 const existing = prev.find(t => t.id === tabConfig.id);
                 if (existing) {
@@ -312,11 +324,13 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
             }
         });
         setIsClosingModal(true);
-    }, []);
+    }, [modalState.data]);
 
     const handleDeleteCustomExploitationTab = useCallback(() => {
         if (modalState.data?.tabId) {
-            setCustomExploitationTabs(prev => prev.filter(t => t.id !== modalState.data.tabId));
+            const targetMode = modalState.data?.targetMode || 'detail';
+            const setTabs = targetMode === 'detail' ? setCustomExploitationTabs : setEfficiencyExploitationTabs;
+            setTabs(prev => prev.filter(t => t.id !== modalState.data.tabId));
             setIsClosingModal(true);
         }
     }, [modalState.data]);
@@ -338,6 +352,8 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         handleSaveCustomExploitationTab,
         handleDeleteCustomExploitationTab,
         customExploitationTabs,
-        setCustomExploitationTabs
+        setCustomExploitationTabs,
+        efficiencyExploitationTabs,
+        setEfficiencyExploitationTabs
     };
 };

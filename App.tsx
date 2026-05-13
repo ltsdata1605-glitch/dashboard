@@ -28,6 +28,8 @@ const SettingsView = lazy(() => import('./components/views/SettingsView'));
 const AboutView = lazy(() => import('./components/views/AboutView'));
 const StickerPrinterView = lazy(() => import('./components/views/StickerPrinterView'));
 const PhanCaView = lazy(() => import('./components/views/phanca/PhanCaView'));
+const BaoCaoKhaiThacView = lazy(() => import('./components/views/reports/BaoCaoKhaiThacView'));
+const KiemQuyView = lazy(() => import('./components/views/KiemQuyView'));
 
 
 // BI Module Wrapper
@@ -76,7 +78,8 @@ const TabContent = React.memo(() => {
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
-
+        { id: 'reports', className: 'w-full h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative flex flex-col', component: <BaoCaoKhaiThacView /> },
+        { id: 'tools-audit', className: 'w-full h-full bg-slate-100 dark:bg-slate-900 overflow-hidden', component: <KiemQuyView /> },
     ], []);
 
     return (
@@ -102,16 +105,9 @@ const TabContent = React.memo(() => {
                 </div>
             )}
 
-
-            {activeTab === 'tools-audit' && (
-                <div className="block">
-                    <ExternalToolView url="https://kiemquy-final-487587635482.us-west1.run.app" title="Kiểm quỹ" />
-                </div>
-            )}
-
             {/* Render External Tool view when applicable */}
-            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-audit', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) && (
-                <div style={{ display: !['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) ? 'block' : 'none' }} className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
+            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-audit', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports'].includes(activeTab) && (
+                <div style={{ display: !['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports'].includes(activeTab) ? 'block' : 'none' }} className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>
                 </div>

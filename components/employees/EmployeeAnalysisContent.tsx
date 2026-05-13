@@ -16,6 +16,8 @@ interface EmployeeAnalysisContentProps {
     customTabs: any[];
     customExploitationTabs: any[];
     setCustomExploitationTabs: React.Dispatch<React.SetStateAction<any[]>>;
+    efficiencyExploitationTabs: any[];
+    setEfficiencyExploitationTabs: React.Dispatch<React.SetStateAction<any[]>>;
     baseFilteredData: any[];
     allDatesBaseFilteredData: any[];
     productConfig: any;
@@ -40,6 +42,8 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
     customTabs,
     customExploitationTabs,
     setCustomExploitationTabs,
+    efficiencyExploitationTabs,
+    setEfficiencyExploitationTabs,
     baseFilteredData,
     allDatesBaseFilteredData,
     productConfig,
@@ -71,22 +75,25 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                         baseFilteredData={baseFilteredData}
                         productConfig={productConfig}
                         customExploitationTabs={customExploitationTabs}
-                        onManageCustomTabs={() => setModalState({ type: 'CREATE_CUSTOM_EXPLOITATION_TAB', data: {} })}
-                        onEditCustomTab={(tabId: string) => {
-                            let tab = customExploitationTabs.find(t => t.id === tabId);
+                        efficiencyExploitationTabs={efficiencyExploitationTabs}
+                        onManageCustomTabs={(mode) => setModalState({ type: 'CREATE_CUSTOM_EXPLOITATION_TAB', data: { targetMode: mode } })}
+                        onEditCustomTab={(tabId: string, mode) => {
+                            const activeTabs = mode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
+                            let tab = activeTabs.find(t => t.id === tabId);
                             if (!tab && tabId === 'doanhThu') {
                                 tab = { id: 'doanhThu', name: 'D.Thu', columns: [ { id: 'doanhThuThuc', name: 'DT Thực', type: 'revenue', filters: {} as any }, { id: 'doanhThuQD', name: 'DTQĐ', type: 'revenue', filters: {} as any }, { id: 'hieuQuaQD', name: 'HQQĐ', type: 'percentage', filters: {} as any } ] };
                             } else if (!tab && tabId === 'spChinh') {
                                 tab = { id: 'spChinh', name: 'SP Chính', columns: [ { id: 'slICT', name: 'ICT', type: 'quantity', filters: {} as any }, { id: 'slCE_main', name: 'CE', type: 'quantity', filters: {} as any }, { id: 'slGiaDung_main', name: 'ĐGD', type: 'quantity', filters: {} as any }, { id: 'slSPChinh_Tong', name: 'Tổng', type: 'quantity', filters: {} as any } ] };
                             }
                             if (tab) {
-                                setModalState({ type: 'EDIT_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, initialName: tab.name, initialColumns: tab.columns, initialIcon: tab.icon } });
+                                setModalState({ type: 'EDIT_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, initialName: tab.name, initialColumns: tab.columns, initialIcon: tab.icon, targetMode: mode } });
                             }
                         }}
-                        onDeleteCustomTab={(tabId: string) => {
-                            const tab = customExploitationTabs.find(t => t.id === tabId);
+                        onDeleteCustomTab={(tabId: string, mode) => {
+                            const activeTabs = mode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
+                            const tab = activeTabs.find(t => t.id === tabId);
                             if (tab) {
-                                setModalState({ type: 'CONFIRM_DELETE_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, tabName: tab.name } });
+                                setModalState({ type: 'CONFIRM_DELETE_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, tabName: tab.name, targetMode: mode } });
                             }
                         }}
                         onExport={handleIndustryTabExport} 

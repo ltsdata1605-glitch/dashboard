@@ -16,11 +16,12 @@ interface IndustryAnalysisTabProps {
     baseFilteredData?: any[];
     productConfig?: any;
     customExploitationTabs?: any[];
-    onManageCustomTabs?: () => void;
-    onEditCustomTab?: (tabId: string) => void;
-    onDeleteCustomTab?: (tabId: string) => void;
+    efficiencyExploitationTabs?: any[];
+    onManageCustomTabs?: (mode: 'detail' | 'efficiency') => void;
+    onEditCustomTab?: (tabId: string, mode: 'detail' | 'efficiency') => void;
+    onDeleteCustomTab?: (tabId: string, mode: 'detail' | 'efficiency') => void;
 }
-const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalysisTabProps>(({ data, onExport, isExporting, onBatchExport, baseFilteredData, productConfig, customExploitationTabs, onManageCustomTabs, onEditCustomTab, onDeleteCustomTab }, ref) => {
+const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalysisTabProps>(({ data, onExport, isExporting, onBatchExport, baseFilteredData, productConfig, customExploitationTabs, efficiencyExploitationTabs, onManageCustomTabs, onEditCustomTab, onDeleteCustomTab }, ref) => {
     const {
         viewMode,
         setViewMode,
@@ -33,7 +34,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
         grandTotal,
         dynamicQuickFilters,
         dynamicHeaderGroups
-    } = useIndustryAnalysisLogic(data, baseFilteredData, productConfig, customExploitationTabs);
+    } = useIndustryAnalysisLogic(data, baseFilteredData, productConfig, customExploitationTabs, efficiencyExploitationTabs);
     
     const showDeptHeaders = Object.keys(processedData).length > 1 || (Object.keys(processedData).length === 1 && Object.keys(processedData)[0] !== 'Không Phân Ca');
     
@@ -199,7 +200,8 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                     );
                 }
 
-                const tab = (customExploitationTabs || []).find(t => t.id === key);
+                const activeTabs = viewMode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
+                const tab = (activeTabs || []).find(t => t.id === key);
                 if (tab) {
                     const cols = (tab.columns || []).filter(c => !c.hidden);
                     
@@ -345,7 +347,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                         )})}
                         {onManageCustomTabs && (
                              <button 
-                                 onClick={onManageCustomTabs}
+                                 onClick={() => onManageCustomTabs(viewMode)}
                                  title="Tạo thẻ mới"
                                  className="px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] font-bold whitespace-nowrap transition-colors text-slate-400 hover:text-indigo-600 flex items-center justify-center shrink-0"
                              >
@@ -374,8 +376,8 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                                 {dynamicHeaderGroups[f.key]?.label || f.label}
                                             </div>
                                             <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
-                                                {onEditCustomTab && <button onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key); }} className="p-1.5 text-slate-400/70 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa"><Icon name="edit-3" size={3.5}/></button>}
-                                                {f.isCustom && onDeleteCustomTab && <button onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key); }} className="p-1.5 text-slate-400/70 hover:text-rose-600 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa"><Icon name="trash-2" size={3.5}/></button>}
+                                                {onEditCustomTab && <button onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key, viewMode); }} className="p-1.5 text-slate-400/70 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa"><Icon name="edit-3" size={3.5}/></button>}
+                                                {f.isCustom && onDeleteCustomTab && <button onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key, viewMode); }} className="p-1.5 text-slate-400/70 hover:text-rose-600 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa"><Icon name="trash-2" size={3.5}/></button>}
                                             </div>
                                         </th>
                                     )})}

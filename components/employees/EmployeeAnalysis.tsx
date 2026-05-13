@@ -57,7 +57,9 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         handleSaveCustomExploitationTab,
         handleDeleteCustomExploitationTab,
         customExploitationTabs,
-        setCustomExploitationTabs
+        setCustomExploitationTabs,
+        efficiencyExploitationTabs,
+        setEfficiencyExploitationTabs
     } = useEmployeeAnalysisLogic(activeTab, setActiveTab, defaultTabs);
 
     const allAvailableTabs = useMemo(() => [
@@ -260,6 +262,8 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                     customTabs={customTabs}
                     customExploitationTabs={customExploitationTabs}
                     setCustomExploitationTabs={setCustomExploitationTabs}
+                    efficiencyExploitationTabs={efficiencyExploitationTabs}
+                    setEfficiencyExploitationTabs={setEfficiencyExploitationTabs}
                     baseFilteredData={filteredEmployeeAnalysisData?.filteredBaseData || baseFilteredData}
                     allDatesBaseFilteredData={baseFilteredData}
                     productConfig={productConfig}
