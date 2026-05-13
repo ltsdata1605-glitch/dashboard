@@ -67,10 +67,12 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 });
             }
 
-            // Xoá logic nạp presets
-            const hasMigratedPresets = await getSetting('presetTabsMigrated') === true;
-            if (!hasMigratedPresets) {
-                await saveSetting('presetTabsMigrated', true);
+            // Migration logic for V2 preset tabs
+            const hasMigratedPresetsV2 = await getSetting('presetTabsMigratedV2') === true;
+            if (!hasMigratedPresetsV2) {
+                // Thêm preset mới vào mảng
+                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
+                await saveSetting('presetTabsMigratedV2', true);
             }
 
             if (finalExploitationTabs.length > 0) {
