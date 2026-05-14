@@ -13,6 +13,7 @@ import { exportElementAsImage } from '../../../services/uiService';
 import { BonusMobileCard } from './bonus/BonusMobileCard';
 import { BonusDesktopRow } from './bonus/BonusDesktopRow';
 import AvatarDisplay from './shared/AvatarDisplay';
+import TimeProgressBar from './shared/TimeProgressBar';
 
 
 
@@ -287,16 +288,17 @@ export const BonusView: React.FC<{
     };
 
     const cardTitle = (
-        <div className="flex flex-col items-start leading-none py-1">
+        <div className="flex flex-col items-start leading-none py-1 w-full">
             <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">HIỆU SUẤT LÀM VIỆC ĐẾN NGÀY {getYesterdayDateString()}</span>
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Quản lý tốt thưởng là quản lý tốt động lực của nhân viên.</span>
+            <TimeProgressBar className="mt-2.5" />
         </div>
     );
 
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-0">
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-3 items-center">
                     <button 

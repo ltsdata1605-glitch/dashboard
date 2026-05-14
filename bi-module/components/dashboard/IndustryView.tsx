@@ -306,20 +306,20 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             border-r border-b border-slate-200 dark:border-slate-700/80 last:border-r-0 
             tabular-nums align-middle
             ${originalCellIndex > 0 ? 'text-center' : `text-left sticky left-0 z-[5] ${isTotalRow ? 'bg-emerald-50 dark:bg-emerald-900/20' : isNNH ? 'bg-white dark:bg-[#1c1c1e]' : isNhomHang ? 'bg-slate-50/80 dark:bg-slate-800/40' : 'bg-white dark:bg-[#1c1c1e]'}`}
-            ${isHang ? 'py-1.5 text-[10px]' : 'py-2.5 text-[11px]'}
+            ${isHang ? 'py-1 text-[11px]' : 'py-1 text-[13px]'}
         `;
         
         if (isTotalRow) {
-            cellClasses += ' text-emerald-800 dark:text-emerald-400 font-black';
+            cellClasses += ' text-[15px] text-emerald-800 dark:text-emerald-400 font-extrabold';
         } else if (isHang) {
-            cellClasses += originalCellIndex === 0 ? ' text-slate-500 dark:text-slate-400' : ' font-medium text-slate-500 dark:text-slate-400';
+            cellClasses += originalCellIndex === 0 ? ' text-slate-500 dark:text-slate-400' : ' font-bold text-slate-500 dark:text-slate-400';
             if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
                 if (numericValue >= 100) cellClasses += ' !text-emerald-500 dark:!text-emerald-500';
                 else if (numericValue >= 85) cellClasses += ' !text-amber-500 dark:!text-amber-500';
                 else if (numericValue > 0) cellClasses += ' !text-red-500 dark:!text-red-500';
             }
         } else {
-            cellClasses += originalCellIndex === 0 ? ' font-semibold text-slate-700 dark:text-slate-300' : ' font-semibold';
+            cellClasses += originalCellIndex === 0 ? ' font-bold text-slate-700 dark:text-slate-300' : ' font-bold';
 
             if (isPercentCol && !isNaN(numericValue) && !isHtCol) {
                 if (numericValue >= 100) cellClasses += ' text-emerald-600 dark:text-emerald-400 font-bold';
@@ -431,19 +431,20 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                             </div>
                         ) : (
                             /* ─── DESKTOP TABLE VIEW ─── */
-                            <div className="overflow-hidden m-4 mb-6">
-                                <table className="w-full border-collapse compact-export-table border border-slate-200 dark:border-slate-700">
+                            <div className="overflow-hidden px-4 pb-4">
+                                <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700">
+                                <table className="w-full border-collapse compact-export-table">
                                     <thead>
                                         {/* TIER 1: GROUP HEADERS */}
-                                        <tr className="text-[11px] font-bold uppercase tracking-wider">
+                                        <tr className="text-[11px] font-black uppercase tracking-wider">
                                             {/* Sticky 'NGÀNH HÀNG' merged header (rowSpan=2) */}
                                             {visibleColumns.has('Nhóm ngành hàng') && (
                                                 <th
                                                     rowSpan={2}
                                                     className={`
-                                                        px-4 py-2.5 text-center text-[12px] font-bold
+                                                        px-2 py-1 text-center text-[11px] font-black
                                                         text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800
-                                                        border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
+                                                        border-b-2 border-b-slate-100 dark:border-b-slate-700
                                                         border-r border-slate-200 dark:border-slate-700
                                                         sticky left-0 z-20 align-middle
                                                         uppercase tracking-wider min-w-[120px]
@@ -459,10 +460,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             key={`group-${idx}`}
                                                             rowSpan={2}
                                                             className={`
-                                                                py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider text-center
+                                                                py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
                                                                 align-middle whitespace-nowrap
-                                                                border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
-                                                                border-r border-slate-200 dark:border-slate-700
+                                                                border-b-2 border-r border-slate-200 dark:border-slate-700
                                                                 ${g.bg} ${g.text}
                                                             `}
                                                             dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }}
@@ -474,7 +474,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         key={`group-${idx}`}
                                                         colSpan={g.colspan}
                                                         className={`
-                                                            py-2.5 px-2 text-[11px] font-bold uppercase tracking-wider text-center 
+                                                            py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center 
                                                             border-b border-r border-slate-200 dark:border-slate-700
                                                             ${g.bg} ${g.text}
                                                         `}
@@ -498,9 +498,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         key={h}
                                                         scope="col"
                                                         className={`
-                                                            px-2 py-2.5 text-[10px] font-bold uppercase
+                                                            px-1.5 py-1 text-[11px] font-bold uppercase
                                                             tracking-wider border-r border-slate-200 dark:border-slate-700
-                                                            border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600
+                                                            border-b-2
                                                             text-center align-middle whitespace-nowrap
                                                             hover:opacity-80 transition-opacity select-none
                                                             ${g.bg} ${g.text}
@@ -511,7 +511,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                             })}
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                                    <tbody>
                                         {treeDisplayRows ? (
                                             /* ─── TREE TABLE ROWS (luyke mode with hierarchy) ─── */
                                             treeDisplayRows.map((flatRow) => {
@@ -526,10 +526,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         className={`
                                                             transition-colors duration-100 group
                                                             ${isTotalRow 
-                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-y !border-y-emerald-200 dark:!border-y-emerald-800/50' 
-                                                                : isNNH ? 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
-                                                                : isNhomHang ? 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
-                                                                : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50/30 dark:hover:bg-slate-800/10'
+                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' 
+                                                                : isNNH ? 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800/30 border-b border-gray-100 dark:border-slate-700'
+                                                                : isNhomHang ? 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-gray-50 dark:hover:bg-slate-800/40 border-b border-gray-100 dark:border-slate-700'
+                                                                : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800/10 border-b border-gray-100 dark:border-slate-700'
                                                             }
                                                         `}
                                                     >
@@ -552,8 +552,8 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         className={`
                                                             transition-colors duration-100 group
                                                             ${isTotalRow 
-                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-y !border-y-emerald-200 dark:!border-y-emerald-800/50' 
-                                                                : 'bg-white dark:bg-[#1c1c1e] hover:bg-slate-50/50 dark:hover:bg-slate-800/30'
+                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' 
+                                                                : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800/30 border-b border-gray-100 dark:border-slate-700'
                                                             }
                                                         `}
                                                     >
@@ -569,6 +569,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                         )}
                                     </tbody>
                                 </table>
+                                </div>
                             </div>
                         )}
                     </div>

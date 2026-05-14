@@ -12,6 +12,7 @@ import { parseRevenueData } from '../../utils/nhanVienHelpers';
 
 
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
+import TimeProgressBar from './shared/TimeProgressBar';
 
 import { ColorSettingsModal, ColorSettings, DEFAULT_COLOR_SETTINGS, CriterionConfig } from './revenue/ColorSettingsModal';
 import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
@@ -184,31 +185,12 @@ const RevenueView: React.FC<{
         setIsExportingByDept(false);
     };
 
-    const timeProgressWidget = useMemo(() => {
-        return (
-            <div className="js-time-progress-widget flex flex-col w-full max-w-md gap-1 px-1 mt-2 mb-1 transition-all">
-                <div className="flex justify-between items-end">
-                    <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Quỹ thời gian</span>
-                        <span className="text-[10px] font-bold text-slate-400 italic">({timeProgressData.dayPassed} / {timeProgressData.daysInMonth} ngày)</span>
-                    </div>
-                    <span className="text-xs font-black text-sky-600 tabular-nums leading-none">{Math.round(timeProgressData.percentage)}%</span>
-                </div>
-                <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1.5 relative overflow-hidden">
-                    <div 
-                        className="h-full bg-sky-500 rounded-full transition-all duration-500"
-                        style={{ width: `${timeProgressData.percentage}%` }}
-                    />
-                </div>
-            </div>
-        );
-    }, [timeProgressData]);
     
     const cardTitle = (
-        <div className="flex flex-col items-start leading-none py-1">
+        <div className="flex flex-col items-start leading-none py-1 w-full">
             <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">DOANH THU ĐẾN NGÀY {getYesterdayDateString()}</span>
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Tôi không chạy theo doanh thu — doanh thu phản ánh đẳng cấp mà Tôi tạo ra.</span>
-            {timeProgressWidget}
+            <TimeProgressBar className="mt-2.5" />
         </div>
     );
 
@@ -218,20 +200,15 @@ const RevenueView: React.FC<{
     const isMobile = window.innerWidth < 768;
 
     return (
-        <div className="space-y-4">
+        <div className="space-y-0">
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-3 items-center">
-                    <select value={snapshotId || ''} onChange={(e) => setSnapshotId(e.target.value || null)} className="pl-3 pr-7 py-1.5 text-[11px] font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none min-w-[100px] appearance-none cursor-pointer text-slate-600 dark:text-slate-300">
-                        <option value="">Hiện tại</option>
-                        {snapshots.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                    </select>
-                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
                     <button 
                         onClick={() => setIsPrevMonthModalOpen(true)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
                     >
                         <ClockIcon className="h-3.5 w-3.5" />
-                        <span className="hidden sm:inline">T.trước</span>
+                        <span className="hidden sm:inline">Cùng kỳ</span>
                         {prevMonthRaw && (
                             <button onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800">
                                 <XIcon className="h-3 w-3" />

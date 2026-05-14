@@ -199,7 +199,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ danhSachData, thiDuaData }) =
                                         }`}>
                                             <div className="flex items-center gap-1.5">
                                                 <ClockIcon className="h-3.5 w-3.5" />
-                                                <span className="text-[10px] font-bold uppercase tracking-widest">
+                                                <span className="text-[10px] font-bold uppercase tracking-wider">
                                                     {msg.role === 'user' ? 'Yêu cầu lúc:' : 'Phản hồi lúc:'} {msg.timestamp}
                                                 </span>
                                             </div>
@@ -257,7 +257,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ danhSachData, thiDuaData }) =
                             </button>
                         </div>
                         <div className="flex justify-center mt-3">
-                            <p className="text-[9px] text-slate-400 font-medium text-center uppercase tracking-widest">
+                            <p className="text-[9px] text-slate-400 font-medium text-center uppercase tracking-wider">
                                 Dữ liệu được bảo mật bởi chuẩn mã hóa BI Enterprise
                             </p>
                         </div>

@@ -236,33 +236,37 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
 
     return (
         <div className="space-y-0">
+            {/* Thanh bar toolbar — giống tab THƯỞNG */}
+            <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
+                <div className="flex gap-2 items-center">
+                    {/* Search */}
+                    <div className="relative">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="Tìm nhân viên..."
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                            className="pl-8 pr-3 py-1.5 text-[11px] w-40 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700 dark:text-slate-300"
+                        />
+                    </div>
+                    {/* Expand/Collapse all */}
+                    <button
+                        onClick={handleExpandAll}
+                        className={`px-3 py-1.5 text-[11px] font-bold border transition-all ${isAllExpanded ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'}`}
+                    >
+                        {isAllExpanded ? 'Thu gọn' : 'Mở rộng'}
+                    </button>
+                </div>
+                <div className="flex gap-1.5 items-center">
+                    <ExportButton onExportPNG={handleExportPNG} />
+                </div>
+            </div>
             <div ref={cardRef}>
                 <Card noPadding rounded={false} title={
                     <div className="flex flex-col">
-                        <span className="text-lg font-black uppercase text-slate-800 dark:text-white">Chi tiết Doanh Thu theo Ngành Hàng</span>
-                        <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wide mt-0.5">Nhân viên › Ngành hàng › Nhóm hàng › Hãng</span>
-                    </div>
-                } actionButton={
-                    <div className="flex items-center gap-2 no-print">
-                        {/* Search */}
-                        <div className="relative">
-                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
-                            <input
-                                type="text"
-                                placeholder="Tìm nhân viên..."
-                                value={searchQuery}
-                                onChange={e => setSearchQuery(e.target.value)}
-                                className="pl-8 pr-3 py-1.5 text-[11px] w-40 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-sky-300 text-slate-700 dark:text-slate-300"
-                            />
-                        </div>
-                        {/* Expand/Collapse all */}
-                        <button
-                            onClick={handleExpandAll}
-                            className="px-3 py-1.5 text-[10px] font-bold uppercase border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-500 hover:text-sky-600 hover:border-sky-300 transition-all"
-                        >
-                            {isAllExpanded ? 'Thu gọn' : 'Mở rộng'}
-                        </button>
-                        <ExportButton onExportPNG={handleExportPNG} />
+                        <span className="text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">Chi tiết Doanh Thu theo Ngành Hàng</span>
+                        <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wide mt-1">Nhân viên › Ngành hàng › Nhóm hàng › Hãng</span>
                     </div>
                 }>
                     <div className="w-full overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>

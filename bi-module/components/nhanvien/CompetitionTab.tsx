@@ -1,16 +1,17 @@
 
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
-import { UsersIcon, XIcon, SpinnerIcon, CameraIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
+import { UsersIcon, XIcon, SpinnerIcon, CameraIcon, ImagesIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
 import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig } from '../../types/nhanVienTypes';
 import { CompetitionGroupCard } from './CompetitionGroupView';
-import { IndividualCompetitionView } from './IndividualCompetitionView';
+import { IndividualCompetitionView, IndividualCompetitionViewHandle } from './IndividualCompetitionView';
 import CompetitionSummaryView from './CompetitionSummaryView';
 import { getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services/uiService';
+import TimeProgressBar from './shared/TimeProgressBar';
 
 const PALETTE = [
   { main: 'bg-sky-600', light: 'bg-sky-100', text: 'text-sky-800', hover: 'hover:bg-sky-50', zebra: 'bg-sky-50/50', footer: 'bg-sky-800' },
@@ -48,6 +49,10 @@ interface CompetitionTabProps {
     highlightedEmployees: Set<string>;
     setHighlightedEmployees: React.Dispatch<React.SetStateAction<Set<string>>>;
     activeDepartments: string[];
+    revenueRows?: any[];
+    installmentRows?: any[];
+    banKemRows?: any[];
+    bonusData?: Record<string, any>;
 }
 
 export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
@@ -74,7 +79,11 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     onSelectIndividual,
     highlightedEmployees,
     setHighlightedEmployees,
-    activeDepartments
+    activeDepartments,
+    revenueRows,
+    installmentRows,
+    banKemRows,
+    bonusData
 }) => {
 
     const [newVersionName, setNewVersionName] = useState('');
@@ -87,6 +96,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const [exportTitleOverride, setExportTitleOverride] = useState<string | null>(null);
     const [isolatedHighlightEmployee, setIsolatedHighlightEmployee] = useState<string | null>(null);
     const groupViewRef = useRef<HTMLDivElement>(null);
+    const individualViewRef = useRef<IndividualCompetitionViewHandle>(null);
     const filterRef = useRef<HTMLDivElement>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterSearch, setFilterSearch] = useState('');
@@ -144,7 +154,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         try {
             const blob = await exportElementAsImage(original, filename, {
                 mode: 'blob-only', elementsToHide: ['.export-button-component'],
-                preprocessClone: (clone) => {
+                forcedWidth: 500,
+                preprocessClone: (clone: HTMLElement) => {
+                    // Remove overflow constraints and stack cards vertically
                     const containers = clone.querySelectorAll('.overflow-x-auto, .grid, .competition-group-card');
                     containers.forEach(el => {
                         const htmlEl = el as HTMLElement;
@@ -160,22 +172,9 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     if (gridContainer) {
                         (gridContainer as HTMLElement).style.display = 'flex';
                         (gridContainer as HTMLElement).style.flexDirection = 'column';
-                        (gridContainer as HTMLElement).style.alignItems = 'center';
-                        (gridContainer as HTMLElement).style.gap = '32px';
+                        (gridContainer as HTMLElement).style.alignItems = 'stretch';
+                        (gridContainer as HTMLElement).style.gap = '24px';
                         (gridContainer as HTMLElement).style.width = '100%';
-                    }
-                    
-                    const titleContainer = clone.querySelector('.export-show-border');
-                    if (titleContainer) {
-                        (titleContainer as HTMLElement).style.width = '100%';
-                        (titleContainer as HTMLElement).style.display = 'flex';
-                        (titleContainer as HTMLElement).style.justifyContent = 'center';
-                        const h3 = titleContainer.querySelector('h3');
-                        if (h3) {
-                            h3.style.width = '100%';
-                            h3.style.fontSize = '24px';
-                            h3.style.fontWeight = '700';
-                        }
                     }
                 }
             });
@@ -257,13 +256,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 const safeName = `${title.replace(/[\s/]/g, '_')}.png`;
                 const blob = await exportElementAsImage(card, safeName, {
                     mode: 'blob-only', elementsToHide: ['.export-button-component'],
-                    preprocessClone: (clone) => {
-                        const headerDiv = clone.querySelector('div:first-child') as HTMLElement;
-                        if (headerDiv) {
-                            headerDiv.style.width = '100%';
-                            const h4 = headerDiv.querySelector('h4');
-                            if (h4) { h4.style.paddingLeft = '15px'; h4.style.paddingRight = '15px'; }
-                        }
+                    preprocessClone: (clone: HTMLElement) => {
                         clone.classList.remove('h-full');
                     }
                 });
@@ -347,6 +340,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         });
     };
 
+
     if (!hasAnyData) {
         return (
             <Card title="HIỆU QUẢ THI ĐUA THEO NHÂN VIÊN">
@@ -359,69 +353,94 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     }
 
     const cardTitle = (
-        <div className="flex flex-col items-start leading-none py-1">
+        <div className="flex flex-col items-start leading-none py-1 w-full">
             <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">HIỆU QUẢ THI ĐUA NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Thi đua là động lực, hiệu quả là mục tiêu - Vượt qua giới hạn, khẳng định bản thân.</span>
+            <TimeProgressBar className="mt-2.5" />
         </div>
     );
 
     return (
-        <Card noPadding title={cardTitle}>
-            <div className="border-t border-slate-100 dark:border-slate-800">
-                <div className="px-6 pb-6 pt-4">
-                    <div className="border-b border-slate-200 dark:border-slate-700 pb-2">
-                        <nav className="flex space-x-2 items-end flex-wrap -mb-px" aria-label="Tabs">
-                            <button onClick={() => { setActiveCompetitionTab('canhan'); setActiveVersionName(null); }} className={`px-4 py-2 text-sm font-semibold rounded-t-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 ${activeVersionName === null && activeCompetitionTab === 'canhan' ? 'border border-b-white dark:border-b-slate-800 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400' : `text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-transparent ${activeVersionName !== null ? 'opacity-60' : ''}`}`}>CÁ NHÂN</button>
-                            <button onClick={() => { setActiveCompetitionTab('nhom'); setActiveVersionName(null); }} className={`px-4 py-2 text-sm font-semibold rounded-t-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 ${activeVersionName === null && activeCompetitionTab === 'nhom' ? 'border border-b-white dark:border-b-slate-800 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400' : `text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-transparent ${activeVersionName !== null ? 'opacity-60' : ''}`}`}>NHÓM</button>
-                            <button onClick={() => { setActiveCompetitionTab('tong'); setActiveVersionName(null); }} className={`px-4 py-2 text-sm font-semibold rounded-t-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 ${activeVersionName === null && activeCompetitionTab === 'tong' ? 'border border-b-white dark:border-b-slate-800 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400' : `text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-transparent ${activeVersionName !== null ? 'opacity-60' : ''}`}`}>TỔNG</button>
-                            
-                            <div className="h-6 border-l border-slate-300 dark:border-slate-600 mx-2 hidden sm:block"></div>
-                            
-                            {versions.filter(v => v && typeof v === 'object' && v.name).map(version => (
-                                <div key={version.name} role="button" tabIndex={0} onClick={() => onVersionTabClick(version)} onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onVersionTabClick(version)} className={`group relative flex items-center gap-2 pl-4 pr-8 py-2 text-sm font-semibold rounded-t-md cursor-pointer transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-400 border ${activeVersionName === version.name ? 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 border-b-white dark:border-b-slate-800 text-indigo-700 dark:text-indigo-400' : 'bg-slate-50 dark:bg-slate-700/50 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'}`} title={`Tải phiên bản: ${version.name}`}>
-                                    <span>{version.name}</span>
-                                    <button onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }} className="absolute right-1 top-1/2 -translate-y-1/2 p-1 rounded-full text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-800/50 hover:text-rose-600 dark:hover:text-rose-300 opacity-0 group-hover:opacity-100 transition-all"><XIcon className="h-4 w-4" /></button>
-                                </div>
-                            ))}
-                            {activeVersionName === 'new' ? (
-                                <div className="flex items-center gap-2 p-2 border border-b-0 border-slate-200 dark:border-slate-700 rounded-t-md bg-slate-50 dark:bg-slate-700/50 transition-all duration-200">
-                                    <input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm hàng thi đua trước" : "Tên phiên bản..."} className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded-md text-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-200 dark:disabled:bg-slate-600 disabled:cursor-not-allowed bg-white dark:bg-slate-800" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
-                                    <button onClick={handleSaveVersionAction} className="px-3 py-1 bg-indigo-600 text-white rounded-md text-sm hover:bg-indigo-700 disabled:bg-slate-400 disabled:cursor-not-allowed" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</button>
-                                    <button onClick={onCancelNewVersion} className="p-1 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-full"><XIcon className="h-4 w-4" /></button>
-                                </div>
-                            ) : (
-                                <button onClick={onStartNewVersion} disabled={!supermarket} className="px-3 py-2 text-sm font-semibold rounded-t-md text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-transparent disabled:text-slate-400 dark:disabled:text-slate-500 disabled:cursor-not-allowed flex items-center gap-2"><span>+ Tạo mới</span></button>
-                            )}
-                        </nav>
-                    </div>
+        <div className="space-y-0">
+            {/* Toolbar bar - giống Trả Góp */}
+            <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
+                <div className="flex gap-2 items-center">
+                    {([['canhan', 'Cá nhân'], ['nhom', 'Nhóm'], ['tong', 'Tổng']] as const).map(([key, label]) => (
+                        <button key={key} onClick={() => { setActiveCompetitionTab(key as any); setActiveVersionName(null); }} className={`px-3 py-1.5 text-[11px] font-bold border transition-all ${activeVersionName === null && activeCompetitionTab === key ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'}`}>{label}</button>
+                    ))}
+                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                    {versions.filter(v => v && typeof v === 'object' && v.name).map(version => (
+                        <div key={version.name} role="button" tabIndex={0} onClick={() => onVersionTabClick(version)} className={`group relative flex items-center gap-1 pl-2.5 pr-6 py-1.5 text-[11px] font-bold cursor-pointer transition-all border ${activeVersionName === version.name ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}>
+                            <span>{version.name}</span>
+                            <button onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }} className="absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all"><XIcon className="h-3 w-3" /></button>
+                        </div>
+                    ))}
+                    {activeVersionName === 'new' ? (
+                        <div className="flex items-center gap-1.5">
+                            <input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên..."} className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-[11px] focus:ring-1 focus:ring-indigo-500 w-28 bg-white dark:bg-slate-800" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
+                            <button onClick={handleSaveVersionAction} className="px-2 py-1 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 disabled:bg-slate-400" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</button>
+                            <button onClick={onCancelNewVersion} className="p-0.5 text-slate-500 hover:bg-slate-200 rounded-full"><XIcon className="h-3 w-3" /></button>
+                        </div>
+                    ) : (
+                        <button onClick={onStartNewVersion} disabled={!supermarket} title="Tạo mới" className="p-1 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40"><PlusIcon className="h-4 w-4" /></button>
+                    )}
+                </div>
+                {/* Bên phải thanh bar — chế độ xem + export */}
+                <div className="flex items-center gap-1">
+                    {activeCompetitionTab === 'nhom' && activeVersionName === null && (
+                        <>
+                            <button onClick={() => setViewMode('group')} title="Bộ phận" className={`p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></button>
+                            <button onClick={() => setViewMode('list')} title="Danh sách" className={`p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></button>
+                            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                            <button onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title="Xuất tất cả nhóm" className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</button>
+                            <button onClick={handleSmartBatchExport} disabled={isExportingHighlights || highlightedEmployees.size === 0} title="Xuất Highlight" className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}</button>
+                        </>
+                    )}
+                    {activeCompetitionTab === 'canhan' && activeVersionName === null && (
+                        <>
+                            <button onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title="Xuất tất cả nhân viên" className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">
+                                {individualViewRef.current?.isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
+                            </button>
+                            <button onClick={() => individualViewRef.current?.handleExportPNG()} title="Xuất ảnh" className="p-1 text-slate-400 hover:text-slate-600 transition-all"><CameraIcon className="h-4 w-4" /></button>
+                        </>
+                    )}
+                </div>
+            </div>
+            <Card noPadding title={cardTitle} rounded={false}>
+                <div className="w-full overflow-hidden px-4 pb-4">
                     <div className="pt-2">
                         {activeCompetitionTab === 'nhom' && (
                             <>
-                            <div className="mb-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4 p-4 bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700">
-                                <div className="flex items-center gap-3 flex-wrap">
-                                    <div className="relative" ref={employeeFilterRef}>
-                                        <button onClick={() => setIsEmployeeFilterOpen(!isEmployeeFilterOpen)} className={`flex items-center gap-2 px-4 py-2 text-[11px] uppercase tracking-wider font-bold rounded-lg border transition-all duration-200 shadow-sm ${isEmployeeFilterOpen ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-700 ring-2 ring-indigo-100 dark:ring-indigo-800' : 'bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600'}`}>
-                                            <UsersIcon className="h-4 w-4" /><span>Highlight nhân viên</span>{highlightedEmployees.size > 0 && <span className="ml-1 px-1.5 py-0.5 bg-indigo-600 text-white text-[10px] font-black rounded-full shadow-sm">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-4 w-4 transition-transform duration-200 ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
-                                        </button>
-                                        {isEmployeeFilterOpen && (
-                                            <div className="absolute left-0 top-full mt-2 w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                                                <div className="p-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                                                    <input type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-800 dark:text-slate-100 placeholder-slate-400" autoFocus />
-                                                    <div className="flex items-center justify-between mt-2 px-1"><button onClick={handleSelectAllEmployees} className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Chọn tất cả</button><button onClick={handleDeselectAllEmployees} className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline">Bỏ chọn tất cả</button></div>
+                            {/* Toolbar: Lọc nhóm + Highlight — canh phải */}
+                            <div className="mb-4 flex flex-wrap items-center justify-end gap-2 px-1 no-print">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    {/* Lọc nhóm */}
+                                    <div className="relative" ref={filterRef}>
+                                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}><FilterIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Lọc nhóm</span>{isFiltered && <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-black rounded-full">{activeFilterCount}</span>}</button>
+                                        {isFilterOpen && (
+                                            <div className="absolute right-0 top-full mt-1 w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden">
+                                                <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50">
+                                                    <input type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} placeholder="Tìm nhóm thi đua..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 bg-white placeholder-slate-400" autoFocus />
+                                                    <div className="flex items-center justify-between mt-1.5"><button onClick={handleSelectAllCompetitions} className="text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</button><button onClick={handleDeselectAllCompetitions} className="text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</button></div>
                                                 </div>
-                                                <div className="overflow-y-auto flex-1 p-2 space-y-1">
-                                                    {allEmployees.filter(emp => emp.name.toLowerCase().includes(employeeFilterSearch.toLowerCase())).map(emp => {
-                                                        const isSelected = highlightedEmployees.has(emp.originalName);
+                                                <div className="overflow-y-auto flex-1 p-1.5 space-y-3">
+                                                    {(Object.entries(relevantCompetitions) as [Criterion, { headers: CompetitionHeader[] }][]).map(([criterion, data]) => {
+                                                        const filteredComps = (data.headers || []).filter(c => c.title.toLowerCase().includes(filterSearch.toLowerCase()));
+                                                        if (filteredComps.length === 0) return null;
                                                         return (
-                                                            <div key={emp.originalName} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors cursor-default">
-                                                                <div className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer" onClick={() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; })}>
-                                                                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${getEmployeeDotColor(emp.originalName)} shadow-sm`}></span>
-                                                                    <span className={`text-sm truncate transition-colors ${isSelected ? 'font-medium text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-400'}`}>{emp.name}</span>
+                                                            <div key={criterion}>
+                                                                <h5 className="px-2 mb-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tiêu chí {criterion}</h5>
+                                                                <div className="space-y-0.5">
+                                                                    {filteredComps.map(comp => {
+                                                                        const displayCompName = shortenName(comp.originalTitle, nameOverrides);
+                                                                        return (
+                                                                            <div key={comp.title} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 transition-colors">
+                                                                                <span onClick={() => handleToggleCompetition(comp.title)} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.title) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompName}</span>
+                                                                                <Switch checked={selectedCompetitions.has(comp.title)} onChange={() => handleToggleCompetition(comp.title)} />
+                                                                            </div>
+                                                                        );
+                                                                    })}
                                                                 </div>
-                                                                <Switch 
-                                                                    checked={isSelected} 
-                                                                    onChange={() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; })}
-                                                                />
                                                             </div>
                                                         );
                                                     })}
@@ -429,73 +448,42 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                             </div>
                                         )}
                                     </div>
-
-                                    <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl p-1 shadow-inner">
-                                        <button 
-                                            onClick={() => setViewMode('group')} 
-                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                        >
-                                            <ViewGridIcon className="h-4 w-4"/>
-                                            <span>BỘ PHẬN</span>
+                                    {/* Highlight */}
+                                    <div className="relative" ref={employeeFilterRef}>
+                                        <button onClick={() => setIsEmployeeFilterOpen(!isEmployeeFilterOpen)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
+                                            <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-indigo-600 text-white text-[9px] font-black rounded-full">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3 w-3 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
                                         </button>
-                                        <button 
-                                            onClick={() => setViewMode('list')} 
-                                            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
-                                        >
-                                            <ViewListIcon className="h-4 w-4"/>
-                                            <span>DANH SÁCH</span>
-                                        </button>
-                                    </div>
-                                    
-                                    <button onClick={handleSmartBatchExport} disabled={isExportingHighlights || highlightedEmployees.size === 0} className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-[11px] uppercase font-bold rounded-lg border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 transition-all duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
-                                        {isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin text-indigo-600" /> : <CameraIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />}<span>{isExportingHighlights ? `Đang xuất ${exportProgress.current}/${exportProgress.total}...` : 'Xuất Highlight'}</span>
-                                    </button>
-                                </div>
-                                <div className="flex items-center gap-3">
-                                    <div className="relative" ref={filterRef}>
-                                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-3 py-2 text-[11px] uppercase font-bold rounded-lg border transition-colors ${isFilterOpen || isFiltered ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'}`}><FilterIcon className="h-4 w-4" /><span>Lọc nhóm thi đua</span>{isFiltered && <span className="ml-1 px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-[10px] font-black rounded-full">{activeFilterCount}</span>}</button>
-                                        {isFilterOpen && (
-                                            <div className="absolute right-0 top-full mt-2 w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                                                <div className="p-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                                                    <input type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} placeholder="Tìm kiếm nhóm thi đua..." className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-800 dark:text-slate-100 placeholder-slate-400" autoFocus />
-                                                    <div className="flex items-center justify-between mt-2"><button onClick={handleSelectAllCompetitions} className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Chọn tất cả</button><button onClick={handleDeselectAllCompetitions} className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline">Bỏ chọn tất cả</button></div>
+                                        {isEmployeeFilterOpen && (
+                                            <div className="absolute right-0 top-full mt-1 w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden">
+                                                <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                                                    <input type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-800 dark:text-slate-100 placeholder-slate-400" autoFocus />
+                                                    <div className="flex items-center justify-between mt-1.5 px-0.5"><button onClick={handleSelectAllEmployees} className="text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</button><button onClick={handleDeselectAllEmployees} className="text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</button></div>
                                                 </div>
-                                                <div className="overflow-y-auto flex-1 p-2 space-y-4">
-                                                    {(Object.entries(relevantCompetitions) as [Criterion, { headers: CompetitionHeader[] }][]).map(([criterion, data]) => {
-                                                        const filteredComps = (data.headers || []).filter(c => c.title.toLowerCase().includes(filterSearch.toLowerCase()));
-                                                        if (filteredComps.length === 0) return null;
+                                                <div className="overflow-y-auto flex-1 p-1.5 space-y-0.5">
+                                                    {allEmployees.filter(emp => emp.name.toLowerCase().includes(employeeFilterSearch.toLowerCase())).map(emp => {
+                                                        const isSelected = highlightedEmployees.has(emp.originalName);
                                                         return (
-                                                            <div key={criterion}>
-                                                                <h5 className="px-2 mb-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tiêu chí {criterion}</h5>
-                                                                <div className="space-y-1">
-                                                                    {filteredComps.map(comp => {
-                                                                        const displayCompName = shortenName(comp.originalTitle, nameOverrides);
-                                                                        return (
-                                                                            <div key={comp.title} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-                                                                                <span onClick={() => handleToggleCompetition(comp.title)} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.title) ? 'font-medium text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-400'}`}>
-                                                                                    {displayCompName}
-                                                                                </span>
-                                                                                <Switch checked={selectedCompetitions.has(comp.title)} onChange={() => handleToggleCompetition(comp.title)} />
-                                                                            </div>
-                                                                        );
-                                                                    })}
+                                                            <div key={emp.originalName} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700/50 cursor-default">
+                                                                <div className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer" onClick={() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; })}>
+                                                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${getEmployeeDotColor(emp.originalName)}`}></span>
+                                                                    <span className={`text-sm truncate ${isSelected ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{emp.name}</span>
                                                                 </div>
+                                                                <Switch checked={isSelected} onChange={() => setHighlightedEmployees(prev => { const newSet = new Set(prev); if (newSet.has(emp.originalName)) newSet.delete(emp.originalName); else newSet.add(emp.originalName); return newSet; })} />
                                                             </div>
-                                                        )
+                                                        );
                                                     })}
                                                 </div>
                                             </div>
                                         )}
                                     </div>
-                                    <button onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} className="flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-colors bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-wait min-w-[140px] justify-center">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />}<span>{isBatchExporting ? `Đang xuất ${exportProgress.current}/${exportProgress.total}...` : 'Xuất tất cả'}</span></button>
                                 </div>
                             </div>
                             {selectedHeadersForNhom.length === 0 ? (
                                 <div className="mt-2 text-center py-12"><UsersIcon className="h-16 w-16 text-slate-400 mx-auto" /><p className="mt-4 text-slate-600 max-w-md mx-auto">Hãy chọn nhóm hàng thi đua cần hiển thị từ bộ lọc nhóm thi đua.</p></div>
                             ) : (
                                 <div className="space-y-8" ref={groupViewRef}>
-                                    <div className="mb-6 text-center p-4 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800 shadow-inner export-show-border">
-                                        <h3 className="text-2xl font-black uppercase text-indigo-700 dark:text-indigo-400 text-center leading-normal">
+                                    <div className="mb-6 text-center py-3 px-4 bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 shadow-lg">
+                                        <h3 className="text-2xl font-black uppercase text-white leading-normal drop-shadow-sm">
                                             {exportTitleOverride || `NHÓM HÀNG THI ĐUA ĐẾN NGÀY ${getYesterdayDateString()}`}
                                         </h3>
                                     </div>
@@ -510,6 +498,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         )}
                         {activeCompetitionTab === 'canhan' && (
                             <IndividualCompetitionView
+                                ref={individualViewRef}
                                 allEmployees={individualViewEmployees}
                                 selectedEmployee={selectedIndividual}
                                 onSelectIndividual={onSelectIndividual}
@@ -518,6 +507,11 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 employeeCompetitionTargets={employeeCompetitionTargets}
                                 selectedCompetitions={selectedCompetitions}
                                 setSelectedCompetitions={setSelectedCompetitions}
+                                supermarketName={supermarket || undefined}
+                                revenueRows={revenueRows}
+                                installmentRows={installmentRows}
+                                banKemRows={banKemRows}
+                                bonusData={bonusData}
                             />
                         )}
                         {activeCompetitionTab === 'tong' && (
@@ -558,7 +552,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                         )}
                     </div>
                 </div>
-            </div>
-        </Card>
+            </Card>
+        </div>
     );
 });

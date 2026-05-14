@@ -145,7 +145,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                 if (comps.length === 0) return null;
                                 return (
                                     <div key={criterion}>
-                                        <p className="px-2 mb-1 text-[10px] font-black text-slate-400 uppercase tracking-widest">{criterion}</p>
+                                        <p className="px-2 mb-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">{criterion}</p>
                                         {comps.map(comp => (
                                             <div key={comp.title} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer" onClick={() => handleToggleTitle(comp.title)}>
                                                 <span className={`text-xs ${selectedTitles.includes(comp.title) ? 'font-bold text-indigo-600' : 'text-slate-600 dark:text-slate-400'}`}>{shortenName(comp.originalTitle, nameOverrides)}</span>

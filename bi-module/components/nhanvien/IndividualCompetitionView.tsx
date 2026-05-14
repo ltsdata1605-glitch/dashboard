@@ -1,11 +1,9 @@
 
-import React, { useRef, useState, useEffect, useMemo } from 'react';
-import Card from '../Card';
+import React, { useRef, useState, useEffect, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
-import ExportButton from '../ExportButton';
-import { FilterIcon, ChevronDownIcon, CameraIcon, SpinnerIcon } from '../Icons';
+import { FilterIcon, ChevronDownIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { Employee, Criterion, CompetitionHeader } from '../../types/nhanVienTypes';
+import { Employee, Criterion, CompetitionHeader, RevenueRow } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services/uiService';
@@ -38,15 +36,240 @@ interface IndividualCompetitionViewProps {
     employeeCompetitionTargets: Map<string, Map<string, number>>;
     selectedCompetitions: Set<string>;
     setSelectedCompetitions: (updater: React.SetStateAction<Set<string>>) => void;
+    supermarketName?: string;
+    revenueRows?: any[];
+    installmentRows?: any[];
+    banKemRows?: any[];
+    bonusData?: Record<string, any>;
 }
 
-const PlaceholderContent: React.FC<{ title: string; message: string }> = ({ title, message }) => (
-    <Card title={title}>
-        <div className="mt-4 text-center py-12"><p className="mt-4 text-slate-600 max-w-md mx-auto">{message}</p></div>
-    </Card>
+export interface IndividualCompetitionViewHandle {
+    handleExportPNG: (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null) => Promise<'download' | 'share' | 'cancel' | null>;
+    performBatchExport: () => Promise<void>;
+    isBatchExporting: boolean;
+}
+
+// ─── Mini KPI Stat ───
+const KpiStat: React.FC<{ label: string; value: string; sub?: string; accent?: string }> = ({ label, value, sub, accent = 'text-indigo-600' }) => (
+    <div className="flex flex-col items-center min-w-0 px-2 py-1.5">
+        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">{label}</span>
+        <span className={`text-base font-black ${accent} leading-tight mt-0.5`}>{value}</span>
+        {sub && <span className="text-[10px] text-slate-500 font-medium leading-tight">{sub}</span>}
+    </div>
 );
 
-export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps> = ({
+// ─── Competition Stat Pill ───
+const StatPill: React.FC<{ count: number; label: string; color: string }> = ({ count, label, color }) => (
+    <div className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold ${color}`}>
+        <span className="text-sm font-black">{count}</span>
+        <span className="hidden sm:inline">{label}</span>
+    </div>
+);
+
+// ─── SVG Donut Chart ───
+const MiniDonut: React.FC<{ segments: { value: number; color: string }[]; centerText: string; size?: number }> = ({ segments, centerText, size = 64 }) => {
+    const r = 24, c = 2 * Math.PI * r, total = segments.reduce((s, seg) => s + seg.value, 0);
+    let offset = 0;
+    return (
+        <svg width={size} height={size} viewBox="0 0 64 64" className="flex-shrink-0">
+            <circle cx="32" cy="32" r={r} fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="7" />
+            {total > 0 && segments.filter(s => s.value > 0).map((seg, i) => {
+                const d = (seg.value / total) * c, o = -offset; offset += d;
+                return <circle key={i} cx="32" cy="32" r={r} fill="none" stroke={seg.color} strokeWidth="7" strokeDasharray={`${d} ${c - d}`} strokeDashoffset={o} strokeLinecap="butt" transform="rotate(-90 32 32)" className="transition-all duration-700" />;
+            })}
+            <text x="32" y="30" textAnchor="middle" className="fill-white font-black" style={{ fontSize: '14px' }}>{centerText}</text>
+            <text x="32" y="41" textAnchor="middle" className="fill-white/50 font-bold" style={{ fontSize: '7px' }}>HOÀN THÀNH</text>
+        </svg>
+    );
+};
+
+// ─── Micro Progress Bar ───
+const MicroBar: React.FC<{ value: number; max?: number }> = ({ value, max = 100 }) => {
+    const pctVal = Math.min(Math.max((value / max) * 100, 0), 100);
+    const color = value >= 60 ? 'bg-emerald-500' : value >= 30 ? 'bg-amber-500' : 'bg-red-500';
+    return (<div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-[3px] mt-1 overflow-hidden"><div className={`${color} h-full rounded-full transition-all duration-500`} style={{ width: `${pctVal}%` }} /></div>);
+};
+
+// ─── Rank Badge ───
+const RankBadge: React.FC<{ rank: number; total: number; label: string }> = ({ rank, total, label }) => {
+    const pctVal = total > 0 ? ((total - rank + 1) / total) * 100 : 0;
+    const color = rank <= 3 ? 'text-emerald-600 bg-emerald-50' : rank <= Math.ceil(total / 2) ? 'text-sky-600 bg-sky-50' : 'text-slate-500 bg-slate-100';
+    const barColor = rank <= 3 ? 'bg-emerald-500' : rank <= Math.ceil(total / 2) ? 'bg-sky-500' : 'bg-slate-400';
+    return (
+        <div className="flex items-center gap-1.5 text-[10px]">
+            <span className="text-slate-400 font-medium">{label}</span>
+            <span className={`font-black px-1.5 py-0.5 rounded ${color}`}>#{rank}<span className="font-medium text-slate-400">/{total}</span></span>
+            <div className="flex-1 min-w-[30px] bg-slate-200 dark:bg-slate-700 rounded-full h-1 overflow-hidden">
+                <div className={`h-full rounded-full transition-all duration-500 ${barColor}`} style={{ width: `${pctVal}%` }} />
+            </div>
+        </div>
+    );
+};
+
+// ─── Employee Profile Card ───
+const EmployeeProfileCard: React.FC<{
+    selectedEmployee: { name: string; originalName: string; department: string };
+    supermarketName?: string;
+    revenueRows?: any[];
+    installmentRows?: any[];
+    banKemRows?: any[];
+    bonusData?: Record<string, any>;
+    groupedPerformanceData: any;
+}> = ({ selectedEmployee, supermarketName, revenueRows, installmentRows, banKemRows, bonusData, groupedPerformanceData }) => {
+    const [avatarSrc] = useIndexedDBState<string | null>(`avatar-${supermarketName || 'default'}-${selectedEmployee.originalName}`, null);
+    
+    const empRevenue = useMemo(() => {
+        if (!revenueRows) return null;
+        return revenueRows.find((r: any) => r.type === 'employee' && r.originalName === selectedEmployee.originalName) as RevenueRow | undefined;
+    }, [revenueRows, selectedEmployee]);
+
+    const empInstallment = useMemo(() => {
+        if (!installmentRows) return null;
+        return installmentRows.find((r: any) => r.type === 'employee' && r.originalName === selectedEmployee.originalName);
+    }, [installmentRows, selectedEmployee]);
+
+    const empBanKem = useMemo(() => {
+        if (!banKemRows) return null;
+        return banKemRows.find((r: any) => r.type === 'employee' && r.originalName === selectedEmployee.originalName);
+    }, [banKemRows, selectedEmployee]);
+
+    const empBonus = useMemo(() => {
+        if (!bonusData) return null;
+        return bonusData[selectedEmployee.originalName];
+    }, [bonusData, selectedEmployee]);
+
+    // Rankings
+    const rankings = useMemo(() => {
+        const getRank = (rows: any[], key: string) => {
+            const empRows = (rows || []).filter((r: any) => r.type === 'employee');
+            const sorted = [...empRows].sort((a, b) => (b[key] || 0) - (a[key] || 0));
+            const idx = sorted.findIndex((r: any) => r.originalName === selectedEmployee.originalName);
+            return { rank: idx >= 0 ? idx + 1 : empRows.length, total: empRows.length };
+        };
+        return {
+            dt: getRank(revenueRows || [], 'dtlk'),
+            tg: getRank(installmentRows || [], 'totalPercent'),
+            bk: getRank(banKemRows || [], 'pctBillBk'),
+        };
+    }, [revenueRows, installmentRows, banKemRows, selectedEmployee]);
+
+    const compStats = useMemo(() => {
+        const allItems: { name: string; completion: number; remaining: number }[] = [];
+        Object.values(groupedPerformanceData || {}).forEach((items: any) => {
+            if (Array.isArray(items)) allItems.push(...items);
+        });
+        const total = allItems.length;
+        const top1 = allItems.filter(i => i.completion >= 100).length;
+        const above80 = allItems.filter(i => i.completion >= 80 && i.completion < 100).length;
+        const below80 = allItems.filter(i => i.completion < 80 && i.completion > 0).length;
+        const noData = allItems.filter(i => i.completion === 0).length;
+        const avgCompletion = total > 0 ? allItems.reduce((s, i) => s + i.completion, 0) / total : 0;
+        return { total, top1, above80, below80, noData, avgCompletion };
+    }, [groupedPerformanceData]);
+
+    const f = (v?: number) => v != null && !isNaN(v) ? roundUp(v).toLocaleString('vi-VN') : '-';
+    const pct = (v?: number) => v != null && !isNaN(v) ? `${Math.round(v)}%` : '-';
+
+    const donutSegments = [
+        { value: compStats.top1, color: '#10b981' },
+        { value: compStats.above80, color: '#f59e0b' },
+        { value: compStats.below80, color: '#ef4444' },
+        { value: compStats.noData, color: 'rgba(255,255,255,0.15)' },
+    ];
+
+    return (
+        <div className="mb-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
+            {/* Header gradient */}
+            <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 px-4 py-3 relative overflow-hidden">
+                <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+                <div className="flex items-center gap-4 relative z-10">
+                    <div className="w-16 h-16 rounded-full border-[3px] border-white/30 overflow-hidden flex-shrink-0 shadow-lg">
+                        {avatarSrc ? (
+                            <img src={avatarSrc} alt={selectedEmployee.name} className="w-full h-full rounded-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full rounded-full bg-white/20 flex items-center justify-center">
+                                <span className="text-2xl font-black text-white/70">{selectedEmployee.name.charAt(selectedEmployee.name.lastIndexOf(' ') + 1) || '?'}</span>
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-black text-white uppercase truncate leading-tight">{selectedEmployee.name}</h3>
+                        <p className="text-[11px] text-white/70 font-medium mt-0.5">{selectedEmployee.department}</p>
+                        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                            <StatPill count={compStats.top1} label="Đạt" color="bg-emerald-500/20 text-emerald-100" />
+                            <StatPill count={compStats.above80} label="≥80%" color="bg-amber-400/20 text-amber-100" />
+                            <StatPill count={compStats.below80} label="<80%" color="bg-red-400/20 text-red-100" />
+                            {compStats.noData > 0 && <StatPill count={compStats.noData} label="N/A" color="bg-white/10 text-white/60" />}
+                        </div>
+                    </div>
+                    {/* Donut chart thay thế con số */}
+                    <div className="flex-shrink-0 hidden sm:flex flex-col items-center gap-0.5">
+                        <MiniDonut segments={donutSegments} centerText={`${compStats.total > 0 ? Math.round(compStats.avgCompletion) : 0}%`} />
+                        <p className="text-[9px] text-white/50 font-bold">{compStats.total} nhóm</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Rank Strip */}
+            {rankings.dt.total > 0 && (
+                <div className="flex items-center gap-4 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Xếp hạng</span>
+                    <div className="flex-1 grid grid-cols-3 gap-3">
+                        <RankBadge rank={rankings.dt.rank} total={rankings.dt.total} label="DT" />
+                        <RankBadge rank={rankings.tg.rank} total={rankings.tg.total} label="TG" />
+                        <RankBadge rank={rankings.bk.rank} total={rankings.bk.total} label="BK" />
+                    </div>
+                </div>
+            )}
+
+            {/* KPI Grid with Micro Progress Bars */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-100 dark:divide-slate-800">
+                <div className="p-2.5 space-y-0.5">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">💰 Doanh Thu</p>
+                    <span className="text-lg font-black text-slate-800 dark:text-white block">{empRevenue ? f(empRevenue.dtlk) : '-'}</span>
+                    <MicroBar value={empRevenue?.hieuQuaQD || 0} />
+                    <div className="flex gap-3 text-[10px] text-slate-500 mt-1">
+                        <span>DTQĐ: <strong className="text-sky-600">{empRevenue ? f(empRevenue.dtqd) : '-'}</strong></span>
+                        <span>HQQĐ: <strong className="text-emerald-600">{empRevenue ? pct(empRevenue.hieuQuaQD) : '-'}</strong></span>
+                    </div>
+                </div>
+                <div className="p-2.5 space-y-0.5">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">💳 Trả Góp</p>
+                    <span className="text-lg font-black text-slate-800 dark:text-white block">{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
+                    <MicroBar value={empInstallment?.totalPercent || 0} />
+                    <div className="flex gap-3 text-[10px] text-slate-500 mt-1">
+                        <span>DT: <strong className="text-indigo-600">{empInstallment ? f(empInstallment.totalDtSieuThi) : '-'}</strong></span>
+                    </div>
+                </div>
+                <div className="p-2.5 space-y-0.5">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🛒 Bán Kèm</p>
+                    <span className="text-lg font-black text-slate-800 dark:text-white block">{empBanKem ? pct(empBanKem.pctBillBk) : '-'}</span>
+                    <MicroBar value={empBanKem?.pctBillBk || 0} />
+                    <div className="flex gap-3 text-[10px] text-slate-500 mt-1">
+                        <span>SP: <strong className="text-violet-600">{empBanKem ? pct(empBanKem.pctSpBk) : '-'}</strong></span>
+                    </div>
+                </div>
+                <div className="p-2.5 space-y-0.5">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🏆 Thưởng</p>
+                    <span className="text-lg font-black text-slate-800 dark:text-white block">{empBonus ? f(empBonus.tong || ((empBonus.erp || 0) + (empBonus.tNong || 0))) : '-'}</span>
+                    <div className="flex gap-3 text-[10px] text-slate-500 mt-1.5">
+                        <span>ERP: <strong className="text-blue-600">{empBonus ? f(empBonus.erp) : '-'}</strong></span>
+                        <span>T.Nóng: <strong className="text-orange-600">{empBonus ? f(empBonus.tNong) : '-'}</strong></span>
+                    </div>
+                    {empBonus?.pNong != null && <div className="text-[10px] text-slate-500">%T.Nóng: <strong className="text-amber-600">{pct(empBonus.pNong)}</strong></div>}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const PlaceholderContent: React.FC<{ title: string; message: string }> = ({ title, message }) => (
+    <div>
+        <div className="mt-4 text-center py-12"><p className="mt-4 text-slate-600 max-w-md mx-auto">{message}</p></div>
+    </div>
+);
+
+export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHandle, IndividualCompetitionViewProps>(({
     allEmployees,
     selectedEmployee,
     onSelectIndividual,
@@ -54,8 +277,13 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
     employeeDataMap,
     employeeCompetitionTargets,
     selectedCompetitions,
-    setSelectedCompetitions
-}) => {
+    setSelectedCompetitions,
+    supermarketName,
+    revenueRows,
+    installmentRows,
+    banKemRows,
+    bonusData
+}, ref) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const sortConfig = { key: 'completion', direction: 'desc' };
     const [isBatchExporting, setIsBatchExporting] = useState(false);
@@ -82,6 +310,11 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useImperativeHandle(ref, () => ({
+        handleExportPNG,
+        performBatchExport,
+        isBatchExporting
+    }));
 
 
     const groupedPerformanceData = useMemo(() => {
@@ -120,7 +353,7 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
             const nameToUse = customFilename || selectedEmployee?.name || 'NhanVien';
             const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}.png`;
             const blob = await exportElementAsImage(originalCard, filename, {
-                mode: 'blob-only', elementsToHide: ['.js-individual-view-toolbar', '.export-button-component', '.no-print']
+                mode: 'blob-only', captureAsDisplayed: true, elementsToHide: ['.js-individual-view-toolbar', '.export-button-component', '.no-print']
             });
             if (blob) {
                 if (autoAction === 'download') {
@@ -215,54 +448,25 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
     };
 
     return (
-        <div ref={cardRef}>
-            <Card title="CHI TIẾT THI ĐUA CÁ NHÂN">
-                <div className="js-individual-view-toolbar mb-4 flex flex-col md:flex-row justify-between items-center gap-4 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm">
-                    <div className="flex items-center gap-2 w-full md:w-auto relative" ref={employeeSelectorRef}>
-                        <span className="text-sm font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">Chọn nhân viên:</span>
-                        <div className="relative">
-                            <button onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="flex items-center justify-between w-full md:w-64 px-3 py-2 text-sm font-medium border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <span className="truncate">{selectedEmployee ? selectedEmployee.name : "Chọn nhân viên..."}</span>
-                                <ChevronDownIcon className="h-4 w-4 ml-2 text-slate-500" />
-                            </button>
-                            {isEmployeeSelectorOpen && (
-                                <div className="absolute top-full left-0 mt-1 w-full md:w-72 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden flex flex-col max-h-80">
-                                    <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:border-slate-800/50 sticky top-0">
-                                        <input type="text" value={employeeSearchTerm} onChange={(e) => setEmployeeSearchTerm(e.target.value)} placeholder="Tìm kiếm..." className="w-full px-3 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-700 dark:text-slate-100" autoFocus />
-                                    </div>
-                                    <div className="overflow-y-auto flex-1">
-                                        {filteredEmployees.length > 0 ? (
-                                            filteredEmployees.map(emp => (
-                                                <button key={emp.originalName} onClick={() => { onSelectIndividual(emp); setIsEmployeeSelectorOpen(false); setEmployeeSearchTerm(''); }} className={`w-full text-left px-4 py-2 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee.originalName === emp.originalName ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-300 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
-                                                    {emp.name}
-                                                </button>
-                                            ))
-                                        ) : (
-                                            <div className="p-4 text-center text-sm text-slate-500 dark:text-slate-400">Không tìm thấy nhân viên</div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        <ExportButton onExportPNG={() => handleExportPNG()} />
-                    </div>
-                    <div className="flex items-center justify-end gap-2 w-full md:w-auto">
+        <div>
+                <div className="mb-4 flex flex-wrap items-center justify-end gap-2 px-1 no-print js-individual-view-toolbar">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <div className="relative" ref={filterRef}>
-                            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-2 px-3 py-2 text-[11px] uppercase font-bold rounded-lg border transition-colors ${isFilterOpen || isFiltered ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700'}`}>
-                                <FilterIcon className="h-4 w-4" />
-                                <span className="hidden sm:inline">Lọc nhóm thi đua</span>
-                                {isFiltered && <span className="ml-1 px-1.5 py-0.5 bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 text-[10px] font-black rounded-full">{activeFilterCount}</span>}
+                            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}>
+                                <FilterIcon className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">Lọc nhóm</span>
+                                {isFiltered && <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-black rounded-full">{activeFilterCount}</span>}
                             </button>
                             {isFilterOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                                    <div className="p-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
-                                        <input type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} placeholder="Tìm kiếm nhóm thi đua..." className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-white dark:bg-slate-800 dark:text-slate-100 placeholder-slate-400" autoFocus />
-                                        <div className="flex items-center justify-between mt-2">
-                                            <button onClick={handleSelectAllCompetitions} className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">Chọn tất cả</button>
-                                            <button onClick={handleDeselectAllCompetitions} className="text-xs font-semibold text-slate-500 dark:text-slate-400 hover:underline">Bỏ chọn tất cả</button>
+                                <div className="absolute right-0 top-full mt-1 w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden">
+                                    <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50">
+                                        <input type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} placeholder="Tìm nhóm thi đua..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 bg-white placeholder-slate-400" autoFocus />
+                                        <div className="flex items-center justify-between mt-1.5">
+                                            <button onClick={handleSelectAllCompetitions} className="text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</button>
+                                            <button onClick={handleDeselectAllCompetitions} className="text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</button>
                                         </div>
                                     </div>
-                                    <div className="overflow-y-auto flex-1 p-2 space-y-4">
+                                    <div className="overflow-y-auto flex-1 p-1.5 space-y-3">
                                         {(Object.entries(allCompetitionsByCriterion) as [string, { headers: CompetitionHeader[] }][]).map(([criterion, competitionsData]) => {
                                             const competitions = competitionsData.headers || [];
                                             if (competitions.length === 0) return null;
@@ -270,15 +474,13 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                                             if (filteredComps.length === 0) return null;
                                             return (
                                                 <div key={criterion}>
-                                                    <h5 className="px-2 mb-2 text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tiêu chí {criterion}</h5>
-                                                    <div className="space-y-1">
+                                                    <h5 className="px-2 mb-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Tiêu chí {criterion}</h5>
+                                                    <div className="space-y-0.5">
                                                         {filteredComps.map(comp => {
                                                             const displayCompTitle = shortenName(comp.originalTitle, nameOverrides);
                                                             return (
-                                                                <div key={comp.title} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors">
-                                                                    <span onClick={() => handleToggleCompetition(comp.title)} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.title) ? 'font-medium text-slate-900 dark:text-slate-100' : 'text-slate-600 dark:text-slate-400'}`}>
-                                                                        {displayCompTitle}
-                                                                    </span>
+                                                                <div key={comp.title} className="flex items-center justify-between p-1.5 rounded hover:bg-slate-100 transition-colors">
+                                                                    <span onClick={() => handleToggleCompetition(comp.title)} className={`text-sm select-none cursor-pointer flex-1 pr-2 ${selectedCompetitions.has(comp.title) ? 'font-medium text-slate-900' : 'text-slate-600'}`}>{displayCompTitle}</span>
                                                                     <Switch checked={selectedCompetitions.has(comp.title)} onChange={() => handleToggleCompetition(comp.title)} />
                                                                 </div>
                                                             );
@@ -291,15 +493,49 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                                 </div>
                             )}
                         </div>
-                        <button onClick={performBatchExport} disabled={isBatchExporting} className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-wait whitespace-nowrap justify-center" title="Xuất ảnh cho tất cả nhân viên">
-                            {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4 text-slate-500 dark:text-slate-400" />}
-                            <span>{isBatchExporting && exportProgress ? `Đang xuất ${exportProgress.current}/${exportProgress.total}...` : 'Xuất tất cả'}</span>
-                        </button>
+                        <div className="relative" ref={employeeSelectorRef}>
+                            <button onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="flex items-center justify-between w-full md:w-56 px-3 py-1.5 text-[11px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all">
+                                <span className="truncate">{selectedEmployee ? selectedEmployee.name : "Chọn nhân viên..."}</span>
+                                <ChevronDownIcon className="h-3.5 w-3.5 ml-2 text-slate-400" />
+                            </button>
+                            {isEmployeeSelectorOpen && (
+                                <div className="absolute top-full right-0 mt-1 w-full md:w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden flex flex-col max-h-72">
+                                    <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 sticky top-0">
+                                        <input type="text" value={employeeSearchTerm} onChange={(e) => setEmployeeSearchTerm(e.target.value)} placeholder="Tìm kiếm..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-700 dark:text-slate-100" autoFocus />
+                                    </div>
+                                    <div className="overflow-y-auto flex-1">
+                                        {filteredEmployees.length > 0 ? (
+                                            filteredEmployees.map(emp => (
+                                                <button key={emp.originalName} onClick={() => { onSelectIndividual(emp); setIsEmployeeSelectorOpen(false); setEmployeeSearchTerm(''); }} className={`w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee.originalName === emp.originalName ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
+                                                    {emp.name}
+                                                </button>
+                                            ))
+                                        ) : (
+                                            <div className="p-3 text-center text-sm text-slate-500">Không tìm thấy</div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
-                <div className="w-full overflow-hidden">
-                    <div className="overflow-x-auto border-t border-slate-200 dark:border-slate-700 lg:border-x lg:border-b lg:rounded-xl lg:m-4 shadow-sm" style={{ WebkitOverflowScrolling: 'touch' }}>
-                        <h3 className="text-center text-xl font-black mb-1 mt-4 uppercase leading-normal text-indigo-700 dark:text-indigo-400 tracking-wider p-2 bg-slate-50 dark:bg-slate-900 shadow-inner export-show-border">{selectedEmployee.name} - THI ĐUA ĐẾN NGÀY {getYesterdayDateString()}</h3>
+                <div className="w-full overflow-hidden px-4 pb-4" ref={cardRef}>
+                    {/* === EMPLOYEE PROFILE CARD === */}
+                    <EmployeeProfileCard
+                        selectedEmployee={selectedEmployee}
+                        supermarketName={supermarketName}
+                        revenueRows={revenueRows}
+                        installmentRows={installmentRows}
+                        banKemRows={banKemRows}
+                        bonusData={bonusData}
+                        groupedPerformanceData={groupedPerformanceData}
+                    />
+                    <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
+                        <div className="text-center py-3 px-4 bg-gradient-to-r from-slate-800 via-slate-700 to-slate-600">
+                            <h3 className="text-xl font-black uppercase text-white leading-normal drop-shadow-sm">
+                                {selectedEmployee.name} - THI ĐUA ĐẾN NGÀY {getYesterdayDateString()}
+                            </h3>
+                        </div>
                         
                         {isMobile ? (
                             <div className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -309,15 +545,15 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                                     const cStyle = getCriterionStyle(criterion);
                                     return (
                                         <div key={criterion}>
-                                            <div className={`px-4 py-2.5 border-y ${cStyle.bg} ${cStyle.border} shadow-inner`}>
-                                                <h4 className={`text-[11px] font-black uppercase ${cStyle.text} tracking-widest flex items-center gap-2`}>
+                                            <div className={`px-4 py-2.5 border-y ${cStyle.bg} ${cStyle.border}`}>
+                                                <h4 className={`text-[11px] font-black uppercase ${cStyle.text} tracking-wider flex items-center gap-2`}>
                                                     <span className={`px-2 py-0.5 rounded ${cStyle.badge}`}>Tiêu chí</span>
                                                     {criterion}
                                                 </h4>
                                             </div>
                                             <div className="divide-y divide-slate-50 dark:divide-slate-700/50">
                                                 {items.map((item, index) => {
-                                                    const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 shadow-inner' : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 shadow-inner border border-rose-100 dark:border-rose-900/30';
+                                                    const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20' : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30';
                                                     return (
                                                         <div key={`${criterion}-${item.originalTitle}`} className="px-4 py-3 bg-white dark:bg-slate-900">
                                                             <div className="flex justify-between items-start mb-2 gap-2">
@@ -358,40 +594,40 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                             </div>
                         ) : (
                         <table className="w-full border-collapse compact-export-table">
-                            <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[11px] font-bold text-slate-500 tracking-wider">
-                                <tr>
-                                    <th className="text-center px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-10 align-middle">#</th>
-                                    <th className="text-left px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle whitespace-nowrap">NHÓM THI ĐUA</th>
-                                    <th className="text-center px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle whitespace-nowrap">MỤC TIÊU</th>
-                                    <th className="text-center px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle whitespace-nowrap">THỰC HIỆN</th>
-                                    <th className="text-center px-2 py-1.5 border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 w-32 align-middle whitespace-nowrap">% HOÀN THÀNH</th>
-                                    <th className="text-center px-2 py-1.5 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle whitespace-nowrap">CÒN LẠI</th>
+                            <thead>
+                                <tr className="text-[11px] font-black uppercase tracking-wider">
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 w-10 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">#</th>
+                                    <th className="text-left px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">NHÓM THI ĐUA</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle whitespace-nowrap bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300">MỤC TIÊU</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle whitespace-nowrap bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300">THỰC HIỆN</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-emerald-400 w-32 align-middle whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">% HOÀN THÀNH</th>
+                                    <th className="text-center px-2 py-2 border-b-[3px] border-b-amber-400 align-middle whitespace-nowrap bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">CÒN LẠI</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white dark:bg-[#1c1c1e] divide-y divide-slate-100 dark:divide-slate-700 text-[13px]">
+                            <tbody>
                                {(['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map((criterion, _criterionIndex) => {
                                    const items = groupedPerformanceData[criterion];
                                    if (!items || items.length === 0) return null;
                                    const cStyle = getCriterionStyle(criterion);
                                    return (
                                        <React.Fragment key={criterion}>
-                                           <tr className={`${cStyle.bg} ${cStyle.text} shadow-inner font-extrabold border-t-[3px] ${cStyle.border}`}>
-                                               <td colSpan={6} className="px-2 py-1 text-[11px] uppercase tracking-wider">
+                                           <tr className={`${cStyle.bg} ${cStyle.text} font-extrabold border-t-2 ${cStyle.border}`}>
+                                               <td colSpan={6} className="px-2 py-1.5 text-[11px] uppercase tracking-wider">
                                                    <span className={`px-2 py-0.5 rounded mr-2 ${cStyle.badge}`}>Tiêu chí</span> {criterion}
                                                </td>
                                            </tr>
                                            {items.map((item, index) => {
                                                const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400';
                                                return (
-                                                   <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-all cursor-pointer">
-                                                       <td className="px-2 py-1 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50">{index + 1}</td>
-                                                       <td className="px-2 py-1 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
+                                                   <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700">
+                                                       <td className="px-2 py-1 text-center text-[13px] text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{index + 1}</td>
+                                                       <td className="px-2 py-1 text-[13px] font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
                                                            {item.name}
                                                        </td>
-                                                       <td className="px-2 py-1 text-center text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.target))}</td>
-                                                       <td className="px-2 py-1 text-center font-semibold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.actual))}</td>
-                                                       <td className="px-2 py-1 text-center w-32 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-16 hidden sm:block"><ProgressBar value={item.completion} /></div></div></td>
-                                                       <td className={`px-2 py-1 text-center font-semibold ${remainingColor} tabular-nums whitespace-nowrap`}>{f.format(roundUp(item.remaining))}</td>
+                                                       <td className="px-2 py-1 text-center text-[13px] font-bold text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.target))}</td>
+                                                       <td className="px-2 py-1 text-center text-[13px] font-bold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.actual))}</td>
+                                                       <td className="px-2 py-1 text-center text-[13px] font-bold w-32 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-16 hidden sm:block"><ProgressBar value={item.completion} /></div></div></td>
+                                                       <td className={`px-2 py-1 text-center text-[13px] font-bold ${remainingColor} tabular-nums whitespace-nowrap`}>{f.format(roundUp(item.remaining))}</td>
                                                    </tr>
                                                );
                                            })}
@@ -404,7 +640,6 @@ export const IndividualCompetitionView: React.FC<IndividualCompetitionViewProps>
                         )}
                     </div>
                 </div>
-            </Card>
         </div>
     );
-};
+});

@@ -157,7 +157,7 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
     });
 
     const detectedProviders = Array.from({ length: numProviders }).map((_, i) => {
-        const fullName = collectedNames[i] || `Đối tác ${i + 1}`;
+        const fullName = collectedNames[i] || 'Khác';
         let short = fullName;
         for (const [key, val] of Object.entries(providerMapping)) {
             if (fullName.toUpperCase().includes(key.toUpperCase())) { short = val; break; }

@@ -353,3 +353,12 @@ export const ViewListIcon: React.FC<IconProps> = ({ className }) => (
       <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
     </svg>
 );
+
+export const ImagesIcon: React.FC<IconProps> = ({ className }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M18 22H4a2 2 0 0 1-2-2V6" />
+      <rect width="16" height="16" x="6" y="2" rx="2" />
+      <circle cx="14" cy="8" r="2" />
+      <path d="m22 13.5-5-4.5-7 8" />
+    </svg>
+);
