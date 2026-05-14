@@ -1,4 +1,4 @@
-import{u as N,j as o,g as S,I as b}from"./index-67bEXsdY.js";import{a as i}from"./vendor-ui-BNZNFZTQ.js";import{r as y}from"./vendor-charts-4wzDEvvO.js";import"./vendor-firebase-Bg-CYcPW.js";const k=`
+import{u as N,j as o,g as S,I as b}from"./index-DfnRr_i3.js";import{a as i}from"./vendor-ui-BNZNFZTQ.js";import{r as y}from"./vendor-charts-4wzDEvvO.js";import"./vendor-firebase-Bg-CYcPW.js";const k=`
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -1684,6 +1684,80 @@ import{u as N,j as o,g as S,I as b}from"./index-67bEXsdY.js";import{a as i}from"
                 return tableHtml;
             }
 
+            // --- Helper: Auto-fit layout for mobile-friendly export ---
+            function forceExportLayout(element) {
+                const saved = [];
+
+                // 1. Card grids: force 3-column
+                const cardGrids = element.querySelectorAll('div[style*="grid-template-columns"]');
+                cardGrids.forEach(grid => {
+                    saved.push({ el: grid, attr: 'style', val: grid.style.cssText });
+                    grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+                    grid.style.gap = '8px';
+                    grid.style.padding = '10px';
+                });
+
+                // 2. Tables: auto-fit columns to content
+                const tables = element.querySelectorAll('table');
+                tables.forEach(table => {
+                    saved.push({ el: table, attr: 'class', val: table.className });
+                    saved.push({ el: table, attr: 'style', val: table.style.cssText });
+                    table.classList.remove('w-full');
+                    table.style.width = 'auto';
+                    table.style.tableLayout = 'auto';
+
+                    // Data cells: nowrap for compact fit
+                    table.querySelectorAll('td, th').forEach(cell => {
+                        if (!cell.querySelector('.flex')) { // skip the name column (has flex container)
+                            saved.push({ el: cell, attr: 'style-ws', val: cell.style.whiteSpace });
+                            cell.style.whiteSpace = 'nowrap';
+                        }
+                    });
+                });
+
+                // 3. Truncated name spans: remove truncation
+                const truncated = element.querySelectorAll('.truncate');
+                truncated.forEach(el => {
+                    saved.push({ el, attr: 'truncate', val: true });
+                    el.classList.remove('truncate');
+                    el.style.maxWidth = 'none';
+                    el.style.overflow = 'visible';
+                    el.style.whiteSpace = 'normal';
+                    el.style.wordBreak = 'break-word';
+                });
+
+                // 4. Remove max-w constraints on name spans
+                const maxW = element.querySelectorAll('[class*="max-w-"]');
+                maxW.forEach(el => {
+                    saved.push({ el, attr: 'maxw-class', val: el.className });
+                    el.className = el.className.replace(/max-w-\\[\\d+px\\]/g, '');
+                });
+
+                return saved;
+            }
+
+            function restoreExportLayout(saved) {
+                saved.forEach(item => {
+                    if (item.attr === 'style') {
+                        item.el.style.cssText = item.val;
+                    } else if (item.attr === 'class') {
+                        item.el.className = item.val;
+                    } else if (item.attr === 'style-ws') {
+                        item.el.style.whiteSpace = item.val || '';
+                    } else if (item.attr === 'truncate') {
+                        item.el.classList.add('truncate');
+                        item.el.style.maxWidth = '';
+                        item.el.style.overflow = '';
+                        item.el.style.whiteSpace = '';
+                        item.el.style.wordBreak = '';
+                    } else if (item.attr === 'maxw-class') {
+                        item.el.className = item.val;
+                    }
+                });
+            }
+
+            const EXPORT_WIDTH = '720px'; // Mobile-optimized width
+
             // --- Helper Function for Image Capture ---
             async function captureElementAsImage(element, filename, options = {}) {
                 console.log('Bắt đầu xuất ảnh:', filename);
@@ -1705,6 +1779,9 @@ import{u as N,j as o,g as S,I as b}from"./index-67bEXsdY.js";import{a as i}from"
                 document.head.appendChild(style);
 
                 if (options.onBeforeCapture) options.onBeforeCapture();
+
+                // Force 3-column grid for card views
+                const gridOriginals = forceExportLayout(element);
 
                 await document.fonts.ready;
                 await new Promise(resolve => setTimeout(resolve, 500)); 
@@ -1732,6 +1809,7 @@ import{u as N,j as o,g as S,I as b}from"./index-67bEXsdY.js";import{a as i}from"
                     messageEl.classList.remove('hidden');
                     setTimeout(() => messageEl.classList.add('hidden'), 5000);
                 } finally {
+                    restoreExportLayout(gridOriginals);
                     document.head.removeChild(style);
                     if (options.onAfterCapture) options.onAfterCapture();
                     loadingOverlay.classList.add('hidden');
@@ -1921,7 +1999,7 @@ import{u as N,j as o,g as S,I as b}from"./index-67bEXsdY.js";import{a as i}from"
                      captureElementAsImage(analysisSection, \`\${storeName}_phan_tich.png\`, {
                          backgroundColor: '#ffffff',
                          onBeforeCapture: () => {
-                            analysisSection.style.width = '960px';
+                            analysisSection.style.width = EXPORT_WIDTH;
                             analysisSection.classList.add('p-4');
                          },
                          onAfterCapture: () => {
@@ -2021,7 +2099,7 @@ import{u as N,j as o,g as S,I as b}from"./index-67bEXsdY.js";import{a as i}from"
                             captureElementAsImage(captureTarget, filename, {
                                 onBeforeCapture: () => {
                                     truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                    captureTarget.style.width = '960px';
+                                    captureTarget.style.width = EXPORT_WIDTH;
                                 },
                                 onAfterCapture: () => {
                                     truncatedElements.forEach(el => el.classList.add('truncate'));
@@ -2131,7 +2209,7 @@ import{u as N,j as o,g as S,I as b}from"./index-67bEXsdY.js";import{a as i}from"
                         captureElementAsImage(captureTarget, filename, {
                             onBeforeCapture: () => {
                                 truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                captureTarget.style.width = '960px';
+                                captureTarget.style.width = EXPORT_WIDTH;
                             },
                             onAfterCapture: () => {
                                 truncatedElements.forEach(el => el.classList.add('truncate'));
@@ -2170,10 +2248,12 @@ import{u as N,j as o,g as S,I as b}from"./index-67bEXsdY.js";import{a as i}from"
                                      const truncatedElements = captureTarget.querySelectorAll('.truncate');
                                      
                                      truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                     captureTarget.style.width = '960px';
+                                     captureTarget.style.width = EXPORT_WIDTH;
+                                      const gridOriginals = forceExportLayout(captureTarget);
 
                                      const dataUrl = await htmlToImage.toPng(captureTarget, { pixelRatio: 2, backgroundColor: '#f5f5f7' });
                                      
+                                      restoreExportLayout(gridOriginals);
                                      captureTarget.style.width = originalWidth;
                                      truncatedElements.forEach(el => el.classList.add('truncate'));
 
@@ -2226,5 +2306,5 @@ import{u as N,j as o,g as S,I as b}from"./index-67bEXsdY.js";import{a as i}from"
     <\/script>
 </body>
 </html>
-`,_=()=>{const{activeTab:u}=N(),[g,v]=i.useState(!1),l=i.useRef(null),[h,w]=i.useState(!1),[c,d]=i.useState({code1:"910",code2:""});i.useEffect(()=>{v(!0);const t=e=>{var r;((r=e.data)==null?void 0:r.type)==="CHECK_THUONG_FILE_LOADED"&&(w(!0),e.data.code1&&d(n=>({...n,code1:e.data.code1})),e.data.code2&&d(n=>({...n,code2:e.data.code2})))};return window.addEventListener("message",t),()=>window.removeEventListener("message",t)},[]);const p=i.useCallback(t=>{var n;const e=(n=l.current)==null?void 0:n.contentDocument;if(!e)return;let r=e.getElementById("injected-global-font");r||(r=e.createElement("style"),r.id="injected-global-font",e.head.appendChild(r)),t&&t!=="Plus Jakarta Sans"?r.innerHTML=`body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${t}', sans-serif !important; }`:r.innerHTML="body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }"},[]);i.useEffect(()=>{const t=l.current;if(!t)return;const e=()=>{try{const n=t.contentDocument;if(n){let a="";for(const s of Array.from(document.styleSheets))try{for(const x of Array.from(s.cssRules))x instanceof CSSFontFaceRule&&(a+=x.cssText+`
-`)}catch{}if(a){const s=n.createElement("style");s.id="injected-font-faces",s.textContent=a,n.head.appendChild(s)}}}catch{}S().then(n=>{n&&p(n)})};t.addEventListener("load",e);const r=new MutationObserver(()=>{const n=document.getElementById("dynamic-font-style");if(n){const a=n.innerHTML.match(/font-family:\s*'([^']+)'/);a&&p(a[1])}});return r.observe(document.head,{childList:!0,subtree:!0,characterData:!0}),()=>{t.removeEventListener("load",e),r.disconnect()}},[p]);const m=(t,e)=>{d(r=>{var a,s;const n={...r,[t]:e};return(s=(a=l.current)==null?void 0:a.contentWindow)==null||s.postMessage({type:"CHECK_THUONG_SEARCH",code1:n.code1,code2:n.code2},"*"),n})},C=()=>{var t,e;(e=(t=l.current)==null?void 0:t.contentWindow)==null||e.postMessage({type:"CHECK_THUONG_CHANGE_FILE"},"*")},f=t=>o.jsxs("div",{className:`flex items-center ${t?"gap-1":"hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300"}`,children:[o.jsxs("div",{className:`flex items-center ${t?"gap-1":"gap-2 px-2"}`,children:[o.jsx("input",{type:"text",placeholder:"Kho 1",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-40 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:c.code1,onChange:e=>m("code1",e.target.value)}),o.jsx("input",{type:"text",placeholder:"Kho 2",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-36 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:c.code2,onChange:e=>m("code2",e.target.value)})]}),o.jsxs("div",{className:`flex items-center ${t?"gap-0.5":"gap-1 border-l border-slate-200 dark:border-slate-700 pl-2"}`,children:[o.jsx("button",{onClick:()=>{var e,r;d(n=>({...n,code2:""})),(r=(e=l.current)==null?void 0:e.contentWindow)==null||r.postMessage({type:"CHECK_THUONG_SEARCH",code1:c.code1,code2:""},"*")},className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors`,title:"Xoá mã kho đang so sánh",children:o.jsx(b,{name:"rotate-ccw",size:t?3:3.5})}),o.jsx("button",{onClick:C,className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`,title:"Tải file khác",children:o.jsx(b,{name:"upload",size:t?3:3.5})})]})]});return o.jsxs("div",{className:"w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0",children:[g&&u==="check-thuong"&&h&&document.getElementById("global-header-actions")&&y.createPortal(f(!1),document.getElementById("global-header-actions")),g&&u==="check-thuong"&&h&&document.getElementById("mobile-topbar-actions")&&y.createPortal(f(!0),document.getElementById("mobile-topbar-actions")),o.jsx("iframe",{ref:l,srcDoc:k,title:"Bảng Tra Cứu Thưởng Thi Đua",className:"w-full h-full border-none flex-grow",style:{width:"100%",height:"100%",border:"none"},sandbox:"allow-scripts allow-same-origin allow-forms allow-downloads"})]})};export{_ as CheckThuongView,_ as default};
+`,_=()=>{const{activeTab:u}=N(),[g,v]=i.useState(!1),l=i.useRef(null),[h,w]=i.useState(!1),[c,d]=i.useState({code1:"910",code2:""});i.useEffect(()=>{v(!0);const t=e=>{var n;((n=e.data)==null?void 0:n.type)==="CHECK_THUONG_FILE_LOADED"&&(w(!0),e.data.code1&&d(r=>({...r,code1:e.data.code1})),e.data.code2&&d(r=>({...r,code2:e.data.code2})))};return window.addEventListener("message",t),()=>window.removeEventListener("message",t)},[]);const p=i.useCallback(t=>{var r;const e=(r=l.current)==null?void 0:r.contentDocument;if(!e)return;let n=e.getElementById("injected-global-font");n||(n=e.createElement("style"),n.id="injected-global-font",e.head.appendChild(n)),t&&t!=="Plus Jakarta Sans"?n.innerHTML=`body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${t}', sans-serif !important; }`:n.innerHTML="body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }"},[]);i.useEffect(()=>{const t=l.current;if(!t)return;const e=()=>{try{const r=t.contentDocument;if(r){let a="";for(const s of Array.from(document.styleSheets))try{for(const x of Array.from(s.cssRules))x instanceof CSSFontFaceRule&&(a+=x.cssText+`
+`)}catch{}if(a){const s=r.createElement("style");s.id="injected-font-faces",s.textContent=a,r.head.appendChild(s)}}}catch{}S().then(r=>{r&&p(r)})};t.addEventListener("load",e);const n=new MutationObserver(()=>{const r=document.getElementById("dynamic-font-style");if(r){const a=r.innerHTML.match(/font-family:\s*'([^']+)'/);a&&p(a[1])}});return n.observe(document.head,{childList:!0,subtree:!0,characterData:!0}),()=>{t.removeEventListener("load",e),n.disconnect()}},[p]);const m=(t,e)=>{d(n=>{var a,s;const r={...n,[t]:e};return(s=(a=l.current)==null?void 0:a.contentWindow)==null||s.postMessage({type:"CHECK_THUONG_SEARCH",code1:r.code1,code2:r.code2},"*"),r})},C=()=>{var t,e;(e=(t=l.current)==null?void 0:t.contentWindow)==null||e.postMessage({type:"CHECK_THUONG_CHANGE_FILE"},"*")},f=t=>o.jsxs("div",{className:`flex items-center ${t?"gap-1":"hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300"}`,children:[o.jsxs("div",{className:`flex items-center ${t?"gap-1":"gap-2 px-2"}`,children:[o.jsx("input",{type:"text",placeholder:"Kho 1",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-40 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:c.code1,onChange:e=>m("code1",e.target.value)}),o.jsx("input",{type:"text",placeholder:"Kho 2",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-36 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:c.code2,onChange:e=>m("code2",e.target.value)})]}),o.jsxs("div",{className:`flex items-center ${t?"gap-0.5":"gap-1 border-l border-slate-200 dark:border-slate-700 pl-2"}`,children:[o.jsx("button",{onClick:()=>{var e,n;d(r=>({...r,code2:""})),(n=(e=l.current)==null?void 0:e.contentWindow)==null||n.postMessage({type:"CHECK_THUONG_SEARCH",code1:c.code1,code2:""},"*")},className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors`,title:"Xoá mã kho đang so sánh",children:o.jsx(b,{name:"rotate-ccw",size:t?3:3.5})}),o.jsx("button",{onClick:C,className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`,title:"Tải file khác",children:o.jsx(b,{name:"upload",size:t?3:3.5})})]})]});return o.jsxs("div",{className:"w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0",children:[g&&u==="check-thuong"&&h&&document.getElementById("global-header-actions")&&y.createPortal(f(!1),document.getElementById("global-header-actions")),g&&u==="check-thuong"&&h&&document.getElementById("mobile-topbar-actions")&&y.createPortal(f(!0),document.getElementById("mobile-topbar-actions")),o.jsx("iframe",{ref:l,srcDoc:k,title:"Bảng Tra Cứu Thưởng Thi Đua",className:"w-full h-full border-none flex-grow",style:{width:"100%",height:"100%",border:"none"},sandbox:"allow-scripts allow-same-origin allow-forms allow-downloads"})]})};export{_ as CheckThuongView,_ as default};
