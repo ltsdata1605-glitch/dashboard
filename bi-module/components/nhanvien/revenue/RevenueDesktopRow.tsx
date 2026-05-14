@@ -2,6 +2,7 @@ import React from 'react';
 import { RevenueRow, Employee } from '../../../types/nhanVienTypes';
 import { roundUp } from '../../../utils/nhanVienHelpers';
 import { MedalBadge, DeltaBadge } from '../../shared/Badges';
+import AvatarDisplay from '../shared/AvatarDisplay';
 
 import { ColorSettings, CriterionConfig } from './ColorSettingsModal';
 
@@ -32,15 +33,14 @@ export const RevenueDesktopRow = React.memo(({
 
     return (
         <tr className={`transition-all group cursor-pointer text-[13px] border-b border-slate-100 dark:border-slate-800/60 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
-            <td className="px-4 py-1 whitespace-nowrap min-w-[180px] border-r border-slate-100 dark:border-slate-800/60">
-                <div className="flex items-center gap-3">
+            <td className="px-2 py-1 whitespace-nowrap min-w-[180px] border-r border-slate-100 dark:border-slate-800/60">
+                <div className="flex items-center gap-2">
                     <MedalBadge rank={row.rank} />
-
+                    <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} onClick={() => onViewTrend(row as Employee)} />
                     <div className="flex flex-col min-w-0" onClick={() => onHighlightToggle(row.originalName!)}>
                         <div className="flex items-center gap-2">
                             <button onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="text-left font-bold text-sky-600 dark:text-sky-400 text-[13px] hover:text-sky-700 dark:hover:text-sky-300 transition-colors whitespace-normal break-words">{row.name}</button>
                         </div>
-
                     </div>
                 </div>
             </td>

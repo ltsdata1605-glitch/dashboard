@@ -112,12 +112,12 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Map<s
             pctBillBk: parseNumber(parts[5]),
             billMngn: parseNumber(parts[6]),
             pctBillMngn: parseNumber(parts[7]),
-            totalBill: parseNumber(parts[8]),
+            totalBill: parseNumber(parts[9]),
             slBk: parseNumber(parts[10]),
             pctSpBk: parseNumber(parts[11]),
             slMngn: parseNumber(parts[12]),
             pctSpMngn: parseNumber(parts[13]),
-            totalSl: parseNumber(parts[14])
+            totalSl: parseNumber(parts[15])
         });
     }
     return rows;

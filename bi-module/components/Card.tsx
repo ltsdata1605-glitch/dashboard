@@ -13,7 +13,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(({ title, actionButton, child
   return (
     <div 
       ref={ref} 
-      className={`bg-white dark:bg-slate-900 shadow-sm border border-slate-200/60 dark:border-slate-800/80 transition-all duration-300 hover:shadow-md group relative ${
+      className={`bg-white dark:bg-slate-900 group relative ${
         rounded ? 'rounded-3xl' : 'rounded-none'
       }`}
     >

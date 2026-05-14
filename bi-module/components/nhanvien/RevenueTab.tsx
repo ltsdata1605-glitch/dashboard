@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { SpinnerIcon, UsersIcon, CogIcon, XIcon, ViewListIcon, ViewGridIcon, CameraIcon, ClockIcon } from '../Icons';
+import { SpinnerIcon, UsersIcon, CogIcon, XIcon, ViewListIcon, ViewGridIcon, CameraIcon, ClockIcon, DownloadAllIcon } from '../Icons';
 import { RevenueRow, Employee, PerformanceChange, SnapshotData, SnapshotMetadata } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -205,15 +205,10 @@ const RevenueView: React.FC<{
     }, [timeProgressData]);
     
     const cardTitle = (
-        <div className="flex items-start gap-3 w-full">
-            <div className="w-1 min-h-[40px] bg-indigo-600 shrink-0 mt-1"></div>
-            <div className="flex flex-col flex-1">
-                <div className="flex flex-col items-start leading-none">
-                    <span className="js-report-title text-xl font-black uppercase text-slate-800 dark:text-white tracking-tight">DOANH THU ĐẾN NGÀY {getYesterdayDateString()}</span>
-                    <span className="text-[10px] uppercase tracking-widest text-slate-400 mt-1 font-bold">Tôi không chạy theo doanh thu — doanh thu phản ánh đẳng cấp mà Tôi tạo ra.</span>
-                </div>
-                {timeProgressWidget}
-            </div>
+        <div className="flex flex-col items-start leading-none py-1">
+            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">DOANH THU ĐẾN NGÀY {getYesterdayDateString()}</span>
+            <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Tôi không chạy theo doanh thu — doanh thu phản ánh đẳng cấp mà Tôi tạo ra.</span>
+            {timeProgressWidget}
         </div>
     );
 
@@ -223,54 +218,46 @@ const RevenueView: React.FC<{
     const isMobile = window.innerWidth < 768;
 
     return (
-        <div className="space-y-0">
+        <div className="space-y-4">
+            <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
+                <div className="flex gap-3 items-center">
+                    <select value={snapshotId || ''} onChange={(e) => setSnapshotId(e.target.value || null)} className="pl-3 pr-7 py-1.5 text-[11px] font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none min-w-[100px] appearance-none cursor-pointer text-slate-600 dark:text-slate-300">
+                        <option value="">Hiện tại</option>
+                        {snapshots.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
+                    <button 
+                        onClick={() => setIsPrevMonthModalOpen(true)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
+                    >
+                        <ClockIcon className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">T.trước</span>
+                        {prevMonthRaw && (
+                            <button onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800">
+                                <XIcon className="h-3 w-3" />
+                            </button>
+                        )}
+                    </button>
+                </div>
+                <div className="flex gap-1.5 items-center">
+                    <button onClick={() => setViewMode('group')} title="Bộ phận" className={`p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></button>
+                    <button onClick={() => setViewMode('list')} title="Danh sách" className={`p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></button>
+                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+                    <button 
+                        onClick={handleBatchExportByDept}
+                        disabled={isExportingByDept}
+                        title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
+                        className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-50"
+                    >
+                        {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
+                    </button>
+                    <ExportButton onExportPNG={() => handleExportPNG()} />
+                </div>
+            </div>
             <div ref={cardRef}>
-                <Card noPadding title={cardTitle} rounded={false} actionButton={
-                    <div className="flex flex-wrap items-center gap-2 no-print">
-                        <div className="flex items-center gap-2">
-                            <select value={snapshotId || ''} onChange={(e) => setSnapshotId(e.target.value || null)} className="pl-3 pr-7 py-2 text-xs font-semibold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg outline-none min-w-[120px] appearance-none cursor-pointer text-slate-600 dark:text-slate-300">
-                                <option value="">Hiện tại</option>
-                                {snapshots.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                            </select>
-                        </div>
-                        <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5">
-                            <button 
-                                onClick={() => setViewMode('group')} 
-                                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-bold uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                            >
-                                <ViewGridIcon className="h-4 w-4"/>
-                            </button>
-                            <button 
-                                onClick={() => setViewMode('list')} 
-                                className={`flex items-center gap-1 px-2.5 py-1.5 rounded-md text-[11px] font-bold uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-700 text-sky-600 dark:text-sky-400 shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                            >
-                                <ViewListIcon className="h-4 w-4"/>
-                            </button>
-                        </div>
-                        <button 
-                            onClick={() => setIsPrevMonthModalOpen(true)}
-                            className={`flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold rounded-lg border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
-                        >
-                            <ClockIcon className="h-4 w-4" />
-                            <span className="hidden sm:inline">T.trước</span>
-                            {prevMonthRaw && (
-                                <button onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800 rounded">
-                                    <XIcon className="h-3 w-3" />
-                                </button>
-                            )}
-                        </button>
-                        <button 
-                            onClick={handleBatchExportByDept}
-                            disabled={isExportingByDept}
-                            className="flex items-center gap-1.5 px-3 py-2 text-[11px] font-bold rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all disabled:opacity-50"
-                        >
-                            {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}
-                            <span className="hidden sm:inline">{isExportingByDept ? `${exportDeptProgress.current}/${exportDeptProgress.total}` : 'BP'}</span>
-                        </button>
-                        <ExportButton onExportPNG={() => handleExportPNG()} />
-                    </div>
-                }>
-                    <div className="w-full overflow-x-auto shadow-sm rounded-none" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <Card noPadding title={cardTitle} rounded={false}>
+                    <div className="w-full overflow-hidden px-4 pb-4">
+                        <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
                         {isMobile ? (
                             <div className="divide-y divide-slate-100 dark:divide-slate-700">
                                 {displayList.map((row, idx) => {
@@ -304,7 +291,7 @@ const RevenueView: React.FC<{
                                 })}
                             </div>
                         ) : (
-                            <div className="border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
+                            <div className="border border-slate-200 dark:border-slate-700 overflow-hidden">
                                 <table className="w-full border-collapse compact-export-table">
                                     <thead className="sticky top-0 z-10">
                                         {/* Tier 1: Group Headers */}
@@ -321,7 +308,7 @@ const RevenueView: React.FC<{
                                         </tr>
                                         {/* Tier 2: Column Headers */}
                                         <tr>
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-sky-50 dark:bg-sky-900/40 border-b border-r border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('dtlk')}>DT Thực</th>
+                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-sky-50 dark:bg-sky-900/40 border-b border-r border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('dtlk')}>Thực</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-sky-50 dark:bg-sky-900/40 border-b border-r border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('dtqd')}>DTQĐ</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-sky-50 dark:bg-sky-900/40 border-b border-r border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-r border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('completion')}>%HT</th>
@@ -336,33 +323,33 @@ const RevenueView: React.FC<{
                                             const isGrandTotal = row.type === 'total';
                                             const prev = row.prevCompData;
                                             return (
-                                                <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-rose-50 dark:bg-rose-900/20 font-extrabold text-rose-800 dark:text-rose-200'} border-y border-slate-200 dark:border-slate-700`}>
-                                                    <td className={`px-2 py-1 uppercase text-[13px] tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center font-black' : 'border-slate-200 dark:border-slate-700 font-extrabold'}`}>{row.name}</td>
-                                                    <td className="px-3 py-1 text-[13px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-black">
+                                                <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-t border-slate-200 dark:border-slate-700`}>
+                                                    <td className={`px-2 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center font-black' : 'border-slate-200 dark:border-slate-700 font-extrabold'}`}>{row.name}</td>
+                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
                                                         <div>{f.format(roundUp(row.dtlk))}</div>
                                                         <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
                                                     </td>
-                                                    <td className="px-3 py-1 text-[13px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-extrabold">
+                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-extrabold`}>
                                                         <div style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion) }}>{f.format(roundUp(row.dtqd))}</div>
                                                         <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                                                     </td>
-                                                    <td className="px-3 py-1 text-[13px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700 text-slate-500 font-black">
+                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 text-slate-500 font-bold`}>
                                                         <div>{f.format(roundUp(row.calculatedTarget))}</div>
                                                         <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
                                                     </td>
-                                                    <td className="px-3 py-1 text-[13px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-black" style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion) }}>
+                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion) }}>
                                                         <div>{roundUp(row.calculatedCompletion)}%</div>
                                                         <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
                                                     </td>
-                                                    <td className="px-3 py-1 text-[13px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-black">
+                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
                                                         <div style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion) }}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                                                         <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
                                                     </td>
-                                                    <td className="px-3 py-1 text-[13px] text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-black" style={{ color: isGrandTotal ? undefined : getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>
+                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>
                                                         <div>{roundUp(row.calculatedInstallment)}%</div>
                                                         <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
                                                     </td>
-                                                    <td className="px-3 py-1 text-[13px] text-center tabular-nums border-slate-200 dark:border-slate-700 font-black" style={{ color: isGrandTotal ? undefined : getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
+                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
                                                         <div>{roundUp(row.pctBillBk)}%</div>
                                                         <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
                                                     </td>
@@ -390,9 +377,9 @@ const RevenueView: React.FC<{
                             </div>
                         )}
                     </div>
+                    </div>
                 </Card>
             </div>
-            <ColorSettingsModal isOpen={isColorModalOpen} onClose={() => setIsColorModalOpen(false)} settings={colorSettings} onSave={setStoredColorSettings} />
             <ColorSettingsModal isOpen={isColorModalOpen} onClose={() => setIsColorModalOpen(false)} settings={colorSettings} onSave={setStoredColorSettings} />
             <ImportPrevMonthModal isOpen={isPrevMonthModalOpen} onClose={() => setIsPrevMonthModalOpen(false)} onSave={setPrevMonthRaw} />
         </div>

@@ -1690,6 +1690,80 @@ const htmlContent = `
                 return tableHtml;
             }
 
+            // --- Helper: Auto-fit layout for mobile-friendly export ---
+            function forceExportLayout(element) {
+                const saved = [];
+
+                // 1. Card grids: force 3-column
+                const cardGrids = element.querySelectorAll('div[style*="grid-template-columns"]');
+                cardGrids.forEach(grid => {
+                    saved.push({ el: grid, attr: 'style', val: grid.style.cssText });
+                    grid.style.gridTemplateColumns = 'repeat(3, 1fr)';
+                    grid.style.gap = '8px';
+                    grid.style.padding = '10px';
+                });
+
+                // 2. Tables: auto-fit columns to content
+                const tables = element.querySelectorAll('table');
+                tables.forEach(table => {
+                    saved.push({ el: table, attr: 'class', val: table.className });
+                    saved.push({ el: table, attr: 'style', val: table.style.cssText });
+                    table.classList.remove('w-full');
+                    table.style.width = 'auto';
+                    table.style.tableLayout = 'auto';
+
+                    // Data cells: nowrap for compact fit
+                    table.querySelectorAll('td, th').forEach(cell => {
+                        if (!cell.querySelector('.flex')) { // skip the name column (has flex container)
+                            saved.push({ el: cell, attr: 'style-ws', val: cell.style.whiteSpace });
+                            cell.style.whiteSpace = 'nowrap';
+                        }
+                    });
+                });
+
+                // 3. Truncated name spans: remove truncation
+                const truncated = element.querySelectorAll('.truncate');
+                truncated.forEach(el => {
+                    saved.push({ el, attr: 'truncate', val: true });
+                    el.classList.remove('truncate');
+                    el.style.maxWidth = 'none';
+                    el.style.overflow = 'visible';
+                    el.style.whiteSpace = 'normal';
+                    el.style.wordBreak = 'break-word';
+                });
+
+                // 4. Remove max-w constraints on name spans
+                const maxW = element.querySelectorAll('[class*="max-w-"]');
+                maxW.forEach(el => {
+                    saved.push({ el, attr: 'maxw-class', val: el.className });
+                    el.className = el.className.replace(/max-w-\\[\\d+px\\]/g, '');
+                });
+
+                return saved;
+            }
+
+            function restoreExportLayout(saved) {
+                saved.forEach(item => {
+                    if (item.attr === 'style') {
+                        item.el.style.cssText = item.val;
+                    } else if (item.attr === 'class') {
+                        item.el.className = item.val;
+                    } else if (item.attr === 'style-ws') {
+                        item.el.style.whiteSpace = item.val || '';
+                    } else if (item.attr === 'truncate') {
+                        item.el.classList.add('truncate');
+                        item.el.style.maxWidth = '';
+                        item.el.style.overflow = '';
+                        item.el.style.whiteSpace = '';
+                        item.el.style.wordBreak = '';
+                    } else if (item.attr === 'maxw-class') {
+                        item.el.className = item.val;
+                    }
+                });
+            }
+
+            const EXPORT_WIDTH = '720px'; // Mobile-optimized width
+
             // --- Helper Function for Image Capture ---
             async function captureElementAsImage(element, filename, options = {}) {
                 console.log('Bắt đầu xuất ảnh:', filename);
@@ -1711,6 +1785,9 @@ const htmlContent = `
                 document.head.appendChild(style);
 
                 if (options.onBeforeCapture) options.onBeforeCapture();
+
+                // Force 3-column grid for card views
+                const gridOriginals = forceExportLayout(element);
 
                 await document.fonts.ready;
                 await new Promise(resolve => setTimeout(resolve, 500)); 
@@ -1738,6 +1815,7 @@ const htmlContent = `
                     messageEl.classList.remove('hidden');
                     setTimeout(() => messageEl.classList.add('hidden'), 5000);
                 } finally {
+                    restoreExportLayout(gridOriginals);
                     document.head.removeChild(style);
                     if (options.onAfterCapture) options.onAfterCapture();
                     loadingOverlay.classList.add('hidden');
@@ -1927,7 +2005,7 @@ const htmlContent = `
                      captureElementAsImage(analysisSection, \`\${storeName}_phan_tich.png\`, {
                          backgroundColor: '#ffffff',
                          onBeforeCapture: () => {
-                            analysisSection.style.width = '960px';
+                            analysisSection.style.width = EXPORT_WIDTH;
                             analysisSection.classList.add('p-4');
                          },
                          onAfterCapture: () => {
@@ -2027,7 +2105,7 @@ const htmlContent = `
                             captureElementAsImage(captureTarget, filename, {
                                 onBeforeCapture: () => {
                                     truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                    captureTarget.style.width = '960px';
+                                    captureTarget.style.width = EXPORT_WIDTH;
                                 },
                                 onAfterCapture: () => {
                                     truncatedElements.forEach(el => el.classList.add('truncate'));
@@ -2137,7 +2215,7 @@ const htmlContent = `
                         captureElementAsImage(captureTarget, filename, {
                             onBeforeCapture: () => {
                                 truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                captureTarget.style.width = '960px';
+                                captureTarget.style.width = EXPORT_WIDTH;
                             },
                             onAfterCapture: () => {
                                 truncatedElements.forEach(el => el.classList.add('truncate'));
@@ -2176,10 +2254,12 @@ const htmlContent = `
                                      const truncatedElements = captureTarget.querySelectorAll('.truncate');
                                      
                                      truncatedElements.forEach(el => el.classList.remove('truncate'));
-                                     captureTarget.style.width = '960px';
+                                     captureTarget.style.width = EXPORT_WIDTH;
+                                      const gridOriginals = forceExportLayout(captureTarget);
 
                                      const dataUrl = await htmlToImage.toPng(captureTarget, { pixelRatio: 2, backgroundColor: '#f5f5f7' });
                                      
+                                      restoreExportLayout(gridOriginals);
                                      captureTarget.style.width = originalWidth;
                                      truncatedElements.forEach(el => el.classList.add('truncate'));
 

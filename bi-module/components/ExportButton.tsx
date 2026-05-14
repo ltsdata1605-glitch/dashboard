@@ -31,14 +31,14 @@ const ExportButton: React.FC<ExportButtonProps> = ({ onExportPNG, disabled = fal
       type="button"
       onClick={handleExport}
       disabled={disabled || isLoading}
-      className="export-button-component p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      className="export-button-component p-1 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-300 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       aria-label="Xuất ảnh báo cáo"
       title="Xuất ảnh báo cáo (PNG)"
     >
       {isLoading ? (
-        <SpinnerIcon className="h-5 w-5" />
+        <SpinnerIcon className="h-4 w-4" />
       ) : (
-        <CameraIcon className="h-5 w-5" />
+        <CameraIcon className="h-4 w-4" />
       )}
     </button>
   );

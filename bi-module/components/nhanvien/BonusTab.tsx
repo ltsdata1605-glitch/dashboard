@@ -6,57 +6,15 @@ import ExportButton from '../ExportButton';
 import { XIcon, UsersIcon, UploadIcon, ClockIcon, ViewListIcon, ViewGridIcon } from '../Icons';
 import { Employee, BonusMetrics } from '../../types/nhanVienTypes';
 import { parseNumber, getYesterdayDateString } from '../../utils/nhanVienHelpers';
-import { Switch } from '../dashboard/DashboardWidgets';
+
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
 import { exportElementAsImage } from '../../../services/uiService';
 import { BonusMobileCard } from './bonus/BonusMobileCard';
 import { BonusDesktopRow } from './bonus/BonusDesktopRow';
+import AvatarDisplay from './shared/AvatarDisplay';
 
-const AvatarDisplay: React.FC<{ employeeName: string; supermarketName: string; isHidden?: boolean; onClick?: () => void }> = ({ employeeName, supermarketName, isHidden, onClick }) => {
-    const dbKey = `avatar-${supermarketName}-${employeeName}`;
-    const [avatarSrc, setAvatarSrc] = useIndexedDBState<string | null>(dbKey, null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => setAvatarSrc(reader.result as string);
-            reader.readAsDataURL(file);
-        }
-    };
-    if (isHidden) return <div className="w-8 h-8 flex-shrink-0" />;
-    return (
-        <div 
-            className="relative group w-8 h-8 flex-shrink-0"
-            onClick={(e) => e.stopPropagation()} 
-        >
-            {avatarSrc ? (
-                <img 
-                    src={avatarSrc} 
-                    alt={employeeName} 
-                    onClick={(e) => { e.stopPropagation(); onClick?.(); }}
-                    className="w-full h-full rounded-full object-cover shadow-sm ring-2 ring-white dark:ring-slate-700 cursor-pointer hover:scale-110 transition-transform" 
-                />
-            ) : (
-                <div 
-                    onClick={(e) => { e.stopPropagation(); onClick?.(); }}
-                    className="w-full h-full rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center ring-2 ring-slate-200 dark:ring-slate-600 cursor-pointer hover:bg-slate-200"
-                >
-                    <UsersIcon className="h-4 w-4 text-slate-400" />
-                </div>
-            )}
-            <button 
-                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} 
-                className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-800 p-1 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-opacity no-print border border-slate-100"
-            >
-                <UploadIcon className="h-2 w-2 text-primary-600" />
-            </button>
-            <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
-        </div>
-    );
-};
 
 const MedalBadge: React.FC<{ rank: number }> = ({ rank }) => {
     const base = "w-7 text-center text-[13px] font-black tabular-nums";
@@ -119,7 +77,6 @@ export const BonusDataModal: React.FC<{
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => onClose('stop')}>
             <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl p-6 w-full max-w-2xl border border-slate-100 dark:border-slate-800 relative focus:outline-none flex flex-col gap-5 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-                {/* Header */}
                 <div className="flex justify-between items-start">
                     <div>
                         <div className="flex items-center gap-3 mb-1">
@@ -133,13 +90,6 @@ export const BonusDataModal: React.FC<{
                         </div>
                         <p className="text-xs text-slate-500 font-medium">Dán dữ liệu HRM &gt; Quản lý điểm thưởng &gt; Điểm thưởng nhân viên</p>
                     </div>
-                    <button 
-                        onClick={() => onClose('skip')} 
-                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 rounded-lg transition-colors"
-                        title="Bỏ qua nhân viên này"
-                    >
-                        <XIcon className="h-5 w-5" />
-                    </button>
                 </div>
 
                 {/* Body Content */}
@@ -175,9 +125,15 @@ export const BonusDataModal: React.FC<{
                     <div className="flex gap-3 w-full sm:w-auto">
                         <button 
                             onClick={() => onClose('stop')} 
+                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
+                        >
+                            Kết thúc
+                        </button>
+                        <button 
+                            onClick={() => onClose('skip')} 
                             className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
-                            Dừng lại
+                            Bỏ qua
                         </button>
                         <button 
                             onClick={async () => (await processAndSave(pastedData)) && onClose('save')} 
@@ -209,7 +165,7 @@ export const BonusView: React.FC<{
     const cardRef = useRef<HTMLDivElement>(null);
     const [sortField, setSortField] = useState<string>('dKien');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
-    const [showAll, setShowAll] = useState(true);
+
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('bonus-view-mode-multi', 'group');
     
     const revenueMap = useMemo(() => {
@@ -341,33 +297,26 @@ export const BonusView: React.FC<{
 
     return (
         <div className="space-y-4">
-            <div className="flex flex-wrap justify-between items-center p-4 bg-white dark:bg-slate-800 rounded-2xl shadow-md no-print border border-slate-200 dark:border-slate-700 gap-4">
-                <div className="flex gap-4 items-center">
-                    <div className="flex gap-2 items-center">
-                        <span className="text-xs font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest">Tất cả</span>
-                        <Switch checked={showAll} onChange={() => setShowAll(!showAll)} />
-                    </div>
-                    
-                    <div className="flex items-center bg-slate-100 dark:bg-slate-900 rounded-xl p-1 shadow-inner">
-                        <button onClick={() => setViewMode('group')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'group' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><ViewGridIcon className="h-4 w-4"/><span>BỘ PHẬN</span></button>
-                        <button onClick={() => setViewMode('list')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase transition-all ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}><ViewListIcon className="h-4 w-4"/><span>DANH SÁCH</span></button>
-                    </div>
-
+            <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
+                <div className="flex gap-3 items-center">
                     <button 
-                        onClick={onBatchUpdate}
-                        className="flex items-center gap-2 px-4 py-2 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-sm font-bold rounded-lg border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-all active:scale-95 shadow-sm"
+                        onClick={() => { window.open('https://newinsite.thegioididong.com/office/thuong-nhan-vien', '_blank'); onBatchUpdate(); }}
+                        className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[11px] font-bold border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-all active:scale-95"
                     >
-                        <UploadIcon className="h-4 w-4" />
-                        <span>Cập nhật hàng loạt</span>
+                        <UploadIcon className="h-3.5 w-3.5" />
+                        <span>Cập nhật thưởng</span>
                     </button>
                 </div>
-                <div className="flex gap-2 items-center">
+                <div className="flex gap-1.5 items-center">
+                    <button onClick={() => setViewMode('group')} title="Bộ phận" className={`p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></button>
+                    <button onClick={() => setViewMode('list')} title="Danh sách" className={`p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></button>
+                    <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <ExportButton onExportPNG={handleExportPNG} />
                 </div>
             </div>
             <div ref={cardRef}>
-                <Card noPadding title={cardTitle}>
-                    <div className="w-full overflow-hidden">
+                <Card noPadding rounded={false} title={cardTitle}>
+                    <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch border border-slate-200 dark:border-slate-700">
                         {isMobile ? (
                             <div className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -443,13 +392,13 @@ export const BonusView: React.FC<{
                                     <th rowSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-b border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/40 align-middle leading-tight" onClick={() => { setSortField('dKien'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Dự<br/>Kiến</th>
                                 </tr>
                                 {/* Tier 2: Column Headers */}
-                                <tr className="bg-slate-50 dark:bg-slate-800/80">
-                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-50 transition-colors" onClick={() => { setSortField('dtqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>DTQĐ</th>
-                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-sky-50 transition-colors" onClick={() => { setSortField('hqqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>HQQĐ</th>
-                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-50 transition-colors" onClick={() => { setSortField('erp'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>ERP</th>
-                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-50 transition-colors" onClick={() => { setSortField('tNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>T.Nóng</th>
-                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-50 transition-colors" onClick={() => { setSortField('pNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>%T.Nóng</th>
-                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-emerald-50 transition-colors" onClick={() => { setSortField('tong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Tổng</th>
+                                <tr>
+                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-b-2 border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => { setSortField('dtqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>DTQĐ</th>
+                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-600 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-b-2 border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => { setSortField('hqqd'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>HQQĐ</th>
+                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-r border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => { setSortField('erp'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>ERP</th>
+                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-r border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => { setSortField('tNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>T.Nóng</th>
+                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-r border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => { setSortField('pNong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>%T.Nóng</th>
+                                    <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-r border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => { setSortField('tong'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Tổng</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white dark:bg-[#1c1c1e] divide-y divide-slate-100 dark:divide-slate-700/60">
@@ -457,15 +406,15 @@ export const BonusView: React.FC<{
                                     if (item.type === 'department' || item.type === 'total') {
                                         const isGrandTotal = item.type === 'total';
                                         return (
-                                            <tr key={`${item.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-y border-slate-200 dark:border-slate-700`}>
-                                                <td className={`px-2 py-1 text-[13px] uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center' : 'border-slate-200 dark:border-slate-700'}`}>{item.name}</td>
-                                                <td className="px-1.5 py-1 text-[13px] text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700">{f.format(item.sumDtqd)}</td>
-                                                <td className="px-1.5 py-1 text-[13px] text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700">-</td>
-                                                <td className="px-1.5 py-1 text-[13px] text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700">{f.format(Math.ceil(item.sumErp / 1000))}</td>
-                                                <td className="px-1.5 py-1 text-[13px] text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700">{f.format(Math.ceil(item.sumTnong / 1000))}</td>
-                                                <td className="px-1.5 py-1 text-[13px] text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700">-</td>
-                                                <td className="px-1.5 py-1 text-[13px] text-center border-r tabular-nums font-extrabold border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white">{f.format(Math.ceil(item.sumTong / 1000))}</td>
-                                                <td className={`px-1.5 py-1 text-[13px] text-center tabular-nums font-extrabold ${isGrandTotal ? 'text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-900/30' : 'text-amber-600 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-900/20'}`}>{f.format(Math.ceil(item.sumDkien / 1000))}</td>
+                                            <tr key={`${item.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-t border-slate-200 dark:border-slate-700`}>
+                                                <td className={`px-2 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center' : 'border-slate-200 dark:border-slate-700'}`}>{item.name}</td>
+                                                <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700`}>{f.format(item.sumDtqd)}</td>
+                                                <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700`}>-</td>
+                                                <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700`}>{f.format(Math.ceil(item.sumErp / 1000))}</td>
+                                                <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700`}>{f.format(Math.ceil(item.sumTnong / 1000))}</td>
+                                                <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums font-bold border-slate-200 dark:border-slate-700`}>-</td>
+                                                <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center border-r tabular-nums font-extrabold border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white`}>{f.format(Math.ceil(item.sumTong / 1000))}</td>
+                                                <td className={`px-1.5 ${isGrandTotal ? 'py-2.5 text-[15px]' : 'py-1 text-[13px]'} text-center tabular-nums font-extrabold ${isGrandTotal ? 'text-amber-700 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-900/30' : 'text-amber-600 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-900/20'}`}>{f.format(Math.ceil(item.sumDkien / 1000))}</td>
                                             </tr>
                                         );
                                     }
