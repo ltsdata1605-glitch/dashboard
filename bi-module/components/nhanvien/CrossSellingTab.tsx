@@ -417,10 +417,10 @@ const CrossSellingTab: React.FC<{
                                                 <div>D.THU</div><div>THỰC</div>
                                             </th>
                                             <th colSpan={3} className="px-2 py-1.5 text-center text-[10px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-r border-b border-amber-100 dark:border-amber-800/50">
-                                                Số lượng SP bán kèm
+                                                Sản phẩm bán kèm
                                             </th>
                                             <th colSpan={3} className="px-2 py-1.5 text-center text-[10px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-b border-emerald-100 dark:border-emerald-800/50">
-                                                Bill bán kèm
+                                                Hiệu quả bill bán kèm
                                             </th>
                                         </tr>
                                         {/* Tier 2: Column Headers */}
@@ -428,9 +428,9 @@ const CrossSellingTab: React.FC<{
                                             <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-amber-50 dark:bg-amber-900/40 border-r border-b-2 border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => handleSort('totalSl')}>LKSP</th>
                                             <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-amber-50 dark:bg-amber-900/40 border-r border-b-2 border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => handleSort('slBk')}>B.Kèm</th>
                                             <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-amber-50 dark:bg-amber-900/40 border-r border-b-2 border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 transition-colors" onClick={() => handleSort('pctSpBk')}>%SPBK</th>
-                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-r border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => handleSort('totalBill')}>Tổng Bill</th>
-                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-r border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => handleSort('billBk')}>Bill BK</th>
-                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => handleSort('pctBillBk')}>%Bill BK</th>
+                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-r border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => handleSort('totalBill')}>Tổng</th>
+                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-r border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => handleSort('billBk')}>B.Kèm</th>
+                                            <th className="px-1.5 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 transition-colors" onClick={() => handleSort('pctBillBk')}>%B.Kèm</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-[#1c1c1e]">
