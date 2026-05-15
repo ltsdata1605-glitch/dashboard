@@ -541,7 +541,7 @@ export default function BaoCaoKhaiThacView() {
   };
 
   return (
-    <div className="h-full flex flex-col w-full relative overflow-hidden">
+    <div className="h-full flex flex-col w-full relative bg-slate-50 dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0 overflow-hidden">
 
       {mounted && activeTab === 'reports' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
         <div className="flex items-center mr-2 bg-white/60 dark:bg-slate-900/60 p-1.5 px-3 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
@@ -569,7 +569,7 @@ export default function BaoCaoKhaiThacView() {
         document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions')!
       )}
 
-      <main className="absolute inset-0 overflow-y-auto w-full custom-scrollbar pb-[76px]">
+      <main className="flex-1 overflow-y-auto w-full custom-scrollbar touch-pan-y overscroll-y-contain -webkit-overflow-scrolling-touch relative z-10">
         <div id="report-export-area" className="max-w-md mx-auto pt-3 px-3 space-y-3">
 
         {warnings.length > 0 && (
@@ -805,7 +805,7 @@ export default function BaoCaoKhaiThacView() {
       </main>
 
       {/* Footer Actions */}
-      <footer className="fixed bottom-[56px] lg:bottom-0 left-0 right-0 lg:left-[260px] h-[56px] flex flex-col justify-center px-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-40">
+      <footer className="flex-shrink-0 h-[56px] flex flex-col justify-center px-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-40">
         <div className="max-w-md w-full mx-auto flex gap-2.5">
           <button 
             onClick={clearAll}
