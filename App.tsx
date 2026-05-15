@@ -241,7 +241,7 @@ function AppContent() {
 
                     {/* Desktop Notification Center has been moved into the Header component to prevent layout overlap */}
                     
-                    <div className="w-full relative flex-grow min-h-0 overflow-y-auto pb-20 lg:pb-0">
+                    <div className={`w-full relative flex-grow min-h-0 pb-20 lg:pb-0 ${['reports', 'tools-print-sticker', 'tools-audit', 'tools-phanca', 'check-thuong'].includes(activeTab) ? 'overflow-hidden' : 'overflow-y-auto custom-scrollbar'}`}>
                         <ErrorBoundary name="MainContent">
                             <Suspense fallback={
                                 <div className="flex items-center justify-center min-h-[50vh]">
