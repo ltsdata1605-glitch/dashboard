@@ -270,6 +270,21 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
     return rows;
   };
 
+  const weekHeaders = useMemo(() => {
+    const headers = [];
+    let day = 1;
+    while (day <= duration) {
+        const date = new Date(year, month - 1, startDay + day - 1);
+        const dow = (date.getDay() + 6) % 7;
+        const len = Math.min(7 - dow, duration - day + 1);
+        const weekNum = dayToWeekMap[day];
+        const theme = weekThemes[(weekNum - 1) % weekThemes.length];
+        headers.push(<th key={day} colSpan={len} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b border-r text-[9px] py-2 font-black uppercase tracking-widest">Tuần {weekNum}</th>);
+        day += len;
+    }
+    return headers;
+  }, [duration, year, month, startDay, dayToWeekMap]);
+
   return (
     <div className={`overflow-x-auto custom-scroll rounded-2xl bg-white border border-slate-200 shadow-xl ${isIndividualExport ? 'flex justify-center' : ''}`} onMouseLeave={() => onDayHover(null)}>
       <table id="scheduleTable" ref={tableRef} className="w-full border-collapse">
@@ -284,20 +299,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
             <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-indigo-50/50 text-indigo-700 font-black text-[10px] uppercase tracking-widest">Giờ Công</th>
             <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-purple-50/50 text-purple-700 font-black text-[10px] uppercase tracking-widest">Số Ngày SBH</th>
             <th colSpan={2} className="border-r-2 border-slate-300 py-2.5 bg-slate-100 font-black text-[10px] uppercase tracking-widest text-slate-500">Số Lần</th>
-            {useMemo(() => {
-                const headers = [];
-                let day = 1;
-                while (day <= duration) {
-                    const date = new Date(year, month - 1, startDay + day - 1);
-                    const dow = (date.getDay() + 6) % 7;
-                    const len = Math.min(7 - dow, duration - day + 1);
-                    const weekNum = dayToWeekMap[day];
-                    const theme = weekThemes[(weekNum - 1) % weekThemes.length];
-                    headers.push(<th key={day} colSpan={len} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b border-r text-[9px] py-2 font-black uppercase tracking-widest">Tuần {weekNum}</th>);
-                    day += len;
-                }
-                return headers;
-            }, [duration, year, month, startDay, dayToWeekMap])}
+            {weekHeaders}
           </tr>
           <tr className="text-[9px] font-black uppercase tracking-tighter">
             <th className="px-1 border-r border-slate-200 bg-indigo-50/20 text-indigo-400">SBH</th>
