@@ -93,35 +93,103 @@ const htmlContent = `
         .filter-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 0; font-size: 11px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; background: #f1f5f9; color: #475569; transition: all 0.2s; }
         .filter-pill:hover { background: #e2e8f0; }
         .filter-pill.active { background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(99,102,241,0.25); }
-        /* Xóa bỏ Mobile Responsive CSS vì sẽ dùng kỹ thuật Auto Zoom Desktop Layout */
-    </style>
-    <script>
-        // Tự động thu nhỏ (zoom out) giao diện desktop để vừa khít màn hình điện thoại
-        function applyAutoZoom() {
-            var screenWidth = window.innerWidth;
-            if (screenWidth < 1100) {
-                var scale = screenWidth / 1100;
-                document.body.style.width = '1100px';
-                document.body.style.minHeight = (window.innerHeight / scale) + 'px';
-                
-                if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-                    document.body.style.transform = 'scale(' + scale + ')';
-                    document.body.style.transformOrigin = 'top left';
-                } else {
-                    document.body.style.zoom = scale;
-                }
-            } else {
-                document.body.style.width = '100%';
-                document.body.style.minHeight = '100vh';
-                document.body.style.zoom = 1;
-                document.body.style.transform = 'none';
-            }
+        /* ===== MOBILE RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            .app-shell { padding: 0 4px; }
+            /* Landing page */
+            #landingPage h1 { font-size: 1.5rem !important; }
+            #landingPage .hero-content { padding: 12px 12px 0; }
+            /* Search section - keep horizontal but compact */
+            #searchSection .mod-card { padding: 8px 10px !important; border-radius: 8px !important; }
+            #searchSection .mod-card > div { flex-direction: row !important; gap: 4px !important; align-items: flex-end !important; }
+            #searchSection .mod-card > div > div { padding: 0 !important; }
+            #searchSection .mod-card > div > div[style*="width:1px"] { margin: 0 6px !important; }
+            #searchSection .mod-input { height: 32px !important; font-size: 11px !important; padding-left: 28px !important; border-radius: 6px !important; }
+            #searchSection .mod-btn { height: 32px !important; width: 32px !important; border-radius: 6px !important; }
+            #searchSection label { font-size: 9px !important; margin-bottom: 2px !important; }
+            /* Summary banner */
+            .summary-banner { padding: 12px 14px !important; }
+            .summary-banner h2 { font-size: 15px !important; }
+            .summary-banner .text-3xl, .summary-banner .text-2xl { font-size: 18px !important; }
+            /* Stat mini cards */
+            .stat-mini { min-width: 70px !important; max-width: 100% !important; padding: 8px 8px 8px 12px !important; border-radius: 8px !important; }
+            .stat-mini span, .stat-mini div { font-size: 10px !important; }
+            .stat-mini .text-lg, .stat-mini .text-xl { font-size: 14px !important; }
+            /* Group summary - allow scroll */
+            #groupSummaryContainer { gap: 6px !important; flex-wrap: wrap !important; }
+            #summaryFiltersSection { padding: 10px 10px !important; border-radius: 10px !important; }
+            #summaryFiltersSection span[style*="font-size:13px"] { font-size: 10px !important; }
+            /* Filter pills */
+            .filter-pill { font-size: 9px !important; padding: 3px 7px !important; }
+            /* Main content area */
+            #mainContent { padding: 0 6px !important; }
+            /* Cards */
+            .mod-card { border-radius: 8px !important; }
+            .s-card { border-radius: 8px !important; }
+            /* Analysis section */
+            #analysisSection { padding: 10px 10px !important; }
+            /* Result cards / Details grid */
+            #detailsGrid { gap: 8px !important; }
+            #detailsGrid .s-card { font-size: 11px !important; }
+            /* Table improvements */
+            table { font-size: 10px !important; }
+            th, td { padding: 4px 6px !important; }
+            /* Top 10 info card */
+            #top10InfoCard { padding: 8px 10px !important; font-size: 11px !important; }
+            /* Modal */
+            #rankingModal > div { max-height: 95vh !important; border-radius: 12px !important; }
+            #rankingModal h3 { font-size: 14px !important; }
+            #modalBody { padding: 8px !important; }
+            #modalBody table { font-size: 9px !important; }
+            #modalBody th, #modalBody td { padding: 3px 4px !important; white-space: nowrap; }
+            /* Version modal */
+            #versionModal > div { max-height: 95vh !important; }
+            #versionModal h3 { font-size: 14px !important; }
+            #versionModal h4 { font-size: 13px !important; }
+            /* Comparison content */
+            #comparisonContent { padding: 0 6px; }
+            #comparisonContent table { font-size: 9px !important; }
+            #comparisonContent th, #comparisonContent td { padding: 3px 4px !important; }
+            /* Bonus row */
+            .bonus-row-pastel { padding: 4px 6px !important; font-size: 10px !important; }
+            /* Typography scaling */
+            .text-2xl { font-size: 16px !important; }
+            .text-xl { font-size: 14px !important; }
+            .text-lg { font-size: 12px !important; }
+            .text-base { font-size: 11px !important; }
+            .text-sm { font-size: 10px !important; }
+            .text-xs { font-size: 9px !important; }
+            .\text-\[15px\] { font-size: 12px !important; }
+            .\text-\[14px\] { font-size: 11px !important; }
+            .\text-\[13px\] { font-size: 10px !important; }
+            .\text-\[12px\] { font-size: 9px !important; }
+            .\text-\[11px\] { font-size: 9px !important; }
+            .\text-\[10px\] { font-size: 8px !important; }
+            .\text-\[9px\] { font-size: 8px !important; }
+            /* Cập nhật các thẻ có inline style cứng */
+            span[style*="font-size:13px"] { font-size: 10px !important; }
+            span[style*="font-size:12px"] { font-size: 9px !important; }
+            span[style*="font-size:11px"] { font-size: 9px !important; }
+            label[style*="font-size:11px"] { font-size: 9px !important; }
+            div[style*="font-size:13px"] { font-size: 10px !important; }
+            /* Overflow protection */
+            body { overflow-x: hidden; }
+            #mainContent, #comparisonContent, #summaryReportArea { overflow-x: hidden; }
+            /* Ẩn scrollbar trên bảng dữ liệu/mobile */
+            ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+            * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+            
+            /* Card grid - lướt ngang mượt mà (horizontal scroll) thay vì xếp chồng */
+            #detailsGrid div[style*="grid-template-columns"] { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto !important; gap: 8px !important; padding: 4px 0 12px 0 !important; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+            #detailsGrid .s-card { min-width: 200px !important; flex-shrink: 0 !important; scroll-snap-align: start; }
+            
+            /* Group header */
+            .group-container h2 { font-size: 11px !important; }
+            .capture-fix { padding: 6px 10px !important; }
         }
-        window.addEventListener('resize', applyAutoZoom);
-        document.addEventListener('DOMContentLoaded', applyAutoZoom);
-    </script>
+    </style>
 </head>
-<body onload="applyAutoZoom()">
+<body>
     <!-- Landing Page -->
     <div id="landingPage" class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] selection:bg-indigo-500/20 selection:text-indigo-600 pb-8">
         
