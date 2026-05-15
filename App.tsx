@@ -200,10 +200,10 @@ function AppContent() {
     }
 
     return (
-        <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
+        <div className="flex h-[100dvh] bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px] overflow-hidden">
             <Sidebar />
             <MobileBottomNav />
-            <div className="flex-grow flex flex-col min-w-0 w-full relative">
+            <div className="flex-grow flex flex-col min-w-0 w-full relative overflow-hidden">
 
                 {/* Mobile Top Bar - Hidden in Desktop View */}
                 <div className="lg:hidden sticky top-0 z-[100] bg-white dark:bg-slate-900 flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
@@ -222,7 +222,7 @@ function AppContent() {
                     </div>
                 </div>
 
-                <main className="flex-grow flex flex-col bg-slate-50/50 dark:bg-slate-950/20 relative">
+                <main className="flex-grow flex flex-col bg-slate-50/50 dark:bg-slate-950/20 relative overflow-hidden">
                     {/* Thêm Banner thông báo Đơn chờ duyệt */}
                     <PendingApprovalBanner />
 
@@ -241,7 +241,7 @@ function AppContent() {
 
                     {/* Desktop Notification Center has been moved into the Header component to prevent layout overlap */}
                     
-                    <div className="w-full relative flex-grow min-h-0 pb-20 lg:pb-0">
+                    <div className="w-full relative flex-grow min-h-0 overflow-y-auto pb-20 lg:pb-0">
                         <ErrorBoundary name="MainContent">
                             <Suspense fallback={
                                 <div className="flex items-center justify-center min-h-[50vh]">
