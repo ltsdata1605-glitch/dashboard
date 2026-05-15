@@ -1,4 +1,4 @@
-import{u as N,j as o,g as S,I as b}from"./index-CYxNhtdZ.js";import{a as i}from"./vendor-ui-D5QPYIG1.js";import{r as y}from"./vendor-charts-CKYuBKLf.js";import"./vendor-firebase-Bg-CYcPW.js";const k=`
+import{u as N,j as o,g as k,I as b}from"./index-CpxjJMXz.js";import{a as i}from"./vendor-ui-D5QPYIG1.js";import{r as y}from"./vendor-charts-CKYuBKLf.js";import"./vendor-firebase-Bg-CYcPW.js";const S=`
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -87,85 +87,35 @@ import{u as N,j as o,g as S,I as b}from"./index-CYxNhtdZ.js";import{a as i}from"
         .filter-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 0; font-size: 11px; font-weight: 600; cursor: pointer; border: 1.5px solid transparent; background: #f1f5f9; color: #475569; transition: all 0.2s; }
         .filter-pill:hover { background: #e2e8f0; }
         .filter-pill.active { background: linear-gradient(135deg, #6366f1, #818cf8); color: #fff; border-color: transparent; box-shadow: 0 2px 8px rgba(99,102,241,0.25); }
-        /* ===== MOBILE RESPONSIVE ===== */
-        @media (max-width: 640px) {
-            .app-shell { padding: 0 4px; }
-            /* Landing page */
-            #landingPage h1 { font-size: 1.5rem !important; }
-            #landingPage .hero-content { padding: 12px 12px 0; }
-            /* Search section - keep horizontal but compact */
-            #searchSection .mod-card { padding: 8px 10px !important; border-radius: 8px !important; }
-            #searchSection .mod-card > div { flex-direction: row !important; gap: 4px !important; align-items: flex-end !important; }
-            #searchSection .mod-card > div > div { padding: 0 !important; }
-            #searchSection .mod-card > div > div[style*="width:1px"] { margin: 0 6px !important; }
-            #searchSection .mod-input { height: 32px !important; font-size: 11px !important; padding-left: 28px !important; border-radius: 6px !important; }
-            #searchSection .mod-btn { height: 32px !important; width: 32px !important; border-radius: 6px !important; }
-            #searchSection label { font-size: 9px !important; margin-bottom: 2px !important; }
-            /* Summary banner */
-            .summary-banner { padding: 12px 14px !important; }
-            .summary-banner h2 { font-size: 15px !important; }
-            .summary-banner .text-3xl, .summary-banner .text-2xl { font-size: 18px !important; }
-            /* Stat mini cards */
-            .stat-mini { min-width: 70px !important; max-width: 100% !important; padding: 8px 8px 8px 12px !important; border-radius: 8px !important; }
-            .stat-mini span, .stat-mini div { font-size: 10px !important; }
-            .stat-mini .text-lg, .stat-mini .text-xl { font-size: 14px !important; }
-            /* Group summary - allow scroll */
-            #groupSummaryContainer { gap: 6px !important; flex-wrap: wrap !important; }
-            #summaryFiltersSection { padding: 10px 10px !important; border-radius: 10px !important; }
-            #summaryFiltersSection span[style*="font-size:13px"] { font-size: 10px !important; }
-            /* Filter pills */
-            .filter-pill { font-size: 9px !important; padding: 3px 7px !important; }
-            /* Main content area */
-            #mainContent { padding: 0 6px !important; }
-            /* Cards */
-            .mod-card { border-radius: 8px !important; }
-            .s-card { border-radius: 8px !important; }
-            /* Analysis section */
-            #analysisSection { padding: 10px 10px !important; }
-            /* Result cards / Details grid */
-            #detailsGrid { gap: 8px !important; }
-            #detailsGrid .s-card { font-size: 11px !important; }
-            /* Table improvements */
-            table { font-size: 10px !important; }
-            th, td { padding: 4px 6px !important; }
-            /* Top 10 info card */
-            #top10InfoCard { padding: 8px 10px !important; font-size: 11px !important; }
-            /* Modal */
-            #rankingModal > div { max-height: 95vh !important; border-radius: 12px !important; }
-            #rankingModal h3 { font-size: 14px !important; }
-            #modalBody { padding: 8px !important; }
-            #modalBody table { font-size: 9px !important; }
-            #modalBody th, #modalBody td { padding: 3px 4px !important; white-space: nowrap; }
-            /* Version modal */
-            #versionModal > div { max-height: 95vh !important; }
-            #versionModal h3 { font-size: 14px !important; }
-            #versionModal h4 { font-size: 13px !important; }
-            /* Comparison content */
-            #comparisonContent { padding: 0 6px; }
-            #comparisonContent table { font-size: 9px !important; }
-            #comparisonContent th, #comparisonContent td { padding: 3px 4px !important; }
-            /* Bonus row */
-            .bonus-row-pastel { padding: 4px 6px !important; font-size: 10px !important; }
-            /* Typography scaling */
-            .text-xl { font-size: 14px !important; }
-            .text-lg { font-size: 13px !important; }
-            .text-base { font-size: 12px !important; }
-            .text-sm { font-size: 11px !important; }
-            /* Overflow protection */
-            body { overflow-x: hidden; }
-            #mainContent, #comparisonContent, #summaryReportArea { overflow-x: hidden; }
-            /* Card grid - lướt ngang mượt mà (horizontal scroll) thay vì xếp chồng */
-            #detailsGrid div[style*="grid-template-columns"] { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto !important; gap: 8px !important; padding: 4px 0 12px 0 !important; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
-            #detailsGrid .s-card { min-width: 200px !important; flex-shrink: 0 !important; scroll-snap-align: start; }
-            #detailsGrid div[style*="grid-template-columns"]::-webkit-scrollbar { height: 4px; }
-            #detailsGrid div[style*="grid-template-columns"]::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-            /* Group header */
-            .group-container h2 { font-size: 11px !important; }
-            .capture-fix { padding: 6px 10px !important; }
-        }
+        /* Xóa bỏ Mobile Responsive CSS vì sẽ dùng kỹ thuật Auto Zoom Desktop Layout */
     </style>
+    <script>
+        // Tự động thu nhỏ (zoom out) giao diện desktop để vừa khít màn hình điện thoại
+        function applyAutoZoom() {
+            var screenWidth = window.innerWidth;
+            if (screenWidth < 1100) {
+                var scale = screenWidth / 1100;
+                document.body.style.width = '1100px';
+                document.body.style.minHeight = (window.innerHeight / scale) + 'px';
+                
+                if (navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+                    document.body.style.transform = 'scale(' + scale + ')';
+                    document.body.style.transformOrigin = 'top left';
+                } else {
+                    document.body.style.zoom = scale;
+                }
+            } else {
+                document.body.style.width = '100%';
+                document.body.style.minHeight = '100vh';
+                document.body.style.zoom = 1;
+                document.body.style.transform = 'none';
+            }
+        }
+        window.addEventListener('resize', applyAutoZoom);
+        document.addEventListener('DOMContentLoaded', applyAutoZoom);
+    <\/script>
 </head>
-<body>
+<body onload="applyAutoZoom()">
     <!-- Landing Page -->
     <div id="landingPage" class="relative min-h-screen flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] selection:bg-indigo-500/20 selection:text-indigo-600 pb-8">
         
@@ -1486,7 +1436,7 @@ import{u as N,j as o,g as S,I as b}from"./index-CYxNhtdZ.js";import{a as i}from"
                     const isDuKien = showDuKien || isNearly;
                     const bonusColor = isDuKien ? 'text-amber-600' : 'text-indigo-600';
                     
-                    const nearlyBadgeHtml = isNearly ? \`<span class="ml-1.5 px-1.5 py-0.5 bg-amber-100 text-amber-800 text-[9px] font-bold rounded-sm uppercase whitespace-nowrap border border-amber-200">Sắp đạt thưởng</span>\` : '';
+                    const nearlyBadgeHtml = isNearly ? \`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" class="inline-block ml-1.5 text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.9)] animate-pulse" style="vertical-align: -2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>\` : '';
                     
                     return \`
                         <tr class="hover:bg-gray-50 transition-colors text-[13px] border-b border-gray-100 last:border-0 group">
@@ -2310,5 +2260,5 @@ import{u as N,j as o,g as S,I as b}from"./index-CYxNhtdZ.js";import{a as i}from"
     <\/script>
 </body>
 </html>
-`,_=()=>{const{activeTab:u}=N(),[g,v]=i.useState(!1),l=i.useRef(null),[h,w]=i.useState(!1),[c,d]=i.useState({code1:"910",code2:""});i.useEffect(()=>{v(!0);const t=e=>{var n;((n=e.data)==null?void 0:n.type)==="CHECK_THUONG_FILE_LOADED"&&(w(!0),e.data.code1&&d(r=>({...r,code1:e.data.code1})),e.data.code2&&d(r=>({...r,code2:e.data.code2})))};return window.addEventListener("message",t),()=>window.removeEventListener("message",t)},[]);const p=i.useCallback(t=>{var r;const e=(r=l.current)==null?void 0:r.contentDocument;if(!e)return;let n=e.getElementById("injected-global-font");n||(n=e.createElement("style"),n.id="injected-global-font",e.head.appendChild(n)),t&&t!=="Plus Jakarta Sans"?n.innerHTML=`body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${t}', sans-serif !important; }`:n.innerHTML="body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }"},[]);i.useEffect(()=>{const t=l.current;if(!t)return;const e=()=>{try{const r=t.contentDocument;if(r){let a="";for(const s of Array.from(document.styleSheets))try{for(const x of Array.from(s.cssRules))x instanceof CSSFontFaceRule&&(a+=x.cssText+`
-`)}catch{}if(a){const s=r.createElement("style");s.id="injected-font-faces",s.textContent=a,r.head.appendChild(s)}}}catch{}S().then(r=>{r&&p(r)})};t.addEventListener("load",e);const n=new MutationObserver(()=>{const r=document.getElementById("dynamic-font-style");if(r){const a=r.innerHTML.match(/font-family:\s*'([^']+)'/);a&&p(a[1])}});return n.observe(document.head,{childList:!0,subtree:!0,characterData:!0}),()=>{t.removeEventListener("load",e),n.disconnect()}},[p]);const m=(t,e)=>{d(n=>{var a,s;const r={...n,[t]:e};return(s=(a=l.current)==null?void 0:a.contentWindow)==null||s.postMessage({type:"CHECK_THUONG_SEARCH",code1:r.code1,code2:r.code2},"*"),r})},C=()=>{var t,e;(e=(t=l.current)==null?void 0:t.contentWindow)==null||e.postMessage({type:"CHECK_THUONG_CHANGE_FILE"},"*")},f=t=>o.jsxs("div",{className:`flex items-center ${t?"gap-1":"hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300"}`,children:[o.jsxs("div",{className:`flex items-center ${t?"gap-1":"gap-2 px-2"}`,children:[o.jsx("input",{type:"text",placeholder:"Kho 1",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-40 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:c.code1,onChange:e=>m("code1",e.target.value)}),o.jsx("input",{type:"text",placeholder:"Kho 2",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-36 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:c.code2,onChange:e=>m("code2",e.target.value)})]}),o.jsxs("div",{className:`flex items-center ${t?"gap-0.5":"gap-1 border-l border-slate-200 dark:border-slate-700 pl-2"}`,children:[o.jsx("button",{onClick:()=>{var e,n;d(r=>({...r,code2:""})),(n=(e=l.current)==null?void 0:e.contentWindow)==null||n.postMessage({type:"CHECK_THUONG_SEARCH",code1:c.code1,code2:""},"*")},className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors`,title:"Xoá mã kho đang so sánh",children:o.jsx(b,{name:"rotate-ccw",size:t?3:3.5})}),o.jsx("button",{onClick:C,className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`,title:"Tải file khác",children:o.jsx(b,{name:"upload",size:t?3:3.5})})]})]});return o.jsxs("div",{className:"w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0",children:[g&&u==="check-thuong"&&h&&document.getElementById("global-header-actions")&&y.createPortal(f(!1),document.getElementById("global-header-actions")),g&&u==="check-thuong"&&h&&document.getElementById("mobile-topbar-actions")&&y.createPortal(f(!0),document.getElementById("mobile-topbar-actions")),o.jsx("iframe",{ref:l,srcDoc:k,title:"Bảng Tra Cứu Thưởng Thi Đua",className:"w-full h-full border-none flex-grow",style:{width:"100%",height:"100%",border:"none"},sandbox:"allow-scripts allow-same-origin allow-forms allow-downloads"})]})};export{_ as CheckThuongView,_ as default};
+`,_=()=>{const{activeTab:u}=N(),[g,v]=i.useState(!1),l=i.useRef(null),[h,w]=i.useState(!1),[d,c]=i.useState({code1:"910",code2:""});i.useEffect(()=>{v(!0);const t=e=>{var n;((n=e.data)==null?void 0:n.type)==="CHECK_THUONG_FILE_LOADED"&&(w(!0),e.data.code1&&c(r=>({...r,code1:e.data.code1})),e.data.code2&&c(r=>({...r,code2:e.data.code2})))};return window.addEventListener("message",t),()=>window.removeEventListener("message",t)},[]);const p=i.useCallback(t=>{var r;const e=(r=l.current)==null?void 0:r.contentDocument;if(!e)return;let n=e.getElementById("injected-global-font");n||(n=e.createElement("style"),n.id="injected-global-font",e.head.appendChild(n)),t&&t!=="Plus Jakarta Sans"?n.innerHTML=`body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${t}', sans-serif !important; }`:n.innerHTML="body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }"},[]);i.useEffect(()=>{const t=l.current;if(!t)return;const e=()=>{try{const r=t.contentDocument;if(r){let a="";for(const s of Array.from(document.styleSheets))try{for(const x of Array.from(s.cssRules))x instanceof CSSFontFaceRule&&(a+=x.cssText+`
+`)}catch{}if(a){const s=r.createElement("style");s.id="injected-font-faces",s.textContent=a,r.head.appendChild(s)}}}catch{}k().then(r=>{r&&p(r)})};t.addEventListener("load",e);const n=new MutationObserver(()=>{const r=document.getElementById("dynamic-font-style");if(r){const a=r.innerHTML.match(/font-family:\s*'([^']+)'/);a&&p(a[1])}});return n.observe(document.head,{childList:!0,subtree:!0,characterData:!0}),()=>{t.removeEventListener("load",e),n.disconnect()}},[p]);const m=(t,e)=>{c(n=>{var a,s;const r={...n,[t]:e};return(s=(a=l.current)==null?void 0:a.contentWindow)==null||s.postMessage({type:"CHECK_THUONG_SEARCH",code1:r.code1,code2:r.code2},"*"),r})},C=()=>{var t,e;(e=(t=l.current)==null?void 0:t.contentWindow)==null||e.postMessage({type:"CHECK_THUONG_CHANGE_FILE"},"*")},f=t=>o.jsxs("div",{className:`flex items-center ${t?"gap-1":"hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300"}`,children:[o.jsxs("div",{className:`flex items-center ${t?"gap-1":"gap-2 px-2"}`,children:[o.jsx("input",{type:"text",placeholder:"Kho 1",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-40 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:d.code1,onChange:e=>m("code1",e.target.value)}),o.jsx("input",{type:"text",placeholder:"Kho 2",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-36 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:d.code2,onChange:e=>m("code2",e.target.value)})]}),o.jsxs("div",{className:`flex items-center ${t?"gap-0.5":"gap-1 border-l border-slate-200 dark:border-slate-700 pl-2"}`,children:[o.jsx("button",{onClick:()=>{var e,n;c(r=>({...r,code2:""})),(n=(e=l.current)==null?void 0:e.contentWindow)==null||n.postMessage({type:"CHECK_THUONG_SEARCH",code1:d.code1,code2:""},"*")},className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors`,title:"Xoá mã kho đang so sánh",children:o.jsx(b,{name:"rotate-ccw",size:t?3:3.5})}),o.jsx("button",{onClick:C,className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`,title:"Tải file khác",children:o.jsx(b,{name:"upload",size:t?3:3.5})})]})]});return o.jsxs("div",{className:"w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0",children:[g&&u==="check-thuong"&&h&&document.getElementById("global-header-actions")&&y.createPortal(f(!1),document.getElementById("global-header-actions")),g&&u==="check-thuong"&&h&&document.getElementById("mobile-topbar-actions")&&y.createPortal(f(!0),document.getElementById("mobile-topbar-actions")),o.jsx("iframe",{ref:l,srcDoc:S,title:"Bảng Tra Cứu Thưởng Thi Đua",className:"w-full h-full border-none flex-grow",style:{width:"100%",height:"100%",border:"none"},sandbox:"allow-scripts allow-same-origin allow-forms allow-downloads"})]})};export{_ as CheckThuongView,_ as default};
