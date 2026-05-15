@@ -138,7 +138,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
 function AppContent() {
     const { isDarkMode, toggleDarkMode } = useLayout();
     const { activeTab } = useActiveTab();
-    const { user, userRole, isDemoMode, isLoading } = useAuth();
+    const { user, userRole, isDemoMode, isLoading, departmentId } = useAuth();
     
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
 
@@ -192,6 +192,11 @@ function AppContent() {
     // Hiển thị màn hình thông tin chờ duyệt hoặc form đăng ký cho user mới
     if (user?.status === 'pending') {
         return <PendingApprovalView />;
+    }
+
+    // Bắt buộc nhập mã kho cho tất cả user đã approved (trừ admin/demo)
+    if (user && !isDemoMode && userRole !== 'admin' && (!departmentId || departmentId.trim() === '')) {
+        return <PendingApprovalView forceDeptUpdate />;
     }
 
     return (

@@ -4,9 +4,15 @@ import { Icon } from '../common/Icon';
 import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
 
-const PendingApprovalView: React.FC = () => {
-    const { user, logout, status, requestAccess } = useAuth();
-    const [selectedRole, setSelectedRole] = useState<'manager' | 'employee' | null>(null);
+interface PendingApprovalViewProps {
+    forceDeptUpdate?: boolean;
+}
+
+const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpdate = false }) => {
+    const { user, logout, status, requestAccess, userRole } = useAuth();
+    const [selectedRole, setSelectedRole] = useState<'manager' | 'employee' | null>(
+        forceDeptUpdate ? (userRole === 'manager' ? 'manager' : 'employee') : null
+    );
     const [deptId, setDeptId] = useState('');
     const [empName, setEmpName] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -15,6 +21,10 @@ const PendingApprovalView: React.FC = () => {
         e.preventDefault();
         if (!selectedRole || !deptId) {
             toast.error('Vui lòng nhập đầy đủ thông tin mã kho.');
+            return;
+        }
+        if (!deptId.trim()) {
+            toast.error('Mã kho không được để trống!');
             return;
         }
         if (!empName) {
@@ -29,7 +39,9 @@ const PendingApprovalView: React.FC = () => {
         setIsSubmitting(true);
         try {
             await requestAccess(selectedRole, deptId, empName);
-            toast.success('Gửi yêu cầu thành công! Admin/Quản lý sẽ duyệt sớm nhất.');
+            toast.success(forceDeptUpdate 
+                ? 'Cập nhật mã kho thành công! Vui lòng chờ duyệt.'
+                : 'Gửi yêu cầu thành công! Admin/Quản lý sẽ duyệt sớm nhất.');
         } catch (error) {
             toast.error('Có lỗi xảy ra, vui lòng thử lại.');
         } finally {
@@ -68,20 +80,27 @@ const PendingApprovalView: React.FC = () => {
                                 {user?.email ? user.email[0] : '?'}
                             </div>
                         )}
-                        <div className="absolute bottom-0 right-0 w-6 h-6 bg-amber-400 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center shadow-sm">
-                            <Icon name={status === 'new' ? 'user-plus' : 'clock'} size={3.5} className="text-white" />
+                        <div className={`absolute bottom-0 right-0 w-6 h-6 ${forceDeptUpdate ? 'bg-rose-500' : 'bg-amber-400'} rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center shadow-sm`}>
+                            <Icon name={forceDeptUpdate ? 'alert-triangle' : status === 'new' ? 'user-plus' : 'clock'} size={3.5} className="text-white" />
                         </div>
                     </div>
 
                     <h2 className="text-2xl font-bold text-slate-800 dark:text-white mb-2 font-display text-center">
-                        {status === 'pending' ? 'Đang Chờ Phê Duyệt' : 'Đăng Ký Quyền Truy Cập'}
+                        {forceDeptUpdate ? 'Cập Nhật Mã Kho' : status === 'pending' ? 'Đang Chờ Phê Duyệt' : 'Đăng Ký Quyền Truy Cập'}
                     </h2>
                     
-                    <div className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-6 text-center">
+                    <div className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-4 text-center">
                         Xin chào <strong className="text-slate-700 dark:text-slate-200">{user?.displayName || user?.email}</strong>,
                     </div>
 
-                    {status === 'pending' ? (
+                    {forceDeptUpdate && (
+                        <div className="w-full bg-rose-50 dark:bg-rose-900/20 text-rose-700 dark:text-rose-400 p-3 rounded-xl border border-rose-200 dark:border-rose-900/40 text-sm text-center leading-relaxed mb-4">
+                            <Icon name="alert-circle" size={4} className="inline mr-1" />
+                            Tài khoản của bạn <strong>chưa đăng ký mã kho</strong>. Vui lòng cập nhật để tiếp tục sử dụng hệ thống.
+                        </div>
+                    )}
+
+                    {status === 'pending' && !forceDeptUpdate ? (
                         <div className="w-full space-y-4 text-center">
                             <div className="bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-400 p-4 rounded-xl border border-amber-200 dark:border-amber-900/40 text-sm text-center leading-relaxed">
                                 Yêu cầu của bạn đã được ghi nhận thành công.<br/>
@@ -126,6 +145,7 @@ const PendingApprovalView: React.FC = () => {
                         </div>
                     ) : (
                         <form onSubmit={handleSubmit} className="w-full text-left">
+                            {!forceDeptUpdate && (
                             <div className="mb-4">
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Vai trò muốn đăng ký:</label>
                                 <div className="grid grid-cols-2 gap-3">
@@ -147,8 +167,9 @@ const PendingApprovalView: React.FC = () => {
                                     </button>
                                 </div>
                             </div>
+                            )}
                             
-                            <motion.div animate={{ height: selectedRole ? 'auto' : 0, opacity: selectedRole ? 1 : 0 }} className="overflow-hidden space-y-4">
+                            <motion.div animate={{ height: (selectedRole || forceDeptUpdate) ? 'auto' : 0, opacity: (selectedRole || forceDeptUpdate) ? 1 : 0 }} className="overflow-hidden space-y-4">
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Mã Kho (Chi nhánh):</label>
                                     <input 
@@ -187,7 +208,7 @@ const PendingApprovalView: React.FC = () => {
                                     />
                                     <p className="text-[11px] text-slate-500 mt-1 italic">Vui lòng nhập <strong className="font-bold text-slate-700 dark:text-slate-300">đúng User ID (mã nhân viên phần số)</strong>. Hệ thống sẽ tự động map dữ liệu.</p>
                                 </div>
-                                {selectedRole && (
+                                {(selectedRole || forceDeptUpdate) && (
                                     <div className="pt-4 flex gap-3">
                                         <button 
                                             type="button" 
@@ -203,7 +224,7 @@ const PendingApprovalView: React.FC = () => {
                                             className="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-indigo-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
                                             {isSubmitting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="check-circle" size={5} />}
-                                            {isSubmitting ? 'Đang gửi...' : 'Gửi Đăng Ký'}
+                                            {isSubmitting ? 'Đang gửi...' : forceDeptUpdate ? 'Cập nhật Mã Kho' : 'Gửi Đăng Ký'}
                                         </button>
                                     </div>
                                 )}
