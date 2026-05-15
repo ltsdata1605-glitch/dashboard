@@ -7,9 +7,7 @@ import SummaryTableView from './dashboard/SummaryTableView';
 import CompetitionView from './dashboard/CompetitionView';
 import IndustryView from './dashboard/IndustryView';
 import DashboardHeader from './dashboard/DashboardHeader';
-import DashboardToolbar from './dashboard/DashboardToolbar';
 import KpiOverview from './dashboard/KpiOverview';
-import { SupermarketNavBar } from './dashboard/DashboardWidgets';
 import * as db from '../utils/db';
 import { useExportOptions } from '../../hooks/useExportOptions';
 import ExportOptionsModal from '../../components/common/ExportOptionsModal';
@@ -279,27 +277,23 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     return (
         <ExportOptionsProvider value={{ showExportOptions: exportOptions.showExportOptions }}>
         <div className="space-y-3 sm:space-y-6">
-            <DashboardHeader title="Tổng quan Siêu thị" activeMainTab={activeMainTab} setActiveMainTab={setActiveMainTab} />
+            <DashboardHeader 
+                title="Tổng quan Siêu thị" 
+                activeMainTab={activeMainTab} 
+                setActiveMainTab={setActiveMainTab} 
+                activeSubTab={activeSubTab}
+                setActiveSubTab={setActiveSubTab}
+                supermarkets={supermarkets}
+                activeSupermarket={activeSupermarket}
+                setActiveSupermarket={setActiveSupermarket}
+                onBatchExport={() => {
+                    if (activeSubTab === 'competition') runBatchExport('competition');
+                    else runBatchExport(isRealtimeView ? 'realtime' : 'cumulative');
+                }}
+                isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
+            />
             
-            <div className="mt-3 sm:mt-8">
-                <DashboardToolbar 
-                    id={isRealtimeView ? "realtime-controls" : "cumulative-controls"}
-                    activeSubTab={activeSubTab}
-                    setActiveSubTab={setActiveSubTab}
-                />
-                
-                <SupermarketNavBar 
-                    supermarkets={supermarkets}
-                    activeSupermarket={activeSupermarket}
-                    setActiveSupermarket={setActiveSupermarket}
-                    onBatchExport={() => {
-                        if (activeSubTab === 'competition') runBatchExport('competition');
-                        else runBatchExport(isRealtimeView ? 'realtime' : 'cumulative');
-                    }}
-                    isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
-                />
-
-                <div className="mt-3 sm:mt-8">
+            <div className="mt-3 sm:mt-4">
                     {activeSubTab === 'revenue' && (
                         <div ref={printableRef} className="space-y-3 sm:space-y-6">
                             <SummaryTableView 
@@ -352,7 +346,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                         />
                     )}
                 </div>
-            </div>
             <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
             <ExportOptionsModal
                 isOpen={!!exportOptions.pendingExport}

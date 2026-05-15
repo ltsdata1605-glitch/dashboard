@@ -124,7 +124,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 
                 {/* Card 1: DT THỰC */}
                 {renderCard({
-                    title: isRealtime ? 'DOANH THU THỰC' : 'DT THỰC L.KẾ',
+                    title: 'DT THỰC',
                     icon: <span className="text-[12px] font-black w-4 h-4 flex items-center justify-center">$</span>,
                     iconBg: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
                     titleColor: 'text-slate-500 dark:text-slate-400',
@@ -139,7 +139,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
 
                 {/* Card 2: DOANH THU Q.ĐỔI */}
                 {renderCard({
-                    title: isRealtime ? 'DOANH THU Q.ĐỔI' : 'DT Q.ĐỔI L.KẾ',
+                    title: 'DTQĐ',
                     icon: <span className="text-[12px] font-black w-4 h-4 flex items-center justify-center">~</span>,
                     iconBg: 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
                     titleColor: 'text-slate-500 dark:text-slate-400',
@@ -155,7 +155,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
 
                 {/* Card 3: HIỆU QUẢ Q.ĐỔI */}
                 {renderCard({
-                    title: 'HIỆU QUẢ Q.ĐỔI',
+                    title: 'HQQĐ',
                     icon: <span className="text-[12px] font-black w-4 h-4 flex items-center justify-center">⚡</span>,
                     iconBg: 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
                     titleColor: 'text-slate-500 dark:text-slate-400',
@@ -169,7 +169,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
 
                 {/* Card 4: TỶ LỆ TRẢ GÓP */}
                 {renderCard({
-                    title: 'TỶ LỆ TRẢ CHẬM',
+                    title: 'TRẢ CHẬM',
                     icon: <span className="text-[12px] font-black w-4 h-4 flex items-center justify-center">%</span>,
                     iconBg: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
                     titleColor: 'text-slate-500 dark:text-slate-400',
@@ -187,7 +187,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
                 {/* Extra 1: Lượt Khách — Blue Pastel */}
                 {renderCard({
-                    title: 'LƯỢT KHÁCH',
+                    title: 'L.KHÁCH',
                     icon: <UsersIcon className="h-4 w-4" />,
                     iconBg: 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
                     titleColor: 'text-blue-600 dark:text-blue-400',
@@ -197,7 +197,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 })}
                 {/* Extra 2: TLPV — Violet Pastel */}
                 {renderCard({
-                    title: 'TL PHỤC VỤ',
+                    title: 'TLPVTC',
                     icon: <DocumentReportIcon className="h-4 w-4" />,
                     iconBg: 'bg-violet-50 dark:bg-violet-900/30 text-violet-600 dark:text-violet-400',
                     titleColor: 'text-violet-600 dark:text-violet-400',
@@ -207,7 +207,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 })}
                 {/* Extra 3: Bill Bán Hàng — Emerald Pastel */}
                 {renderCard({
-                    title: 'BILL BÁN HÀNG',
+                    title: 'BILL BÁN',
                     icon: <FileTextIcon className="h-4 w-4" />,
                     iconBg: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
                     titleColor: 'text-emerald-600 dark:text-emerald-400',
@@ -217,7 +217,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 })}
                 {/* Extra 4: Bill Thu Hộ — Rose Pastel */}
                 {renderCard({
-                    title: 'BILL THU HỘ',
+                    title: 'BILL T.HỘ',
                     icon: <FileTextIcon className="h-4 w-4" />,
                     iconBg: 'bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400',
                     titleColor: 'text-rose-600 dark:text-rose-400',

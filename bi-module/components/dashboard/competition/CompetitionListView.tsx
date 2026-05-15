@@ -55,6 +55,16 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
         return mapping[header] || header;
     };
 
+    const getHeaderStyle = (headerFormatted: string) => {
+        const h = headerFormatted.replace(/<br\/>/g, ' ');
+        if (h.includes('M.TIÊU')) return 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300 hover:bg-sky-200 dark:hover:bg-sky-800';
+        if (h.includes('T.HIỆN') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300 hover:bg-cyan-200 dark:hover:bg-cyan-800';
+        if (h.includes('%HTDK')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800';
+        if (h.includes('%HT')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-800';
+        if (h.includes('C.LẠI')) return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800';
+        return 'hover:bg-slate-50 dark:hover:bg-slate-800';
+    };
+
     const isMobile = window.innerWidth < 768;
 
     return (
@@ -128,9 +138,9 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
             ) : (
                 <table className="min-w-full text-[13px] border-collapse compact-export-table">
                     <thead>
-                        <tr className="bg-sky-50 dark:bg-slate-800 text-sky-900 dark:text-sky-100 font-bold uppercase tracking-tight border-b-[3px] border-sky-200 dark:border-slate-700 shadow-sm">
-                            <th className="px-2 py-1.5 text-center border-r border-sky-100 dark:border-slate-700/50 w-10 text-[11px] align-middle">#</th>
-                            <th className="px-2 py-1.5 text-left cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors border-r border-sky-100 dark:border-slate-700/50 whitespace-nowrap text-[11px] align-middle" onClick={() => handleSort(-1)}>
+                        <tr className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider border-b-[2px] border-slate-200 dark:border-slate-700">
+                            <th className="px-2 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 w-10 text-[10px] sm:text-[11px] align-middle">#</th>
+                            <th className="px-2 py-1.5 text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-r border-slate-200 dark:border-slate-700 whitespace-nowrap text-[10px] sm:text-[11px] align-middle" onClick={() => handleSort(-1)}>
                                 NHÓM THI ĐUA
                             </th>
                             {headers.map((header, index) => {
@@ -139,7 +149,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                     <th 
                                         key={index} 
                                         onClick={() => handleSort(index)}
-                                        className="px-2 py-1.5 text-center whitespace-nowrap cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors border-r border-sky-100 dark:border-slate-700/50 last:border-r-0 text-[11px] align-middle"
+                                        className={`px-2 py-1.5 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[10px] sm:text-[11px] align-middle ${getHeaderStyle(getFormattedHeader(header))}`}
                                         dangerouslySetInnerHTML={{ __html: getFormattedHeader(header) }}
                                     />
                                 )
@@ -148,7 +158,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                             { !hiddenColumns.includes('Còn Lại') && (
                                     <th 
                                     onClick={() => handleSort('conLai')}
-                                    className="px-2 py-1.5 text-center whitespace-nowrap cursor-pointer hover:bg-sky-100/50 dark:hover:bg-slate-700 transition-colors text-[11px] align-middle"
+                                    className={`px-2 py-1.5 text-center whitespace-nowrap cursor-pointer transition-colors text-[10px] sm:text-[11px] align-middle ${getHeaderStyle('C.LẠI')}`}
                                     dangerouslySetInnerHTML={{ __html: getFormattedHeader('Còn Lại') }}
                                 />
                             )}
@@ -208,13 +218,11 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                     
                                                     if (isProgressBarColumn) {
                                                         const htValue = parseNumber(cell);
-                                                        let colorClass = 'text-red-600 dark:text-red-400';
-                                                        if (htValue >= 100) colorClass = 'text-green-600 dark:text-green-400';
-                                                        else if (htValue >= 85) colorClass = 'text-yellow-600 dark:text-yellow-400';
+                                                        let colorClass = 'text-slate-800 dark:text-slate-200';
 
                                                         return (
                                                             <div className="flex items-center justify-center gap-3 tabular-nums">
-                                                                <span className={`font-bold w-10 text-right ${colorClass}`}>{`${roundUp(htValue)}%`}</span>
+                                                                <span className={`font-black text-[12px] w-10 text-right ${colorClass}`}>{`${roundUp(htValue)}%`}</span>
                                                                 <div className="w-10 hidden sm:block"> <ProgressBar value={htValue} /> </div>
                                                             </div>
                                                         );
@@ -222,6 +230,12 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                     
                                                     const isActualCol = header.startsWith('L.Kế') || header.startsWith('Realtime');
                                                     if (isActualCol) return <span className="font-bold text-slate-900 dark:text-white">{cellDisplayValue}</span>;
+                                                    
+                                                    if (headerKey === '%HTDK' || headerKey === '%HTDK V.Trội') {
+                                                        const pVal = parseNumber(cell);
+                                                        const color = pVal >= 100 ? 'text-emerald-600 dark:text-emerald-400' : (pVal >= 85 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400');
+                                                        return <span className={`font-black ${color}`}>{cellDisplayValue}</span>;
+                                                    }
 
                                                     return <span className="text-slate-600 dark:text-slate-400 font-bold">{cellDisplayValue}</span>;
                                                 };

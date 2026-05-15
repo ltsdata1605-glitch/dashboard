@@ -1,11 +1,13 @@
 
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import Card from '../Card';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { SupermarketCompetitionData, Criterion, shortenName, shortenSupermarketName, parseNumber } from '../../utils/dashboardHelpers';
 import CompetitionControlBar from './competition/CompetitionControlBar';
 import CompetitionGridView from './competition/CompetitionGridView';
 import CompetitionListView from './competition/CompetitionListView';
+import { exportElementAsImage } from '../../../services/uiService';
+import { Icon } from '../../../components/common/Icon';
 
 interface CompetitionViewProps {
     data: Record<string, SupermarketCompetitionData>;
@@ -27,6 +29,8 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const [hiddenColumns, setHiddenColumns] = useIndexedDBState<string[]>(`competition_view_hidden_columns_${isRealtime ? 'rt' : 'lk'}`, []);
     const [defaultSortSet, setDefaultSortSet] = useState(false);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
+    const [isExporting, setIsExporting] = useState(false);
+    const exportRef = useRef<HTMLDivElement>(null);
     
     const handleSort = (columnIndex: number | 'conLai' | 'htdkVT' | -1) => {
         setSortConfig(current => {
@@ -119,31 +123,52 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         }, {} as Partial<Record<Criterion, any[]>>);
     }, [sortedPrograms]);
 
-    const cardTitle = (
-        <div className="card-title-text flex flex-col items-center justify-center w-full">
-            <span className="text-xl font-semibold uppercase text-primary-700 dark:text-primary-400 text-center leading-none tracking-tight">
-                {isRealtime ? 'REALTIME THI ĐUA' : 'LUỸ KẾ THI ĐUA'} - {activeSupermarket === 'Tổng' ? 'TỔNG QUAN' : shortenSupermarketName(activeSupermarket).toUpperCase()}
-            </span>
-            {updateTimestamp && (
-                <div className="flex items-center justify-center gap-1.5 mt-1.5 no-print bg-slate-50 dark:bg-slate-800/50 px-3 py-0.5 rounded-full border border-slate-100 dark:border-slate-700/50">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                    <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-                        Cập nhật lúc: {updateTimestamp}
-                    </span>
-                </div>
-            )}
-        </div>
-    );
-    
+    const handleExport = async () => {
+        if (exportRef.current) {
+            setIsExporting(true);
+            const title = `${isRealtime ? 'REALTIME THI ĐUA' : 'LUỸ KẾ THI ĐUA'} - ${activeSupermarket === 'Tổng' ? 'TỔNG QUAN' : shortenSupermarketName(activeSupermarket).toUpperCase()}`;
+            const safeTabName = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+            await exportElementAsImage(exportRef.current, `${safeTabName}.png`, {
+                elementsToHide: ['.hide-on-export'],
+                isCompactTable: true,
+                fitAllColumns: true
+            });
+            setIsExporting(false);
+        }
+    };
+
     return (
-        <Card title={cardTitle} actionButton={<CompetitionControlBar viewMode={viewMode} setViewMode={setViewMode} selectedPrograms={selectedPrograms} setSelectedPrograms={setSelectedPrograms} allProgramNames={allProgramNames} hiddenColumns={hiddenColumns} setHiddenColumns={setHiddenColumns} headers={processedSupermarketData?.headers || []} onExport={onExport} />} ref={ref} rounded={false}>
-            <div className="mt-4">
-                {processedSupermarketData && sortedPrograms.length > 0 ? (
-                    viewMode === 'grid' ? <CompetitionGridView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} /> 
-                    : <CompetitionListView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} handleSort={handleSort} />
-                ) : <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/40 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800"><p className="text-sm font-medium text-slate-400">Không có chương trình thi đua nào được chọn.</p></div>}
+        <div ref={exportRef} className="rounded-none border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 mt-4">
+            <div className="overflow-hidden">
+                <div className="px-2 py-1 flex justify-between items-center bg-[#34495e] dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 gap-2">
+                    <h3 className="text-[11px] sm:text-[13px] font-extrabold uppercase flex items-center gap-1.5 sm:gap-2 text-white tracking-widest truncate w-full justify-center">
+                        {activeSupermarket === 'Tổng' ? 'TỔNG QUAN' : activeSupermarket.toUpperCase()} - THI ĐUA {updateTimestamp ? `ĐẾN ${updateTimestamp.split(' ')[0]}` : ''}
+                    </h3>
+                    <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0 absolute right-2">
+                        <CompetitionControlBar 
+                            viewMode={viewMode} 
+                            setViewMode={setViewMode} 
+                            selectedPrograms={selectedPrograms} 
+                            setSelectedPrograms={setSelectedPrograms} 
+                            allProgramNames={allProgramNames} 
+                            hiddenColumns={hiddenColumns} 
+                            setHiddenColumns={setHiddenColumns} 
+                            headers={processedSupermarketData?.headers || []} 
+                        />
+                        <button onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/20 transition-colors ml-1">
+                            {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
+                            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
+                        </button>
+                    </div>
+                </div>
+                <div className="p-0">
+                    {processedSupermarketData && sortedPrograms.length > 0 ? (
+                        viewMode === 'grid' ? <CompetitionGridView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} /> 
+                        : <CompetitionListView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} handleSort={handleSort} />
+                    ) : <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/40 border-2 border-dashed border-slate-200 dark:border-slate-800"><p className="text-sm font-medium text-slate-400">Không có chương trình thi đua nào được chọn.</p></div>}
+                </div>
             </div>
-        </Card>
+        </div>
     );
 });
 
