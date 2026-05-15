@@ -99,13 +99,14 @@ const htmlContent = `
             /* Landing page */
             #landingPage h1 { font-size: 1.5rem !important; }
             #landingPage .hero-content { padding: 12px 12px 0; }
-            /* Search section - stack vertically */
-            #searchSection .mod-card { padding: 10px 12px !important; border-radius: 10px !important; }
-            #searchSection .mod-card > div { flex-direction: column !important; gap: 8px !important; }
-            #searchSection .mod-card > div > div[style*="width:1px"] { display: none !important; }
-            #searchSection .mod-input { height: 36px !important; font-size: 13px !important; padding-left: 32px !important; border-radius: 8px !important; }
-            #searchSection .mod-btn { height: 36px !important; width: 36px !important; border-radius: 8px !important; }
-            #searchSection label { font-size: 10px !important; margin-bottom: 4px !important; }
+            /* Search section - keep horizontal but compact */
+            #searchSection .mod-card { padding: 8px 10px !important; border-radius: 8px !important; }
+            #searchSection .mod-card > div { flex-direction: row !important; gap: 4px !important; align-items: flex-end !important; }
+            #searchSection .mod-card > div > div { padding: 0 !important; }
+            #searchSection .mod-card > div > div[style*="width:1px"] { margin: 0 6px !important; }
+            #searchSection .mod-input { height: 32px !important; font-size: 11px !important; padding-left: 28px !important; border-radius: 6px !important; }
+            #searchSection .mod-btn { height: 32px !important; width: 32px !important; border-radius: 6px !important; }
+            #searchSection label { font-size: 9px !important; margin-bottom: 2px !important; }
             /* Summary banner */
             .summary-banner { padding: 12px 14px !important; }
             .summary-banner h2 { font-size: 15px !important; }
@@ -159,8 +160,11 @@ const htmlContent = `
             /* Overflow protection */
             body { overflow-x: hidden; }
             #mainContent, #comparisonContent, #summaryReportArea { overflow-x: hidden; }
-            /* Card grid - 2 columns on mobile */
-            #detailsGrid div[style*="grid-template-columns"] { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important; gap: 6px !important; padding: 6px !important; }
+            /* Card grid - lướt ngang mượt mà (horizontal scroll) thay vì xếp chồng */
+            #detailsGrid div[style*="grid-template-columns"] { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto !important; gap: 8px !important; padding: 4px 0 12px 0 !important; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
+            #detailsGrid .s-card { min-width: 200px !important; flex-shrink: 0 !important; scroll-snap-align: start; }
+            #detailsGrid div[style*="grid-template-columns"]::-webkit-scrollbar { height: 4px; }
+            #detailsGrid div[style*="grid-template-columns"]::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
             /* Group header */
             .group-container h2 { font-size: 11px !important; }
             .capture-fix { padding: 6px 10px !important; }
