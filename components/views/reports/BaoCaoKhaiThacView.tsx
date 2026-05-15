@@ -541,7 +541,38 @@ export default function BaoCaoKhaiThacView() {
   };
 
   return (
-    <div className="h-full flex flex-col w-full relative bg-slate-50 dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0 overflow-hidden">
+    <div className="h-full flex flex-col w-full relative bg-slate-50 dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0 overflow-hidden bao-cao-container">
+      <style>{`
+        @media (max-width: 768px) {
+            /* High-Density Typography cho mobile */
+            #report-export-area .text-2xl { font-size: 16px !important; }
+            #report-export-area .text-xl { font-size: 14px !important; }
+            #report-export-area .text-lg { font-size: 12px !important; }
+            #report-export-area .text-base { font-size: 11px !important; }
+            #report-export-area .text-sm { font-size: 10px !important; }
+            #report-export-area .text-xs { font-size: 9px !important; }
+            #report-export-area .text-\\[14px\\] { font-size: 11px !important; }
+            #report-export-area .text-\\[13px\\] { font-size: 10px !important; }
+            #report-export-area .text-\\[12px\\] { font-size: 9px !important; }
+            #report-export-area .text-\\[11px\\] { font-size: 9px !important; }
+            #report-export-area .text-\\[10px\\] { font-size: 8px !important; }
+            
+            /* Triệt tiêu khoảng trắng thừa */
+            #report-export-area .p-3 { padding: 8px !important; }
+            #report-export-area .p-4 { padding: 10px !important; }
+            #report-export-area .gap-2 { gap: 4px !important; }
+            #report-export-area .gap-3 { gap: 6px !important; }
+            #report-export-area .gap-4 { gap: 8px !important; }
+            #report-export-area .mb-2 { margin-bottom: 4px !important; }
+            #report-export-area .mb-3 { margin-bottom: 8px !important; }
+            #report-export-area .rounded-xl { border-radius: 8px !important; }
+            #report-export-area .rounded-2xl { border-radius: 12px !important; }
+            
+            /* Ẩn hoàn toàn thanh cuộn */
+            .bao-cao-container ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+            .bao-cao-container * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+        }
+      `}</style>
 
       {mounted && activeTab === 'reports' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
         <div className="flex items-center mr-2 bg-white/60 dark:bg-slate-900/60 p-1.5 px-3 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
