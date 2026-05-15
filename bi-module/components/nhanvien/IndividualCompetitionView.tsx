@@ -7,6 +7,7 @@ import { Employee, Criterion, CompetitionHeader, RevenueRow } from '../../types/
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services/uiService';
+import { PieChart, Pie, Cell } from 'recharts';
 
 const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
     const percentage = Math.min(Math.max(value, 0), 200);
@@ -60,9 +61,9 @@ const KpiStat: React.FC<{ label: string; value: string; sub?: string; accent?: s
 
 // ─── Competition Stat Pill ───
 const StatPill: React.FC<{ count: number; label: string; color: string }> = ({ count, label, color }) => (
-    <div className={`flex items-center gap-1 px-2 py-1 rounded text-[10px] font-bold ${color}`}>
-        <span className="text-sm font-black">{count}</span>
-        <span className="hidden sm:inline">{label}</span>
+    <div className={`flex items-center justify-center gap-1 px-2 py-1 rounded text-[11px] font-bold min-w-[52px] ${color}`}>
+        <span className="font-black">{count}</span>
+        <span>{label}</span>
     </div>
 );
 
@@ -83,25 +84,30 @@ const MiniDonut: React.FC<{ segments: { value: number; color: string }[]; center
     );
 };
 
-// ─── Progress Ring (pastel, single arc) ───
-const ProgressRing: React.FC<{ percent: number; total: number; size?: number }> = ({ percent, total, size = 68 }) => {
-    const r = 26, c = 2 * Math.PI * r;
-    const clampedPct = Math.min(Math.max(percent, 0), 200);
-    const arcLength = (Math.min(clampedPct, 100) / 100) * c;
-    const strokeColor = clampedPct >= 80 ? '#10b981' : clampedPct >= 50 ? '#f59e0b' : '#ef4444';
-    const bgColor = clampedPct >= 80 ? '#d1fae5' : clampedPct >= 50 ? '#fef3c7' : '#fee2e2';
+// ─── DKHT Donut (Recharts) ───
+const DONUT_COLORS = ['#34d399', '#fbbf24', '#94a3b8', '#f87171'];
+const DkhtDonut: React.FC<{ stats: { dkhtDat: number; dkhtGanDat: number; dkhtChuaDat: number; noSale: number; total: number } }> = ({ stats }) => {
+    const data = [
+        { name: '≥100%', value: stats.dkhtDat },
+        { name: 'Gần đạt', value: stats.dkhtGanDat },
+        { name: '<80%', value: stats.dkhtChuaDat },
+        { name: 'No Sale', value: stats.noSale },
+    ].filter(d => d.value > 0);
+    const datPct = stats.total > 0 ? Math.round((stats.dkhtDat / stats.total) * 100) : 0;
     return (
-        <div className="flex flex-col items-center gap-0.5">
-            <svg width={size} height={size} viewBox="0 0 68 68" className="flex-shrink-0 drop-shadow-sm">
-                <circle cx="34" cy="34" r={r} fill="none" stroke={bgColor} strokeWidth="6" />
-                <circle cx="34" cy="34" r={r} fill="none" stroke={strokeColor} strokeWidth="6"
-                    strokeDasharray={`${arcLength} ${c - arcLength}`} strokeDashoffset={0}
-                    strokeLinecap="round" transform="rotate(-90 34 34)"
-                    className="transition-all duration-700" />
-                <text x="34" y="31" textAnchor="middle" className="fill-slate-800 dark:fill-white font-black" style={{ fontSize: '15px' }}>{clampedPct}%</text>
-                <text x="34" y="43" textAnchor="middle" className="fill-slate-400 font-bold" style={{ fontSize: '7px' }}>HOÀN THÀNH</text>
-            </svg>
-            <p className="text-[9px] text-slate-400 font-bold">{total} nhóm</p>
+        <div className="flex flex-col items-center gap-0">
+            <div className="relative" style={{ width: 76, height: 76 }}>
+                <PieChart width={76} height={76} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
+                    <Pie data={data} cx="50%" cy="50%" innerRadius={22} outerRadius={33} paddingAngle={2} dataKey="value" strokeWidth={0}>
+                        {data.map((_entry, index) => <Cell key={index} fill={DONUT_COLORS[['≥100%', 'Gần đạt', '<80%', 'No Sale'].indexOf(_entry.name)]} />)}
+                    </Pie>
+                </PieChart>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <span className="text-[15px] font-black text-white leading-none drop-shadow-md">{datPct}%</span>
+                    <span className="text-[6px] font-bold text-white/80 uppercase leading-tight drop-shadow-sm mt-0.5">Đạt 100%</span>
+                </div>
+            </div>
+            <p className="text-[9px] text-white/70 font-bold">{stats.total} nhóm</p>
         </div>
     );
 };
@@ -177,57 +183,65 @@ const EmployeeProfileCard: React.FC<{
     }, [revenueRows, installmentRows, banKemRows, selectedEmployee]);
 
     const compStats = useMemo(() => {
-        const allItems: { name: string; completion: number; remaining: number }[] = [];
+        const allItems: { name: string; completion: number; remaining: number; target: number; actual: number }[] = [];
         Object.values(groupedPerformanceData || {}).forEach((items: any) => {
             if (Array.isArray(items)) allItems.push(...items);
         });
+        const now = new Date();
+        const daysPassed = now.getDate() - 1;
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
         const total = allItems.length;
-        const top1 = allItems.filter(i => i.completion >= 100).length;
-        const above80 = allItems.filter(i => i.completion >= 80 && i.completion < 100).length;
-        const below80 = allItems.filter(i => i.completion < 80 && i.completion > 0).length;
-        const noData = allItems.filter(i => i.completion === 0).length;
-        const avgCompletion = total > 0 ? allItems.reduce((s, i) => s + i.completion, 0) / total : 0;
-        return { total, top1, above80, below80, noData, avgCompletion };
+        // Calculate %DKHT for each item
+        const dkhtValues = allItems.map(i => {
+            if (daysPassed <= 0 || !i.target || i.target <= 0) return 0;
+            return ((i.actual / daysPassed) * daysInMonth / i.target) * 100;
+        });
+        const dkhtDat = dkhtValues.filter(d => d >= 100).length;
+        const dkhtGanDat = dkhtValues.filter(d => d >= 80 && d < 100).length;
+        const dkhtChuaDat = dkhtValues.filter(d => d > 0 && d < 80).length;
+        const noSale = dkhtValues.filter(d => d === 0).length;
+        const avgDkht = total > 0 ? dkhtValues.reduce((s, d) => s + d, 0) / total : 0;
+        return { total, dkhtDat, dkhtGanDat, dkhtChuaDat, noSale, avgDkht };
     }, [groupedPerformanceData]);
 
     const f = (v?: number) => v != null && !isNaN(v) ? roundUp(v).toLocaleString('vi-VN') : '-';
     const pct = (v?: number) => v != null && !isNaN(v) ? `${Math.round(v)}%` : '-';
 
     const donutSegments = [
-        { value: compStats.top1, color: '#10b981' },
-        { value: compStats.above80, color: '#f59e0b' },
-        { value: compStats.below80, color: '#ef4444' },
-        { value: compStats.noData, color: 'rgba(255,255,255,0.15)' },
+        { value: compStats.dkhtDat, color: '#059669' },
+        { value: compStats.dkhtGanDat, color: '#d97706' },
+        { value: compStats.dkhtChuaDat, color: '#dc2626' },
+        { value: compStats.noSale, color: '#94a3b8' },
     ];
 
     return (
         <div className="mb-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
-            {/* Header pastel gradient */}
-            <div className="bg-gradient-to-br from-sky-50 via-teal-50 to-indigo-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 px-4 py-3 relative overflow-hidden border-b border-slate-100 dark:border-slate-700">
-                <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, #0ea5e9 1px, transparent 1px), radial-gradient(circle at 80% 20%, #6366f1 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            {/* Header gradient */}
+            <div className="bg-gradient-to-br from-teal-500 via-cyan-500 to-blue-600 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 px-4 py-3 relative overflow-hidden border-b border-teal-600/30 dark:border-slate-700">
+                <div className="absolute inset-0 opacity-[0.08]" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                 <div className="flex items-center gap-4 relative z-10">
-                    <div className="w-16 h-16 rounded-full border-[3px] border-white dark:border-slate-600 overflow-hidden flex-shrink-0 shadow-lg shadow-sky-200/50 dark:shadow-none">
+                    <div className="w-24 h-24 rounded-full border-[3px] border-white/40 overflow-hidden flex-shrink-0 shadow-lg">
                         {avatarSrc ? (
                             <img src={avatarSrc} alt={selectedEmployee.name} className="w-full h-full rounded-full object-cover" />
                         ) : (
-                            <div className="w-full h-full rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center">
+                            <div className="w-full h-full rounded-full bg-white/20 flex items-center justify-center">
                                 <span className="text-2xl font-black text-white">{selectedEmployee.name.charAt(selectedEmployee.name.lastIndexOf(' ') + 1) || '?'}</span>
                             </div>
                         )}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-black text-slate-800 dark:text-white uppercase truncate leading-tight">{selectedEmployee.name}</h3>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">{selectedEmployee.department}</p>
+                        <h3 className="text-lg font-black text-white uppercase truncate leading-tight drop-shadow-sm">{selectedEmployee.name}</h3>
+                        <p className="text-[11px] text-white/70 font-medium mt-0.5">{selectedEmployee.department}</p>
                         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                            <StatPill count={compStats.top1} label="Đạt" color="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400" />
-                            <StatPill count={compStats.above80} label="≥80%" color="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400" />
-                            <StatPill count={compStats.below80} label="<80%" color="bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400" />
-                            {compStats.noData > 0 && <StatPill count={compStats.noData} label="N/A" color="bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400" />}
+                            <StatPill count={compStats.dkhtDat} label="≥100%" color="bg-emerald-400 text-white border border-white/50" />
+                            <StatPill count={compStats.dkhtGanDat} label="Gần đạt" color="bg-yellow-400 text-white border border-white/50" />
+                            <StatPill count={compStats.dkhtChuaDat} label="<80%" color="bg-slate-400 text-white border border-white/50" />
+                            {compStats.noSale > 0 && <StatPill count={compStats.noSale} label="No Sale" color="bg-red-400 text-white border border-white/50" />}
                         </div>
                     </div>
-                    {/* Progress Ring — % hoàn thành trung bình */}
-                    <div className="flex-shrink-0 flex flex-col items-center gap-0.5">
-                        <ProgressRing percent={compStats.total > 0 ? Math.round(compStats.avgCompletion) : 0} total={compStats.total} />
+                    {/* Recharts Donut — tỷ lệ nhóm đạt DKHT */}
+                    <div className="flex-shrink-0 flex flex-col items-center gap-0.5 bg-black/20 rounded-xl p-1.5 backdrop-blur-sm">
+                        <DkhtDonut stats={compStats} />
                     </div>
                 </div>
             </div>
@@ -620,43 +634,52 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                 <tr className="text-[11px] font-black uppercase tracking-wider">
                                     <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">#</th>
                                     <th className="text-left px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">NHÓM THI ĐUA</th>
-                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle whitespace-nowrap bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300">MỤC TIÊU</th>
-                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle whitespace-nowrap bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300">THỰC HIỆN</th>
-                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-emerald-400 align-middle whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">% HOÀN THÀNH</th>
-                                    <th className="text-center px-2 py-2 border-b-[3px] border-b-amber-400 align-middle whitespace-nowrap bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">CÒN LẠI</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle whitespace-nowrap bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300">M.TIÊU</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle whitespace-nowrap bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300">T.HIỆN</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-emerald-400 align-middle whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">%HT</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-violet-400 align-middle whitespace-nowrap bg-violet-100 dark:bg-violet-900/40 text-violet-800 dark:text-violet-300">%DKHT</th>
+                                    <th className="text-center px-2 py-2 border-b-[3px] border-b-amber-400 align-middle whitespace-nowrap bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">C.LẠI</th>
                                 </tr>
                             </thead>
                             <tbody>
-                               {(['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map((criterion, _criterionIndex) => {
-                                   const items = groupedPerformanceData[criterion];
-                                   if (!items || items.length === 0) return null;
-                                   const cStyle = getCriterionStyle(criterion);
-                                   return (
-                                       <React.Fragment key={criterion}>
-                                           <tr className={`${cStyle.bg} ${cStyle.text} font-extrabold border-t-2 ${cStyle.border}`}>
-                                               <td colSpan={6} className="px-2 py-1.5 text-[11px] uppercase tracking-wider">
-                                                   <span className={`px-2 py-0.5 rounded mr-2 ${cStyle.badge}`}>Tiêu chí</span> {criterion}
-                                               </td>
-                                           </tr>
-                                           {items.map((item, index) => {
-                                               const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400';
-                                               return (
-                                                   <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700">
-                                                       <td className="px-2 py-1 text-center text-[13px] text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{index + 1}</td>
-                                                       <td className="px-2 py-1 text-[13px] font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50">
-                                                           {item.name}
-                                                       </td>
-                                                       <td className="px-2 py-1 text-center text-[13px] font-bold text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.target))}</td>
-                                                       <td className="px-2 py-1 text-center text-[13px] font-bold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.actual))}</td>
-                                                       <td className="px-2 py-1 text-center text-[13px] font-bold border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-16"><ProgressBar value={item.completion} /></div></div></td>
-                                                       <td className={`px-2 py-1 text-center text-[13px] font-bold ${remainingColor} tabular-nums whitespace-nowrap`}>{f.format(roundUp(item.remaining))}</td>
-                                                   </tr>
-                                               );
-                                           })}
-                                       </React.Fragment>
-                                   )
-                               })}
-                               {Object.keys(groupedPerformanceData).length === 0 && (<tr><td colSpan={6} className="px-2 py-4 text-center text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">Chưa có chương trình thi đua nào được chọn từ bộ lọc hoặc không có dữ liệu cho nhân viên này.</td></tr>)}
+                               {(() => {
+                                   const now = new Date();
+                                   const daysPassed = now.getDate() - 1;
+                                   const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                                   return (['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map((criterion, _criterionIndex) => {
+                                       const items = groupedPerformanceData[criterion];
+                                       if (!items || items.length === 0) return null;
+                                       const cStyle = getCriterionStyle(criterion);
+                                       return (
+                                           <React.Fragment key={criterion}>
+                                               <tr className={`${cStyle.bg} ${cStyle.text} font-extrabold border-t-2 ${cStyle.border}`}>
+                                                   <td colSpan={7} className="px-2 py-1.5 text-[11px] uppercase tracking-wider">
+                                                       <span className={`px-2 py-0.5 rounded mr-2 ${cStyle.badge}`}>Tiêu chí</span> {criterion}
+                                                   </td>
+                                               </tr>
+                                               {items.map((item, index) => {
+                                                   const remainingColor = item.remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-rose-600 dark:text-rose-400';
+                                                   const dkht = (daysPassed > 0 && item.target > 0) ? ((item.actual / daysPassed) * daysInMonth / item.target) * 100 : 0;
+                                                   const dkhtColor = dkht >= 100 ? 'text-emerald-600 dark:text-emerald-400' : dkht >= 80 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400';
+                                                   return (
+                                                       <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700">
+                                                           <td className="px-2 py-1 text-center text-[13px] text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{index + 1}</td>
+                                                           <td className="px-2 py-1 text-[13px] font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50">
+                                                               {item.name}
+                                                           </td>
+                                                           <td className="px-2 py-1 text-center text-[13px] font-bold text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.target))}</td>
+                                                           <td className="px-2 py-1 text-center text-[13px] font-bold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.actual))}</td>
+                                                           <td className="px-2 py-1 text-center text-[13px] font-bold border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap"><div className="flex items-center gap-1 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-10"><ProgressBar value={item.completion} /></div></div></td>
+                                                           <td className={`px-2 py-1 text-center text-[13px] font-bold border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap ${dkhtColor}`}>{daysPassed > 0 ? `${Math.round(dkht)}%` : '-'}</td>
+                                                           <td className={`px-2 py-1 text-center text-[13px] font-bold ${remainingColor} tabular-nums whitespace-nowrap`}>{f.format(roundUp(item.remaining))}</td>
+                                                       </tr>
+                                                   );
+                                               })}
+                                           </React.Fragment>
+                                       )
+                                   });
+                               })()}
+                               {Object.keys(groupedPerformanceData).length === 0 && (<tr><td colSpan={7} className="px-2 py-4 text-center text-slate-500 dark:text-slate-400 border-t border-slate-200 dark:border-slate-700">Chưa có chương trình thi đua nào được chọn từ bộ lọc hoặc không có dữ liệu cho nhân viên này.</td></tr>)}
                             </tbody>
                         </table>
                         )}
