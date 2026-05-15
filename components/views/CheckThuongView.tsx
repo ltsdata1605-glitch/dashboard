@@ -160,11 +160,14 @@ const htmlContent = `
             /* Overflow protection */
             body { overflow-x: hidden; }
             #mainContent, #comparisonContent, #summaryReportArea { overflow-x: hidden; }
+            /* Ẩn scrollbar trên bảng dữ liệu/mobile */
+            ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+            * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+            
             /* Card grid - lướt ngang mượt mà (horizontal scroll) thay vì xếp chồng */
             #detailsGrid div[style*="grid-template-columns"] { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto !important; gap: 8px !important; padding: 4px 0 12px 0 !important; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
             #detailsGrid .s-card { min-width: 200px !important; flex-shrink: 0 !important; scroll-snap-align: start; }
-            #detailsGrid div[style*="grid-template-columns"]::-webkit-scrollbar { height: 4px; }
-            #detailsGrid div[style*="grid-template-columns"]::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+            
             /* Group header */
             .group-container h2 { font-size: 11px !important; }
             .capture-fix { padding: 6px 10px !important; }
@@ -1492,7 +1495,7 @@ const htmlContent = `
                     const isDuKien = showDuKien || isNearly;
                     const bonusColor = isDuKien ? 'text-amber-600' : 'text-indigo-600';
                     
-                    const nearlyBadgeHtml = isNearly ? \`<span class="ml-1.5 px-1.5 py-0.5 bg-amber-100 text-amber-800 text-[9px] font-bold rounded-sm uppercase whitespace-nowrap border border-amber-200">Sắp đạt thưởng</span>\` : '';
+                    const nearlyBadgeHtml = isNearly ? \`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" class="inline-block ml-1.5 text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.9)] animate-pulse" style="vertical-align: -2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>\` : '';
                     
                     return \`
                         <tr class="hover:bg-gray-50 transition-colors text-[13px] border-b border-gray-100 last:border-0 group">
