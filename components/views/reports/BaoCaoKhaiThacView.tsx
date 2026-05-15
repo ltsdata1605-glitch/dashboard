@@ -569,7 +569,7 @@ export default function BaoCaoKhaiThacView() {
         document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions')!
       )}
 
-      <main className="flex-1 overflow-y-auto w-full custom-scrollbar pb-[76px] overscroll-y-contain touch-pan-y">
+      <main className="absolute inset-0 overflow-y-auto w-full custom-scrollbar pb-[76px]">
         <div id="report-export-area" className="max-w-md mx-auto pt-3 px-3 space-y-3">
 
         {warnings.length > 0 && (

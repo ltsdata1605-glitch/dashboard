@@ -199,13 +199,11 @@ function AppContent() {
         return <PendingApprovalView forceDeptUpdate />;
     }
 
-    const isFullScreenApp = ['reports', 'tools-print-sticker', 'tools-audit', 'tools-phanca', 'check-thuong'].includes(activeTab);
-
     return (
-        <div className={`flex ${isFullScreenApp ? 'h-[100dvh] overflow-hidden' : 'min-h-screen'} bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]`}>
+        <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-500 lg:pl-[80px]">
             <Sidebar />
             <MobileBottomNav />
-            <div className={`flex-grow flex flex-col min-w-0 w-full relative ${isFullScreenApp ? 'overflow-hidden' : ''}`}>
+            <div className="flex-grow flex flex-col min-w-0 w-full relative">
 
                 {/* Mobile Top Bar - Hidden in Desktop View */}
                 <div className="lg:hidden sticky top-0 z-[100] bg-white dark:bg-slate-900 flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
@@ -224,7 +222,7 @@ function AppContent() {
                     </div>
                 </div>
 
-                <main className={`flex-grow flex flex-col bg-slate-50/50 dark:bg-slate-950/20 relative ${isFullScreenApp ? 'overflow-hidden' : ''}`}>
+                <main className="flex-grow flex flex-col bg-slate-50/50 dark:bg-slate-950/20 relative">
                     {/* Thêm Banner thông báo Đơn chờ duyệt */}
                     <PendingApprovalBanner />
 
@@ -243,7 +241,7 @@ function AppContent() {
 
                     {/* Desktop Notification Center has been moved into the Header component to prevent layout overlap */}
                     
-                    <div className={`w-full relative flex-grow min-h-0 pb-20 lg:pb-0 ${isFullScreenApp ? 'overflow-hidden' : ''}`}>
+                    <div className="w-full relative flex-grow min-h-0 pb-20 lg:pb-0">
                         <ErrorBoundary name="MainContent">
                             <Suspense fallback={
                                 <div className="flex items-center justify-center min-h-[50vh]">
