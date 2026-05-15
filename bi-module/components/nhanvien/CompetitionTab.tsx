@@ -155,7 +155,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             const blob = await exportElementAsImage(original, filename, {
                 mode: 'blob-only', elementsToHide: ['.export-button-component'],
                 forcedWidth: 500,
-                preprocessClone: (clone: HTMLElement) => {
+                onCloneReady: (clone: HTMLElement) => {
                     // Remove overflow constraints and stack cards vertically
                     const containers = clone.querySelectorAll('.overflow-x-auto, .grid, .competition-group-card');
                     containers.forEach(el => {
@@ -256,7 +256,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 const safeName = `${title.replace(/[\s/]/g, '_')}.png`;
                 const blob = await exportElementAsImage(card, safeName, {
                     mode: 'blob-only', elementsToHide: ['.export-button-component'],
-                    preprocessClone: (clone: HTMLElement) => {
+                    onCloneReady: (clone: HTMLElement) => {
                         clone.classList.remove('h-full');
                     }
                 });

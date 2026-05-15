@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { saveSetting, getSetting } from '../../../services/dbService';
@@ -172,8 +172,25 @@ const initialState: ReportState = {
   leads: []
 };
 
+// Saved totals cho cộng dồn
+interface SavedTotals {
+  cash: number;
+  installment: number;
+  insurance: number;
+  maintenance: number;
+  lastUpdatedAt?: string;
+}
+const SAVED_TOTALS_KEY = 'bao_cao_saved_totals_v1';
+const initialSavedTotals: SavedTotals = { cash: 0, installment: 0, insurance: 0, maintenance: 0, lastUpdatedAt: '' };
+
+// Helper: chặn nhập chữ vào ô số
+const blockNonNumericKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+};
+
 export default function BaoCaoKhaiThacView() {
   const [state, setState] = useState<ReportState>(initialState);
+  const [savedTotals, setSavedTotals] = useState<SavedTotals>(initialSavedTotals);
   const [history, setHistory] = useState<any[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -208,13 +225,17 @@ export default function BaoCaoKhaiThacView() {
         });
       }
       
+      // Load saved totals
+      const loadedTotals = await getSetting<SavedTotals>(SAVED_TOTALS_KEY);
+      if (loadedTotals) setSavedTotals({ ...initialSavedTotals, ...loadedTotals });
+      
       const savedHistory = await getSetting<any[]>(HISTORY_KEY) || [];
       setHistory(savedHistory);
     };
     loadData();
     
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [])
 
   // Compute Warnings (3 days consecutive 0 results)
   useEffect(() => {
@@ -291,13 +312,64 @@ export default function BaoCaoKhaiThacView() {
     return () => clearInterval(interval);
   }, [state, mounted]);
 
+  // Tổng cộng dồn: saved + current
+  const totalCash = (savedTotals.cash || 0) + (parseFloat(state.cash) || 0);
+  const totalInstallment = (savedTotals.installment || 0) + (parseFloat(state.installment) || 0);
+  const totalInsurance = (savedTotals.insurance || 0) + (parseFloat(state.services.insurance) || 0);
+  const totalMaintenance = (savedTotals.maintenance || 0) + (parseFloat(state.services.maintenance) || 0);
+
   const efficiency = useCallback(() => {
-    const cashVal = parseFloat(state.cash) || 0;
-    const instVal = parseFloat(state.installment) || 0;
-    const total = cashVal + instVal;
+    const total = totalCash + totalInstallment;
     if (total === 0) return 0;
-    return (instVal / total) * 100;
-  }, [state.cash, state.installment]);
+    return (totalInstallment / total) * 100;
+  }, [totalCash, totalInstallment]);
+
+  // Lưu dữ liệu Doanh Thu hiện tại → clear input → cho nhập mới
+  const handleAccumulateRevenue = () => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    const newSaved = {
+      ...savedTotals,
+      cash: totalCash,
+      installment: totalInstallment,
+      lastUpdatedAt: timeStr,
+    };
+    setSavedTotals(newSaved);
+    saveSetting(SAVED_TOTALS_KEY, newSaved);
+    setState(prev => ({ ...prev, cash: '', installment: '' }));
+    showToast(`Đã lưu: Tiền mặt ${totalCash} + Trả chậm ${totalInstallment}. Nhập tiếp!`);
+  };
+
+  // Lưu dữ liệu Dịch Vụ hiện tại → clear input → cho nhập mới
+  const handleAccumulateServices = () => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    const newSaved = {
+      ...savedTotals,
+      insurance: totalInsurance,
+      maintenance: totalMaintenance,
+      lastUpdatedAt: timeStr,
+    };
+    setSavedTotals(newSaved);
+    saveSetting(SAVED_TOTALS_KEY, newSaved);
+    setState(prev => ({ ...prev, services: { ...prev.services, insurance: '', maintenance: '' } }));
+    showToast(`Đã lưu: Bảo hiểm ${totalInsurance} + Bảo dưỡng ${totalMaintenance}. Nhập tiếp!`);
+  };
+
+  // Reset cộng dồn
+  const resetAccumulation = (group: 'revenue' | 'services') => {
+    if (group === 'revenue') {
+      const newSaved = { ...savedTotals, cash: 0, installment: 0 };
+      setSavedTotals(newSaved);
+      saveSetting(SAVED_TOTALS_KEY, newSaved);
+      showToast('Đã xoá luỹ kế Doanh Thu');
+    } else {
+      const newSaved = { ...savedTotals, insurance: 0, maintenance: 0 };
+      setSavedTotals(newSaved);
+      saveSetting(SAVED_TOTALS_KEY, newSaved);
+      showToast('Đã xoá luỹ kế Dịch Vụ');
+    }
+  };
 
   const showToast = (message: string) => {
     setToast(message);
@@ -318,7 +390,9 @@ export default function BaoCaoKhaiThacView() {
   const clearAll = async () => {
     if (window.confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu?')) {
       setState(initialState);
+      setSavedTotals(initialSavedTotals);
       await saveSetting(STORAGE_KEY, initialState);
+      await saveSetting(SAVED_TOTALS_KEY, initialSavedTotals);
     }
   };
 
@@ -333,8 +407,9 @@ export default function BaoCaoKhaiThacView() {
     r += `👤 NV: ${state.staffName || 'Chưa nhập'}\n`;
     r += `🕒 Lúc: ${timeStr} - ${dateStr}\n\n`;
     
-    const cashVal = state.cash || '0';
-    const instVal = state.installment || '0';
+    // Dùng tổng cộng dồn cho copy báo cáo
+    const cashVal = totalCash || 0;
+    const instVal = totalInstallment || 0;
     const effRounded = Math.round(efficiency());
     
     r += `💰 TRẢ CHẬM:\n`;
@@ -381,8 +456,8 @@ export default function BaoCaoKhaiThacView() {
     r += `\n`;
 
     r += `🛠️ DOANH THU THỰC & DV:\n`;
-    r += `1. Bảo hiểm: ${fmt(state.services.insurance)}\n`;
-    r += `2. Bảo dưỡng: ${fmt(state.services.maintenance)}\n`;
+    r += `1. Bảo hiểm: ${fmt(totalInsurance)}\n`;
+    r += `2. Bảo dưỡng: ${fmt(totalMaintenance)}\n`;
     r += `3. Vieon: ${fmt(state.services.vieon)}\n`;
     r += `4. SIM: ${fmt(state.services.sim)}\n\n`;
 
@@ -516,35 +591,60 @@ export default function BaoCaoKhaiThacView() {
             <h2 className="label-sm text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-2">
               <CheckCircle2 size={12} className="text-blue-500" /> Doanh thu
             </h2>
-            <motion.div 
-              initial={false}
-              animate={{ 
-                color: efficiency() >= 50 ? "#059669" : efficiency() > 20 ? "#2563eb" : "#64748b" 
-              }}
-              className="text-[10px] font-bold tracking-wider"
-            >
-              HIỆU QUẢ: {efficiency().toFixed(1)}%
-            </motion.div>
+            <div className="flex items-center gap-2">
+              <motion.div 
+                initial={false}
+                animate={{ 
+                  color: efficiency() >= 50 ? "#059669" : efficiency() > 20 ? "#2563eb" : "#64748b" 
+                }}
+                className="text-[10px] font-bold tracking-wider"
+              >
+                HIỆU QUẢ: {efficiency().toFixed(1)}%
+              </motion.div>
+              <button 
+                onClick={handleAccumulateRevenue}
+                disabled={!state.cash && !state.installment}
+                className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold bg-blue-50 text-blue-600 border border-blue-200 rounded-lg hover:bg-blue-100 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                title="Lưu dữ liệu hiện tại và nhập thêm"
+              >
+                <Plus size={10} /> Thêm
+              </button>
+            </div>
           </div>
+          {/* Indicator: hiển thị tổng luỹ kế nếu đã lưu */}
+          {(savedTotals.cash > 0 || savedTotals.installment > 0) && (
+            <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg px-2.5 py-1.5 mb-2">
+              <div className="flex items-center gap-3 text-[10px] flex-wrap">
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold">📦 Đã lưu{savedTotals.lastUpdatedAt ? ` (${savedTotals.lastUpdatedAt})` : ''}:</span>
+                <span className="text-slate-600">Tiền mặt: <strong className="text-slate-800">{savedTotals.cash}</strong></span>
+                <span className="text-blue-600">Trả chậm: <strong>{savedTotals.installment}</strong></span>
+              </div>
+              <button onClick={() => resetAccumulation('revenue')} className="text-[9px] text-red-400 hover:text-red-600 font-bold flex-shrink-0" title="Xoá luỹ kế">
+                <X size={12} />
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="text-[10px] text-slate-400 font-medium mb-1 block uppercase">Tiền mặt</label>
+              <label className="text-[10px] text-slate-400 font-medium mb-1 block uppercase">Tiền mặt {savedTotals.cash > 0 && <span className="text-emerald-500">(Tổng: {totalCash})</span>}</label>
               <input 
                 type="number"
                 placeholder="0"
                 className="w-full text-xl font-bold text-slate-800 focus:outline-none placeholder:text-slate-200"
                 value={state.cash}
                 onChange={e => setState(prev => ({ ...prev, cash: e.target.value }))}
+                onKeyDown={blockNonNumericKeys}
               />
             </div>
             <div className="border-l border-slate-100 pl-4">
-              <label className="text-[10px] text-slate-400 font-medium mb-1 block uppercase">Trả chậm</label>
+              <label className="text-[10px] text-slate-400 font-medium mb-1 block uppercase">Trả chậm {savedTotals.installment > 0 && <span className="text-emerald-500">(Tổng: {totalInstallment})</span>}</label>
               <input 
                 type="number"
                 placeholder="0"
                 className="w-full text-xl font-bold text-blue-600 focus:outline-none placeholder:text-slate-200"
                 value={state.installment}
                 onChange={e => setState(prev => ({ ...prev, installment: e.target.value }))}
+                onKeyDown={blockNonNumericKeys}
               />
             </div>
           </div>
@@ -579,25 +679,54 @@ export default function BaoCaoKhaiThacView() {
 
         {/* Services Section */}
         <section className="card-base bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm border-emerald-100 bg-emerald-50/10">
-          <h2 className="label-sm text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 text-emerald-700 flex items-center gap-2 mb-2">
-            <ShieldCheck size={12} /> Dịch vụ
-          </h2>
+          <div className="flex justify-between items-center mb-2">
+            <h2 className="label-sm text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 text-emerald-700 flex items-center gap-2">
+              <ShieldCheck size={12} /> Dịch vụ
+            </h2>
+            <button 
+              onClick={handleAccumulateServices}
+              disabled={!state.services.insurance && !state.services.maintenance}
+              className="flex items-center gap-1 px-2 py-1 text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg hover:bg-emerald-100 active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Lưu dữ liệu hiện tại và nhập thêm"
+            >
+              <Plus size={10} /> Thêm
+            </button>
+          </div>
+          {/* Indicator: hiển thị tổng luỹ kế DV nếu đã lưu */}
+          {(savedTotals.insurance > 0 || savedTotals.maintenance > 0) && (
+            <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800 rounded-lg px-2.5 py-1.5 mb-2">
+              <div className="flex items-center gap-3 text-[10px] flex-wrap">
+                <span className="text-emerald-700 dark:text-emerald-400 font-bold">📦 Đã lưu{savedTotals.lastUpdatedAt ? ` (${savedTotals.lastUpdatedAt})` : ''}:</span>
+                <span className="text-slate-600">Bảo hiểm: <strong className="text-slate-800">{savedTotals.insurance}</strong></span>
+                <span className="text-emerald-600">Bảo dưỡng: <strong>{savedTotals.maintenance}</strong></span>
+              </div>
+              <button onClick={() => resetAccumulation('services')} className="text-[9px] text-red-400 hover:text-red-600 font-bold flex-shrink-0" title="Xoá luỹ kế">
+                <X size={12} />
+              </button>
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-2 mb-2">
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold ml-1">BẢO HIỂM</label>
+              <label className="text-[10px] text-slate-400 font-bold ml-1">BẢO HIỂM {savedTotals.insurance > 0 && <span className="text-emerald-500">(Tổng: {totalInsurance})</span>}</label>
               <input 
-                type="text" 
-                placeholder="..." 
+                type="number" 
+                step="any"
+                inputMode="decimal"
+                min="0"
+                placeholder="0" 
                 className="w-full text-xs bg-white border border-slate-200 rounded-lg px-2 py-2 focus:outline-none"
                 value={state.services.insurance}
                 onChange={e => setState(prev => ({ ...prev, services: { ...prev.services, insurance: e.target.value } }))}
               />
             </div>
             <div className="space-y-1">
-              <label className="text-[10px] text-slate-400 font-bold ml-1">BẢO DƯỠNG</label>
+              <label className="text-[10px] text-slate-400 font-bold ml-1">BẢO DƯỠNG {savedTotals.maintenance > 0 && <span className="text-emerald-500">(Tổng: {totalMaintenance})</span>}</label>
               <input 
-                type="text" 
-                placeholder="..." 
+                type="number" 
+                step="any"
+                inputMode="decimal"
+                min="0"
+                placeholder="0" 
                 className="w-full text-xs bg-white border border-slate-200 rounded-lg px-2 py-2 focus:outline-none"
                 value={state.services.maintenance}
                 onChange={e => setState(prev => ({ ...prev, services: { ...prev.services, maintenance: e.target.value } }))}
@@ -656,12 +785,14 @@ export default function BaoCaoKhaiThacView() {
           color="red" 
           stats={state.priceWar.ce} 
           onChange={newStats => setState(prev => ({ ...prev, priceWar: { ...prev.priceWar, ce: newStats } }))}
+          leadNameInputId="lead-name-input"
         />
         <PriceWarCard 
           title="Chiến giá: ICT (Điện thoại)" 
           color="slate" 
           stats={state.priceWar.ict} 
           onChange={newStats => setState(prev => ({ ...prev, priceWar: { ...prev.priceWar, ict: newStats } }))}
+          leadNameInputId="lead-name-input"
         />
 
         <LeadsCard 
@@ -980,44 +1111,52 @@ function ProductItem({ label, icon, value, onStep }: { label: string, icon: Reac
   );
 }
 
-function PriceWarCard({ title, color, stats, onChange }: { 
-  title: string, color: 'red' | 'slate', stats: PriceWarStats, onChange: (s: PriceWarStats) => void 
+function PriceWarCard({ title, color, stats, onChange, leadNameInputId }: { 
+  title: string, color: 'red' | 'slate', stats: PriceWarStats, onChange: (s: PriceWarStats) => void, leadNameInputId?: string 
 }) {
   const borderColor = color === 'red' ? 'border-l-red-500' : 'border-l-slate-400';
   const textColor = color === 'red' ? 'text-red-700' : 'text-slate-700';
 
   const update = (field: keyof PriceWarStats, val: string) => onChange({ ...stats, [field]: val });
 
+  const focusLeadName = () => {
+    if (leadNameInputId) {
+      setTimeout(() => document.getElementById(leadNameInputId)?.focus(), 100);
+    }
+  };
+
   return (
     <section className={`card-base bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-3 shadow-sm border-l-4 ${borderColor}`}>
       <h2 className={`label-sm text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1 mb-2 flex items-center gap-2 ${textColor}`}><Sword size={12} /> {title}</h2>
       <div className="grid grid-cols-5 gap-2">
-        <StatInput label="TC" value={stats.tc} onChange={v => update('tc', v)} />
-        <StatInput label="SS" value={stats.ss} onChange={v => update('ss', v)} />
-        <StatInput label="CH" value={stats.ch} onChange={v => update('ch', v)} />
-        <StatInput label="BỎ" value={stats.bo} onChange={v => update('bo', v)} />
-        <StatInput label="XTT" value={stats.xtt} onChange={v => update('xtt', v)} />
+        <StatInput label="Thành công" value={stats.tc} onChange={v => update('tc', v)} />
+        <StatInput label="So sánh" value={stats.ss} onChange={v => update('ss', v)} />
+        <StatInput label="Chiến" value={stats.ch} onChange={v => update('ch', v)} />
+        <StatInput label="Bỏ về" value={stats.bo} onChange={v => update('bo', v)} />
+        <StatInput label="Xin TT" value={stats.xtt} onChange={v => update('xtt', v)} onBlur={focusLeadName} />
       </div>
     </section>
   );
 }
 
-function StatInput({ label, value, onChange }: { label: string, value: string, onChange: (v: string) => void }) {
+function StatInput({ label, value, onChange, onBlur }: { label: string, value: string, onChange: (v: string) => void, onBlur?: () => void }) {
   return (
     <div className="space-y-1">
-      <label className="text-[9px] text-slate-400 font-bold block text-center uppercase">{label}</label>
+      <label className="text-[9px] text-slate-400 font-bold block text-center uppercase leading-tight">{label}</label>
       <input 
         type="number" 
         min="0"
         className="w-full text-center text-xs font-bold bg-slate-50 border border-slate-100 rounded-lg p-2 focus:outline-none"
         placeholder="-"
         value={value}
+        onKeyDown={blockNonNumericKeys}
         onChange={e => {
           const val = e.target.value;
           if (val === '' || parseInt(val) >= 0) {
             onChange(val);
           }
         }}
+        onBlur={onBlur}
       />
     </div>
   );
@@ -1045,6 +1184,7 @@ function LeadsCard({ leads, onAdd, onRemove }: {
       
       <div className="space-y-2 mb-2">
         <input 
+          id="lead-name-input"
           type="text" 
           placeholder="Tên khách hàng" 
           className="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none"

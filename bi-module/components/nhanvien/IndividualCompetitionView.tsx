@@ -83,6 +83,29 @@ const MiniDonut: React.FC<{ segments: { value: number; color: string }[]; center
     );
 };
 
+// ─── Progress Ring (pastel, single arc) ───
+const ProgressRing: React.FC<{ percent: number; total: number; size?: number }> = ({ percent, total, size = 68 }) => {
+    const r = 26, c = 2 * Math.PI * r;
+    const clampedPct = Math.min(Math.max(percent, 0), 200);
+    const arcLength = (Math.min(clampedPct, 100) / 100) * c;
+    const strokeColor = clampedPct >= 80 ? '#10b981' : clampedPct >= 50 ? '#f59e0b' : '#ef4444';
+    const bgColor = clampedPct >= 80 ? '#d1fae5' : clampedPct >= 50 ? '#fef3c7' : '#fee2e2';
+    return (
+        <div className="flex flex-col items-center gap-0.5">
+            <svg width={size} height={size} viewBox="0 0 68 68" className="flex-shrink-0 drop-shadow-sm">
+                <circle cx="34" cy="34" r={r} fill="none" stroke={bgColor} strokeWidth="6" />
+                <circle cx="34" cy="34" r={r} fill="none" stroke={strokeColor} strokeWidth="6"
+                    strokeDasharray={`${arcLength} ${c - arcLength}`} strokeDashoffset={0}
+                    strokeLinecap="round" transform="rotate(-90 34 34)"
+                    className="transition-all duration-700" />
+                <text x="34" y="31" textAnchor="middle" className="fill-slate-800 dark:fill-white font-black" style={{ fontSize: '15px' }}>{clampedPct}%</text>
+                <text x="34" y="43" textAnchor="middle" className="fill-slate-400 font-bold" style={{ fontSize: '7px' }}>HOÀN THÀNH</text>
+            </svg>
+            <p className="text-[9px] text-slate-400 font-bold">{total} nhóm</p>
+        </div>
+    );
+};
+
 // ─── Micro Progress Bar ───
 const MicroBar: React.FC<{ value: number; max?: number }> = ({ value, max = 100 }) => {
     const pctVal = Math.min(Math.max((value / max) * 100, 0), 100);
@@ -179,33 +202,32 @@ const EmployeeProfileCard: React.FC<{
 
     return (
         <div className="mb-3 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 overflow-hidden">
-            {/* Header gradient */}
-            <div className="bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 px-4 py-3 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+            {/* Header pastel gradient */}
+            <div className="bg-gradient-to-br from-sky-50 via-teal-50 to-indigo-50 dark:from-slate-800 dark:via-slate-800 dark:to-slate-800 px-4 py-3 relative overflow-hidden border-b border-slate-100 dark:border-slate-700">
+                <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'radial-gradient(circle at 20% 80%, #0ea5e9 1px, transparent 1px), radial-gradient(circle at 80% 20%, #6366f1 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
                 <div className="flex items-center gap-4 relative z-10">
-                    <div className="w-16 h-16 rounded-full border-[3px] border-white/30 overflow-hidden flex-shrink-0 shadow-lg">
+                    <div className="w-16 h-16 rounded-full border-[3px] border-white dark:border-slate-600 overflow-hidden flex-shrink-0 shadow-lg shadow-sky-200/50 dark:shadow-none">
                         {avatarSrc ? (
                             <img src={avatarSrc} alt={selectedEmployee.name} className="w-full h-full rounded-full object-cover" />
                         ) : (
-                            <div className="w-full h-full rounded-full bg-white/20 flex items-center justify-center">
-                                <span className="text-2xl font-black text-white/70">{selectedEmployee.name.charAt(selectedEmployee.name.lastIndexOf(' ') + 1) || '?'}</span>
+                            <div className="w-full h-full rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center">
+                                <span className="text-2xl font-black text-white">{selectedEmployee.name.charAt(selectedEmployee.name.lastIndexOf(' ') + 1) || '?'}</span>
                             </div>
                         )}
                     </div>
                     <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-black text-white uppercase truncate leading-tight">{selectedEmployee.name}</h3>
-                        <p className="text-[11px] text-white/70 font-medium mt-0.5">{selectedEmployee.department}</p>
+                        <h3 className="text-lg font-black text-slate-800 dark:text-white uppercase truncate leading-tight">{selectedEmployee.name}</h3>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">{selectedEmployee.department}</p>
                         <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                            <StatPill count={compStats.top1} label="Đạt" color="bg-emerald-500/20 text-emerald-100" />
-                            <StatPill count={compStats.above80} label="≥80%" color="bg-amber-400/20 text-amber-100" />
-                            <StatPill count={compStats.below80} label="<80%" color="bg-red-400/20 text-red-100" />
-                            {compStats.noData > 0 && <StatPill count={compStats.noData} label="N/A" color="bg-white/10 text-white/60" />}
+                            <StatPill count={compStats.top1} label="Đạt" color="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400" />
+                            <StatPill count={compStats.above80} label="≥80%" color="bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400" />
+                            <StatPill count={compStats.below80} label="<80%" color="bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400" />
+                            {compStats.noData > 0 && <StatPill count={compStats.noData} label="N/A" color="bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-400" />}
                         </div>
                     </div>
-                    {/* Donut chart thay thế con số */}
-                    <div className="flex-shrink-0 hidden sm:flex flex-col items-center gap-0.5">
-                        <MiniDonut segments={donutSegments} centerText={`${compStats.total > 0 ? Math.round(compStats.avgCompletion) : 0}%`} />
-                        <p className="text-[9px] text-white/50 font-bold">{compStats.total} nhóm</p>
+                    {/* Progress Ring — % hoàn thành trung bình */}
+                    <div className="flex-shrink-0 flex flex-col items-center gap-0.5">
+                        <ProgressRing percent={compStats.total > 0 ? Math.round(compStats.avgCompletion) : 0} total={compStats.total} />
                     </div>
                 </div>
             </div>
@@ -215,48 +237,48 @@ const EmployeeProfileCard: React.FC<{
                 <div className="flex items-center gap-4 px-4 py-2 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0">Xếp hạng</span>
                     <div className="flex-1 grid grid-cols-3 gap-3">
-                        <RankBadge rank={rankings.dt.rank} total={rankings.dt.total} label="DT" />
-                        <RankBadge rank={rankings.tg.rank} total={rankings.tg.total} label="TG" />
-                        <RankBadge rank={rankings.bk.rank} total={rankings.bk.total} label="BK" />
+                        <RankBadge rank={rankings.dt.rank} total={rankings.dt.total} label="DTQĐ" />
+                        <RankBadge rank={rankings.tg.rank} total={rankings.tg.total} label="Trả chậm" />
+                        <RankBadge rank={rankings.bk.rank} total={rankings.bk.total} label="Bán kèm" />
                     </div>
                 </div>
             )}
 
             {/* KPI Grid with Micro Progress Bars */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-slate-100 dark:divide-slate-800">
-                <div className="p-2.5 space-y-0.5">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">💰 Doanh Thu</p>
-                    <span className="text-lg font-black text-slate-800 dark:text-white block">{empRevenue ? f(empRevenue.dtlk) : '-'}</span>
-                    <MicroBar value={empRevenue?.hieuQuaQD || 0} />
-                    <div className="flex gap-3 text-[10px] text-slate-500 mt-1">
-                        <span>DTQĐ: <strong className="text-sky-600">{empRevenue ? f(empRevenue.dtqd) : '-'}</strong></span>
-                        <span>HQQĐ: <strong className="text-emerald-600">{empRevenue ? pct(empRevenue.hieuQuaQD) : '-'}</strong></span>
+            <div className="grid grid-cols-4 divide-x divide-slate-100 dark:divide-slate-800">
+                <div className="js-kpi-cell p-2.5 space-y-0.5">
+                    <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">💰 DTQĐ</p>
+                    <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empRevenue ? f(empRevenue.dtqd) : '-'}</span>
+                    <MicroBar value={(empRevenue?.hieuQuaQD || 0) * 100} />
+                    <div className="js-kpi-sub flex gap-3 text-[10px] text-slate-500 mt-1">
+                        <span>DTLK: <strong className="text-sky-600">{empRevenue ? f(empRevenue.dtlk) : '-'}</strong></span>
+                        <span>HQQĐ: <strong className="text-emerald-600">{empRevenue ? pct((empRevenue.hieuQuaQD || 0) * 100) : '-'}</strong></span>
                     </div>
                 </div>
-                <div className="p-2.5 space-y-0.5">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">💳 Trả Góp</p>
-                    <span className="text-lg font-black text-slate-800 dark:text-white block">{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
+                <div className="js-kpi-cell p-2.5 space-y-0.5">
+                    <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">💳 Trả Góp</p>
+                    <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
                     <MicroBar value={empInstallment?.totalPercent || 0} />
-                    <div className="flex gap-3 text-[10px] text-slate-500 mt-1">
+                    <div className="js-kpi-sub flex gap-3 text-[10px] text-slate-500 mt-1">
                         <span>DT: <strong className="text-indigo-600">{empInstallment ? f(empInstallment.totalDtSieuThi) : '-'}</strong></span>
                     </div>
                 </div>
-                <div className="p-2.5 space-y-0.5">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🛒 Bán Kèm</p>
-                    <span className="text-lg font-black text-slate-800 dark:text-white block">{empBanKem ? pct(empBanKem.pctBillBk) : '-'}</span>
+                <div className="js-kpi-cell p-2.5 space-y-0.5">
+                    <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">🛒 Bán Kèm</p>
+                    <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empBanKem ? pct(empBanKem.pctBillBk) : '-'}</span>
                     <MicroBar value={empBanKem?.pctBillBk || 0} />
-                    <div className="flex gap-3 text-[10px] text-slate-500 mt-1">
+                    <div className="js-kpi-sub flex gap-3 text-[10px] text-slate-500 mt-1">
                         <span>SP: <strong className="text-violet-600">{empBanKem ? pct(empBanKem.pctSpBk) : '-'}</strong></span>
                     </div>
                 </div>
-                <div className="p-2.5 space-y-0.5">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">🏆 Thưởng</p>
-                    <span className="text-lg font-black text-slate-800 dark:text-white block">{empBonus ? f(empBonus.tong || ((empBonus.erp || 0) + (empBonus.tNong || 0))) : '-'}</span>
-                    <div className="flex gap-3 text-[10px] text-slate-500 mt-1.5">
+                <div className="js-kpi-cell p-2.5 space-y-0.5">
+                    <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">🏆 Thưởng</p>
+                    <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empBonus ? f(empBonus.tong || ((empBonus.erp || 0) + (empBonus.tNong || 0))) : '-'}</span>
+                    <div className="js-kpi-sub flex gap-3 text-[10px] text-slate-500 mt-1.5">
                         <span>ERP: <strong className="text-blue-600">{empBonus ? f(empBonus.erp) : '-'}</strong></span>
                         <span>T.Nóng: <strong className="text-orange-600">{empBonus ? f(empBonus.tNong) : '-'}</strong></span>
                     </div>
-                    {empBonus?.pNong != null && <div className="text-[10px] text-slate-500">%T.Nóng: <strong className="text-amber-600">{pct(empBonus.pNong)}</strong></div>}
+                    {empBonus?.pNong != null && <div className="js-kpi-sub text-[10px] text-slate-500">%T.Nóng: <strong className="text-amber-600">{pct(empBonus.pNong)}</strong></div>}
                 </div>
             </div>
         </div>
@@ -353,7 +375,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
             const nameToUse = customFilename || selectedEmployee?.name || 'NhanVien';
             const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}.png`;
             const blob = await exportElementAsImage(originalCard, filename, {
-                mode: 'blob-only', captureAsDisplayed: true, elementsToHide: ['.js-individual-view-toolbar', '.export-button-component', '.no-print']
+                mode: 'blob-only', forcedWidth: 600, elementsToHide: ['.js-individual-view-toolbar', '.export-button-component', '.no-print']
             });
             if (blob) {
                 if (autoAction === 'download') {
@@ -596,11 +618,11 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         <table className="w-full border-collapse compact-export-table">
                             <thead>
                                 <tr className="text-[11px] font-black uppercase tracking-wider">
-                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 w-10 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">#</th>
-                                    <th className="text-left px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle whitespace-nowrap bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">NHÓM THI ĐUA</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">#</th>
+                                    <th className="text-left px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200">NHÓM THI ĐUA</th>
                                     <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle whitespace-nowrap bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300">MỤC TIÊU</th>
                                     <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-sky-400 align-middle whitespace-nowrap bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300">THỰC HIỆN</th>
-                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-emerald-400 w-32 align-middle whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">% HOÀN THÀNH</th>
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-emerald-400 align-middle whitespace-nowrap bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300">% HOÀN THÀNH</th>
                                     <th className="text-center px-2 py-2 border-b-[3px] border-b-amber-400 align-middle whitespace-nowrap bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300">CÒN LẠI</th>
                                 </tr>
                             </thead>
@@ -621,12 +643,12 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                                return (
                                                    <tr key={`${criterion}-${item.originalTitle}`} className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700">
                                                        <td className="px-2 py-1 text-center text-[13px] text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{index + 1}</td>
-                                                       <td className="px-2 py-1 text-[13px] font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap">
+                                                       <td className="px-2 py-1 text-[13px] font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50">
                                                            {item.name}
                                                        </td>
                                                        <td className="px-2 py-1 text-center text-[13px] font-bold text-slate-500 dark:text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.target))}</td>
                                                        <td className="px-2 py-1 text-center text-[13px] font-bold text-slate-800 dark:text-slate-100 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap">{f.format(roundUp(item.actual))}</td>
-                                                       <td className="px-2 py-1 text-center text-[13px] font-bold w-32 border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-16 hidden sm:block"><ProgressBar value={item.completion} /></div></div></td>
+                                                       <td className="px-2 py-1 text-center text-[13px] font-bold border-r border-slate-100 dark:border-slate-700/50 tabular-nums whitespace-nowrap"><div className="flex items-center gap-2 justify-center"><span className="font-bold text-center w-10">{roundUp(item.completion).toFixed(0)}%</span><div className="w-16"><ProgressBar value={item.completion} /></div></div></td>
                                                        <td className={`px-2 py-1 text-center text-[13px] font-bold ${remainingColor} tabular-nums whitespace-nowrap`}>{f.format(roundUp(item.remaining))}</td>
                                                    </tr>
                                                );
