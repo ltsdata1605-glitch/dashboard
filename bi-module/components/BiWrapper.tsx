@@ -85,7 +85,59 @@ const BiWrapper = React.memo(function BiWrapper() {
     ];
 
     return (
-        <div className="flex flex-col w-full min-h-screen">
+        <div className="flex flex-col w-full min-h-screen bi-report-module">
+            <style>{`
+                @media (max-width: 768px) {
+                    /* High-Density Typography cho toàn bộ Report BI trên mobile */
+                    .bi-report-module .text-3xl { font-size: 20px !important; }
+                    .bi-report-module .text-2xl { font-size: 16px !important; }
+                    .bi-report-module .text-xl { font-size: 14px !important; }
+                    .bi-report-module .text-lg { font-size: 12px !important; }
+                    .bi-report-module .text-base { font-size: 11px !important; }
+                    .bi-report-module .text-sm { font-size: 10px !important; }
+                    .bi-report-module .text-xs { font-size: 9px !important; }
+                    .bi-report-module .text-\\[14px\\] { font-size: 11px !important; }
+                    .bi-report-module .text-\\[13px\\] { font-size: 10px !important; }
+                    .bi-report-module .text-\\[12px\\] { font-size: 9px !important; }
+                    .bi-report-module .text-\\[11px\\] { font-size: 9px !important; }
+                    .bi-report-module .text-\\[10px\\] { font-size: 8px !important; }
+                    .bi-report-module .text-\\[9px\\] { font-size: 8px !important; }
+                    
+                    /* Inline styles font size */
+                    .bi-report-module span[style*="font-size:13px"] { font-size: 10px !important; }
+                    .bi-report-module span[style*="font-size:12px"] { font-size: 9px !important; }
+                    .bi-report-module span[style*="font-size:11px"] { font-size: 9px !important; }
+                    
+                    /* Triệt tiêu khoảng trắng thừa */
+                    .bi-report-module .p-4 { padding: 10px !important; }
+                    .bi-report-module .p-3 { padding: 8px !important; }
+                    .bi-report-module .p-6 { padding: 12px !important; }
+                    .bi-report-module .py-6 { padding-top: 12px !important; padding-bottom: 12px !important; }
+                    .bi-report-module .px-6 { padding-left: 12px !important; padding-right: 12px !important; }
+                    
+                    .bi-report-module .gap-6 { gap: 12px !important; }
+                    .bi-report-module .gap-4 { gap: 8px !important; }
+                    .bi-report-module .gap-3 { gap: 6px !important; }
+                    .bi-report-module .gap-2 { gap: 4px !important; }
+                    
+                    .bi-report-module .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: 12px !important; }
+                    .bi-report-module .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 8px !important; }
+                    
+                    .bi-report-module .mb-6 { margin-bottom: 12px !important; }
+                    .bi-report-module .mb-4 { margin-bottom: 8px !important; }
+                    
+                    .bi-report-module .rounded-2xl { border-radius: 12px !important; }
+                    .bi-report-module .rounded-xl { border-radius: 8px !important; }
+                    
+                    /* Icon sizes */
+                    .bi-report-module .w-12 { width: 32px !important; }
+                    .bi-report-module .h-12 { height: 32px !important; }
+                    
+                    /* Ẩn scrollbar trên bảng dữ liệu/mobile */
+                    .bi-report-module ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
+                    .bi-report-module * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
+                }
+            `}</style>
             {mounted && activeTab === 'employees' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
                 <div className={`flex items-center ${isMobile ? 'gap-0.5' : 'gap-1 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm'} animate-in fade-in zoom-in duration-300`}>
                     {navigationLinks.map(tab => {
