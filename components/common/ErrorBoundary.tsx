@@ -47,10 +47,18 @@ export class ErrorBoundary extends React.Component<Props, State> {
             {this.state.error?.message || 'Vui lòng thử tải lại trang hoặc kiểm tra lại dữ liệu đầu vào.'}
           </p>
           <button
-            onClick={() => this.setState({ hasError: false, error: null })}
+            onClick={() => {
+              const errMsg = this.state.error?.message || '';
+              if (errMsg.includes('Importing a module script failed') || errMsg.includes('Failed to fetch dynamically imported module')) {
+                // Force reload to get the new index.html with updated chunk hashes
+                window.location.reload();
+              } else {
+                this.setState({ hasError: false, error: null });
+              }
+            }}
             className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors text-sm font-medium"
           >
-            Thử lại
+            {this.state.error?.message?.includes('module script') ? 'Tải lại trang' : 'Thử lại'}
           </button>
         </div>
       );
