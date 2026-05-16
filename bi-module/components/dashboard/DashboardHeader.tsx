@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { MainTab, SubTab, shortenSupermarketName } from '../../utils/dashboardHelpers';
-import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ChevronDownIcon } from '../Icons';
+import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ChevronDownIcon, ImagesIcon } from '../Icons';
 import { Icon } from '../../../components/common/Icon';
+import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
 
 interface DashboardHeaderProps {
     title: string;
@@ -14,6 +15,13 @@ interface DashboardHeaderProps {
     setActiveSupermarket: (sm: string) => void;
     onBatchExport: () => void;
     isBatchExporting: boolean;
+    /** Single-table export callback */
+    onExport?: () => void;
+    isExporting?: boolean;
+    /** Slot for tab-specific controls (e.g. column settings dropdown) */
+    toolbarSlot?: React.ReactNode;
+    /** Content to render inside the header container (e.g. merged table) */
+    children?: React.ReactNode;
 }
 
 const SUB_TABS: { tab: SubTab; label: string }[] = [
@@ -21,14 +29,40 @@ const SUB_TABS: { tab: SubTab; label: string }[] = [
     { tab: 'competition', label: 'Thi đua' },
 ];
 
+const QUOTES: Record<SubTab, string> = {
+    revenue: 'Doanh thu không tự đến — doanh thu là kết quả của sự nỗ lực mỗi ngày.',
+    competition: 'Thi đua là động lực, hiệu quả là mục tiêu — vượt qua giới hạn, khẳng định bản thân.',
+};
+
+const getDateLabel = () => {
+    const now = new Date();
+    return `${now.getDate() - 1}/${now.getMonth() + 1}`;
+};
+
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     title, activeMainTab, setActiveMainTab,
     activeSubTab, setActiveSubTab,
     supermarkets: rawSupermarkets, activeSupermarket, setActiveSupermarket,
-    onBatchExport, isBatchExporting
+    onBatchExport, isBatchExporting,
+    onExport, isExporting,
+    toolbarSlot,
+    children
 }) => {
     // Defensive guard: IndexedDB on iOS/Safari can sometimes return null/undefined
     const supermarkets = Array.isArray(rawSupermarkets) ? rawSupermarkets : [];
+
+    const contentTitle = useMemo(() => {
+        const displayName = activeSupermarket !== 'Tổng' ? shortenSupermarketName(activeSupermarket).toUpperCase() : 'TỔNG QUAN';
+        const isRealtime = activeMainTab === 'realtime';
+        if (activeSubTab === 'revenue') {
+            return isRealtime
+                ? `DOANH THU SIÊU THỊ ĐẾN NGÀY ${getDateLabel()}`
+                : `LUỸ KẾ DOANH THU — ${displayName} ĐẾN NGÀY ${getDateLabel()}`;
+        }
+        return isRealtime
+            ? `THI ĐUA SIÊU THỊ ĐẾN NGÀY ${getDateLabel()}`
+            : `LUỸ KẾ THI ĐUA — ${displayName} ĐẾN NGÀY ${getDateLabel()}`;
+    }, [activeSubTab, activeMainTab, activeSupermarket]);
 
     return (
         <div className="space-y-0">
@@ -68,73 +102,92 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 </div>
             </div>
 
-            {/* Row 2: Sub Tabs + View Toggle + Export — inside a bordered container like NhanVien */}
+            {/* Row 2: Bordered container with Tabs + Action Bar + Title/Quote */}
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+                {/* Sub-tabs row */}
                 <div className="border-b border-slate-200 dark:border-slate-700 px-4 sm:px-5 pt-3">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
-                    <div className="flex items-end justify-between -mb-px">
-                        <nav className="flex items-center gap-0 overflow-x-auto hide-scrollbar w-full sm:w-auto">
-                            {SUB_TABS.map(({ tab, label }) => {
-                                const isActive = activeSubTab === tab;
-                                return (
-                                    <button
-                                        key={tab}
-                                        onClick={() => setActiveSubTab(tab)}
-                                        className={`
-                                            flex-1 sm:flex-none px-5 py-2.5 text-[12px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap border-b-2
-                                            ${isActive
-                                                ? 'font-black text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
-                                                : 'font-bold text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'
-                                            }
-                                        `}
-                                    >
-                                        {label}
-                                    </button>
-                                );
-                            })}
-                        </nav>
+                    <nav className="flex items-center gap-0 overflow-x-auto hide-scrollbar w-full sm:w-auto -mb-px">
+                        {SUB_TABS.map(({ tab, label }) => {
+                            const isActive = activeSubTab === tab;
+                            return (
+                                <button
+                                    key={tab}
+                                    onClick={() => setActiveSubTab(tab)}
+                                    className={`
+                                        flex-1 sm:flex-none px-5 py-2.5 text-[12px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap border-b-2
+                                        ${isActive
+                                            ? 'font-black text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
+                                            : 'font-bold text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'
+                                        }
+                                    `}
+                                >
+                                    {label}
+                                </button>
+                            );
+                        })}
+                    </nav>
+                </div>
 
-                        {/* Right side: View toggle + Export */}
-                        <div className="hidden sm:flex items-center gap-3 pb-2 shrink-0">
-                            <button
-                                onClick={() => setActiveMainTab(activeMainTab === 'realtime' ? 'cumulative' : 'realtime')}
-                                className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-[11px] font-bold whitespace-nowrap"
-                            >
-                                <Icon name="clock" size={3.5} className="text-slate-400" />
-                                {activeMainTab === 'realtime' ? 'Cùng kỳ' : 'Cùng kỳ'}
-                            </button>
+                {/* Action bar — matching NhanVien toolbar */}
+                <div className="flex items-center justify-between px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700">
+                    {/* Left: Cùng kỳ toggle */}
+                    <button
+                        onClick={() => setActiveMainTab(activeMainTab === 'realtime' ? 'cumulative' : 'realtime')}
+                        className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-[11px] font-bold whitespace-nowrap"
+                    >
+                        <Icon name="clock" size={3.5} className="text-slate-400" />
+                        Cùng kỳ
+                    </button>
 
+                    {/* Right: [⚙️ Column settings] | [🖼️ Batch export] [📷 Export] */}
+                    <div className="flex items-center gap-1">
+                        {/* Column settings portal target */}
+                        <div id="column-settings-portal" />
+
+                        {/* Column settings slot (injected per tab) */}
+                        {toolbarSlot}
+
+                        {/* Divider */}
+                        <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+
+                        {/* Batch export */}
+                        <button
+                            onClick={onBatchExport}
+                            disabled={isBatchExporting}
+                            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors disabled:opacity-50"
+                            title="Xuất tất cả ảnh"
+                        >
+                            {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
+                        </button>
+
+                        {/* Single export */}
+                        {onExport && (
                             <button
-                                onClick={onBatchExport}
-                                disabled={isBatchExporting}
+                                onClick={onExport}
+                                disabled={isExporting}
                                 className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors disabled:opacity-50"
-                                title="Xuất tất cả ảnh"
+                                title="Xuất ảnh"
                             >
-                                {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}
+                                {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}
                             </button>
-                        </div>
+                        )}
                     </div>
                 </div>
 
-                {/* Mobile-only: View toggle + Export (below tabs) */}
-                <div className="flex sm:hidden items-center justify-between px-4 py-2 border-b border-slate-100 dark:border-slate-800">
-                    <button
-                        onClick={() => setActiveMainTab(activeMainTab === 'realtime' ? 'cumulative' : 'realtime')}
-                        className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold"
-                    >
-                        <Icon name="clock" size={3.5} className="text-slate-400" />
-                        {activeMainTab === 'realtime' ? 'ĐANG XEM: REALTIME' : 'ĐANG XEM: LUỸ KẾ'}
-                    </button>
-
-                    <button
-                        onClick={onBatchExport}
-                        disabled={isBatchExporting}
-                        className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors disabled:opacity-50"
-                        title="Xuất tất cả ảnh"
-                    >
-                        {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}
-                    </button>
+                {/* Content Title + Quote + TimeProgressBar — like NhanVien's RevenueTab */}
+                <div className="px-4 sm:px-5 py-3 sm:py-4">
+                    <h2 className="js-report-title text-lg sm:text-2xl font-black uppercase text-slate-800 dark:text-white leading-tight">
+                        {contentTitle}
+                    </h2>
+                    <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold leading-snug">
+                        {QUOTES[activeSubTab]}
+                    </p>
+                    <TimeProgressBar className="mt-2.5" />
                 </div>
+
+                {/* Children content (e.g. merged SummaryTableView) */}
+                {children}
             </div>
         </div>
     );

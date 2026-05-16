@@ -1,7 +1,8 @@
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import Card from './Card';
-import { UploadIcon } from './Icons';
+import { UploadIcon, CogIcon } from './Icons';
+import { Switch } from './dashboard/DashboardWidgets';
 import { useDashboardLogic } from '../hooks/useDashboardLogic';
 import SummaryTableView from './dashboard/SummaryTableView';
 import CompetitionView from './dashboard/CompetitionView';
@@ -127,7 +128,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     const industryTableRef = useRef<HTMLDivElement>(null);
     const competitionViewRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const columnSelectorRef = useRef<HTMLDivElement>(null);
     const exportOptions = useExportOptions();
+    const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
+    const [isHeaderExporting, setIsHeaderExporting] = useState(false);
 
     // --- Restore Logic ---
     const handleRestoreClick = () => {
@@ -263,7 +267,13 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     if (!hasData) {
         return (
             <div className="space-y-6">
-                <DashboardHeader title="Tổng quan Siêu thị" activeMainTab={activeMainTab} setActiveMainTab={setActiveMainTab} />
+                <DashboardHeader 
+                    title="Tổng quan Siêu thị" 
+                    activeMainTab={activeMainTab} setActiveMainTab={setActiveMainTab}
+                    activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab}
+                    supermarkets={supermarkets} activeSupermarket={activeSupermarket} setActiveSupermarket={setActiveSupermarket}
+                    onBatchExport={() => {}} isBatchExporting={false}
+                />
                 <EmptyState 
                     onNavigate={onNavigateToUpdater} 
                     onRestore={handleRestoreClick}
@@ -291,23 +301,38 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                     else runBatchExport(isRealtimeView ? 'realtime' : 'cumulative');
                 }}
                 isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
-            />
+                onExport={async () => {
+                    setIsHeaderExporting(true);
+                    if (activeSubTab === 'competition') {
+                        await handleExportPNG(competitionViewRef, `ThiDua_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`);
+                    } else {
+                        await handleExportPNG(printableRef, `BangDoanhThu${!isRealtimeView ? 'LuyKe' : ''}_${activeSupermarket}`);
+                    }
+                    setIsHeaderExporting(false);
+                }}
+                isExporting={isHeaderExporting}
+            >
+                {/* Revenue tab: SummaryTableView merges into header container */}
+                {activeSubTab === 'revenue' && (
+                    <div ref={printableRef}>
+                        <SummaryTableView 
+                            ref={summaryTableRef}
+                            data={isRealtimeView ? summaryRealtimeParsed.table : summaryLuyKeParsed.table} 
+                            isCumulative={!isRealtimeView}
+                            supermarketDailyTargets={supermarketDailyTargets} 
+                            supermarketMonthlyTargets={supermarketMonthlyTargets}
+                            activeSupermarket={activeSupermarket}
+                            onExport={() => handleExportPNG(printableRef, `BangDoanhThu${!isRealtimeView ? 'LuyKe' : ''}_${activeSupermarket}`)}
+                            updateTimestamp={isRealtimeView ? summaryRealtimeTs : null}
+                            supermarketTargets={supermarketTargets}
+                        />
+                    </div>
+                )}
+            </DashboardHeader>
             
             <div className="mt-3 sm:mt-4">
                     {activeSubTab === 'revenue' && (
-                        <div ref={printableRef} className="space-y-3 sm:space-y-6">
-                            <SummaryTableView 
-                                ref={summaryTableRef}
-                                data={isRealtimeView ? summaryRealtimeParsed.table : summaryLuyKeParsed.table} 
-                                isCumulative={!isRealtimeView}
-                                supermarketDailyTargets={supermarketDailyTargets} 
-                                supermarketMonthlyTargets={supermarketMonthlyTargets}
-                                activeSupermarket={activeSupermarket}
-                                onExport={() => handleExportPNG(printableRef, `BangDoanhThu${!isRealtimeView ? 'LuyKe' : ''}_${activeSupermarket}`)}
-                                updateTimestamp={isRealtimeView ? summaryRealtimeTs : null}
-                                supermarketTargets={supermarketTargets}
-                            />
-                            
+                        <div className="space-y-3 sm:space-y-6">
                             <KpiOverview 
                                 isRealtime={isRealtimeView}
                                 kpiData={currentKpiData}

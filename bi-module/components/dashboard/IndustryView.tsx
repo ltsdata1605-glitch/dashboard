@@ -123,11 +123,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     }, []);
 
     const actionButton = (
-        <div className="industry-view-controls flex items-center gap-1.5 no-print">
-             {onExport && <ExportButton onExportPNG={onExport} />}
+        <div className="industry-view-controls flex items-center gap-1 no-print">
              {/* Expand/Collapse buttons for tree mode */}
              {hasTreeData && (
-                <div className="flex items-center gap-0.5 mr-1">
+                <div className="flex items-center gap-0.5">
                     <button
                         onClick={expandAll}
                         className="p-1 rounded-full text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-colors"
@@ -145,10 +144,15 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     </button>
                 </div>
              )}
+
+             {/* Divider: expand/collapse | filter+column */}
+             {hasTreeData && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />}
+
+             {/* Filter */}
              <div className="relative" ref={industryFilterRef}>
                 <button
                     onClick={() => setIsIndustryFilterOpen(prev => !prev)}
-                    className="p-1 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                     title="Lọc ngành hàng"
                 >
                     <FilterIcon className="h-4 w-4" />
@@ -178,13 +182,15 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     </div>
                 )}
             </div>
+
+            {/* Column settings */}
             <div className="relative" ref={selectorRef}>
                 <button
                     onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                    className={`p-1.5 rounded-lg transition-colors ${
+                    className={`p-1.5 transition-colors ${
                         isColumnSelectorOpen
-                            ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600'
-                            : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
+                            ? 'text-indigo-600 dark:text-indigo-400'
+                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                     }`}
                     title="Tuỳ chỉnh hiển thị cột"
                 >
@@ -212,6 +218,12 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     </div>
                 )}
             </div>
+
+            {/* Divider: filter+column | export */}
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+
+            {/* Export */}
+            {onExport && <ExportButton onExportPNG={onExport} />}
         </div>
     );
 

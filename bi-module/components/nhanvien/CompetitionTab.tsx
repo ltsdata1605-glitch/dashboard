@@ -151,12 +151,17 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const exportGroupViewToPNG = async (filename: string, refToExport = groupViewRef, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
         if (!refToExport.current) return null;
         const original = refToExport.current;
+        // Count how many group cards exist to decide layout
+        const cardCount = original.querySelectorAll('.competition-group-card').length;
+        const useTwoColGrid = cardCount === 2;
+
         try {
             const blob = await exportElementAsImage(original, filename, {
                 mode: 'blob-only', elementsToHide: ['.export-button-component'],
-                forcedWidth: 500,
+                forcedWidth: useTwoColGrid ? 1000 : 500,
+                fitAllColumns: useTwoColGrid,
                 onCloneReady: (clone: HTMLElement) => {
-                    // Remove overflow constraints and stack cards vertically
+                    // Remove overflow constraints
                     const containers = clone.querySelectorAll('.overflow-x-auto, .grid, .competition-group-card');
                     containers.forEach(el => {
                         const htmlEl = el as HTMLElement;
@@ -170,11 +175,21 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
 
                     const gridContainer = clone.querySelector('.grid');
                     if (gridContainer) {
-                        (gridContainer as HTMLElement).style.display = 'flex';
-                        (gridContainer as HTMLElement).style.flexDirection = 'column';
-                        (gridContainer as HTMLElement).style.alignItems = 'stretch';
-                        (gridContainer as HTMLElement).style.gap = '24px';
-                        (gridContainer as HTMLElement).style.width = '100%';
+                        if (useTwoColGrid) {
+                            // Keep 2-column grid — match displayed layout
+                            (gridContainer as HTMLElement).style.display = 'grid';
+                            (gridContainer as HTMLElement).style.gridTemplateColumns = 'repeat(2, minmax(0, 1fr))';
+                            (gridContainer as HTMLElement).style.gap = '24px';
+                            (gridContainer as HTMLElement).style.width = '100%';
+                            (gridContainer as HTMLElement).style.alignItems = 'start';
+                        } else {
+                            // Stack vertically for 3+ cards
+                            (gridContainer as HTMLElement).style.display = 'flex';
+                            (gridContainer as HTMLElement).style.flexDirection = 'column';
+                            (gridContainer as HTMLElement).style.alignItems = 'stretch';
+                            (gridContainer as HTMLElement).style.gap = '24px';
+                            (gridContainer as HTMLElement).style.width = '100%';
+                        }
                     }
                 }
             });
@@ -256,6 +271,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 const safeName = `${title.replace(/[\s/]/g, '_')}.png`;
                 const blob = await exportElementAsImage(card, safeName, {
                     mode: 'blob-only', elementsToHide: ['.export-button-component'],
+                    fitAllColumns: true,
                     onCloneReady: (clone: HTMLElement) => {
                         clone.classList.remove('h-full');
                     }

@@ -1,7 +1,6 @@
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import Card from '../Card';
-import ExportButton from '../ExportButton';
+import ReactDOM from 'react-dom';
 import { parseSummaryData, roundUp, shortenSupermarketName, parseNumber } from '../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { CogIcon } from '../Icons';
@@ -252,15 +251,39 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         return groups;
     }, [orderedHeaders, visibleColumns]);
 
-    const cardTitle = (
-        <div className="card-title-text flex flex-col items-start w-full">
-            <span className="text-sm sm:text-xl font-black uppercase text-primary-700 dark:text-primary-400 leading-none tracking-tight">
-                {processedTable.title}
-            </span>
-            {updateTimestamp && !isCumulative && (
-                <div className="flex items-center gap-1 mt-1 sm:mt-1.5 opacity-60 no-print">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-500"></div>
-                    <span className="text-[8px] sm:text-[9px] font-bold uppercase tracking-widest text-slate-500">{updateTimestamp}</span>
+    // Column settings dropdown element — exposed for parent to place in toolbar
+    const columnSettingsDropdown = (
+        <div className="relative" ref={selectorRef}>
+            <button
+                onClick={() => setIsColumnSelectorOpen(prev => !prev)}
+                className={`p-1.5 transition-colors ${
+                    isColumnSelectorOpen
+                        ? 'text-indigo-600 dark:text-indigo-400'
+                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                }`}
+                title="Tuỳ chỉnh hiển thị cột"
+            >
+                <CogIcon className="h-4 w-4" />
+            </button>
+            {isColumnSelectorOpen && (
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
+                    <div className="grid gap-0.5">
+                        {orderedHeaders.filter(h => h !== 'Tên miền').map((h) => (
+                            <div key={h} className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                <label
+                                    htmlFor={`col-toggle-sum-${h}`}
+                                    className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
+                                    dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
+                                />
+                                <Switch
+                                    id={`col-toggle-sum-${h}`}
+                                    checked={visibleColumns.has(h)}
+                                    onChange={() => toggleColumn(h)}
+                                />
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>
@@ -281,62 +304,26 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         return { bg: 'bg-red-500', text: 'text-white', badge: 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400' };
     };
 
+    // Find the portal target in the DashboardHeader action bar
+    const portalTarget = typeof document !== 'undefined' ? document.getElementById('column-settings-portal') : null;
+
     return (
-        <div className="js-summary-table-container relative z-10">
-            <Card ref={ref} title={cardTitle}
-                actionButton={
-                    <div className="flex items-center gap-1.5 no-print">
-                        <ExportButton onExportPNG={onExport} />
-                        <div className="relative" ref={selectorRef}>
-                            <button
-                                onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                                className={`p-1.5 rounded-lg transition-colors ${
-                                    isColumnSelectorOpen
-                                        ? 'bg-primary-100 dark:bg-primary-900/30 text-primary-600'
-                                        : 'text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700'
-                                }`}
-                                title="Tuỳ chỉnh hiển thị cột"
-                            >
-                                <CogIcon className="h-4 w-4" />
-                            </button>
-                            {isColumnSelectorOpen && (
-                                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
-                                    <div className="grid gap-0.5">
-                                        {orderedHeaders.filter(h => h !== 'Tên miền').map((h) => (
-                                            <div key={h} className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                                                <label
-                                                    htmlFor={`col-toggle-sum-${h}`}
-                                                    className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
-                                                    dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}
-                                                />
-                                                <Switch
-                                                    id={`col-toggle-sum-${h}`}
-                                                    checked={visibleColumns.has(h)}
-                                                    onChange={() => toggleColumn(h)}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                }
-                rounded={false} noPadding
-            >
-                <div className="w-full overflow-hidden px-4 pb-4">
-                        {/* ─── TABLE VIEW ─── */}
-                        <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700">
-                            <table className="w-full border-collapse compact-export-table min-w-max">
-                                <thead>
-                                    {/* TIER 1: GROUP HEADERS */}
-                                    <tr className="text-[11px] font-black uppercase tracking-wider">
-                                        {/* Sticky 'SIÊU THỊ' merged header (rowSpan=2) */}
-                                        {visibleColumns.has('Tên miền') && (
-                                            <th
-                                                rowSpan={2}
-                                                className={`
+        <div className="js-summary-table-container relative z-10" ref={ref}>
+            {/* Portal column settings into the DashboardHeader action bar */}
+            {portalTarget && ReactDOM.createPortal(columnSettingsDropdown, portalTarget)}
+
+            <div className="w-full overflow-hidden px-4 pb-4">
+                    {/* ─── TABLE VIEW ─── */}
+                    <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700">
+                        <table className="w-full border-collapse compact-export-table min-w-max">
+                            <thead>
+                                {/* TIER 1: GROUP HEADERS */}
+                                <tr className="text-[11px] font-black uppercase tracking-wider">
+                                    {/* Sticky 'SIÊU THỊ' merged header (rowSpan=2) */}
+                                    {visibleColumns.has('Tên miền') && (
+                                        <th
+                                            rowSpan={2}
+                                            className={`
                                                     px-2 py-1 text-center text-[11px] font-black
                                                     text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30
                                                     border-b-2 border-b-indigo-100 dark:border-b-indigo-800
@@ -483,9 +470,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                     })}
                                 </tbody>
                             </table>
-                        </div>
                 </div>
-            </Card>
+            </div>
         </div>
     );
 });
