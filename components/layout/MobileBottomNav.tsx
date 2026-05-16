@@ -39,11 +39,11 @@ const MobileBottomNav: React.FC = React.memo(() => {
     const moreTabs = [
         { id: 'inventory', label: 'Kho hàng', icon: Package },
         { id: 'reports', label: 'Báo cáo', icon: FileText },
+        { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck },
         { id: 'tools-print-sticker', label: 'In Sticker', icon: Printer },
         { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
-        { id: 'tools-coupon', label: 'Chuyển đổi Coupon', icon: Ticket },
+        { id: 'tools-coupon', label: 'Rút gọn Coupon', icon: Ticket },
         { id: 'tools-tax', label: 'Hoàn thuế nhận thay', icon: Calculator, externalUrl: 'https://tinhthue-netify-487587635482.us-west1.run.app' },
-        { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck },
         { id: 'settings', label: 'Cài đặt', icon: Settings },
         { id: 'help', label: 'Giới thiệu', icon: HelpCircle },
     ];

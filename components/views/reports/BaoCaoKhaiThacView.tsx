@@ -191,6 +191,7 @@ const blockNonNumericKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
 export default function BaoCaoKhaiThacView() {
   const [state, setState] = useState<ReportState>(initialState);
   const [savedTotals, setSavedTotals] = useState<SavedTotals>(initialSavedTotals);
+  const cashInputRef = useRef<HTMLInputElement>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
@@ -223,6 +224,12 @@ export default function BaoCaoKhaiThacView() {
             ict: { ...initialState.priceWar.ict, ...savedData.priceWar?.ict }
           }
         });
+        if (savedData.staffName && savedData.staffName.trim()) {
+          setIsEditingName(false);
+          setTimeout(() => {
+            cashInputRef.current?.focus();
+          }, 100);
+        }
       }
       
       // Load saved totals
@@ -567,10 +574,6 @@ export default function BaoCaoKhaiThacView() {
             #report-export-area .mb-3 { margin-bottom: 8px !important; }
             #report-export-area .rounded-xl { border-radius: 8px !important; }
             #report-export-area .rounded-2xl { border-radius: 12px !important; }
-            
-            /* Ẩn hoàn toàn thanh cuộn */
-            .bao-cao-container ::-webkit-scrollbar { display: none !important; width: 0 !important; height: 0 !important; }
-            .bao-cao-container * { -ms-overflow-style: none !important; scrollbar-width: none !important; }
         }
       `}</style>
 
@@ -600,7 +603,7 @@ export default function BaoCaoKhaiThacView() {
         document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions')!
       )}
 
-      <main className="flex-1 overflow-y-auto w-full custom-scrollbar touch-pan-y overscroll-y-contain -webkit-overflow-scrolling-touch relative z-10">
+      <main className="flex-1 overflow-y-auto w-full relative z-10 custom-scrollbar pb-10">
         <div id="report-export-area" className="max-w-md mx-auto pt-3 px-3 space-y-3">
 
         {warnings.length > 0 && (
@@ -659,7 +662,11 @@ export default function BaoCaoKhaiThacView() {
             <div>
               <label className="text-[10px] text-slate-400 font-medium mb-1 block uppercase">Tiền mặt {savedTotals.cash > 0 && <span className="text-emerald-500">(Tổng: {totalCash})</span>}</label>
               <input 
+                ref={cashInputRef}
                 type="number"
+                step="any"
+                inputMode="decimal"
+                min="0"
                 placeholder="0"
                 className="w-full text-xl font-bold text-slate-800 focus:outline-none placeholder:text-slate-200"
                 value={state.cash}
@@ -671,6 +678,9 @@ export default function BaoCaoKhaiThacView() {
               <label className="text-[10px] text-slate-400 font-medium mb-1 block uppercase">Trả chậm {savedTotals.installment > 0 && <span className="text-emerald-500">(Tổng: {totalInstallment})</span>}</label>
               <input 
                 type="number"
+                step="any"
+                inputMode="decimal"
+                min="0"
                 placeholder="0"
                 className="w-full text-xl font-bold text-blue-600 focus:outline-none placeholder:text-slate-200"
                 value={state.installment}
@@ -1224,9 +1234,13 @@ function LeadsCard({ leads, onAdd, onRemove }: {
         />
         <div className="grid grid-cols-2 gap-2">
           <input 
-            type="text" 
+            type="number"
+            step="any"
+            inputMode="decimal"
+            min="0"
             placeholder="Số điện thoại" 
             className="w-full text-sm bg-white border border-slate-200 rounded-lg px-3 py-2 focus:outline-none"
+            onKeyDown={blockNonNumericKeys}
             value={form.phone}
             onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
           />

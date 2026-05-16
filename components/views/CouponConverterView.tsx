@@ -136,10 +136,10 @@ export default function CouponConverterView() {
             <div className="w-full max-w-[960px] mx-auto relative z-10 flex flex-col h-full min-h-[600px]">
                 <header className="text-center mb-10 shrink-0">
                     <h1 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 dark:from-indigo-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent mb-4 tracking-tight py-2 leading-tight">
-                        Chuyển đổi coupon GVGS, EVENT
+                        Rút gọn Coupon GVGS, EVENT
                     </h1>
                     <div className="text-sm text-slate-500 dark:text-slate-400 max-w-3xl mx-auto font-medium space-y-1">
-                        <p>Hỗ trợ chuyển đổi COUPON từ báo cáo Anh 3169 - Phạm Nguyên Vũ gửi Event, GVGS:</p>
+                        <p>Hỗ trợ rút gọn COUPON từ báo cáo Anh 3169 - Phạm Nguyên Vũ gửi Event, GVGS:</p>
                         <p>Mã COUPON Áp Dụng Cho Máy lọc nước Giờ vàng giá sốc ngày 1/5 - 3/5/2026</p>
                         <p>Mã COUPON Áp Dụng Cho Tivi - Loa Karaoke Giờ vàng giá sốc ngày 1/5 - 3/5/2026</p>
                     </div>

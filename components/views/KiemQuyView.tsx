@@ -55,7 +55,17 @@ export default function KiemQuyView() {
     getSetting(HISTORY_KEY).then((data: any) => {
       if (data && Array.isArray(data)) setHistory(data);
     }).catch(() => {});
+    
+    // Auto focus "Số tiền đang giữ" on mount
+    const timer = setTimeout(() => {
+      onHandRef.current?.focus();
+    }, 100);
+    return () => clearTimeout(timer);
   }, []);
+
+  const blockNonNumericKeys = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (['e', 'E', '+', '-'].includes(e.key)) e.preventDefault();
+  };
 
   const showToast = useCallback((msg: string) => {
     setToast(msg);
@@ -128,7 +138,7 @@ export default function KiemQuyView() {
   };
 
   return (
-    <div className="h-full w-full relative overflow-hidden">
+    <div className="flex-1 w-full h-full relative overflow-hidden flex flex-col">
       <div className="absolute inset-0 overflow-y-auto w-full pb-[140px] lg:pb-[76px]">
         <div className="max-w-md mx-auto pt-1 px-3 space-y-2">
         {/* Summary Card */}
@@ -203,12 +213,15 @@ export default function KiemQuyView() {
               <input
                 ref={onHandRef}
                 type="number"
+                step="any"
                 inputMode="decimal"
+                min="0"
                 value={amountOnHand}
                 onChange={(e) => {
                   const val = e.target.value.replace(/\D/g, '');
                   setAmountOnHand(val);
                 }}
+                onKeyDown={blockNonNumericKeys}
                 placeholder="Số tiền đang giữ..."
                 className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-lg py-1.5 px-3 text-sm font-bold focus:ring-1 focus:ring-emerald-500 outline-none pr-8 dark:text-white dark:placeholder:text-slate-500"
               />
@@ -243,7 +256,9 @@ export default function KiemQuyView() {
                   <input
                     ref={(el) => { inputRefs.current[denom.value] = el; }}
                     type="number"
-                    inputMode="numeric"
+                    step="any"
+                    inputMode="decimal"
+                    min="0"
                     value={counts[denom.value] || ''}
                     onChange={(e) => {
                       const val = e.target.value.replace(/\D/g, '');
@@ -251,6 +266,7 @@ export default function KiemQuyView() {
                     }}
                     onClick={(e) => e.stopPropagation()}
                     onKeyDown={(e) => {
+                      blockNonNumericKeys(e);
                       if (e.key === 'Enter') handleNextInput(denom.value);
                     }}
                     placeholder="0"
@@ -275,7 +291,7 @@ export default function KiemQuyView() {
       </div>
 
       {/* Fixed Footer */}
-      <footer className="fixed bottom-[56px] lg:bottom-0 left-0 right-0 lg:left-[260px] h-[56px] flex flex-col justify-center px-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-40">
+      <footer className="absolute bottom-0 left-0 right-0 h-[56px] flex flex-col justify-center px-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-40">
         <div className="max-w-md w-full mx-auto flex gap-2.5">
           <button 
             onClick={resetAll}

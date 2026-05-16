@@ -89,6 +89,14 @@ export default function StickerPrinterView() {
     const percentRef = useRef<HTMLDivElement>(null);
 
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     // Load saved state from IndexedDB on mount
     useEffect(() => {
@@ -648,9 +656,9 @@ export default function StickerPrinterView() {
 
     return (
         <div className="print-wrapper w-full h-[calc(100vh-64px)] bg-slate-100 dark:bg-slate-900 relative overflow-hidden">
-            {mounted && activeTab === 'tools-print-sticker' && document.getElementById('global-header-actions') && createPortal(
-                <div className="flex items-center gap-1 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300">
-                    <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
+            {mounted && activeTab === 'tools-print-sticker' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
+                <div className="flex items-center gap-0.5 lg:gap-1 bg-white/60 dark:bg-slate-900/60 p-1 lg:p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300 mr-1 lg:mr-0">
+                    <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-0.5 lg:p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
                         <button
                             onClick={() => {
                                 setStickerMode('sticker');
@@ -659,13 +667,14 @@ export default function StickerPrinterView() {
                                 setBgImage('/frame/X24_NEW.png');
                                 setHeaderTextSize(8);
                             }}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-[13px] transition-all ${
+                            className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
                                 stickerMode === 'sticker' && stickerType === 'gia_soc' 
                                     ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                             }`}
                         >
-                            {stickerMode === 'sticker' && stickerType === 'gia_soc' && <CheckCircle2 size={14} className="text-indigo-600 dark:text-indigo-400" />} Giá Sốc
+                            <span className="lg:hidden">Giá Sốc</span>
+                            <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'gia_soc' && <CheckCircle2 size={14} className="inline mr-1 text-indigo-600 dark:text-indigo-400" />}Giá Sốc</span>
                         </button>
                         <button
                             onClick={() => {
@@ -675,95 +684,40 @@ export default function StickerPrinterView() {
                                 setBgImage('/frame/GVO2-scaled.png');
                                 setHeaderTextSize(8);
                             }}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-[13px] transition-all ${
+                            className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
                                 stickerMode === 'sticker' && stickerType === 'gio_vang' 
                                     ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 shadow-sm' 
                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                             }`}
                         >
-                            {stickerMode === 'sticker' && stickerType === 'gio_vang' && <CheckCircle2 size={14} className="text-amber-600 dark:text-amber-400" />} Giờ Vàng
+                            <span className="lg:hidden">Giờ Vàng</span>
+                            <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'gio_vang' && <CheckCircle2 size={14} className="inline mr-1 text-amber-600 dark:text-amber-400" />}Giờ Vàng</span>
                         </button>
                         <button
                             onClick={() => { setStickerMode('event'); setEventEverOpened(true); }}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold text-[13px] transition-all ${
+                            className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
                                 stickerMode === 'event' 
                                     ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 shadow-sm' 
                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                             }`}
                         >
-                            {stickerMode === 'event' && <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" />}
-                            <Package size={14} />
-                            Event - Tồn kho
+                            <span className="lg:hidden">Event</span>
+                            <span className="hidden lg:inline">{stickerMode === 'event' && <CheckCircle2 size={14} className="inline mr-1 text-emerald-600 dark:text-emerald-400" />}<Package size={14} className="inline mr-1" />Event - Tồn kho</span>
                         </button>
                     </div>
                     
                     {stickerMode === 'sticker' && (
-                        <div className="flex items-center gap-1 ml-1 pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
-                            <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[26px]">
-                                <button onClick={() => setHeaderTextSize(s => Number((s - 0.2).toFixed(1)))} className="px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Giảm size">-</button>
-                                <span className="px-0 text-[11px] font-bold text-slate-700 dark:text-slate-300 w-7 text-center">{headerTextSize}</span>
-                                <button onClick={() => setHeaderTextSize(s => Number((s + 0.2).toFixed(1)))} className="px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Tăng size">+</button>
+                        <div className="flex items-center gap-1 ml-0.5 lg:ml-1 pl-1.5 lg:pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
+                            <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[22px] lg:h-[26px]">
+                                <button onClick={() => setHeaderTextSize(s => Number((s - 0.2).toFixed(1)))} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Giảm size">-</button>
+                                <span className="px-0 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 w-5 lg:w-7 text-center">{headerTextSize}</span>
+                                <button onClick={() => setHeaderTextSize(s => Number((s + 0.2).toFixed(1)))} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Tăng size">+</button>
                             </div>
                         </div>
                     )}
                 </div>,
-                document.getElementById('global-header-actions')!
+                document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions')!
             )}
-
-            {/* Mobile toolbar — visible only on small screens */}
-            <div className="lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 dark:border-slate-700/60 px-3 py-2 flex items-center justify-between gap-2 no-print">
-                <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-0.5 rounded-md border border-slate-200/50 dark:border-slate-700/50">
-                    <button
-                        onClick={() => {
-                            setStickerMode('sticker');
-                            setStickerType('gia_soc');
-                            setHeaderTextContent('QUẠT ĐIỀU HOÀ');
-                            setBgImage('/frame/X24_NEW.png');
-                            setHeaderTextSize(8);
-                        }}
-                        className={`px-3 py-1.5 rounded-md font-semibold text-xs transition-all ${
-                            stickerMode === 'sticker' && stickerType === 'gia_soc'
-                                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                : 'text-slate-500'
-                        }`}
-                    >
-                        Giá Sốc
-                    </button>
-                    <button
-                        onClick={() => {
-                            setStickerMode('sticker');
-                            setStickerType('gio_vang');
-                            setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
-                            setBgImage('/frame/GVO2-scaled.png');
-                            setHeaderTextSize(8);
-                        }}
-                        className={`px-3 py-1.5 rounded-md font-semibold text-xs transition-all ${
-                            stickerMode === 'sticker' && stickerType === 'gio_vang'
-                                ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 shadow-sm'
-                                : 'text-slate-500'
-                        }`}
-                    >
-                        Giờ Vàng
-                    </button>
-                    <button
-                        onClick={() => { setStickerMode('event'); setEventEverOpened(true); }}
-                        className={`px-3 py-1.5 rounded-md font-semibold text-xs transition-all ${
-                            stickerMode === 'event'
-                                ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 shadow-sm'
-                                : 'text-slate-500'
-                        }`}
-                    >
-                        Event
-                    </button>
-                </div>
-                {stickerMode === 'sticker' && (
-                    <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-md overflow-hidden shadow-sm h-8">
-                        <button onClick={() => setHeaderTextSize(s => Number((s - 0.2).toFixed(1)))} className="px-2.5 h-full flex items-center justify-center hover:bg-slate-100 text-slate-600 font-black text-sm">-</button>
-                        <span className="px-1 text-[11px] font-bold text-slate-700 dark:text-slate-300 w-7 text-center">{headerTextSize}</span>
-                        <button onClick={() => setHeaderTextSize(s => Number((s + 0.2).toFixed(1)))} className="px-2.5 h-full flex items-center justify-center hover:bg-slate-100 text-slate-600 font-black text-sm">+</button>
-                    </div>
-                )}
-            </div>
 
             {/* Event native component — always mounted once opened, toggled via CSS */}
             {eventEverOpened && (

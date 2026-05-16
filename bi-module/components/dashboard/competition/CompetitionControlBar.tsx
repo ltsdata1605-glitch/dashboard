@@ -1,9 +1,9 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { FilterIcon, CogIcon, ViewGridIcon, ViewListIcon } from '../../Icons';
+import ReactDOM from 'react-dom';
+import { FilterIcon, ViewGridIcon, ViewListIcon } from '../../Icons';
 import { Switch } from '../DashboardWidgets';
 import { shortenName } from '../../../utils/dashboardHelpers';
-import ExportButton from '../../ExportButton';
 
 interface CompetitionControlBarProps {
     viewMode: 'grid' | 'list';
@@ -11,10 +11,6 @@ interface CompetitionControlBarProps {
     selectedPrograms: string[];
     setSelectedPrograms: React.Dispatch<React.SetStateAction<string[]>>;
     allProgramNames: string[];
-    hiddenColumns: string[];
-    setHiddenColumns: React.Dispatch<React.SetStateAction<string[]>>;
-    headers: string[];
-    onExport?: () => Promise<void>;
 }
 
 const CompetitionControlBar: React.FC<CompetitionControlBarProps> = ({
@@ -23,24 +19,15 @@ const CompetitionControlBar: React.FC<CompetitionControlBarProps> = ({
     selectedPrograms,
     setSelectedPrograms,
     allProgramNames,
-    hiddenColumns,
-    setHiddenColumns,
-    headers,
-    onExport
 }) => {
     const [programFilterSearch, setProgramFilterSearch] = useState('');
     const [isProgramFilterOpen, setIsProgramFilterOpen] = useState(false);
-    const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const programFilterRef = useRef<HTMLDivElement>(null);
-    const columnSelectorRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (programFilterRef.current && !programFilterRef.current.contains(event.target as Node)) {
                 setIsProgramFilterOpen(false);
-            }
-            if (columnSelectorRef.current && !columnSelectorRef.current.contains(event.target as Node)) {
-                setIsColumnSelectorOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -74,40 +61,61 @@ const CompetitionControlBar: React.FC<CompetitionControlBarProps> = ({
 
     const isFiltered = selectedPrograms.length > 0 && selectedPrograms.length < allProgramNames.length;
 
-    return (
-        <div id="competition-view-controls" className="flex items-center gap-1.5">
-            {onExport && <ExportButton onExportPNG={onExport} />}
-            
+    // Find portal target in DashboardHeader action bar
+    const portalTarget = typeof document !== 'undefined' ? document.getElementById('column-settings-portal') : null;
+
+    const controls = (
+        <div id="competition-view-controls" className="flex items-center gap-1">
+            {/* View mode toggle — flat icons, no bg/border */}
+            <button
+                onClick={() => setViewMode('grid')}
+                className={`p-1.5 transition-colors ${viewMode === 'grid' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                title="Chế độ lưới"
+            >
+                <ViewGridIcon className="h-4 w-4"/>
+            </button>
+            <button
+                onClick={() => setViewMode('list')}
+                className={`p-1.5 transition-colors ${viewMode === 'list' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                title="Chế độ danh sách"
+            >
+                <ViewListIcon className="h-4 w-4"/>
+            </button>
+
+            {/* Divider */}
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+
+            {/* Filter */}
             <div className="relative" ref={programFilterRef}>
                 <button
                     onClick={() => setIsProgramFilterOpen(p => !p)}
-                    className={`p-2 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-slate-800 ${isFiltered ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/40 dark:text-primary-400' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                    className={`p-1.5 transition-colors relative ${isFiltered ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                     title="Lọc chương trình thi đua"
                 >
-                    <FilterIcon className="h-5 w-5" />
+                    <FilterIcon className="h-4 w-4" />
                     {isFiltered && (
-                        <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-[8px] font-bold px-1 rounded-full">{selectedPrograms.length}</span>
+                        <span className="absolute -top-0.5 -right-0.5 bg-indigo-600 text-white text-[7px] font-bold w-3 h-3 flex items-center justify-center rounded-full">{selectedPrograms.length}</span>
                     )}
                 </button>
                 {isProgramFilterOpen && (
-                    <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-20 p-2 flex flex-col max-h-96 text-left">
-                        <div className="px-1 mb-2">
+                    <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-[100] p-3 flex flex-col max-h-96 text-left">
+                        <div className="mb-2">
                             <input
                                 type="text"
                                 value={programFilterSearch}
                                 onChange={(e) => setProgramFilterSearch(e.target.value)}
                                 placeholder="Tìm kiếm chương trình..."
-                                className="w-full px-3 py-2 text-sm border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
+                                className="w-full px-3 py-1.5 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
                             />
                         </div>
-                        <div className="flex justify-between items-center mb-2 px-2">
-                            <button onClick={() => setSelectedPrograms(allProgramNames)} className="text-xs font-semibold text-primary-600 hover:underline uppercase tracking-tighter">Chọn tất cả</button>
-                            <button onClick={() => setSelectedPrograms([])} className="text-xs font-semibold text-slate-500 hover:underline uppercase tracking-tighter">Bỏ chọn tất cả</button>
+                        <div className="flex justify-between items-center mb-2 px-1">
+                            <button onClick={() => setSelectedPrograms(allProgramNames)} className="text-[10px] font-bold text-indigo-600 hover:underline uppercase tracking-wider">Chọn tất cả</button>
+                            <button onClick={() => setSelectedPrograms([])} className="text-[10px] font-bold text-slate-400 hover:underline uppercase tracking-wider">Bỏ chọn</button>
                         </div>
-                        <div className="flex-1 overflow-y-auto space-y-1 pr-1 max-h-60 scrollbar-thin">
+                        <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                             {filteredProgramNames.map(name => (
-                                <div key={name} className="flex items-center justify-between p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700">
-                                    <span className={`text-sm flex-1 mr-3 cursor-pointer select-none ${selectedPrograms.includes(name) ? 'font-bold text-primary-600' : 'text-slate-700 dark:text-slate-200'}`} onClick={() => toggleProgram(name)}>
+                                <div key={name} className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <span className={`text-xs flex-1 mr-3 cursor-pointer select-none ${selectedPrograms.includes(name) ? 'font-bold text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-200'}`} onClick={() => toggleProgram(name)}>
                                         {shortenName(name)}
                                     </span>
                                     <Switch 
@@ -120,43 +128,16 @@ const CompetitionControlBar: React.FC<CompetitionControlBarProps> = ({
                     </div>
                 )}
             </div>
-
-            <div className="relative" ref={columnSelectorRef}>
-                    <button
-                    onClick={() => setIsColumnSelectorOpen(p => !p)}
-                    className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 dark:focus:ring-offset-slate-800 transition-colors"
-                    title="Cột hiển thị"
-                >
-                    <CogIcon className="h-5 w-5" />
-                </button>
-                {isColumnSelectorOpen && (
-                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-xl border dark:border-slate-700 z-20 p-2 flex flex-col max-h-96 text-left">
-                        <h4 className="px-2 text-xs font-bold uppercase text-slate-500 dark:text-slate-400 mb-2 mt-1">Cột hiển thị</h4>
-                        <div className="flex-1 overflow-y-auto space-y-1">
-                            {headers.map(header => (
-                                <div key={header} className="flex items-center justify-between p-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700">
-                                    <span className="text-sm text-slate-700 dark:text-slate-200 cursor-pointer select-none" onClick={() => toggleColumn(header)}>{header}</span>
-                                    <Switch 
-                                        checked={!hiddenColumns.includes(header)} 
-                                        onChange={() => toggleColumn(header)} 
-                                    />
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <div className="flex items-center bg-slate-200 dark:bg-slate-700 rounded-lg p-1">
-                <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-sm' : 'text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50'}`}>
-                    <ViewGridIcon className="h-5 w-5"/>
-                </button>
-                <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-white dark:bg-slate-800 text-primary-600 shadow-sm' : 'text-slate-500 hover:bg-white/50 dark:hover:bg-slate-800/50'}`}>
-                    <ViewListIcon className="h-5 w-5"/>
-                </button>
-            </div>
         </div>
     );
+
+    // Portal into DashboardHeader action bar
+    if (portalTarget) {
+        return ReactDOM.createPortal(controls, portalTarget);
+    }
+
+    // Fallback: render inline
+    return controls;
 };
 
 export default CompetitionControlBar;

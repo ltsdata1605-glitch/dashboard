@@ -7,7 +7,8 @@ import CompetitionControlBar from './competition/CompetitionControlBar';
 import CompetitionGridView from './competition/CompetitionGridView';
 import CompetitionListView from './competition/CompetitionListView';
 import { exportElementAsImage } from '../../../services/uiService';
-import { Icon } from '../../../components/common/Icon';
+import { CogIcon } from '../Icons';
+import { Switch } from './DashboardWidgets';
 
 interface CompetitionViewProps {
     data: Record<string, SupermarketCompetitionData>;
@@ -30,7 +31,20 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const [defaultSortSet, setDefaultSortSet] = useState(false);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isExporting, setIsExporting] = useState(false);
+    const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const exportRef = useRef<HTMLDivElement>(null);
+    const columnSelectorRef = useRef<HTMLDivElement>(null);
+
+    // Click outside handler for column selector
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (columnSelectorRef.current && !columnSelectorRef.current.contains(event.target as Node)) {
+                setIsColumnSelectorOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
     
     const handleSort = (columnIndex: number | 'conLai' | 'htdkVT' | -1) => {
         setSortConfig(current => {
@@ -138,27 +152,51 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     };
 
     return (
-        <div ref={exportRef} className="rounded-none border border-slate-200 dark:border-slate-700 overflow-hidden bg-white dark:bg-slate-900 mt-4">
-            <div className="overflow-hidden">
-                <div className="px-2 py-1 flex justify-between items-center bg-[#34495e] dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 gap-2">
-                    <h3 className="text-[11px] sm:text-[13px] font-extrabold uppercase flex items-center gap-1.5 sm:gap-2 text-white tracking-widest truncate w-full justify-center">
+        <div ref={exportRef} className="rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 mt-4 relative">
+            {/* Portal competition controls into DashboardHeader action bar */}
+            <CompetitionControlBar 
+                viewMode={viewMode} 
+                setViewMode={setViewMode} 
+                selectedPrograms={selectedPrograms} 
+                setSelectedPrograms={setSelectedPrograms} 
+                allProgramNames={allProgramNames} 
+            />
+            <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <div className={`p-4 ${viewMode === 'list' ? 'min-w-fit' : ''}`}>
+                    <div className="py-3 px-4 flex justify-center items-center bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 shadow-lg relative mb-4">
+                    <h3 className="text-lg sm:text-2xl font-black uppercase text-white leading-normal drop-shadow-sm tracking-tight text-center">
                         {activeSupermarket === 'Tổng' ? 'TỔNG QUAN' : activeSupermarket.toUpperCase()} - THI ĐUA {updateTimestamp ? `ĐẾN ${updateTimestamp.split(' ')[0]}` : ''}
                     </h3>
-                    <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0 absolute right-2">
-                        <CompetitionControlBar 
-                            viewMode={viewMode} 
-                            setViewMode={setViewMode} 
-                            selectedPrograms={selectedPrograms} 
-                            setSelectedPrograms={setSelectedPrograms} 
-                            allProgramNames={allProgramNames} 
-                            hiddenColumns={hiddenColumns} 
-                            setHiddenColumns={setHiddenColumns} 
-                            headers={processedSupermarketData?.headers || []} 
-                        />
-                        <button onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/20 transition-colors ml-1">
-                            {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
-                            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
+                    {/* Column settings — in title bar */}
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 hide-on-export" ref={columnSelectorRef}>
+                        <button
+                            onClick={() => setIsColumnSelectorOpen(p => !p)}
+                            className={`p-1.5 rounded transition-colors ${isColumnSelectorOpen ? 'bg-white/30 text-white' : 'text-white/60 hover:text-white hover:bg-white/20'}`}
+                            title="Cột hiển thị"
+                        >
+                            <CogIcon className="h-4 w-4" />
                         </button>
+                        {isColumnSelectorOpen && (
+                            <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto text-left">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Cột hiển thị</p>
+                                <div className="grid gap-0.5">
+                                    {(processedSupermarketData?.headers || []).map(header => (
+                                        <div key={header} className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                            <label
+                                                className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
+                                                onClick={() => setHiddenColumns((prev: string[]) => { const s = new Set(prev); if (s.has(header)) s.delete(header); else s.add(header); return Array.from(s); })}
+                                            >
+                                                {header}
+                                            </label>
+                                            <Switch 
+                                                checked={!hiddenColumns.includes(header)} 
+                                                onChange={() => setHiddenColumns((prev: string[]) => { const s = new Set(prev); if (s.has(header)) s.delete(header); else s.add(header); return Array.from(s); })} 
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="p-0">
@@ -166,6 +204,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                         viewMode === 'grid' ? <CompetitionGridView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} /> 
                         : <CompetitionListView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} handleSort={handleSort} />
                     ) : <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/40 border-2 border-dashed border-slate-200 dark:border-slate-800"><p className="text-sm font-medium text-slate-400">Không có chương trình thi đua nào được chọn.</p></div>}
+                </div>
                 </div>
             </div>
         </div>

@@ -12,25 +12,10 @@ interface CompetitionListViewProps {
     handleSort: (col: any) => void;
 }
 
-const CRITERIA_THEMES = {
-  'DTLK': { 
-    main: 'bg-sky-600', 
-    light: 'bg-sky-50 dark:bg-sky-900/20', 
-    text: 'text-sky-700 dark:text-sky-300',
-    border: 'border-sky-100 dark:border-sky-800'
-  },
-  'DTQĐ': { 
-    main: 'bg-emerald-600', 
-    light: 'bg-emerald-50 dark:bg-emerald-900/20', 
-    text: 'text-emerald-700 dark:text-emerald-300',
-    border: 'border-emerald-100 dark:border-emerald-800'
-  },
-  'SLLK': { 
-    main: 'bg-rose-600', 
-    light: 'bg-rose-50 dark:bg-rose-900/20', 
-    text: 'text-rose-700 dark:text-rose-300',
-    border: 'border-rose-100 dark:border-rose-800'
-  }
+const CRITERIA_THEMES: Record<string, { main: string; light: string; text: string; border: string; badge: string }> = {
+    'DTLK': { main: 'bg-sky-600', light: 'bg-sky-50 dark:bg-sky-900/30', text: 'text-sky-700 dark:text-sky-300', border: 'border-sky-200 dark:border-sky-800', badge: 'bg-white/20 text-white' },
+    'DTQĐ': { main: 'bg-emerald-600', light: 'bg-emerald-50 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300', border: 'border-emerald-200 dark:border-emerald-800', badge: 'bg-white/20 text-white' },
+    'SLLK': { main: 'bg-rose-600', light: 'bg-rose-50 dark:bg-rose-900/30', text: 'text-rose-700 dark:text-rose-300', border: 'border-rose-200 dark:border-rose-800', badge: 'bg-white/20 text-white' },
 };
 
 const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSortedPrograms, headers, hiddenColumns, isRealtime, handleSort }) => {
@@ -55,26 +40,27 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
         return mapping[header] || header;
     };
 
-    const getHeaderStyle = (headerFormatted: string) => {
-        const h = headerFormatted.replace(/<br\/>/g, ' ');
-        if (h.includes('M.TIÊU')) return 'bg-sky-100 text-sky-800 dark:bg-sky-900/30 dark:text-sky-300 hover:bg-sky-200 dark:hover:bg-sky-800';
-        if (h.includes('T.HIỆN') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300 hover:bg-cyan-200 dark:hover:bg-cyan-800';
-        if (h.includes('%HTDK')) return 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 hover:bg-purple-200 dark:hover:bg-purple-800';
-        if (h.includes('%HT')) return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-800';
-        if (h.includes('C.LẠI')) return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800';
-        return 'hover:bg-slate-50 dark:hover:bg-slate-800';
+    // NhanVien-style header color mapping — thick bottom-border with colored backgrounds
+    const getHeaderCellClass = (header: string) => {
+        const h = getFormattedHeader(header).replace(/<br\/>/g, ' ');
+        if (h.includes('M.TIÊU')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
+        if (h.includes('T.HIỆN') || h.includes('L.KẾ') || h.includes('S.LƯỢNG')) return 'bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 border-b-[3px] border-b-sky-400';
+        if (h.includes('%HTDK')) return 'bg-violet-100 dark:bg-violet-900/40 text-violet-800 dark:text-violet-300 border-b-[3px] border-b-violet-400';
+        if (h.includes('%HT')) return 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300 border-b-[3px] border-b-emerald-400';
+        if (h.includes('C.LẠI')) return 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-b-[3px] border-b-amber-400';
+        return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b-[3px] border-b-slate-400';
     };
 
     const isMobile = window.innerWidth < 768;
 
     return (
-        <div className="overflow-x-auto rounded-none border border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-900">
+        <div className="overflow-hidden">
             {isMobile ? (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
                     {(['DTLK', 'DTQĐ', 'SLLK'] as const).map(criterion => {
                         const programs = groupedAndSortedPrograms[criterion];
                         if (!programs || programs.length === 0) return null;
-                        const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-slate-600', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100' };
+                        const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-slate-600', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100', badge: '' };
 
                         return (
                             <div key={criterion}>
@@ -136,129 +122,129 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                     })}
                 </div>
             ) : (
-                <table className="min-w-full text-[13px] border-collapse compact-export-table">
-                    <thead>
-                        <tr className="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 font-bold uppercase tracking-wider border-b-[2px] border-slate-200 dark:border-slate-700">
-                            <th className="px-2 py-1.5 text-center border-r border-slate-200 dark:border-slate-700 w-10 text-[10px] sm:text-[11px] align-middle">#</th>
-                            <th className="px-2 py-1.5 text-left cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-r border-slate-200 dark:border-slate-700 whitespace-nowrap text-[10px] sm:text-[11px] align-middle" onClick={() => handleSort(-1)}>
-                                NHÓM THI ĐUA
-                            </th>
-                            {headers.map((header, index) => {
-                                if (hiddenColumns.includes(header) || header === 'Còn Lại') return null;
-                                return (
+                <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
+                    <table className="w-full border-collapse compact-export-table">
+                            <thead>
+                                <tr className="text-[11px] font-black uppercase tracking-wider">
+                                    <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 w-10">#</th>
                                     <th 
-                                        key={index} 
-                                        onClick={() => handleSort(index)}
-                                        className={`px-2 py-1.5 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-200 dark:border-slate-700 last:border-r-0 text-[10px] sm:text-[11px] align-middle ${getHeaderStyle(getFormattedHeader(header))}`}
-                                        dangerouslySetInnerHTML={{ __html: getFormattedHeader(header) }}
-                                    />
-                                )
-                            })}
-                                
-                            { !hiddenColumns.includes('Còn Lại') && (
-                                    <th 
-                                    onClick={() => handleSort('conLai')}
-                                    className={`px-2 py-1.5 text-center whitespace-nowrap cursor-pointer transition-colors text-[10px] sm:text-[11px] align-middle ${getHeaderStyle('C.LẠI')}`}
-                                    dangerouslySetInnerHTML={{ __html: getFormattedHeader('Còn Lại') }}
-                                />
-                            )}
-                        </tr>
-                    </thead>
-                    {(Object.keys(groupedAndSortedPrograms)).map(criterion => {
-                        const programs = groupedAndSortedPrograms[criterion as Criterion];
-                        if (!programs || programs.length === 0) return null;
-                        const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-slate-600', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100' };
-            
-                        return (
-                            <tbody key={criterion} className="divide-y divide-slate-100 dark:divide-slate-800">
-                                <tr className={`${theme.main} text-white`}>
-                                    <th colSpan={100} className="px-2 py-1 text-left text-[11px] font-semibold uppercase tracking-widest">
-                                        <div className="flex items-center gap-2">
-                                            <span className="bg-white/20 px-2 py-0.5 rounded text-[9px] backdrop-blur-sm">TIÊU CHÍ</span>
-                                            {criterion}
-                                        </div>
+                                        className="text-left px-2 py-2 cursor-pointer border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" 
+                                        onClick={() => handleSort(-1)}
+                                    >
+                                        NHÓM THI ĐUA
                                     </th>
+                                    {headers.map((header, index) => {
+                                        if (hiddenColumns.includes(header) || header === 'Còn Lại') return null;
+                                        return (
+                                            <th 
+                                                key={index} 
+                                                onClick={() => handleSort(index)}
+                                                className={`px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[11px] align-middle ${getHeaderCellClass(header)}`}
+                                                dangerouslySetInnerHTML={{ __html: getFormattedHeader(header) }}
+                                            />
+                                        )
+                                    })}
+                                        
+                                    { !hiddenColumns.includes('Còn Lại') && (
+                                            <th 
+                                            onClick={() => handleSort('conLai')}
+                                            className="px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors text-[11px] align-middle bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-b-[3px] border-b-amber-400"
+                                            dangerouslySetInnerHTML={{ __html: getFormattedHeader('Còn Lại') }}
+                                        />
+                                    )}
                                 </tr>
-                                {programs.map((program: any, index: number) => {
-                                    const conLai = program.conLai;
-                                    const numericHeadersToRound = new Set(['Realtime', 'Realtime (QĐ)', 'Target', 'Target V.Trội', 'L.Kế', 'L.Kế (QĐ)', 'Còn Lại', 'SLLK', 'Số lượng']);
-                                    const percentHeadersToRound = new Set(['%HT', '%HTDK', '%HT V.Trội', '%HTDK V.Trội']);
-
-                                    return (
-                                        <tr key={program.name} className="hover:bg-slate-50 dark:hover:bg-slate-800/60 transition-colors group">
-                                            <td className="px-2 py-1 text-center text-slate-500 dark:text-slate-400 font-bold border-r border-slate-100 dark:border-slate-800 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
-                                            <td className="px-2 py-1 font-medium text-slate-700 dark:text-slate-200 whitespace-nowrap border-r border-slate-100 dark:border-slate-800 uppercase tracking-tight">
-                                                <div className="flex items-center gap-2">
-                                                  {shortenName(program.name, nameOverrides)}
-                                                </div>
+                            </thead>
+                            {(Object.keys(groupedAndSortedPrograms)).map(criterion => {
+                                const programs = groupedAndSortedPrograms[criterion as Criterion];
+                                if (!programs || programs.length === 0) return null;
+                                const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-slate-600', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100', badge: 'bg-white/20 text-white' };
+                    
+                                return (
+                                    <tbody key={criterion}>
+                                        <tr className={`${theme.main} text-white font-extrabold border-t-2 ${theme.border}`}>
+                                            <td colSpan={100} className="px-2 py-1.5 text-[11px] uppercase tracking-wider">
+                                                <span className={`px-2 py-0.5 rounded mr-2 ${theme.badge}`}>Tiêu chí</span> {criterion}
                                             </td>
-                                            {program.data.map((cell: any, cIdx: number) => {
-                                                const header = headers[cIdx];
-                                                if (hiddenColumns.includes(header) || header === 'Còn Lại') return null;
+                                        </tr>
+                                        {programs.map((program: any, index: number) => {
+                                            const conLai = program.conLai;
+                                            const numericHeadersToRound = new Set(['Realtime', 'Realtime (QĐ)', 'Target', 'Target V.Trội', 'L.Kế', 'L.Kế (QĐ)', 'Còn Lại', 'SLLK', 'Số lượng']);
+                                            const percentHeadersToRound = new Set(['%HT', '%HTDK', '%HT V.Trội', '%HTDK V.Trội']);
 
-                                                const isNumericToRound = numericHeadersToRound.has(header);
-                                                const isPercentToRound = percentHeadersToRound.has(header);
-                                                
-                                                let cellDisplayValue: string | number | React.ReactNode = cell;
-                                                
-                                                if (isNumericToRound) {
-                                                    const rawNum = parseNumber(cellDisplayValue);
-                                                    if (header === 'Target V.Trội' || header === 'Target(QĐ) V.Trội') {
-                                                        cellDisplayValue = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(rawNum);
-                                                    } else {
-                                                        cellDisplayValue = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.ceil(rawNum));
-                                                    }
-                                                } else if (isPercentToRound) {
-                                                    cellDisplayValue = `${roundUp(parseNumber(cellDisplayValue))}%`;
-                                                }
+                                            return (
+                                                <tr key={program.name} className="hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700">
+                                                    <td className="px-2 py-1 text-center text-[13px] text-slate-400 border-r border-slate-100 dark:border-slate-700/50 tabular-nums">{(index + 1).toString().padStart(2, '0')}</td>
+                                                    <td className="px-2 py-1 text-[13px] font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap uppercase tracking-tight">
+                                                        {shortenName(program.name, nameOverrides)}
+                                                    </td>
+                                                    {program.data.map((cell: any, cIdx: number) => {
+                                                        const header = headers[cIdx];
+                                                        if (hiddenColumns.includes(header) || header === 'Còn Lại') return null;
 
-                                                const cellContent = () => {
-                                                    const headerKey = headers[cIdx];
-                                                    const isProgressBarColumn = headerKey === (isRealtime ? '%HT' : '%HTDK') || headerKey === '%HT V.Trội' || headerKey === '%HTDK V.Trội';
-                                                    
-                                                    if (isProgressBarColumn) {
-                                                        const htValue = parseNumber(cell);
-                                                        let colorClass = 'text-slate-800 dark:text-slate-200';
+                                                        const isNumericToRound = numericHeadersToRound.has(header);
+                                                        const isPercentToRound = percentHeadersToRound.has(header);
+                                                        
+                                                        let cellDisplayValue: string | number | React.ReactNode = cell;
+                                                        
+                                                        if (isNumericToRound) {
+                                                            const rawNum = parseNumber(cellDisplayValue);
+                                                            cellDisplayValue = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.ceil(rawNum));
+                                                        } else if (isPercentToRound) {
+                                                            cellDisplayValue = `${roundUp(parseNumber(cellDisplayValue))}%`;
+                                                        }
+
+                                                        const cellContent = () => {
+                                                            const headerKey = headers[cIdx];
+                                                            const isProgressBarColumn = headerKey === (isRealtime ? '%HT' : '%HTDK') || headerKey === '%HT V.Trội' || headerKey === '%HTDK V.Trội';
+                                                            
+                                                            if (isProgressBarColumn) {
+                                                                const htValue = parseNumber(cell);
+                                                                return (
+                                                                    <div className="flex items-center gap-1 justify-center tabular-nums">
+                                                                        <span className="font-bold text-center w-10 text-[13px]">{`${roundUp(htValue)}%`}</span>
+                                                                        <div className="w-10 hidden sm:block"> <ProgressBar value={htValue} /> </div>
+                                                                    </div>
+                                                                );
+                                                            }
+                                                            
+                                                            // Target columns
+                                                            if (header === 'Target' || header === 'Target V.Trội') {
+                                                                return <span className="font-bold text-slate-500 dark:text-slate-400">{cellDisplayValue}</span>;
+                                                            }
+
+                                                            // Actual columns (L.Kế, Realtime)
+                                                            const isActualCol = header.startsWith('L.Kế') || header.startsWith('Realtime');
+                                                            if (isActualCol) return <span className="font-bold text-slate-800 dark:text-slate-100">{cellDisplayValue}</span>;
+                                                            
+                                                            if (headerKey === '%HTDK' || headerKey === '%HTDK V.Trội') {
+                                                                const pVal = parseNumber(cell);
+                                                                const color = pVal >= 100 ? 'text-emerald-600 dark:text-emerald-400' : (pVal >= 85 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400');
+                                                                return <span className={`font-black ${color}`}>{cellDisplayValue}</span>;
+                                                            }
+
+                                                            return <span className="text-slate-600 dark:text-slate-400 font-bold">{cellDisplayValue}</span>;
+                                                        };
 
                                                         return (
-                                                            <div className="flex items-center justify-center gap-3 tabular-nums">
-                                                                <span className={`font-black text-[12px] w-10 text-right ${colorClass}`}>{`${roundUp(htValue)}%`}</span>
-                                                                <div className="w-10 hidden sm:block"> <ProgressBar value={htValue} /> </div>
-                                                            </div>
-                                                        );
-                                                    }
+                                                            <td key={cIdx} className="px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap border-r border-slate-100 dark:border-slate-700/50 last:border-r-0 tabular-nums">
+                                                                {cellContent()}
+                                                            </td>
+                                                        )
+                                                    })}
                                                     
-                                                    const isActualCol = header.startsWith('L.Kế') || header.startsWith('Realtime');
-                                                    if (isActualCol) return <span className="font-bold text-slate-900 dark:text-white">{cellDisplayValue}</span>;
-                                                    
-                                                    if (headerKey === '%HTDK' || headerKey === '%HTDK V.Trội') {
-                                                        const pVal = parseNumber(cell);
-                                                        const color = pVal >= 100 ? 'text-emerald-600 dark:text-emerald-400' : (pVal >= 85 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400');
-                                                        return <span className={`font-black ${color}`}>{cellDisplayValue}</span>;
-                                                    }
-
-                                                    return <span className="text-slate-600 dark:text-slate-400 font-bold">{cellDisplayValue}</span>;
-                                                };
-
-                                                return (
-                                                    <td key={cIdx} className="px-2 py-1 text-center whitespace-nowrap border-r border-slate-100 dark:border-slate-800 last:border-r-0 tabular-nums">
-                                                        {cellContent()}
-                                                    </td>
-                                                )
-                                            })}
-                                            
-                                            { !hiddenColumns.includes('Còn Lại') && (
-                                                <td className={`px-2 py-1 text-center font-bold whitespace-nowrap border-slate-100 dark:border-slate-800 tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}`}>
-                                                    {conLai !== null ? new Intl.NumberFormat('vi-VN').format(Math.ceil(conLai)) : '-'}
-                                                </td>
-                                            )}
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        );
-                    })}
-                </table>
+                                                    { !hiddenColumns.includes('Còn Lại') && (
+                                                        <td className={`px-2 py-1 text-center text-[13px] font-bold whitespace-nowrap tabular-nums ${conLai === null ? '' : (conLai >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}`}>
+                                                            {conLai !== null ? new Intl.NumberFormat('vi-VN').format(Math.ceil(conLai)) : '-'}
+                                                        </td>
+                                                    )}
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                );
+                            })}
+                        </table>
+                </div>
             )}
         </div>
     );

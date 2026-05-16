@@ -88,7 +88,7 @@ const TabContent = React.memo(() => {
                 mountedTabs.has(view.id) ? (
                     <div 
                         key={view.id} 
-                        className={`${view.className || ''} ${activeTab === view.id ? 'block relative w-full h-full' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}`}
+                        className={`${view.className || ''} ${activeTab === view.id ? 'flex-1 relative w-full' : '!absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}`}
                     >
                         {view.component}
                     </div>
@@ -96,11 +96,13 @@ const TabContent = React.memo(() => {
             ))}
 
             {activeTab === 'tools-coupon' && (
-                <CouponConverterView />
+                <div className="flex-1 relative w-full flex flex-col">
+                    <CouponConverterView />
+                </div>
             )}
 
             {activeTab === 'tools-tax' && (
-                <div className="block">
+                <div className="flex-1 relative w-full flex flex-col">
                     <ExternalToolView url="https://tinhthue-netify-487587635482.us-west1.run.app" title="Tính thuế nhận thưởng" />
                 </div>
             )}
@@ -125,7 +127,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'reports': { main: 'Báo', highlight: 'Cáo' },
     'tools': { main: 'Công', highlight: 'Cụ' },
     'tools-print-sticker': { main: 'In', highlight: 'Sticker' },
-    'tools-coupon': { main: 'Đổi', highlight: 'Coupon' },
+    'tools-coupon': { main: 'Rút gọn', highlight: 'Coupon' },
     'tools-tax': { main: 'Hoàn', highlight: 'Thuế' },
     'tools-audit': { main: 'Kiểm', highlight: 'Quỹ' },
     'tools-phanca': { main: 'Phân', highlight: 'Ca' },
@@ -241,7 +243,7 @@ function AppContent() {
 
                     {/* Desktop Notification Center has been moved into the Header component to prevent layout overlap */}
                     
-                    <div className="w-full relative flex-grow min-h-0 pb-20 lg:pb-0">
+                    <div className="w-full relative flex-grow min-h-0 pb-20 lg:pb-0 flex flex-col">
                         <ErrorBoundary name="MainContent">
                             <Suspense fallback={
                                 <div className="flex items-center justify-center min-h-[50vh]">
