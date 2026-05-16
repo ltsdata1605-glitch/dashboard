@@ -5,8 +5,11 @@ import { RevenueRow, BonusMetrics, ManualDeptMapping } from '../types/nhanVienTy
 import { parseRevenueData, parseInstallmentData, parseCrossSellingData, formatEmployeeName } from '../utils/nhanVienHelpers';
 
 export function useNhanVienData() {
-    const [supermarkets] = useIndexedDBState<string[]>('supermarket-list', []);
-    const [activeSupermarkets, setActiveSupermarkets] = useIndexedDBState<string[]>('nhanvien-active-supermarkets', []);
+    const [supermarketsRaw] = useIndexedDBState<string[]>('supermarket-list', []);
+    const [activeSupermarketsRaw, setActiveSupermarkets] = useIndexedDBState<string[]>('nhanvien-active-supermarkets', []);
+    // Defensive: ensure arrays are always valid (Safari/iOS IndexedDB edge case)
+    const supermarkets = Array.isArray(supermarketsRaw) ? supermarketsRaw : [];
+    const activeSupermarkets = Array.isArray(activeSupermarketsRaw) ? activeSupermarketsRaw : [];
 
     const [aggregatedData, setAggregatedData] = useState({
         danhSach: '',
@@ -161,7 +164,8 @@ export function useNhanVienData() {
             .sort();
     }, [employeeDepartmentMap]);
     
-    const [activeDepartments, setActiveDepartments] = useIndexedDBState<string[]>('nhanvien-active-depts-multi', ['all']);
+    const [activeDepartmentsRaw, setActiveDepartments] = useIndexedDBState<string[]>('nhanvien-active-depts-multi', ['all']);
+    const activeDepartments = Array.isArray(activeDepartmentsRaw) ? activeDepartmentsRaw : ['all'];
     const effectiveActiveDepartments = useMemo(() => activeDepartments.includes('all') ? departmentOptions : activeDepartments, [activeDepartments, departmentOptions]);
 
     const toggleSupermarket = (sm: string) => {

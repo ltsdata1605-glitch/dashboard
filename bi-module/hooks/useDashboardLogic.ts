@@ -23,7 +23,9 @@ export const useDashboardLogic = () => {
     const [summaryLuyKe] = useIndexedDBState('summary-luy-ke', '');
     const [competitionRealtime] = useIndexedDBState('competition-realtime', '');
     const [competitionLuyKe] = useIndexedDBState('competition-luy-ke', '');
-    const [supermarkets] = useIndexedDBState<string[]>('supermarket-list', []);
+    const [supermarketsRaw] = useIndexedDBState<string[]>('supermarket-list', []);
+    // Defensive: ensure supermarkets is always a valid array (Safari/iOS IndexedDB edge case)
+    const supermarkets = Array.isArray(supermarketsRaw) ? supermarketsRaw : [];
     const [summaryRealtimeTs] = useIndexedDBState<string | null>('summary-realtime-ts', null);
     const [competitionRealtimeTs] = useIndexedDBState<string | null>('competition-realtime-ts', null);
     const [competitionLuyKeTs] = useIndexedDBState<string | null>('competition-luy-ke-ts', null);

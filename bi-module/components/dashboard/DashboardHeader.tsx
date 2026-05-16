@@ -24,9 +24,12 @@ const SUB_TABS: { tab: SubTab; label: string }[] = [
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({
     title, activeMainTab, setActiveMainTab,
     activeSubTab, setActiveSubTab,
-    supermarkets, activeSupermarket, setActiveSupermarket,
+    supermarkets: rawSupermarkets, activeSupermarket, setActiveSupermarket,
     onBatchExport, isBatchExporting
 }) => {
+    // Defensive guard: IndexedDB on iOS/Safari can sometimes return null/undefined
+    const supermarkets = Array.isArray(rawSupermarkets) ? rawSupermarkets : [];
+
     return (
         <div className="space-y-0">
             {/* Row 1: Title + Supermarket Selector — matches NhanVien style */}
@@ -51,7 +54,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                     className="appearance-none bg-transparent outline-none cursor-pointer text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 pr-6 truncate max-w-[100px] sm:max-w-[160px]"
                                 >
                                     <option value="Tổng">CỤM</option>
-                                    {supermarkets.map(sm => (
+                                    {supermarkets?.map(sm => (
                                         <option key={sm} value={sm}>{shortenSupermarketName(sm)}</option>
                                     ))}
                                 </select>

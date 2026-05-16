@@ -29,7 +29,13 @@ export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, D
         db.get(key).then(storedValue => {
             if (currentLoadId === loadIdRef.current) {
                 if (storedValue !== undefined && storedValue !== null) {
-                    setValue(storedValue);
+                    // Type safety: if defaultValue is an array, ensure storedValue is also an array
+                    // Prevents Safari/iOS crashes when cloud sync or DB migration corrupts data types
+                    if (Array.isArray(defaultValueRef.current) && !Array.isArray(storedValue)) {
+                        setValue(defaultValueRef.current);
+                    } else {
+                        setValue(storedValue);
+                    }
                 } else {
                     setValue(defaultValueRef.current);
                 }
