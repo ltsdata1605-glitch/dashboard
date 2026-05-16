@@ -158,7 +158,7 @@ export const clearStore = async (): Promise<void> => {
       const cursor = cursorRequest.result;
       if (cursor) {
         const k = String(cursor.key);
-        if (k.startsWith(BI_PREFIX)) {
+        if (k.startsWith(BI_PREFIX) && !k.startsWith(`${BI_PREFIX}avatar-`)) {
           cursor.delete();
         }
         cursor.continue();

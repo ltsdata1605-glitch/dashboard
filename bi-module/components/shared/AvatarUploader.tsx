@@ -3,7 +3,7 @@ import { UsersIcon, UploadIcon } from '../Icons';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 
 export const AvatarUploader: React.FC<{ employeeName: string; supermarketName: string }> = ({ employeeName, supermarketName }) => {
-    const dbKey = `avatar-${supermarketName}-${employeeName}`;
+    const dbKey = `avatar-${employeeName}`;
     const [avatarSrc, setAvatarSrc] = useIndexedDBState<string | null>(dbKey, null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {

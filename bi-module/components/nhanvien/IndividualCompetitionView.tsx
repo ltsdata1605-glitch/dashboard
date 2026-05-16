@@ -145,7 +145,7 @@ const EmployeeProfileCard: React.FC<{
     bonusData?: Record<string, any>;
     groupedPerformanceData: any;
 }> = ({ selectedEmployee, supermarketName, revenueRows, installmentRows, banKemRows, bonusData, groupedPerformanceData }) => {
-    const [avatarSrc] = useIndexedDBState<string | null>(`avatar-${supermarketName || 'default'}-${selectedEmployee.originalName}`, null);
+    const [avatarSrc] = useIndexedDBState<string | null>(`avatar-${selectedEmployee.originalName}`, null);
     
     const empRevenue = useMemo(() => {
         if (!revenueRows) return null;

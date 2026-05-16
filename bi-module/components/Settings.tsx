@@ -34,8 +34,6 @@ const Settings: React.FC = () => {
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [allSnapshots, setAllSnapshots] = useState<Record<string, SnapshotMetadata[]>>({});
-    const [restoreLogs, setRestoreLogs] = useState<string[]>([]);
-
     useEffect(() => {
         const fetchSnapshots = async () => {
             setIsLoading('snapshots');
@@ -59,11 +57,6 @@ const Settings: React.FC = () => {
         };
         fetchSnapshots();
     }, []);
-
-    const addLog = (message: string) => {
-        const time = new Date().toLocaleTimeString();
-        setRestoreLogs(prev => [`[${time}] ${message}`, ...prev]);
-    };
 
     const handleBackup = async () => {
         setIsLoading('backup');
@@ -120,8 +113,6 @@ const Settings: React.FC = () => {
     };
 
     const handleRestore = () => {
-        setRestoreLogs([]);
-        addLog("Bắt đầu quy trình khôi phục...");
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
         }
@@ -131,12 +122,10 @@ const Settings: React.FC = () => {
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) {
-            addLog("Người dùng hủy chọn file.");
             return;
         }
 
         setIsLoading('restore');
-        addLog(`Đang đọc file: ${file.name} (${(file.size / 1024).toFixed(2)} KB)...`);
         
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -144,7 +133,6 @@ const Settings: React.FC = () => {
                 const content = e.target?.result;
                 if (typeof content !== 'string') throw new Error('Không thể đọc nội dung file.');
                 
-                addLog("Đọc file thành công. Đang phân tích JSON...");
                 let parsedContent = JSON.parse(content);
                 let dataToRestore: { key: string; value: any }[] = [];
 
@@ -158,7 +146,6 @@ const Settings: React.FC = () => {
 
                 if (dataToRestore.length === 0) throw new Error('File backup rỗng.');
 
-                addLog("Đang xóa dữ liệu cũ và ghi đè...");
                 await db.clearStore();
                 await db.setMany(dataToRestore);
                 
@@ -172,18 +159,13 @@ const Settings: React.FC = () => {
                     await db.set(key, value);
                 }
                 
-                // db.set() và db.setMany() mới đã tự bắn event indexeddb-change
-
-                addLog("Khôi phục thành công!");
                 setIsLoading(null); 
-                
-                // Đã tắt thông báo thành công theo yêu cầu
+                window.location.reload();
 
             } catch (error) {
                 console.error('Restore failed:', error);
-                addLog(`❌ LỖI: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`);
                 setIsLoading(null);
-                alert(`Khôi phục thất bại.`);
+                alert(`Khôi phục thất bại: ${error instanceof Error ? error.message : 'Lỗi không xác định'}`);
             }
         };
         reader.readAsText(file);
@@ -237,23 +219,6 @@ const Settings: React.FC = () => {
                     </div>
                 </div>
             </section>
-
-            {/* Restore Logs */}
-            {restoreLogs.length > 0 && (
-                <section className="bg-slate-900 border border-slate-700 shadow-lg animate-in fade-in slide-in-from-top-4">
-                    <div className="flex justify-between items-center px-4 py-2.5 border-b border-slate-700">
-                        <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Nhật ký hệ thống</span>
-                        <button onClick={() => setRestoreLogs([])} className="text-[10px] font-bold text-slate-500 hover:text-slate-300 uppercase tracking-wider transition-colors">Xóa log</button>
-                    </div>
-                    <div className="h-32 overflow-y-auto p-4 font-mono text-xs space-y-1">
-                        {restoreLogs.map((log, index) => (
-                            <div key={index} className={`${log.includes('❌') ? 'text-red-400' : (log.includes('thành công') ? 'text-green-400' : 'text-slate-300')}`}>
-                                {log}
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
 
             {/* Section 2: Quản lý Snapshots */}
             <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">

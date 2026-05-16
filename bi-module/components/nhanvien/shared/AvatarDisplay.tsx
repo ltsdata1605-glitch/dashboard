@@ -10,7 +10,8 @@ interface AvatarDisplayProps {
 }
 
 const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, supermarketName, isHidden, onClick }) => {
-    const dbKey = `avatar-${supermarketName}-${employeeName}`;
+    // Bỏ supermarketName ra khỏi key để avatar dùng chung cho toàn hệ thống
+    const dbKey = `avatar-${employeeName}`;
     const [avatarSrc, setAvatarSrc] = useIndexedDBState<string | null>(dbKey, null);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
