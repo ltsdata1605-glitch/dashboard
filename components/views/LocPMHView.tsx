@@ -104,8 +104,8 @@ export default function LocPMHView() {
     };
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans min-h-screen flex flex-col items-center py-6 px-4">
-            <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl overflow-hidden border border-slate-100 dark:border-slate-700 flex flex-col h-[calc(100vh-8rem)]">
+        <div className="w-full h-full flex flex-col items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200 font-sans absolute inset-0">
+            <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-xl md:rounded-2xl shadow-sm md:shadow-xl overflow-hidden border border-slate-200 dark:border-slate-700 flex flex-col h-full max-h-full">
                 
                 <header className="bg-blue-600 dark:bg-blue-700 text-white p-4 flex items-center justify-between shrink-0">
                     <h1 className="text-xl font-bold tracking-wide">Trình Lọc PMH</h1>
@@ -129,12 +129,12 @@ export default function LocPMHView() {
                         <label htmlFor="textData" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Văn bản chứa mã (Dán từ tin nhắn):</label>
                         <textarea 
                             id="textData" 
-                            rows={6} 
+                            rows={3} 
                             value={textData}
                             onChange={(e) => setTextData(e.target.value)}
                             onPaste={handlePaste}
-                            className="w-full p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none text-sm" 
-                            placeholder="Dán văn bản có chứa các khối PMH vào đây. Hệ thống sẽ tự động lọc và xoá nội dung sau khi xử lý xong..."
+                            className="w-full p-2.5 sm:p-3 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none text-sm" 
+                            placeholder="Dán văn bản có chứa PMH vào đây. Hệ thống sẽ tự lọc và xoá sau khi xử lý..."
                         />
                     </div>
 
@@ -144,7 +144,7 @@ export default function LocPMHView() {
                             <span className="text-xs text-slate-500 dark:text-slate-500 font-medium">{resultCount} mã được tìm thấy</span>
                         </div>
                         <div className="flex-1 w-full p-3 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-y-auto font-mono text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
-                            {resultsText || 'Chưa có dữ liệu. Hãy nhấn "Bắt Đầu Lọc".'}
+                            {resultsText || 'Chưa có dữ liệu. Hãy dán mã vào ô trên để lọc.'}
                         </div>
                     </div>
                 </main>
@@ -162,7 +162,7 @@ export default function LocPMHView() {
             </div>
 
             {/* Toast Notification */}
-            <div className={`fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium transition-opacity duration-300 z-[100] ${isToastVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+            <div className={`fixed bottom-[100px] left-1/2 transform -translate-x-1/2 bg-gray-800 text-white px-4 py-2 rounded-full shadow-lg text-sm font-medium transition-opacity duration-300 z-[100] ${isToastVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                 {toastMessage}
             </div>
         </div>
