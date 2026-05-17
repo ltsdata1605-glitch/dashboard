@@ -101,7 +101,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterSearch, setFilterSearch] = useState('');
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
-    const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('competition-view-mode', 'group');
+    const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('competition-view-mode', 'list');
 
     // --- Logic cho Tab TỔNG đa bảng ---
     const [summaryTables, setSummaryTables] = useIndexedDBState<SummaryTableConfig[]>('nhanvien-summary-tables-v1', [

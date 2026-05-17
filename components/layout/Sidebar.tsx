@@ -202,6 +202,7 @@ export default function Sidebar() {
                 { id: 'tools-print-sticker', label: 'In Sticker', icon: Sticker },
                 { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
                 { id: 'tools-coupon', label: 'Rút gọn Coupon', icon: Ticket },
+                { id: 'tools-filter-pmh', label: 'Lọc PMH', icon: Search },
                 { id: 'tools-tax', label: 'Hoàn thuế nhận thay', icon: Calculator, externalUrl: 'https://tinhthue-netify-487587635482.us-west1.run.app' }
             ]
         },

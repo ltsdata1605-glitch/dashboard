@@ -47,16 +47,20 @@ export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, D
     
     loadValue();
 
-    const handleDbChange = (event: CustomEvent) => {
-        if (event.detail.key === key) {
-            // Nếu chính hook này vừa ghi key đó → state đã đúng rồi, bỏ qua reload
-            if (justWroteKeyRef.current === key) {
-                justWroteKeyRef.current = null;
+        const handleDbChange = (event: CustomEvent) => {
+            if (event.detail.key === 'ALL') {
+                setValue(defaultValueRef.current);
                 return;
             }
-            loadValue();
-        }
-    };
+            if (event.detail.key === key) {
+                // Nếu chính hook này vừa ghi key đó → state đã đúng rồi, bỏ qua reload
+                if (justWroteKeyRef.current === key) {
+                    justWroteKeyRef.current = null;
+                    return;
+                }
+                loadValue();
+            }
+        };
 
     window.addEventListener(DB_CHANGE_EVENT, handleDbChange as EventListener);
     return () => window.removeEventListener(DB_CHANGE_EVENT, handleDbChange as EventListener);

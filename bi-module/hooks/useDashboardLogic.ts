@@ -102,7 +102,8 @@ export const useDashboardLogic = () => {
             const programTotalTargets: Record<string, number> = {};
             for (const supermarketName in newAugmentedData) {
                 if (supermarketName === 'Tổng') continue;
-                const adjustments = await db.get(`comptarget-${supermarketName}-targets`) || {};
+                const safeName = shortenSupermarketName(supermarketName);
+                const adjustments = await db.get(`comptarget-${safeName}-targets`) || {};
                 const supermarketData = newAugmentedData[supermarketName];
                 if (!supermarketData || !supermarketData.headers || !supermarketData.programs) continue;
                 const headersToAdd: string[] = [];
@@ -161,7 +162,8 @@ export const useDashboardLogic = () => {
             const programTotals: Record<string, { totalVT: number; totalLK: number }> = {};
             for (const supermarketName in newAugmentedData) {
                 if (supermarketName === 'Tổng') continue;
-                const adjustments = await db.get(`comptarget-${supermarketName}-targets`) || {};
+                const safeName = shortenSupermarketName(supermarketName);
+                const adjustments = await db.get(`comptarget-${safeName}-targets`) || {};
                 const supermarketData = newAugmentedData[supermarketName];
                 if (!supermarketData || !supermarketData.headers || !supermarketData.programs) continue;
                 const headersToAdd: string[] = [];
@@ -221,11 +223,12 @@ export const useDashboardLogic = () => {
             const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
             const allSupermarketsForTargets = ['Tổng', ...supermarkets];
             for (const supermarketName of allSupermarketsForTargets) {
-                const quyDoi = await db.get(`targethero-${supermarketName}-quydoi`) ?? 40;
-                const traGop = await db.get(`targethero-${supermarketName}-tragop`) ?? 45;
+                const safeName = shortenSupermarketName(supermarketName);
+                const quyDoi = await db.get(`targethero-${safeName}-quydoi`) ?? 40;
+                const traGop = await db.get(`targethero-${safeName}-tragop`) ?? 45;
                 allTargets[supermarketName] = { quyDoi, traGop };
                 if (supermarketName === 'Tổng') continue;
-                const totalTargetPercent = await db.get(`targethero-${supermarketName}-total`) ?? 100;
+                const totalTargetPercent = await db.get(`targethero-${safeName}-total`) ?? 100;
                 const luyKeSupermarketSummary = summaryLuyKeParsed.table.rows.find(r => r[0] === supermarketName);
                 const dtDuKienQd = luyKeSupermarketSummary ? parseNumber(luyKeSupermarketSummary[5]) : 0; 
                 const htTargetDuKienPercent = luyKeSupermarketSummary ? parseNumber(luyKeSupermarketSummary[6]) : 0; 

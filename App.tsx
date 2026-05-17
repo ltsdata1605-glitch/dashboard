@@ -17,7 +17,8 @@ import {
     HelpCircle,
     Shield,
     FileText,
-    Wrench
+    Wrench,
+    Search
 } from 'lucide-react';
 
 const DashboardView = lazy(() => import('./components/views/DashboardView'));
@@ -42,6 +43,7 @@ import StaffListView from './components/views/StaffListView';
 import ReportLinkView from './components/views/ReportLinkView';
 import StaffScheduleView from './components/views/StaffScheduleView';
 import CouponConverterView from './components/views/CouponConverterView';
+import LocPMHView from './components/views/LocPMHView';
 import { Toaster } from 'react-hot-toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
 import PendingApprovalBanner from './components/layout/PendingApprovalBanner';
@@ -101,6 +103,12 @@ const TabContent = React.memo(() => {
                 </div>
             )}
 
+            {activeTab === 'tools-filter-pmh' && (
+                <div className="flex-1 relative w-full flex flex-col">
+                    <LocPMHView />
+                </div>
+            )}
+
             {activeTab === 'tools-tax' && (
                 <div className="flex-1 relative w-full flex flex-col">
                     <ExternalToolView url="https://tinhthue-netify-487587635482.us-west1.run.app" title="Tính thuế nhận thưởng" />
@@ -108,8 +116,8 @@ const TabContent = React.memo(() => {
             )}
 
             {/* Render External Tool view when applicable */}
-            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-audit', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports'].includes(activeTab) && (
-                <div style={{ display: !['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports'].includes(activeTab) ? 'block' : 'none' }} className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
+            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-audit', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports', 'tools-filter-pmh'].includes(activeTab) && (
+                <div style={{ display: !['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports', 'tools-filter-pmh'].includes(activeTab) ? 'block' : 'none' }} className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>
                 </div>
@@ -128,6 +136,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'tools': { main: 'Công', highlight: 'Cụ' },
     'tools-print-sticker': { main: 'In', highlight: 'Sticker' },
     'tools-coupon': { main: 'Rút gọn', highlight: 'Coupon' },
+    'tools-filter-pmh': { main: 'Lọc', highlight: 'PMH' },
     'tools-tax': { main: 'Hoàn', highlight: 'Thuế' },
     'tools-audit': { main: 'Kiểm', highlight: 'Quỹ' },
     'tools-phanca': { main: 'Phân', highlight: 'Ca' },
@@ -154,6 +163,7 @@ function AppContent() {
             case 'tools-print-sticker': return <Printer size={15} color="white" strokeWidth={2.5} />;
             case 'tools-phanca': return <Calendar size={15} color="white" strokeWidth={2.5} />;
             case 'tools-coupon': return <Ticket size={15} color="white" strokeWidth={2.5} />;
+            case 'tools-filter-pmh': return <Search size={15} color="white" strokeWidth={2.5} />;
             case 'tools-tax': return <Calculator size={15} color="white" strokeWidth={2.5} />;
             case 'tools-audit': return <ClipboardCheck size={15} color="white" strokeWidth={2.5} />;
             case 'settings': return <Settings size={15} color="white" strokeWidth={2.5} />;

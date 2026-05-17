@@ -240,7 +240,6 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                 if (action === 'cancel') break;
                 autoAction = action;
             }
-            alert('✅ Đã hoàn tất xuất hàng loạt cho tất cả siêu thị!');
         } catch (e) {
             console.error(e);
             alert('❌ Lỗi xuất hàng loạt.');

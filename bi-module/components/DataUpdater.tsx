@@ -241,18 +241,11 @@ const DataUpdater: React.FC = () => {
     const handleClearAllData = async () => {
         setToast({ message: 'Đang xoá dữ liệu...', type: 'info', isVisible: true });
         await db.clearStore();
-        setToast({ message: 'Đã xoá thành công! Đang quay về Tổng quan...', type: 'success', isVisible: true });
+        setToast({ message: 'Đã xoá thành công! Các thiết lập đã được đặt về mặc định.', type: 'success', isVisible: true });
         
-        // Broadcast that everything is gone so other listeners drop their cache
-        window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: 'main-active-view' } }));
-        
-        setTimeout(() => {
-            if (onNavigateToDashboard) {
-                onNavigateToDashboard();
-            } else {
-                window.location.reload();
-            }
-        }, 800);
+        // Broadcast that everything is gone so all listeners drop their cache
+        window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: 'ALL' } }));
+        setIsConfirmingClear(false);
     };
 
     return (
@@ -272,10 +265,6 @@ const DataUpdater: React.FC = () => {
                     </p>
                 </div>
                 <div className="flex items-center gap-2 pb-2">
-                    <div className="flex items-center gap-2 px-2.5 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 rounded-full shadow-sm">
-                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse ring-2 ring-emerald-500/30"></div>
-                        <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest leading-none mt-[1px]">HỆ THỐNG SẴN SÀNG</span>
-                    </div>
                     {isConfirmingClear ? (
                         <div className="flex items-center gap-1.5">
                             <button 

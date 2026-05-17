@@ -40,7 +40,7 @@ const EMPTY_ARRAY: any[] = [];
 const NOOP = () => {};
 
 export const NhanVien: React.FC = () => {
-    const [activeTab, setActiveTab] = useState<Tab>('revenue');
+    const [activeTab, setActiveTab] = useIndexedDBState<Tab>('nhanvien-active-tab', 'revenue');
     const [isSmFilterOpen, setIsSmFilterOpen] = useState(false);
     const smRef = useRef<HTMLDivElement>(null);
 
@@ -106,7 +106,7 @@ export const NhanVien: React.FC = () => {
 
     const competitionData = useMemo(() => parseCompetitionData(aggregatedData.thiDua, employeeDepartmentMap), [aggregatedData.thiDua, employeeDepartmentMap]);
     // Fix: Updated type to include 'tong'
-    const [activeCompetitionTab, setActiveCompetitionTab] = useState<Criterion | 'nhom' | 'canhan' | 'tong'>('canhan');
+    const [activeCompetitionTab, setActiveCompetitionTab] = useIndexedDBState<Criterion | 'nhom' | 'canhan' | 'tong'>('nhanvien-active-competition-tab', 'nhom');
     const [highlightedEmpArray, setHighlightedEmpArray] = useIndexedDBState<string[]>('highlight-employees-multi', []);
     const highlightedEmployees = useMemo(() => new Set(highlightedEmpArray), [highlightedEmpArray]);
     const setHighlightedEmployees = (updater: React.SetStateAction<Set<string>>) => { 
@@ -139,13 +139,14 @@ export const NhanVien: React.FC = () => {
             if (lines.length === 0) return;
 
             // Song song hóa tất cả IDB reads cho tất cả siêu thị
-            const smDataResults = await Promise.all(activeSupermarkets.map(sm => 
-                Promise.all([
-                    db.get(`comptarget-${sm}-targets`),
-                    db.get(`targethero-${sm}-departmentweights`),
+            const smDataResults = await Promise.all(activeSupermarkets.map(sm => {
+                const safeName = shortenSupermarketName(sm);
+                return Promise.all([
+                    db.get(`comptarget-${safeName}-targets`),
+                    db.get(`targethero-${safeName}-departmentweights`),
                     sm // giữ lại tên SM để mapping
-                ])
-            ));
+                ]);
+            }));
 
             const smDataMap = new Map<string, { competitionTargets: any; departmentWeights: any }>();
             smDataResults.forEach(([compTargets, deptWeights, sm]) => {
@@ -217,7 +218,7 @@ export const NhanVien: React.FC = () => {
             // Song song đọc tất cả: summary + target cho mỗi SM
             const [summaryLuyKeData, ...smTargets] = await Promise.all([
                 db.get('summary-luy-ke'),
-                ...activeSupermarkets.map(sm => db.get(`targethero-${sm}-total`))
+                ...activeSupermarkets.map(sm => db.get(`targethero-${shortenSupermarketName(sm)}-total`))
             ]);
             let totalT = 0;
             if (summaryLuyKeData) {
@@ -255,7 +256,7 @@ export const NhanVien: React.FC = () => {
     }, [individualViewEmployees]);
 
     const [versions, setVersions] = useIndexedDBState<Version[]>('nhanvien-competition-versions', []);
-    const [activeVersionName, setActiveVersionName] = useState<string | 'new' | null>(null);
+    const [activeVersionName, setActiveVersionName] = useIndexedDBState<string | 'new' | null>('nhanvien-active-version', null);
 
     const handleVersionTabClick = (version: Version) => {
         setActiveVersionName(version.name);

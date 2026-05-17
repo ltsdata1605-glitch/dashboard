@@ -32,7 +32,6 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isExporting, setIsExporting] = useState(false);
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
-    const exportRef = useRef<HTMLDivElement>(null);
     const columnSelectorRef = useRef<HTMLDivElement>(null);
 
     // Click outside handler for column selector
@@ -137,22 +136,8 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         }, {} as Partial<Record<Criterion, any[]>>);
     }, [sortedPrograms]);
 
-    const handleExport = async () => {
-        if (exportRef.current) {
-            setIsExporting(true);
-            const title = `${isRealtime ? 'REALTIME THI ĐUA' : 'LUỸ KẾ THI ĐUA'} - ${activeSupermarket === 'Tổng' ? 'TỔNG QUAN' : shortenSupermarketName(activeSupermarket).toUpperCase()}`;
-            const safeTabName = title.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
-            await exportElementAsImage(exportRef.current, `${safeTabName}.png`, {
-                elementsToHide: ['.hide-on-export'],
-                isCompactTable: true,
-                fitAllColumns: true
-            });
-            setIsExporting(false);
-        }
-    };
-
     return (
-        <div ref={exportRef} className="rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 mt-4 relative">
+        <div ref={ref} className="rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 mt-4 relative">
             {/* Portal competition controls into DashboardHeader action bar */}
             <CompetitionControlBar 
                 viewMode={viewMode} 

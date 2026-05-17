@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { shortenSupermarketName } from '../utils/dashboardHelpers';
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import { RevenueRow, BonusMetrics, ManualDeptMapping } from '../types/nhanVienTypes';
@@ -35,17 +36,18 @@ export function useNhanVienData() {
         const fetchAllData = async () => {
             if (activeSupermarkets.length === 0) return;
             
-            const results = await Promise.all(activeSupermarkets.map(sm => 
-                Promise.all([
-                    db.get(`config-${sm}-danhsach`),
-                    db.get(`config-${sm}-thidua`),
-                    db.get(`config-${sm}-tragop`),
-                    db.get(`config-${sm}-bankem`),
-                    db.get(`manual-dept-mapping-${sm}`),
-                    db.get(`bonus-data-${sm}`),
-                    db.get(`targethero-${sm}-departmentweights`)
-                ])
-            ));
+            const results = await Promise.all(activeSupermarkets.map(sm => {
+                const safeName = shortenSupermarketName(sm);
+                return Promise.all([
+                    db.get(`config-${safeName}-danhsach`),
+                    db.get(`config-${safeName}-thidua`),
+                    db.get(`config-${safeName}-tragop`),
+                    db.get(`config-${safeName}-bankem`),
+                    db.get(`manual-dept-mapping-${safeName}`),
+                    db.get(`bonus-data-${safeName}`),
+                    db.get(`targethero-${safeName}-departmentweights`)
+                ]);
+            }));
 
             if (!isMounted) return;
 

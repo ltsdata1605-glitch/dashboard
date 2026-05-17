@@ -7,7 +7,7 @@ import TargetHero from './TargetHero';
 import Slider from './Slider';
 import Card from './Card';
 import * as db from '../utils/db';
-import { parseNumber, shortenName } from '../utils/dashboardHelpers';
+import { parseNumber, shortenName, shortenSupermarketName } from '../utils/dashboardHelpers';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 type Competition = { name: string; criteria: string };
@@ -235,7 +235,8 @@ const CompetitionTarget: React.FC<{
     competitionLuyKeData: string;
     totalEmployees?: number;
 }> = ({ supermarketName, addUpdate, competitions, competitionLuyKeData, totalEmployees = 0 }) => {
-    const [targets, setTargets] = useIndexedDBState<Record<string, number>>(`comptarget-${supermarketName}-targets`, {});
+    const safeName = shortenSupermarketName(supermarketName);
+    const [targets, setTargets] = useIndexedDBState<Record<string, number>>(`comptarget-${safeName}-targets`, {});
     const [nameOverrides, setNameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [groupOverrides, setGroupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
@@ -265,7 +266,7 @@ const CompetitionTarget: React.FC<{
         const ratio = targets[compName] ?? 100;
         const adjVal = baseVal * (ratio / 100);
         
-        const key = `prev-month-target-${supermarketName}-${compName}`;
+        const key = `prev-month-target-${safeName}-${compName}`;
         await db.set(key, adjVal);
         
         alert(`✅ Đã lưu Target ${shortenName(compName, nameOverrides)} làm mốc so sánh tháng trước!`);
@@ -428,14 +429,18 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' | 'info'; isVisible: boolean }>({ message: '', type: 'info', isVisible: false });
 
-    const ids = useMemo(() => ({
-        ds: supermarketName ? `config-${supermarketName}-danhsach` : null,
-        td: supermarketName ? `config-${supermarketName}-thidua` : null,
-        rt: supermarketName ? `config-${supermarketName}-industry-realtime` : null,
-        lk: supermarketName ? `config-${supermarketName}-industry-luyke` : null,
-        tg: supermarketName ? `config-${supermarketName}-tragop` : null,
-        bk: supermarketName ? `config-${supermarketName}-bankem` : null,
-    }), [supermarketName]);
+    const ids = useMemo(() => {
+        if (!supermarketName) return { ds: null, td: null, rt: null, lk: null, tg: null, bk: null };
+        const safeName = shortenSupermarketName(supermarketName);
+        return {
+            ds: `config-${safeName}-danhsach`,
+            td: `config-${safeName}-thidua`,
+            rt: `config-${safeName}-industry-realtime`,
+            lk: `config-${safeName}-industry-luyke`,
+            tg: `config-${safeName}-tragop`,
+            bk: `config-${safeName}-bankem`,
+        };
+    }, [supermarketName]);
 
     const [danhSachData, setDanhSachData] = useIndexedDBState(ids.ds, '');
     const [thiDuaData, setThiDuaData] = useIndexedDBState(ids.td, '');

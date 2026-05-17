@@ -4,7 +4,7 @@ import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { ChevronDownIcon, XIcon, PlusIcon, TrashIcon, CheckCircleIcon, CogIcon, PencilIcon, ResetIcon } from './Icons';
 import Slider from './Slider';
 import { ManualDeptMapping } from '../types/nhanVienTypes';
-import { parseNumber } from '../utils/dashboardHelpers';
+import { parseNumber, shortenSupermarketName } from '../utils/dashboardHelpers';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 
@@ -235,16 +235,17 @@ const CompactTargetItem: React.FC<{
 
 const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, departments, summaryLuyKeData }) => {
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
-    const [traGop, setTraGop] = useIndexedDBState<number>(`targethero-${supermarketName}-tragop`, 45);
-    const [quyDoi, setQuyDoi] = useIndexedDBState<number>(`targethero-${supermarketName}-quydoi`, 40);
-    const [totalTarget, setTotalTarget] = useIndexedDBState<number>(`targethero-${supermarketName}-total`, 100);
-    const [departmentWeights, setDepartmentWeights] = useIndexedDBState<Record<string, number>>(`targethero-${supermarketName}-departmentweights`, {});
-    const [manualMapping, setManualMapping] = useIndexedDBState<ManualDeptMapping>(`manual-dept-mapping-${supermarketName}`, {});
+    const safeName = shortenSupermarketName(supermarketName);
+    const [traGop, setTraGop] = useIndexedDBState<number>(`targethero-${safeName}-tragop`, 45);
+    const [quyDoi, setQuyDoi] = useIndexedDBState<number>(`targethero-${safeName}-quydoi`, 40);
+    const [totalTarget, setTotalTarget] = useIndexedDBState<number>(`targethero-${safeName}-total`, 100);
+    const [departmentWeights, setDepartmentWeights] = useIndexedDBState<Record<string, number>>(`targethero-${safeName}-departmentweights`, {});
+    const [manualMapping, setManualMapping] = useIndexedDBState<ManualDeptMapping>(`manual-dept-mapping-${safeName}`, {});
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDept, setEditingDept] = useState<{ name: string; employees: string[] } | null>(null);
 
-    const [allEmployeesRaw] = useIndexedDBState<string>(`config-${supermarketName}-danhsach`, '');
+    const [allEmployeesRaw] = useIndexedDBState<string>(`config-${safeName}-danhsach`, '');
     const allEmployees = useMemo(() => {
         if (!allEmployeesRaw) return [];
         return allEmployeesRaw.split('\n')
