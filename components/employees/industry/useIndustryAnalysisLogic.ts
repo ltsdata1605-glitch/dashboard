@@ -18,13 +18,23 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             getIndustryVisibleGroups(),
             getIndustryVisibleGroups() // Temporary fallback for efficiency if missing
         ]).then(([savedDetail]) => {
+            let initialGroups = ['spChinh'];
             if (savedDetail && savedDetail.length > 0) {
+                initialGroups = savedDetail;
                 setVisibleGroupsDetail(new Set(savedDetail));
                 setVisibleGroupsEfficiency(new Set(savedDetail));
             } else {
                 setVisibleGroupsDetail(new Set(['spChinh']));
                 setVisibleGroupsEfficiency(new Set(['spChinh']));
             }
+            
+            const firstGroup = initialGroups[0];
+            const defaultSortKey = firstGroup && groupToSortKeyMap[firstGroup] 
+                ? groupToSortKeyMap[firstGroup] 
+                : 'percentBaoHiem';
+            
+            setSortConfig({ key: defaultSortKey as any, direction: 'desc' });
+            
             setInitialGroupsLoaded(true);
         });
     }, []);
@@ -36,9 +46,14 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             saveIndustryVisibleGroups(Array.from(visibleGroupsDetail));
         }
     }, [visibleGroupsDetail, initialGroupsLoaded]);
-    
     useEffect(() => {
-        setSortConfig({ key: 'percentBaoHiem', direction: 'desc' });
+        const currentGroups = viewMode === 'detail' ? visibleGroupsDetail : visibleGroupsEfficiency;
+        const firstVisibleGroup = Array.from(currentGroups)[0];
+        const defaultSortKey = firstVisibleGroup && groupToSortKeyMap[firstVisibleGroup] 
+            ? groupToSortKeyMap[firstVisibleGroup] 
+            : 'percentBaoHiem';
+            
+        setSortConfig({ key: defaultSortKey as any, direction: 'desc' });
     }, [viewMode]);
 
     const dynamicQuickFilters = useMemo(() => {
@@ -89,8 +104,6 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
         });
 
         const pastelColors = [
-            { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400' },
-            { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
             { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-700 dark:text-amber-400' },
             { bg: 'bg-violet-50 dark:bg-violet-500/10', text: 'text-violet-700 dark:text-violet-400' },
             { bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-700 dark:text-rose-400' },
@@ -102,13 +115,17 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             { bg: 'bg-pink-50 dark:bg-pink-500/10', text: 'text-pink-700 dark:text-pink-400' },
             { bg: 'bg-lime-50 dark:bg-lime-500/10', text: 'text-lime-700 dark:text-lime-400' },
             { bg: 'bg-purple-50 dark:bg-purple-500/10', text: 'text-purple-700 dark:text-purple-400' },
-            { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400' }
+            { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400' },
+            { bg: 'bg-red-50 dark:bg-red-500/10', text: 'text-red-700 dark:text-red-400' },
+            { bg: 'bg-yellow-50 dark:bg-yellow-500/10', text: 'text-yellow-700 dark:text-yellow-400' }
         ];
 
-        (activeTabs || []).forEach((tab, index) => {
+        let colorIndex = 0;
+        (activeTabs || []).forEach((tab) => {
             if (tab.id === 'doanhThu' || tab.id === 'spChinh') return; // Handled above
             
-            const color = pastelColors[index % pastelColors.length];
+            const color = pastelColors[colorIndex % pastelColors.length];
+            colorIndex++;
             const subHeaders = (tab.columns || []).filter(c => !c.hidden).map(col => ({
                 label: col.name.toUpperCase(),
                 key: `val_${tab.id}_${col.id}`

@@ -19,6 +19,10 @@ export const groupToSortKeyMap: Record<string, SortConfig['key']> = {
     default_tab_bao_duong_ce: 'val_default_tab_bao_duong_ce_col_bd_ce_3' as any,
     default_tab_bao_hiem_ict: 'val_default_tab_bao_hiem_ict_col_bh_ict_3' as any,
     default_tab_all_bhiem: 'val_default_tab_all_bhiem_col_all_bh_3' as any,
+    default_tab_phu_kien: 'val_default_tab_phu_kien_col_pk_6' as any,
+    default_tab_gia_dung: 'val_default_tab_gia_dung_col_gd_12' as any,
+    default_tab_dcnb: 'val_default_tab_dcnb_col_dcnb_7' as any,
+    default_tab_dong_ho: 'val_default_tab_dong_ho_col_dh_5' as any,
 };
 
 // Data structure for detail view headers

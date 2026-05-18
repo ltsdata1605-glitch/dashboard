@@ -313,7 +313,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
 
                 <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4 flex flex-col">
                     <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="pie-chart" size={4} className="text-teal-500 sm:hidden"/><Icon name="pie-chart" size={5} className="text-teal-500 hidden sm:block"/> Tỷ Trọng Doanh Thu Ngành Hàng</h4>
-                    <div className="flex-1 overflow-y-auto">
+                    <div className={(isBatchExporting || isExporting) ? "flex-1" : "flex-1 overflow-y-auto"}>
                     {(() => {
                         const totalIndustryRevenue = Object.values(industryBreakdown).reduce((s, v) => s + v, 0);
                         const sortedIndustries = Object.entries(industryBreakdown)
@@ -372,7 +372,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                         <Icon name="contact" size={4} className="text-sky-500 sm:hidden"/><Icon name="contact" size={5} className="text-sky-500 hidden sm:block"/> Chi Tiết Theo Khách Hàng
                     </span>
                  </h4>
-                 <div ref={customerDetailsContainerRef} className="space-y-0 max-h-[500px] overflow-y-auto pr-1 sm:pr-2 mt-2 sm:mt-4">
+                 <div ref={customerDetailsContainerRef} className={`space-y-0 pr-1 sm:pr-2 mt-2 sm:mt-4 ${(isBatchExporting || isExporting) ? '' : 'max-h-[500px] overflow-y-auto'}`}>
                     {(() => {
                         // Sort customers by createdDateKey (newest first), then by revenue
                         const sorted = [...customerBreakdown].sort((a, b) => {
@@ -394,7 +394,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                             <div className="flex-1 h-px bg-indigo-200 dark:bg-indigo-800"></div>
                                         </div>
                                     )}
-                        <details className="bg-white dark:bg-slate-900 overflow-hidden" open={customerBreakdown.length === 1}>
+                        <details className="bg-white dark:bg-slate-900 overflow-hidden" open={customerBreakdown.length === 1 || isBatchExporting || isExporting || isAllCustomersExpanded}>
                              <summary className="py-2 sm:py-2.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-cyan-50/80 hover:bg-cyan-100/80 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-cyan-400">
                                 <p className="font-bold text-sm sm:text-[17px] text-cyan-950 dark:text-cyan-100 pl-1">{customer.name.toUpperCase()}</p>
                                 <div className="flex items-center gap-x-2 sm:gap-x-4 gap-y-0.5 sm:gap-y-1 flex-wrap justify-end text-[10px] sm:text-sm font-semibold">
@@ -502,7 +502,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     
     if (isBatchExporting) {
         return (
-            <div className="modal-content bg-slate-50 dark:bg-slate-900 w-full max-w-4xl max-h-[90vh] flex flex-col border border-slate-200 dark:border-slate-700">
+            <div className="modal-content bg-slate-50 dark:bg-slate-900 w-full max-w-4xl flex flex-col border border-slate-200 dark:border-slate-700">
                 <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex-shrink-0">
                     <div>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Phân Tích Hiệu Quả Cá Nhân</p>

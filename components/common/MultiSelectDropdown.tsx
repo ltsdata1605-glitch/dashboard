@@ -63,23 +63,31 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     };
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
-        onChange(e.target.checked ? options : []);
+        onChange(e.target.checked ? allUniqueOptions : []);
     };
 
     const deferredSearchTerm = useDeferredValue(searchTerm);
 
+    const allUniqueOptions = useMemo(() => {
+        // Ensure selected items are always in the options list so they can be seen/unchecked
+        // even if they are not present in the current data source.
+        // We sort them so they appear naturally in the list.
+        const set = new Set([...selected, ...options]);
+        return Array.from(set).sort((a, b) => a.localeCompare(b));
+    }, [selected, options]);
+
     const filteredOptions = useMemo(() => {
-        return options.filter(option =>
+        return allUniqueOptions.filter(option =>
             option.toLowerCase().includes(deferredSearchTerm.toLowerCase())
         );
-    }, [options, deferredSearchTerm]);
+    }, [allUniqueOptions, deferredSearchTerm]);
 
     // Format display text or tags
     const renderContent = () => {
         const labelText = variant === 'compact' ? label : label;
         if (selected.length === 0) return <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[10px] tracking-wider whitespace-nowrap">{label}</span>;
         
-        if (selected.length === options.length) {
+        if (selected.length === allUniqueOptions.length) {
             return <span className="text-indigo-600 dark:text-indigo-400 font-bold text-[10px] uppercase tracking-wider whitespace-nowrap">
                 {variant === 'compact' ? 'ALL' : `Tất cả ${label}`}
             </span>;
@@ -121,7 +129,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     {renderContent()}
                 </div>
                 <div className="flex items-center gap-1.5 ml-2">
-                    {selected.length > 0 && !(variant === 'compact' && selected.length === options.length) && (
+                    {selected.length > 0 && !(variant === 'compact' && selected.length === allUniqueOptions.length) && (
                         <div className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200">
                             {selected.length}
                         </div>
@@ -175,7 +183,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                             <div className="relative flex items-center">
                                 <input 
                                     type="checkbox" 
-                                    checked={selected.length === options.length && options.length > 0} 
+                                    checked={selected.length === allUniqueOptions.length && allUniqueOptions.length > 0} 
                                     onChange={handleSelectAll} 
                                     className="peer sr-only" 
                                 />
@@ -185,7 +193,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                             </div>
                             <span className="text-[10px] sm:text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Tất cả {label}</span>
                         </label>
-                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400">{filteredOptions.length} / {options.length}</span>
+                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400">{filteredOptions.length} / {allUniqueOptions.length}</span>
                     </div>
 
                     {/* Options List */}
