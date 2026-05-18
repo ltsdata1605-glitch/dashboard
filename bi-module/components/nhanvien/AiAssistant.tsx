@@ -139,7 +139,6 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ danhSachData, thiDuaData }) =
                                 <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Trợ lý Phân tích BI</h3>
                                 <div className="flex items-center gap-1.5">
                                     <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                                    <p className="text-[10px] text-slate-500 font-medium uppercase tracking-wider">Hệ thống sẵn sàng</p>
                                 </div>
                             </div>
                         </div>

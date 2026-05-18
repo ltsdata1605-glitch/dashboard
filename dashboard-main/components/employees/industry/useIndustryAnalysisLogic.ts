@@ -1,0 +1,466 @@
+import { useState, useEffect, useMemo } from 'react';
+import type { ExploitationData, CustomExploitationTabConfig } from '../../../types';
+import { getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../../services/dbService';
+import { SortConfig, detailQuickFilters, groupToSortKeyMap, detailHeaderGroups } from './IndustryTableUtils';
+import { COL, HINH_THUC_XUAT_THU_HO } from '../../../constants';
+import { getRowValue } from '../../../utils/dataUtils';
+
+export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: any[], productConfig?: any, customExploitationTabs?: CustomExploitationTabConfig[], efficiencyExploitationTabs?: CustomExploitationTabConfig[]) => {
+    const [viewMode, setViewMode] = useState<'detail' | 'efficiency'>('detail');
+    const activeTabs = viewMode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
+    const [visibleGroupsDetail, setVisibleGroupsDetail] = useState<Set<string>>(new Set());
+    const [visibleGroupsEfficiency, setVisibleGroupsEfficiency] = useState<Set<string>>(new Set());
+    const [initialGroupsLoaded, setInitialGroupsLoaded] = useState(false);
+    const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'percentBaoHiem', direction: 'desc' });
+    
+    useEffect(() => {
+        Promise.all([
+            getIndustryVisibleGroups(),
+            getIndustryVisibleGroups() // Temporary fallback for efficiency if missing
+        ]).then(([savedDetail]) => {
+            if (savedDetail && savedDetail.length > 0) {
+                setVisibleGroupsDetail(new Set(savedDetail));
+                setVisibleGroupsEfficiency(new Set(savedDetail));
+            } else {
+                setVisibleGroupsDetail(new Set(['spChinh']));
+                setVisibleGroupsEfficiency(new Set(['spChinh']));
+            }
+            setInitialGroupsLoaded(true);
+        });
+    }, []);
+
+    const visibleGroups = viewMode === 'detail' ? visibleGroupsDetail : visibleGroupsEfficiency;
+
+    useEffect(() => {
+        if (initialGroupsLoaded) {
+            saveIndustryVisibleGroups(Array.from(visibleGroupsDetail));
+        }
+    }, [visibleGroupsDetail, initialGroupsLoaded]);
+    
+    useEffect(() => {
+        setSortConfig({ key: 'percentBaoHiem', direction: 'desc' });
+    }, [viewMode]);
+
+    const dynamicQuickFilters = useMemo(() => {
+        const baseFilters: any[] = [...detailQuickFilters].map(f => {
+            const override = activeTabs?.find(t => t.id === f.key);
+            if (override) {
+                let name = override.name;
+                if (f.key === 'doanhThu' && name === 'DOANH THU') name = 'D.Thu';
+                if (f.key === 'spChinh' && name === 'SẢN PHẨM CHÍNH') name = 'SP Chính';
+                return { ...f, label: name };
+            }
+            return f;
+        });
+        (activeTabs || []).forEach(tab => {
+            if (tab.id === 'doanhThu' || tab.id === 'spChinh') return;
+            baseFilters.push({ key: tab.id, label: tab.name, isCustom: true });
+        });
+        return baseFilters;
+    }, [activeTabs]);
+
+        const dynamicHeaderGroups = useMemo(() => {
+        const baseGroups: any = { ...detailHeaderGroups };
+        
+        // Apply overrides for doanhThu and spChinh if they were edited
+        ['doanhThu', 'spChinh'].forEach(key => {
+            const tabOverride = activeTabs?.find(t => t.id === key);
+            if (tabOverride && baseGroups[key]) {
+                baseGroups[key].label = tabOverride.name;
+                // Use tabOverride columns to define subHeaders exactly as configured by user
+                if (tabOverride.columns) {
+                    baseGroups[key].subHeaders = tabOverride.columns
+                        .filter(c => !c.hidden)
+                        .map(c => {
+                            const originalSubHeaders = detailHeaderGroups[key].subHeaders;
+                            const isStandard = originalSubHeaders.some(sh => sh.key === c.id || (key === 'doanhThu' && sh.key === 'doanhThuThuc' && c.id === 'dtThuc'));
+                            let finalKey = c.id;
+                            if (key === 'doanhThu' && c.id === 'dtThuc') finalKey = 'doanhThuThuc';
+                            if (!isStandard) {
+                                finalKey = `val_${key}_${c.id}`;
+                            }
+                            return { label: c.name.toUpperCase(), key: finalKey as any, originalColId: c.id, originalType: c.type };
+                        });
+                } else {
+                    baseGroups[key].subHeaders = detailHeaderGroups[key].subHeaders;
+                }
+                baseGroups[key].colSpan = baseGroups[key].subHeaders.length;
+            }
+        });
+
+        const pastelColors = [
+            { bg: 'bg-emerald-50 dark:bg-emerald-500/10', text: 'text-emerald-700 dark:text-emerald-400' },
+            { bg: 'bg-sky-50 dark:bg-sky-500/10', text: 'text-sky-700 dark:text-sky-400' },
+            { bg: 'bg-amber-50 dark:bg-amber-500/10', text: 'text-amber-700 dark:text-amber-400' },
+            { bg: 'bg-violet-50 dark:bg-violet-500/10', text: 'text-violet-700 dark:text-violet-400' },
+            { bg: 'bg-rose-50 dark:bg-rose-500/10', text: 'text-rose-700 dark:text-rose-400' },
+            { bg: 'bg-teal-50 dark:bg-teal-500/10', text: 'text-teal-700 dark:text-teal-400' },
+            { bg: 'bg-indigo-50 dark:bg-indigo-500/10', text: 'text-indigo-700 dark:text-indigo-400' },
+            { bg: 'bg-fuchsia-50 dark:bg-fuchsia-500/10', text: 'text-fuchsia-700 dark:text-fuchsia-400' },
+            { bg: 'bg-orange-50 dark:bg-orange-500/10', text: 'text-orange-700 dark:text-orange-400' },
+            { bg: 'bg-cyan-50 dark:bg-cyan-500/10', text: 'text-cyan-700 dark:text-cyan-400' },
+            { bg: 'bg-pink-50 dark:bg-pink-500/10', text: 'text-pink-700 dark:text-pink-400' },
+            { bg: 'bg-lime-50 dark:bg-lime-500/10', text: 'text-lime-700 dark:text-lime-400' },
+            { bg: 'bg-purple-50 dark:bg-purple-500/10', text: 'text-purple-700 dark:text-purple-400' },
+            { bg: 'bg-blue-50 dark:bg-blue-500/10', text: 'text-blue-700 dark:text-blue-400' }
+        ];
+
+        (activeTabs || []).forEach((tab, index) => {
+            if (tab.id === 'doanhThu' || tab.id === 'spChinh') return; // Handled above
+            
+            const color = pastelColors[index % pastelColors.length];
+            const subHeaders = (tab.columns || []).filter(c => !c.hidden).map(col => ({
+                label: col.name.toUpperCase(),
+                key: `val_${tab.id}_${col.id}`
+            }));
+
+            baseGroups[tab.id] = {
+                label: tab.name.toUpperCase(),
+                colSpan: subHeaders.length || 1,
+                bg: color.bg,
+                text: color.text,
+                subHeaders: subHeaders.length > 0 ? subHeaders : [{ label: '-', key: `empty_${tab.id}` }]
+            };
+        });
+        return baseGroups;
+    }, [activeTabs]);
+
+    const handleToggleGroup = (groupKey: string) => {
+        const currentGroups = viewMode === 'detail' ? visibleGroupsDetail : visibleGroupsEfficiency;
+        const setGroups = viewMode === 'detail' ? setVisibleGroupsDetail : setVisibleGroupsEfficiency;
+
+        const newVisibleGroups = new Set(currentGroups);
+        const wasAdded = !newVisibleGroups.has(groupKey);
+
+        if (wasAdded) {
+            newVisibleGroups.add(groupKey);
+        } else {
+            if (newVisibleGroups.size > 1) { 
+                newVisibleGroups.delete(groupKey);
+            }
+        }
+        
+        const setsAreEqual = (a: Set<string>, b: Set<string>) => a.size === b.size && [...a].every(value => b.has(value));
+
+        if (!setsAreEqual(currentGroups, newVisibleGroups)) {
+            setGroups(newVisibleGroups);
+
+            const sortKeyForToggledGroup = groupToSortKeyMap[groupKey];
+            if (wasAdded && sortKeyForToggledGroup) {
+                setSortConfig({ key: sortKeyForToggledGroup, direction: 'desc' });
+            } else if (!wasAdded && sortConfig.key === sortKeyForToggledGroup) {
+                const remainingSpecialGroups: string[] = dynamicQuickFilters.map((f: any) => f.key).filter((key) => newVisibleGroups.has(key) && groupToSortKeyMap[key]);
+                if (remainingSpecialGroups.length > 0) {
+                    const firstKey = remainingSpecialGroups[0];
+                    const newSortKey = groupToSortKeyMap[firstKey];
+                    if(newSortKey) setSortConfig({ key: newSortKey, direction: 'desc' });
+                } else {
+                    setSortConfig({ key: 'percentBaoHiem', direction: 'desc' });
+                }
+            }
+        }
+    };
+    
+    const customTabData = useMemo(() => {
+        const customData = new Map<string, { [tabId: string]: { [colId: string]: { mainSl: number, mainDt: number, baseSl: number, baseDt: number } } }>();
+        const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+
+        if (!baseFilteredData || !productConfig || allTabs.length === 0) return customData;
+
+        try {
+            const validData = baseFilteredData.filter(row => !HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT)));
+
+            const checkMatch = (filters: any, industry: string, subgroup: string, manufacturer: string, productCodeStr: string) => {
+                if (!filters) return false;
+                const industryMatch = !filters.selectedIndustries || filters.selectedIndustries.length === 0 || filters.selectedIndustries.includes(industry);
+                const subgroupMatch = !filters.selectedSubgroups || filters.selectedSubgroups.length === 0 || filters.selectedSubgroups.includes(subgroup);
+                const manufacturerMatch = !filters.selectedManufacturers || filters.selectedManufacturers.length === 0 || filters.selectedManufacturers.includes(manufacturer);
+                
+                let productCodeMatch = !filters.productCodes || filters.productCodes.length === 0;
+                if (!productCodeMatch && filters.productCodes) {
+                    for (const code of filters.productCodes) {
+                        if (productCodeStr.includes(code)) {
+                            productCodeMatch = true;
+                            break;
+                        }
+                    }
+                }
+                return industryMatch && subgroupMatch && manufacturerMatch && productCodeMatch;
+            };
+
+            allTabs.forEach(tab => {
+                const cols = tab.columns || [];
+                if (cols.length === 0) return;
+
+                validData.forEach(row => {
+                    const rawCreator = getRowValue(row, COL.NGUOI_TAO);
+                    if (!rawCreator) return;
+                    
+                    const employeeId = rawCreator.split(' - ')[0].trim();
+                    const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
+                    const price = Number(getRowValue(row, COL.PRICE)) || 0;
+                    
+                    const industry = productConfig.childToParentMap[getRowValue(row, COL.MA_NHOM_HANG)] || '';
+                    const subgroup = productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || '';
+                    const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
+                    const productCodeStr = String(getRowValue(row, COL.PRODUCT) || '');
+
+                    cols.forEach(col => {
+                        let isMainMatch = false;
+                        let isBaseMatch = false;
+
+                        if (col.type === 'quantity' || col.type === 'revenue') {
+                            isMainMatch = checkMatch(col.filters, industry, subgroup, manufacturer, productCodeStr);
+                        } else if (col.type === 'percentage' && col.percentageConfig) {
+                            isMainMatch = checkMatch(col.percentageConfig.numeratorFilters, industry, subgroup, manufacturer, productCodeStr);
+                            isBaseMatch = checkMatch(col.percentageConfig.denominatorFilters, industry, subgroup, manufacturer, productCodeStr);
+                        }
+
+                        if (isMainMatch || isBaseMatch) {
+                            if (!customData.has(employeeId)) {
+                                customData.set(employeeId, {});
+                            }
+                            const empData = customData.get(employeeId)!;
+                            if (!empData[tab.id]) {
+                                empData[tab.id] = {};
+                            }
+                            if (!empData[tab.id][col.id]) {
+                                empData[tab.id][col.id] = { mainSl: 0, mainDt: 0, baseSl: 0, baseDt: 0 };
+                            }
+                            
+                            const colData = empData[tab.id][col.id];
+                            if (isMainMatch) {
+                                colData.mainSl += quantity;
+                                colData.mainDt += price;
+                            }
+                            if (isBaseMatch) {
+                                colData.baseSl += quantity;
+                                colData.baseDt += price;
+                            }
+                        }
+                    });
+                });
+            });
+        } catch(e) {
+            console.error("Lỗi custom tabs", e);
+        }
+        return customData;
+    }, [baseFilteredData, customExploitationTabs, efficiencyExploitationTabs, productConfig]);
+
+    const { processedData, groupTotals, grandTotal } = useMemo(() => {
+        const thresholds = { percentBaoHiem: 40, percentSimKT: 30, percentDongHoKT: 20, percentPhuKienKT: 10, percentGiaDungKT: 30 };
+
+        const enhancedData = data.map(item => {
+            const slSPChinh_Tong = (item.slICT || 0) + (item.slCE_main || 0) + (item.slGiaDung_main || 0);
+            
+            const empId = item.name.split(' - ')[0].trim();
+            const customFields: Record<string, number> = {};
+            const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+            if (allTabs.length > 0) {
+                allTabs.forEach(tab => {
+                    const empData1 = customTabData.get(empId);
+                    const empData2 = customTabData.get(item.name);
+                    const tData = (empData1 && empData1[tab.id]) || (empData2 && empData2[tab.id]) || {};
+                    
+                    const cols = tab.columns || [];
+                    cols.forEach(col => {
+                        const cData = tData[col.id] || { mainSl: 0, mainDt: 0, baseSl: 0, baseDt: 0 };
+                        
+                        let val = 0;
+                        if (col.type === 'quantity') val = cData.mainSl;
+                        if (col.type === 'revenue') val = cData.mainDt;
+                        if (col.type === 'percentage') {
+                            const baseVal = col.percentageConfig?.baseMetric === 'revenue' ? cData.baseDt : cData.baseSl;
+                            const numVal = col.percentageConfig?.numeratorMetric === 'revenue' ? cData.mainDt : cData.mainSl;
+                            val = baseVal > 0 ? (numVal / baseVal) * 100 : 0;
+                        }
+                        
+                        customFields[`val_${tab.id}_${col.id}`] = val;
+                        // Keep raw values for calculateTotals sum later
+                        customFields[`raw_mainSl_${tab.id}_${col.id}`] = cData.mainSl;
+                        customFields[`raw_mainDt_${tab.id}_${col.id}`] = cData.mainDt;
+                        customFields[`raw_baseSl_${tab.id}_${col.id}`] = cData.baseSl;
+                        customFields[`raw_baseDt_${tab.id}_${col.id}`] = cData.baseDt;
+                    });
+                });
+            }
+
+            const getCustomTabVal = (tabId: string, colType: string) => {
+                const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+                const tab = allTabs.find(t => t.id === tabId);
+                if (!tab) return 0;
+                const col = tab.columns?.find(c => c.type === colType) || tab.columns?.[0];
+                if (!col) return 0;
+                return customFields[`val_${tab.id}_${col.id}`] || 0;
+            };
+
+            const getCustomTabSumQuantity = (tabId: string) => {
+                const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+                const tab = allTabs.find(t => t.id === tabId);
+                if (!tab) return 0;
+                return tab.columns?.filter(c => c.type === 'quantity').reduce((sum, col) => sum + (customFields[`val_${tab.id}_${col.id}`] || 0), 0) || 0;
+            };
+
+            const percentBaoHiem = getCustomTabVal('preset_bao_hiem', 'percentage');
+            const percentSimKT = getCustomTabVal('preset_sim', 'percentage');
+            const percentDongHoKT = getCustomTabVal('preset_dong_ho', 'percentage');
+            const percentPhuKienKT = getCustomTabVal('preset_phu_kien', 'percentage');
+            const percentGiaDungKT = getCustomTabVal('preset_gia_dung', 'percentage');
+
+            let belowAverageCount = 0;
+            if (percentBaoHiem < thresholds.percentBaoHiem) belowAverageCount++;
+            if (percentSimKT < thresholds.percentSimKT) belowAverageCount++;
+            if (percentDongHoKT < thresholds.percentDongHoKT) belowAverageCount++;
+            if (percentPhuKienKT < thresholds.percentPhuKienKT) belowAverageCount++;
+            if (percentGiaDungKT < thresholds.percentGiaDungKT) belowAverageCount++;
+
+            const doanhThuBaoHiem = getCustomTabVal('preset_bao_hiem', 'revenue');
+            const doanhThuSim = getCustomTabVal('preset_sim', 'revenue');
+            const doanhThuDongHo = getCustomTabVal('preset_dong_ho', 'revenue');
+            const doanhThuPhuKien = getCustomTabVal('preset_phu_kien', 'revenue');
+            const doanhThuGiaDung = getCustomTabVal('preset_gia_dung', 'revenue');
+
+            const slBaoHiem = getCustomTabSumQuantity('preset_bao_hiem');
+            const slSim = getCustomTabSumQuantity('preset_sim');
+            const slDongHo = getCustomTabSumQuantity('preset_dong_ho');
+            const slPhuKien = getCustomTabSumQuantity('preset_phu_kien');
+            const slGiaDung = getCustomTabSumQuantity('preset_gia_dung');
+
+            return { 
+                ...item, 
+                slSPChinh_Tong, 
+                percentBaoHiem, percentSimKT, percentDongHoKT, percentPhuKienKT, percentGiaDungKT, 
+                belowAverageCount, 
+                doanhThuBaoHiem, doanhThuSim, doanhThuDongHo, doanhThuPhuKien, doanhThuGiaDung,
+                slBaoHiem, slSim, slDongHo, slPhuKien, slGiaDung,
+                ...customFields 
+            };
+        });
+
+        const sorted = [...enhancedData].sort((a, b) => {
+            if (sortConfig.key === 'name') {
+                return sortConfig.direction === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name);
+            }
+            
+            const key = sortConfig.key as keyof typeof a;
+            const valA = (a as any)[key] ?? 0;
+            const valB = (b as any)[key] ?? 0;
+
+            if (typeof valA === 'number' && typeof valB === 'number') {
+                const result = sortConfig.direction === 'asc' ? valA - valB : valB - valA;
+                if (result !== 0) return result;
+            }
+            return a.name.localeCompare(b.name);
+        });
+
+        const grouped = sorted.reduce((acc, employee) => {
+            const dept = employee.department || 'Không Phân Ca';
+            if (!acc[dept]) acc[dept] = [];
+            acc[dept].push(employee);
+            return acc;
+        }, {} as { [key: string]: typeof sorted });
+        
+        const sortedGroupKeys = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+        const finalGroupedData: { [key: string]: typeof sorted } = {};
+        sortedGroupKeys.forEach(key => { finalGroupedData[key] = grouped[key]; });
+
+        const calculateTotals = (items: typeof enhancedData) => {
+            const initialTotals: Record<string, number> = {
+                doanhThuThuc: 0, doanhThuQD: 0,
+                slICT: 0, doanhThuICT: 0, slCE_main: 0, doanhThuCE_main: 0, slGiaDung_main: 0,
+                slBaoHiem: 0, doanhThuBaoHiem: 0,
+                slSim: 0, doanhThuSim: 0, slDongHo: 0, doanhThuDongHo: 0,
+                doanhThuPhuKien: 0, slPhuKien: 0, slCamera: 0, slLoa: 0, slPinSDP: 0, slTaiNgheBLT: 0,
+                doanhThuGiaDung: 0, slGiaDung: 0, slMayLocNuoc: 0, slNoiCom: 0, slNoiChien: 0, slQuatDien: 0,
+                belowAverageCount: 0
+            };
+            
+            const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+            if (allTabs.length > 0) {
+                 allTabs.forEach(tab => {
+                     const cols = tab.columns || [];
+                     cols.forEach(col => {
+                         initialTotals[`raw_mainSl_${tab.id}_${col.id}`] = 0;
+                         initialTotals[`raw_mainDt_${tab.id}_${col.id}`] = 0;
+                         initialTotals[`raw_baseSl_${tab.id}_${col.id}`] = 0;
+                         initialTotals[`raw_baseDt_${tab.id}_${col.id}`] = 0;
+                     });
+                 });
+            }
+
+            if (items.length === 0) return { ...initialTotals, hieuQuaQD: 0, percentBaoHiem: 0, percentSimKT: 0, percentDongHoKT: 0, percentPhuKienKT: 0, percentGiaDungKT: 0, slSPChinh_Tong: 0 };
+            
+            const t = items.reduce((acc, item) => {
+                Object.keys(initialTotals).forEach((key) => {
+                    const value = (item as any)[key];
+                    if (typeof value === 'number') {
+                        (acc as any)[key] += value;
+                    }
+                });
+                return acc;
+            }, { ...initialTotals });
+            
+            const hieuQuaQD = t.doanhThuThuc > 0 ? (t.doanhThuQD - t.doanhThuThuc) / t.doanhThuThuc * 100 : 0;
+            const slSPChinh_Tong = t.slICT + t.slCE_main + t.slGiaDung_main;
+            if (allTabs.length > 0) {
+                 allTabs.forEach(tab => {
+                     const cols = tab.columns || [];
+                     cols.forEach(col => {
+                         let val = 0;
+                         if (col.type === 'quantity') val = t[`raw_mainSl_${tab.id}_${col.id}`] || 0;
+                         if (col.type === 'revenue') val = t[`raw_mainDt_${tab.id}_${col.id}`] || 0;
+                         if (col.type === 'percentage') {
+                             const baseVal = col.percentageConfig?.baseMetric === 'revenue' ? t[`raw_baseDt_${tab.id}_${col.id}`] || 0 : t[`raw_baseSl_${tab.id}_${col.id}`] || 0;
+                             const numVal = col.percentageConfig?.numeratorMetric === 'revenue' ? t[`raw_mainDt_${tab.id}_${col.id}`] || 0 : t[`raw_mainSl_${tab.id}_${col.id}`] || 0;
+                             val = baseVal > 0 ? (numVal / baseVal) * 100 : 0;
+                         }
+                         t[`val_${tab.id}_${col.id}`] = val;
+                     });
+                 });
+            }
+            
+            const getCustomTabValTotal = (tabId: string, colType: string) => {
+                const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
+                const tab = allTabs.find(tb => tb.id === tabId);
+                if (!tab) return 0;
+                const col = tab.columns?.find(c => c.type === colType) || tab.columns?.[0];
+                if (!col) return 0;
+                return t[`val_${tab.id}_${col.id}`] || 0;
+            };
+
+            const percentBaoHiem = getCustomTabValTotal('preset_bao_hiem', 'percentage');
+            const percentSimKT = getCustomTabValTotal('preset_sim', 'percentage');
+            const percentDongHoKT = getCustomTabValTotal('preset_dong_ho', 'percentage');
+            const percentPhuKienKT = getCustomTabValTotal('preset_phu_kien', 'percentage');
+            const percentGiaDungKT = getCustomTabValTotal('preset_gia_dung', 'percentage');
+            
+            return { ...t, slSPChinh_Tong, hieuQuaQD, percentBaoHiem, percentSimKT, percentDongHoKT, percentPhuKienKT, percentGiaDungKT };
+        };
+
+        const groupTotals: { [key: string]: any } = {};
+        for (const dept in finalGroupedData) { groupTotals[dept] = calculateTotals(finalGroupedData[dept]); }
+        const grandTotal = calculateTotals(enhancedData);
+
+        return { processedData: finalGroupedData, groupTotals, grandTotal };
+    }, [data, sortConfig, customTabData, customExploitationTabs, efficiencyExploitationTabs]);
+
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' = 'desc';
+        if (sortConfig.key === key && sortConfig.direction === 'desc') { direction = 'asc'; }
+        setSortConfig({ key: key as any, direction });
+    };
+
+    return {
+        viewMode,
+        setViewMode,
+        visibleGroups,
+        handleToggleGroup,
+        sortConfig,
+        handleSort,
+        processedData,
+        groupTotals,
+        grandTotal,
+        dynamicQuickFilters,
+        dynamicHeaderGroups
+    };
+};

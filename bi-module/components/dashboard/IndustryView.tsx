@@ -166,17 +166,20 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                             placeholder="Tìm kiếm ngành hàng..."
                             className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
                         />
-                        <div className="flex-1 overflow-y-auto space-y-1">
+                        <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                             {allIndustries.filter(n => n.toLowerCase().includes(industryFilterSearch.toLowerCase())).map(industry => (
-                                <label key={industry} className="flex items-center gap-2 p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer">
-                                    <input
-                                        type="checkbox"
+                                <div key={industry} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                    <label
+                                        className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
+                                        onClick={() => setHiddenIndustries(prev => prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry])}
+                                    >
+                                        {industry.replace('NNH ', '')}
+                                    </label>
+                                    <Switch
                                         checked={!hiddenIndustries.includes(industry)}
                                         onChange={() => setHiddenIndustries(prev => prev.includes(industry) ? prev.filter(i => i !== industry) : [...prev, industry])}
-                                        className="h-3.5 w-3.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
                                     />
-                                    <span className="text-xs text-slate-700 dark:text-slate-200">{industry.replace('NNH ', '')}</span>
-                                </label>
+                                </div>
                             ))}
                         </div>
                     </div>
@@ -201,7 +204,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
                         <div className="grid gap-0.5">
                             {orderedHeaders.filter(h => h !== 'Nhóm ngành hàng').map((h) => (
-                                <div key={h} className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                <div key={h} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                     <label
                                         htmlFor={`col-toggle-ind-${h}`}
                                         className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"

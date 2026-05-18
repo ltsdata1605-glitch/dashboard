@@ -247,6 +247,15 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                         </td>
                                     );
                                 }
+                                if (col.type === 'sum') {
+                                    return (
+                                        <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200 tabular-nums border-b border-r border-slate-200 dark:border-slate-700 bg-amber-50/50 dark:bg-amber-900/20">
+                                            <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${hasStyle ? 'rounded-md' : ''}`} style={badgeStyle}>
+                                                {formatNum(val)}
+                                            </div>
+                                        </td>
+                                    );
+                                }
                                 return (
                                     <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold border-b border-r border-slate-200 dark:border-slate-700">
                                         {hasStyle ? (

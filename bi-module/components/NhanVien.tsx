@@ -315,10 +315,10 @@ export const NhanVien: React.FC = () => {
                         <button onClick={() => setIsSmFilterOpen(!isSmFilterOpen)} className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all outline-none whitespace-nowrap">
                             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                                 <BuildingStorefrontIcon className="h-4 w-4 text-indigo-500 flex-shrink-0" />
-                                <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : activeSupermarkets.map(s => shortenSupermarketName(s)).join(', ')}</span>
+                                <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{activeSupermarkets.length}</span>
+                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}</span>
                                 <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isSmFilterOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </button>
@@ -329,10 +329,10 @@ export const NhanVien: React.FC = () => {
                                         <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">Chọn tất cả</span>
                                         <Switch checked={activeSupermarkets.length === supermarkets.length} onChange={() => {}} />
                                     </div>
-                                    {supermarkets.map(sm => (
+                                    {Array.from(new Map(supermarkets.map(sm => [shortenSupermarketName(sm), sm])).values()).map(sm => (
                                         <div key={sm} onClick={() => toggleSupermarket(sm)} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                             <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{shortenSupermarketName(sm)}</span>
-                                            <Switch checked={activeSupermarkets.includes(sm)} onChange={() => {}} />
+                                            <Switch checked={activeSupermarkets.some(a => shortenSupermarketName(a) === shortenSupermarketName(sm))} onChange={() => {}} />
                                         </div>
                                     ))}
                                 </div>

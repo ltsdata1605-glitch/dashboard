@@ -125,7 +125,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                 <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                     <table className="w-full border-collapse compact-export-table">
                             <thead>
-                                <tr className="text-[11px] font-black uppercase tracking-wider">
+                                <tr className="text-[13px] font-black uppercase tracking-wider">
                                     <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 w-10">#</th>
                                     <th 
                                         className="text-left px-2 py-2 cursor-pointer border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" 
@@ -139,7 +139,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                             <th 
                                                 key={index} 
                                                 onClick={() => handleSort(index)}
-                                                className={`px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[11px] align-middle ${getHeaderCellClass(header)}`}
+                                                className={`px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors border-r border-slate-300 dark:border-slate-600 last:border-r-0 text-[13px] align-middle ${getHeaderCellClass(header)}`}
                                                 dangerouslySetInnerHTML={{ __html: getFormattedHeader(header) }}
                                             />
                                         )
@@ -148,7 +148,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                     { !hiddenColumns.includes('Còn Lại') && (
                                             <th 
                                             onClick={() => handleSort('conLai')}
-                                            className="px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors text-[11px] align-middle bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-b-[3px] border-b-amber-400"
+                                            className="px-2 py-2 text-center whitespace-nowrap cursor-pointer transition-colors text-[13px] align-middle bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 border-b-[3px] border-b-amber-400"
                                             dangerouslySetInnerHTML={{ __html: getFormattedHeader('Còn Lại') }}
                                         />
                                     )}

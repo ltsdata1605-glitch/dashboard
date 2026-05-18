@@ -13,7 +13,12 @@ export const detailQuickFilters: { key: string; label: string }[] = [
 ];
 
 export const groupToSortKeyMap: Record<string, SortConfig['key']> = {
-    baoHiem: 'percentBaoHiem', // Giữ lại cho tương thích sort cũ (hoặc xoá nếu ko cần thiết)
+    baoHiem: 'percentBaoHiem', // Giữ lại cho tương thích sort cũ
+    doanhThu: 'doanhThuQD',
+    spChinh: 'slSPChinh_Tong',
+    default_tab_bao_duong_ce: 'val_default_tab_bao_duong_ce_col_bd_ce_3' as any,
+    default_tab_bao_hiem_ict: 'val_default_tab_bao_hiem_ict_col_bh_ict_3' as any,
+    default_tab_all_bhiem: 'val_default_tab_all_bhiem_col_all_bh_3' as any,
 };
 
 // Data structure for detail view headers

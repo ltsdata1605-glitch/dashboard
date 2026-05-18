@@ -23,7 +23,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
     <div className="relative min-h-[calc(100vh-180px)] flex flex-col justify-center items-center overflow-hidden bg-[#F8FAFC] dark:bg-[#0B0F19] selection:bg-indigo-500/20 rounded-xl">
         {/* Ambient Background Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
-        
+
         {/* Glow Orbs */}
         <div className="absolute top-[10%] left-[20%] w-[300px] h-[300px] bg-sky-500/25 dark:bg-sky-600/15 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 pointer-events-none"></div>
         <div className="absolute top-[10%] right-[20%] w-[300px] h-[300px] bg-indigo-500/25 dark:bg-indigo-600/15 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 pointer-events-none"></div>
@@ -33,8 +33,8 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
             <div className="mb-4">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-200/50 dark:border-sky-500/20 bg-white/80 dark:bg-sky-500/10 backdrop-blur-xl shadow-sm">
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
                     </span>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-sky-800 dark:text-sky-300">Report BI Pro</span>
                 </div>
@@ -43,10 +43,10 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
             {/* Hero Typography */}
             <div className="mb-6">
                 <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1] mb-4 drop-shadow-sm">
-                    {message ? message : (<>Báo cáo BI.<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 dark:from-sky-400 dark:via-blue-400 dark:to-indigo-400">Chuyên nghiệp.</span></>)}
+                    {message ? message : (<>Báo cáo BI.<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 dark:from-sky-400 dark:via-blue-400 dark:to-indigo-400">Chuyên nghiệp.</span></>)}
                 </h1>
                 <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto font-medium leading-relaxed">
-                    Tổng hợp doanh thu, thi đua và phân tích ngành hàng theo thời gian thực.<br className="hidden sm:block"/>
+                    Tổng hợp doanh thu, thi đua và phân tích ngành hàng theo thời gian thực.<br className="hidden sm:block" />
                     Cập nhật dữ liệu từ BI hoặc khôi phục từ file backup.
                 </p>
             </div>
@@ -61,14 +61,14 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
                                 <UploadIcon className="h-6 w-6 text-sky-500 dark:text-sky-400" />
                             </div>
                             <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-                                <button 
-                                    onClick={onNavigate} 
+                                <button
+                                    onClick={onNavigate}
                                     className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-white bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 shadow-md shadow-sky-500/20 transition-all active:scale-95"
                                 >
                                     Cập nhật dữ liệu
                                 </button>
                                 <span className="text-slate-300 dark:text-slate-600 hidden sm:block text-sm">hoặc</span>
-                                <button 
+                                <button
                                     onClick={onRestore}
                                     className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all active:scale-95"
                                 >
@@ -127,6 +127,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     const summaryTableRef = useRef<HTMLDivElement>(null);
     const industryTableRef = useRef<HTMLDivElement>(null);
     const competitionViewRef = useRef<HTMLDivElement>(null);
+    const pageRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const columnSelectorRef = useRef<HTMLDivElement>(null);
     const exportOptions = useExportOptions();
@@ -150,7 +151,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
             try {
                 const content = e.target?.result;
                 if (typeof content !== 'string') throw new Error('Định dạng file không hợp lệ.');
-                
+
                 const parsedContent = JSON.parse(content);
                 let dataToRestore: { key: string; value: any }[] = [];
 
@@ -195,15 +196,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     const handleExportPNG = async (targetRef: React.RefObject<HTMLDivElement | null>, filenamePart: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
         const original = targetRef.current;
         if (!original) return null;
-        
+
         try {
             const safeName = filenamePart.replace(/[^a-zA-Z0-9]/g, '_');
-            const filename = `BI_PRO_${safeName}_${new Date().toISOString().slice(0,10)}.png`;
-            
+            const filename = `BI_PRO_${safeName}_${new Date().toISOString().slice(0, 10)}.png`;
+
             const blob = await exportElementAsImage(original, filename, {
-                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '.industry-view-controls', '#competition-view-controls', '.js-individual-view-toolbar']
+                mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component', '.column-customizer', '.industry-view-controls', '#competition-view-controls', '.js-individual-view-toolbar', '.hide-on-export']
             });
-            
+
             if (blob) {
                 if (autoAction === 'download') {
                     downloadBlob(blob, filename);
@@ -227,14 +228,14 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
         setExporting(true);
         const originalSm = activeSupermarket;
         const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
-        
+
         let autoAction: 'download' | 'share' | 'cancel' | null = null;
-        
+
         try {
             for (const sm of ['Tổng', ...supermarkets]) {
                 setActiveSupermarket(sm);
                 await sleep(1500);
-                const targetRef = mode === 'competition' ? competitionViewRef : printableRef;
+                const targetRef = pageRef;
                 const prefix = mode === 'competition' ? `ThiDua_${activeMainTab}` : (mode === 'realtime' ? 'DoanhThu' : 'DoanhThu_LuyKe');
                 const action = await handleExportPNG(targetRef, `${prefix}_${sm}`, autoAction);
                 if (action === 'cancel') break;
@@ -266,17 +267,17 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     if (!hasData) {
         return (
             <div className="space-y-6">
-                <DashboardHeader 
-                    title="Tổng quan Siêu thị" 
+                <DashboardHeader
+                    title="Tổng quan Siêu thị"
                     activeMainTab={activeMainTab} setActiveMainTab={setActiveMainTab}
                     activeSubTab={activeSubTab} setActiveSubTab={setActiveSubTab}
                     supermarkets={supermarkets} activeSupermarket={activeSupermarket} setActiveSupermarket={setActiveSupermarket}
-                    onBatchExport={() => {}} isBatchExporting={false}
+                    onBatchExport={() => { }} isBatchExporting={false}
                 />
-                <EmptyState 
-                    onNavigate={onNavigateToUpdater} 
+                <EmptyState
+                    onNavigate={onNavigateToUpdater}
                     onRestore={handleRestoreClick}
-                    message={`Không có dữ liệu ${isRealtimeView ? 'Realtime' : 'Luỹ kế'}. Vui lòng cập nhật.`} 
+                    message={`Không có dữ liệu ${isRealtimeView ? 'Realtime' : 'Luỹ kế'}. Vui lòng cập nhật.`}
                 />
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
             </div>
@@ -285,54 +286,51 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
 
     return (
         <ExportOptionsProvider value={{ showExportOptions: exportOptions.showExportOptions }}>
-        <div className="space-y-3 sm:space-y-6">
-            <DashboardHeader 
-                title="Tổng quan Siêu thị" 
-                activeMainTab={activeMainTab} 
-                setActiveMainTab={setActiveMainTab} 
-                activeSubTab={activeSubTab}
-                setActiveSubTab={setActiveSubTab}
-                supermarkets={supermarkets}
-                activeSupermarket={activeSupermarket}
-                setActiveSupermarket={setActiveSupermarket}
-                onBatchExport={() => {
-                    if (activeSubTab === 'competition') runBatchExport('competition');
-                    else runBatchExport(isRealtimeView ? 'realtime' : 'cumulative');
-                }}
-                isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
-                onExport={async () => {
-                    setIsHeaderExporting(true);
-                    if (activeSubTab === 'competition') {
-                        await handleExportPNG(competitionViewRef, `ThiDua_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`);
-                    } else {
-                        await handleExportPNG(printableRef, `BangDoanhThu${!isRealtimeView ? 'LuyKe' : ''}_${activeSupermarket}`);
-                    }
-                    setIsHeaderExporting(false);
-                }}
-                isExporting={isHeaderExporting}
-            >
-                {/* Revenue tab: SummaryTableView merges into header container */}
-                {activeSubTab === 'revenue' && (
-                    <div ref={printableRef}>
-                        <SummaryTableView 
-                            ref={summaryTableRef}
-                            data={isRealtimeView ? summaryRealtimeParsed.table : summaryLuyKeParsed.table} 
-                            isCumulative={!isRealtimeView}
-                            supermarketDailyTargets={supermarketDailyTargets} 
-                            supermarketMonthlyTargets={supermarketMonthlyTargets}
-                            activeSupermarket={activeSupermarket}
-                            onExport={() => handleExportPNG(printableRef, `BangDoanhThu${!isRealtimeView ? 'LuyKe' : ''}_${activeSupermarket}`)}
-                            updateTimestamp={isRealtimeView ? summaryRealtimeTs : null}
-                            supermarketTargets={supermarketTargets}
-                        />
-                    </div>
-                )}
-            </DashboardHeader>
-            
-            <div className="mt-3 sm:mt-4">
+            <div className="space-y-3 sm:space-y-6" ref={pageRef}>
+                <div ref={printableRef} className="space-y-3 sm:space-y-6">
+                    <DashboardHeader
+                        title="Tổng quan Siêu thị"
+                        activeMainTab={activeMainTab}
+                        setActiveMainTab={setActiveMainTab}
+                        activeSubTab={activeSubTab}
+                        setActiveSubTab={setActiveSubTab}
+                        supermarkets={supermarkets}
+                        activeSupermarket={activeSupermarket}
+                        setActiveSupermarket={setActiveSupermarket}
+                        onBatchExport={() => {
+                            if (activeSubTab === 'competition') runBatchExport('competition');
+                            else runBatchExport(isRealtimeView ? 'realtime' : 'cumulative');
+                        }}
+                        isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
+                        onExport={async () => {
+                            setIsHeaderExporting(true);
+                            // Export everything inside printableRef for both tabs
+                            await handleExportPNG(printableRef, `Dashboard_${activeSubTab}_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`);
+                            setIsHeaderExporting(false);
+                        }}
+                        isExporting={isHeaderExporting}
+                    >
+                        {/* Revenue tab: SummaryTableView merges into header container */}
+                        {activeSubTab === 'revenue' && (
+                            <div>
+                                <SummaryTableView
+                                    ref={summaryTableRef}
+                                    data={isRealtimeView ? summaryRealtimeParsed.table : summaryLuyKeParsed.table}
+                                    isCumulative={!isRealtimeView}
+                                    supermarketDailyTargets={supermarketDailyTargets}
+                                    supermarketMonthlyTargets={supermarketMonthlyTargets}
+                                    activeSupermarket={activeSupermarket}
+                                    onExport={() => handleExportPNG(summaryTableRef, `BangDoanhThu${!isRealtimeView ? 'LuyKe' : ''}_${activeSupermarket}`)}
+                                    updateTimestamp={isRealtimeView ? summaryRealtimeTs : null}
+                                    supermarketTargets={supermarketTargets}
+                                />
+                            </div>
+                        )}
+                    </DashboardHeader>
+
                     {activeSubTab === 'revenue' && (
-                        <div className="space-y-3 sm:space-y-6">
-                            <KpiOverview 
+                        <div className="mt-3 sm:mt-4">
+                            <KpiOverview
                                 isRealtime={isRealtimeView}
                                 kpiData={currentKpiData}
                                 targets={activeTargets}
@@ -340,46 +338,50 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                                 supermarketMonthlyTargets={supermarketMonthlyTargets}
                                 activeSupermarket={activeSupermarket}
                             />
-
-                            {activeSupermarket !== 'Tổng' && (
-                                <div className="js-industry-view-container">
-                                    <IndustryView 
-                                        ref={industryTableRef}
-                                        isRealtime={isRealtimeView} 
-                                        realtimeData={industryRealtimeParsed} 
-                                        luykeData={industryLuyKeParsed} 
-                                        activeSupermarket={activeSupermarket}
-                                        onExport={() => handleExportPNG(industryTableRef, `NganhHang_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`)}
-                                    />
-                                </div>
-                            )}
                         </div>
                     )}
 
                     {activeSubTab === 'competition' && (
-                        <CompetitionView
-                            ref={competitionViewRef}
-                            data={isRealtimeView ? augmentedRealtimeData : augmentedLuyKeData}
-                            isRealtime={isRealtimeView}
-                            activeSupermarket={activeSupermarket}
-                            setActiveSupermarket={setActiveSupermarket}
-                            onBatchExport={() => runBatchExport('competition')}
-                            isBatchExporting={isBatchExportingCompetition}
-                            updateTimestamp={isRealtimeView ? competitionRealtimeTs : competitionLuyKeTs}
-                            onExport={() => handleExportPNG(competitionViewRef, `ThiDua_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`)}
-                        />
+                        <div className="mt-3 sm:mt-4">
+                            <CompetitionView
+                                ref={competitionViewRef}
+                                data={isRealtimeView ? augmentedRealtimeData : augmentedLuyKeData}
+                                isRealtime={isRealtimeView}
+                                activeSupermarket={activeSupermarket}
+                                setActiveSupermarket={setActiveSupermarket}
+                                onBatchExport={() => runBatchExport('competition')}
+                                isBatchExporting={isBatchExportingCompetition}
+                                updateTimestamp={isRealtimeView ? competitionRealtimeTs : competitionLuyKeTs}
+                                onExport={() => handleExportPNG(printableRef, `ThiDua_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`)}
+                            />
+                        </div>
                     )}
                 </div>
-            <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
-            <ExportOptionsModal
-                isOpen={!!exportOptions.pendingExport}
-                onClose={exportOptions.handleClose}
-                onDownload={exportOptions.handleDownload}
-                onShare={exportOptions.handleShare}
-                canShare={exportOptions.canShare}
-                filename={exportOptions.pendingExport?.filename || ''}
-            />
-        </div>
+
+                <div className="mt-3 sm:mt-4">
+                    {activeSubTab === 'revenue' && activeSupermarket !== 'Tổng' && (
+                        <div className="js-industry-view-container">
+                            <IndustryView
+                                ref={industryTableRef}
+                                isRealtime={isRealtimeView}
+                                realtimeData={industryRealtimeParsed}
+                                luykeData={industryLuyKeParsed}
+                                activeSupermarket={activeSupermarket}
+                                onExport={() => handleExportPNG(industryTableRef, `NganhHang_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`)}
+                            />
+                        </div>
+                    )}
+                </div>
+                <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
+                <ExportOptionsModal
+                    isOpen={!!exportOptions.pendingExport}
+                    onClose={exportOptions.handleClose}
+                    onDownload={exportOptions.handleDownload}
+                    onShare={exportOptions.handleShare}
+                    canShare={exportOptions.canShare}
+                    filename={exportOptions.pendingExport?.filename || ''}
+                />
+            </div>
         </ExportOptionsProvider>
     );
 };

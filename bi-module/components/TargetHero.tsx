@@ -283,11 +283,26 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
         const weights: Record<string, number> = { ...departmentWeights };
         const validNames = new Set(combinedDepts.map(d => d.name));
         Object.keys(weights).forEach(k => { if (!validNames.has(k)) delete weights[k]; });
-        let missing = combinedDepts.filter(d => weights[d.name] === undefined);
-        if (missing.length > 0) {
-            const currentTotal = combinedDepts.reduce((sum, d) => sum + (weights[d.name] || 0), 0);
-            const share = Math.max(0, 100 - currentTotal) / missing.length;
-            missing.forEach(d => { weights[d.name] = share; });
+        if (Object.keys(departmentWeights).length === 0) {
+            let hasAllInOne = false;
+            combinedDepts.forEach(d => {
+                if (d.name.toUpperCase().includes('ALL IN ONE')) {
+                    hasAllInOne = true;
+                }
+            });
+            if (hasAllInOne) {
+                combinedDepts.forEach(d => {
+                    weights[d.name] = d.name.toUpperCase().includes('ALL IN ONE') ? 100 : 0;
+                });
+            } else {
+                const share = 100 / (combinedDepts.length || 1);
+                combinedDepts.forEach(d => { weights[d.name] = share; });
+            }
+        } else {
+            let missing = combinedDepts.filter(d => weights[d.name] === undefined);
+            if (missing.length > 0) {
+                missing.forEach(d => { weights[d.name] = 0; }); // Default to 0 for new departments to prevent accidental over-allocation
+            }
         }
         return weights;
     }, [departmentWeights, combinedDepts]);

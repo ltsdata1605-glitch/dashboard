@@ -1,0 +1,15 @@
+--- useIndustryAnalysisLogic.ts
++++ useIndustryAnalysisLogic.ts
+@@ -1,9 +1,11 @@
+ import { useState, useEffect, useMemo } from 'react';
+ import type { ExploitationData } from '../../../types';
+ import { getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../../services/dbService';
+ import { SortConfig, detailQuickFilters, groupToSortKeyMap } from './IndustryTableUtils';
++import { COL, HINH_THUC_XUAT_THU_HO } from '../../../constants';
++import { getRowValue } from '../../../utils/dataUtils';
+ 
+-export const useIndustryAnalysisLogic = (data: ExploitationData[]) => {
++export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: any[], productConfig?: any, customExploitationTabs?: any[]) => {
+     const [viewMode, setViewMode] = useState<'detail' | 'efficiency' | 'efficiency_dt_sl' | 'efficiency_quantity'>('detail');
+     const [visibleGroups, setVisibleGroups] = useState<Set<string>>(new Set());
+     const [initialGroupsLoaded, setInitialGroupsLoaded] = useState(false);

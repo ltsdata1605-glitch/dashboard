@@ -1,0 +1,579 @@
+import React, { useMemo, useRef, useState } from 'react';
+import type { DataRow, Employee, ProductConfig, ContestTableConfig, ColumnConfig } from '../../types';
+import { getRowValue, getHeSoQuyDoi, abbreviateName, formatQuantity, formatCurrency } from '../../utils/dataUtils';
+import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
+import { Icon } from '../common/Icon';
+import { exportElementAsImage } from '../../services/uiService';
+import { useDashboardContext } from '../../contexts/DashboardContext';
+import { DEPT_COLORS, RankBadge } from './performance/PerformanceTableUtils';
+
+interface ContestTableProps {
+    config: ContestTableConfig;
+    allEmployees: Employee[];
+    baseFilteredData: DataRow[];
+    productConfig: ProductConfig;
+    tableColorTheme: { header: string; row: string; border: string; };
+    onManageColumns: () => void;
+    onDeleteTable: () => void;
+    onAddColumn: () => void;
+    onEditColumn: (columnId: string) => void;
+    onTriggerDeleteColumn: (columnId: string) => void;
+}
+
+import { DATA_STATUS_COLORS } from '../../constants';
+
+const getConditionalStyle = (value: number | undefined, column: ColumnConfig, average: number | undefined): React.CSSProperties => {
+    if (value === undefined || !column.conditionalFormatting || column.conditionalFormatting.length === 0) {
+        return {};
+    }
+
+    for (const rule of column.conditionalFormatting) {
+        let match = false;
+        switch (rule.condition) {
+            case '>':
+                match = value > rule.value1;
+                break;
+            case '<':
+                match = value < rule.value1;
+                break;
+            case '=':
+                match = value === rule.value1;
+                break;
+            case 'between':
+                if (rule.value2 !== undefined) {
+                    match = value >= rule.value1 && value <= rule.value2;
+                }
+                break;
+            case '>avg':
+                match = average !== undefined && value > average;
+                break;
+            case '<avg':
+                match = average !== undefined && value < average;
+                break;
+        }
+        if (match) {
+            // Determine colors from standard constants
+            const isNegative = rule.condition === '<' || rule.condition === '<avg';
+            const statusColor = isNegative ? DATA_STATUS_COLORS.negative : DATA_STATUS_COLORS.positive;
+
+            return {
+                backgroundColor: statusColor.bg,
+                color: statusColor.text,
+                fontWeight: 'bold'
+            };
+        }
+    }
+    return {};
+};
+
+
+const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmployees, baseFilteredData, productConfig, tableColorTheme, onManageColumns, onDeleteTable, onAddColumn, onEditColumn, onTriggerDeleteColumn }) => {
+    const { filterState } = useDashboardContext();
+    const exportRef = useRef<HTMLDivElement>(null);
+    const [isExporting, setIsExporting] = useState(false);
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>(() => {
+        const defaultSortKey = config.defaultSortColumnId;
+        if (defaultSortKey && config.columns.find(c => c.id === defaultSortKey)) {
+            return { key: defaultSortKey, direction: 'desc' };
+        }
+        return { key: 'name', direction: 'asc' };
+    });
+
+    const { processedRows, totals, averages, sortedAndGroupedColumns, groupedRows, sortedDepartments, departmentTotals } = useMemo(() => {
+        const employeeColumnValues = new Map<string, Map<string, number>>(); // Map<employeeName, Map<columnId, value>>
+
+        const validData = baseFilteredData.filter(row => !HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT)));
+
+        // Step 1: Calculate all 'data' columns
+        // Build a lookup: raw creator string → display name (from allEmployees)
+        // This handles cases where the raw data "NGUOI_TAO" value differs from the displayed emp.name
+        const creatorToDisplayName = new Map<string, string>();
+        allEmployees.forEach(emp => {
+            // Match by ID prefix (e.g., "51118" matches "51118 - T.Anh")
+            const empId = emp.name.split(' - ')[0].trim();
+            creatorToDisplayName.set(emp.name, emp.name); // exact match
+            if (empId !== emp.name) {
+                // Also map from just the ID
+                creatorToDisplayName.set(empId, emp.name);
+            }
+        });
+
+        config.columns.forEach(col => {
+            if (col.type !== 'data') return;
+
+            const filteredSalesData = validData.filter(row => {
+                const industry = productConfig.childToParentMap[getRowValue(row, COL.MA_NHOM_HANG)] || '';
+                const subgroup = productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || '';
+                const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
+                const productNameStr = String(getRowValue(row, COL.PRODUCT) || '');
+
+                const filters = col.filters;
+                if (!filters) return true; // No filters, include all data
+
+                const industryMatch = filters.selectedIndustries.length === 0 || filters.selectedIndustries.includes(industry);
+                const subgroupMatch = filters.selectedSubgroups.length === 0 || filters.selectedSubgroups.includes(subgroup);
+                const manufacturerMatch = filters.selectedManufacturers.length === 0 || filters.selectedManufacturers.includes(manufacturer);
+
+                let productCodeMatch = filters.productCodes.length === 0;
+                if (!productCodeMatch) {
+                    for (const code of filters.productCodes) {
+                        if (productNameStr.includes(code)) {
+                            productCodeMatch = true;
+                            break;
+                        }
+                    }
+                }
+
+                const allCategoryFiltersPass = industryMatch && subgroupMatch && manufacturerMatch && productCodeMatch;
+                if (!allCategoryFiltersPass) return false;
+
+                // New Price Filter Logic
+                if (filters.priceCondition && typeof filters.priceValue1 === 'number') {
+                    const priceColumnKey = filters.priceType === 'original' ? COL.ORIGINAL_PRICE : COL.PRICE;
+                    const price = Number(getRowValue(row, priceColumnKey)) || 0;
+                    const val1 = filters.priceValue1;
+
+                    switch (filters.priceCondition) {
+                        case 'greater':
+                            if (price <= val1) return false;
+                            break;
+                        case 'less':
+                            if (price >= val1) return false;
+                            break;
+                        case 'equal':
+                            if (price !== val1) return false;
+                            break;
+                        case 'between':
+                            const val2 = filters.priceValue2;
+                            if (typeof val2 !== 'number' || price < val1 || price > val2) return false;
+                            break;
+                    }
+                }
+
+                return true;
+            });
+
+            filteredSalesData.forEach(row => {
+                const rawCreator = getRowValue(row, COL.NGUOI_TAO);
+                if (!rawCreator) return;
+
+                // Resolve raw creator to the display name used in allEmployees
+                const employee = creatorToDisplayName.get(rawCreator) ||
+                    creatorToDisplayName.get(rawCreator.split(' - ')[0].trim()) ||
+                    rawCreator;
+
+                if (!employeeColumnValues.has(employee)) {
+                    employeeColumnValues.set(employee, new Map<string, number>());
+                }
+                const employeeValues = employeeColumnValues.get(employee)!;
+
+                const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
+                const price = Number(getRowValue(row, COL.PRICE)) || 0;
+                const revenue = price; // Doanh thu là giá trị của cột Giá bán_1
+
+                let value = 0;
+                if (col.metricType === 'quantity') {
+                    value = quantity;
+                } else if (col.metricType === 'revenue') {
+                    value = revenue / 1000000;
+                } else if (col.metricType === 'revenueQD') {
+                    const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
+                    const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+                    const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig);
+                    value = (revenue * heso) / 1000000;
+                }
+
+                employeeValues.set(col.id, (employeeValues.get(col.id) || 0) + value);
+            });
+        });
+
+        // Step 1.5: Process 'target' columns
+        const validEmployeesCount = allEmployees.length;
+        config.columns.forEach(col => {
+            if (col.type !== 'target') return;
+            const valuePerEmployee = validEmployeesCount > 0 ? (col.targetValue || 0) / validEmployeesCount : 0;
+
+            allEmployees.forEach(emp => {
+                if (!employeeColumnValues.has(emp.name)) {
+                    employeeColumnValues.set(emp.name, new Map<string, number>());
+                }
+                const employeeValues = employeeColumnValues.get(emp.name)!;
+                employeeValues.set(col.id, valuePerEmployee);
+            });
+        });
+
+        // Step 2: Process all employees and calculate 'calculated' columns
+        allEmployees.forEach(emp => {
+            const employeeName = emp.name;
+            if (!employeeColumnValues.has(employeeName)) {
+                employeeColumnValues.set(employeeName, new Map<string, number>());
+            }
+            const employeeValues = employeeColumnValues.get(employeeName)!;
+
+            config.columns.forEach(col => {
+                if (col.type === 'calculated' && col.operand1_columnId && col.operand2_columnId) {
+                    const operand1 = employeeValues.get(col.operand1_columnId) || 0;
+                    const operand2 = employeeValues.get(col.operand2_columnId) || 0;
+                    let result = 0;
+                    switch (col.operation) {
+                        case '+': result = operand1 + operand2; break;
+                        case '-': result = operand1 - operand2; break;
+                        case '*': result = operand1 * operand2; break;
+                        case '/': result = operand2 !== 0 ? operand1 / operand2 : 0; break;
+                        default: result = 0;
+                    }
+                    if (col.operation === '/' && col.displayAs === 'percentage') {
+                        result *= 100;
+                    }
+                    employeeValues.set(col.id, result);
+                }
+            });
+        });
+
+        // Step 3: Create the final rows for rendering
+        let processedRows = allEmployees.map(emp => {
+            const values = employeeColumnValues.get(emp.name) || new Map<string, number>();
+            return {
+                name: emp.name,
+                department: emp.department,
+                columnValues: values
+            };
+        });
+
+        // Step 4: Calculate totals and averages
+        const totals = new Map<string, number>();
+        const averages = new Map<string, number>();
+        const validRowCount = processedRows.length > 0 ? processedRows.length : 1;
+
+        config.columns.forEach(col => {
+            const total = processedRows.reduce((sum, row) => sum + (row.columnValues.get(col.id) || 0), 0);
+            totals.set(col.id, total);
+            averages.set(col.id, total / validRowCount);
+        });
+
+        // Re-calculate totals and averages for calculated percentage columns to be accurate
+        config.columns.forEach(col => {
+            if (col.type === 'calculated' && col.operation === '/' && col.displayAs === 'percentage' && col.operand1_columnId && col.operand2_columnId) {
+                const totalOperand1 = totals.get(col.operand1_columnId) || 0;
+                const totalOperand2 = totals.get(col.operand2_columnId) || 0;
+                const totalResult = totalOperand2 !== 0 ? (totalOperand1 / totalOperand2) * 100 : 0;
+                totals.set(col.id, totalResult);
+            }
+        });
+
+        // Step 5: Sort the data
+        processedRows.sort((a, b) => {
+            if (sortConfig.key === 'name') {
+                const valA = a.name;
+                const valB = b.name;
+                return sortConfig.direction === 'asc' ? valA.localeCompare(b.name) : b.name.localeCompare(a.name);
+            } else {
+                const valA = a.columnValues.get(sortConfig.key) || 0;
+                const valB = b.columnValues.get(sortConfig.key) || 0;
+                return sortConfig.direction === 'asc' ? valA - valB : valB - valA;
+            }
+        });
+
+        const grouped = new Map<string, ColumnConfig[]>();
+        config.columns.forEach(col => {
+            const mainHeader = col.mainHeader || '';
+            if (!grouped.has(mainHeader)) {
+                grouped.set(mainHeader, []);
+            }
+            grouped.get(mainHeader)!.push(col);
+        });
+
+        const mainHeaderOrder: string[] = Array.from(new Set(config.columns.map(c => c.mainHeader || '')));
+
+        const sortedAndGroupedColumns = mainHeaderOrder.map(header => ({
+            name: header,
+            columns: grouped.get(header) || [],
+        }));
+
+        const groupedRows = processedRows.reduce((acc, row) => {
+            const dept = row.department || 'Không Phân Ca';
+            if (!acc[dept]) acc[dept] = [];
+            acc[dept].push(row);
+            return acc;
+        }, {} as Record<string, typeof processedRows>);
+
+        const sortedDepartments = Object.keys(groupedRows).sort((a, b) => a.localeCompare(b));
+
+        const departmentTotals = new Map<string, Map<string, number>>();
+        sortedDepartments.forEach(dept => {
+            const rowsInDept = groupedRows[dept];
+            const deptTotals = new Map<string, number>();
+            config.columns.forEach(col => {
+                const total = rowsInDept.reduce((sum, row) => sum + (row.columnValues.get(col.id) || 0), 0);
+                deptTotals.set(col.id, total);
+            });
+
+            // Recalculate percentage columns for the group total
+            config.columns.forEach(col => {
+                if (col.type === 'calculated' && col.operation === '/' && col.displayAs === 'percentage' && col.operand1_columnId && col.operand2_columnId) {
+                    const totalOperand1 = deptTotals.get(col.operand1_columnId) || 0;
+                    const totalOperand2 = deptTotals.get(col.operand2_columnId) || 0;
+                    const totalResult = totalOperand2 !== 0 ? (totalOperand1 / totalOperand2) * 100 : 0;
+                    deptTotals.set(col.id, totalResult);
+                }
+            });
+
+            departmentTotals.set(dept, deptTotals);
+        });
+
+
+        return { processedRows, totals, averages, sortedAndGroupedColumns, groupedRows, sortedDepartments, departmentTotals };
+    }, [config, allEmployees, baseFilteredData, productConfig, sortConfig]);
+
+    const handleSort = (key: string) => {
+        let direction: 'asc' | 'desc' = 'desc';
+        if (sortConfig.key === key && sortConfig.direction === 'desc') {
+            direction = 'asc';
+        }
+        setSortConfig({ key, direction });
+    };
+
+    const handleExport = async () => {
+        if (exportRef.current) {
+            setIsExporting(true);
+            const prefix = (Array.isArray(filterState.kho) && filterState.kho.length > 0 && !filterState.kho.includes('all')) ? `[${filterState.kho.join('_')}]` : '[Tat-ca-khu-vuc]';
+            const safeTabName = config.tableName.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-zA-Z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+            await exportElementAsImage(exportRef.current, `${prefix}-${safeTabName}.png`, {
+                elementsToHide: ['.hide-on-export'],
+                isCompactTable: true,
+                fitAllColumns: true
+            });
+            setIsExporting(false);
+        }
+    };
+
+    const formatValue = (value: number | undefined, column: ColumnConfig): string => {
+        if (value == null || isNaN(value)) return '-';
+
+        if (column.type === 'calculated') {
+            const decimals = column.decimalPlaces ?? 0;
+            if (column.displayAs === 'percentage') {
+                return value.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + '%';
+            }
+            return value.toLocaleString('vi-VN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+        }
+
+        const metricType = column.metricType;
+        if (metricType === 'revenue' || metricType === 'revenueQD') {
+            return formatCurrency(Math.round(value), 0);
+        }
+
+        return formatQuantity(Math.round(value));
+    };
+
+    const groupsWithHeader = sortedAndGroupedColumns.filter(g => g.name);
+    const groupsWithoutHeader = sortedAndGroupedColumns.find(g => !g.name);
+    const columnsWithoutHeader = groupsWithoutHeader ? groupsWithoutHeader.columns : [];
+    const columnsWithHeader = groupsWithHeader.flatMap(g => g.columns);
+
+    const showDeptHeaders = sortedDepartments.length > 1 || (sortedDepartments.length === 1 && sortedDepartments[0] !== 'Không Phân Ca');
+
+    const getPastelColor = (index: number) => {
+        const colors = [
+            'bg-blue-50/80 dark:bg-blue-900/20',
+            'bg-emerald-50/80 dark:bg-emerald-900/20',
+            'bg-amber-50/80 dark:bg-amber-900/20',
+            'bg-rose-50/80 dark:bg-rose-900/20',
+            'bg-indigo-50/80 dark:bg-indigo-900/20',
+            'bg-teal-50/80 dark:bg-teal-900/20',
+            'bg-orange-50/80 dark:bg-orange-900/20',
+            'bg-purple-50/80 dark:bg-purple-900/20',
+            'bg-cyan-50/80 dark:bg-cyan-900/20',
+            'bg-lime-50/80 dark:bg-lime-900/20',
+        ];
+        return colors[index % colors.length];
+    };
+
+    return (
+        <div ref={exportRef} className="rounded-none border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div className="overflow-hidden">
+                <div
+                    className="px-2 py-1 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 gap-2"
+                >
+                    <h3 className="text-[11px] sm:text-sm font-extrabold uppercase flex items-center gap-1.5 sm:gap-2 text-slate-800 dark:text-white tracking-tight truncate">
+                        <Icon name={config.icon || "target"} size={3.5} className="text-primary-500 sm:hidden shrink-0" />
+                        <Icon name={config.icon || "target"} size={4} className="text-primary-500 hidden sm:block shrink-0" />
+                        <span className="truncate">{config.tableName}</span>
+                    </h3>
+                    <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
+                        <button onClick={(e) => { e.stopPropagation(); onAddColumn(); }} title="Thêm Cột Mới" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            <Icon name="plus-circle" size={3.5} className="sm:hidden" /><Icon name="plus-circle" size={5} className="hidden sm:block" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); onManageColumns(); }} title="Sửa tên và cài đặt bảng" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            <Icon name="settings-2" size={3.5} className="sm:hidden" /><Icon name="settings-2" size={5} className="hidden sm:block" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); onDeleteTable(); }} title="Xóa Bảng Này" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+                            <Icon name="trash-2" size={3.5} className="sm:hidden" /><Icon name="trash-2" size={5} className="hidden sm:block" />
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); handleExport(); }} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
+                            {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
+                        </button>
+                    </div>
+                </div>
+
+                <div className="overflow-x-auto table-container">
+                    <table className="min-w-full text-sm compact-export-table border-collapse whitespace-nowrap">
+                        <thead className="uppercase sticky top-0 z-30 bg-white dark:bg-slate-900 shadow-sm border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600">
+                            <tr>
+                                <th rowSpan={2} colSpan={2} onClick={() => handleSort('name')} className="px-2 py-1 text-center text-[11px] font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle min-w-[140px] tracking-wider sticky left-0 z-40 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors">
+                                    <div className="flex items-center justify-center gap-1">
+                                        NHÂN VIÊN
+                                        {sortConfig.key === 'name' && (
+                                            <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={3} /></span>
+                                        )}
+                                    </div>
+                                </th>
+
+                                {groupsWithHeader.map((group, gIdx) => {
+                                    const colorConfigs = [
+                                        { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300' },
+                                        { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300' },
+                                        { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300' },
+                                        { bg: 'bg-cyan-50 dark:bg-cyan-900/20', text: 'text-cyan-700 dark:text-cyan-300' },
+                                        { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300' }
+                                    ];
+                                    const config = colorConfigs[gIdx % colorConfigs.length];
+                                    return (
+                                        <th key={group.name} colSpan={group.columns.length} className={`px-2 py-1 text-center text-[11px] uppercase tracking-wider font-bold border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text}`}>
+                                            {group.name}
+                                        </th>
+                                    );
+                                })}
+
+                                {columnsWithoutHeader.map((col, cIdx) => {
+                                    const colorConfigs = [
+                                        { bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300' },
+                                        { bg: 'bg-indigo-50 dark:bg-indigo-900/20', text: 'text-indigo-700 dark:text-indigo-300' },
+                                        { bg: 'bg-teal-50 dark:bg-teal-900/20', text: 'text-teal-700 dark:text-teal-300' },
+                                    ];
+                                    const config = colorConfigs[cIdx % colorConfigs.length];
+                                    return (
+                                        <th key={col.id} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider cursor-pointer select-none group/th relative align-middle border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r h-px border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
+                                            <div className="flex items-center justify-center gap-1">
+                                                {col.columnName}
+                                                {sortConfig.key === col.id && (
+                                                    <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
+                                                )}
+                                            </div>
+                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
+                                                <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3} /></button>
+                                            </div>
+                                        </th>
+                                    );
+                                })}
+                            </tr>
+                            <tr>
+                                {columnsWithHeader.map((col, cIdx) => {
+                                    // Assign same pastel colors based on their index mapping to parent groups but simplified here
+                                    const groupIdx = groupsWithHeader.findIndex(g => g.columns.some(c => c.id === col.id));
+                                    const colorConfigs = [
+                                        { bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300' },
+                                        { bg: 'bg-rose-50 dark:bg-rose-900/20', text: 'text-rose-700 dark:text-rose-300' },
+                                        { bg: 'bg-amber-50 dark:bg-amber-900/20', text: 'text-amber-700 dark:text-amber-300' },
+                                        { bg: 'bg-cyan-50 dark:bg-cyan-900/20', text: 'text-cyan-700 dark:text-cyan-300' },
+                                        { bg: 'bg-purple-50 dark:bg-purple-900/20', text: 'text-purple-700 dark:text-purple-300' }
+                                    ];
+                                    const config = colorConfigs[Math.max(0, groupIdx) % colorConfigs.length];
+                                    return (
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-2 py-1 text-center text-[11px] h-px font-bold uppercase tracking-wider cursor-pointer select-none group/th relative border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${config.bg} ${config.text} hover:opacity-80 transition-opacity`}>
+                                            <div className="flex items-center justify-center gap-1">
+                                                {col.columnName}
+                                                {sortConfig.key === col.id && (
+                                                    <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
+                                                )}
+                                            </div>
+                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
+                                                <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3} /></button>
+                                                <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3} /></button>
+                                            </div>
+                                        </th>
+                                    );
+                                })}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {sortedDepartments.map((department, deptIndex) => {
+                                const rows = groupedRows[department];
+                                const deptTotals = departmentTotals.get(department);
+                                const deptColor = getPastelColor(deptIndex);
+                                return (
+                                    <React.Fragment key={department}>
+                                        {showDeptHeaders && (
+                                            <tr>
+                                                <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className={`px-2 py-1 ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].strip} border-y border-slate-200 dark:border-slate-700`}>
+                                                    <div className="flex items-center gap-1.5 sm:gap-2">
+                                                        <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].badge} flex-shrink-0`} />
+                                                        <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].text}`}>{department} — {rows.length} người</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        )}
+                                        {rows.map((row, rowIndex) => {
+                                            const rowClass = rowIndex % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50/30 dark:bg-slate-800/20';
+                                            return (
+                                                <tr key={row.name} className={`group border-b border-slate-200 dark:border-slate-700 transition-colors duration-100 hover:bg-slate-100 dark:hover:bg-slate-800 ${rowIndex % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800'}`}>
+                                                    <td className="px-2 py-1 text-center border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-inherit z-10">
+                                                        <RankBadge rank={rowIndex} />
+                                                    </td>
+                                                    <td className="px-2 py-1 font-bold text-[11px] sm:text-[13px] text-slate-700 dark:text-slate-200 whitespace-nowrap text-left border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10">{abbreviateName(row.name)}</td>
+                                                    {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
+                                                        const value = row.columnValues.get(col.id);
+                                                        const average = averages.get(col.id);
+                                                        const style = getConditionalStyle(value, col, average);
+                                                        return (
+                                                            <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
+                                                                <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(style).length > 0 ? 'rounded-md' : ''}`} style={style}>
+                                                                    {formatValue(value, col)}
+                                                                </div>
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr>
+                                            );
+                                        })}
+                                        {sortedDepartments.length > 1 && deptTotals && (
+                                            <tr className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 font-bold">
+                                                <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10">Tổng {department}</td>
+                                                {[...columnsWithHeader, ...columnsWithoutHeader].map(col => (
+                                                    <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
+                                                        {formatValue(deptTotals.get(col.id), col)}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        )}
+                                    </React.Fragment>
+                                );
+                            })}
+                        </tbody>
+                        <tfoot className="bg-slate-100 dark:bg-slate-800 font-bold text-[11px] sm:text-[13px] border-t border-slate-200 dark:border-slate-700">
+                            <tr>
+                                <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[12px] font-extrabold text-teal-700 dark:text-teal-300 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-100 dark:bg-slate-800 z-10">∑ Tổng</td>
+                                {[...columnsWithHeader, ...columnsWithoutHeader].map(col => {
+                                    const value = totals.get(col.id);
+                                    const average = averages.get(col.id);
+                                    const style = getConditionalStyle(value, col, average);
+                                    return (
+                                        <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-800 dark:text-slate-200 border-r border-slate-200 dark:border-slate-700">
+                                            <div className={`inline-block px-1 sm:px-1.5 py-0.5 ${Object.keys(style).length > 0 ? 'rounded-md' : ''}`} style={style}>
+                                                {formatValue(value, col)}
+                                            </div>
+                                        </td>
+                                    );
+                                })}
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    );
+});
+
+export default ContestTable;

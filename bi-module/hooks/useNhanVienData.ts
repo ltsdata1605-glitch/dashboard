@@ -7,10 +7,12 @@ import { parseRevenueData, parseInstallmentData, parseCrossSellingData, formatEm
 
 export function useNhanVienData() {
     const [supermarketsRaw] = useIndexedDBState<string[]>('supermarket-list', []);
-    const [activeSupermarketsRaw, setActiveSupermarkets] = useIndexedDBState<string[]>('nhanvien-active-supermarkets', []);
+    const [activeSupermarketsRaw, setActiveSupermarkets, isActiveSupermarketsLoaded] = useIndexedDBState<string[]>('nhanvien-active-supermarkets', []);
     // Defensive: ensure arrays are always valid (Safari/iOS IndexedDB edge case)
     const supermarkets = Array.isArray(supermarketsRaw) ? supermarketsRaw : [];
-    const activeSupermarkets = Array.isArray(activeSupermarketsRaw) ? activeSupermarketsRaw : [];
+    const activeSupermarkets = Array.isArray(activeSupermarketsRaw) 
+        ? activeSupermarketsRaw.filter(sm => supermarkets.includes(sm)) 
+        : [];
 
     const [aggregatedData, setAggregatedData] = useState({
         danhSach: '',
@@ -25,19 +27,30 @@ export function useNhanVienData() {
     const [aggregatedWeights, setAggregatedWeights] = useState<Record<string, number>>({});
 
     useEffect(() => {
-        if (activeSupermarkets.length === 0 && supermarkets.length > 0) {
+        if (isActiveSupermarketsLoaded && activeSupermarkets.length === 0 && supermarkets.length > 0) {
             setActiveSupermarkets([supermarkets[0]]);
         }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [supermarkets]);
+    }, [supermarkets, isActiveSupermarketsLoaded]);
 
     useEffect(() => {
         let isMounted = true;
         const fetchAllData = async () => {
-            if (activeSupermarkets.length === 0) return;
+            if (activeSupermarkets.length === 0) {
+                setAggregatedData({
+                    danhSach: '',
+                    thiDua: '',
+                    traGop: '',
+                    banKem: '',
+                    manualMapping: {},
+                    bonusData: {}
+                });
+                return;
+            }
             
-            const results = await Promise.all(activeSupermarkets.map(sm => {
-                const safeName = shortenSupermarketName(sm);
+            const uniqueSafeNames = Array.from(new Set(activeSupermarkets.map(sm => shortenSupermarketName(sm))));
+            
+            const results = await Promise.all(uniqueSafeNames.map(safeName => {
                 return Promise.all([
                     db.get(`config-${safeName}-danhsach`),
                     db.get(`config-${safeName}-thidua`),
@@ -167,8 +180,10 @@ export function useNhanVienData() {
     }, [employeeDepartmentMap]);
     
     const [activeDepartmentsRaw, setActiveDepartments] = useIndexedDBState<string[]>('nhanvien-active-depts-multi', ['all']);
-    const activeDepartments = Array.isArray(activeDepartmentsRaw) ? activeDepartmentsRaw : ['all'];
-    const effectiveActiveDepartments = useMemo(() => activeDepartments.includes('all') ? departmentOptions : activeDepartments, [activeDepartments, departmentOptions]);
+    const activeDepartments = Array.isArray(activeDepartmentsRaw) 
+        ? activeDepartmentsRaw.filter(d => d === 'all' || departmentOptions.includes(d)) 
+        : ['all'];
+    const effectiveActiveDepartments = useMemo(() => activeDepartments.length === 0 || activeDepartments.includes('all') ? departmentOptions : activeDepartments, [activeDepartments, departmentOptions]);
 
     const toggleSupermarket = (sm: string) => {
         setActiveSupermarkets(prev => {
@@ -218,6 +233,23 @@ export function useNhanVienData() {
         await db.set(`bonus-data-${currentSm}`, { ...aggregatedData.bonusData, [originalName]: metrics });
     };
 
+    const effectiveAggregatedWeights = useMemo(() => {
+        if (Object.keys(aggregatedWeights).length > 0) return aggregatedWeights;
+        
+        const weights: Record<string, number> = {};
+        const hasAllInOne = departmentOptions.some(d => d.toUpperCase().includes('ALL IN ONE'));
+        
+        if (hasAllInOne) {
+            departmentOptions.forEach(d => {
+                weights[d] = d.toUpperCase().includes('ALL IN ONE') ? 100 : 0;
+            });
+        } else {
+            const share = 100 / (departmentOptions.length || 1);
+            departmentOptions.forEach(d => { weights[d] = share; });
+        }
+        return weights;
+    }, [aggregatedWeights, departmentOptions]);
+
     return {
         supermarkets,
         activeSupermarkets,
@@ -225,7 +257,7 @@ export function useNhanVienData() {
         effectiveActiveDepartments,
         departmentOptions,
         aggregatedData,
-        aggregatedWeights,
+        aggregatedWeights: effectiveAggregatedWeights,
         employeeDepartmentMap,
         installmentRows,
         banKemRows,

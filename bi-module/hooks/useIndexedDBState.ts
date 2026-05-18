@@ -7,8 +7,9 @@ type Dispatch<A> = (value: A) => void;
 
 const DB_CHANGE_EVENT = 'indexeddb-change';
 
-export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, Dispatch<SetStateAction<T>>] {
+export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, Dispatch<SetStateAction<T>>, boolean] {
   const [value, setValue] = useState<T>(defaultValue);
+  const [isLoaded, setIsLoaded] = useState(false);
   const loadIdRef = useRef(0);
   const writeQueueRef = useRef<(() => Promise<any>)[]>([]);
   const isWritingRef = useRef(false);
@@ -20,6 +21,7 @@ export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, D
   useEffect(() => {
     if (!key) {
       setValue(defaultValueRef.current);
+      setIsLoaded(true);
       return;
     }
 
@@ -39,9 +41,11 @@ export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, D
                 } else {
                     setValue(defaultValueRef.current);
                 }
+                setIsLoaded(true);
             }
         }).catch(err => {
             console.error(`Failed to load key "${key}"`, err);
+            if (currentLoadId === loadIdRef.current) setIsLoaded(true);
         });
     };
     
@@ -98,5 +102,5 @@ export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, D
     });
   }, [key]);
 
-  return [value, setStoredValue];
+  return [value, setStoredValue, isLoaded];
 }

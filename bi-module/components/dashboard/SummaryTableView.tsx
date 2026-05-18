@@ -270,7 +270,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
                     <div className="grid gap-0.5">
                         {orderedHeaders.filter(h => h !== 'Tên miền').map((h) => (
-                            <div key={h} className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                            <div key={h} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                 <label
                                     htmlFor={`col-toggle-sum-${h}`}
                                     className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
@@ -324,7 +324,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         <th
                                             rowSpan={2}
                                             className={`
-                                                    px-2 py-1 text-center text-[11px] font-black
+                                                    px-2 py-2 text-center text-[11px] font-black
                                                     text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30
                                                     border-b-2 border-b-indigo-100 dark:border-b-indigo-800
                                                     border-r border-slate-200 dark:border-slate-700
@@ -343,7 +343,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         key={`group-${idx}`}
                                                         rowSpan={2}
                                                         className={`
-                                                            py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
+                                                            py-2 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
                                                             align-middle whitespace-nowrap
                                                             border-b-2 border-r border-slate-200 dark:border-slate-700
                                                             ${g.bg} ${g.text}
@@ -358,7 +358,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                     key={`group-${idx}`}
                                                     colSpan={g.colspan}
                                                     className={`
-                                                        py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center 
+                                                        py-2 px-1.5 text-[11px] font-black uppercase tracking-wider text-center 
                                                         border-b border-r border-slate-200 dark:border-slate-700
                                                         ${g.bg} ${g.text}
                                                     `}
@@ -382,14 +382,14 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 <th
                                                     key={h}
                                                     className={`
-                                                        px-1.5 py-1 text-[11px] font-bold uppercase
+                                                        px-1.5 py-2 text-[11px] font-bold uppercase
                                                         tracking-wider border-r border-slate-200 dark:border-slate-700
                                                         border-b-2
                                                         text-center align-middle whitespace-nowrap
                                                         cursor-pointer hover:opacity-80 transition-opacity select-none
                                                         ${g.bg} ${g.text}
                                                     `}
-                                                    dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
+                                                    dangerouslySetInnerHTML={{ __html: (headerMapping[h] || h).replace(/(<br\/>)?V\.TRỘI/gi, '').trim() }}
                                                 />
                                             );
                                         })}
@@ -431,7 +431,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         <td
                                                             key={h}
                                                             className={`
-                                                                px-2 py-1 whitespace-nowrap
+                                                                px-2 py-2 whitespace-nowrap
                                                                 text-[13px] font-bold
                                                                 tabular-nums align-middle
                                                                 ${isTotal ? 'text-[15px] font-extrabold text-emerald-800 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}

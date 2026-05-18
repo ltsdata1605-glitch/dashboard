@@ -1,0 +1,5 @@
+{
+  "name": "DashboardYCX",
+  "description": "Hệ thống quản lý và phân tích dữ liệu kinh doanh cho Điện máy Xanh, hỗ trợ xử lý file Excel lớn và biểu đồ trực quan.",
+  "requestFramePermissions": []
+}

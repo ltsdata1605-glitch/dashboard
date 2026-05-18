@@ -274,6 +274,12 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                             const numVal = col.percentageConfig?.numeratorMetric === 'revenue' ? cData.mainDt : cData.mainSl;
                             val = baseVal > 0 ? (numVal / baseVal) * 100 : 0;
                         }
+                        if (col.type === 'sum') {
+                            val = cols.filter(c => !c.hidden && (c.type === 'quantity' || c.type === 'revenue')).reduce((acc, c) => {
+                                const relatedData = tData[c.id] || { mainSl: 0, mainDt: 0, baseSl: 0, baseDt: 0 };
+                                return acc + (c.type === 'quantity' ? relatedData.mainSl : relatedData.mainDt);
+                            }, 0);
+                        }
                         
                         customFields[`val_${tab.id}_${col.id}`] = val;
                         // Keep raw values for calculateTotals sum later
@@ -413,6 +419,11 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                              const baseVal = col.percentageConfig?.baseMetric === 'revenue' ? t[`raw_baseDt_${tab.id}_${col.id}`] || 0 : t[`raw_baseSl_${tab.id}_${col.id}`] || 0;
                              const numVal = col.percentageConfig?.numeratorMetric === 'revenue' ? t[`raw_mainDt_${tab.id}_${col.id}`] || 0 : t[`raw_mainSl_${tab.id}_${col.id}`] || 0;
                              val = baseVal > 0 ? (numVal / baseVal) * 100 : 0;
+                         }
+                         if (col.type === 'sum') {
+                             val = cols.filter(c => !c.hidden && (c.type === 'quantity' || c.type === 'revenue')).reduce((acc, c) => {
+                                 return acc + (t[c.type === 'quantity' ? `raw_mainSl_${tab.id}_${c.id}` : `raw_mainDt_${tab.id}_${c.id}`] || 0);
+                             }, 0);
                          }
                          t[`val_${tab.id}_${col.id}`] = val;
                      });

@@ -212,10 +212,20 @@ const DataUpdater: React.FC = () => {
             if (supermarkets.length > 0) setSupermarkets([]);
             return;
         }
-        // Cải tiến: Nhận diện cả siêu thị ĐM và TGD (hoặc bất kỳ siêu thị nào có định dạng XXX - YYY)
-        const extractedNames = Array.from(new Set(summaryLuyKe.split('\n')
+        // Cải tiến: Nhận diện cả siêu thị ĐM và TGD, và deduplicate theo tên ngắn (shortenSupermarketName)
+        const rawExtractedNames = Array.from(new Set(summaryLuyKe.split('\n')
             .map(line => (line.split('\t')[0] ?? '').trim())
             .filter(name => (name.startsWith('ĐM') || name.startsWith('TGD')) && name.includes(' - '))));
+
+        const uniqueShortNames = new Set<string>();
+        const extractedNames: string[] = [];
+        for (const name of rawExtractedNames) {
+            const shortName = shortenSupermarketName(name);
+            if (!uniqueShortNames.has(shortName)) {
+                uniqueShortNames.add(shortName);
+                extractedNames.push(name);
+            }
+        }
 
         if (extractedNames.length > 0 && JSON.stringify(extractedNames.sort()) !== JSON.stringify(supermarkets.sort())) {
              setSupermarkets(extractedNames);

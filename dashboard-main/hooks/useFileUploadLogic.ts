@@ -1,0 +1,261 @@
+import { useState, useRef, startTransition } from 'react';
+// @ts-ignore: Vite virtual module alias for Web Workers
+import SalesWorker from '../services/worker?worker';
+import type { DataRow, Status, AppState, ProductConfig } from '../types';
+import type { User } from 'firebase/auth';
+import { processShiftFile, DepartmentMap } from '../services/dataService';
+import { 
+    saveDepartmentMap, clearDepartmentMap, 
+    saveSalesData, clearSalesData, 
+    clearCustomTabs,
+    saveSetting
+} from '../services/dbService';
+
+interface FileUploadLogicProps {
+    isDeduplicationEnabled: boolean;
+    originalData: DataRow[];
+    setOriginalData: (data: DataRow[]) => void;
+    setDepartmentMap: (map: DepartmentMap | null) => void;
+    setProcessedData: (data: any) => void;
+    setFileInfo: (info: { filename: string; savedAt: string } | null) => void;
+    setAppState: (state: AppState) => void;
+    setStatus: (status: Status) => void;
+    setFilterState?: (filters: any) => void;
+    user?: User | null;
+}
+
+export const useFileUploadLogic = ({
+    isDeduplicationEnabled,
+    originalData,
+    setOriginalData,
+    setDepartmentMap,
+    setProcessedData,
+    setFileInfo,
+    setAppState,
+    setStatus,
+    setFilterState,
+    user
+}: FileUploadLogicProps) => {
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [isClearingDepartments, setIsClearingDepartments] = useState(false);
+    const [processingTime, setProcessingTime] = useState(0);
+    const timerRef = useRef<number | undefined>(undefined);
+
+    const startTimer = () => {
+        setProcessingTime(0);
+        const startTime = Date.now();
+        timerRef.current = window.setInterval(() => {
+            setProcessingTime(Date.now() - startTime);
+        }, 100);
+    };
+
+    const stopTimer = () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = undefined;
+        }
+    };
+
+    const handleClearDepartments = async () => {
+        setIsClearingDepartments(true);
+        try {
+            await clearDepartmentMap();
+            setDepartmentMap(null);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setIsClearingDepartments(false);
+        }
+    };
+    
+    const handleClearData = async () => {
+        try {
+            await clearSalesData();
+            // Không xoá các tab tuỳ chỉnh và cấu hình người dùng
+            // await clearCustomTabs();
+            setOriginalData([]);
+            setProcessedData(null);
+            setFileInfo(null);
+            setAppState('upload');
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleShiftFileProcessing = async (files: File[]) => {
+        if (files.length === 0) return;
+        setAppState('loading');
+        setIsProcessing(true);
+        setStatus({ message: `Đang xử lý ${files.length} file phân ca...`, type: 'info', progress: 20 });
+        try {
+            // Note: In a real app, we might want to get the current map from a ref or state passed in
+            // For now, we'll just assume it's handled via the setDepartmentMap callback
+            let mergedMap: DepartmentMap = {}; 
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                setStatus({ message: `Đang xử lý file ${i + 1}/${files.length}: ${file.name}`, type: 'info', progress: 20 + (60 * (i + 1) / files.length) });
+                const { map } = await processShiftFile(file); 
+                mergedMap = { ...mergedMap, ...map }; 
+            }
+            
+            await saveDepartmentMap(mergedMap);
+            await saveSetting('originalDepartmentMap', mergedMap);
+            setDepartmentMap(mergedMap);
+            setStatus({ message: `Đã xử lý và gộp ${files.length} file phân ca!`, type: 'success', progress: 100 });
+        } catch (error) {
+            const msg = error instanceof Error ? error.message : "Lỗi không xác định";
+            setStatus({ message: msg, type: 'error', progress: 0 });
+        } finally {
+            setIsProcessing(false);
+            if(originalData.length > 0) setAppState('dashboard');
+            else setAppState('upload');
+        }
+    };
+
+    const handleFileProcessing = async (files: File[], isCloudSync: boolean = false) => {
+        if (!files || files.length === 0) return;
+        setAppState('loading');
+        setIsProcessing(true);
+        startTimer();
+        
+        const latestFileTime = Math.max(...files.map(f => f.lastModified));
+        
+        // Google Drive Upload logic moved to background task after UI render
+
+        let worker: Worker;
+        try {
+            worker = new SalesWorker();
+        } catch (e) {
+            console.error("Worker instantiation error:", e);
+            setStatus({ message: 'Trình duyệt không hỗ trợ xử lý nền', type: 'error', progress: 0 });
+            setAppState('upload');
+            setIsProcessing(false);
+            return;
+        }
+        worker.onmessage = async (e) => {
+            const { type, payload } = e.data;
+            if (type === 'progress') {
+                setStatus(payload);
+            } else if (type === 'result') {
+                try {
+                    setStatus({ message: 'Đang lưu dữ liệu...', type: 'info', progress: 95 });
+                    await new Promise(r => setTimeout(r, 50)); // nhường CPU để vẽ progress
+                    
+                    const mergedName = files.length === 1 ? files[0].name : `Gộp ${files.length} Báo cáo`;
+                    const latestDate = new Date(latestFileTime);
+                    
+                    await saveSalesData(payload, mergedName, latestDate.getTime());
+                    setFileInfo({ filename: mergedName, savedAt: latestDate.toLocaleString('vi-VN') });
+                    
+                    // Reset filters to initial state to avoid stale filters from previous data
+                    if (setFilterState) {
+                        const { initialFilterState } = await import('./useFilterState');
+                        setFilterState(initialFilterState);
+                    }
+                    
+                    setOriginalData(payload);
+                    setStatus({ message: 'Đang tổng hợp báo cáo...', type: 'info', progress: 98 });
+                    await new Promise(r => setTimeout(r, 50)); // nhường CPU trước khi React render Dashboard khổng lồ
+                    
+                    startTransition(() => {
+                        setAppState('processing');
+                    });
+                    
+                    // Background Drive Upload (Non-blocking)
+                    if (!isCloudSync) {
+                        const token = sessionStorage.getItem('googleOAuthToken');
+                        if (token) {
+                            (async () => {
+                                try {
+                                    const { toast } = await import('react-hot-toast');
+                                    const { uploadFileToDrive, listDriveFiles } = await import('../services/googleDriveService');
+                                    
+                                    toast('Đang kiểm tra và đồng bộ ngầm lên Google Drive...', { icon: '☁️' });
+                                    const existingFiles = await listDriveFiles(token);
+                                    
+                                    const pad = (n: number) => n.toString().padStart(2, '0');
+                                    const formatDate = (date: Date) => `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+                                    
+                                    let uploadedCount = 0;
+                                    let skippedCount = 0;
+                                    let lastUploadedFileId: string | null = null;
+                                    let lastUploadedFileName: string | null = null;
+
+                                    for (let i = 0; i < files.length; i++) {
+                                        const file = files[i];
+                                        const formattedCreation = formatDate(new Date(file.lastModified));
+                                        const isDuplicate = existingFiles.some(f => {
+                                            const nameMatches = f.name.includes(`YCX_${formattedCreation}`) || f.name.includes(`Tải file: ${formattedCreation}`);
+                                            const sizeMatches = f.size ? f.size === file.size.toString() : true;
+                                            return nameMatches && sizeMatches;
+                                        });
+                                        
+                                        if (isDuplicate) {
+                                            skippedCount++;
+                                        } else {
+                                            const driveResult = await uploadFileToDrive(file, token, 'dmx_sales');
+                                            lastUploadedFileId = driveResult.id;
+                                            lastUploadedFileName = driveResult.name;
+                                            uploadedCount++;
+                                        }
+                                    }
+
+                                    if (uploadedCount > 0) {
+                                        toast.success(`Đã sao lưu ngầm ${uploadedCount} báo cáo lên Drive!`);
+                                        if (user && lastUploadedFileId && lastUploadedFileName) {
+                                            try {
+                                                const { syncToCloud } = await import('../services/firestoreService');
+                                                await syncToCloud(user, { latestDriveUpload: { fileId: lastUploadedFileId, name: lastUploadedFileName, timestamp: Date.now(), fileLastModified: latestFileTime } });
+                                            } catch (e) {
+                                                console.error("Lỗi đồng bộ metadata Drive:", e);
+                                            }
+                                        }
+                                    }
+                                } catch (err) {
+                                    console.error("Lỗi Google Drive Background Upload:", err);
+                                    import('react-hot-toast').then(m => m.toast.error("Quá trình đẩy file lên Drive gặp sự cố."));
+                                }
+                            })();
+                        }
+                    }
+                } catch (error) {
+                    console.error("Lỗi lưu dữ liệu:", error);
+                    setStatus({ message: 'Lỗi khi lưu vào hệ thống', type: 'error', progress: 0 });
+                    setAppState('upload');
+                } finally {
+                    setIsProcessing(false);
+                    stopTimer();
+                    worker.terminate();
+                }
+            } else if (type === 'error') {
+                setStatus({ message: payload, type: 'error', progress: 0 });
+                setAppState('upload');
+                setIsProcessing(false);
+                stopTimer();
+                worker.terminate();
+            }
+        };
+
+        worker.onerror = (error) => {
+            console.error("Worker err:", error);
+            setStatus({ message: 'Lỗi luồng xử lý nền (Worker)', type: 'error', progress: 0 });
+            setAppState('upload');
+            setIsProcessing(false);
+            stopTimer();
+            worker.terminate();
+        };
+
+        worker.postMessage({ files: files, enableDeduplication: isDeduplicationEnabled });
+    };
+
+    return {
+        isProcessing,
+        isClearingDepartments,
+        processingTime,
+        handleFileProcessing,
+        handleShiftFileProcessing,
+        handleClearData,
+        handleClearDepartments
+    };
+};

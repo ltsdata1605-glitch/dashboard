@@ -129,7 +129,18 @@ export async function importAllSettings(settings: Record<string, any>): Promise<
             for (const [key, value] of Object.entries(settings)) {
                 store.put(value, key);
             }
-            tx.oncomplete = () => resolve();
+            tx.oncomplete = () => {
+                if (typeof window !== 'undefined') {
+                    for (const key of Object.keys(settings)) {
+                        window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                        if (key.startsWith('bi_')) {
+                            const originalKey = key.slice(3);
+                            window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                        }
+                    }
+                }
+                resolve();
+            };
             tx.onerror = () => reject(tx.error);
         } catch (error) {
             console.error('IndexedDB Error in importAllSettings:', error);
@@ -151,6 +162,10 @@ export async function mergeSettings(settings: Record<string, any>): Promise<void
                 if (typeof window !== 'undefined') {
                     for (const key of Object.keys(settings)) {
                         window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                        if (key.startsWith('bi_')) {
+                            const originalKey = key.slice(3);
+                            window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                        }
                     }
                 }
                 resolve();

@@ -7,7 +7,7 @@ import CompetitionControlBar from './competition/CompetitionControlBar';
 import CompetitionGridView from './competition/CompetitionGridView';
 import CompetitionListView from './competition/CompetitionListView';
 import { exportElementAsImage } from '../../../services/uiService';
-import { CogIcon } from '../Icons';
+import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 
 interface CompetitionViewProps {
@@ -32,13 +32,19 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isExporting, setIsExporting] = useState(false);
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
+    const [isProgramFilterOpen, setIsProgramFilterOpen] = useState(false);
+    const [programFilterSearch, setProgramFilterSearch] = useState('');
     const columnSelectorRef = useRef<HTMLDivElement>(null);
+    const programFilterRef = useRef<HTMLDivElement>(null);
 
-    // Click outside handler for column selector
+    // Click outside handler for column selector & program filter
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (columnSelectorRef.current && !columnSelectorRef.current.contains(event.target as Node)) {
                 setIsColumnSelectorOpen(false);
+            }
+            if (programFilterRef.current && !programFilterRef.current.contains(event.target as Node)) {
+                setIsProgramFilterOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -63,7 +69,13 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
         });
         return Array.from(names).sort();
     }, [data]);
-    const supermarketData = data[activeSupermarket];
+    const supermarketData = useMemo(() => {
+        if (data[activeSupermarket]) return data[activeSupermarket];
+        // Fuzzy fallback: trim-based matching for edge cases
+        const trimmedActive = activeSupermarket.trim();
+        const matchKey = Object.keys(data).find(k => k.trim() === trimmedActive);
+        return matchKey ? data[matchKey] : undefined;
+    }, [data, activeSupermarket]);
 
     const processedSupermarketData = useMemo(() => {
         if (!supermarketData || !supermarketData.headers) return undefined;
@@ -113,7 +125,9 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
     const sortedPrograms = useMemo(() => {
         if (!processedSupermarketData?.programs) return [];
-        const selectedSet = new Set(selectedPrograms);
+        const currentProgramNames = processedSupermarketData.programs.map((p: any) => p.name);
+        const validSelected = selectedPrograms.filter(p => currentProgramNames.includes(p));
+        const selectedSet = new Set(validSelected);
         const visible = processedSupermarketData.programs.filter((p: any) => selectedSet.size === 0 || selectedSet.has(p.name));
         if (sortConfig === null) return visible;
         return [...visible].sort((a: any, b: any) => {
@@ -138,22 +152,66 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
 
     return (
         <div ref={ref} className="rounded-none border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 mt-4 relative">
-            {/* Portal competition controls into DashboardHeader action bar */}
+            {/* Portal view mode controls into DashboardHeader action bar */}
             <CompetitionControlBar 
                 viewMode={viewMode} 
                 setViewMode={setViewMode} 
-                selectedPrograms={selectedPrograms} 
-                setSelectedPrograms={setSelectedPrograms} 
-                allProgramNames={allProgramNames} 
             />
-            <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
-                <div className={`p-4 ${viewMode === 'list' ? 'min-w-fit' : ''}`}>
-                    <div className="py-3 px-4 flex justify-center items-center bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 shadow-lg relative mb-4">
-                    <h3 className="text-lg sm:text-2xl font-black uppercase text-white leading-normal drop-shadow-sm tracking-tight text-center">
-                        {activeSupermarket === 'Tổng' ? 'TỔNG QUAN' : activeSupermarket.toUpperCase()} - THI ĐUA {updateTimestamp ? `ĐẾN ${updateTimestamp.split(' ')[0]}` : ''}
-                    </h3>
-                    {/* Column settings — in title bar */}
-                    <div className="absolute right-3 top-1/2 -translate-y-1/2 hide-on-export" ref={columnSelectorRef}>
+            {/* Title bar — outside overflow container so dropdowns aren't clipped */}
+            <div className="py-3 px-4 mx-4 mt-4 flex justify-center items-center bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 shadow-lg relative z-50">
+                <h3 className="text-lg sm:text-2xl font-black uppercase text-white leading-normal drop-shadow-sm tracking-tight text-center">
+                    {activeSupermarket === 'Tổng' ? 'TỔNG CỤM' : activeSupermarket.toUpperCase()}
+                </h3>
+                {/* Filter + Column settings — in title bar */}
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 hide-on-export flex items-center gap-1">
+                    {/* Program filter */}
+                    <div className="relative" ref={programFilterRef}>
+                        <button
+                            onClick={() => setIsProgramFilterOpen(p => !p)}
+                            className={`p-1.5 rounded transition-colors relative ${isProgramFilterOpen ? 'bg-white/30 text-white' : 'text-white/60 hover:text-white hover:bg-white/20'}`}
+                            title="Lọc chương trình thi đua"
+                        >
+                            <FilterIcon className="h-4 w-4" />
+                            {(() => {
+                                const currentProgramNames = processedSupermarketData?.programs?.map((p: any) => p.name) || [];
+                                const validSelected = selectedPrograms.filter(p => currentProgramNames.includes(p));
+                                const isFiltered = validSelected.length > 0 && validSelected.length < allProgramNames.length;
+                                return isFiltered ? <span className="absolute -top-0.5 -right-0.5 bg-amber-400 text-slate-900 text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">{validSelected.length}</span> : null;
+                            })()}
+                        </button>
+                        {isProgramFilterOpen && (
+                            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-[100] p-3 flex flex-col max-h-96 text-left">
+                                <div className="mb-2">
+                                    <input
+                                        type="text"
+                                        value={programFilterSearch}
+                                        onChange={(e) => setProgramFilterSearch(e.target.value)}
+                                        placeholder="Tìm kiếm chương trình..."
+                                        className="w-full px-3 py-1.5 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
+                                    />
+                                </div>
+                                <div className="flex justify-between items-center mb-2 px-1">
+                                    <button onClick={() => setSelectedPrograms(allProgramNames)} className="text-[10px] font-bold text-indigo-600 hover:underline uppercase tracking-wider">Chọn tất cả</button>
+                                    <button onClick={() => setSelectedPrograms([])} className="text-[10px] font-bold text-slate-400 hover:underline uppercase tracking-wider">Bỏ chọn</button>
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
+                                    {allProgramNames.filter(name => !programFilterSearch || name.toLowerCase().includes(programFilterSearch.toLowerCase())).map(name => (
+                                        <div key={name} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                            <span className={`text-xs flex-1 mr-3 cursor-pointer select-none ${selectedPrograms.includes(name) ? 'font-bold text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-200'}`} onClick={() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); })}>
+                                                {shortenName(name)}
+                                            </span>
+                                            <Switch 
+                                                checked={selectedPrograms.includes(name)} 
+                                                onChange={() => setSelectedPrograms(prev => { const s = new Set(prev); if (s.has(name)) s.delete(name); else s.add(name); return Array.from(s); })}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                    {/* Column selector */}
+                    <div className="relative" ref={columnSelectorRef}>
                         <button
                             onClick={() => setIsColumnSelectorOpen(p => !p)}
                             className={`p-1.5 rounded transition-colors ${isColumnSelectorOpen ? 'bg-white/30 text-white' : 'text-white/60 hover:text-white hover:bg-white/20'}`}
@@ -166,7 +224,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Cột hiển thị</p>
                                 <div className="grid gap-0.5">
                                     {(processedSupermarketData?.headers || []).map(header => (
-                                        <div key={header} className="flex items-center justify-between px-2 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <div key={header} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                                             <label
                                                 className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
                                                 onClick={() => setHiddenColumns((prev: string[]) => { const s = new Set(prev); if (s.has(header)) s.delete(header); else s.add(header); return Array.from(s); })}
@@ -184,11 +242,15 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                         )}
                     </div>
                 </div>
+            </div>
+            {/* Scrollable table content */}
+            <div className="overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <div className={`px-4 pb-4 pt-4 ${viewMode === 'list' ? 'min-w-fit' : ''}`}>
                 <div className="p-0">
                     {processedSupermarketData && sortedPrograms.length > 0 ? (
                         viewMode === 'grid' ? <CompetitionGridView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} /> 
                         : <CompetitionListView groupedAndSortedPrograms={groupedAndSortedPrograms} headers={processedSupermarketData.headers} hiddenColumns={hiddenColumns} isRealtime={isRealtime} handleSort={handleSort} />
-                    ) : <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/40 border-2 border-dashed border-slate-200 dark:border-slate-800"><p className="text-sm font-medium text-slate-400">Không có chương trình thi đua nào được chọn.</p></div>}
+                    ) : <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/40 border-2 border-dashed border-slate-200 dark:border-slate-800"><p className="text-sm font-medium text-slate-400">{!supermarketData ? `Chưa có dữ liệu thi đua cho "${activeSupermarket}". Vui lòng cập nhật dữ liệu.` : 'Không có chương trình thi đua nào được chọn.'}</p></div>}
                 </div>
                 </div>
             </div>

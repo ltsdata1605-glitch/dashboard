@@ -200,12 +200,12 @@ const Header: React.FC<HeaderProps> = ({
                 )}
 
                 {/* Data Import Group */}
-                <div className="flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
+                <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
                     {(userRole === 'admin' || userRole === 'manager') && (
                         <>
                             <button 
                                 onClick={onNewFile}
-                                className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold text-sm transition-colors rounded-l-full"
+                                className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold text-sm transition-colors"
                                 title="Tải lên báo cáo YCX mới"
                             >
                                 <Icon name="file-up" size={4} />
@@ -228,7 +228,7 @@ const Header: React.FC<HeaderProps> = ({
                         href="https://report.mwgroup.vn/home/dashboard/77"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className={`flex items-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors ${(userRole !== 'admin' && userRole !== 'manager') ? 'rounded-l-full' : ''}`}
+                        className="flex items-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors"
                         title="Tải dữ liệu báo cáo"
                     >
                         <Icon name="link" size={4} />
@@ -237,10 +237,11 @@ const Header: React.FC<HeaderProps> = ({
                     <div className="border-l border-slate-100 dark:border-slate-700">
                         <FontSelector />
                     </div>
-                    
-                    <div className="border-l border-slate-100 dark:border-slate-700 flex items-center rounded-r-full">
-                        <NotificationDropdown buttonClassName="relative flex items-center justify-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors rounded-r-full" />
-                    </div>
+                </div>
+                
+                {/* Notification Group */}
+                <div className="flex items-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] relative z-[60]">
+                    <NotificationDropdown buttonClassName="relative flex items-center justify-center p-2 text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors rounded-full" />
                 </div>
             </div>,
             document.getElementById('global-header-actions')!

@@ -29,6 +29,11 @@ export const getYesterdayDateString = () => {
     return `${yesterday.getDate()}/${yesterday.getMonth() + 1}`;
 };
 
+export const isIgnoredDept = (name: string) => {
+    const lower = name.toLowerCase();
+    return lower.includes('quản lý siêu thị') || lower.includes('trưởng ca');
+};
+
 export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
     if (!danhSachData) return [];
     const rows: RevenueRow[] = [];
@@ -45,8 +50,10 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
             rows.push({ type: 'total', name, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: hqqdCalculated, soLuong: parseNumber(parts[4]), donGia: parseNumber(parts[5]) });
         } else if (trimmed.startsWith('BP ') && parts.length > 1 && !isNaN(parseNumber(parts[1]))) {
             currentDeptDS = name;
-            rows.push({ type: 'department', name, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: hqqdCalculated });
-        } else if (currentDeptDS && name.includes(' - ') && parts.length > 3) {
+            if (!isIgnoredDept(currentDeptDS)) {
+                rows.push({ type: 'department', name, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: hqqdCalculated });
+            }
+        } else if (currentDeptDS && !isIgnoredDept(currentDeptDS) && name.includes(' - ') && parts.length > 3) {
             rows.push({ type: 'employee', name: formatEmployeeName(name), originalName: name, department: currentDeptDS, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: hqqdCalculated });
         }
     }
@@ -101,6 +108,8 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Map<s
         }
 
         if (!originalName) continue;
+        if (department && isIgnoredDept(department)) continue;
+        if (isDept && isIgnoredDept(rawName)) continue;
 
         rows.push({
             type: isTotal ? 'total' : (isDept ? 'department' : 'employee'),
@@ -195,6 +204,10 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         
         let originalName = isTotal ? 'Tổng' : (isDept ? rawName : findFullName(rawName));
         if (!originalName) continue;
+
+        const resolvedDept = isDept ? rawName : employeeDepartmentMap.get(originalName);
+        if (resolvedDept && isIgnoredDept(resolvedDept)) continue;
+        if (isDept && isIgnoredDept(rawName)) continue;
 
         const totalPercent = parseNumber(parts[parts.length - 1]);
         const totalDtSieuThi = parseNumber(parts[parts.length - 2]);
@@ -296,6 +309,8 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
             else if (namePart.startsWith('BP ')) department = namePart;
             else continue; // Bỏ qua nếu không xác định được gì
         }
+        
+        if (isIgnoredDept(department)) continue;
         
         const formattedName = namePart === 'Tổng' ? 'Tổng' : formatEmployeeName(matchedOriginalName || namePart);
         

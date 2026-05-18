@@ -69,14 +69,14 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 });
             }
 
-            // Migration logic for V4 preset tabs (Fix duplication)
-            const hasMigratedPresetsV4 = await getSetting('presetTabsMigratedV4') === true;
-            if (!hasMigratedPresetsV4) {
+            // Migration logic for V8 preset tabs (Fix duplication)
+            const hasMigratedPresetsV8 = await getSetting('presetTabsMigratedV8') === true;
+            if (!hasMigratedPresetsV8) {
                 // Filter out previous default tabs to prevent duplication
                 finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
                 // Thêm preset mới vào mảng
                 finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
-                await saveSetting('presetTabsMigratedV4', true);
+                await saveSetting('presetTabsMigratedV8', true);
             }
 
             if (finalExploitationTabs.length > 0) {

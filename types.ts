@@ -146,7 +146,7 @@ export interface EmployeeData {
 export interface CustomColumnConfig {
     id: string; // unique UUID cho cột
     name: string; // Tên hiển thị cột (VD: SL MLN)
-    type: 'quantity' | 'revenue' | 'percentage';
+    type: 'quantity' | 'revenue' | 'percentage' | 'sum';
     hidden?: boolean; // Ẩn/hiện cột trên bảng
     
     // Dành cho type = quantity | revenue

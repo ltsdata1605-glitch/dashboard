@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi" class="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Nền tảng phân tích dữ liệu bán hàng hiệu suất cao tích hợp Trợ lý ảo AI. Xử lý file Excel lớn mượt mà, trực quan hóa dữ liệu đa chiều.">
+    <title>Dashboard YCX - Bảo mật tuyệt đối</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Oswald:wght@400;500;600;700&family=Roboto+Condensed:wght@400;500;700&family=Fjalla+One&family=Jost:wght@400;500;600;700&family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- html2canvas for image export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script>
+        // Patch html2canvas: chuyển đổi màu oklch() sang rgb/hex vì html2canvas v1.4.1 không hỗ trợ oklch
+        (function() {
+            if (!window.html2canvas) return;
+            var _original = window.html2canvas;
+            var _cvs = document.createElement('canvas');
+            _cvs.width = 1; _cvs.height = 1;
+            var _ctx = _cvs.getContext('2d');
+
+            // Dùng Canvas 2D context để chuyển oklch → hex/rgb
+            function resolveOklch(val) {
+                if (!val || typeof val !== 'string' || val.indexOf('oklch') === -1) return null;
+                try {
+                    _ctx.clearRect(0, 0, 1, 1);
+                    _ctx.fillStyle = '#000000';
+                    _ctx.fillStyle = val;
+                    var resolved = _ctx.fillStyle;
+                    // Trả về nếu chuyển đổi thành công (không phải fallback #000000)
+                    if (resolved !== '#000000' || val.indexOf('0, 0, 0') !== -1 || val.indexOf('0%') !== -1) {
+                        return resolved;
+                    }
+                    // Nếu canvas không parse được oklch, dùng regex để extract và chuyển thủ công
+                    _ctx.fillRect(0, 0, 1, 1);
+                    var px = _ctx.getImageData(0, 0, 1, 1).data;
+                    if (px[3] > 0) return 'rgba(' + px[0] + ',' + px[1] + ',' + px[2] + ',' + (px[3]/255).toFixed(2) + ')';
+                    return null;
+                } catch(e) { return null; }
+            }
+
+            // Duyệt tất cả phần tử và chuyển màu oklch → rgb
+            function fixOklchColors(root) {
+                var els = [root];
+                var children = root.querySelectorAll('*');
+                for (var i = 0; i < children.length; i++) els.push(children[i]);
+
+                var colorProps = [
+                    ['color', 'color'],
+                    ['backgroundColor', 'background-color'],
+                    ['borderColor', 'border-color'],
+                    ['borderTopColor', 'border-top-color'],
+                    ['borderRightColor', 'border-right-color'],
+                    ['borderBottomColor', 'border-bottom-color'],
+                    ['borderLeftColor', 'border-left-color'],
+                    ['outlineColor', 'outline-color'],
+                    ['textDecorationColor', 'text-decoration-color'],
+                    ['caretColor', 'caret-color']
+                ];
+
+                for (var i = 0; i < els.length; i++) {
+                    var el = els[i];
+                    if (!(el instanceof HTMLElement)) continue;
+                    try {
+                        var cs = getComputedStyle(el);
+                        for (var j = 0; j < colorProps.length; j++) {
+                            var val = cs[colorProps[j][0]];
+                            if (val && val.indexOf('oklch') !== -1) {
+                                var rgb = resolveOklch(val);
+                                if (rgb) el.style.setProperty(colorProps[j][1], rgb, 'important');
+                            }
+                        }
+                        // Xử lý box-shadow chứa oklch
+                        var shadow = cs.boxShadow;
+                        if (shadow && shadow.indexOf('oklch') !== -1) {
+                            var fixed = shadow.replace(/oklch\([^)]+\)/g, function(match) {
+                                return resolveOklch(match) || 'transparent';
+                            });
+                            el.style.setProperty('box-shadow', fixed, 'important');
+                        }
+                    } catch(e) { /* bỏ qua lỗi trên từng phần tử */ }
+                }
+            }
+
+            // Wrap html2canvas gốc
+            window.html2canvas = function(element, options) {
+                try { fixOklchColors(element); } catch(e) { console.warn('fixOklchColors error:', e); }
+                return _original.call(this, element, options);
+            };
+        })();
+    </script>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-500 relative min-h-screen antialiased text-slate-900 dark:text-slate-100 overflow-x-hidden">
+    <!-- Global Background Effects -->
+    <div class="fixed inset-0 z-[-1] overflow-hidden pointer-events-none">
+        <div class="absolute inset-0 bg-grid-pattern opacity-40"></div>
+        <div class="absolute top-0 -left-4 w-96 h-96 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-20 animate-blob"></div>
+        <div class="absolute top-0 -right-4 w-96 h-96 bg-indigo-300 dark:bg-indigo-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div class="absolute -bottom-8 left-20 w-96 h-96 bg-emerald-300 dark:bg-emerald-900 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
+    </div>
+
+    <div id="root" class="relative z-10"></div>
+    <!-- Entry point for React -->
+    <script type="module" src="./index.tsx"></script>
+
+    <script>
+        // Chống Refresh khi kéo xuống ngoài ý muốn trên Mobile (Pull-to-refresh)
+        let lastTouchY = 0;
+        document.addEventListener('touchstart', function(e) {
+            lastTouchY = e.touches[0].clientY;
+        }, {passive: false});
+
+        document.addEventListener('touchmove', function(e) {
+            const touchY = e.touches[0].clientY;
+            if (window.scrollY === 0 && touchY > lastTouchY) {
+                e.preventDefault();
+            }
+            lastTouchY = touchY;
+        }, {passive: false});
+    </script>
+</body>
+
+</html>

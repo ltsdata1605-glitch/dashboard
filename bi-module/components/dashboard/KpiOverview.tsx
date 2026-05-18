@@ -74,7 +74,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
         rightEl?: React.ReactNode;
     }) => {
         return (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-2.5 sm:p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 rounded-none border border-slate-200 dark:border-slate-700 p-2.5 sm:p-4 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow relative overflow-hidden">
                 {/* Top styling bar like in image */}
                 <div className={`absolute top-0 left-0 w-full h-1 ${props.iconBg.split(' ')[0]} opacity-50`}></div>
                 
