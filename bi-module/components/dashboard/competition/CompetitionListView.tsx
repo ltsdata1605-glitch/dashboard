@@ -51,7 +51,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
         return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 border-b-[3px] border-b-slate-400';
     };
 
-    const isMobile = window.innerWidth < 768;
+    const isMobile = false; // Always show table view, even on mobile
 
     return (
         <div className="overflow-hidden">

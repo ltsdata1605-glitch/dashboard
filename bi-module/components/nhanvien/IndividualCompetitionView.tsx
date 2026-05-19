@@ -472,7 +472,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     const activeFilterCount = allRelevantHeaders.filter(c => selectedCompetitions.has(c.title)).length;
     const totalFilterCount = allRelevantHeaders.length;
     const isFiltered = activeFilterCount < totalFilterCount;
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const isMobile = false; // Always show table view, even on mobile
 
     const getCriterionStyle = (crit: Criterion) => {
         switch (crit) {

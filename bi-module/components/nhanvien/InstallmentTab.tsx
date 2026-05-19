@@ -252,7 +252,7 @@ const InstallmentTab: React.FC<{
         </div>
     );
 
-    const isMobile = window.innerWidth < 768;
+    const isMobile = false; // Always show table view, even on mobile
 
     return (
         <div className="space-y-0">

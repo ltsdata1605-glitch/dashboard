@@ -307,7 +307,7 @@ const CompetitionTarget: React.FC<{
                                     <div className="w-1.5 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-sm"></div>
                                     Nhóm Tiêu Chí: <span className="text-slate-700 dark:text-slate-200">{criteria}</span>
                                 </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+                                <div className="grid grid-cols-2 gap-2 sm:gap-x-8 sm:gap-y-3">
                                     {comps.map(comp => {
                                         const idx = competitions.findIndex(c => c.name === comp.name);
                                         const baseVal = baseTargets[comp.name] || 0;
@@ -336,7 +336,7 @@ const CompetitionTarget: React.FC<{
                                                 </div>
                                                 {/* Row 2: Gốc / Sau / TB/ng / % / Save */}
                                                 <div className="flex items-center gap-3">
-                                                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
                                                         <div className="flex items-center gap-1">
                                                             <span className="text-[9px] font-black uppercase">Gốc:</span>
                                                             <span className="text-[11px] font-black tabular-nums">{f.format(baseVal)}{unitSuffix}</span>

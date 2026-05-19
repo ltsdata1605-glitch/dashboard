@@ -61,7 +61,7 @@ const CompetitionGridView: React.FC<CompetitionGridViewProps> = ({ groupedAndSor
                             <span className={`${theme.header} w-2 h-6 rounded-full`}></span>
                             TIÊU CHÍ: {criterion}
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-3 gap-2 sm:gap-4">
                             {programs.map((program) => {
                                 const conLai = program.conLai ?? 0;
                                 const target = targetIndex !== -1 ? parseNumber(program.data[targetIndex]) : 0;
@@ -77,20 +77,20 @@ const CompetitionGridView: React.FC<CompetitionGridViewProps> = ({ groupedAndSor
                                 const percentColor = percent >= 100 ? 'text-green-600 dark:text-green-400' : (percent < 85 ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400');
 
                                 return (
-                                <div key={program.name} className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col overflow-hidden group hover:-translate-y-1">
-                                    <div className={`px-5 py-4 ${theme.header} border-b border-white/10`}>
-                                        <h4 className="font-medium text-sm text-white uppercase leading-tight line-clamp-2 min-h-[2.5rem]" title={program.name}>
+                                <div key={program.name} className="bg-white dark:bg-slate-800 rounded-none border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col overflow-hidden group">
+                                    <div className={`px-2 py-1.5 ${theme.header} border-b border-white/10`}>
+                                        <h4 className="font-bold text-[10px] sm:text-xs text-white uppercase leading-tight truncate" title={program.name}>
                                             {shortenName(program.name, nameOverrides)}
                                         </h4>
                                     </div>
                                     
-                                    <div className="p-5 flex-1 flex flex-col justify-between">
-                                        <div className="mb-6">
-                                            <div className="flex justify-between items-baseline mb-2">
-                                                <span className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">Tiến độ thực hiện</span>
-                                                <span className={`text-3xl font-semibold ${percentColor} tabular-nums`}>{roundUp(percent)}%</span>
+                                    <div className="p-2 sm:p-3 flex-1 flex flex-col justify-between">
+                                        <div className="mb-2 sm:mb-3">
+                                            <div className="flex justify-between items-baseline mb-1">
+                                                <span className="text-[8px] sm:text-[9px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-tighter">Tiến độ</span>
+                                                <span className={`text-lg sm:text-xl font-bold ${percentColor} tabular-nums leading-none`}>{roundUp(percent)}%</span>
                                             </div>
-                                            <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-3 overflow-hidden shadow-inner p-0.5">
+                                            <div className="w-full bg-slate-100 dark:bg-slate-700 rounded-full h-1.5 sm:h-2 overflow-hidden shadow-inner p-0.5">
                                                 <div 
                                                     className={`h-full rounded-full ${progressColorClass} transition-all duration-1000 ease-out`} 
                                                     style={{ width: `${Math.min(percent, 100)}%` }}
@@ -98,18 +98,18 @@ const CompetitionGridView: React.FC<CompetitionGridViewProps> = ({ groupedAndSor
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-3 gap-1 text-center border-t border-slate-100 dark:border-slate-700 pt-4">
+                                        <div className="grid grid-cols-3 gap-0.5 text-center border-t border-slate-100 dark:border-slate-700 pt-1.5 sm:pt-2">
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-semibold mb-1 truncate">M.TIÊU</span>
-                                                <span className="font-medium text-slate-700 dark:text-slate-300 text-sm truncate tabular-nums">{formatNumber(target)}</span>
+                                                <span className="text-[8px] text-slate-400 dark:text-slate-500 uppercase font-semibold mb-0.5 truncate">M.TIÊU</span>
+                                                <span className="font-bold text-slate-700 dark:text-slate-300 text-[10px] sm:text-xs truncate tabular-nums">{formatNumber(target)}</span>
                                             </div>
                                             <div className="flex flex-col min-w-0 border-l border-r border-slate-100 dark:border-slate-700">
-                                                <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-semibold mb-1 truncate">T.HIỆN</span>
-                                                <span className="font-semibold text-primary-600 dark:text-primary-400 text-sm truncate tabular-nums">{formatNumber(actual)}</span>
+                                                <span className="text-[8px] text-slate-400 dark:text-slate-500 uppercase font-semibold mb-0.5 truncate">T.HIỆN</span>
+                                                <span className="font-bold text-primary-600 dark:text-primary-400 text-[10px] sm:text-xs truncate tabular-nums">{formatNumber(actual)}</span>
                                             </div>
                                             <div className="flex flex-col min-w-0">
-                                                <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-semibold mb-1 truncate">C.LẠI</span>
-                                                <span className={`font-semibold text-sm truncate tabular-nums ${remainingColor}`}>{formatNumber(conLai)}</span>
+                                                <span className="text-[8px] text-slate-400 dark:text-slate-500 uppercase font-semibold mb-0.5 truncate">C.LẠI</span>
+                                                <span className={`font-bold text-[10px] sm:text-xs truncate tabular-nums ${remainingColor}`}>{formatNumber(conLai)}</span>
                                             </div>
                                         </div>
                                     </div>

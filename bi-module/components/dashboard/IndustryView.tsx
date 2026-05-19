@@ -240,7 +240,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         );
     }
 
-    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const isMobile = false; // Always show table view, even on mobile
 
     const htKey = isRealtime ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)';
     const dtqdKey = isRealtime ? 'DT Realtime (QĐ)' : 'DTQĐ';

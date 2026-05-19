@@ -187,10 +187,10 @@ const CompactTargetItem: React.FC<{
 
     return (
         <div className={`p-3 rounded-xl transition-all border ${t.bg} ${t.border} ${t.shadow}`}>
-            <div className="flex justify-between items-start mb-2 gap-4">
+            <div className="flex flex-wrap justify-between items-start mb-2 gap-2 sm:gap-4">
                 <div>
                     <span className={`text-[11px] font-black uppercase tracking-wider ${t.label}`}>{label}</span>
-                    <div className="flex items-center gap-2 mt-0.5">
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
                         <span className="text-[9px] font-black uppercase opacity-70">Gốc:</span>
                         <span className="text-[11px] font-black tabular-nums">{f.format(baseValue)}{unit}</span>
                         <span className="text-[9px] opacity-40">|</span>
@@ -325,7 +325,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
 
     return (
         <section className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+            <div className="grid grid-cols-2 gap-3 sm:gap-x-12 sm:gap-y-8">
                 {/* Cột trái: Điều chỉnh Target chính */}
                 <div className="space-y-3">
                     <div className="flex justify-between items-center mb-1 px-1">
@@ -404,9 +404,9 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
 
                             return (
                                 <div key={dept.name} className={`relative group p-3 ${t.bg} border ${t.border} rounded-xl shadow-sm transition-all hover:scale-[1.01]`}>
-                                    <div className="flex justify-between items-start mb-1">
+                                    <div className="flex flex-wrap justify-between items-start mb-1 gap-2">
                                         <div>
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                                                 <span className={`text-[12px] font-black uppercase tracking-wider ${t.label}`}>{dept.name}</span>
                                                 <span className="text-[9px] opacity-70 font-bold uppercase">({dept.employeeCount} NV)</span>
                                                 {isManual && (
@@ -416,7 +416,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                                     </div>
                                                 )}
                                             </div>
-                                            <div className="flex items-center gap-2 mt-0.5">
+                                            <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
                                                 <span className={`text-[11px] font-black ${t.after} tabular-nums`}>{f.format(allocated)}<span className="text-[8px] opacity-60 ml-0.5 uppercase">Tr</span></span>
                                                 <span className="text-[9px] opacity-50">—</span>
                                                 <span className={`text-[11px] font-black ${t.label}`}>{f.format(perEmployee)}Tr/ng</span>

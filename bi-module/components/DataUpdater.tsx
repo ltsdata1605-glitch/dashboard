@@ -304,7 +304,7 @@ const DataUpdater: React.FC = () => {
                 </div>
             </header>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 relative z-10">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 relative z-10">
                 {/* NHÓM BÁO CÁO TỔNG HỢP */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-sm p-4 shadow-sm">
                     <div className="flex items-center gap-2 mb-4">
