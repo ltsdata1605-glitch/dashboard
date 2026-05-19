@@ -220,67 +220,6 @@ const Settings: React.FC = () => {
                 </div>
             </section>
 
-            {/* Section 2: Quản lý Snapshots */}
-            <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
-                <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                    <ClockIcon className="h-4 w-4 text-amber-500" />
-                    <h2 className="text-[12px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">Quản lý Snapshots (Lịch sử lưu)</h2>
-                </div>
-                <div className="p-5">
-                    {/* Info banner */}
-                    <div className="mb-5 bg-slate-50 dark:bg-slate-800/50 border-l-3 border-l-indigo-500 p-4">
-                        <h4 className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider mb-2">Hướng dẫn sử dụng Snapshots:</h4>
-                        <ul className="space-y-1.5 text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
-                            <li className="flex gap-2">
-                                <span className="text-indigo-500 font-black shrink-0">•</span>
-                                <span><strong className="text-slate-700 dark:text-slate-200">Tạo mới:</strong> Tại tab Phân tích Nhân viên → Doanh thu, nhấn biểu tượng 👤 (+) bên cạnh dòng "So sánh với" để lưu dữ liệu hiện tại.</span>
-                            </li>
-                            <li className="flex gap-2">
-                                <span className="text-indigo-500 font-black shrink-0">•</span>
-                                <span><strong className="text-slate-700 dark:text-slate-200">Công dụng:</strong> Cho phép bạn quay lại xem dữ liệu hiệu suất của các ngày trước đó để so sánh sự tăng/giảm.</span>
-                            </li>
-                            <li className="flex gap-2">
-                                <span className="text-indigo-500 font-black shrink-0">•</span>
-                                <span><strong className="text-slate-700 dark:text-slate-200">Quản lý:</strong> Bạn có thể xóa các bản snapshot cũ tại đây để giải phóng bộ nhớ trình duyệt nếu ứng dụng chạy chậm.</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    {/* Snapshot list */}
-                    <div className="space-y-4">
-                        {isLoading === 'snapshots' ? (
-                            <div className="flex justify-center py-8"><SpinnerIcon className="h-8 w-8 text-indigo-500 animate-spin" /></div>
-                        ) : Object.keys(allSnapshots).length > 0 ? (
-                            (Object.entries(allSnapshots) as [string, SnapshotMetadata[]][]).map(([supermarket, snapshots]) => (
-                                <div key={supermarket} className="border border-slate-200 dark:border-slate-700">
-                                    <div className="flex items-center justify-between px-4 py-2.5 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-                                        <span className="text-[12px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">{supermarket}</span>
-                                        <span className="text-[10px] font-black text-slate-400 bg-white dark:bg-slate-700 px-2 py-0.5 border border-slate-200 dark:border-slate-600">{snapshots.length} bản lưu</span>
-                                    </div>
-                                    <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-                                        {snapshots.map(snapshot => (
-                                            <li key={snapshot.id} className="px-4 py-3 flex items-center justify-between group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-                                                <div>
-                                                    <p className="text-[12px] font-bold text-slate-800 dark:text-slate-100">{snapshot.name}</p>
-                                                    <p className="text-[10px] text-slate-400 mt-0.5">Lưu lúc: {new Date(snapshot.date).toLocaleString('vi-VN')}</p>
-                                                </div>
-                                                <button onClick={() => handleDeleteSnapshot(supermarket, snapshot.id)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 border border-transparent hover:border-red-200 dark:hover:border-red-800 transition-all">
-                                                    <TrashIcon className="h-3.5 w-3.5" />
-                                                </button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                </div>
-                            ))
-                        ) : (
-                            <div className="text-center py-10 bg-slate-50 dark:bg-slate-800/50 border border-dashed border-slate-300 dark:border-slate-700">
-                                <ClockIcon className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                                <p className="text-[11px] text-slate-400 font-bold uppercase tracking-wider">Chưa có snapshot nào được lưu</p>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </section>
         </div>
     );
 };

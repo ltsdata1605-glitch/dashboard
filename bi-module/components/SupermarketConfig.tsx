@@ -280,11 +280,11 @@ const CompetitionTarget: React.FC<{
                     <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình Target Thi đua</h2>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={() => { if(confirm('Khôi phục tất cả Target phụ về 100%?')) { setTargets({}); } }} className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 text-[10px] font-black rounded-xl border border-rose-200 dark:border-rose-800 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-all uppercase tracking-widest active:scale-95 shadow-sm">
-                        <ResetIcon className="h-3 w-3" /><span>Reset</span>
+                    <button onClick={() => { if(confirm('Khôi phục tất cả Target phụ về 100%?')) { setTargets({}); } }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                        <ResetIcon className="h-4 w-4" />
                     </button>
-                    <button onClick={() => setIsRenameModalOpen(true)} className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 text-[10px] font-black rounded-xl border border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition-all uppercase tracking-widest active:scale-95 shadow-sm">
-                        <PencilIcon className="h-3 w-3" /><span>Sửa tên và phân nhóm</span>
+                    <button onClick={() => setIsRenameModalOpen(true)} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Sửa tên và phân nhóm">
+                        <PencilIcon className="h-4 w-4" />
                     </button>
                 </div>
             </div>
@@ -327,32 +327,35 @@ const CompetitionTarget: React.FC<{
                                         const t = dThemes[idx % dThemes.length];
 
                                         return (
-                                            <div key={comp.name} className={`relative group p-3 ${t.bg} border ${t.border} rounded-xl shadow-sm transition-all hover:scale-[1.01]`}>
-                                                {/* Row 1: Tên nhóm hàng — full width */}
-                                                <div className="mb-1.5">
-                                                    <span className={`text-[13px] font-black uppercase tracking-wider ${t.label}`} title={comp.name}>
+                                            <div key={comp.name} className={`relative group p-2 sm:p-2.5 ${t.bg} border ${t.border} rounded-lg shadow-sm transition-all hover:scale-[1.01]`}>
+                                                <div className="mb-2">
+                                                    <span className={`text-[12px] font-black uppercase tracking-wider ${t.label}`} title={comp.name}>
                                                         {shortenName(comp.name, nameOverrides)}
                                                     </span>
-                                                </div>
-                                                {/* Row 2: Gốc / Sau / TB/ng / % / Save */}
-                                                <div className="flex items-center gap-3">
-                                                <div className="flex flex-wrap items-center gap-2 flex-1 min-w-0">
-                                                        <div className="flex items-center gap-1">
-                                                            <span className="text-[9px] font-black uppercase">Gốc:</span>
-                                                            <span className="text-[11px] font-black tabular-nums">{f.format(baseVal)}{unitSuffix}</span>
-                                                        </div>
-                                                        <div className="flex items-center gap-1 pl-2 border-l border-current/20">
-                                                            <span className="text-[9px] font-black uppercase">Sau:</span>
-                                                            <span className={`text-[11px] font-black tabular-nums ${t.after}`}>{f.format(adjVal)}{unitSuffix}</span>
-                                                        </div>
+                                                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
+                                                        <span className="text-[9px] font-black uppercase opacity-70">Gốc:</span>
+                                                        <span className="text-[11px] font-black tabular-nums">{f.format(baseVal)}{unitSuffix}</span>
+                                                        <span className="text-[9px] opacity-40">|</span>
+                                                        <span className="text-[9px] font-black uppercase">Sau:</span>
+                                                        <span className={`text-[11px] font-black tabular-nums ${t.after}`}>{f.format(adjVal)}{unitSuffix}</span>
                                                         {perPerson > 0 && (
-                                                            <div className="flex items-center gap-1 pl-2 border-l border-current/20">
+                                                            <>
+                                                                <span className="text-[9px] opacity-40">|</span>
                                                                 <span className={`text-[11px] font-black tabular-nums`}>{f.format(perPerson)} {perPersonUnit}</span>
-                                                            </div>
+                                                            </>
                                                         )}
                                                     </div>
+                                                </div>
+                                                <div className="px-1 flex items-center gap-2">
+                                                    <input
+                                                        type="range"
+                                                        min={0} max={300} step={1}
+                                                        value={ratio}
+                                                        onChange={(e) => handleSliderChange(comp.name)(parseFloat(e.target.value))}
+                                                        className={`flex-1 h-1.5 ${t.track} rounded-full appearance-none cursor-pointer ${t.thumb} transition-all min-w-0`}
+                                                    />
                                                     <div className="flex items-center gap-1 shrink-0">
-                                                        <div className={`flex items-center gap-1 ${t.inputBg} px-2 py-1 rounded-lg border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm`}>
+                                                        <div className={`flex items-center gap-1 ${t.inputBg} px-1.5 py-0.5 rounded border ${t.inputBorder} ${t.ring} focus-within:ring-1 shadow-sm`}>
                                                             <input 
                                                                 type="number"
                                                                 value={Math.round(ratio).toString()}
@@ -363,27 +366,18 @@ const CompetitionTarget: React.FC<{
                                                                     const v = parseInt(val, 10); 
                                                                     if (!isNaN(v)) handleSliderChange(comp.name)(v); 
                                                                 }}
-                                                                className={`w-10 bg-transparent text-right text-[12px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                                className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                                             />
                                                             <span className="text-[9px] font-bold opacity-60">%</span>
                                                         </div>
                                                         <button 
                                                             onClick={() => handleSaveAsPrevMonth(comp.name)}
-                                                            className={`p-1.5 ${t.btnText} ${t.btnHover} rounded-lg border border-transparent hover:border-current/20 transition-colors bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm`}
+                                                            className={`p-1 ${t.btnText} ${t.btnHover} rounded-md border border-transparent hover:border-current/20 transition-colors bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm`}
                                                             title="Lưu dữ liệu hiện tại làm mốc so sánh tháng trước"
                                                         >
                                                             <ClockIcon className="h-3.5 w-3.5" />
                                                         </button>
                                                     </div>
-                                                </div>
-                                                <div className="px-1 py-1 mt-1">
-                                                    <input
-                                                        type="range"
-                                                        min={0} max={300} step={1}
-                                                        value={ratio}
-                                                        onChange={(e) => handleSliderChange(comp.name)(parseFloat(e.target.value))}
-                                                        className={`w-full h-1.5 ${t.track} rounded-full appearance-none cursor-pointer ${t.thumb} transition-all`}
-                                                    />
                                                 </div>
                                             </div>
                                         );
@@ -553,7 +547,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 <div className="w-1.5 h-1.5 bg-sky-500 rounded-sm"></div>
                                 BC D.Thu Ngành Hàng
                             </h3>
-                            <div className="grid grid-cols-1 gap-2">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
                                 <StatusTile title="Realtime" lastUpdated={industryRealtimeTs} value={industryRealtimeData} placeholder="Ngành hàng Realtime..." error={errors.industryRealtime} 
                                     icon={<ClockIcon className="h-4 w-4" />} colorTheme="amber"
                                     onChange={(v) => { setIndustryRealtimeData(v); handleUpdate('industryRealtime', v, s => s.includes('Nhóm ngành hàng	SL Realtime'), setIndustryRealtimeTs, `Ngành hàng (RT) - ${supermarketName}`, ids.rt!); }}
@@ -582,7 +576,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-sm"></div>
                                 BC D.Thu theo NV
                             </h3>
-                            <div className="grid grid-cols-1 gap-2">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
                                 <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData} downloadUrl={`https://bi.thegioididong.com/nhan-vien?id=${supermarketName}&tab=1`}
                                     icon={<UsersIcon className="h-4 w-4" />} colorTheme="purple"
                                     onChange={(v) => { setDanhSachData(v); handleUpdate('danhSach', v, s => s.includes('Nhân viên	DTLK	DTQĐ'), setDanhSachTs, `Nhân viên (DS) - ${supermarketName}`, ids.ds!); }}
@@ -613,7 +607,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 <div className="w-1.5 h-1.5 bg-indigo-500 rounded-sm"></div>
                                 Trả góp & CHI TIẾT NH
                             </h3>
-                            <div className="grid grid-cols-1 gap-2">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
                                 <StatusTile title="HQ BÁN KÈM" lastUpdated={banKemTs} value={banKemData} placeholder="Nhân viên..." error={errors.banKem} 
                                     icon={<ChartBarIcon className="h-4 w-4" />} colorTheme="emerald"
                                     onChange={(v) => { setBanKemData(v); handleUpdate('banKem', v, s => s.includes('Nhân viên	DTLK	DTLK áp dụng MNGN'), setBanKemTs, `Nhân viên (BK) - ${supermarketName}`, ids.bk!); }}
