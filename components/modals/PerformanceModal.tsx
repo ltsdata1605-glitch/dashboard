@@ -232,7 +232,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
         if (elementToExport) {
             setIsExporting(true);
             showExportOverlay(`Đang xuất: ${employeeName}`);
-            await onExport(elementToExport, `phan-tich-hieu-qua-${employeeName}.png`, { forceOpenDetails: true, forcedWidth: 960 });
+            await onExport(elementToExport, `phan-tich-hieu-qua-${employeeName}.png`, { forceOpenDetails: true, forcedWidth: 640 });
             setIsExporting(false);
             hideExportOverlay();
         }
@@ -298,12 +298,12 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 {/* Top Products */}
                 <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-4 flex flex-col">
                     <h4 className="font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 mb-2 sm:mb-3 flex items-center gap-2"><Icon name="award" size={4} className="text-amber-500 sm:hidden"/><Icon name="award" size={5} className="text-amber-500 hidden sm:block"/> Top 5 Sản Phẩm Bán Chạy</h4>
-                    <ul className="space-y-2 flex-1">
+                    <ul className="space-y-1 flex-1">
                         {topProducts.map((p, i) => (
-                            <li key={i} className="flex justify-between items-center text-sm p-2 rounded-md bg-slate-50 dark:bg-slate-700/50">
+                            <li key={i} className="flex justify-between items-center text-sm py-1 px-2 rounded-md bg-slate-50 dark:bg-slate-700/50">
                                 <div className="truncate pr-4">
                                     <p className="font-semibold text-slate-700 dark:text-slate-200 truncate" title={p.name}>{p.name}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">{formatQuantity(p.quantity)} SP</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-none mt-0.5">{formatQuantity(p.quantity)} SP</p>
                                 </div>
                                 <span className="font-bold text-indigo-600 dark:text-indigo-400 whitespace-nowrap">{formatCurrency(p.revenue)}</span>
                             </li>
@@ -337,17 +337,17 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                         }
 
                         return (
-                            <ul className="space-y-2.5">
+                            <ul className="space-y-1.5 mt-1">
                                 {sortedIndustries.map(([name, revenue], i) => {
                                     const percent = totalIndustryRevenue > 0 ? (revenue / totalIndustryRevenue) * 100 : 0;
                                     return (
                                         <li key={name}>
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className="flex items-center gap-2 text-sm font-semibold text-slate-700 dark:text-slate-200 truncate">
-                                                    <span className={`w-2.5 h-2.5 rounded-full flex-shrink-0 ${dotColors[i % dotColors.length]}`}></span>
+                                            <div className="flex items-center justify-between mb-0.5">
+                                                <span className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
+                                                    <span className={`w-2 h-2 rounded-full flex-shrink-0 ${dotColors[i % dotColors.length]}`}></span>
                                                     {name}
                                                 </span>
-                                                <span className="text-sm font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap ml-3">{formatCurrency(revenue)}</span>
+                                                <span className="text-xs font-bold text-slate-600 dark:text-slate-300 whitespace-nowrap ml-3">{formatCurrency(revenue)}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -395,9 +395,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                         </div>
                                     )}
                         <details className="bg-white dark:bg-slate-900 overflow-hidden" open={customerBreakdown.length === 1 || isBatchExporting || isExporting || isAllCustomersExpanded}>
-                             <summary className="py-2 sm:py-2.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-cyan-50/80 hover:bg-cyan-100/80 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-cyan-400">
-                                <p className="font-bold text-sm sm:text-[17px] text-cyan-950 dark:text-cyan-100 pl-1">{customer.name.toUpperCase()}</p>
-                                <div className="flex items-center gap-x-2 sm:gap-x-4 gap-y-0.5 sm:gap-y-1 flex-wrap justify-end text-[10px] sm:text-sm font-semibold">
+                             <summary className="py-1 sm:py-1.5 px-2 sm:px-3 cursor-pointer flex justify-between items-center list-none bg-cyan-50/80 hover:bg-cyan-100/80 dark:bg-cyan-900/30 dark:hover:bg-cyan-900/50 transition-colors rounded-r-lg mb-1.5 mt-2 shadow-sm border-l-4 border-cyan-400">
+                                <p className="font-bold text-xs sm:text-sm text-cyan-950 dark:text-cyan-100 pl-1">{customer.name.toUpperCase()}</p>
+                                <div className="flex items-center gap-x-2 sm:gap-x-3 gap-y-0.5 sm:gap-y-1 flex-wrap justify-end text-[9px] sm:text-[11px] font-semibold">
                                     <span className="text-slate-600 dark:text-slate-300">Hẹn giao: <span className="font-bold text-slate-800 dark:text-slate-100">{customer.scheduledDate}</span></span>
                                     <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(customer.totalRevenue)}</span></span>
                                     <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(customer.totalRevenueQD)}</span></span>
@@ -412,11 +412,11 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                      <table className="w-full text-sm table-fixed compact-export-table border-collapse">
                                          <thead className="bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 text-xs border-b border-t border-slate-100 dark:border-slate-800">
                                              <tr>
-                                                 <th className="py-2.5 px-2 text-left font-semibold w-[25%]">Mã ĐH</th>
-                                                 <th className="py-2.5 px-2 text-left font-semibold w-[35%] lg:w-[38%]">Sản phẩm</th>
-                                                 <th className="py-2.5 px-2 text-center font-semibold w-[8%]">SL</th>
-                                                 <th className="py-2.5 px-2 text-right font-semibold w-[14%] whitespace-nowrap">Doanh Thu</th>
-                                                 <th className="py-2.5 px-2 text-center font-semibold w-[18%]">Trạng Thái</th>
+                                                 <th className="py-1 px-1.5 text-left font-semibold w-[135px]">Mã ĐH</th>
+                                                 <th className="py-1 px-1.5 text-left font-semibold">Sản phẩm</th>
+                                                 <th className="py-1 px-1.5 text-center font-semibold w-[30px]">SL</th>
+                                                 <th className="py-1 px-1.5 text-right font-semibold w-[75px] whitespace-nowrap">Doanh Thu</th>
+                                                 <th className="py-1 px-1.5 text-center font-semibold w-[85px]">Trạng Thái</th>
                                              </tr>
                                          </thead>
                                          <tbody>
@@ -430,7 +430,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                     return (
                                                         <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                                                             {lineIndex === 0 && (
-                                                            <td rowSpan={group.lines.length} className="py-2.5 px-2 text-left text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                                                            <td rowSpan={group.lines.length} className="py-1 px-1.5 text-left text-xs text-slate-500 dark:text-slate-400 align-middle border-b border-dashed border-slate-300 dark:border-slate-700 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                                                                 onClick={() => {
                                                                     if (orderId && orderId !== '-') {
                                                                         navigator.clipboard.writeText(orderId).then(() => {
@@ -445,7 +445,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                 }}
                                                                 title={orderId !== '-' ? 'Nh\u1ea5n \u0111\u1ec3 sao ch\u00e9p' : ''}
                                                             >
-                                                                    <div className="flex flex-col items-start justify-center gap-1">
+                                                                    <div className="flex flex-col items-start justify-center gap-0.5">
                                                                         <span className="font-mono font-bold text-slate-700 dark:text-slate-300 break-all">{orderId}</span>
                                                                         {group.isAttached && (
                                                                             <span className="inline-flex w-fit items-center px-1.5 py-1 rounded text-[9px] font-black uppercase bg-green-100 text-green-800 dark:bg-green-900/60 dark:text-green-100 shadow-sm leading-none ring-1 ring-green-300/30">
@@ -455,8 +455,8 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                     </div>
                                                                 </td>
                                                             )}
-                                                            <td className="py-2.5 px-2 text-left text-slate-700 dark:text-slate-300 truncate w-full border-b border-dashed border-slate-300 dark:border-slate-700">
-                                                                <div className="flex flex-wrap items-center gap-2">
+                                                            <td className="py-1 px-1.5 text-left text-slate-700 dark:text-slate-300 truncate w-full border-b border-dashed border-slate-300 dark:border-slate-700">
+                                                                <div className="flex flex-wrap items-center gap-1.5">
                                                                     <span className="truncate w-full block" title={getRowValue(order, COL.PRODUCT) as string}>{getRowValue(order, COL.PRODUCT)}</span>
                                                                     {isInstallment && (
                                                                         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-black uppercase bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300 leading-none">
@@ -465,10 +465,10 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                                     )}
                                                                 </div>
                                                             </td>
-                                                            <td className="py-2.5 px-2 text-center text-slate-600 dark:text-slate-300 border-b border-dashed border-slate-300 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
-                                                            <td className="py-2.5 px-2 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700">{formatCurrency(price)}</td>
+                                                            <td className="py-1 px-1.5 text-center text-slate-600 dark:text-slate-300 border-b border-dashed border-slate-300 dark:border-slate-700">{formatQuantity(getRowValue(order, COL.QUANTITY) as number)}</td>
+                                                            <td className="py-1 px-1.5 text-right font-semibold text-slate-800 dark:text-slate-100 whitespace-nowrap border-b border-dashed border-slate-300 dark:border-slate-700">{formatCurrency(price)}</td>
                                                             {lineIndex === 0 && (
-                                                                <td rowSpan={group.lines.length} className="py-2.5 px-2 text-center text-xs align-middle border-b border-dashed border-slate-300 dark:border-slate-700">
+                                                                <td rowSpan={group.lines.length} className="py-1 px-1.5 text-center text-xs align-middle border-b border-dashed border-slate-300 dark:border-slate-700">
                                                                     {isUnshipped ? (
                                                                         <span className="inline-flex items-center px-2 py-0.5 rounded-full font-semibold bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-300">
                                                                             <span className="w-1.5 h-1.5 bg-red-500 rounded-full mr-1.5 animate-pulse"></span>
@@ -502,7 +502,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     
     if (isBatchExporting) {
         return (
-            <div className="modal-content bg-slate-50 dark:bg-slate-900 w-full max-w-4xl flex flex-col border border-slate-200 dark:border-slate-700">
+            <div className="modal-content bg-slate-50 dark:bg-slate-900 w-[640px] flex flex-col border border-slate-200 dark:border-slate-700">
                 <div className="flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex-shrink-0">
                     <div>
                         <p className="text-sm text-slate-500 dark:text-slate-400">Phân Tích Hiệu Quả Cá Nhân</p>

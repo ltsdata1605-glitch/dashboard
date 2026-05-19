@@ -5,6 +5,7 @@ import SupermarketConfig from './SupermarketConfig';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import Toast from './Toast';
+import { shortenSupermarketName } from '../utils/dashboardHelpers';
 
 // --- Validation ---
 const SUMMARY_REALTIME_REPORT_HEADER = 'Tên miền	DTLK	DTQĐ	Target (QĐ)	% HT Target (QĐ)';
