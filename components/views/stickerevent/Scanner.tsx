@@ -22,6 +22,13 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
   const [status, setStatus] = useState<string>('Yêu cầu quyền truy cập máy ảnh...');
   const [scanResult, setScanResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const isScanningPaused = useRef(false);
+  const scanTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (scanTimeoutRef.current) clearTimeout(scanTimeoutRef.current);
+    };
+  }, []);
 
   const onScanSuccessRef = useRef(onScanSuccess);
   useEffect(() => {
@@ -51,7 +58,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
       oscillator.start();
       oscillator.stop(audioContext.currentTime + 0.15); // Beep for 150ms
     } catch (e) {
-      console.error("Could not play sound:", e);
+      console.warn("Could not play sound:", e);
     }
   }, []);
 
@@ -72,7 +79,8 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
       setScanResult({ type: 'error', message: `Không có trong danh sách: ${decodedText}` });
     }
 
-    setTimeout(() => {
+    if (scanTimeoutRef.current) clearTimeout(scanTimeoutRef.current);
+    scanTimeoutRef.current = window.setTimeout(() => {
       isScanningPaused.current = false;
       setScanResult(null);
     }, 1200); // Slightly reduced delay
@@ -155,7 +163,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
     return () => {
       if (scannerRef.current && scannerRef.current.isScanning) {
         scannerRef.current.stop().catch((error: any) => {
-          console.log("Lỗi khi dừng máy quét lúc dọn dẹp (có thể bỏ qua):", error);
+          // console.warn("Lỗi khi dừng máy quét lúc dọn dẹp (có thể bỏ qua):", error);
         });
       }
     };

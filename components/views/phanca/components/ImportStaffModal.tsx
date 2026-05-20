@@ -25,6 +25,13 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
   const [genderAssignments, setGenderAssignments] = useState<{ [key: string]: 'Nam' | 'Nu' }>({});
   const [supermarketName, setSupermarketName] = useState('');
   const [showErrorTooltip, setShowErrorTooltip] = useState(false);
+  const timeoutRef = React.useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     // Cố gắng đoán giới tính từ ID nhân viên
@@ -48,7 +55,8 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
   const handleConfirm = () => {
     if (!supermarketName.trim()) {
         setShowErrorTooltip(true);
-        setTimeout(() => setShowErrorTooltip(false), 3000);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = window.setTimeout(() => setShowErrorTooltip(false), 3000);
         return;
     }
 

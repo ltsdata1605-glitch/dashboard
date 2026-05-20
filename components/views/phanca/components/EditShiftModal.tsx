@@ -64,6 +64,13 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
   const [view, setView] = useState<ModalView>('main');
   const [suggestion, setSuggestion] = useState<Solution>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const suggestionTimeoutRef = React.useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (suggestionTimeoutRef.current) clearTimeout(suggestionTimeoutRef.current);
+    };
+  }, []);
   const [pendingShift, setPendingShift] = useState<ScheduleInfo | null>(null);
   const [suggestionContext, setSuggestionContext] = useState<'off' | 'demotion' | 'busy' | null>(null);
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
@@ -155,7 +162,8 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
       setSuggestion(null);
       setView('suggestion');
 
-      setTimeout(() => {
+      if (suggestionTimeoutRef.current) clearTimeout(suggestionTimeoutRef.current);
+      suggestionTimeoutRef.current = window.setTimeout(() => {
           let allSolutions: Solution[] = [];
 
           if (context === 'busy') {

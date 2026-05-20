@@ -19,21 +19,21 @@ export default function AboutView() {
     return (
         <div className="p-3 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 pb-32 animate-in fade-in duration-500 max-w-7xl mx-auto">
             {/* Hero Section */}
-            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-800 p-6 sm:p-12 text-white shadow-xl">
-                <div className="absolute top-0 right-0 p-6 sm:p-12 opacity-10 pointer-events-none">
-                    <Cpu size={240} className="w-40 h-40 sm:w-60 sm:h-60" />
+            <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-br from-indigo-600 via-indigo-700 to-blue-800 p-5 sm:p-8 text-white shadow-xl">
+                <div className="absolute top-0 right-0 p-4 sm:p-8 opacity-10 pointer-events-none">
+                    <Cpu size={200} className="w-32 h-32 sm:w-48 sm:h-48" />
                 </div>
                 <div className="relative z-10 max-w-3xl">
-                    <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/30 backdrop-blur-md mb-4 sm:mb-6">
-                        <Sparkles size={14} className="text-amber-300 sm:w-4 sm:h-4" />
-                        <span className="text-xs sm:text-sm font-bold tracking-wide uppercase text-indigo-100">Phiên bản 11.2 - 2026</span>
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/30 border border-indigo-400/30 backdrop-blur-md mb-3 sm:mb-4">
+                        <Sparkles size={14} className="text-amber-300 w-3.5 h-3.5" />
+                        <span className="text-xs font-bold tracking-wide uppercase text-indigo-100">Phiên bản 11.2 - 2026</span>
                     </div>
-                    <h1 className="text-3xl sm:text-5xl font-black mb-3 sm:mb-4 tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-indigo-200">
+                    <h1 className="text-2xl sm:text-4xl font-black mb-2 sm:mb-3 tracking-tight leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white to-indigo-200">
                         Dashboard YCX
                         <br />
                         Bảo Mật Tuyệt Đối
                     </h1>
-                    <p className="text-sm sm:text-xl text-indigo-100/90 leading-relaxed max-w-2xl font-medium">
+                    <p className="text-sm sm:text-base text-indigo-100/90 leading-relaxed max-w-2xl font-medium">
                         Nền tảng phân tích dữ liệu bán hàng hiệu suất cao tích hợp Trợ lý ảo AI. Xử lý file Excel dung lượng lớn cực kỳ mượt mà, trực quan hóa dữ liệu đa chiều mang lại cái nhìn sâu sắc cho nhà quản trị.
                     </p>
                 </div>

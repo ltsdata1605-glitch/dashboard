@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
+import toast from 'react-hot-toast';
 import * as XLSX from 'xlsx';
 import './phanca.css';
 import { exportToImage, generateBusyTemplateTSV } from './utils/exportUtils';
@@ -86,7 +87,6 @@ const App: React.FC = () => {
 
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   const [shiftDefinitions, setShiftDefinitions] = useState<ShiftDefinitions>(DEFAULT_SHIFT_DEFINITIONS);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
   const [balancingFeedback, setBalancingFeedback] = useState<BalancingFeedback | null>(null);
   const [editingRuleKey, setEditingRuleKey] = useState<'kho' | 'tn' | 'gh' | null>(null);
   const [editingCellInfo, setEditingCellInfo] = useState<EditShiftModalInfo | null>(null);
@@ -285,8 +285,13 @@ const App: React.FC = () => {
   }, [monthYear]);
 
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 3000);
+    if (type === 'error') {
+      toast.error(message, { duration: 3000 });
+    } else if (type === 'info') {
+      toast(message, { duration: 3000 });
+    } else {
+      toast.success(message, { duration: 3000 });
+    }
   };
 
   const handleDeleteStaffList = () => {
@@ -559,7 +564,7 @@ const App: React.FC = () => {
             await new Promise(resolve => setTimeout(resolve, 400));
         }
     } catch (err) {
-        console.error("Export error:", err);
+        console.warn("Export error:", err);
         alert("Lỗi khi xuất ảnh cá nhân.");
     } finally {
         setBatchExportProgress(null);
@@ -735,7 +740,7 @@ const App: React.FC = () => {
             isImportingRef.current = false;
         }, 300);
     } catch (error) {
-        console.error("Import error:", error);
+        console.warn("Import error:", error);
         alert("Có lỗi xảy ra khi lưu dữ liệu nhân viên.");
         isImportingRef.current = false;
     }
@@ -979,16 +984,7 @@ const App: React.FC = () => {
         onConfirm={confirmDeleteStaffList} 
         onCancel={() => setIsDeleteConfirmOpen(false)} 
       />}
-      {/* Toast Notification */}
-      {toast && (
-        <div className={`fixed bottom-8 left-1/2 transform -translate-x-1/2 z-[200] px-5 py-2.5 shadow-2xl flex items-center gap-2.5 animate-bounce-in ${
-          toast.type === 'success' ? 'bg-emerald-600 text-white' : 
-          toast.type === 'error' ? 'bg-rose-600 text-white' : 'bg-slate-800 text-white'
-        }`}>
-          {toast.type === 'success' && <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
-          <span className="font-semibold text-sm">{toast.message}</span>
-        </div>
-      )}
+
     </div>
   );
 };

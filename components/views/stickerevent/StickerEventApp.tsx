@@ -127,6 +127,13 @@ export default function App(): React.JSX.Element {
   const [employeeName, setEmployeeName] = useState('');
   const [isEditingEmployeeName, setIsEditingEmployeeName] = useState(false);
   const debounceTimeout = useRef<number | null>(null);
+  const highlightTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+    };
+  }, []);
   const importInputRef = useRef<HTMLInputElement>(null);
   const productListRef = useRef<HTMLDivElement>(null);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -921,7 +928,8 @@ export default function App(): React.JSX.Element {
           element.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
-        setTimeout(() => {
+        if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+        highlightTimeoutRef.current = window.setTimeout(() => {
             setHighlightedMsp(null);
         }, 2000);
     } else {

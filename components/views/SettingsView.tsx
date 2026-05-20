@@ -80,7 +80,7 @@ const SettingsView: React.FC = () => {
                     const configs = await fetchSharedConfigs(userRole, departmentId);
                     if (isMounted) setSharedConfigs(configs);
                 } catch (e) {
-                    console.error("Lấy danh sách thư viện thất bại:", e);
+                    console.warn("Lấy danh sách thư viện thất bại:", e);
                 }
             };
             loadConfigs();
@@ -124,7 +124,7 @@ const SettingsView: React.FC = () => {
             toast.success('Đã Khôi Phục Gốc cấu hình thành công!');
             setTimeout(() => window.location.reload(), 1500);
         } catch (error) {
-            console.error("Lỗi khi wipe data:", error);
+            console.warn("Lỗi khi wipe data:", error);
             toast.error('Có lỗi xảy ra khi dọn dẹp!');
         } finally {
             setIsClearing(false);
@@ -176,7 +176,7 @@ const SettingsView: React.FC = () => {
             setShowShareModal(false);
             setShareDescription('');
         } catch (err) {
-            console.error("Lỗi chia sẻ:", err);
+            console.warn("Lỗi chia sẻ:", err);
             toast.error("Không thể chia sẻ cấu hình lúc này.");
         } finally {
             setIsSharing(false);
@@ -192,7 +192,7 @@ const SettingsView: React.FC = () => {
                 toast.success("Áp dụng mẫu cấu hình thành công! Đang tải lại...", { duration: 4000 });
                 setTimeout(() => window.location.reload(), 1500);
             } catch (err) {
-                console.error("Lỗi áp dụng mẫu cấu hình:", err);
+                console.warn("Lỗi áp dụng mẫu cấu hình:", err);
                 toast.error("Áp dụng mẫu cấu hình thất bại.");
             }
         }

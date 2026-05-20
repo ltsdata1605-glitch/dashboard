@@ -11,11 +11,22 @@ export const useCloudSync = () => {
     const [lastSyncTime, setLastSyncTime] = useState<Date | null>(null);
     const [lastError, setLastError] = useState<string | null>(null);
     const hasUnsavedChanges = useRef(false);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    // Clear timeout helper to prevent memory leaks
+    const clearSyncTimeout = useCallback(() => {
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+            timeoutRef.current = null;
+        }
+    }, []);
 
     const forceSync = useCallback(async () => {
         if (!user || isDemoMode) return;
         setSyncState('syncing');
         setLastError(null);
+        clearSyncTimeout();
+        
         try {
             const allSettings = await getAllSettings();
             await syncToCloud(user, {
@@ -25,17 +36,16 @@ export const useCloudSync = () => {
             setSyncState('synced');
             setLastSyncTime(new Date());
 
-            setTimeout(() => setSyncState('idle'), 5000);
+            timeoutRef.current = setTimeout(() => {
+                setSyncState('idle');
+            }, 5000);
         } catch (err: any) {
-            console.error("Lỗi Auto-Sync cài đặt:", err);
             setSyncState('error');
-            
             const errMsg = (err?.message || '').toLowerCase();
             const errCode = err?.code || '';
             setLastError(err?.message || 'Đồng bộ dữ liệu thất bại. Lỗi mạng hoặc hết phiên.');
             
             if (errCode === 'resource-exhausted' || errMsg.includes('quota') || errMsg.includes('429')) {
-                // Graceful quota handling — no crash, will retry later
                 import('react-hot-toast').then(({ default: toast }) => {
                     toast('⏳ Đã lưu cài đặt vào máy. Đồng bộ lên đám mây sẽ tự động thử lại sau.', { 
                         id: 'quota-limit',
@@ -43,9 +53,6 @@ export const useCloudSync = () => {
                         duration: 4000
                     });
                 });
-            } else if (errMsg.includes('failed to fetch') || errMsg.includes('network')) {
-                // Network error — completely silent, will auto-retry on reconnect
-                console.warn("⚡ Mất kết nối mạng, cài đặt đã lưu an toàn trên máy.");
             } else if (errMsg.includes('unauthenticated') || errMsg.includes('permission-denied')) {
                 import('react-hot-toast').then(({ default: toast }) => {
                     toast('🔑 Phiên đăng nhập hết hạn. Đăng nhập lại để đồng bộ cài đặt.', { 
@@ -55,12 +62,12 @@ export const useCloudSync = () => {
                 });
             }
             // All errors: data is safe in IndexedDB, will sync when possible
-            setTimeout(() => {
+            timeoutRef.current = setTimeout(() => {
                 setSyncState('idle');
                 setLastError(null);
             }, 8000);
         }
-    }, [user, isDemoMode]);
+    }, [user, isDemoMode, clearSyncTimeout]);
 
     useEffect(() => {
         if (!user || isDemoMode) return;
@@ -70,18 +77,13 @@ export const useCloudSync = () => {
         };
 
         const syncIfChanged = () => {
-            if (hasUnsavedChanges.current) {
-                forceSync();
-            }
+            if (hasUnsavedChanges.current) forceSync();
         };
 
         window.addEventListener('ycx-setting-changed', handleSettingChanged);
         
-        // Auto-save when user leaves the page or hides the tab
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'hidden') {
-                syncIfChanged();
-            }
+            if (document.visibilityState === 'hidden') syncIfChanged();
         };
         const handleBeforeUnload = () => {
             syncIfChanged();
@@ -98,8 +100,9 @@ export const useCloudSync = () => {
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('beforeunload', handleBeforeUnload);
             window.clearInterval(intervalId);
+            clearSyncTimeout(); // Prevent memory leak when component unmounts
         };
-    }, [user, isDemoMode, forceSync]);
+    }, [user, isDemoMode, forceSync, clearSyncTimeout]);
 
     return { syncState, lastSyncTime, forceSync, lastError };
 };

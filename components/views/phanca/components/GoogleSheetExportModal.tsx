@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface GoogleSheetExportModalProps {
   data: string;
@@ -8,14 +8,22 @@ interface GoogleSheetExportModalProps {
 const GoogleSheetExportModal: React.FC<GoogleSheetExportModalProps> = ({ data, onClose }) => {
   const [copyButtonText, setCopyButtonText] = useState('Sao chép vào Clipboard');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   const handleCopy = () => {
     if (textareaRef.current) {
       navigator.clipboard.writeText(textareaRef.current.value).then(() => {
         setCopyButtonText('✅ Đã sao chép!');
-        setTimeout(() => setCopyButtonText('Sao chép vào Clipboard'), 2000);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = window.setTimeout(() => setCopyButtonText('Sao chép vào Clipboard'), 2000);
       }).catch(err => {
-        console.error('Không thể sao chép:', err);
+        console.warn('Không thể sao chép:', err);
         setCopyButtonText('Lỗi!');
       });
     }

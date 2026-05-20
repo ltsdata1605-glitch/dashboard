@@ -18,7 +18,7 @@ interface TargetHeroProps {
 const CreateDeptModal: React.FC<{ 
     isOpen: boolean; 
     onClose: () => void; 
-    onSave: (name: string, employeeNames: string[]) => void;
+    onSave: (name: string, employeeNames: string[], hiddenEmps: string[]) => void;
     allEmployees: { name: string; originalName: string }[];
     existingMapping: ManualDeptMapping;
     editingDept?: { name: string; employees: string[] } | null;
@@ -153,10 +153,14 @@ const CreateDeptModal: React.FC<{
                     </button>
                     <button onClick={onClose} className="flex-1 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm uppercase tracking-widest active:scale-95">Hủy bỏ</button>
                     <button 
-                        disabled={!name.trim() || (!editingDept && selectedEmps.size === 0)}
-                        onClick={() => { onSave(name.trim(), Array.from(selectedEmps)); onClose(); }}
+                        disabled={
+                            editingDept 
+                                ? !name.trim() 
+                                : (!name.trim() && selectedEmps.size > 0) || (!name.trim() && selectedEmps.size === 0 && hiddenEmps.size === 0)
+                        }
+                        onClick={() => { onSave(name.trim(), Array.from(selectedEmps), Array.from(hiddenEmps)); onClose(); }}
                         className="flex-[1.5] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-500 hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95"
-                    >{editingDept && selectedEmps.size === 0 ? 'Xoá bộ phận' : 'Lưu cập nhật'}</button>
+                    >{editingDept && selectedEmps.size === 0 ? 'Xoá bộ phận' : (!name.trim() && hiddenEmps.size > 0 ? 'Lưu cập nhật' : 'Lưu cập nhật')}</button>
                 </div>
             </div>
         </div>
@@ -239,6 +243,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
     const [totalTarget, setTotalTarget] = useIndexedDBState<number>(`targethero-${safeName}-total`, 100);
     const [departmentWeights, setDepartmentWeights] = useIndexedDBState<Record<string, number>>(`targethero-${safeName}-departmentweights`, {});
     const [manualMapping, setManualMapping] = useIndexedDBState<ManualDeptMapping>(`manual-dept-mapping-${safeName}`, {});
+    const [hiddenEmployees, setHiddenEmployees] = useIndexedDBState<string[]>(`hidden-employees-${safeName}`, []);
     
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDept, setEditingDept] = useState<{ name: string; employees: string[] } | null>(null);
@@ -248,9 +253,18 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
         if (!allEmployeesRaw) return [];
         return allEmployeesRaw.split('\n')
             .map(l => l.trim())
-            .filter(l => l.includes(' - ') && !l.startsWith('BP ') && !l.startsWith('Hỗ trợ BI') && !l.startsWith('NNH ') && !l.startsWith('ĐML_STR_STR') && !/^\d/.test(l))
-            .map(l => ({ originalName: l.split('\t')[0], name: l.split('\t')[0] }));
-    }, [allEmployeesRaw]);
+            .filter(l => {
+                const namePart = l.split('\t')[0];
+                if (!namePart.includes(' - ')) return false;
+                if (namePart.startsWith('BP ') || namePart.startsWith('Hỗ trợ BI') || namePart.startsWith('NNH ') || namePart.startsWith('ĐML_STR_STR') || /^\d/.test(namePart)) return false;
+                
+                const parts = namePart.split(' - ');
+                const possibleId = parts[parts.length - 1].trim();
+                return /^\d+$/.test(possibleId);
+            })
+            .map(l => ({ originalName: l.split('\t')[0], name: l.split('\t')[0] }))
+            .filter(emp => !hiddenEmployees.includes(emp.originalName));
+    }, [allEmployeesRaw, hiddenEmployees]);
 
     const baseTargetQuyDoi = useMemo(() => {
         if (!summaryLuyKeData) return 0;
@@ -266,9 +280,37 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
 
     const adjustedTarget = useMemo(() => baseTargetQuyDoi * (totalTarget / 100), [baseTargetQuyDoi, totalTarget]);
 
+    const defaultDepartments = useMemo(() => {
+        if (!allEmployeesRaw) return departments.map(d => ({ ...d, isManual: false }));
+        
+        const lines = allEmployeesRaw.split('\n').map(l => l.trim()).filter(l => l);
+        const departmentList: { name: string; employeeCount: number; isManual: boolean }[] = [];
+        let currentDept: { name: string; employeeCount: number; isManual: boolean } | null = null;
+        
+        for (const line of lines) {
+            const parts = line.split('\t');
+            const namePart = parts[0];
+            
+            if (namePart.startsWith('BP ') && parts.length > 1) {
+                if (currentDept) departmentList.push(currentDept);
+                currentDept = { name: namePart.trim(), employeeCount: 0, isManual: false };
+            } else if (currentDept && parts.length > 1) {
+                if (namePart.includes(' - ') && !namePart.startsWith('Hỗ trợ BI') && !namePart.startsWith('NNH ') && !namePart.startsWith('ĐML_STR_STR') && !/^\d/.test(namePart)) {
+                    const npParts = namePart.split(' - ');
+                    const possibleId = npParts[npParts.length - 1].trim();
+                    if (/^\d+$/.test(possibleId) && !hiddenEmployees.includes(namePart)) {
+                        currentDept.employeeCount++;
+                    }
+                }
+            }
+        }
+        if (currentDept) departmentList.push(currentDept);
+        return departmentList.length > 0 ? departmentList : departments.map(d => ({ ...d, isManual: false }));
+    }, [allEmployeesRaw, hiddenEmployees, departments]);
+
     const combinedDepts = useMemo(() => {
         const manualNames = Object.keys(manualMapping);
-        if (manualNames.length === 0) return departments.map(d => ({ ...d, isManual: false }));
+        if (manualNames.length === 0) return defaultDepartments.filter(d => d.employeeCount > 0);
         const manualList = manualNames.map(name => ({ name, employeeCount: manualMapping[name].length, isManual: true }));
         return manualList.sort((a,b) => {
             if (a.name === 'BP Khác') return 1;
@@ -348,7 +390,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Phân bổ bộ phận</h2>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => { if(confirm('Đặt tất cả nhân sự và trọng số về mặc định?')) { setDepartmentWeights({}); setManualMapping({}); } }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                            <button onClick={() => { if(confirm('Đặt tất cả nhân sự và trọng số về mặc định?')) { setDepartmentWeights({}); setManualMapping({}); setHiddenEmployees([]); } }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                                 <ResetIcon className="h-4 w-4" />
                             </button>
                             <button onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Tạo mới">
@@ -452,20 +494,25 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
             <CreateDeptModal 
                 isOpen={isModalOpen} 
                 onClose={() => { setIsModalOpen(false); setEditingDept(null); }} 
-                onSave={(name, emps) => {
-                    const n = {...manualMapping};
-                    if (editingDept && editingDept.name !== name) delete n[editingDept.name];
-                    if (emps.length === 0) {
-                        // Xóa hết NV → xóa luôn bộ phận
-                        delete n[name];
-                        const w = {...departmentWeights};
-                        delete w[name];
-                        if (editingDept) delete w[editingDept.name];
-                        setDepartmentWeights(w);
-                    } else {
-                        n[name] = emps;
+                onSave={(name, emps, hiddenEmps) => {
+                    if (hiddenEmps && hiddenEmps.length > 0) {
+                        setHiddenEmployees([...hiddenEmployees, ...hiddenEmps]);
                     }
-                    setManualMapping(n);
+                    if (name.trim()) {
+                        const n = {...manualMapping};
+                        if (editingDept && editingDept.name !== name) delete n[editingDept.name];
+                        if (emps.length === 0) {
+                            // Xóa hết NV → xóa luôn bộ phận
+                            delete n[name];
+                            const w = {...departmentWeights};
+                            delete w[name];
+                            if (editingDept) delete w[editingDept.name];
+                            setDepartmentWeights(w);
+                        } else {
+                            n[name] = emps;
+                        }
+                        setManualMapping(n);
+                    }
                 }}
                 allEmployees={allEmployees}
                 existingMapping={manualMapping}

@@ -73,7 +73,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 await updateDoc(userRef, updateData);
                 toast.success('Đã tự động lưu!', { duration: 1500, id: `autosave-${requestId}` });
             } catch (err) {
-                console.error('Auto-save failed:', err);
+                console.warn('Auto-save failed:', err);
                 toast.error('Lỗi tự động lưu, thử lại.');
             } finally {
                 setSavingIds(prev => { const n = new Set(prev); n.delete(requestId); return n; });
@@ -161,7 +161,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             
             setRequests(filteredData);
         } catch (error: any) {
-            console.error("Lỗi lấy danh sách yêu cầu:", error);
+            console.warn("Lỗi lấy danh sách yêu cầu:", error);
             if (error?.code === 'permission-denied') {
                 toast.error('Firestore: Quyền truy cập bị từ chối. Vui lòng kiểm tra Security Rules.');
             } else {
@@ -181,6 +181,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         
         return () => {
             window.removeEventListener('refresh-user-management', handleRefresh);
+            Object.values(debounceTimers.current).forEach(clearTimeout);
         };
     }, [userRole, departmentId, listMode]);
 
@@ -237,7 +238,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             
             fetchRequests(); // Refresh data
         } catch (error) {
-            console.error('Lỗi khi cập nhật trạng thái:', error);
+            console.warn('Lỗi khi cập nhật trạng thái:', error);
             toast.error('Có lỗi xảy ra, vui lòng thử lại.');
         }
     };

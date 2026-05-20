@@ -12,6 +12,13 @@ export default function CouponConverterView() {
     const [errorMessage, setErrorMessage] = useState<string>('');
     const [showGuide, setShowGuide] = useState<boolean>(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const copyTimeoutRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+        };
+    }, []);
 
     // --- Helpers ---
     const copyToClipboard = useCallback(async (text: string) => {
@@ -19,15 +26,15 @@ export default function CouponConverterView() {
         try {
             await navigator.clipboard.writeText(text);
         } catch (err) {
-            console.error('Clipboard API failed', err);
+            console.warn('Clipboard API failed', err);
             throw new Error('Không thể sao chép. Vui lòng kiểm tra quyền trình duyệt.');
         }
     }, []);
 
     const showCopySuccessFeedback = useCallback(() => {
         setIsCopied(true);
-        const timer = setTimeout(() => setIsCopied(false), 2500);
-        return () => clearTimeout(timer);
+        if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+        copyTimeoutRef.current = window.setTimeout(() => setIsCopied(false), 2500);
     }, []);
 
     const updateOutput = useCallback((input: string, titleVal: string) => {

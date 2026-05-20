@@ -556,7 +556,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setIndustryRealtimeTs(null); 
                                         removeUpdate(ids.rt!); 
                                         setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                        setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
+                                        
                                     }} />
                                 <StatusTile title="Luỹ kế" lastUpdated={industryLuyKeTs} value={industryLuyKeData} downloadUrl={`https://bi.thegioididong.com/chi-tiet-nganh-hang?id=${supermarketName}`}
                                     icon={<ChartPieIcon className="h-4 w-4" />} colorTheme="emerald"
@@ -566,7 +566,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setIndustryLuyKeTs(null); 
                                         removeUpdate(ids.lk!); 
                                         setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                        setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
+                                        
                                     }} />
                             </div>
                         </div>
@@ -585,7 +585,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setDanhSachTs(null); 
                                         removeUpdate(ids.ds!); 
                                         setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                        setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
+                                        
                                     }} />
                                 
                                 <StatusTile title="THI ĐUA NV" lastUpdated={thiDuaTs} value={thiDuaData} placeholder="Phòng ban..." error={errors.thiDua} 
@@ -596,7 +596,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setThiDuaTs(null); 
                                         removeUpdate(ids.td!); 
                                         setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                        setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
+                                        
                                     }} />
                             </div>
                         </div>
@@ -616,7 +616,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setBanKemTs(null); 
                                         removeUpdate(ids.bk!); 
                                         setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                        setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
+                                        
                                     }} />
 
                                 <StatusTile title="Trả góp NV" lastUpdated={traGopTs} value={traGopData} downloadUrl={`https://bi.thegioididong.com/nhan-vien?id=${supermarketName}&tab=5`}
@@ -627,7 +627,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setTraGopTs(null); 
                                         removeUpdate(ids.tg!); 
                                         setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                        setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
+                                        
                                     }} />
                             </div>
                         </div>

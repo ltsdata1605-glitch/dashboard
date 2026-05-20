@@ -20,84 +20,79 @@ interface DashboardProps {
 }
 
 const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; message?: string }> = ({ onNavigate, onRestore, message }) => (
-    <div className="relative min-h-[calc(100vh-180px)] flex flex-col justify-center items-center overflow-hidden bg-[#F8FAFC] dark:bg-[#0B0F19] selection:bg-indigo-500/20 rounded-xl">
+    <div className="relative min-h-[calc(100vh-120px)] flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] dark:bg-[#0B0F19] selection:bg-indigo-500/20 selection:text-indigo-600 pb-8">
+        
         {/* Ambient Background Grid */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none"></div>
 
-        {/* Glow Orbs */}
-        <div className="absolute top-[10%] left-[20%] w-[300px] h-[300px] bg-sky-500/25 dark:bg-sky-600/15 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 pointer-events-none"></div>
-        <div className="absolute top-[10%] right-[20%] w-[300px] h-[300px] bg-indigo-500/25 dark:bg-indigo-600/15 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 pointer-events-none"></div>
+        {/* Animated Glow Orbs */}
+        <div className="absolute top-[10%] left-[20%] w-[200px] h-[200px] bg-indigo-500/30 dark:bg-indigo-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 animate-pulse pointer-events-none"></div>
+        <div className="absolute top-[10%] right-[20%] w-[200px] h-[200px] bg-purple-500/30 dark:bg-purple-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 animate-pulse [animation-delay:2s] pointer-events-none"></div>
+        <div className="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[250px] h-[250px] bg-blue-500/30 dark:bg-blue-600/20 rounded-full mix-blend-multiply dark:mix-blend-screen filter blur-[100px] opacity-60 animate-pulse [animation-delay:4s] pointer-events-none"></div>
 
-        <div className="relative z-10 w-full max-w-[800px] px-6 flex flex-col items-center text-center">
-            {/* Badge */}
-            <div className="mb-4">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-sky-200/50 dark:border-sky-500/20 bg-white/80 dark:bg-sky-500/10 backdrop-blur-xl shadow-sm">
-                    <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
-                    </span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-sky-800 dark:text-sky-300">Report BI Pro</span>
-                </div>
-            </div>
-
+        <div className="relative z-10 w-full max-w-[1000px] px-6 flex flex-col items-center text-center mt-4">
+            
             {/* Hero Typography */}
-            <div className="mb-6">
-                <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1] mb-4 drop-shadow-sm">
-                    {message ? message : (<>Báo cáo BI.<br /><span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-600 via-blue-600 to-indigo-600 dark:from-sky-400 dark:via-blue-400 dark:to-indigo-400">Chuyên nghiệp.</span></>)}
+            <div className="mb-4">
+                <h1 className="text-3xl sm:text-4xl lg:text-[2.8rem] font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1] mb-3 drop-shadow-sm">
+                    {message ? message : (<>Dữ liệu phức tạp.<br/><span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 dark:from-indigo-400 dark:via-fuchsia-400 dark:to-cyan-400">Phân tích siêu tốc.</span></>)}
                 </h1>
-                <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl mx-auto font-medium leading-relaxed">
-                    Tổng hợp doanh thu, thi đua và phân tích ngành hàng theo thời gian thực.<br className="hidden sm:block" />
-                    Cập nhật dữ liệu từ BI hoặc khôi phục từ file backup.
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 max-w-xl mx-auto font-medium leading-relaxed tracking-tight">
+                    Chuyển đổi tức thì hàng chục ngàn dòng báo cáo BI thành bảng phân tích trực quan.<br className="hidden sm:block"/>
+                    Tối ưu hiệu suất bằng cách xử lý trực tiếp trên trình duyệt.
                 </p>
             </div>
 
-            {/* Action Card */}
-            <div className="w-full max-w-md">
+            {/* Main Action Area - Glass Card */}
+            <div className="w-full max-w-md mt-2">
                 <div className="relative group">
-                    <div className="absolute -inset-1 bg-gradient-to-r from-sky-500/30 via-blue-500/30 to-indigo-500/30 rounded-[24px] blur-xl opacity-0 group-hover:opacity-100 transition duration-700"></div>
-                    <div className="relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-2xl rounded-2xl p-6 shadow-lg ring-1 ring-slate-200/60 dark:ring-white/10">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="w-12 h-12 bg-sky-50 dark:bg-sky-900/30 rounded-xl flex items-center justify-center">
-                                <UploadIcon className="h-6 w-6 text-sky-500 dark:text-sky-400" />
+                    {/* Glow effect behind */}
+                    <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/40 via-purple-500/40 to-blue-500/40 rounded-[32px] blur-2xl opacity-0 group-hover:opacity-100 transition duration-1000"></div>
+                    
+                    <div className="relative bg-white/70 dark:bg-[#111827]/70 backdrop-blur-3xl rounded-[24px] p-1.5 shadow-[0_8px_40px_-12px_rgba(0,0,0,0.15)] ring-1 ring-white dark:ring-white/10">
+                        <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl rounded-[20px] overflow-hidden border border-slate-100 dark:border-white/5 p-5">
+                            
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center border border-indigo-100 dark:border-indigo-800/50">
+                                    <UploadIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                                </div>
+                                <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
+                                    <button
+                                        onClick={onNavigate}
+                                        className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-white bg-[#0584c7] hover:bg-[#046ca3] shadow-md shadow-[#0584c7]/20 transition-all active:scale-95"
+                                    >
+                                        Cập nhật dữ liệu
+                                    </button>
+                                    <span className="text-slate-400 dark:text-slate-500 hidden sm:block text-[11px] font-medium uppercase tracking-wider">hoặc</span>
+                                    <button
+                                        onClick={onRestore}
+                                        className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm transition-all active:scale-95"
+                                    >
+                                        <UploadIcon className="h-4 w-4" /> Khôi phục
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-                                <button
-                                    onClick={onNavigate}
-                                    className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-white bg-gradient-to-r from-sky-600 to-blue-600 hover:from-sky-700 hover:to-blue-700 shadow-md shadow-sky-500/20 transition-all active:scale-95"
-                                >
-                                    Cập nhật dữ liệu
-                                </button>
-                                <span className="text-slate-300 dark:text-slate-600 hidden sm:block text-sm">hoặc</span>
-                                <button
-                                    onClick={onRestore}
-                                    className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 shadow-sm transition-all active:scale-95"
-                                >
-                                    <UploadIcon className="h-4 w-4" /> Khôi phục
-                                </button>
-                            </div>
+
                         </div>
                     </div>
                 </div>
             </div>
 
-            {/* Trust Indicators */}
-            <div className="mt-8 grid grid-cols-3 gap-6 text-center">
-                <div className="space-y-0.5">
-                    <div className="flex justify-center text-slate-400 mb-1"><UploadIcon className="h-4 w-4" /></div>
-                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Dán & Cập nhật</p>
-                    <p className="text-[10px] text-slate-500">Từ BI trực tiếp</p>
+            {/* Footer / Trust Indicators */}
+            <div className="mt-8 flex items-center justify-center gap-6 text-center">
+                <div className="flex flex-col items-center gap-1.5 text-slate-400">
+                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Local Processing</span>
                 </div>
-                <div className="space-y-0.5">
-                    <div className="flex justify-center text-slate-400 mb-1"><UploadIcon className="h-4 w-4" /></div>
-                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Offline Ready</p>
-                    <p className="text-[10px] text-slate-500">Lưu trữ cục bộ IndexedDB</p>
+                <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+                <div className="flex flex-col items-center gap-1.5 text-slate-400">
+                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Instant Speed</span>
                 </div>
-                <div className="space-y-0.5">
-                    <div className="flex justify-center text-slate-400 mb-1"><UploadIcon className="h-4 w-4" /></div>
-                    <p className="text-[11px] font-bold text-slate-700 dark:text-slate-300">Export Pro</p>
-                    <p className="text-[10px] text-slate-500">Chia sẻ ảnh HD</p>
+                <div className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700"></div>
+                <div className="flex flex-col items-center gap-1.5 text-slate-400">
+                    <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">Smart UI</span>
                 </div>
             </div>
+
         </div>
     </div>
 );

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import toast from 'react-hot-toast';
 import { 
-  Calculator, 
   Banknote, 
   AlertCircle, 
   CheckCircle2, 
@@ -45,7 +45,7 @@ export default function KiemQuyView() {
   const [notes, setNotes] = useState<string>('');
   const [history, setHistory] = useState<AuditRecord[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
+
   
   const inputRefs = useRef<Record<number, HTMLInputElement | null>>({});
   const onHandRef = useRef<HTMLInputElement | null>(null);
@@ -68,8 +68,7 @@ export default function KiemQuyView() {
   };
 
   const showToast = useCallback((msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2000);
+    toast.success(msg, { duration: 2000 });
   }, []);
 
   const formatCurrency = (amount: number) => {
@@ -139,7 +138,7 @@ export default function KiemQuyView() {
 
   return (
     <div className="flex-1 w-full h-full relative overflow-hidden flex flex-col">
-      <div className="absolute inset-0 overflow-y-auto w-full pb-[140px] lg:pb-[76px]">
+      <div className="absolute inset-0 overflow-y-auto w-full pb-8">
         <div className="max-w-md mx-auto pt-1 px-3 space-y-2">
         {/* Summary Card */}
         <motion.div 
@@ -287,50 +286,33 @@ export default function KiemQuyView() {
               className="w-full bg-slate-50 dark:bg-slate-900 border-none rounded-lg py-1 px-2 text-[11px] focus:ring-1 focus:ring-emerald-500 outline-none min-h-[32px] max-h-[32px] resize-none dark:text-white dark:placeholder:text-slate-500"
             />
           </div>
+          <div className="flex gap-2.5 pt-1 pb-6">
+            <button 
+              onClick={resetAll}
+              className="flex-none w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg active:bg-slate-200 dark:active:bg-slate-700 transition-colors"
+            >
+              <RotateCcw size={18} />
+            </button>
+            <button 
+              onClick={saveToHistory}
+              className="flex-1 h-10 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-lg flex items-center justify-center gap-1 active:scale-[0.98] shadow-md shadow-emerald-500/20 transition-all"
+            >
+              <Save size={16} />
+              <span className="truncate">LƯU KIỂM QUỸ</span>
+            </button>
+            <button 
+              onClick={() => setShowHistory(true)}
+              className="flex-1 h-10 bg-[#0066FF] hover:bg-blue-700 text-white font-bold text-sm rounded-lg flex items-center justify-center gap-1 active:scale-[0.98] shadow-md shadow-blue-500/20 transition-all"
+            >
+              <History size={16} />
+              <span className="truncate">LỊCH SỬ</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Fixed Footer */}
-      <footer className="absolute bottom-0 left-0 right-0 h-[56px] flex flex-col justify-center px-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-40">
-        <div className="max-w-md w-full mx-auto flex gap-2.5">
-          <button 
-            onClick={resetAll}
-            className="flex-none w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg active:bg-slate-200 dark:active:bg-slate-700 transition-colors"
-          >
-            <RotateCcw size={18} />
-          </button>
-          <button 
-            onClick={saveToHistory}
-            className="flex-1 h-10 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-lg flex items-center justify-center gap-1 active:scale-[0.98] shadow-md shadow-emerald-500/20 transition-all"
-          >
-            <Save size={16} />
-            <span className="truncate">LƯU KIỂM QUỸ</span>
-          </button>
-          <button 
-            onClick={() => setShowHistory(true)}
-            className="flex-1 h-10 bg-[#0066FF] hover:bg-blue-700 text-white font-bold text-sm rounded-lg flex items-center justify-center gap-1 active:scale-[0.98] shadow-md shadow-blue-500/20 transition-all"
-          >
-            <History size={16} />
-            <span className="truncate">LỊCH SỬ</span>
-          </button>
-        </div>
-      </footer>
-
-      {/* Toast */}
+      {/* History Popup */}
       <AnimatePresence>
-        {toast && (
-          <motion.div 
-            initial={{ y: 50, opacity: 0, x: '-50%' }}
-            animate={{ y: 0, opacity: 1, x: '-50%' }}
-            exit={{ y: 20, opacity: 0, x: '-50%' }}
-            className="fixed bottom-24 left-1/2 bg-slate-800 text-white px-6 py-3 rounded-2xl text-xs font-bold z-50 shadow-2xl flex items-center gap-2"
-          >
-            <CheckCircle2 size={14} className="text-emerald-400" />
-            {toast}
-          </motion.div>
-        )}
-
-        {/* History Popup */}
         {showHistory && (
           <motion.div 
             initial={{ opacity: 0 }}

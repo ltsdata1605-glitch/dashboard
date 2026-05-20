@@ -333,7 +333,7 @@ const DataUpdater: React.FC = () => {
                                 setSummaryRealtimeTs(null); 
                                 removeUpdate('summary-realtime');
                                 setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
+                                
                             }}
                         />
                         <StatusTile 
@@ -358,7 +358,7 @@ const DataUpdater: React.FC = () => {
                                 removeUpdate('summary-luy-ke'); 
                                 setSupermarkets([]); 
                                 setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
+                                
                             }}
                         />
                     </div>
@@ -392,7 +392,7 @@ const DataUpdater: React.FC = () => {
                                 setCompetitionRealtimeTs(null); 
                                 removeUpdate('competition-realtime'); 
                                 setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
+                                
                             }}
                         />
                         <StatusTile 
@@ -416,7 +416,7 @@ const DataUpdater: React.FC = () => {
                                 setCompetitionLuyKeTs(null); 
                                 removeUpdate('competition-luy-ke'); 
                                 setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
-                                setTimeout(() => setToast(p => ({ ...p, isVisible: false })), 2000);
+                                
                             }}
                         />
                     </div>

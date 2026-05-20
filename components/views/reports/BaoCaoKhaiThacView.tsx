@@ -43,6 +43,7 @@ import {
   Camera
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import toast from 'react-hot-toast';
 
 // --- Types ---
 
@@ -195,8 +196,6 @@ export default function BaoCaoKhaiThacView() {
   const [history, setHistory] = useState<any[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  
-  const [toast, setToast] = useState<string | null>(null);
   const [isEditingName, setIsEditingName] = useState(!state.staffName);
 
   const { activeTab } = useActiveTab();
@@ -307,9 +306,9 @@ export default function BaoCaoKhaiThacView() {
                 timestamp: serverTimestamp()
              });
              await saveSetting('last_firebase_sync_date', todayStr);
-             console.log("Đã đẩy dữ liệu báo cáo cuối ngày lên Firebase thành công!");
+             // console.log("Đã đẩy dữ liệu báo cáo cuối ngày lên Firebase thành công!");
            } catch (e) {
-             console.error("Lỗi đẩy Firebase cuối ngày:", e);
+             console.warn("Lỗi đẩy Firebase cuối ngày:", e);
            }
         }
       }
@@ -379,8 +378,7 @@ export default function BaoCaoKhaiThacView() {
   };
 
   const showToast = (message: string) => {
-    setToast(message);
-    setTimeout(() => setToast(null), 3000);
+    toast.success(message, { duration: 3000 });
   };
 
   const handleStep = (category: 'products' | 'household' | 'accessories' | 'services', key: string, step: number) => {
@@ -518,7 +516,7 @@ export default function BaoCaoKhaiThacView() {
           return;
         }
       } catch (err) {
-        console.error('Clipboard API failed', err);
+        console.warn('Clipboard API failed', err);
       }
 
       // Fallback
@@ -539,7 +537,7 @@ export default function BaoCaoKhaiThacView() {
           throw new Error('Fallback failed');
         }
       } catch (err) {
-        console.error('Copy failed', err);
+        console.warn('Copy failed', err);
         alert('Không thể copy báo cáo. Vui lòng thử lại hoặc chụp màn hình.');
       }
     };
@@ -872,18 +870,6 @@ export default function BaoCaoKhaiThacView() {
       </footer>
 
       <AnimatePresence>
-        {toast && (
-          <motion.div 
-            initial={{ y: 50, opacity: 0, x: '-50%' }}
-            animate={{ y: 0, opacity: 1, x: '-50%' }}
-            exit={{ y: 20, opacity: 0, x: '-50%' }}
-            className="fixed bottom-24 left-1/2 bg-slate-800 text-white px-6 py-3 rounded-2xl text-xs font-bold z-50 shadow-2xl flex items-center gap-2"
-          >
-            <CheckCircle2 size={14} className="text-emerald-400" />
-            {toast}
-          </motion.div>
-        )}
-
         {showHistory && (
           <motion.div 
             initial={{ opacity: 0 }}
