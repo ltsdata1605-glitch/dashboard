@@ -424,6 +424,7 @@ export const NhanVien: React.FC = () => {
                 {editingBonusEmployee && (
                     <BonusDataModal 
                         employee={editingBonusEmployee} 
+                        nextEmployee={isBatchBonusMode ? allEmployees[allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) + 1] || null : null}
                         supermarketName={activeSupermarkets[0]} 
                         remainingInBatch={isBatchBonusMode ? allEmployees.length - allEmployees.findIndex(e => e.originalName === editingBonusEmployee.originalName) : 0}
                         onClose={handleBonusModalClose}

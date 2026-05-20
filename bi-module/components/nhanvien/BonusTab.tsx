@@ -16,6 +16,8 @@ import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
 import toast from 'react-hot-toast';
 
+let hrmWindowRef: Window | null = null;
+
 const MedalBadge: React.FC<{ rank: number }> = ({ rank }) => {
     const base = "w-7 text-center text-[13px] font-black tabular-nums";
     if (rank === 1) return <span className={`${base} text-amber-500`} title="TOP 1">#1</span>;
@@ -28,11 +30,12 @@ const MedalBadge: React.FC<{ rank: number }> = ({ rank }) => {
 
 export const BonusDataModal: React.FC<{ 
     employee: Employee; 
+    nextEmployee?: Employee | null;
     supermarketName: string;
     onClose: (reason: 'save' | 'skip' | 'stop') => void; 
     onSave: (name: string, metrics: BonusMetrics) => void; 
     remainingInBatch?: number;
-}> = ({ employee, supermarketName, onClose, onSave, remainingInBatch }) => {
+}> = ({ employee, nextEmployee, supermarketName, onClose, onSave, remainingInBatch }) => {
     const [pastedData, setPastedData] = useState('');
     const [error, setError] = useState<string | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -105,7 +108,21 @@ export const BonusDataModal: React.FC<{
                             const text = e.clipboardData.getData('text'); 
                             if (await processAndSave(text)) {
                                 toast.success(`Lưu thành công: ${employee.name}`, { duration: 1500 });
+                                
+                                if (nextEmployee) {
+                                    const nextId = nextEmployee.originalName.split(' - ')[1]?.trim();
+                                    if (nextId) {
+                                        try {
+                                            await navigator.clipboard.writeText(nextId);
+                                            toast.success(`Đã copy: ${nextId}`, { duration: 1500, position: 'top-center' });
+                                        } catch (err) {}
+                                    }
+                                }
+
                                 onClose('save');
+                                if (hrmWindowRef && !hrmWindowRef.closed) {
+                                    hrmWindowRef.focus();
+                                }
                             } else {
                                 setPastedData(text);
                             }
@@ -309,7 +326,7 @@ export const BonusView: React.FC<{
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-3 items-center">
                     <button 
-                        onClick={() => { window.open('https://newinsite.thegioididong.com/office/thuong-nhan-vien', '_blank'); onBatchUpdate(); }}
+                        onClick={() => { hrmWindowRef = window.open('https://newinsite.thegioididong.com/office/thuong-nhan-vien', '_blank'); onBatchUpdate(); }}
                         className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[11px] font-bold border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-all active:scale-95"
                     >
                         <UploadIcon className="h-3.5 w-3.5" />
