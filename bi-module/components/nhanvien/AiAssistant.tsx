@@ -132,8 +132,8 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ danhSachData, thiDuaData }) =
                     {/* Header */}
                     <div className="flex items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 bg-slate-50 dark:bg-slate-900 rounded-t-3xl">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary-100 dark:bg-primary-500/20 rounded-xl">
-                                <SparklesIcon className="h-6 w-6 text-primary-600 dark:text-primary-400"/>
+                            <div className="p-2 bg-indigo-100 dark:bg-indigo-500/20 rounded-xl">
+                                <SparklesIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400"/>
                             </div>
                             <div>
                                 <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">Trợ lý Phân tích BI</h3>
@@ -222,7 +222,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ danhSachData, thiDuaData }) =
                                         <span className="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-tight">AI đang suy nghĩ...</span>
                                     </div>
                                     <div className="h-1.5 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                                        <div className="h-full bg-primary-500 w-1/2 animate-shimmer"></div>
+                                        <div className="h-full bg-indigo-500 w-1/2 animate-shimmer"></div>
                                     </div>
                                 </div>
                             </div>

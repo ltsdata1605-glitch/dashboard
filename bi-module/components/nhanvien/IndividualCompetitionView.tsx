@@ -485,7 +485,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
 
     return (
         <div>
-                <div className="mb-4 flex flex-wrap items-center justify-end gap-2 px-1 no-print js-individual-view-toolbar">
+                <div className="mb-4 flex flex-wrap items-center justify-end gap-2 px-1 no-print js-individual-view-toolbar relative z-50">
                     <div className="flex items-center gap-2 flex-wrap">
                         <div className="relative" ref={filterRef}>
                             <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}>

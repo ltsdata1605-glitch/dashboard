@@ -29,7 +29,21 @@ export function canShareFiles(): boolean {
 export async function shareBlob(blob: Blob, filename: string): Promise<boolean> {
     try {
         const file = new File([blob], filename, { type: 'image/png' });
-        const shareData = { files: [file], title: filename.replace('.png', '') };
+        
+        // Chuyển đổi tên file thành tên bảng hiển thị tiếng Việt
+        let displayName = filename.replace('.png', '').replace(/_/g, ' ');
+        displayName = displayName.replace(/Bonus Report/i, 'Báo Cáo Thưởng');
+        displayName = displayName.replace(/ChiTiet/i, 'Báo Cáo Chi Tiết');
+        displayName = displayName.replace(/BC DoanhThu/i, 'Báo Cáo Doanh Thu');
+        displayName = displayName.replace(/BC CrossSelling/i, 'Báo Cáo Bán Kèm');
+        displayName = displayName.replace(/BC Installment/i, 'Báo Cáo Trả Góp');
+        displayName = displayName.replace(/Competition/i, 'Báo Cáo Thi Đua');
+        
+        const shareData = { 
+            files: [file], 
+            title: displayName,
+            text: displayName
+        };
         
         if (navigator.canShare && navigator.canShare(shareData)) {
             await navigator.share(shareData);
