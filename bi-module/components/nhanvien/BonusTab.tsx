@@ -14,8 +14,7 @@ import { BonusMobileCard } from './bonus/BonusMobileCard';
 import { BonusDesktopRow } from './bonus/BonusDesktopRow';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
-
-
+import toast from 'react-hot-toast';
 
 const MedalBadge: React.FC<{ rank: number }> = ({ rank }) => {
     const base = "w-7 text-center text-[13px] font-black tabular-nums";
@@ -45,7 +44,9 @@ export const BonusDataModal: React.FC<{
 
         const employeeId = employee.originalName.split(' - ')[1]?.trim();
         if (employeeId) {
-            navigator.clipboard.writeText(employeeId).catch(err => console.error('Lỗi copy:', err));
+            navigator.clipboard.writeText(employeeId)
+                .then(() => toast.success(`Đã copy: ${employeeId}`, { duration: 1500, position: 'top-center' }))
+                .catch(err => console.error('Lỗi copy:', err));
         }
     }, [employee.originalName]);
 
@@ -100,8 +101,14 @@ export const BonusDataModal: React.FC<{
                         value={pastedData} 
                         onChange={e => setPastedData(e.target.value)} 
                         onPaste={async (e) => { 
+                            e.preventDefault();
                             const text = e.clipboardData.getData('text'); 
-                            if (await processAndSave(text)) onClose('save'); 
+                            if (await processAndSave(text)) {
+                                toast.success(`Lưu thành công: ${employee.name}`, { duration: 1500 });
+                                onClose('save');
+                            } else {
+                                setPastedData(text);
+                            }
                         }} 
                         placeholder="Click vào đây hoặc nhấn tự động dán (Ctrl + V)..." 
                         className="w-full h-48 py-3 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors resize-none placeholder-slate-400" 
