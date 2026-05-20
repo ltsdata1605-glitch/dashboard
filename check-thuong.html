@@ -1,14 +1,13 @@
-import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"./vendor-ui-CThmjQ6e.js";import{r as y}from"./vendor-charts-CKGyarwB.js";import"./vendor-firebase-Bg-CYcPW.js";const k=`
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng Tra Cứu Thưởng Thi Đua</title>
-    <script src="https://cdn.tailwindcss.com"><\/script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"><\/script>
-    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"><\/script>
-    <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"><\/script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/html-to-image@1.11.13/dist/html-to-image.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/idb-keyval@6/dist/umd.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto+Condensed:wght@400;700&family=Oswald:wght@400;500;600;700&family=Fjalla+One&family=Jost:wght@400;500;600;700&family=Josefin+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -153,13 +152,13 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
             .text-base { font-size: 11px !important; }
             .text-sm { font-size: 10px !important; }
             .text-xs { font-size: 9px !important; }
-            .	ext-[15px] { font-size: 12px !important; }
-            .	ext-[14px] { font-size: 11px !important; }
-            .	ext-[13px] { font-size: 10px !important; }
-            .	ext-[12px] { font-size: 9px !important; }
-            .	ext-[11px] { font-size: 9px !important; }
-            .	ext-[10px] { font-size: 8px !important; }
-            .	ext-[9px] { font-size: 8px !important; }
+            .\text-\[15px\] { font-size: 12px !important; }
+            .\text-\[14px\] { font-size: 11px !important; }
+            .\text-\[13px\] { font-size: 10px !important; }
+            .\text-\[12px\] { font-size: 9px !important; }
+            .\text-\[11px\] { font-size: 9px !important; }
+            .\text-\[10px\] { font-size: 8px !important; }
+            .\text-\[9px\] { font-size: 8px !important; }
             /* Cập nhật các thẻ có inline style cứng */
             span[style*="font-size:13px"] { font-size: 10px !important; }
             span[style*="font-size:12px"] { font-size: 9px !important; }
@@ -398,7 +397,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
             const saveState = () => {
                 if (competitionData && competitionData.length > 0) {
                     idbKeyval.set('checkthuong_data', {
-                        competitionData: competitionData,
+                        // Removed competitionData to prevent massive IDB bloat
                         fileName: fileStatus.textContent.replace('Đã tải: ', '').replace(' (từ bộ nhớ tạm)', ''),
                         uploadTime: fileUploadTime,
                         code1: storeCodeInput1.value,
@@ -408,28 +407,17 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 }
             };
 
-            // Load saved state on init
+            // Load saved state on init (only for codes and view mode, require re-upload for data)
             idbKeyval.get('checkthuong_data').then(savedData => {
-                if (savedData && savedData.competitionData && savedData.competitionData.length > 0) {
-                    competitionData = savedData.competitionData;
-                    fileUploadTime = savedData.uploadTime || new Date().toISOString();
-                    preProcessData(competitionData);
-                    
-                    if (savedData.fileName) {
-                        fileStatus.textContent = \`Đã tải: \${savedData.fileName} (từ bộ nhớ tạm)\`;
-                        fileStatus.className = 'mt-4 text-center text-sm font-medium text-green-600';
-                        searchSection.classList.remove('hidden');
-                        landingPage.classList.add('hidden');
-                        changeFileButton.classList.remove('hidden');
-                    }
-                    
+                if (savedData) {
                     if (savedData.code1) storeCodeInput1.value = savedData.code1;
                     if (savedData.code2) storeCodeInput2.value = savedData.code2;
                     if (savedData.singleViewMode) singleViewMode = savedData.singleViewMode;
                     
-                    window.parent.postMessage({ type: 'CHECK_THUONG_FILE_LOADED', code1: storeCodeInput1.value, code2: storeCodeInput2.value }, '*');
-                    
-                    if(storeCodeInput1.value) handleSearchOrCompare();
+                    if (savedData.competitionData && savedData.competitionData.length > 0) {
+                        // Legacy support if they still have old data in IDB, we clear it out to save space
+                        idbKeyval.delete('checkthuong_data');
+                    }
                 }
             }).catch(e => console.warn('IDB Load Error:', e));
 
@@ -443,13 +431,13 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 let str = String(val).trim();
                 if (str === '-' || str === '') return 0;
                 // Remove spaces and currency symbols
-                str = str.replace(/[^d.,-]/g, '');
+                str = str.replace(/[^\d.,-]/g, '');
                 // Handle Vietnamese format (1.000.000,50) vs US format (1,000,000.50)
                 const lastDot = str.lastIndexOf('.');
                 const lastComma = str.lastIndexOf(',');
                 if (lastComma > lastDot) {
                     // Comma is decimal separator: 1.000.000,50 -> 1000000.50
-                    str = str.replace(/./g, '').replace(',', '.');
+                    str = str.replace(/\./g, '').replace(',', '.');
                 } else if (lastDot > lastComma) {
                     // Dot is decimal separator: 1,000,000.50 -> 1000000.50
                     str = str.replace(/,/g, '');
@@ -457,14 +445,14 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     // Only one type of separator
                     if (str.includes(',')) {
                         // If multiple commas or 3 digits after comma, it's likely a thousand separator
-                        if (str.split(',').length > 2 || str.match(/,d{3}$/)) {
+                        if (str.split(',').length > 2 || str.match(/,\d{3}$/)) {
                             str = str.replace(/,/g, '');
                         } else {
                             str = str.replace(',', '.');
                         }
                     } else if (str.includes('.')) {
-                        if (str.split('.').length > 2 || str.match(/.d{3}$/)) {
-                            str = str.replace(/./g, '');
+                        if (str.split('.').length > 2 || str.match(/\.\d{3}$/)) {
+                            str = str.replace(/\./g, '');
                         }
                     }
                 }
@@ -699,10 +687,10 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     version: "V8.0 - Giao diện so sánh chuyên nghiệp",
                     date: "26/09/2025 09:45:00",
                     changes: [
-                        "Thiết kế lại hoàn toàn giao diện so sánh với bố cục \\"Đối Đầu Trực Tiếp\\" (Head-to-Head).",
+                        "Thiết kế lại hoàn toàn giao diện so sánh với bố cục \"Đối Đầu Trực Tiếp\" (Head-to-Head).",
                         "Thêm các thẻ phân tích tổng quan, làm nổi bật các chỉ số chính và bên đang chiếm ưu thế.",
-                        "Bổ sung mục \\"Phân Tích Nhanh\\" để tự động tóm tắt các điểm mạnh vượt trội của mỗi kho.",
-                        "Cải tiến bảng so sánh chi tiết với cột \\"Chênh lệch\\", giúp định lượng hóa sự khác biệt về hiệu suất."
+                        "Bổ sung mục \"Phân Tích Nhanh\" để tự động tóm tắt các điểm mạnh vượt trội của mỗi kho.",
+                        "Cải tiến bảng so sánh chi tiết với cột \"Chênh lệch\", giúp định lượng hóa sự khác biệt về hiệu suất."
                     ]
                 }
             ];
@@ -716,15 +704,15 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
             };
             
             function renderVersionHistory() {
-                versionModalBody.innerHTML = versionHistory.map(v => \`
+                versionModalBody.innerHTML = versionHistory.map(v => `
                     <div>
-                        <h4 class="text-lg font-bold text-[#1d1d1f]">\${v.version}</h4>
-                        <p class="text-sm text-gray-500 mb-2">\${v.date}</p>
+                        <h4 class="text-lg font-bold text-[#1d1d1f]">${v.version}</h4>
+                        <p class="text-sm text-gray-500 mb-2">${v.date}</p>
                         <ul class="list-disc list-inside space-y-1 text-[#6e6e73]">
-                            \${v.changes.map(change => \`<li>\${change}</li>\`).join('')}
+                            ${v.changes.map(change => `<li>${change}</li>`).join('')}
                         </ul>
                     </div>
-                \`).join('<hr class="my-6 border-gray-200">');
+                `).join('<hr class="my-6 border-gray-200">');
             }
 
 
@@ -740,19 +728,19 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     const nganhHang = row[COLS.NGANH_HANG]; 
                     const kenh = row[COLS.KENH] || 'N/A';
                     if (!nganhHang) return; 
-                    const key = \`\${kenh}|\${nganhHang}\`;
+                    const key = `${kenh}|${nganhHang}`;
                     if (parseNumber(row[COLS.TONG_THUONG]) > 0) { 
                         fundStatusByGroup[key] = true; 
                     } 
                 }); 
                 const allGroups = new Set(data.map(row => {
                     if (!row[COLS.NGANH_HANG]) return null;
-                    return \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG]}\`;
+                    return `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`;
                 }).filter(Boolean)); 
                 noFundGroups = new Set([...allGroups].filter(group => !fundStatusByGroup[group])); 
                 const groups = {}; 
                 data.forEach(row => { 
-                    const key = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG] || 'N/A'}\`; 
+                    const key = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG] || 'N/A'}`; 
                     if (!groups[key]) groups[key] = []; 
                     groups[key].push(parseNumber(row[COLS.PERCENT_DU_KIEN])); 
                 }); 
@@ -785,18 +773,18 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                             dataArray = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
                         } else { // Handle CSV and other text files
                             const textContent = e.target.result;
-                            const rows = textContent.split(/\\r\\n|\\n|\\r/);
+                            const rows = textContent.split(/\r\n|\n|\r/);
                             // Auto-detect delimiter: check for tab, semicolon, or comma in the first few rows
                             let delimiter = ',';
                             const sampleRow = rows.length > 2 ? rows[2] : (rows[0] || '');
-                            if (sampleRow.includes('\\t')) delimiter = '\\t';
+                            if (sampleRow.includes('\t')) delimiter = '\t';
                             else if (sampleRow.includes(';')) delimiter = ';';
                             dataArray = rows.map(row => row.split(delimiter));
                         }
                         let headerRowIndex = -1;
                         let debugInfo = [];
                         for (let i = 0; i < Math.min(10, dataArray.length); i++) {
-                            debugInfo.push(\`Dòng \${i + 1}: \${JSON.stringify(dataArray[i])}\`);
+                            debugInfo.push(`Dòng ${i + 1}: ${JSON.stringify(dataArray[i])}`);
                             if (validateDataStructure(dataArray[i])) {
                                 headerRowIndex = i;
                                 break;
@@ -812,7 +800,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                         competitionData = dataArray.slice(dataStartIndex).filter(row => row && row.length > 0 && row.some(cell => cell !== undefined && cell !== null && String(cell).trim() !== ''));
                         if (competitionData.length === 0) throw new Error("File không có dữ liệu hợp lệ.");
                         preProcessData(competitionData);
-                        fileStatus.textContent = \`Đã tải: \${file.name}\`;
+                        fileStatus.textContent = `Đã tải: ${file.name}`;
                         fileStatus.className = 'mt-4 text-center text-sm font-medium text-green-600';
                         searchSection.classList.remove('hidden');
                         landingPage.classList.add('hidden');
@@ -823,7 +811,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                         saveState();
                     } catch (error) {
                         const message = error instanceof Error ? error.message : String(error);
-                        fileStatus.textContent = \`Lỗi: \${message}\`;
+                        fileStatus.textContent = `Lỗi: ${message}`;
                         fileStatus.className = 'mt-4 text-left text-sm font-medium text-red-600 whitespace-pre-wrap bg-red-50 p-4 rounded-lg border border-red-200 overflow-auto max-h-60';
                     }
                 };
@@ -878,21 +866,21 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 if (storeStr === searchCode) return true;
                 
                 // 2. Extract the first number sequence from the store string (e.g., "123" from "123 - Vĩnh Phúc")
-                const codeMatch = storeStr.match(/^(d+)/);
+                const codeMatch = storeStr.match(/^(\d+)/);
                 if (codeMatch && codeMatch[1] === searchCode) return true;
                 
                 // 3. Match distinct word
                 try {
                     // Escape special characters for regex
-                    const escapedCode = searchCode.replace(/[-/\\\\^\\$*+?.()|[\\]{}]/g, '\\\\$&');
-                    const regex = new RegExp(\`(^|[^a-zA-Z0-9])\${escapedCode}([^a-zA-Z0-9]|$)\`, 'i');
+                    const escapedCode = searchCode.replace(/[-/\\^\$*+?.()|[\]{}]/g, '\\$&');
+                    const regex = new RegExp(`(^|[^a-zA-Z0-9])${escapedCode}([^a-zA-Z0-9]|$)`, 'i');
                     if (regex.test(storeStr)) return true;
                 } catch (e) {
                     // Ignore regex errors
                 }
                 
                 // 4. Fallback: if searchCode is not purely numeric, do a simple includes
-                if (!/^\\d+$/.test(searchCode) && storeStr.includes(searchCode)) return true;
+                if (!/^\d+$/.test(searchCode) && storeStr.includes(searchCode)) return true;
                 
                 return false;
             };
@@ -901,7 +889,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 comparisonContent.classList.add('hidden');
                 currentStoreData = competitionData.filter(row => isMatchStore(row, storeCode)); 
                 if (currentStoreData.length === 0) { 
-                    messageEl.textContent = \`Không tìm thấy kết quả nào cho mã kho "\${storeCode}". Vui lòng kiểm tra lại mã kho.\`; 
+                    messageEl.textContent = `Không tìm thấy kết quả nào cho mã kho "${storeCode}". Vui lòng kiểm tra lại mã kho.`; 
                     messageEl.classList.remove('hidden');
                     mainContent.classList.add('hidden');
                     return; 
@@ -919,7 +907,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 const storeInfoParts = storeInfo.split(' - ');
                 const storeInfoShort = storeInfoParts.length > 1 ? storeInfoParts[storeInfoParts.length - 1].trim() : storeInfo;
                 
-                summaryCard.innerHTML = \`
+                summaryCard.innerHTML = `
                     <div style="position:absolute;top:10px;right:10px;display:flex;gap:6px;z-index:10" class="no-print">
                         <button id="exportFullPageImageButton" title="Xuất ảnh toàn bộ trang" style="padding:5px;border-radius:6px;background:rgba(255,255,255,0.15);border:none;color:#fff;cursor:pointer;transition:all 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><circle cx="10" cy="12" r="2"/><path d="m20 17-1.296-1.296a2.41 2.41 0 0 0-3.408 0L9 22"/></svg>
@@ -931,22 +919,22 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     <p style="font-size:11px;opacity:0.8;margin:0 0 2px 0;font-weight:500;display:flex;align-items:center;gap:6px">
                         Kết quả tra cứu
                         <span style="opacity:0.5">•</span>
-                        <span style="font-weight:400;opacity:0.9">\${timeStr}</span>
+                        <span style="font-weight:400;opacity:0.9">${timeStr}</span>
                     </p>
-                    <h2 style="font-size:16px;font-weight:800;margin:0;letter-spacing:-0.02em" class="truncate">\${storeInfoShort}</h2>
+                    <h2 style="font-size:16px;font-weight:800;margin:0;letter-spacing:-0.02em" class="truncate">${storeInfoShort}</h2>
                     <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.12)">
                         <p style="font-size:10px;opacity:0.6;margin:0;font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Tổng tiền thưởng dự kiến</p>
-                        <p style="font-size:28px;font-weight:800;margin:4px 0 0 0;letter-spacing:-0.02em">\${formatCurrencyFull(totalBonus)}</p>
+                        <p style="font-size:28px;font-weight:800;margin:4px 0 0 0;letter-spacing:-0.02em">${formatCurrencyFull(totalBonus)}</p>
                     </div>
-                \`;
-                 top10InfoCard.innerHTML = \`
+                `;
+                 top10InfoCard.innerHTML = `
                     <div style="display:flex;align-items:center;gap:8px">
                         <div style="width:3px;height:16px;background:linear-gradient(to bottom,#6366f1,#a78bfa);border-radius:2px"></div>
                         <span style="font-size:12px;font-weight:600;color:#6b7280">Tiêu Chí Đạt Giải:</span>
-                        <span style="font-size:13px;font-weight:700;color:#4f46e5">Lấy Top \${top10Value} Theo Kênh</span>
+                        <span style="font-size:13px;font-weight:700;color:#4f46e5">Lấy Top ${top10Value} Theo Kênh</span>
                     </div>
                     <div id="filterContainer" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px"></div>
-                \`;
+                `;
                 renderAnalysis(currentStoreData, totalBonus); 
                 renderGroupedResults(currentStoreData); 
                 renderSummaryAndFilters(getGroupDefinitions(currentStoreData)); 
@@ -962,8 +950,8 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 
                 if (store1Data.length === 0 || store2Data.length === 0) {
                     let errorMsg = '';
-                    if (store1Data.length === 0) errorMsg += \`Không tìm thấy dữ liệu cho kho "\${code1}". \`;
-                    if (store2Data.length === 0) errorMsg += \`Không tìm thấy dữ liệu cho kho "\${code2}".\`;
+                    if (store1Data.length === 0) errorMsg += `Không tìm thấy dữ liệu cho kho "${code1}". `;
+                    if (store2Data.length === 0) errorMsg += `Không tìm thấy dữ liệu cho kho "${code2}".`;
                     messageEl.textContent = errorMsg;
                     messageEl.classList.remove('hidden');
                     comparisonContent.classList.add('hidden');
@@ -975,8 +963,8 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
             }
 
             function renderComparison(store1Data, store2Data) {
-                const store1Info = store1Data[0]?.[COLS.SIÊU_THỊ] || \`Kho \${storeCodeInput1.value}\`;
-                const store2Info = store2Data[0]?.[COLS.SIÊU_THỊ] || \`Kho \${storeCodeInput2.value}\`;
+                const store1Info = store1Data[0]?.[COLS.SIÊU_THỊ] || `Kho ${storeCodeInput1.value}`;
+                const store2Info = store2Data[0]?.[COLS.SIÊU_THỊ] || `Kho ${storeCodeInput2.value}`;
                 // Extract readable name: take text after the last " - " dash
                 const extractShortName = (fullName) => {
                     if (!fullName) return '';
@@ -1003,7 +991,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     if (val1 === val2) return '';
                     const isWinner1 = lowerIsBetter ? val1 < val2 : val1 > val2;
                     return isWinner1 
-                        ? \`<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>\` 
+                        ? `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>` 
                         : '';
                 };
                 
@@ -1012,23 +1000,23 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                         ? { bg: 'bg-gradient-to-br from-blue-50 to-white', border: 'border-blue-100', text: 'text-blue-800', badgeBg: 'bg-blue-100', badgeText: 'text-blue-700', icon: 'text-blue-500' }
                         : { bg: 'bg-gradient-to-br from-purple-50 to-white', border: 'border-purple-100', text: 'text-purple-800', badgeBg: 'bg-purple-100', badgeText: 'text-purple-700', icon: 'text-purple-500' };
 
-                     return \`
-                        <div class="\${colorScheme.bg} p-3 border \${colorScheme.border} rounded-xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
+                     return `
+                        <div class="${colorScheme.bg} p-3 border ${colorScheme.border} rounded-xl shadow-sm hover:shadow-md transition-shadow relative overflow-hidden">
                              <div class="absolute top-0 right-0 p-2 opacity-10">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 \${colorScheme.icon}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 ${colorScheme.icon}" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 22h20L12 2z"/></svg>
                              </div>
                              <div class="relative z-10 flex items-center gap-1.5 mb-1.5">
-                                <span class="text-[10px] font-bold py-0.5 px-2 rounded-full \${colorScheme.badgeBg} \${colorScheme.badgeText} shadow-sm border border-white/50">\${storeCode}</span>
-                                <h3 class="text-sm font-bold truncate \${colorScheme.text}">\${storeName}</h3>
+                                <span class="text-[10px] font-bold py-0.5 px-2 rounded-full ${colorScheme.badgeBg} ${colorScheme.badgeText} shadow-sm border border-white/50">${storeCode}</span>
+                                <h3 class="text-sm font-bold truncate ${colorScheme.text}">${storeName}</h3>
                              </div>
                              <div class="relative z-10 space-y-0.5">
-                                <div class="flex justify-between items-center pb-1 border-b border-gray-100/50"><span class="text-gray-500 font-medium text-[10px]">Tổng Thưởng</span><div class="flex items-center gap-1"><span class="font-extrabold text-base text-gray-900">\${formatCurrency(stats.totalBonus)}</span> \${isStore1 ? getWinnerIcon(stats.totalBonus, opponentStats.totalBonus) : getWinnerIcon(opponentStats.totalBonus, stats.totalBonus)}</div></div>
-                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">Đạt thưởng</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">\${stats.achieved}</span> \${isStore1 ? getWinnerIcon(stats.achieved, opponentStats.achieved) : getWinnerIcon(opponentStats.achieved, stats.achieved)}</div></div>
-                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">Sắp có thưởng</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">\${stats.nearly}</span> \${isStore1 ? getWinnerIcon(stats.nearly, opponentStats.nearly) : getWinnerIcon(opponentStats.nearly, stats.nearly)}</div></div>
-                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">Bottom 50%</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">\${stats.bottom50}</span> \${isStore1 ? getWinnerIcon(stats.bottom50, opponentStats.bottom50, true) : getWinnerIcon(opponentStats.bottom50, stats.bottom50, true)}</div></div>
-                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">No Sale</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">\${stats.noSale}</span> \${isStore1 ? getWinnerIcon(stats.noSale, opponentStats.noSale, true) : getWinnerIcon(opponentStats.noSale, stats.noSale, true)}</div></div>
+                                <div class="flex justify-between items-center pb-1 border-b border-gray-100/50"><span class="text-gray-500 font-medium text-[10px]">Tổng Thưởng</span><div class="flex items-center gap-1"><span class="font-extrabold text-base text-gray-900">${formatCurrency(stats.totalBonus)}</span> ${isStore1 ? getWinnerIcon(stats.totalBonus, opponentStats.totalBonus) : getWinnerIcon(opponentStats.totalBonus, stats.totalBonus)}</div></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">Đạt thưởng</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">${stats.achieved}</span> ${isStore1 ? getWinnerIcon(stats.achieved, opponentStats.achieved) : getWinnerIcon(opponentStats.achieved, stats.achieved)}</div></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">Sắp có thưởng</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">${stats.nearly}</span> ${isStore1 ? getWinnerIcon(stats.nearly, opponentStats.nearly) : getWinnerIcon(opponentStats.nearly, stats.nearly)}</div></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">Bottom 50%</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">${stats.bottom50}</span> ${isStore1 ? getWinnerIcon(stats.bottom50, opponentStats.bottom50, true) : getWinnerIcon(opponentStats.bottom50, stats.bottom50, true)}</div></div>
+                                <div class="flex justify-between items-center"><span class="text-gray-500 font-medium text-[10px]">No Sale</span><div class="flex items-center gap-1"><span class="font-bold text-xs text-gray-800">${stats.noSale}</span> ${isStore1 ? getWinnerIcon(stats.noSale, opponentStats.noSale, true) : getWinnerIcon(opponentStats.noSale, stats.noSale, true)}</div></div>
                              </div>
-                        </div>\`;
+                        </div>`;
                 };
 
                 const allCategories = [...new Set([...store1Data.map(r => r[COLS.NGANH_HANG]), ...store2Data.map(r => r[COLS.NGANH_HANG])])];
@@ -1088,18 +1076,18 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     const bgStore1 = 'bg-blue-50/40';
                     const bgStore2 = 'bg-purple-50/40';
 
-                    const formattedCategory = \`#\${index}. \${category}\`;
+                    const formattedCategory = `#${index}. ${category}`;
                     
-                    tableRowsHtml += \`<tr class="hover:bg-gray-100 transition-colors group text-[10px]">
-                        <td class="px-1 py-1 font-semibold text-gray-700 sticky left-0 bg-white group-hover:bg-gray-50 transition-colors border-r border-gray-200 shadow-[1px_0_0_0_#e5e7eb] truncate max-w-[120px] z-0 text-[10px]" title="\${category}">\${formattedCategory}</td>
-                        <td class="px-0.5 py-1 text-center \${bgStore1} \${percentColor1} border-r border-gray-200">\${row1 ? formatPercent(percent1) : '-'}</td>
-                        <td class="px-0.5 py-1 text-center \${bgStore1} \${textClass1} border-r border-gray-200">\${rankV1 !== Infinity ? rankV1 : '-'}</td>
-                        <td class="px-0.5 py-1 text-center \${bgStore1} \${textClass1} border-r border-gray-200">\${formatBonus(bonus1)}</td>
-                        <td class="px-0.5 py-1 text-center \${bgStore2} \${percentColor2} border-r border-gray-200">\${row2 ? formatPercent(percent2) : '-'}</td>
-                        <td class="px-0.5 py-1 text-center \${bgStore2} \${textClass2} border-r border-gray-200">\${rankV2 !== Infinity ? rankV2 : '-'}</td>
-                        <td class="px-0.5 py-1 text-center \${bgStore2} \${textClass2} border-r border-gray-200">\${formatBonus(bonus2)}</td>
-                        <td class="px-1 py-1 text-center bg-emerald-50/30"><span class="\${getDiffClass(bonusDiff)}">\${formatBonus(bonusDiff)}</span></td>
-                    </tr>\`;
+                    tableRowsHtml += `<tr class="hover:bg-gray-100 transition-colors group text-[10px]">
+                        <td class="px-1 py-1 font-semibold text-gray-700 sticky left-0 bg-white group-hover:bg-gray-50 transition-colors border-r border-gray-200 shadow-[1px_0_0_0_#e5e7eb] truncate max-w-[120px] z-0 text-[10px]" title="${category}">${formattedCategory}</td>
+                        <td class="px-0.5 py-1 text-center ${bgStore1} ${percentColor1} border-r border-gray-200">${row1 ? formatPercent(percent1) : '-'}</td>
+                        <td class="px-0.5 py-1 text-center ${bgStore1} ${textClass1} border-r border-gray-200">${rankV1 !== Infinity ? rankV1 : '-'}</td>
+                        <td class="px-0.5 py-1 text-center ${bgStore1} ${textClass1} border-r border-gray-200">${formatBonus(bonus1)}</td>
+                        <td class="px-0.5 py-1 text-center ${bgStore2} ${percentColor2} border-r border-gray-200">${row2 ? formatPercent(percent2) : '-'}</td>
+                        <td class="px-0.5 py-1 text-center ${bgStore2} ${textClass2} border-r border-gray-200">${rankV2 !== Infinity ? rankV2 : '-'}</td>
+                        <td class="px-0.5 py-1 text-center ${bgStore2} ${textClass2} border-r border-gray-200">${formatBonus(bonus2)}</td>
+                        <td class="px-1 py-1 text-center bg-emerald-50/30"><span class="${getDiffClass(bonusDiff)}">${formatBonus(bonusDiff)}</span></td>
+                    </tr>`;
                     index++;
                 }
                 
@@ -1108,21 +1096,21 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     const sorted = storeData.filter(r => parseNumber(r[COLS.TONG_THUONG]) > 0)
                                       .sort((a,b) => parseNumber(b[COLS.TONG_THUONG]) - parseNumber(a[COLS.TONG_THUONG]))
                                       .slice(0, 3);
-                    if (sorted.length === 0) return \`<p class="text-gray-500 italic px-1 text-[10px]">Không có môn nào có thưởng.</p>\`;
+                    if (sorted.length === 0) return `<p class="text-gray-500 italic px-1 text-[10px]">Không có môn nào có thưởng.</p>`;
                     
                     const colorClass = isStore1 ? 'text-blue-700' : 'text-purple-700';
                     
-                    return \`<ul class="space-y-0">\` + sorted.map(item => \`<li class="flex justify-between items-center py-0.5 border-b border-gray-100 last:border-0"><strong class="text-gray-700 truncate mr-1.5 text-[10px]" title="\${item[COLS.NGANH_HANG]}">\${item[COLS.NGANH_HANG]}</strong> <span class="font-bold \${colorClass} text-[10px] whitespace-nowrap">\${formatCurrencySimple(item[COLS.TONG_THUONG])}</span></li>\`).join('') + \`</ul>\`;
+                    return `<ul class="space-y-0">` + sorted.map(item => `<li class="flex justify-between items-center py-0.5 border-b border-gray-100 last:border-0"><strong class="text-gray-700 truncate mr-1.5 text-[10px]" title="${item[COLS.NGANH_HANG]}">${item[COLS.NGANH_HANG]}</strong> <span class="font-bold ${colorClass} text-[10px] whitespace-nowrap">${formatCurrencySimple(item[COLS.TONG_THUONG])}</span></li>`).join('') + `</ul>`;
                 };
 
                 const store1AwardedHtml = store1Data.filter(r => parseNumber(r[COLS.TONG_THUONG]) > 0)
                     .sort((a, b) => parseNumber(b[COLS.TONG_THUONG]) - parseNumber(a[COLS.TONG_THUONG]))
-                    .map((r, i) => \`<li class="flex justify-between items-center py-0.5 border-b border-gray-100 last:border-0"><div class="flex items-center gap-1 overflow-hidden"><span class="font-bold text-blue-300 text-[10px]">#\${i+1}</span><strong class="truncate text-[10px] text-gray-700" title="\${r[COLS.NGANH_HANG]}">\${r[COLS.NGANH_HANG]}</strong></div> <span class="font-semibold text-blue-700 whitespace-nowrap ml-1.5 text-[10px]">\${formatCurrencySimple(r[COLS.TONG_THUONG])}</span></li>\`) 
-                    .join('') || \`<li class="italic text-gray-400 text-[10px]">Không có</li>\`;
+                    .map((r, i) => `<li class="flex justify-between items-center py-0.5 border-b border-gray-100 last:border-0"><div class="flex items-center gap-1 overflow-hidden"><span class="font-bold text-blue-300 text-[10px]">#${i+1}</span><strong class="truncate text-[10px] text-gray-700" title="${r[COLS.NGANH_HANG]}">${r[COLS.NGANH_HANG]}</strong></div> <span class="font-semibold text-blue-700 whitespace-nowrap ml-1.5 text-[10px]">${formatCurrencySimple(r[COLS.TONG_THUONG])}</span></li>`) 
+                    .join('') || `<li class="italic text-gray-400 text-[10px]">Không có</li>`;
                 const store2AwardedHtml = store2Data.filter(r => parseNumber(r[COLS.TONG_THUONG]) > 0)
                     .sort((a, b) => parseNumber(b[COLS.TONG_THUONG]) - parseNumber(a[COLS.TONG_THUONG]))
-                    .map((r, i) => \`<li class="flex justify-between items-center py-0.5 border-b border-gray-100 last:border-0"><div class="flex items-center gap-1 overflow-hidden"><span class="font-bold text-purple-300 text-[10px]">#\${i+1}</span><strong class="truncate text-[10px] text-gray-700" title="\${r[COLS.NGANH_HANG]}">\${r[COLS.NGANH_HANG]}</strong></div> <span class="font-semibold text-purple-700 whitespace-nowrap ml-1.5 text-[10px]">\${formatCurrencySimple(r[COLS.TONG_THUONG])}</span></li>\`)
-                    .join('') || \`<li class="italic text-gray-400 text-[10px]">Không có</li>\`;
+                    .map((r, i) => `<li class="flex justify-between items-center py-0.5 border-b border-gray-100 last:border-0"><div class="flex items-center gap-1 overflow-hidden"><span class="font-bold text-purple-300 text-[10px]">#${i+1}</span><strong class="truncate text-[10px] text-gray-700" title="${r[COLS.NGANH_HANG]}">${r[COLS.NGANH_HANG]}</strong></div> <span class="font-semibold text-purple-700 whitespace-nowrap ml-1.5 text-[10px]">${formatCurrencySimple(r[COLS.TONG_THUONG])}</span></li>`)
+                    .join('') || `<li class="italic text-gray-400 text-[10px]">Không có</li>`;
 
                 const sortClass = comparisonSortState.key === 'bonusDiff' ? (comparisonSortState.direction === 'asc' ? 'sort-asc' : 'sort-desc') : '';
 
@@ -1132,7 +1120,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     return parts.length > 1 ? parts[parts.length - 1] : name;
                 };
 
-                comparisonContent.innerHTML = \`
+                comparisonContent.innerHTML = `
                     <div class="space-y-4">
                         <div id="captureComparisonMain">
                             <div class="bg-white/80 backdrop-blur-sm border border-gray-200/80 p-3 shadow-sm mb-3 rounded-xl flex justify-between items-center">
@@ -1142,7 +1130,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                                 </button>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-2">\${renderStatCard(store1NameShort, storeCodeInput1.value.trim(), stats1, stats2, true)}\${renderStatCard(store2NameShort, storeCodeInput2.value.trim(), stats2, stats1, false)}</div>
+                            <div class="grid grid-cols-2 gap-2">${renderStatCard(store1NameShort, storeCodeInput1.value.trim(), stats1, stats2, true)}${renderStatCard(store2NameShort, storeCodeInput2.value.trim(), stats2, stats1, false)}</div>
                             
                             <div id="strengthsAnalysisSection" class="bg-white/90 backdrop-blur-md border border-gray-200/60 shadow-sm rounded-xl p-3 mt-4">
                                 <div class="flex justify-between items-center mb-2 pb-2 border-b border-gray-100/80">
@@ -1154,18 +1142,18 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                                  <div class="grid grid-cols-2 gap-2 text-xs" id="topStrengthsContainer">
                                     <div class="border border-blue-200 bg-white rounded-lg overflow-hidden">
                                         <div class="bg-blue-50/70 p-1.5 border-b border-blue-100">
-                                            <h4 class="font-bold text-blue-800 flex items-center gap-1 text-[11px]"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> \${store1NameShort}</h4>
+                                            <h4 class="font-bold text-blue-800 flex items-center gap-1 text-[11px]"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> ${store1NameShort}</h4>
                                         </div>
                                         <div class="p-1.5">
-                                            \${renderTop3Strengths(store1Data, true)}
+                                            ${renderTop3Strengths(store1Data, true)}
                                         </div>
                                     </div>
                                     <div class="border border-purple-200 bg-white rounded-lg overflow-hidden">
                                         <div class="bg-purple-50/70 p-1.5 border-b border-purple-100">
-                                            <h4 class="font-bold text-purple-800 flex items-center gap-1 text-[11px]"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> \${store2NameShort}</h4>
+                                            <h4 class="font-bold text-purple-800 flex items-center gap-1 text-[11px]"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> ${store2NameShort}</h4>
                                         </div>
                                         <div class="p-1.5">
-                                            \${renderTop3Strengths(store2Data, false)}
+                                            ${renderTop3Strengths(store2Data, false)}
                                         </div>
                                     </div>
                                  </div>
@@ -1173,12 +1161,12 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                                     <h3 class="text-md font-bold text-center mb-4 text-gray-800">Danh sách tất cả các môn có giải</h3>
                                     <div class="grid grid-cols-2 gap-3 text-xs">
                                         <div class="border border-blue-100 p-3 rounded-lg">
-                                            <h4 class="font-bold text-blue-800 mb-2 flex items-center gap-2 border-b border-blue-100/50 pb-1.5">Kho \${store1NameShort}</h4>
-                                            <ul class="space-y-0 text-gray-700">\${store1AwardedHtml}</ul>
+                                            <h4 class="font-bold text-blue-800 mb-2 flex items-center gap-2 border-b border-blue-100/50 pb-1.5">Kho ${store1NameShort}</h4>
+                                            <ul class="space-y-0 text-gray-700">${store1AwardedHtml}</ul>
                                         </div>
                                         <div class="border border-purple-100 p-3 rounded-lg">
-                                            <h4 class="font-bold text-purple-800 mb-2 flex items-center gap-2 border-b border-purple-100/50 pb-1.5">Kho \${store2NameShort}</h4>
-                                            <ul class="space-y-0 text-gray-700">\${store2AwardedHtml}</ul>
+                                            <h4 class="font-bold text-purple-800 mb-2 flex items-center gap-2 border-b border-purple-100/50 pb-1.5">Kho ${store2NameShort}</h4>
+                                            <ul class="space-y-0 text-gray-700">${store2AwardedHtml}</ul>
                                         </div>
                                     </div>
                                  </div>
@@ -1197,9 +1185,9 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                                     <thead class="sticky top-0 z-10 text-[10px]">
                                         <tr>
                                             <th rowspan="2" class="px-1 py-1 text-center font-bold text-gray-700 sticky left-0 bg-slate-100 align-middle uppercase border-b border-r border-gray-200 shadow-[1px_0_0_0_#e5e7eb] z-20 text-[9px] min-w-[80px]">Ngành Hàng</th>
-                                            <th colspan="3" class="px-0.5 py-1 text-center font-bold text-blue-800 border-b border-r border-gray-200 bg-blue-100 truncate max-w-[90px] text-[10px]" title="\${store1NameShort}">\${shortenName(store1NameShort)}</th>
-                                            <th colspan="3" class="px-0.5 py-1 text-center font-bold text-purple-800 border-b border-r border-gray-200 bg-purple-100 truncate max-w-[90px] text-[10px]" title="\${store2NameShort}">\${shortenName(store2NameShort)}</th>
-                                            <th rowspan="2" class="px-1 py-1 text-center font-bold text-emerald-800 border-b border-gray-200 bg-emerald-100/60 align-middle sortable \${sortClass} hover:bg-emerald-100 transition cursor-pointer group w-[50px] text-[9px]" data-sort-key="bonusDiff">
+                                            <th colspan="3" class="px-0.5 py-1 text-center font-bold text-blue-800 border-b border-r border-gray-200 bg-blue-100 truncate max-w-[90px] text-[10px]" title="${store1NameShort}">${shortenName(store1NameShort)}</th>
+                                            <th colspan="3" class="px-0.5 py-1 text-center font-bold text-purple-800 border-b border-r border-gray-200 bg-purple-100 truncate max-w-[90px] text-[10px]" title="${store2NameShort}">${shortenName(store2NameShort)}</th>
+                                            <th rowspan="2" class="px-1 py-1 text-center font-bold text-emerald-800 border-b border-gray-200 bg-emerald-100/60 align-middle sortable ${sortClass} hover:bg-emerald-100 transition cursor-pointer group w-[50px] text-[9px]" data-sort-key="bonusDiff">
                                                 <div class="flex items-center justify-center gap-0.5 uppercase">+/- <span class="text-emerald-400 group-hover:text-emerald-600">&#8597;</span></div>
                                             </th>
                                         </tr>
@@ -1212,12 +1200,12 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                                             <th class="px-0.5 py-1 text-center font-semibold text-purple-800 border-b border-r border-gray-200 bg-purple-50/80 text-[9px]">Thưởng</th>
                                         </tr>
                                     </thead>
-                                    <tbody class="divide-y divide-gray-200 bg-white">\${tableRowsHtml}</tbody>
+                                    <tbody class="divide-y divide-gray-200 bg-white">${tableRowsHtml}</tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-                \`;
+                `;
             }
 
             function renderAnalysis(data, totalBonus) {
@@ -1226,10 +1214,10 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 const achievedCount = data.filter(row => parseNumber(row[COLS.TONG_THUONG]) > 0).length; 
                 const totalCategories = data.length; 
                 const warningList = data.filter(row => { const bonus = parseNumber(row[COLS.TONG_THUONG]); if (bonus === 0) return false; const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); if (isNaN(cutoffRank)) return false; const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); const isAtRiskVuot = !isNaN(rankVuot) && rankVuot <= cutoffRank && rankVuot > cutoffRank - 3; const isAtRiskTarget = !isNaN(rankTarget) && rankTarget <= cutoffRank && rankTarget > cutoffRank - 3; return isAtRiskVuot || isAtRiskTarget; }); 
-                const opportunityList = data.filter(row => { const groupKey = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG]}\`; if (noFundGroups.has(groupKey)) return false; if (parseNumber(row[COLS.TONG_THUONG]) > 0) return false; const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); if (isNaN(cutoffRank)) return false; const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); const isNearlyVuot = !isNaN(rankVuot) && rankVuot > cutoffRank && rankVuot <= cutoffRank + 20; const isNearlyTarget = !isNaN(rankTarget) && rankTarget > cutoffRank && rankTarget <= cutoffRank + 20; return isNearlyVuot || isNearlyTarget; }).map(row => { const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); let ranksNeeded = Infinity; if (!isNaN(rankVuot) && rankVuot > cutoffRank) ranksNeeded = Math.min(ranksNeeded, rankVuot - cutoffRank); if (!isNaN(rankTarget) && rankTarget > cutoffRank) ranksNeeded = Math.min(ranksNeeded, rankTarget - cutoffRank); return { name: row[COLS.NGANH_HANG], ranksNeeded: ranksNeeded, kenh: row[COLS.KENH] }; }).sort((a,b) => a.ranksNeeded - b.ranksNeeded); 
-                const bottomCount = data.filter(row => { const groupKey = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG]}\`; if (noFundGroups.has(groupKey)) return false; const key = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG] || 'N/A'}\`; const median = bottom50MedianMap[key]; return median !== undefined && parseNumber(row[COLS.PERCENT_DU_KIEN]) <= median; }).length; 
-                const noSaleCount = data.filter(row => { const groupKey = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG]}\`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) == 0; }).length; 
-                let html = \`<div class="flex justify-between items-center mb-4">
+                const opportunityList = data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; if (parseNumber(row[COLS.TONG_THUONG]) > 0) return false; const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); if (isNaN(cutoffRank)) return false; const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); const isNearlyVuot = !isNaN(rankVuot) && rankVuot > cutoffRank && rankVuot <= cutoffRank + 20; const isNearlyTarget = !isNaN(rankTarget) && rankTarget > cutoffRank && rankTarget <= cutoffRank + 20; return isNearlyVuot || isNearlyTarget; }).map(row => { const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); let ranksNeeded = Infinity; if (!isNaN(rankVuot) && rankVuot > cutoffRank) ranksNeeded = Math.min(ranksNeeded, rankVuot - cutoffRank); if (!isNaN(rankTarget) && rankTarget > cutoffRank) ranksNeeded = Math.min(ranksNeeded, rankTarget - cutoffRank); return { name: row[COLS.NGANH_HANG], ranksNeeded: ranksNeeded, kenh: row[COLS.KENH] }; }).sort((a,b) => a.ranksNeeded - b.ranksNeeded); 
+                const bottomCount = data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; const key = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG] || 'N/A'}`; const median = bottom50MedianMap[key]; return median !== undefined && parseNumber(row[COLS.PERCENT_DU_KIEN]) <= median; }).length; 
+                const noSaleCount = data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) == 0; }).length; 
+                let html = `<div class="flex justify-between items-center mb-4">
                                 <h2 class="text-xl sm:text-2xl font-bold text-[#1d1d1f]">Phân Tích & Đề Xuất</h2>
                                 <div id="analysisActions" class="flex items-center gap-2 no-print">
                                     <button id="copyAnalysisButton" title="Sao chép nội dung" class="p-2 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-600 transition">
@@ -1243,57 +1231,57 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                                     </button>
                                 </div>
                             </div>
-                            <div id="analysisContent" class="space-y-4">\`; 
-                html += \`<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div><p class="font-semibold text-sm text-[#1d1d1f]">Siêu thị đã xuất sắc đạt được tổng giải thưởng là <strong class="text-blue-600">\${formatCurrency(totalBonus)}</strong> với <strong class="text-blue-600">\${achievedCount}/\${totalCategories}</strong> môn thi đang có thưởng.</p></div></div>\`; 
+                            <div id="analysisContent" class="space-y-4">`; 
+                html += `<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg></div><div><p class="font-semibold text-sm text-[#1d1d1f]">Siêu thị đã xuất sắc đạt được tổng giải thưởng là <strong class="text-blue-600">${formatCurrency(totalBonus)}</strong> với <strong class="text-blue-600">${achievedCount}/${totalCategories}</strong> môn thi đang có thưởng.</p></div></div>`; 
                 if (warningList.length > 0) { 
-                    html += \`<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>
+                    html += `<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg></div>
                     <div>
-                        <p class="font-semibold text-sm text-[#1d1d1f]">Cảnh báo: <span class="text-yellow-600">Có \${warningList.length} môn</span> đang có thưởng nhưng ở vị trí mấp mé. Cần chú ý duy trì để không rớt hạng:</p>
+                        <p class="font-semibold text-sm text-[#1d1d1f]">Cảnh báo: <span class="text-yellow-600">Có ${warningList.length} môn</span> đang có thưởng nhưng ở vị trí mấp mé. Cần chú ý duy trì để không rớt hạng:</p>
                         <ul class="list-disc list-inside mt-2 text-[#6e6e73] text-xs space-y-1">
-                            \${warningList.map(item => \`
-                                <li class="opportunity-item cursor-pointer hover:text-blue-600 hover:underline" data-group-name="\${item[COLS.NGANH_HANG]}" data-group-channel="\${item[COLS.KENH]}">
-                                    <strong>\${item[COLS.NGANH_HANG]}</strong>
+                            ${warningList.map(item => `
+                                <li class="opportunity-item cursor-pointer hover:text-blue-600 hover:underline" data-group-name="${item[COLS.NGANH_HANG]}" data-group-channel="${item[COLS.KENH]}">
+                                    <strong>${item[COLS.NGANH_HANG]}</strong>
                                 </li>
-                            \`).join('')}
+                            `).join('')}
                         </ul>
-                    </div></div>\`;
+                    </div></div>`;
                 } 
-                if (opportunityList.length > 0) { html += \`<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518 4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg></div><div><p class="font-semibold text-sm text-[#1d1d1f]">Cơ hội vàng: <span class="text-green-600">Tập trung vào \${opportunityList.length} môn tiềm năng</span> sau để tối đa hóa giải thưởng:</p><ul class="list-disc list-inside mt-2 text-[#6e6e73] text-xs space-y-1">\${opportunityList.map(item => \`<li class="opportunity-item cursor-pointer hover:text-blue-600 hover:underline" data-group-name="\${item.name}" data-group-channel="\${item.kenh}"><strong>\${item.name}:</strong> cần cải thiện <strong class="text-green-700">\${item.ranksNeeded}</strong> hạng.</li>\`).join('')}</ul></div></div>\`; } 
-                if(bottomCount > 0 || noSaleCount > 0) { html += \`<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg></div><div><p class="font-semibold text-sm text-[#1d1d1f]">Điểm cần bứt phá: <span class="text-red-600">Có \${bottomCount} môn ở TOP 50%</span> dưới và <span class="text-red-600">\${noSaleCount} môn chưa phát sinh doanh số</span>. Cần xem xét lại chiến lược và tìm giải pháp cải thiện.</p></div></div>\`; } 
-                html += \`</div>\`; 
+                if (opportunityList.length > 0) { html += `<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518 4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg></div><div><p class="font-semibold text-sm text-[#1d1d1f]">Cơ hội vàng: <span class="text-green-600">Tập trung vào ${opportunityList.length} môn tiềm năng</span> sau để tối đa hóa giải thưởng:</p><ul class="list-disc list-inside mt-2 text-[#6e6e73] text-xs space-y-1">${opportunityList.map(item => `<li class="opportunity-item cursor-pointer hover:text-blue-600 hover:underline" data-group-name="${item.name}" data-group-channel="${item.kenh}"><strong>${item.name}:</strong> cần cải thiện <strong class="text-green-700">${item.ranksNeeded}</strong> hạng.</li>`).join('')}</ul></div></div>`; } 
+                if(bottomCount > 0 || noSaleCount > 0) { html += `<div class="flex items-start space-x-4"><div class="flex-shrink-0 w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg></div><div><p class="font-semibold text-sm text-[#1d1d1f]">Điểm cần bứt phá: <span class="text-red-600">Có ${bottomCount} môn ở TOP 50%</span> dưới và <span class="text-red-600">${noSaleCount} môn chưa phát sinh doanh số</span>. Cần xem xét lại chiến lược và tìm giải pháp cải thiện.</p></div></div>`; } 
+                html += `</div>`; 
                 analysisSection.innerHTML = html; 
             }
 
             function getGroupDefinitions(data) {
                 return [
                     { key: 'achieved', title: 'Đạt thưởng', color: 'bg-green-500', data: data.filter(row => parseNumber(row[COLS.TONG_THUONG]) > 0) },
-                    { key: 'nearly', title: 'Sắp có', color: 'bg-yellow-500', data: data.filter(row => { const groupKey = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG]}\`; if (noFundGroups.has(groupKey)) return false; if (parseNumber(row[COLS.TONG_THUONG]) > 0) return false; const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); if (isNaN(cutoffRank)) return false; const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); const isNearlyVuot = !isNaN(rankVuot) && rankVuot > cutoffRank && rankVuot <= cutoffRank + 20; const isNearlyTarget = !isNaN(rankTarget) && rankTarget > cutoffRank && rankTarget <= cutoffRank + 20; return isNearlyVuot || isNearlyTarget;}) },
-                    { key: 'achieved100', title: 'Đạt 100%', color: 'bg-teal-500', data: data.filter(row => { const groupKey = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG]}\`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) >= 1; }) },
-                    { key: 'notAchieved100', title: '<100%', color: 'bg-orange-500', data: data.filter(row => { const groupKey = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG]}\`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) < 1; }) },
-                    { key: 'bottom50', title: 'Bottom 50%', color: 'bg-red-500', data: data.filter(row => { const groupKey = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG]}\`; if (noFundGroups.has(groupKey)) return false; const key = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG] || 'N/A'}\`; const median = bottom50MedianMap[key]; return median !== undefined && parseNumber(row[COLS.PERCENT_DU_KIEN]) <= median;}) },
-                    { key: 'noFund', title: 'Không Quỹ', color: 'bg-purple-500', data: data.filter(row => { const groupKey = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG]}\`; return noFundGroups.has(groupKey); }) },
-                    { key: 'noSale', title: 'No Sale', color: 'bg-gray-600', data: data.filter(row => { const groupKey = \`\${row[COLS.KENH] || 'N/A'}|\${row[COLS.NGANH_HANG]}\`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) == 0; }) }
+                    { key: 'nearly', title: 'Sắp có', color: 'bg-yellow-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; if (parseNumber(row[COLS.TONG_THUONG]) > 0) return false; const cutoffRank = parseInt(row[COLS.LAY_TOP_10], 10); if (isNaN(cutoffRank)) return false; const rankVuot = parseInt(row[COLS.HANG_VUOT_Uu], 10); const rankTarget = parseInt(row[COLS.HANG_PERCENT_TARGET], 10); const isNearlyVuot = !isNaN(rankVuot) && rankVuot > cutoffRank && rankVuot <= cutoffRank + 20; const isNearlyTarget = !isNaN(rankTarget) && rankTarget > cutoffRank && rankTarget <= cutoffRank + 20; return isNearlyVuot || isNearlyTarget;}) },
+                    { key: 'achieved100', title: 'Đạt 100%', color: 'bg-teal-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) >= 1; }) },
+                    { key: 'notAchieved100', title: '<100%', color: 'bg-orange-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) < 1; }) },
+                    { key: 'bottom50', title: 'Bottom 50%', color: 'bg-red-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; const key = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG] || 'N/A'}`; const median = bottom50MedianMap[key]; return median !== undefined && parseNumber(row[COLS.PERCENT_DU_KIEN]) <= median;}) },
+                    { key: 'noFund', title: 'Không Quỹ', color: 'bg-purple-500', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; return noFundGroups.has(groupKey); }) },
+                    { key: 'noSale', title: 'No Sale', color: 'bg-gray-600', data: data.filter(row => { const groupKey = `${row[COLS.KENH] || 'N/A'}|${row[COLS.NGANH_HANG]}`; if (noFundGroups.has(groupKey)) return false; return parseNumber(row[COLS.PERCENT_DU_KIEN]) == 0; }) }
                 ];
             }
 
             function renderSummaryAndFilters(groups) {
                 const statColors = {achieved:'#10b981',nearly:'#f59e0b',bottom50:'#f43f5e',noFund:'#8b5cf6',noSale:'#64748b',achieved100:'#14b8a6',notAchieved100:'#f97316'};
-                groupSummaryContainer.innerHTML = groups.map(g => \`
-                    <div class="stat-mini" onclick="const el=document.getElementById('group-section-\${g.key}');if(el){const y=el.getBoundingClientRect().top+window.scrollY-20;window.scrollTo({top:y,behavior:'smooth'});}" style="--stat-color: \${statColors[g.key]||'#6366f1'}">
-                        <div style="position: absolute; top: -15px; right: -15px; width: 50px; height: 50px; background: \${statColors[g.key]||'#6366f1'}; filter: blur(25px); opacity: 0.2; border-radius: 50%; pointer-events: none;"></div>
+                groupSummaryContainer.innerHTML = groups.map(g => `
+                    <div class="stat-mini" onclick="const el=document.getElementById('group-section-${g.key}');if(el){const y=el.getBoundingClientRect().top+window.scrollY-20;window.scrollTo({top:y,behavior:'smooth'});}" style="--stat-color: ${statColors[g.key]||'#6366f1'}">
+                        <div style="position: absolute; top: -15px; right: -15px; width: 50px; height: 50px; background: ${statColors[g.key]||'#6366f1'}; filter: blur(25px); opacity: 0.2; border-radius: 50%; pointer-events: none;"></div>
                         <div style="display:flex; align-items:flex-start; margin-bottom:10px; width: 100%; position: relative; z-index: 1">
-                            <p style="font-size:10.5px;color:#475569;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:0.02em;line-height:1.3;white-space:normal;word-break:keep-all" title="\${g.title}">\${g.title}</p>
+                            <p style="font-size:10.5px;color:#475569;font-weight:700;margin:0;text-transform:uppercase;letter-spacing:0.02em;line-height:1.3;white-space:normal;word-break:keep-all" title="${g.title}">${g.title}</p>
                         </div>
-                        <p style="font-size:26px;font-weight:800;color:#0f172a;margin:0;line-height:1; position: relative; z-index: 1; font-feature-settings: 'tnum'; letter-spacing: -0.02em">\${g.data.length}</p>
+                        <p style="font-size:26px;font-weight:800;color:#0f172a;margin:0;line-height:1; position: relative; z-index: 1; font-feature-settings: 'tnum'; letter-spacing: -0.02em">${g.data.length}</p>
                     </div>
-                \`).join('');
+                `).join('');
                 const filterContainer = document.getElementById('filterContainer');
                 if (!filterContainer) return;
-                filterContainer.innerHTML = \`<button data-filter="all" class="filter-btn filter-pill active">All (\${currentStoreData.length})</button>\` 
-                + groups.map(g => \`<button data-filter="\${g.key}" class="filter-btn filter-pill">\${g.title} (\${g.data.length})</button>\`).join('')
-                + \`<div style="display:flex;gap:4px;margin-left:8px" class="no-print">
+                filterContainer.innerHTML = `<button data-filter="all" class="filter-btn filter-pill active">All (${currentStoreData.length})</button>` 
+                + groups.map(g => `<button data-filter="${g.key}" class="filter-btn filter-pill">${g.title} (${g.data.length})</button>`).join('')
+                + `<div style="display:flex;gap:4px;margin-left:8px" class="no-print">
                         <button id="toggleViewModeBtn" title="Chuyển chế độ hiển thị (Danh sách / Thẻ)" style="width:30px;height:30px;border-radius:8px;background:#4f46e5;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
-                            \${singleViewMode === 'list' 
+                            ${singleViewMode === 'list' 
                                 ? '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><rect x="7" y="7" width="3" height="3"/><rect x="14" y="7" width="3" height="3"/><rect x="7" y="14" width="3" height="3"/><rect x="14" y="14" width="3" height="3"/></svg>' 
                                 : '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>'}
                         </button>
@@ -1303,7 +1291,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                         <button id="exportAllFilteredImagesButton" title="Xuất tất cả" style="width:30px;height:30px;border-radius:8px;background:#f97316;color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-images"><path d="M18 22H4a2 2 0 0 1-2-2V6"/><path d="m22 13-1.296-1.296a2.41 2.41 0 0 0-3.408 0L11 18"/><circle cx="12" cy="8" r="2"/><rect width="16" height="16" x="6" y="2" rx="2"/></svg>
                         </button>
-                   </div>\`;
+                   </div>`;
             }
 
             const PALETTE = [
@@ -1352,29 +1340,29 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 
                 const titleOnly = titleText.replace("Bảng Xếp Hạng: ", "");
 
-                let tableHtml = \`<h4 class="text-xl font-bold text-center mb-4 text-indigo-600 uppercase">\${titleOnly}</h4>
-                                 <div class="overflow-x-auto"><table class="text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr>\`;
+                let tableHtml = `<h4 class="text-xl font-bold text-center mb-4 text-indigo-600 uppercase">${titleOnly}</h4>
+                                 <div class="overflow-x-auto"><table class="text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr>`;
                 
                 Object.entries(sortKeys).forEach(([key, col]) => {
                     const isSortable = col !== null;
-                    const thClass = \`px-4 py-1 text-center \${isSortable ? 'sortable' : ''} \${sortState.key === col ? (sortState.direction === 'asc' ? 'sort-asc' : 'sort-desc') : ''}\`;
+                    const thClass = `px-4 py-1 text-center ${isSortable ? 'sortable' : ''} ${sortState.key === col ? (sortState.direction === 'asc' ? 'sort-asc' : 'sort-desc') : ''}`;
                     const title = { sieuthi: 'SIÊU THỊ', percent: '%DKHT', du_kien_vuot: 'D.KIẾN DT/SL', rank_v: 'HẠNG V.TRỘI', rank_t: 'HẠNG %HT', bonus: 'THƯỞNG' }[key];
-                    tableHtml += \`<th scope="col" class="\${thClass}" \${isSortable ? \`data-sort-key="\${col}"\` : ''}>\${title}</th>\`;
+                    tableHtml += `<th scope="col" class="${thClass}" ${isSortable ? `data-sort-key="${col}"` : ''}>${title}</th>`;
                 });
 
-                tableHtml += \`</tr></thead><tbody>\`;
+                tableHtml += `</tr></thead><tbody>`;
                 data.forEach((row, index) => {
                     const isCurrentStore = row[COLS.SIÊU_THỊ] === currentStoreFullName;
-                    tableHtml += \`<tr class="\${isCurrentStore ? 'bg-blue-100 font-bold text-blue-900 border-l-4 border-blue-500' : 'bg-white border-b'}">
-                                    <th scope="row" class="px-4 py-1 font-medium \${isCurrentStore ? '' : 'text-gray-900'} whitespace-nowrap">\${row[COLS.SIÊU_THỊ]}</th>
-                                    <td class="px-4 py-1 text-right">\${formatPercent(row[COLS.PERCENT_DU_KIEN])}</td>
-                                    <td class="px-4 py-1 text-right">\${formatNumber(row[COLS.DU_KIEN_VUOT])}</td>
-                                    <td class="px-4 py-1 text-right">\${row[COLS.HANG_VUOT_Uu] || '-'}</td>
-                                    <td class="px-4 py-1 text-right">\${row[COLS.HANG_PERCENT_TARGET] || '-'}</td>
-                                    <td class="px-4 py-1 text-right">\${formatCurrencySimple(row[COLS.TONG_THUONG])}</td>
-                                  </tr>\`;
+                    tableHtml += `<tr class="${isCurrentStore ? 'bg-blue-100 font-bold text-blue-900 border-l-4 border-blue-500' : 'bg-white border-b'}">
+                                    <th scope="row" class="px-4 py-1 font-medium ${isCurrentStore ? '' : 'text-gray-900'} whitespace-nowrap">${row[COLS.SIÊU_THỊ]}</th>
+                                    <td class="px-4 py-1 text-right">${formatPercent(row[COLS.PERCENT_DU_KIEN])}</td>
+                                    <td class="px-4 py-1 text-right">${formatNumber(row[COLS.DU_KIEN_VUOT])}</td>
+                                    <td class="px-4 py-1 text-right">${row[COLS.HANG_VUOT_Uu] || '-'}</td>
+                                    <td class="px-4 py-1 text-right">${row[COLS.HANG_PERCENT_TARGET] || '-'}</td>
+                                    <td class="px-4 py-1 text-right">${formatCurrencySimple(row[COLS.TONG_THUONG])}</td>
+                                  </tr>`;
                 });
-                tableHtml += \`</tbody></table></div>\`;
+                tableHtml += `</tbody></table></div>`;
                 modalBody.innerHTML = tableHtml;
             }
 
@@ -1410,7 +1398,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 });
                 
                 sortState = { key: null, direction: 'desc' }; 
-                const titleText = \`Bảng Xếp Hạng: \${groupName} - Kênh \${groupChannel}\`;
+                const titleText = `Bảng Xếp Hạng: ${groupName} - Kênh ${groupChannel}`;
                 renderRankingTable(rankingDataForModal, titleText);
                 
                 modalTitle.textContent = titleText;
@@ -1473,7 +1461,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 const renderSingleRow = (row, groupKey, index) => {
                     const groupNameVal = row[COLS.NGANH_HANG];
                     const groupChannelVal = row[COLS.KENH];
-                    const groupKey2 = \`\${groupChannelVal || 'N/A'}|\${groupNameVal}\`;
+                    const groupKey2 = `${groupChannelVal || 'N/A'}|${groupNameVal}`;
                     const groupHasFund = !noFundGroups.has(groupKey2);
 
                     const isAchieved = parseNumber(row[COLS.TONG_THUONG]) > 0;
@@ -1504,25 +1492,25 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     const isDuKien = showDuKien || isNearly;
                     const bonusColor = isDuKien ? 'text-amber-600' : 'text-indigo-600';
                     
-                    const nearlyBadgeHtml = isNearly ? \`<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" class="inline-block ml-1.5 text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.9)] animate-pulse" style="vertical-align: -2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>\` : '';
+                    const nearlyBadgeHtml = isNearly ? `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" class="inline-block ml-1.5 text-amber-400 drop-shadow-[0_0_5px_rgba(251,191,36,0.9)] animate-pulse" style="vertical-align: -2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>` : '';
                     
-                    return \`
+                    return `
                         <tr class="hover:bg-gray-50 transition-colors text-[13px] border-b border-gray-100 last:border-0 group">
                             <td class="px-3 py-2 font-medium text-gray-800">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-gray-400 font-bold text-[11px]">#\${index}</span>
-                                    <span class="truncate max-w-[280px]" title="\${groupNameVal}">\${groupNameVal}</span>\${nearlyBadgeHtml}
-                                    <button class="view-ranking-btn no-print ml-1 text-gray-300 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" title="Xem xếp hạng" data-group-name="\${groupNameVal}" data-group-channel="\${groupChannelVal}">
+                                    <span class="text-gray-400 font-bold text-[11px]">#${index}</span>
+                                    <span class="truncate max-w-[280px]" title="${groupNameVal}">${groupNameVal}</span>${nearlyBadgeHtml}
+                                    <button class="view-ranking-btn no-print ml-1 text-gray-300 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity" title="Xem xếp hạng" data-group-name="${groupNameVal}" data-group-channel="${groupChannelVal}">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zM1 15a1 1 0 100 2h18a1 1 0 100-2H1z" /></svg>
                                     </button>
                                 </div>
                             </td>
-                            <td class="px-2 py-2 text-center \${percentColor}">\${formatPercent(percent)}</td>
-                            <td class="px-2 py-2 text-center text-gray-700">\${formatNumber(row[COLS.DU_KIEN_VUOT])}</td>
-                            <td class="px-2 py-2 text-center text-gray-600">\${hangVuot} <span class="text-gray-300">/</span> \${hangPercent}</td>
-                            <td class="px-3 py-2 text-right font-bold \${bonusColor}">\${formatCurrency(totalBonus)}</td>
+                            <td class="px-2 py-2 text-center ${percentColor}">${formatPercent(percent)}</td>
+                            <td class="px-2 py-2 text-center text-gray-700">${formatNumber(row[COLS.DU_KIEN_VUOT])}</td>
+                            <td class="px-2 py-2 text-center text-gray-600">${hangVuot} <span class="text-gray-300">/</span> ${hangPercent}</td>
+                            <td class="px-3 py-2 text-right font-bold ${bonusColor}">${formatCurrency(totalBonus)}</td>
                         </tr>
-                    \`;
+                    `;
                 };
 
                 const GROUP_PASTEL_HEADERS = {
@@ -1545,7 +1533,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     // Check if this group has bonuses (for showing "dự kiến")
                     const groupNameVal = row[COLS.NGANH_HANG];
                     const groupChannelVal = row[COLS.KENH];
-                    const groupKey2 = \`\${groupChannelVal || 'N/A'}|\${groupNameVal}\`;
+                    const groupKey2 = `${groupChannelVal || 'N/A'}|${groupNameVal}`;
                     const groupHasFund = !noFundGroups.has(groupKey2);
                     const showDuKien = !isAchieved && groupHasFund && parseNumber(row[COLS.TONG_THUONG]) === 0;
 
@@ -1564,17 +1552,17 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     const { bg } = getGroupColor(groupName);
                     const isDuKien = showDuKien || isNearly;
 
-                    const thuongVuotHtml = thuongVuot > 0 ? \`
+                    const thuongVuotHtml = thuongVuot > 0 ? `
                         <div style="display:flex;justify-content:space-between;align-items:center;color:#059669;font-size:11px;white-space:nowrap">
-                            <span style="font-weight:600">\${isDuKien ? 'Thưởng V.Trội D.Kiến:' : 'Thưởng Vượt Trội:'}</span>
-                            <span style="font-weight:700">\${formatCurrency(thuongVuot)}</span>
-                        </div>\` : '';
+                            <span style="font-weight:600">${isDuKien ? 'Thưởng V.Trội D.Kiến:' : 'Thưởng Vượt Trội:'}</span>
+                            <span style="font-weight:700">${formatCurrency(thuongVuot)}</span>
+                        </div>` : '';
 
-                    const thuongTopHtml = thuongTop > 0 ? \`
+                    const thuongTopHtml = thuongTop > 0 ? `
                         <div style="display:flex;justify-content:space-between;align-items:center;color:#7c3aed;font-size:11px;white-space:nowrap">
-                            <span style="font-weight:600">\${isDuKien ? 'Thưởng Top % D.Kiến:' : 'Thưởng Top % Target:'}</span>
-                            <span style="font-weight:700">\${formatCurrency(thuongTop)}</span>
-                        </div>\` : '';
+                            <span style="font-weight:600">${isDuKien ? 'Thưởng Top % D.Kiến:' : 'Thưởng Top % Target:'}</span>
+                            <span style="font-weight:700">${formatCurrency(thuongTop)}</span>
+                        </div>` : '';
                     
                     let footerLabel = isDuKien ? 'D.KIẾN THƯỞNG' : 'TỔNG THƯỞNG';
                     let showBreakdown = false;
@@ -1591,33 +1579,33 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     }
 
                     const bonusSectionHtml = showBreakdown ? 
-                        \`<div class="bonus-row-pastel" style="margin-top:6px;display:flex;flex-direction:column;gap:2px">\${thuongVuotHtml}\${thuongTopHtml}</div>\` : '';
+                        `<div class="bonus-row-pastel" style="margin-top:6px;display:flex;flex-direction:column;gap:2px">${thuongVuotHtml}${thuongTopHtml}</div>` : '';
 
                     const footerBg = isDuKien ? 'linear-gradient(135deg,#fffbeb,#fef3c7)' : 'linear-gradient(135deg,#eef2ff,#e0e7ff)';
-                    const footerHtml = \`
-                        <div style="margin-top:auto;padding:7px 10px;border-top:1px solid rgba(0,0,0,0.06);background:\${footerBg}">
+                    const footerHtml = `
+                        <div style="margin-top:auto;padding:7px 10px;border-top:1px solid rgba(0,0,0,0.06);background:${footerBg}">
                             <div style="display:flex;justify-content:space-between;align-items:center;white-space:nowrap">
-                                <span style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em">\${footerLabel}</span>
-                                <span style="font-size:14px;font-weight:800;color:\${footerColor}">\${formatCurrency(totalBonus)}</span>
+                                <span style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.04em">${footerLabel}</span>
+                                <span style="font-size:14px;font-weight:800;color:${footerColor}">${formatCurrency(totalBonus)}</span>
                             </div>
-                        </div>\`;
+                        </div>`;
 
-                    return \`
+                    return `
                         <div class="s-card border border-gray-200">
-                            <div class="\${bg}" style="padding:7px 10px;position:relative;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #e5e7eb">
-                                <h3 style="font-size:11px;font-weight:700;text-align:center;margin:0" class="truncate">\${groupName.toUpperCase()}</h3>
-                                <button class="view-ranking-btn no-print" title="Xem xếp hạng" data-group-name="\${row[COLS.NGANH_HANG]}" data-group-channel="\${row[COLS.KENH]}" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:4px;border-radius:6px;background:rgba(255,255,255,0.3);border:none;cursor:pointer;color:inherit;display:flex;align-items:center;justify-content:center">
+                            <div class="${bg}" style="padding:7px 10px;position:relative;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #e5e7eb">
+                                <h3 style="font-size:11px;font-weight:700;text-align:center;margin:0" class="truncate">${groupName.toUpperCase()}</h3>
+                                <button class="view-ranking-btn no-print" title="Xem xếp hạng" data-group-name="${row[COLS.NGANH_HANG]}" data-group-channel="${row[COLS.KENH]}" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:4px;border-radius:6px;background:rgba(255,255,255,0.3);border:none;cursor:pointer;color:inherit;display:flex;align-items:center;justify-content:center">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a1 1 0 011-1h14a1 1 0 110 2H3a1 1 0 01-1-1zM1 15a1 1 0 100 2h18a1 1 0 100-2H1z" /></svg>
                                 </button>
                             </div>
                             <div style="padding:8px 10px;font-size:11px;flex:1;display:flex;flex-direction:column;gap:2px">
-                                <div style="display:flex;justify-content:space-between;align-items:baseline;white-space:nowrap"><span style="color:#9ca3af;font-weight:500">% D.Kiến</span><span style="font-weight:800;font-size:15px;color:#4f46e5">\${formatPercent(row[COLS.PERCENT_DU_KIEN])}</span></div>
-                                <div style="display:flex;justify-content:space-between;align-items:baseline;white-space:nowrap"><span style="color:#9ca3af;font-weight:500">D.Kiến Vượt</span><span style="font-weight:700;font-size:12px;color:#111827">\${formatNumber(row[COLS.DU_KIEN_VUOT])}</span></div>
-                                <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="color:#9ca3af;font-weight:500">Hạng (V.Trội / % Target)</span><span style="font-weight:700;font-size:12px;color:#111827">\${row[COLS.HANG_VUOT_Uu] || '-'} / \${row[COLS.HANG_PERCENT_TARGET] || '-'}</span></div>
-                                \${bonusSectionHtml}
+                                <div style="display:flex;justify-content:space-between;align-items:baseline;white-space:nowrap"><span style="color:#9ca3af;font-weight:500">% D.Kiến</span><span style="font-weight:800;font-size:15px;color:#4f46e5">${formatPercent(row[COLS.PERCENT_DU_KIEN])}</span></div>
+                                <div style="display:flex;justify-content:space-between;align-items:baseline;white-space:nowrap"><span style="color:#9ca3af;font-weight:500">D.Kiến Vượt</span><span style="font-weight:700;font-size:12px;color:#111827">${formatNumber(row[COLS.DU_KIEN_VUOT])}</span></div>
+                                <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="color:#9ca3af;font-weight:500">Hạng (V.Trội / % Target)</span><span style="font-weight:700;font-size:12px;color:#111827">${row[COLS.HANG_VUOT_Uu] || '-'} / ${row[COLS.HANG_PERCENT_TARGET] || '-'}</span></div>
+                                ${bonusSectionHtml}
                             </div>
-                            \${footerHtml}
-                        </div>\`;
+                            ${footerHtml}
+                        </div>`;
                 };
 
                 let html = '';
@@ -1642,7 +1630,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     
                     if (singleViewMode === 'list') {
                         const groupRowsHtml = group.data.map((row, index) => renderSingleRow(row, group.key, index + 1)).join('');
-                        contentHtml = \`<div class="overflow-x-auto">
+                        contentHtml = `<div class="overflow-x-auto">
                                 <table class="w-full text-left border-collapse">
                                     <thead>
                                         <tr class="bg-gray-50/50 text-[11px] uppercase text-gray-500 border-b border-gray-200">
@@ -1654,26 +1642,26 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        \${groupRowsHtml}
+                                        ${groupRowsHtml}
                                     </tbody>
                                 </table>
-                            </div>\`;
+                            </div>`;
                     } else {
                         const groupCardsHtml = group.data.map(row => renderSingleCard(row, group.key)).join('');
-                        contentHtml = \`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;padding:10px">\${groupCardsHtml}</div>\`;
+                        contentHtml = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;padding:10px">${groupCardsHtml}</div>`;
                     }
                     
-                    const groupHtml = \`<div id="group-section-\${group.key}" class="group-container border border-gray-200 bg-white" data-group-key="\${group.key}" style="margin-bottom:16px">
-                        <div class="capture-target \${singleViewMode === 'card' ? 'mod-card' : ''}" style="overflow:hidden">
-                            <div class="capture-fix \${pastelClass} border-b border-gray-200 flex justify-between items-center" style="padding:10px 14px">
-                                <h2 style="font-size:14px;font-weight:800;margin:0;letter-spacing:0.02em">\${group.title.toUpperCase()} (\${group.data.length})</h2>
-                                <button class="exportGroupImageBtn no-print flex items-center justify-center transition" data-group-key="\${group.key}" title="Xuất ảnh nhóm này" style="width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,0.4);color:rgba(0,0,0,0.6);border:none;cursor:pointer" onmouseover="this.style.background='rgba(255,255,255,0.8)';this.style.color='#000'" onmouseout="this.style.background='rgba(255,255,255,0.4)';this.style.color='rgba(0,0,0,0.6)'">
+                    const groupHtml = `<div id="group-section-${group.key}" class="group-container border border-gray-200 bg-white" data-group-key="${group.key}" style="margin-bottom:16px">
+                        <div class="capture-target ${singleViewMode === 'card' ? 'mod-card' : ''}" style="overflow:hidden">
+                            <div class="capture-fix ${pastelClass} border-b border-gray-200 flex justify-between items-center" style="padding:10px 14px">
+                                <h2 style="font-size:14px;font-weight:800;margin:0;letter-spacing:0.02em">${group.title.toUpperCase()} (${group.data.length})</h2>
+                                <button class="exportGroupImageBtn no-print flex items-center justify-center transition" data-group-key="${group.key}" title="Xuất ảnh nhóm này" style="width:24px;height:24px;border-radius:6px;background:rgba(255,255,255,0.4);color:rgba(0,0,0,0.6);border:none;cursor:pointer" onmouseover="this.style.background='rgba(255,255,255,0.8)';this.style.color='#000'" onmouseout="this.style.background='rgba(255,255,255,0.4)';this.style.color='rgba(0,0,0,0.6)'">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-camera"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
                                 </button>
                             </div>
-                            \${contentHtml}
+                            ${contentHtml}
                         </div>
-                    </div>\`;
+                    </div>`;
                     html += groupHtml;
                 });
                 detailsGrid.innerHTML = html;
@@ -1682,7 +1670,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
             function getRankingTableHtml(data, titleText) {
                 const currentStoreFullName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ] : '';
                 const titleOnly = titleText.replace("Bảng Xếp Hạng: ", "");
-                let tableHtml = \`<div class="p-4 bg-white"><h4 class="text-xl font-bold text-center mb-4 text-indigo-600 uppercase">\${titleOnly}</h4>
+                let tableHtml = `<div class="p-4 bg-white"><h4 class="text-xl font-bold text-center mb-4 text-indigo-600 uppercase">${titleOnly}</h4>
                                  <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr>
                                     <th scope="col" class="px-4 py-1 text-center">SIÊU THỊ</th>
                                     <th scope="col" class="px-4 py-1 text-center">%DKHT</th>
@@ -1690,19 +1678,19 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                                     <th scope="col" class="px-4 py-1 text-center">HẠNG V.TRỘI</th>
                                     <th scope="col" class="px-4 py-1 text-center">HẠNG %HT</th>
                                     <th scope="col" class="px-4 py-1 text-center">THƯỞNG</th>
-                                 </tr></thead><tbody>\`;
+                                 </tr></thead><tbody>`;
                 data.forEach(row => {
                     const isCurrentStore = row[COLS.SIÊU_THỊ] === currentStoreFullName;
-                    tableHtml += \`<tr class="\${isCurrentStore ? 'bg-blue-100 font-bold text-blue-900' : 'bg-white border-b'}">
-                                    <th scope="row" class="px-4 py-1 font-medium \${isCurrentStore ? '' : 'text-gray-900'} whitespace-nowrap">\${row[COLS.SIÊU_THỊ]}</th>
-                                    <td class="px-4 py-1 text-right">\${formatPercent(row[COLS.PERCENT_DU_KIEN])}</td>
-                                    <td class="px-4 py-1 text-right">\${formatNumber(row[COLS.DU_KIEN_VUOT])}</td>
-                                    <td class="px-4 py-1 text-right">\${row[COLS.HANG_VUOT_Uu] || '-'}</td>
-                                    <td class="px-4 py-1 text-right">\${row[COLS.HANG_PERCENT_TARGET] || '-'}</td>
-                                    <td class="px-4 py-1 text-right">\${formatCurrencySimple(row[COLS.TONG_THUONG])}</td>
-                                  </tr>\`;
+                    tableHtml += `<tr class="${isCurrentStore ? 'bg-blue-100 font-bold text-blue-900' : 'bg-white border-b'}">
+                                    <th scope="row" class="px-4 py-1 font-medium ${isCurrentStore ? '' : 'text-gray-900'} whitespace-nowrap">${row[COLS.SIÊU_THỊ]}</th>
+                                    <td class="px-4 py-1 text-right">${formatPercent(row[COLS.PERCENT_DU_KIEN])}</td>
+                                    <td class="px-4 py-1 text-right">${formatNumber(row[COLS.DU_KIEN_VUOT])}</td>
+                                    <td class="px-4 py-1 text-right">${row[COLS.HANG_VUOT_Uu] || '-'}</td>
+                                    <td class="px-4 py-1 text-right">${row[COLS.HANG_PERCENT_TARGET] || '-'}</td>
+                                    <td class="px-4 py-1 text-right">${formatCurrencySimple(row[COLS.TONG_THUONG])}</td>
+                                  </tr>`;
                 });
-                tableHtml += \`</tbody></table></div></div>\`;
+                tableHtml += `</tbody></table></div></div>`;
                 return tableHtml;
             }
 
@@ -1752,7 +1740,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 const maxW = element.querySelectorAll('[class*="max-w-"]');
                 maxW.forEach(el => {
                     saved.push({ el, attr: 'maxw-class', val: el.className });
-                    el.className = el.className.replace(/max-w-\\[\\d+px\\]/g, '');
+                    el.className = el.className.replace(/max-w-\[\d+px\]/g, '');
                 });
 
                 return saved;
@@ -1885,7 +1873,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     const captureArea = document.getElementById('captureDetailTable');
                     const store1Name = storeCodeInput1.value.trim();
                     const store2Name = storeCodeInput2.value.trim();
-                    const filename = \`so_sanh_chi_tiet_\${store1Name}_vs_\${store2Name}.png\`;
+                    const filename = `so_sanh_chi_tiet_${store1Name}_vs_${store2Name}.png`;
 
                     if (captureArea) {
                         captureElementAsImage(captureArea, filename, {
@@ -1899,7 +1887,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     const captureArea = document.getElementById('strengthsAnalysisSection');
                     const store1Name = storeCodeInput1.value.trim();
                     const store2Name = storeCodeInput2.value.trim();
-                    const filename = \`phan_tich_nhanh_\${store1Name}_vs_\${store2Name}.png\`;
+                    const filename = `phan_tich_nhanh_${store1Name}_vs_${store2Name}.png`;
                     if (captureArea) {
                         captureElementAsImage(captureArea, filename, {
                             backgroundColor: '#ffffff',
@@ -1928,7 +1916,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     
                     const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
                     
-                    captureElementAsImage(captureArea, \`\${storeName}_tong_hop.png\`, {
+                    captureElementAsImage(captureArea, `${storeName}_tong_hop.png`, {
                         onBeforeCapture: () => {
                             if(titleElement) titleElement.classList.remove('truncate');
                             captureArea.classList.add('p-4'); 
@@ -1945,7 +1933,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     const truncatedElements = captureArea.querySelectorAll('.truncate');
                     const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
                     
-                    captureElementAsImage(captureArea, \`\${storeName}_toan_trang.png\`, {
+                    captureElementAsImage(captureArea, `${storeName}_toan_trang.png`, {
                         onBeforeCapture: () => {
                             truncatedElements.forEach(el => el.classList.remove('truncate'));
                         },
@@ -1960,7 +1948,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     const truncatedElements = captureArea.querySelectorAll('.truncate');
                     const store1Name = storeCodeInput1.value.trim();
                     const store2Name = storeCodeInput2.value.trim();
-                    captureElementAsImage(captureArea, \`so_sanh_\${store1Name}_vs_\${store2Name}.png\`, {
+                    captureElementAsImage(captureArea, `so_sanh_${store1Name}_vs_${store2Name}.png`, {
                          onBeforeCapture: () => { 
                             truncatedElements.forEach(el => el.classList.remove('truncate'));
                             captureArea.classList.add('p-4');
@@ -1988,7 +1976,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 if (copyButton) {
                     const analysisContent = document.getElementById('analysisContent');
                     if (!analysisContent) return;
-                    let textToCopy = "Phân Tích & Đề Xuất\\n\\n";
+                    let textToCopy = "Phân Tích & Đề Xuất\n\n";
                     const iconMap = { 'bg-blue-100': '✅', 'bg-yellow-100': '⚠️', 'bg-green-100': '✨', 'bg-red-100': '📈' };
                     analysisContent.querySelectorAll('.flex.items-start').forEach(item => {
                         const iconDiv = item.querySelector('.flex-shrink-0');
@@ -1996,10 +1984,10 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                         let icon = '';
                         for (const key in iconMap) { if (iconDiv && iconDiv.classList.contains(key)) { icon = iconMap[key]; break; } }
                         if (textP) {
-                            textToCopy += \`\${icon} \${textP.innerText.trim()}\`;
+                            textToCopy += `${icon} ${textP.innerText.trim()}`;
                             const ul = item.querySelector('ul');
-                            if (ul) { textToCopy += "\\n"; ul.querySelectorAll('li').forEach(li => { textToCopy += \`    - \${li.innerText.trim()}\\n\`; });
-                            } else { textToCopy += "\\n\\n"; }
+                            if (ul) { textToCopy += "\n"; ul.querySelectorAll('li').forEach(li => { textToCopy += `    - ${li.innerText.trim()}\n`; });
+                            } else { textToCopy += "\n\n"; }
                         }
                     });
                     const textarea = document.createElement('textarea');
@@ -2009,7 +1997,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     document.execCommand('copy');
                     document.body.removeChild(textarea);
                     const originalIcon = copyButton.innerHTML;
-                    copyButton.innerHTML = \`<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>\`;
+                    copyButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>`;
                     setTimeout(() => { copyButton.innerHTML = originalIcon; }, 2000);
                     return;
                 }
@@ -2018,7 +2006,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 if (exportAnalysisBtn) {
                      const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
                      const originalWidth = analysisSection.style.width;
-                     captureElementAsImage(analysisSection, \`\${storeName}_phan_tich.png\`, {
+                     captureElementAsImage(analysisSection, `${storeName}_phan_tich.png`, {
                          backgroundColor: '#ffffff',
                          onBeforeCapture: () => {
                             analysisSection.style.width = EXPORT_WIDTH;
@@ -2048,7 +2036,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
 
                         for (let i = 0; i < analysisItems.length; i++) {
                             const item = analysisItems[i];
-                            loadingText.textContent = \`Đang xuất BXH Phân tích \${i + 1}/\${analysisItems.length}...\`;
+                            loadingText.textContent = `Đang xuất BXH Phân tích ${i + 1}/${analysisItems.length}...`;
                             const groupName = item.dataset.groupName;
                             const groupChannel = item.dataset.groupChannel;
                             let dataForTable = competitionData.filter(row => row[COLS.NGANH_HANG] === groupName && row[COLS.KENH] === groupChannel);
@@ -2072,12 +2060,12 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                                 const secondaryB = parseInt(b[secondarySortKey], 10) || Infinity;
                                 return secondaryA - secondaryB;
                             });
-                            const titleText = \`Bảng Xếp Hạng: \${groupName} - Kênh \${groupChannel}\`;
+                            const titleText = `Bảng Xếp Hạng: ${groupName} - Kênh ${groupChannel}`;
                             tempContainer.innerHTML = getRankingTableHtml(dataForTable, titleText);
                             try {
                                 const dataUrl = await htmlToImage.toPng(tempContainer.firstChild, { pixelRatio: 2, backgroundColor: '#ffffff' });
                                 const link = document.createElement('a');
-                                const filename = \`BXH_\${groupName}_\${groupChannel}\`.replace(/[^\\w\\s-]/g, '').trim().replace(/\\s+/g, '_') + '.png';
+                                const filename = `BXH_${groupName}_${groupChannel}`.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_') + '.png';
                                 link.download = filename;
                                 link.href = dataUrl;
                                 link.click();
@@ -2109,12 +2097,12 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 const exportGroupBtn = event.target.closest('.exportGroupImageBtn');
                 if (exportGroupBtn) {
                     const groupKey = exportGroupBtn.dataset.groupKey;
-                    const container = document.querySelector(\`.group-container[data-group-key="\${groupKey}"]\`);
+                    const container = document.querySelector(`.group-container[data-group-key="${groupKey}"]`);
                     if (container) {
                         const captureTarget = container.querySelector('.capture-target');
                         if (captureTarget) {
                             const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
-                            const filename = \`\${storeName}_\${groupKey}.png\`;
+                            const filename = `${storeName}_${groupKey}.png`;
                             const originalWidth = captureTarget.style.width;
                             const truncatedElements = captureTarget.querySelectorAll('.truncate');
 
@@ -2146,7 +2134,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     const modalBody = document.getElementById('modalBody');
                     const tableWrapper = modalBody.querySelector('.overflow-x-auto');
                     const modalTitleText = document.getElementById('modalTitle').textContent || 'xep_hang';
-                    const filename = modalTitleText.replace(/[^\\w\\s-]/g, '').trim().replace(/\\s+/g, '_') + '.png';
+                    const filename = modalTitleText.replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '_') + '.png';
                     
                     captureElementAsImage(modalBody, filename, {
                          backgroundColor: '#ffffff',
@@ -2219,10 +2207,10 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                     if (!filterContainer) return;
                     const activeFilter = filterContainer.querySelector('.filter-btn.active').dataset.filter;
                     const storeName = currentStoreData.length > 0 ? currentStoreData[0][COLS.SIÊU_THỊ].split(' ').slice(1).join('_') : 'bao_cao';
-                    const filename = \`\${storeName}_\${activeFilter}.png\`;
+                    const filename = `${storeName}_${activeFilter}.png`;
                     const captureTarget = activeFilter === 'all' 
                         ? document.getElementById('detailsGrid') 
-                        : document.querySelector(\`.group-container[data-group-key="\${activeFilter}"] .capture-target\`);
+                        : document.querySelector(`.group-container[data-group-key="${activeFilter}"] .capture-target`);
                     
                     if (captureTarget) {
                         const originalWidth = captureTarget.style.width;
@@ -2255,14 +2243,14 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
 
                         for (let i = 0; i < filtersToExport.length; i++) {
                              const filter = filtersToExport[i];
-                             const filterBtn = filterContainer.querySelector(\`.filter-btn[data-filter="\${filter}"]\`);
+                             const filterBtn = filterContainer.querySelector(`.filter-btn[data-filter="${filter}"]`);
                              if (!filterBtn) continue;
                              
-                             loadingText.textContent = \`Đang xuất ảnh \${i+1}/\${filtersToExport.length}...\`;
+                             loadingText.textContent = `Đang xuất ảnh ${i+1}/${filtersToExport.length}...`;
                              filterBtn.click();
                              await new Promise(res => setTimeout(res, 300));
                              
-                             const container = document.querySelector(\`.group-container[data-group-key="\${filter}"]\`);
+                             const container = document.querySelector(`.group-container[data-group-key="${filter}"]`);
                              if(container){
                                  const captureTarget = container.querySelector('.capture-target');
                                  if (captureTarget) {
@@ -2280,7 +2268,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                                      truncatedElements.forEach(el => el.classList.add('truncate'));
 
                                      const link = document.createElement('a');
-                                     link.download = \`\${storeName}_\${filter}.png\`;
+                                     link.download = `${storeName}_${filter}.png`;
                                      link.href = dataUrl;
                                      link.click();
                                      await new Promise(res => setTimeout(res, 200));
@@ -2288,7 +2276,7 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                              }
                         }
                         
-                        filterContainer.querySelector(\`.filter-btn[data-filter="all"]\`).click();
+                        filterContainer.querySelector(`.filter-btn[data-filter="all"]`).click();
                         loadingOverlay.classList.add('hidden');
                         loadingText.textContent = '';
                     };
@@ -2325,8 +2313,44 @@ import{u as N,j as o,g as S,I as b}from"./index-DlNwsAoG.js";import{a as i}from"
                 }
             });
         });
-    <\/script>
+    </script>
 </body>
 </html>
-`,_=()=>{const{activeTab:u}=N(),[g,v]=i.useState(!1),l=i.useRef(null),[h,w]=i.useState(!1),[c,d]=i.useState({code1:"910",code2:""});i.useEffect(()=>{v(!0);const t=e=>{var r;((r=e.data)==null?void 0:r.type)==="CHECK_THUONG_FILE_LOADED"&&(w(!0),e.data.code1&&d(n=>({...n,code1:e.data.code1})),e.data.code2&&d(n=>({...n,code2:e.data.code2})))};return window.addEventListener("message",t),()=>window.removeEventListener("message",t)},[]);const p=i.useCallback(t=>{var n;const e=(n=l.current)==null?void 0:n.contentDocument;if(!e)return;let r=e.getElementById("injected-global-font");r||(r=e.createElement("style"),r.id="injected-global-font",e.head.appendChild(r)),t&&t!=="Plus Jakarta Sans"?r.innerHTML=`body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${t}', sans-serif !important; }`:r.innerHTML="body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }"},[]);i.useEffect(()=>{const t=l.current;if(!t)return;const e=()=>{try{const n=t.contentDocument;if(n){let a="";for(const s of Array.from(document.styleSheets))try{for(const x of Array.from(s.cssRules))x instanceof CSSFontFaceRule&&(a+=x.cssText+`
-`)}catch{}if(a){const s=n.createElement("style");s.id="injected-font-faces",s.textContent=a,n.head.appendChild(s)}}}catch{}S().then(n=>{n&&p(n)})};t.addEventListener("load",e);const r=new MutationObserver(()=>{const n=document.getElementById("dynamic-font-style");if(n){const a=n.innerHTML.match(/font-family:\s*'([^']+)'/);a&&p(a[1])}});return r.observe(document.head,{childList:!0,subtree:!0,characterData:!0}),()=>{t.removeEventListener("load",e),r.disconnect()}},[p]);const m=(t,e)=>{d(r=>{var a,s;const n={...r,[t]:e};return(s=(a=l.current)==null?void 0:a.contentWindow)==null||s.postMessage({type:"CHECK_THUONG_SEARCH",code1:n.code1,code2:n.code2},"*"),n})},C=()=>{var t,e;(e=(t=l.current)==null?void 0:t.contentWindow)==null||e.postMessage({type:"CHECK_THUONG_CHANGE_FILE"},"*")},f=t=>o.jsxs("div",{className:`flex items-center ${t?"gap-1":"hidden lg:flex gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300"}`,children:[o.jsxs("div",{className:`flex items-center ${t?"gap-1":"gap-2 px-2"}`,children:[o.jsx("input",{type:"text",placeholder:"Kho 1",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-40 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:c.code1,onChange:e=>m("code1",e.target.value)}),o.jsx("input",{type:"text",placeholder:"Kho 2",className:`${t?"w-14 px-2 py-1 text-[10px]":"w-36 px-4 py-1.5 text-sm"} bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full font-semibold text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]`,value:c.code2,onChange:e=>m("code2",e.target.value)})]}),o.jsxs("div",{className:`flex items-center ${t?"gap-0.5":"gap-1 border-l border-slate-200 dark:border-slate-700 pl-2"}`,children:[o.jsx("button",{onClick:()=>{var e,r;d(n=>({...n,code2:""})),(r=(e=l.current)==null?void 0:e.contentWindow)==null||r.postMessage({type:"CHECK_THUONG_SEARCH",code1:c.code1,code2:""},"*")},className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors`,title:"Xoá mã kho đang so sánh",children:o.jsx(b,{name:"rotate-ccw",size:t?3:3.5})}),o.jsx("button",{onClick:C,className:`${t?"w-6 h-6":"w-8 h-8"} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`,title:"Tải file khác",children:o.jsx(b,{name:"upload",size:t?3:3.5})})]})]});return o.jsxs("div",{className:"w-full h-full flex flex-col bg-white dark:bg-slate-900 absolute top-0 left-0 right-0 bottom-20 lg:bottom-0",children:[g&&u==="check-thuong"&&h&&document.getElementById("global-header-actions")&&y.createPortal(f(!1),document.getElementById("global-header-actions")),g&&u==="check-thuong"&&h&&document.getElementById("mobile-topbar-actions")&&y.createPortal(f(!0),document.getElementById("mobile-topbar-actions")),o.jsx("iframe",{ref:l,srcDoc:k,title:"Bảng Tra Cứu Thưởng Thi Đua",className:"w-full h-full border-none flex-grow",style:{width:"100%",height:"100%",border:"none"},sandbox:"allow-scripts allow-same-origin allow-forms allow-downloads"})]})};export{_ as CheckThuongView,_ as default};
+`;
+
+export const CheckThuongView: React.FC = () => {
+    const { activeTab } = useActiveTab();
+    const [mounted, setMounted] = useState(false);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const [hasData, setHasData] = useState(false);
+    const [codes, setCodes] = useState({ code1: '910', code2: '' });
+
+    useEffect(() => {
+        setMounted(true);
+        const handleMessage = (e: MessageEvent) => {
+            if (e.data?.type === 'CHECK_THUONG_FILE_LOADED') {
+                setHasData(true);
+                if (e.data.code1) setCodes(prev => ({ ...prev, code1: e.data.code1 }));
+                if (e.data.code2) setCodes(prev => ({ ...prev, code2: e.data.code2 }));
+            }
+        };
+        window.addEventListener('message', handleMessage);
+        return () => window.removeEventListener('message', handleMessage);
+    }, []);
+
+    // Inject parent's custom font into the iframe document
+    const injectFontIntoIframe = useCallback((fontValue: string) => {
+        const iframeDoc = iframeRef.current?.contentDocument;
+        if (!iframeDoc) return;
+
+        let styleEl = iframeDoc.getElementById('injected-global-font');
+        if (!styleEl) {
+            styleEl = iframeDoc.createElement('style');
+            styleEl.id = 'injected-global-font';
+            iframeDoc.head.appendChild(styleEl);
+        }
+
+        if (fontValue && fontValue !== 'Plus Jakarta Sans') {
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${fontValue}', sans-serif !important; }`;
+        } else {
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }
