@@ -38,6 +38,13 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
     if (!danhSachData) return [];
     const rows: RevenueRow[] = [];
     let currentDeptDS = '';
+    
+    const isValidEmployeeName = (name: string) => {
+        if (!name.includes(' - ')) return false;
+        const parts = name.split(' - ');
+        return /^\d+$/.test(parts[0].trim()) || /^\d+$/.test(parts[1].trim());
+    };
+
     for (const line of String(danhSachData).split('\n')) {
         const trimmed = line.trim();
         if (!trimmed) continue;
@@ -53,7 +60,7 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
             if (!isIgnoredDept(currentDeptDS)) {
                 rows.push({ type: 'department', name, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: hqqdCalculated });
             }
-        } else if (currentDeptDS && !isIgnoredDept(currentDeptDS) && name.includes(' - ') && parts.length > 3) {
+        } else if (currentDeptDS && !isIgnoredDept(currentDeptDS) && isValidEmployeeName(name) && parts.length > 3) {
             rows.push({ type: 'employee', name: formatEmployeeName(name), originalName: name, department: currentDeptDS, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: hqqdCalculated });
         }
     }

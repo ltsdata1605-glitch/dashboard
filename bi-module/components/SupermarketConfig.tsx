@@ -547,7 +547,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 <div className="w-1.5 h-1.5 bg-sky-500 rounded-sm"></div>
                                 BC D.Thu Ngành Hàng
                             </h3>
-                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="Realtime" lastUpdated={industryRealtimeTs} value={industryRealtimeData} placeholder="Ngành hàng Realtime..." error={errors.industryRealtime} 
                                     icon={<ClockIcon className="h-4 w-4" />} colorTheme="amber"
                                     onChange={(v) => { setIndustryRealtimeData(v); handleUpdate('industryRealtime', v, s => s.includes('Nhóm ngành hàng	SL Realtime'), setIndustryRealtimeTs, `Ngành hàng (RT) - ${supermarketName}`, ids.rt!); }}
@@ -576,7 +576,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-sm"></div>
                                 BC D.Thu theo NV
                             </h3>
-                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="DOANH THU" lastUpdated={danhSachTs} value={danhSachData} downloadUrl={`https://bi.thegioididong.com/nhan-vien?id=${supermarketName}&tab=1`}
                                     icon={<UsersIcon className="h-4 w-4" />} colorTheme="purple"
                                     onChange={(v) => { setDanhSachData(v); handleUpdate('danhSach', v, s => s.includes('Nhân viên	DTLK	DTQĐ'), setDanhSachTs, `Nhân viên (DS) - ${supermarketName}`, ids.ds!); }}
@@ -607,7 +607,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                 <div className="w-1.5 h-1.5 bg-indigo-500 rounded-sm"></div>
                                 Trả góp & CHI TIẾT NH
                             </h3>
-                            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                            <div className="grid grid-cols-2 md:grid-cols-1 gap-2 sm:gap-3">
                                 <StatusTile title="HQ BÁN KÈM" lastUpdated={banKemTs} value={banKemData} placeholder="Nhân viên..." error={errors.banKem} 
                                     icon={<ChartBarIcon className="h-4 w-4" />} colorTheme="emerald"
                                     onChange={(v) => { setBanKemData(v); handleUpdate('banKem', v, s => s.includes('Nhân viên	DTLK	DTLK áp dụng MNGN'), setBanKemTs, `Nhân viên (BK) - ${supermarketName}`, ids.bk!); }}

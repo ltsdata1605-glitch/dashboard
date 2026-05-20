@@ -225,12 +225,13 @@ export function useNhanVienData() {
     }, [allEmployees]);
 
     const handleSaveBonus = async (originalName: string, metrics: BonusMetrics) => {
-        let currentSm = activeSupermarkets[0];
+        let safeName = shortenSupermarketName(activeSupermarkets[0]);
         setAggregatedData(prev => ({
             ...prev,
             bonusData: { ...prev.bonusData, [originalName]: metrics }
         }));
-        await db.set(`bonus-data-${currentSm}`, { ...aggregatedData.bonusData, [originalName]: metrics });
+        const currentDbData = await db.get(`bonus-data-${safeName}`) || {};
+        await db.set(`bonus-data-${safeName}`, { ...currentDbData, [originalName]: metrics });
     };
 
     const effectiveAggregatedWeights = useMemo(() => {
