@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { ScheduleInfo, StaffStats, SchedulingRules, StaffMember, DailyRequirements, Solution, EditShiftModalInfo, BusySchedule, SolutionAction } from '../types';
 import { calculateTotalHours, findAutomaticReplacement } from '../utils/scheduleUtils';
+import toast from 'react-hot-toast';
 
 
 interface EditShiftModalProps {
@@ -298,7 +298,7 @@ const EditShiftModal: React.FC<EditShiftModalProps> = ({
     const isAfternoonShift = /[456]/.test(shiftString);
 
     if ((period === 'morning' && !isMorningShift) || (period === 'afternoon' && !isAfternoonShift)) {
-        alert('Lịch bận của bạn không ảnh hưởng đến ca làm việc này.');
+        toast.error('Lịch bận của bạn không ảnh hưởng đến ca làm việc này.', { duration: 3000 });
         return;
     }
 

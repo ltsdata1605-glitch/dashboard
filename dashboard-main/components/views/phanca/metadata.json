@@ -1,5 +1,0 @@
-{
-  "name": "Remix: phanca_tools910_28.12.2025",
-  "description": "- Đã fix Ca giao hàng\n- Thứ 2 và 5: Ưu tiên Nam làm kho\n- Cân bằng ca thu ngân giữa các bạn Nữ (tự động hoán đổi ca)\n- Tối ưu cân bằng SBH Nam/Nữ sau khi nhập lịch bận",
-  "requestFramePermissions": []
-}

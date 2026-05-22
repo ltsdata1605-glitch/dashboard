@@ -2,12 +2,14 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { DownloadIcon, XIcon, CheckCircleIcon, ChevronDownIcon, ResetIcon, AlertTriangleIcon, PencilIcon, SaveIcon, UploadIcon, ClockIcon, TrashIcon, UsersIcon, SparklesIcon, ChartBarIcon, DocumentReportIcon, ChartPieIcon } from './Icons';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
-import Toast from './Toast';
+import toast from 'react-hot-toast';
 import TargetHero from './TargetHero';
 import Slider from './Slider';
 import Card from './Card';
 import * as db from '../utils/db';
 import { parseNumber, shortenName, shortenSupermarketName } from '../utils/dashboardHelpers';
+import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
+import { parseSimpleDepartments } from '../../services/parsers/employeeParser';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 type Competition = { name: string; criteria: string };
@@ -241,6 +243,21 @@ const CompetitionTarget: React.FC<{
     const [groupOverrides, setGroupOverrides] = useIndexedDBState<Record<string, string>>('competition-group-overrides', {});
     const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
     
+    // Confirm Dialog State
+    const [confirmDialog, setConfirmDialog] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        variant?: 'danger' | 'warning' | 'info' | 'success';
+        confirmText?: string;
+    }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+
+    const showConfirm = (options: { title: string; message: string; onConfirm: () => void; variant?: 'danger' | 'warning' | 'info' | 'success'; confirmText?: string; }) => {
+        setConfirmDialog({ ...options, isOpen: true });
+    };
+    const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+    
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
     const baseTargets = useMemo(() => {
@@ -280,7 +297,18 @@ const CompetitionTarget: React.FC<{
                     <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình Target Thi đua</h2>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={() => { if(confirm('Khôi phục tất cả Target phụ về 100%?')) { setTargets({}); } }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                    <button onClick={() => {
+                        showConfirm({
+                            title: 'Khôi phục Target',
+                            message: 'Khôi phục tất cả Target phụ về 100%?',
+                            variant: 'warning',
+                            confirmText: 'Đồng ý',
+                            onConfirm: () => {
+                                setTargets({});
+                                closeConfirm();
+                            }
+                        });
+                    }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                         <ResetIcon className="h-4 w-4" />
                     </button>
                     <button onClick={() => setIsRenameModalOpen(true)} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Sửa tên và phân nhóm">
@@ -405,6 +433,16 @@ const CompetitionTarget: React.FC<{
                     setGroupOverrides(groups);
                 }}
             />
+
+            <ConfirmDialog 
+                isOpen={confirmDialog.isOpen}
+                onClose={closeConfirm}
+                onConfirm={confirmDialog.onConfirm}
+                title={confirmDialog.title}
+                message={confirmDialog.message}
+                variant={confirmDialog.variant}
+                confirmText={confirmDialog.confirmText}
+            />
         </div>
     );
 };
@@ -421,7 +459,7 @@ interface SupermarketConfigProps {
 const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, addUpdate, removeUpdate, competitionLuyKeData, summaryLuyKeData, onThiDuaDataChange }) => {
     const [activeTab, setActiveTab] = useState<ConfigTab>('data');
 
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' | 'info'; isVisible: boolean }>({ message: '', type: 'info', isVisible: false });
+
 
     const ids = useMemo(() => {
         if (!supermarketName) return { ds: null, td: null, rt: null, lk: null, tg: null, bk: null };
@@ -460,19 +498,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     };
 
     const departments = useMemo(() => {
-        if (!danhSachData || !danhSachData.includes('Nhân viên	DTLK	DTQĐ	Hiệu quả QĐ	Số lượng	Đơn giá')) return [];
-        const lines = danhSachData.split('\n').map(l => l.trim()).filter(l => l);
-        const departmentList: any[] = [];
-        let currentDept: any = null;
-        for (const line of lines) {
-            const parts = line.split('\t');
-            if (line.startsWith('BP ') && parts.length > 1) {
-                if (currentDept) departmentList.push(currentDept);
-                currentDept = { name: parts[0].trim(), employeeCount: 0 };
-            } else if (currentDept && parts.length > 1) currentDept.employeeCount++;
-        }
-        if (currentDept) departmentList.push(currentDept);
-        return departmentList;
+        return parseSimpleDepartments(danhSachData);
     }, [danhSachData]);
 
     const competitions = useMemo(() => {
@@ -513,13 +539,6 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
 
     return (
         <div className="space-y-6">
-            <Toast 
-                message={toast.message} 
-                type={toast.type} 
-                isVisible={toast.isVisible} 
-                onClose={() => setToast(p => ({ ...p, isVisible: false }))} 
-                duration={3000}
-            />
             <div className="flex items-center border-b border-slate-200 dark:border-slate-800 mb-4 overflow-x-auto scrollbar-hide">
                 <nav className="flex space-x-6 min-w-max" aria-label="Tabs">
                     {[
@@ -555,7 +574,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setIndustryRealtimeData(''); 
                                         setIndustryRealtimeTs(null); 
                                         removeUpdate(ids.rt!); 
-                                        setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
+                                        toast.success(`Đã xoá dữ liệu ${title}`);
                                         
                                     }} />
                                 <StatusTile title="Luỹ kế" lastUpdated={industryLuyKeTs} value={industryLuyKeData} downloadUrl={`https://bi.thegioididong.com/chi-tiet-nganh-hang?id=${supermarketName}`}
@@ -565,7 +584,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setIndustryLuyKeData(''); 
                                         setIndustryLuyKeTs(null); 
                                         removeUpdate(ids.lk!); 
-                                        setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
+                                        toast.success(`Đã xoá dữ liệu ${title}`);
                                         
                                     }} />
                             </div>
@@ -584,7 +603,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setDanhSachData(''); 
                                         setDanhSachTs(null); 
                                         removeUpdate(ids.ds!); 
-                                        setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
+                                        toast.success(`Đã xoá dữ liệu ${title}`);
                                         
                                     }} />
                                 
@@ -595,7 +614,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setThiDuaData(''); 
                                         setThiDuaTs(null); 
                                         removeUpdate(ids.td!); 
-                                        setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
+                                        toast.success(`Đã xoá dữ liệu ${title}`);
                                         
                                     }} />
                             </div>
@@ -615,7 +634,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setBanKemData(''); 
                                         setBanKemTs(null); 
                                         removeUpdate(ids.bk!); 
-                                        setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
+                                        toast.success(`Đã xoá dữ liệu ${title}`);
                                         
                                     }} />
 
@@ -626,7 +645,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                                         setTraGopData(''); 
                                         setTraGopTs(null); 
                                         removeUpdate(ids.tg!); 
-                                        setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
+                                        toast.success(`Đã xoá dữ liệu ${title}`);
                                         
                                     }} />
                             </div>

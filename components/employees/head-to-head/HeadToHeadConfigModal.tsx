@@ -7,6 +7,8 @@ import { CalculatedColumnForm } from '../modals/column-config/CalculatedColumnFo
 import { TargetColumnForm } from '../modals/column-config/TargetColumnForm';
 import { FormattingRulesForm } from '../modals/column-config/FormattingRulesForm';
 import { DATA_STATUS_COLORS } from '../../../constants';
+import { Button } from '../../shared/ui/Button';
+import { Input } from '../../shared/ui/Input';
 
 interface ConfigModalProps {
     isOpen: boolean;
@@ -353,24 +355,19 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                                     {existingMainHeaders.length > 0 && <span className="text-[10px] sm:text-xs font-normal text-slate-400">Chọn từ danh sách</span>}
                                 </label>
                                 <div className="relative">
-                                    <Icon name="layers" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input 
+                                    <Input 
                                         id="mainHeader" 
                                         type="text" 
                                         value={mainHeader} 
+                                        leftIcon="layers"
                                         onChange={e => { setMainHeader(e.target.value); setShowHeadersList(true); }}
                                         onFocus={() => setShowHeadersList(true)}
                                         placeholder="Tạo nhóm mới hoặc chọn..." 
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-8 sm:pl-10 pr-8 sm:pr-10 py-2 sm:py-2.5 text-xs sm:text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm" 
+                                        className="h-10 text-sm font-medium" 
                                         autoComplete="off"
+                                        rightIcon="chevron-down"
+                                        onRightIconClick={() => setShowHeadersList(!showHeadersList)}
                                     />
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setShowHeadersList(!showHeadersList)} 
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 hover:bg-slate-100 transition-colors p-1.5 rounded-md"
-                                    >
-                                        <Icon name="chevron-down" size={4} />
-                                    </button>
                                 </div>
                                 {showHeadersList && (
                                     <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-56 overflow-y-auto py-1.5 z-20">
@@ -393,14 +390,14 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                             <div>
                                 <label htmlFor="tableName" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">Tên Bảng (Bắt buộc) *</label>
                                 <div className="relative">
-                                    <Icon name="type" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input 
+                                    <Input 
                                         id="tableName" 
                                         type="text" 
+                                        leftIcon="type"
                                         value={tableName} 
                                         onChange={e => setTableName(e.target.value.toUpperCase())} 
                                         placeholder="VD: SL SIM, DT APPLE..." 
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-8 sm:pl-10 pr-3 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none shadow-sm" 
+                                        className="h-10 text-sm font-bold text-indigo-700 dark:text-indigo-300" 
                                         required 
                                     />
                                 </div>
@@ -486,10 +483,10 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                 
                 {/* FOOTER */}
                 <div className="p-3 sm:p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                    <button type="button" onClick={onClose} className="py-2 sm:py-2.5 px-3 sm:px-5 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-slate-500 hover:bg-slate-100 transition-colors focus:ring-2 focus:ring-slate-300"> Hủy Bỏ </button>
-                    <button type="submit" className="py-2 sm:py-2.5 px-4 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-xs sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all flex items-center gap-1.5 sm:gap-2 justify-center">
+                    <Button variant="ghost" type="button" onClick={onClose}> Hủy Bỏ </Button>
+                    <Button variant="primary" type="submit" className="shadow-md">
                         <Icon name="save" size={4} /> {editingConfig ? "Lưu Chỉnh Sửa" : "Thêm Bảng Mới"}
-                    </button>
+                    </Button>
                 </div>
             </form>
         </ModalWrapper>

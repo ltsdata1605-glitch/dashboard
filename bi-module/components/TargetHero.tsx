@@ -5,6 +5,11 @@ import { ChevronDownIcon, XIcon, PlusIcon, TrashIcon, CheckCircleIcon, CogIcon, 
 import Slider from './Slider';
 import { ManualDeptMapping } from '../types/nhanVienTypes';
 import { parseNumber, shortenSupermarketName } from '../utils/dashboardHelpers';
+import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
+import { parseAllEmployees, parseDepartments } from '../../services/parsers/employeeParser';
+import { useDepartments } from '../hooks/useDepartments';
+import { Modal } from '../../components/shared/ui/Modal';
+import { Button } from '../../components/shared/ui/Button';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 
@@ -70,13 +75,44 @@ const CreateDeptModal: React.FC<{
     };
 
     return (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[150] flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-md flex flex-col max-h-[90vh] border border-slate-200/50 dark:border-slate-700 animate-in fade-in zoom-in-95 overflow-hidden">
-                <div className="p-4 border-b border-sky-100/50 dark:border-slate-700 bg-sky-50/50 dark:bg-slate-800/50 flex justify-between items-center">
-                    <h3 className="font-black text-lg text-sky-800 dark:text-sky-400 tracking-tight">{editingDept ? 'Sửa bộ phận' : 'Tạo Bộ phận mới'}</h3>
-                    <button onClick={onClose} className="p-1.5 hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-600"><XIcon className="h-5 w-5 text-sky-600/60 dark:text-slate-400" /></button>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={editingDept ? 'Sửa bộ phận' : 'Tạo Bộ phận mới'}
+            footer={
+                <div className="flex gap-3 w-full">
+                    <Button 
+                        variant="danger"
+                        size="icon"
+                        onClick={() => { setName(''); setSelectedEmps(new Set()); setHiddenEmps(new Set()); }}
+                        className="flex-none bg-rose-50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-700 text-rose-600 dark:text-rose-400"
+                        title="Khôi phục mặc định"
+                    >
+                        <ResetIcon className="h-4 w-4" />
+                    </Button>
+                    <Button 
+                        variant="secondary"
+                        onClick={onClose} 
+                        className="flex-1"
+                    >
+                        Hủy bỏ
+                    </Button>
+                    <Button 
+                        variant="primary"
+                        disabled={
+                            editingDept 
+                                ? !name.trim() 
+                                : (!name.trim() && selectedEmps.size > 0) || (!name.trim() && selectedEmps.size === 0 && hiddenEmps.size === 0)
+                        }
+                        onClick={() => { onSave(name.trim(), Array.from(selectedEmps), Array.from(hiddenEmps)); onClose(); }}
+                        className="flex-[1.5]"
+                    >
+                        {editingDept && selectedEmps.size === 0 ? 'Xoá bộ phận' : (!name.trim() && hiddenEmps.size > 0 ? 'Lưu cập nhật' : 'Lưu cập nhật')}
+                    </Button>
                 </div>
-                <div className="p-5 space-y-5 overflow-y-auto bg-white dark:bg-slate-800">
+            }
+        >
+            <div className="space-y-5">
                     <div>
                         <label className="block text-[10px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-widest mb-2">Tên nhóm / Bộ phận</label>
                         <input value={name} onChange={e => setName(e.target.value)} placeholder="Ví dụ: Nhóm Online..." className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 outline-none transition-all font-bold text-slate-700 dark:text-slate-200 text-sm placeholder:text-slate-400 placeholder:font-normal" />
@@ -146,24 +182,8 @@ const CreateDeptModal: React.FC<{
                                 </div>}
                         </div>
                     </div>
-                </div>
-                <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex gap-3 bg-slate-50/80 dark:bg-slate-900/50">
-                    <button onClick={() => { setName(''); setSelectedEmps(new Set()); setHiddenEmps(new Set()); }} className="px-3 py-3 bg-rose-50 dark:bg-rose-900/30 border border-rose-200 dark:border-rose-700 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-black hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors shadow-sm uppercase tracking-widest active:scale-95" title="Khôi phục mặc định">
-                        <ResetIcon className="h-4 w-4" />
-                    </button>
-                    <button onClick={onClose} className="flex-1 px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-xs font-black hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors shadow-sm uppercase tracking-widest active:scale-95">Hủy bỏ</button>
-                    <button 
-                        disabled={
-                            editingDept 
-                                ? !name.trim() 
-                                : (!name.trim() && selectedEmps.size > 0) || (!name.trim() && selectedEmps.size === 0 && hiddenEmps.size === 0)
-                        }
-                        onClick={() => { onSave(name.trim(), Array.from(selectedEmps), Array.from(hiddenEmps)); onClose(); }}
-                        className="flex-[1.5] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black disabled:opacity-50 disabled:from-slate-400 disabled:to-slate-500 hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95"
-                    >{editingDept && selectedEmps.size === 0 ? 'Xoá bộ phận' : (!name.trim() && hiddenEmps.size > 0 ? 'Lưu cập nhật' : 'Lưu cập nhật')}</button>
-                </div>
             </div>
-        </div>
+        </Modal>
     );
 };
 
@@ -248,22 +268,24 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingDept, setEditingDept] = useState<{ name: string; employees: string[] } | null>(null);
 
+    // Confirm Dialog State
+    const [confirmDialog, setConfirmDialog] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        variant?: 'danger' | 'warning' | 'info' | 'success';
+        confirmText?: string;
+    }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+
+    const showConfirm = (options: { title: string; message: string; onConfirm: () => void; variant?: 'danger' | 'warning' | 'info' | 'success'; confirmText?: string; }) => {
+        setConfirmDialog({ ...options, isOpen: true });
+    };
+    const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+
     const [allEmployeesRaw] = useIndexedDBState<string>(`config-${safeName}-danhsach`, '');
     const allEmployees = useMemo(() => {
-        if (!allEmployeesRaw) return [];
-        return allEmployeesRaw.split('\n')
-            .map(l => l.trim())
-            .filter(l => {
-                const namePart = l.split('\t')[0];
-                if (!namePart.includes(' - ')) return false;
-                if (namePart.startsWith('BP ') || namePart.startsWith('Hỗ trợ BI') || namePart.startsWith('NNH ') || namePart.startsWith('ĐML_STR_STR') || /^\d/.test(namePart)) return false;
-                
-                const parts = namePart.split(' - ');
-                const possibleId = parts[parts.length - 1].trim();
-                return /^\d+$/.test(possibleId);
-            })
-            .map(l => ({ originalName: l.split('\t')[0], name: l.split('\t')[0] }))
-            .filter(emp => !hiddenEmployees.includes(emp.originalName));
+        return parseAllEmployees(allEmployeesRaw, hiddenEmployees);
     }, [allEmployeesRaw, hiddenEmployees]);
 
     const baseTargetQuyDoi = useMemo(() => {
@@ -282,86 +304,26 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
 
     const defaultDepartments = useMemo(() => {
         if (!allEmployeesRaw) return departments.map(d => ({ ...d, isManual: false }));
-        
-        const lines = allEmployeesRaw.split('\n').map(l => l.trim()).filter(l => l);
-        const departmentList: { name: string; employeeCount: number; isManual: boolean }[] = [];
-        let currentDept: { name: string; employeeCount: number; isManual: boolean } | null = null;
-        
-        for (const line of lines) {
-            const parts = line.split('\t');
-            const namePart = parts[0];
-            
-            if (namePart.startsWith('BP ') && parts.length > 1) {
-                if (currentDept) departmentList.push(currentDept);
-                currentDept = { name: namePart.trim(), employeeCount: 0, isManual: false };
-            } else if (currentDept && parts.length > 1) {
-                if (namePart.includes(' - ') && !namePart.startsWith('Hỗ trợ BI') && !namePart.startsWith('NNH ') && !namePart.startsWith('ĐML_STR_STR') && !/^\d/.test(namePart)) {
-                    const npParts = namePart.split(' - ');
-                    const possibleId = npParts[npParts.length - 1].trim();
-                    if (/^\d+$/.test(possibleId) && !hiddenEmployees.includes(namePart)) {
-                        currentDept.employeeCount++;
-                    }
-                }
-            }
-        }
-        if (currentDept) departmentList.push(currentDept);
-        return departmentList.length > 0 ? departmentList : departments.map(d => ({ ...d, isManual: false }));
+        const parsedDepts = parseDepartments(allEmployeesRaw, hiddenEmployees);
+        return parsedDepts.length > 0 ? parsedDepts : departments.map(d => ({ ...d, isManual: false }));
     }, [allEmployeesRaw, hiddenEmployees, departments]);
 
-    const combinedDepts = useMemo(() => {
-        const manualNames = Object.keys(manualMapping);
-        if (manualNames.length === 0) return defaultDepartments.filter(d => d.employeeCount > 0);
-        const manualList = manualNames.map(name => ({ name, employeeCount: manualMapping[name].length, isManual: true }));
-        return manualList.sort((a,b) => {
-            if (a.name === 'BP Khác') return 1;
-            if (b.name === 'BP Khác') return -1;
-            return a.name.localeCompare(b.name);
-        });
-    }, [departments, manualMapping, allEmployees]);
-
-    const effectiveWeights = useMemo(() => {
-        const weights: Record<string, number> = { ...departmentWeights };
-        const validNames = new Set(combinedDepts.map(d => d.name));
-        Object.keys(weights).forEach(k => { if (!validNames.has(k)) delete weights[k]; });
-        if (Object.keys(departmentWeights).length === 0) {
-            let hasAllInOne = false;
-            combinedDepts.forEach(d => {
-                if (d.name.toUpperCase().includes('ALL IN ONE')) {
-                    hasAllInOne = true;
-                }
-            });
-            if (hasAllInOne) {
-                combinedDepts.forEach(d => {
-                    weights[d.name] = d.name.toUpperCase().includes('ALL IN ONE') ? 100 : 0;
-                });
-            } else {
-                const share = 100 / (combinedDepts.length || 1);
-                combinedDepts.forEach(d => { weights[d.name] = share; });
-            }
-        } else {
-            let missing = combinedDepts.filter(d => weights[d.name] === undefined);
-            if (missing.length > 0) {
-                missing.forEach(d => { weights[d.name] = 0; }); // Default to 0 for new departments to prevent accidental over-allocation
-            }
-        }
-        return weights;
-    }, [departmentWeights, combinedDepts]);
+    const {
+        combinedDepts,
+        effectiveWeights,
+        totalAllocatedWeight,
+        totalAllocatedEmployees
+    } = useDepartments({
+        defaultDepartments,
+        manualMapping,
+        allEmployees,
+        departmentWeights
+    });
 
     const handleDepartmentSliderChange = (deptName: string) => (newValue: number) => {
         const newWeights: Record<string, number> = { ...effectiveWeights, [deptName]: Math.max(0, newValue) };
         setDepartmentWeights(newWeights);
     };
-
-    const totalAllocatedWeight = useMemo(() => {
-        return combinedDepts.reduce((sum, d) => sum + (effectiveWeights[d.name] || 0), 0);
-    }, [combinedDepts, effectiveWeights]);
-
-    const totalAllocatedEmployees = useMemo(() => {
-        return combinedDepts.reduce((sum, d) => {
-            const w = effectiveWeights[d.name] || 0;
-            return sum + (w > 0 ? d.employeeCount : 0);
-        }, 0);
-    }, [combinedDepts, effectiveWeights]);
 
     return (
         <section className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
@@ -373,7 +335,20 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <div className="w-1 h-3 bg-primary-600 rounded-full"></div>
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target</h2>
                         </div>
-                        <button onClick={() => { if(confirm('Khôi phục hiển thị về mục tiêu mặc định?')) { setTotalTarget(100); setTraGop(45); setQuyDoi(40); } }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                        <button onClick={() => {
+                            showConfirm({
+                                title: 'Khôi phục Target',
+                                message: 'Khôi phục hiển thị về mục tiêu mặc định?',
+                                variant: 'warning',
+                                confirmText: 'Đồng ý',
+                                onConfirm: () => {
+                                    setTotalTarget(100);
+                                    setTraGop(45);
+                                    setQuyDoi(40);
+                                    closeConfirm();
+                                }
+                            });
+                        }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                             <ResetIcon className="h-4 w-4" />
                         </button>
                     </div>
@@ -390,7 +365,20 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                             <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Phân bổ bộ phận</h2>
                         </div>
                         <div className="flex gap-2">
-                            <button onClick={() => { if(confirm('Đặt tất cả nhân sự và trọng số về mặc định?')) { setDepartmentWeights({}); setManualMapping({}); setHiddenEmployees([]); } }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                            <button onClick={() => {
+                                showConfirm({
+                                    title: 'Khôi phục Cấu hình',
+                                    message: 'Đặt tất cả nhân sự và trọng số về mặc định?',
+                                    variant: 'danger',
+                                    confirmText: 'Đồng ý',
+                                    onConfirm: () => {
+                                        setDepartmentWeights({});
+                                        setManualMapping({});
+                                        setHiddenEmployees([]);
+                                        closeConfirm();
+                                    }
+                                });
+                            }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                                 <ResetIcon className="h-4 w-4" />
                             </button>
                             <button onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Tạo mới">
@@ -451,7 +439,23 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                             {isManual && (
                                                 <div className="flex gap-1 ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                     <button onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3 w-3" /></button>
-                                                    <button onClick={() => { if(confirm(`Xóa bộ phận "${dept.name}"?`)) { const n = {...manualMapping}; delete n[dept.name]; setManualMapping(n); const w = {...departmentWeights}; delete w[dept.name]; setDepartmentWeights(w); } }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-red-600 hover:bg-red-100 hover:border-red-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3 w-3" /></button>
+                                                    <button onClick={() => {
+                                                        showConfirm({
+                                                            title: 'Xóa Bộ phận',
+                                                            message: `Xóa bộ phận "${dept.name}"?`,
+                                                            variant: 'danger',
+                                                            confirmText: 'Xóa',
+                                                            onConfirm: () => {
+                                                                const n = {...manualMapping};
+                                                                delete n[dept.name];
+                                                                setManualMapping(n);
+                                                                const w = {...departmentWeights};
+                                                                delete w[dept.name];
+                                                                setDepartmentWeights(w);
+                                                                closeConfirm();
+                                                            }
+                                                        });
+                                                    }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-red-600 hover:bg-red-100 hover:border-red-300 transition-colors" title="Xoá nhóm"><TrashIcon className="h-3 w-3" /></button>
                                                 </div>
                                             )}
                                         </div>
@@ -517,6 +521,16 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                 allEmployees={allEmployees}
                 existingMapping={manualMapping}
                 editingDept={editingDept}
+            />
+
+            <ConfirmDialog 
+                isOpen={confirmDialog.isOpen}
+                onClose={closeConfirm}
+                onConfirm={confirmDialog.onConfirm}
+                title={confirmDialog.title}
+                message={confirmDialog.message}
+                variant={confirmDialog.variant}
+                confirmText={confirmDialog.confirmText}
             />
         </section>
     );

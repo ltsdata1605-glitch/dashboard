@@ -5,6 +5,7 @@ import { abbreviateName, formatCurrency, formatQuantity } from '../../utils/data
 import { Icon } from '../common/Icon';
 import { saveTopSellerAnalysis } from '../../services/dbService';
 import { RankBadge } from './performance/PerformanceTableUtils';
+import { Button } from '../shared/ui/Button';
 
 interface TopSellerListProps {
     fullSellerArray: Employee[];
@@ -82,27 +83,26 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                 </div>
                 <div className="flex items-center gap-0.5 lg:gap-2 hide-on-export shrink-0">
                         <div className="inline-flex gap-0.5 sm:gap-1">
-                            <button onClick={() => setIsExpanded(false)} className={`p-1.5 sm:p-2 transition-all rounded-lg ${!isExpanded ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Top/Bot 20%">
-                                <Icon name="percent" size={3.5} className="sm:hidden" /><Icon name="percent" size={5} className="hidden sm:block" />
-                            </button>
-                            <button onClick={() => setIsExpanded(true)} className={`p-1.5 sm:p-2 transition-all rounded-lg ${isExpanded ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Tất cả">
-                                <Icon name="layout-list" size={3.5} className="sm:hidden" /><Icon name="layout-list" size={5} className="hidden sm:block" />
-                            </button>
+                            <Button onClick={() => setIsExpanded(false)} variant="ghost" size="icon" className={`transition-all w-8 h-8 sm:w-10 sm:h-10 ${!isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Top/Bot 20%">
+                                <Icon name="percent" size={4.5} />
+                            </Button>
+                            <Button onClick={() => setIsExpanded(true)} variant="ghost" size="icon" className={`transition-all w-8 h-8 sm:w-10 sm:h-10 ${isExpanded ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`} title="Tất cả">
+                                <Icon name="layout-list" size={4.5} />
+                            </Button>
                         </div>
                         <div className="h-4 sm:h-6 w-px bg-slate-300 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
-                        <button 
+                        <Button 
                             onClick={handleBatchExportClick}
-                            className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all"
+                            variant="ghost" size="icon"
+                            className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all w-8 h-8 sm:w-10 sm:h-10"
                             title="Xuất hàng loạt báo cáo chi tiết"
                         >
-                            <Icon name="images" size={3.5} className="sm:hidden" />
-                            <Icon name="images" size={5} className="hidden sm:block" />
-                        </button>
+                            <Icon name="images" size={4.5} />
+                        </Button>
                         {onExport && (
-                            <button onClick={onExport} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg sm:rounded-xl transition-all">
-                                {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
-                                {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
-                            </button>
+                            <Button onClick={onExport} disabled={isExporting} isLoading={isExporting} variant="ghost" size="icon" title="Xuất Ảnh" className="text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all w-8 h-8 sm:w-10 sm:h-10">
+                                {!isExporting && <Icon name="camera" size={4.5} />}
+                            </Button>
                         )}
                 </div>
             </div>

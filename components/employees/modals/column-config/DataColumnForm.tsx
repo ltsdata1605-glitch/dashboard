@@ -1,6 +1,8 @@
 import React from 'react';
 import { Icon } from '../../../common/Icon';
 import MultiSelectDropdown from '../../../common/MultiSelectDropdown';
+import { Select } from '../../../shared/ui/Select';
+import { Input } from '../../../shared/ui/Input';
 
 interface DataColumnFormProps {
     metricType: 'quantity' | 'revenue' | 'revenueQD';
@@ -77,29 +79,29 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
                     </h5>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <div className="w-full sm:w-[160px]">
-                            <select value={priceType} onChange={e => setPriceType(e.target.value as any)} className="w-full h-8 sm:h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-medium text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <Select value={priceType} onChange={e => setPriceType(e.target.value as any)} className="h-8 sm:h-10 text-xs sm:text-sm">
                                 <option value="discounted">Giá bán (Khuyến mãi)</option>
                                 <option value="original">Giá niêm yết (Gốc)</option>
-                            </select>
+                            </Select>
                         </div>
                         <div className="w-full sm:w-[130px]">
-                            <select value={priceCondition} onChange={e => setPriceCondition(e.target.value as any)} className="w-full h-8 sm:h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-medium text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <Select value={priceCondition} onChange={e => setPriceCondition(e.target.value as any)} className="h-8 sm:h-10 text-xs sm:text-sm">
                                 <option value="none" className="text-slate-500">Bỏ qua giá</option>
                                 <option value="greater">Lớn hơn - &gt;</option>
                                 <option value="less">Nhỏ hơn - &lt;</option>
                                 <option value="equal">Bằng đúng - =</option>
                                 <option value="between">Trong khoảng</option>
-                            </select>
+                            </Select>
                         </div>
                         {priceCondition !== 'none' && (
                             <div className="flex-grow flex items-center gap-2">
                                 <div className="relative flex-grow">
-                                    <input type="number" value={priceValue1} onChange={e => setPriceValue1(e.target.value)} placeholder="0 đ" className="w-full h-8 sm:h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-2 sm:pl-3 pr-2 sm:pr-3 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500" />
+                                    <Input type="number" value={priceValue1} onChange={e => setPriceValue1(e.target.value)} placeholder="0 đ" className="h-8 sm:h-10 text-xs sm:text-sm" />
                                 </div>
                                 {priceCondition === 'between' && (
                                     <div className="flex items-center gap-2 flex-grow">
                                         <span className="text-slate-400 text-xs sm:text-sm font-medium">~</span>
-                                        <input type="number" value={priceValue2} onChange={e => setPriceValue2(e.target.value)} placeholder="0 đ" className="w-full h-8 sm:h-10 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 pl-2 sm:pl-3 pr-2 sm:pr-3 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500" />
+                                        <Input type="number" value={priceValue2} onChange={e => setPriceValue2(e.target.value)} placeholder="0 đ" className="h-8 sm:h-10 text-xs sm:text-sm" />
                                     </div>
                                 )}
                             </div>

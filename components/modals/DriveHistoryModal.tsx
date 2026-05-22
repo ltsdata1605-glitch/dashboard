@@ -4,6 +4,8 @@ import { Icon } from '../common/Icon';
 import toast from 'react-hot-toast';
 import { listDriveFiles, downloadFileFromDrive, deleteFileFromDrive, DriveFile } from '../../services/googleDriveService';
 import { useAuth } from '../../contexts/AuthContext';
+import { Button } from '../shared/ui/Button';
+import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 
 interface DriveHistoryModalProps {
     isOpen: boolean;
@@ -20,6 +22,21 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
     const [isDeletingAll, setIsDeletingAll] = useState(false);
     const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+    // Confirm Dialog State
+    const [confirmDialog, setConfirmDialog] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        variant?: 'danger' | 'warning' | 'info' | 'success';
+        confirmText?: string;
+    }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+
+    const showConfirm = (options: { title: string; message: string; onConfirm: () => void; variant?: 'danger' | 'warning' | 'info' | 'success'; confirmText?: string; }) => {
+        setConfirmDialog({ ...options, isOpen: true });
+    };
+    const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
 
     useEffect(() => {
         if (isOpen) {
@@ -91,60 +108,74 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
         setSelectedIds(next);
     };
 
-    const handleDelete = async (e: React.MouseEvent, fileId: string) => {
+    const handleDelete = (e: React.MouseEvent, fileId: string) => {
         e.stopPropagation();
-        if (!confirm('Bạn có chắc chắn muốn xóa báo cáo này khỏi Drive?')) return;
-        
-        setIsDeleting(fileId);
-        try {
-            const token = sessionStorage.getItem('googleOAuthToken');
-            if (!token) {
-                setNeedsReconnect(true);
-                throw new Error('Mất kết nối Google, vui lòng kết nối lại');
+        showConfirm({
+            title: 'Xóa Báo Cáo',
+            message: 'Bạn có chắc chắn muốn xóa báo cáo này khỏi Drive?',
+            variant: 'danger',
+            confirmText: 'Xóa',
+            onConfirm: async () => {
+                closeConfirm();
+                setIsDeleting(fileId);
+                try {
+                    const token = sessionStorage.getItem('googleOAuthToken');
+                    if (!token) {
+                        setNeedsReconnect(true);
+                        throw new Error('Mất kết nối Google, vui lòng kết nối lại');
+                    }
+                    
+                    await deleteFileFromDrive(fileId, token);
+                    setFiles(prev => prev.filter(f => f.id !== fileId));
+                    
+                    const newSelection = new Set(selectedIds);
+                    newSelection.delete(fileId);
+                    setSelectedIds(newSelection);
+                    
+                    toast.success('Đã xóa báo cáo');
+                } catch (error: any) {
+                    console.error(error);
+                    toast.error(error.message || 'Lỗi khi xóa báo cáo');
+                } finally {
+                    setIsDeleting(null);
+                }
             }
-            
-            await deleteFileFromDrive(fileId, token);
-            setFiles(prev => prev.filter(f => f.id !== fileId));
-            
-            const newSelection = new Set(selectedIds);
-            newSelection.delete(fileId);
-            setSelectedIds(newSelection);
-            
-            toast.success('Đã xóa báo cáo');
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error.message || 'Lỗi khi xóa báo cáo');
-        } finally {
-            setIsDeleting(null);
-        }
+        });
     };
 
-    const handleDeleteAll = async () => {
-        if (!confirm(`Bạn có chắc chắn muốn XÓA TẤT CẢ ${files.length} báo cáo khỏi Drive?`)) return;
-        
-        setIsDeletingAll(true);
-        const loadingToast = toast.loading('Đang xóa...');
-        try {
-            const token = sessionStorage.getItem('googleOAuthToken');
-            if (!token) {
-                setNeedsReconnect(true);
-                throw new Error('Mất kết nối Google, vui lòng kết nối lại.');
+    const handleDeleteAll = () => {
+        showConfirm({
+            title: 'Xóa Tất Cả Báo Cáo',
+            message: `Bạn có chắc chắn muốn XÓA TẤT CẢ ${files.length} báo cáo khỏi Drive?`,
+            variant: 'danger',
+            confirmText: 'Xóa Tất Cả',
+            onConfirm: async () => {
+                closeConfirm();
+                setIsDeletingAll(true);
+                const loadingToast = toast.loading('Đang xóa...');
+                try {
+                    const token = sessionStorage.getItem('googleOAuthToken');
+                    if (!token) {
+                        setNeedsReconnect(true);
+                        throw new Error('Mất kết nối Google, vui lòng kết nối lại.');
+                    }
+                    
+                    for (const file of files) {
+                        await deleteFileFromDrive(file.id, token);
+                    }
+                    
+                    setFiles([]);
+                    setSelectedIds(new Set());
+                    toast.success('Đã xóa toàn bộ!', { id: loadingToast });
+                } catch (error: any) {
+                    console.error(error);
+                    toast.error('Có lỗi xảy ra khi xóa', { id: loadingToast });
+                    fetchFiles();
+                } finally {
+                    setIsDeletingAll(false);
+                }
             }
-            
-            for (const file of files) {
-                await deleteFileFromDrive(file.id, token);
-            }
-            
-            setFiles([]);
-            setSelectedIds(new Set());
-            toast.success('Đã xóa toàn bộ!', { id: loadingToast });
-        } catch (error: any) {
-            console.error(error);
-            toast.error('Có lỗi xảy ra khi xóa', { id: loadingToast });
-            fetchFiles();
-        } finally {
-            setIsDeletingAll(false);
-        }
+        });
     };
 
     if (!isOpen) return null;
@@ -210,7 +241,7 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                                 </div>
                                 <p className="font-semibold text-sm sm:text-base text-slate-700 dark:text-slate-300 mb-1 sm:mb-2">Chưa kết nối Google Drive</p>
                                 <p className="text-xs sm:text-sm text-center max-w-xs mb-4 sm:mb-6 leading-relaxed">Bạn cần cấp quyền truy cập Drive (tối đa 1 giờ) để tải báo cáo Mây.</p>
-                                <button
+                                <Button
                                     onClick={async () => {
                                         try {
                                             await loginWithGoogle();
@@ -219,12 +250,11 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                                             toast.error("Kết nối thất bại hoặc bị hủy");
                                         }
                                     }}
-                                    className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white rounded-xl font-semibold shadow-md shadow-indigo-500/20 transition-all flex items-center gap-1.5 sm:gap-2"
+                                    variant="primary"
+                                    leftIcon={<Icon name="cloud" size={5} />}
                                 >
-                                    <Icon name="cloud" size={4} className="sm:hidden" />
-                                    <Icon name="cloud" size={5} className="hidden sm:block" />
                                     Bấm vào đây để Liên Kết Nhanh
-                                </button>
+                                </Button>
                             </div>
                         ) : isLoading ? (
                             <div className="flex flex-col items-center justify-center py-6 sm:py-12 text-indigo-600 dark:text-indigo-400">
@@ -293,22 +323,30 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                             <span className="text-xs sm:text-sm font-medium text-slate-500">
                                 Đã chọn: <strong className="text-indigo-600 dark:text-indigo-400">{selectedIds.size}</strong> báo cáo
                             </span>
-                            <button
+                            <Button
                                 onClick={handleDownloadSelected}
                                 disabled={selectedIds.size === 0 || isDownloading}
-                                className={`flex items-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold text-xs sm:text-sm transition-all shadow-sm ${selectedIds.size > 0 && !isDownloading ? 'bg-indigo-600 text-white hover:bg-indigo-700 active:scale-95' : 'bg-slate-300 text-slate-500 dark:bg-slate-700 dark:text-slate-400 cursor-not-allowed border border-slate-400/20'}`}
+                                isLoading={isDownloading}
+                                variant="primary"
+                                leftIcon={!isDownloading ? <Icon name="cloud-download" size={4.5} /> : undefined}
                             >
-                                {isDownloading ? (
-                                    <><Icon name="loader-2" size={4.5} className="animate-spin" /> Đang xử lý...</>
-                                ) : (
-                                    <><Icon name="cloud-download" size={4.5} /> Nạp Dữ Liệu</>
-                                )}
-                            </button>
+                                {isDownloading ? 'Đang xử lý...' : 'Nạp Dữ Liệu'}
+                            </Button>
                         </div>
                     )}
 
                 </motion.div>
             </div>
+            
+            <ConfirmDialog 
+                isOpen={confirmDialog.isOpen}
+                onClose={closeConfirm}
+                onConfirm={confirmDialog.onConfirm}
+                title={confirmDialog.title}
+                message={confirmDialog.message}
+                variant={confirmDialog.variant}
+                confirmText={confirmDialog.confirmText}
+            />
         </AnimatePresence>
     );
 };

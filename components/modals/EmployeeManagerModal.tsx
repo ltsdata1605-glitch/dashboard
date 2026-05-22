@@ -3,6 +3,9 @@ import ModalWrapper from './ModalWrapper';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getSetting } from '../../services/dbService';
+import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
+import { Button } from '../shared/ui/Button';
+import { Input } from '../shared/ui/Input';
 
 interface EmployeeManagerModalProps {
     isOpen: boolean;
@@ -22,6 +25,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
 
     // Cờ báo hiệu có thay đổi để cập nhật lúc đóng
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+    const [showRestoreConfirm, setShowRestoreConfirm] = useState(false);
 
     // Khởi tạo Modal
     useEffect(() => {
@@ -111,17 +115,20 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
         if (updateDepartmentMap) updateDepartmentMap(newMap);
     };
 
-    const handleRestore = async () => {
-        if (window.confirm('Bạn có muốn khôi phục lại danh sách nhân viên ban đầu (từ file Excel) không?')) {
-            const originalMap = await getSetting<Record<string, string>>('originalDepartmentMap');
-            if (originalMap) {
-                setLocalMap(originalMap);
-                setHasUnsavedChanges(true);
-                if (updateDepartmentMap) updateDepartmentMap(originalMap);
-            } else {
-                alert('Không tìm thấy bản sao lưu danh sách gôc!');
-            }
+    const confirmRestore = async () => {
+        const originalMap = await getSetting<Record<string, string>>('originalDepartmentMap');
+        if (originalMap) {
+            setLocalMap(originalMap);
+            setHasUnsavedChanges(true);
+            if (updateDepartmentMap) updateDepartmentMap(originalMap);
+        } else {
+            alert('Không tìm thấy bản sao lưu danh sách gốc!');
         }
+        setShowRestoreConfirm(false);
+    };
+
+    const handleRestore = () => {
+        setShowRestoreConfirm(true);
     };
 
     const handleClose = () => {
@@ -146,12 +153,12 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                 {/* Toolbar */}
                 <div className="p-2.5 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
                     <div className="relative w-48 sm:w-64">
-                        <input 
+                        <Input 
                             type="text" 
                             placeholder="Tìm mã NV, tên, siêu thị..." 
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full pl-8 sm:pl-9 pr-3 py-1.5 sm:py-2 text-xs sm:text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-indigo-500"
+                            className="pl-8 sm:pl-9 pr-3 text-xs sm:text-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800"
                         />
                         <Icon name="search" size={3.5} className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 text-slate-400 sm:hidden" />
                         <Icon name="search" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 hidden sm:block" />
@@ -202,23 +209,23 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                     {editingId === emp.id ? (
                                         <>
                                             <td className="px-2 sm:px-4 py-1.5 sm:py-2 border-r border-slate-200 dark:border-slate-700">
-                                                <input 
+                                                <Input 
                                                     type="text" 
                                                     value={editName} 
                                                     onChange={e => setEditName(e.target.value)} 
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs sm:text-sm border border-indigo-300 rounded focus:ring-indigo-500 dark:bg-slate-700 dark:border-indigo-500 dark:text-white"
+                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
                                                     autoFocus
                                                 />
                                             </td>
                                             <td className="px-2 sm:px-4 py-1.5 sm:py-2 border-r border-slate-200 dark:border-slate-700">
-                                                <input 
+                                                <Input 
                                                     list="department-options"
                                                     type="text" 
                                                     value={editDept} 
                                                     onChange={e => setEditDept(e.target.value)} 
                                                     onKeyDown={e => { if (e.key === 'Enter') handleSave(); }}
-                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs sm:text-sm border border-indigo-300 rounded focus:ring-indigo-500 dark:bg-slate-700 dark:border-indigo-500 dark:text-white"
+                                                    className="w-full px-1.5 sm:px-2 py-0.5 sm:py-1 text-xs sm:text-sm border-indigo-300 dark:border-indigo-500"
                                                     placeholder="Chọn hoặc nhập phòng ban..."
                                                 />
                                             </td>
@@ -275,21 +282,31 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
 
                 {/* Footer */}
                 <div className="p-2.5 sm:p-4 border-t border-slate-200 dark:border-slate-700 flex justify-between gap-2 sm:gap-3 bg-slate-50 dark:bg-slate-900/50">
-                    <button 
+                    <Button 
                         onClick={handleRestore} 
-                        className="px-3 sm:px-6 py-1.5 sm:py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-300 dark:hover:bg-slate-600 rounded-lg shadow-sm transition-all font-medium flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm"
+                        variant="secondary"
+                        leftIcon={<Icon name="rotate-ccw" size={4} />}
                     >
-                        <Icon name="rotate-ccw" size={3.5} className="sm:hidden" />
-                        <Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục gốc
-                    </button>
-                    <button 
+                        Khôi phục gốc
+                    </Button>
+                    <Button 
                         onClick={handleClose} 
-                        className="px-3 sm:px-6 py-1.5 sm:py-2 bg-indigo-600 text-white hover:bg-indigo-700 rounded-lg shadow-sm transition-all active:scale-95 font-medium text-xs sm:text-sm"
+                        variant="primary"
                     >
                         {hasUnsavedChanges ? 'Lưu & Đóng' : 'Đóng'}
-                    </button>
+                    </Button>
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={showRestoreConfirm}
+                onClose={() => setShowRestoreConfirm(false)}
+                onConfirm={confirmRestore}
+                title="Khôi phục danh sách gốc?"
+                message="Bạn có muốn khôi phục lại danh sách nhân viên ban đầu (từ file Excel) không? Các chỉnh sửa thủ công sẽ bị mất."
+                confirmText="Khôi phục"
+                variant="warning"
+            />
         </ModalWrapper>
     );
 };

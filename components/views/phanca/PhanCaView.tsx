@@ -23,6 +23,7 @@ import HelpModal from './components/HelpModal';
 import ConflictListModal from './components/ConflictListModal';
 import BusyReportModal from './components/BusyReportModal';
 import AiSuggestPatternModal from './components/AiSuggestPatternModal';
+import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 
 import { abbreviateVietnameseName } from './utils/stringUtils';
 import { DEFAULT_PATTERNS_HUNG_VUONG_910_99, DEFAULT_SHIFT_DEFINITIONS } from './constants';
@@ -86,6 +87,22 @@ const App: React.FC = () => {
   const [isConflictModalOpen, setConflictModalOpen] = useState(false);
 
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  
+  // Confirm Dialog State
+  const [confirmDialog, setConfirmDialog] = useState<{
+      isOpen: boolean;
+      title: string;
+      message: string;
+      onConfirm: () => void;
+      variant?: 'danger' | 'warning' | 'info' | 'success';
+      confirmText?: string;
+  }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+
+  const showConfirm = (options: { title: string; message: string; onConfirm: () => void; variant?: 'danger' | 'warning' | 'info' | 'success'; confirmText?: string; }) => {
+      setConfirmDialog({ ...options, isOpen: true });
+  };
+  const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
+
   const [shiftDefinitions, setShiftDefinitions] = useState<ShiftDefinitions>(DEFAULT_SHIFT_DEFINITIONS);
   const [balancingFeedback, setBalancingFeedback] = useState<BalancingFeedback | null>(null);
   const [editingRuleKey, setEditingRuleKey] = useState<'kho' | 'tn' | 'gh' | null>(null);
@@ -391,8 +408,8 @@ const App: React.FC = () => {
                 }
             });
             if (imported.length > 0) { setImportedStaff(imported); setImportModalOpen(true); }
-            else alert("Không tìm thấy dữ liệu nhân viên hợp lệ.");
-        } catch (error) { alert("Lỗi khi xử lý file Excel."); }
+            else showToast("Không tìm thấy dữ liệu nhân viên hợp lệ.", 'error');
+        } catch (error) { showToast("Lỗi khi xử lý file Excel.", 'error'); }
         finally { if (fileInputRef.current) fileInputRef.current.value = ''; }
     };
     reader.readAsArrayBuffer(file);
@@ -497,7 +514,7 @@ const App: React.FC = () => {
 
   const handleExportWeekly = async () => {
     const list = getSortedStaffForExport();
-    if (list.length === 0) return alert("Chưa có lịch để xuất.");
+    if (list.length === 0) return showToast("Chưa có lịch để xuất.", 'error');
     setIsExportingImage(true);
     setStaffListForExport(list);
     
@@ -527,7 +544,7 @@ const App: React.FC = () => {
             await new Promise(resolve => setTimeout(resolve, 300));
         }
     } catch (err) {
-        alert("Lỗi khi xuất ảnh theo tuần.");
+        showToast("Lỗi khi xuất ảnh theo tuần.", 'error');
     } finally {
         setBatchExportProgress(null);
         setWeeklyExportConfig(null);
@@ -537,45 +554,53 @@ const App: React.FC = () => {
     }
   };
 
-  const handleExportIndividual = async () => {
+  const handleExportIndividual = () => {
     const list = getSortedStaffForExport();
-    if (list.length === 0) return alert("Chưa có lịch để xuất.");
-    if (!confirm("Hệ thống sẽ tiến hành xuất file cho từng nhân viên. Bạn có đồng ý?")) return;
+    if (list.length === 0) return showToast("Chưa có lịch để xuất.", 'error');
     
-    setIsExportingImage(true);
-    setWeeklyExportConfig(null);
-    setBatchExportProgress({ current: 0, total: list.length, name: "Khởi động xuất lịch cá nhân..." });
+    showConfirm({
+        title: 'Xuất Lịch Cá Nhân',
+        message: 'Hệ thống sẽ tiến hành xuất file cho từng nhân viên. Bạn có đồng ý?',
+        variant: 'info',
+        confirmText: 'Đồng ý',
+        onConfirm: async () => {
+            closeConfirm();
+            setIsExportingImage(true);
+            setWeeklyExportConfig(null);
+            setBatchExportProgress({ current: 0, total: list.length, name: "Khởi động xuất lịch cá nhân..." });
 
-    const [yearVal, monthVal] = monthYear.split('-').map(Number);
-    
-    try {
-        for (let i = 0; i < list.length; i++) {
-            const staff = list[i];
-            setBatchExportProgress({ current: i + 1, total: list.length, name: `Đang xuất NV: ${staff.name.split(' - ')[1] || staff.name}` });
+            const [yearVal, monthVal] = monthYear.split('-').map(Number);
             
-            setStaffListForExport([staff]);
-            setExportTitle(staff.name);
-            
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            
-            const sanitizedStaffName = staff.name.replace(/[^a-zA-Z0-9\s._-]/g, '').replace(/\s+/g, '_');
-            await exportToImage(exportContainerRef, `Lich_Ca_Nhan_${sanitizedStaffName}_Thang_${monthVal}_${yearVal}.png`);
-            
-            await new Promise(resolve => setTimeout(resolve, 400));
+            try {
+                for (let i = 0; i < list.length; i++) {
+                    const staff = list[i];
+                    setBatchExportProgress({ current: i + 1, total: list.length, name: `Đang xuất NV: ${staff.name.split(' - ')[1] || staff.name}` });
+                    
+                    setStaffListForExport([staff]);
+                    setExportTitle(staff.name);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    
+                    const sanitizedStaffName = staff.name.replace(/[^a-zA-Z0-9\s._-]/g, '').replace(/\s+/g, '_');
+                    await exportToImage(exportContainerRef, `Lich_Ca_Nhan_${sanitizedStaffName}_Thang_${monthVal}_${yearVal}.png`);
+                    
+                    await new Promise(resolve => setTimeout(resolve, 400));
+                }
+            } catch (err) {
+                console.warn("Export error:", err);
+                showToast("Lỗi khi xuất ảnh cá nhân.", 'error');
+            } finally {
+                setBatchExportProgress(null);
+                setStaffListForExport(null);
+                setIsExportingImage(false);
+                setExportTitle('');
+            }
         }
-    } catch (err) {
-        console.warn("Export error:", err);
-        alert("Lỗi khi xuất ảnh cá nhân.");
-    } finally {
-        setBatchExportProgress(null);
-        setStaffListForExport(null);
-        setIsExportingImage(false);
-        setExportTitle('');
-    }
+    });
   };
 
   const handleExportExcel = () => {
-    if (!nams.length && !nus.length) return alert("Chưa có dữ liệu.");
+    if (!nams.length && !nus.length) return showToast("Chưa có dữ liệu.", 'error');
     const sortedList = getSortedStaffForExport();
     const [yearVal, monthVal] = monthYear.split('-').map(Number);
     const data: any[][] = [['LỊCH PHÂN CA'], ['HỌ VÀ TÊN', 'SBH', 'TỔNG', ...Array.from({length: duration}, (_, i) => `Ngày ${i+1}`)]];
@@ -741,7 +766,7 @@ const App: React.FC = () => {
         }, 300);
     } catch (error) {
         console.warn("Import error:", error);
-        alert("Có lỗi xảy ra khi lưu dữ liệu nhân viên.");
+        showToast("Có lỗi xảy ra khi lưu dữ liệu nhân viên.", 'error');
         isImportingRef.current = false;
     }
   };
@@ -984,6 +1009,16 @@ const App: React.FC = () => {
         onConfirm={confirmDeleteStaffList} 
         onCancel={() => setIsDeleteConfirmOpen(false)} 
       />}
+
+      <ConfirmDialog 
+          isOpen={confirmDialog.isOpen}
+          onClose={closeConfirm}
+          onConfirm={confirmDialog.onConfirm}
+          title={confirmDialog.title}
+          message={confirmDialog.message}
+          variant={confirmDialog.variant}
+          confirmText={confirmDialog.confirmText}
+      />
 
     </div>
   );

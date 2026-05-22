@@ -6,6 +6,8 @@ import { Icon } from '../common/Icon';
 import SearchableSelect from '../common/SearchableSelect';
 import { WAREHOUSE_METRIC_TYPE_MAP, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
 import ColumnConfigModal from '../employees/modals/ColumnConfigModal';
+import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
+import { Button } from '../shared/ui/Button';
 
 interface SettingsModalProps {
     isOpen: boolean;
@@ -20,6 +22,7 @@ interface SettingsModalProps {
 const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, columns, onSave, allIndustries, allGroups, allManufacturers }) => {
     const [internalColumns, setInternalColumns] = useState<IndustryColumnConfig[]>([]);
     const [view, setView] = useState<'picker' | 'form'>('picker');
+    const [confirmState, setConfirmState] = useState<{isOpen: boolean, type: 'delete' | 'deleteGroup' | 'restore', targetId?: string, targetName?: string}>({isOpen: false, type: 'delete'});
     
     // Form state
     const [editingColumn, setEditingColumn] = useState<IndustryColumnConfig | null>(null);
@@ -187,15 +190,11 @@ const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, 
     };
 
     const handleDelete = (id: string) => {
-        if (window.confirm('Bạn có chắc chắn muốn xóa cột tùy chỉnh này?')) {
-            setInternalColumns(prev => prev.filter(c => c.id !== id));
-        }
+        setConfirmState({ isOpen: true, type: 'delete', targetId: id });
     };
     
     const handleDeleteGroup = (groupName: string) => {
-        if (window.confirm(`Bạn có chắc chắn muốn xóa nhóm "${groupName}" và tất cả các cột bên trong?`)) {
-            setInternalColumns(prev => prev.filter(c => c.mainHeader !== groupName));
-        }
+        setConfirmState({ isOpen: true, type: 'deleteGroup', targetName: groupName });
     };
 
     const handleToggleGroupVisibility = (mainHeader: string, shouldBeVisible: boolean) => {
@@ -238,10 +237,7 @@ const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, 
     };
 
     const handleRestoreDefaults = () => {
-        if (window.confirm('Thao tác này sẽ xóa tất cả các tùy chỉnh và khôi phục lại bố cục cột mặc định. Bạn có chắc chắn?')) {
-            setInternalColumns([...DEFAULT_WAREHOUSE_COLUMNS]);
-            resetForm();
-        }
+        setConfirmState({ isOpen: true, type: 'restore' });
     };
 
     const groupColorMap: Record<string, { bg: string, text: string, indicator: string, border: string }> = {
@@ -269,9 +265,9 @@ const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, 
                         </button>
                     </div>
                 </div>
-                 <button onClick={() => { resetForm(false); setView('form'); }} className="flex items-center justify-center gap-1.5 sm:gap-2 px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl shadow-md text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30">
-                    <Icon name="plus" size={3.5} className="sm:hidden" /><Icon name="plus" size={4} className="hidden sm:block" /> Tạo Cột Mới
-                </button>
+                 <Button onClick={() => { resetForm(false); setView('form'); }} variant="primary" leftIcon={<Icon name="plus" size={4} />}>
+                    Tạo Cột Mới
+                </Button>
             </div>
             
              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-5 pb-4 sm:pb-6">
@@ -436,15 +432,42 @@ const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, 
                 
                 {view === 'picker' && (
                     <div className="p-3 sm:p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                        <button onClick={handleRestoreDefaults} className="py-2 sm:py-2.5 px-3 sm:px-4 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors flex items-center gap-1.5 sm:gap-2">
-                            <Icon name="rotate-ccw" size={3.5} className="sm:hidden" /><Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục
-                        </button>
-                        <button onClick={handleSaveAndClose} className="py-2 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-xs sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-1.5 sm:gap-2">
-                            Hoàn tất <Icon name="check" size={3.5} className="ml-0.5 sm:hidden"/><Icon name="check" size={4} className="ml-1 hidden sm:block"/>
-                        </button>
+                        <Button onClick={handleRestoreDefaults} variant="danger" leftIcon={<Icon name="rotate-ccw" size={4} />}>
+                            Khôi phục
+                        </Button>
+                        <Button onClick={handleSaveAndClose} variant="primary" rightIcon={<Icon name="check" size={4} />}>
+                            Hoàn tất
+                        </Button>
                     </div>
                 )}
             </div>
+
+            <ConfirmDialog
+                isOpen={confirmState.isOpen}
+                onClose={() => setConfirmState(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={() => {
+                    if (confirmState.type === 'delete' && confirmState.targetId) {
+                        setInternalColumns(prev => prev.filter(c => c.id !== confirmState.targetId));
+                    } else if (confirmState.type === 'deleteGroup' && confirmState.targetName) {
+                        setInternalColumns(prev => prev.filter(c => c.mainHeader !== confirmState.targetName));
+                    } else if (confirmState.type === 'restore') {
+                        setInternalColumns([...DEFAULT_WAREHOUSE_COLUMNS]);
+                        resetForm();
+                    }
+                    setConfirmState(prev => ({ ...prev, isOpen: false }));
+                }}
+                title={
+                    confirmState.type === 'delete' ? 'Xóa cột tùy chỉnh?' :
+                    confirmState.type === 'deleteGroup' ? 'Xóa nhóm cột?' : 'Khôi phục mặc định?'
+                }
+                message={
+                    confirmState.type === 'delete' ? 'Bạn có chắc chắn muốn xóa cột tùy chỉnh này?' :
+                    confirmState.type === 'deleteGroup' ? `Bạn có chắc chắn muốn xóa nhóm "${confirmState.targetName}" và tất cả các cột bên trong?` :
+                    'Thao tác này sẽ xóa tất cả các tùy chỉnh và khôi phục lại bố cục cột mặc định. Bạn có chắc chắn?'
+                }
+                confirmText={confirmState.type === 'restore' ? 'Khôi phục' : 'Xóa'}
+                variant="danger"
+            />
         </ModalWrapper>
     );
 };

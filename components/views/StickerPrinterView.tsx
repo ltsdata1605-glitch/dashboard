@@ -5,6 +5,7 @@ import { useActiveTab } from '../../contexts/LayoutContext';
 import { saveSetting, getSetting } from '../../services/dbService';
 import BarcodeCanvas from './BarcodeCanvas';
 import * as XLSX from 'xlsx';
+import toast from 'react-hot-toast';
 
 const StickerEventApp = lazy(() => import('./stickerevent/StickerEventApp'));
 
@@ -307,8 +308,7 @@ export default function StickerPrinterView() {
                 }
                 setBatchItems(items);
             } catch (err) {
-                console.error(err);
-                alert("Lỗi đọc file Excel");
+                toast.error("Lỗi đọc file Excel");
             }
         };
         reader.readAsBinaryString(file);
@@ -381,15 +381,14 @@ export default function StickerPrinterView() {
                     });
                 }
                 if (items.length === 0) {
-                    alert('Không tìm thấy dữ liệu hợp lệ trong file.');
+                    toast.error('Không tìm thấy dữ liệu hợp lệ trong file.');
                     return;
                 }
                 // Auto-filter by inventory if loaded
                 if (inventoryCodes) {
-                    items = items.map(it => ({
-                        ...it,
-                        selected: inventoryCodes.has(String(it.imei).replace(/\D/g, '').replace(/^0+/, ''))
-                    }));
+                    items.forEach(it => {
+                        it.selected = inventoryCodes.has(String(it.imei).replace(/\D/g, '').replace(/^0+/, ''));
+                    });
                 }
                 setBatchItems(items);
                 setShowBarcode(true);
@@ -403,8 +402,7 @@ export default function StickerPrinterView() {
                     if (soLuong) setSubHeaderTextContent(soLuong);
                 }
             } catch (err) {
-                console.error(err);
-                alert('Lỗi đọc file Excel');
+                toast.error('Lỗi đọc file Excel');
             }
         };
         reader.readAsBinaryString(file);
@@ -432,7 +430,7 @@ export default function StickerPrinterView() {
                     if (normalized) codes.add(normalized);
                 }
                 if (codes.size === 0) {
-                    alert('Không tìm thấy mã sản phẩm trong cột F của file tồn kho.');
+                    toast.error('Không tìm thấy mã sản phẩm trong cột F của file tồn kho.');
                     return;
                 }
                 setInventoryCodes(codes);
@@ -444,8 +442,7 @@ export default function StickerPrinterView() {
                     })));
                 }
             } catch (err) {
-                console.error(err);
-                alert('Lỗi đọc file tồn kho');
+                toast.error('Lỗi đọc file tồn kho');
             }
         };
         reader.readAsBinaryString(file);

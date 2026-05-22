@@ -18,6 +18,7 @@ export default defineConfig(({ mode }) => {
         tailwindcss(),
       ],
       build: {
+        chunkSizeWarningLimit: 1500,
         rollupOptions: {
             output: {
                 manualChunks: {

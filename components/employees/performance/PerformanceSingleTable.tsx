@@ -7,6 +7,7 @@ import {
     getProgressBarColor, getPercentBadge, getTraChamBadge, getHieuQuaBadge, RankBadge
 } from './PerformanceTableUtils';
 import { useDashboardContext } from '../../../contexts/DashboardContext';
+import { Button } from '../../shared/ui/Button';
 
 interface RenderSingleTableProps {
     groupType: GroupType;
@@ -169,38 +170,39 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                 const tabIcon = TAB_THEMES[tab].icon;
                                 const tabLabel = tab === 'doanhThu' ? 'D.Thu' : tab === 'khaiThac' ? 'T.Chậm' : 'V.Trội';
                                 return (
-                                <button
+                                <Button
                                     key={tab}
                                     onClick={() => handleTabChange(tab)}
-                                    className={`p-1.5 sm:p-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all whitespace-nowrap flex items-center gap-1 sm:gap-1.5 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
+                                    variant="ghost"
+                                    className={`px-1.5 py-1 sm:px-3 sm:py-2 text-[10px] sm:text-xs font-bold rounded-lg transition-all flex items-center gap-1 sm:gap-1.5 h-8 sm:h-10 ${groupType === tab ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400'}`}
                                     title={tabLabel}
                                 >
-                                    <Icon name={tabIcon} size={3.5} className="sm:hidden" />
+                                    <Icon name={tabIcon} size={4.5} className="sm:hidden" />
                                     <Icon name={tabIcon} size={5} className="hidden sm:block" />
                                     <span className="hidden sm:inline">{tabLabel}</span>
-                                </button>
+                                </Button>
                             )})}
                         </div>
                         <div className="h-4 sm:h-6 w-px bg-slate-300 dark:bg-slate-700 mx-0.5 sm:mx-1"></div>
-                        <button
+                        <Button
                             onClick={async (e) => { 
                                 e.stopPropagation(); 
                                 onBatchExport();
                             }}
                             disabled={isExporting}
-                            className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 transition-all"
+                            variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 text-slate-400 hover:text-indigo-600 transition-all"
                             title="Xuất Ảnh Tất Cả Tab (3 Tab)"
                         >
-                            <Icon name="images" size={3.5} className="sm:hidden" /><Icon name="images" size={5} className="hidden sm:block" />
-                        </button>
-                        <button
+                            <Icon name="images" size={4.5} className="sm:hidden" /><Icon name="images" size={5} className="hidden sm:block" />
+                        </Button>
+                        <Button
                             onClick={e => { e.stopPropagation(); onSingleExport(); }}
-                            disabled={isExporting}
-                            className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 transition-all"
+                            disabled={isExporting} isLoading={isExporting}
+                            variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10 text-slate-400 hover:text-indigo-600 transition-all"
                             title="Xuất Ảnh Tab Hiện Tại"
                         >
-                            {isExporting ? <Icon name="loader-2" size={4} className="animate-spin" /> : <><Icon name="camera" size={3.5} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
-                        </button>
+                            {!isExporting && <><Icon name="camera" size={4.5} className="sm:hidden" /><Icon name="camera" size={5} className="hidden sm:block" /></>}
+                        </Button>
                     </div>
                 </div>
             </div>

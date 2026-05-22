@@ -4,7 +4,7 @@ import { CheckCircleIcon, DownloadIcon, AlertTriangleIcon, UploadIcon, ClockIcon
 import SupermarketConfig from './SupermarketConfig';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
-import Toast from './Toast';
+import toast from 'react-hot-toast';
 import { shortenSupermarketName } from '../utils/dashboardHelpers';
 
 // --- Validation ---
@@ -241,18 +241,12 @@ const DataUpdater: React.FC = () => {
         }
     }, [supermarkets, activeSupermarket]);
 
-    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' | 'info'; isVisible: boolean }>({
-        message: '',
-        type: 'success',
-        isVisible: false
-    });
-
     const [isConfirmingClear, setIsConfirmingClear] = useState(false);
 
     const handleClearAllData = async () => {
-        setToast({ message: 'Đang xoá dữ liệu...', type: 'info', isVisible: true });
+        toast('Đang xoá dữ liệu...', { icon: 'ℹ️' });
         await db.clearStore();
-        setToast({ message: 'Đã xoá thành công! Các thiết lập đã được đặt về mặc định.', type: 'success', isVisible: true });
+        toast.success('Đã xoá thành công! Các thiết lập đã được đặt về mặc định.');
         
         // Broadcast that everything is gone so all listeners drop their cache
         window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: 'ALL' } }));
@@ -261,13 +255,6 @@ const DataUpdater: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto md:space-y-4 space-y-4 pb-20 md:px-4 px-2">
-            <Toast 
-                message={toast.message} 
-                type={toast.type} 
-                isVisible={toast.isVisible} 
-                onClose={() => setToast(p => ({ ...p, isVisible: false }))} 
-                duration={toast.message.includes('Đang xoá') ? 0 : 3000}
-            />
             <header className="flex flex-col md:flex-row md:items-end justify-between gap-3 pt-3 pb-1 border-b border-slate-200 dark:border-slate-800">
                 <div>
                     <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-white uppercase">DỮ LIỆU</h1>
@@ -332,7 +319,7 @@ const DataUpdater: React.FC = () => {
                                 setSummaryRealtime(''); 
                                 setSummaryRealtimeTs(null); 
                                 removeUpdate('summary-realtime');
-                                setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
+                                toast.success(`Đã xoá dữ liệu ${title}`);
                                 
                             }}
                         />
@@ -357,7 +344,7 @@ const DataUpdater: React.FC = () => {
                                 setSummaryLuyKeTs(null); 
                                 removeUpdate('summary-luy-ke'); 
                                 setSupermarkets([]); 
-                                setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
+                                toast.success(`Đã xoá dữ liệu ${title}`);
                                 
                             }}
                         />
@@ -391,7 +378,7 @@ const DataUpdater: React.FC = () => {
                                 setCompetitionRealtime(''); 
                                 setCompetitionRealtimeTs(null); 
                                 removeUpdate('competition-realtime'); 
-                                setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
+                                toast.success(`Đã xoá dữ liệu ${title}`);
                                 
                             }}
                         />
@@ -415,7 +402,7 @@ const DataUpdater: React.FC = () => {
                                 setCompetitionLuyKe(''); 
                                 setCompetitionLuyKeTs(null); 
                                 removeUpdate('competition-luy-ke'); 
-                                setToast({ message: `Đã xoá dữ liệu ${title}`, type: 'warning', isVisible: true });
+                                toast.success(`Đã xoá dữ liệu ${title}`);
                                 
                             }}
                         />

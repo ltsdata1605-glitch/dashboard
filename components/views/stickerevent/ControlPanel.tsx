@@ -218,7 +218,10 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
             </div>
 
             {/* ───────── Tìm kiếm sản phẩm ───────── */}
-            <div className={`pt-2 border-t border-slate-100 ${isEmployeeNameEmpty ? "opacity-50 pointer-events-none grayscale" : ""} ${props.isMobile ? "fixed bottom-14 left-0 right-0 p-2 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40" : ""}`}>
+            <div 
+                className={`pt-2 border-t border-slate-100 ${isEmployeeNameEmpty ? "opacity-50 pointer-events-none grayscale" : ""} ${props.isMobile ? "fixed left-0 right-0 p-2 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40" : ""}`}
+                style={props.isMobile ? { bottom: 'calc(112px + env(safe-area-inset-bottom, 0px))' } : {}}
+            >
                 <SearchBar
                     searchQuery={props.searchQuery}
                     onSearchChange={props.onSearchChange}

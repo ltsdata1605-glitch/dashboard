@@ -2,7 +2,10 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ModalWrapper from '../../modals/ModalWrapper';
 import { ColumnConfig, ContestTableConfig } from '../../../types';
-import { ICON_OPTIONS } from '../../employees/EmployeeAnalysis'; // Hoặc move ICON_OPTIONS ra constants
+import { ICON_OPTIONS } from '../../employees/EmployeeAnalysis';
+import { Input } from '../../shared/ui/Input';
+import { Select } from '../../shared/ui/Select';
+import { Button } from '../../shared/ui/Button';
 
 // Modal for creating/editing a TAB
 export const TabModal: React.FC<{
@@ -40,21 +43,21 @@ export const TabModal: React.FC<{
                 <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                     <div>
                         <label htmlFor="tabName" className="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Tên Tab</label>
-                        <input
+                        <Input
                             ref={inputRef}
                             id="tabName"
                             type="text"
                             value={tabName}
                             onChange={e => setTabName(e.target.value)}
                             placeholder="VD: Thi Đua Tháng 10"
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg sm:rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none"
+                            className="w-full text-xs sm:text-sm"
                             required
                         />
                     </div>
                 </div>
                  <div className="p-3 sm:p-4 flex justify-end gap-2 sm:gap-3 bg-slate-50 dark:bg-slate-800/80 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <button type="button" onClick={onClose} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors">Hủy</button>
-                    <button type="submit" className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors shadow-sm">{tabId ? "Lưu thay đổi" : "Tạo Tab"}</button>
+                    <Button type="button" onClick={onClose} variant="ghost">Hủy</Button>
+                    <Button type="submit" variant="primary">{tabId ? "Lưu thay đổi" : "Tạo Tab"}</Button>
                 </div>
             </form>
          </ModalWrapper>
@@ -96,37 +99,37 @@ export const TableModal: React.FC<{
                 <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                     <div>
                         <label htmlFor="tableName" className="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Tên Bảng</label>
-                        <input
+                        <Input
                             ref={inputRef}
                             id="tableName"
                             type="text"
                             value={tableName}
                             onChange={e => setTableName(e.target.value)}
                             placeholder="VD: Bảng thi đua Sim số"
-                            className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg sm:rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition outline-none"
+                            className="w-full text-xs sm:text-sm focus:ring-emerald-500 focus:border-emerald-500"
                             required
                         />
                     </div>
                     {isEditing && columns.length > 0 && (
                         <div>
                             <label htmlFor="sortColumn" className="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Sắp xếp mặc định (giảm dần)</label>
-                            <select
+                            <Select
                                 id="sortColumn"
                                 value={sortColumnId}
                                 onChange={e => setSortColumnId(e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg sm:rounded-xl p-2.5 sm:p-3 text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition outline-none"
+                                className="w-full text-xs sm:text-sm focus:ring-emerald-500 focus:border-emerald-500"
                             >
                                 <option value="">-- Không sắp xếp --</option>
                                 {columns.map(col => (
                                     <option key={col.id} value={col.id}>{col.columnName}</option>
                                 ))}
-                            </select>
+                            </Select>
                         </div>
                     )}
                 </div>
                 <div className="p-3 sm:p-4 flex justify-end gap-2 sm:gap-3 bg-slate-50 dark:bg-slate-800/80 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <button type="button" onClick={onClose} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 transition-colors">Hủy</button>
-                    <button type="submit" className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg sm:rounded-xl text-xs sm:text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 transition-colors shadow-sm">{isEditing ? "Lưu thay đổi" : "Tạo Bảng"}</button>
+                    <Button type="button" onClick={onClose} variant="ghost">Hủy</Button>
+                    <Button type="submit" variant="primary">{isEditing ? "Lưu thay đổi" : "Tạo Bảng"}</Button>
                 </div>
             </form>
         </ModalWrapper>

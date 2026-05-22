@@ -1,5 +1,6 @@
 import React from 'react';
 import { Icon } from '../../../common/Icon';
+import { Select } from '../../../shared/ui/Select';
 import type { ColumnConfig } from '../../../../types';
 
 interface CalculatedColumnFormProps {
@@ -35,10 +36,10 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
                 <div className="flex flex-row items-center gap-2 sm:gap-3 w-full">
                     <div className="flex-1 w-full relative">
                         <label className="block text-[9px] sm:text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-1 sm:mb-1.5">Nguồn dữ liệu 1</label>
-                        <select value={operand1} onChange={e => setOperand1(e.target.value)} className="w-full h-8 sm:h-12 block rounded-lg sm:rounded-xl border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-[10px] sm:text-sm pl-2 sm:pl-4 truncate pr-5 sm:pr-8 cursor-pointer">
+                        <Select value={operand1} onChange={e => setOperand1(e.target.value)} className="h-8 sm:h-12 text-[10px] sm:text-sm">
                             <option value="">– Chọn –</option>
                             {availableOperands.map(c => <option key={c.id} value={c.id}>{c.mainHeader ? `[${c.mainHeader}] ${c.columnName}` : c.columnName}</option>)}
-                        </select>
+                        </Select>
                     </div>
                     <div className="flex-shrink-0 relative w-8 sm:w-16 h-8 sm:h-12 mt-4 sm:mt-5 flex items-center justify-center">
                         <select value={operation} onChange={e => setOperation(e.target.value as any)} className="absolute inset-0 z-10 opacity-0 cursor-pointer w-full h-full">
@@ -53,10 +54,10 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
                     </div>
                     <div className="flex-1 w-full relative">
                         <label className="block text-[9px] sm:text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-1 sm:mb-1.5 opacity-0">Nguồn 2</label>
-                        <select value={operand2} onChange={e => setOperand2(e.target.value)} className="w-full h-8 sm:h-12 block rounded-lg sm:rounded-xl border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 font-semibold focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-[10px] sm:text-sm pl-2 sm:pl-4 truncate pr-5 sm:pr-8 cursor-pointer">
+                        <Select value={operand2} onChange={e => setOperand2(e.target.value)} className="h-8 sm:h-12 text-[10px] sm:text-sm">
                             <option value="">– Chọn –</option>
-                                {availableOperands.map(c => <option key={c.id} value={c.id}>{c.mainHeader ? `[${c.mainHeader}] ${c.columnName}` : c.columnName}</option>)}
-                        </select>
+                            {availableOperands.map(c => <option key={c.id} value={c.id}>{c.mainHeader ? `[${c.mainHeader}] ${c.columnName}` : c.columnName}</option>)}
+                        </Select>
                     </div>
                 </div>
                 <div className="mt-3 sm:mt-5 flex flex-wrap justify-end gap-2 sm:gap-5">

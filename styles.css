@@ -14,6 +14,14 @@
   --color-indigo-800: #075985;
   --color-indigo-900: #0c4a6e;
 
+  /* Semantic Colors from Design System */
+  --color-primary: var(--color-sky-500);
+  --color-primary-hover: var(--color-sky-600);
+  --color-secondary: var(--color-slate-500);
+  --color-success: var(--color-emerald-500);
+  --color-warning: var(--color-amber-500);
+  --color-danger: var(--color-rose-500);
+
   --animate-blob: blob 7s infinite;
   --animate-marquee: marquee 25s linear infinite;
   --animate-wiggle: wiggle 1.2s ease-in-out infinite;

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 
 interface AddEmployeeModalProps {
   onClose: () => void;
@@ -15,7 +16,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ onClose, onAdd }) =
     if (name.trim() && department.trim()) {
       onAdd(name.trim(), gender, department.trim());
     } else {
-      alert("Vui lòng nhập đầy đủ Tên/Mã và Bộ phận của nhân viên.");
+      toast.error("Vui lòng nhập đầy đủ Tên/Mã và Bộ phận của nhân viên.", { duration: 3000 });
     }
   };
 

@@ -6,6 +6,7 @@ import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity, getHinhThuc
 import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../../constants';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, hideExportOverlay } from '../../services/uiService';
+import { Button } from '../shared/ui/Button';
 
 
 
@@ -251,13 +252,12 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     
     const controls = (
         <div className="flex items-center gap-1 sm:gap-2 hide-on-export">
-            <button onClick={toggleAllCustomers} title={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'} className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center w-8 h-8 sm:w-[42px] sm:h-[42px] border border-slate-300 dark:border-slate-600">
-                <Icon name={isAllCustomersExpanded ? "chevrons-up-down" : "chevrons-down-up"} size={3.5} className="sm:hidden" />
-                <Icon name={isAllCustomersExpanded ? "chevrons-up-down" : "chevrons-down-up"} size={4} className="hidden sm:block" />
-            </button>
-            <button onClick={handleExport} disabled={isExporting} title="Xuất Ảnh Phân Tích" className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center w-8 h-8 sm:w-[42px] sm:h-[42px] border border-slate-300 dark:border-slate-600">
-                 {isExporting ? <Icon name="loader-2" className="animate-spin" size={3.5} /> : <><Icon name="camera" size={3.5} className="sm:hidden" /><Icon name="camera" size={4} className="hidden sm:block" /></>}
-            </button>
+            <Button onClick={toggleAllCustomers} variant="secondary" size="icon" title={isAllCustomersExpanded ? 'Thu gọn tất cả' : 'Mở rộng tất cả'} className="w-8 h-8 sm:w-[42px] sm:h-[42px]">
+                <Icon name={isAllCustomersExpanded ? "chevrons-up-down" : "chevrons-down-up"} size={4} />
+            </Button>
+            <Button onClick={handleExport} disabled={isExporting} isLoading={isExporting} variant="secondary" size="icon" title="Xuất Ảnh Phân Tích" className="w-8 h-8 sm:w-[42px] sm:h-[42px]">
+                 {!isExporting && <Icon name="camera" size={4} />}
+            </Button>
         </div>
     );
     

@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { saveSetting, getSetting } from '../../../services/dbService';
+import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 import { 
   Droplets,
   Wind,
@@ -196,6 +197,7 @@ export default function BaoCaoKhaiThacView() {
   const [history, setHistory] = useState<any[]>([]);
   const [warnings, setWarnings] = useState<string[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [isEditingName, setIsEditingName] = useState(!state.staffName);
 
   const { activeTab } = useActiveTab();
@@ -393,12 +395,11 @@ export default function BaoCaoKhaiThacView() {
   };
 
   const clearAll = async () => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa toàn bộ dữ liệu?')) {
-      setState(initialState);
-      setSavedTotals(initialSavedTotals);
-      await saveSetting(STORAGE_KEY, initialState);
-      await saveSetting(SAVED_TOTALS_KEY, initialSavedTotals);
-    }
+    setState(initialState);
+    setSavedTotals(initialSavedTotals);
+    await saveSetting(STORAGE_KEY, initialState);
+    await saveSetting(SAVED_TOTALS_KEY, initialSavedTotals);
+    setShowClearConfirm(false);
   };
 
   const copyReport = () => {
@@ -538,7 +539,7 @@ export default function BaoCaoKhaiThacView() {
         }
       } catch (err) {
         console.warn('Copy failed', err);
-        alert('Không thể copy báo cáo. Vui lòng thử lại hoặc chụp màn hình.');
+        toast.error('Không thể copy báo cáo. Vui lòng thử lại hoặc chụp màn hình.');
       }
     };
 
@@ -847,7 +848,7 @@ export default function BaoCaoKhaiThacView() {
       <footer className="flex-shrink-0 h-[56px] flex flex-col justify-center px-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 z-40">
         <div className="max-w-md w-full mx-auto flex gap-2.5">
           <button 
-            onClick={clearAll}
+            onClick={() => setShowClearConfirm(true)}
             className="flex-none w-10 h-10 flex items-center justify-center bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-lg active:bg-slate-200 dark:active:bg-slate-700 transition-colors"
           >
             <RotateCcw size={18} />

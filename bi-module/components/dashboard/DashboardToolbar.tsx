@@ -2,6 +2,7 @@
 import React from 'react';
 import { SubTab } from '../../utils/dashboardHelpers';
 import { ChartBarIcon, UsersIcon } from '../Icons';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface DashboardToolbarProps {
     id: string;
@@ -24,13 +25,14 @@ const DashboardToolbar: React.FC<DashboardToolbarProps> = ({ id, activeSubTab, s
                 {TABS.map(({ tab, label }) => {
                     const isActive = activeSubTab === tab;
                     return (
-                        <button
+                        <Button
                             key={tab}
+                            variant="ghost"
                             onClick={() => setActiveSubTab(tab)}
                             className={`py-1 px-3 sm:py-1.5 sm:px-6 text-[9px] sm:text-[11px] font-semibold rounded-lg transition-all uppercase tracking-widest ${isActive ? 'bg-white dark:bg-slate-700 text-sky-600 shadow-sm border border-sky-100/50 relative' : 'text-slate-500 hover:text-sky-600 dark:hover:text-sky-400'}`}
                         >
                             {label}
-                        </button>
+                        </Button>
                     );
                 })}
             </nav>

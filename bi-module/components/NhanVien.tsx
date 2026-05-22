@@ -17,6 +17,7 @@ import ExportOptionsModal from '../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { useNhanVienData } from '../hooks/useNhanVienData';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
+import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
 import { parseCompetitionData } from '../utils/nhanVienHelpers';
 import * as db from '../utils/db';
 const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: Tab; setActiveTab: (t: Tab) => void; icon?: React.ReactNode; }> = React.memo(({ tab, children, activeTab, setActiveTab }) => (
@@ -46,6 +47,7 @@ export const NhanVien: React.FC = () => {
 
     const [editingBonusEmployee, setEditingBonusEmployee] = useState<Employee | null>(null);
     const [isBatchBonusMode, setIsBatchBonusMode] = useState(false);
+    const [versionToDelete, setVersionToDelete] = useState<string | null>(null);
 
     const data = useNhanVienData();
     const {
@@ -284,11 +286,16 @@ export const NhanVien: React.FC = () => {
     };
 
     const handleDeleteVersion = (name: string) => {
-        if (window.confirm(`Bạn có chắc chắn muốn xoá phiên bản "${name}"?`)) {
-            setVersions(prev => (prev || []).filter(v => v.name !== name));
-            if (activeVersionName === name) {
+        setVersionToDelete(name);
+    };
+
+    const confirmDeleteVersion = () => {
+        if (versionToDelete) {
+            setVersions(prev => (prev || []).filter(v => v.name !== versionToDelete));
+            if (activeVersionName === versionToDelete) {
                 setActiveVersionName(null);
             }
+            setVersionToDelete(null);
         }
     };
 
@@ -440,6 +447,16 @@ export const NhanVien: React.FC = () => {
                 onShare={exportOptions.handleShare}
                 canShare={exportOptions.canShare}
                 filename={exportOptions.pendingExport?.filename || ''}
+            />
+
+            <ConfirmDialog
+                isOpen={!!versionToDelete}
+                onClose={() => setVersionToDelete(null)}
+                onConfirm={confirmDeleteVersion}
+                title="Xóa phiên bản?"
+                message={`Bạn có chắc chắn muốn xoá phiên bản "${versionToDelete}"?`}
+                confirmText="Xóa"
+                variant="danger"
             />
         </div>
         </ExportOptionsProvider>

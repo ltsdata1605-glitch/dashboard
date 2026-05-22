@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CameraIcon, SpinnerIcon } from './Icons';
+import { Button } from '../../components/shared/ui/Button';
 
 interface ExportButtonProps {
   onExportPNG: () => Promise<void>;
@@ -27,11 +28,11 @@ const ExportButton: React.FC<ExportButtonProps> = ({ onExportPNG, disabled = fal
   };
 
   return (
-    <button
-      type="button"
+    <Button
       onClick={handleExport}
       disabled={disabled || isLoading}
-      className="export-button-component p-1 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-300 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      variant="ghost" size="icon"
+      className="export-button-component h-6 w-6 p-1 text-slate-400 hover:text-slate-600 dark:text-slate-400 dark:hover:text-slate-300"
       aria-label="Xuất ảnh báo cáo"
       title="Xuất ảnh báo cáo (PNG)"
     >
@@ -40,7 +41,7 @@ const ExportButton: React.FC<ExportButtonProps> = ({ onExportPNG, disabled = fal
       ) : (
         <CameraIcon className="h-4 w-4" />
       )}
-    </button>
+    </Button>
   );
 };
 

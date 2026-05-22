@@ -4,6 +4,7 @@ import { GoogleGenAI } from '@google/genai';
 import { SparklesIcon, XIcon, SpinnerIcon, UsersIcon, ClockIcon, TrashIcon, CheckCircleIcon } from '../Icons';
 import MarkdownRenderer from '../MarkdownRenderer';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 
 interface Message {
     id: string;
@@ -21,6 +22,7 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ danhSachData, thiDuaData }) =
     const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
     const [aiQuery, setAiQuery] = useState('');
     const [isAiLoading, setIsAiLoading] = useState(false);
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
     
     // Lưu lịch sử chat vào IndexedDB để không bị mất khi reload trang
     const [chatHistory, setChatHistory] = useIndexedDBState<Message[]>('ai-assistant-history', []);
@@ -105,9 +107,12 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ danhSachData, thiDuaData }) =
     };
 
     const clearHistory = () => {
-        if (window.confirm("Bạn có chắc chắn muốn xoá toàn bộ lịch sử trò chuyện?")) {
-            setChatHistory([]);
-        }
+        setShowClearConfirm(true);
+    };
+
+    const confirmClear = () => {
+        setChatHistory([]);
+        setShowClearConfirm(false);
     };
 
     return (
@@ -280,6 +285,16 @@ const AiAssistant: React.FC<AiAssistantProps> = ({ danhSachData, thiDuaData }) =
                     border-radius: 2px;
                 }
             `}</style>
+            
+            <ConfirmDialog
+                isOpen={showClearConfirm}
+                onClose={() => setShowClearConfirm(false)}
+                onConfirm={confirmClear}
+                title="Xóa lịch sử trò chuyện?"
+                message="Bạn có chắc chắn muốn xoá toàn bộ lịch sử trò chuyện không?"
+                confirmText="Xóa lịch sử"
+                variant="danger"
+            />
         </>
     );
 };

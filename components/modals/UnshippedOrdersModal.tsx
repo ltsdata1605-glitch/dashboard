@@ -7,6 +7,7 @@ import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, updateExportOverlay, hideExportOverlay } from '../../services/uiService';
 import * as XLSX from 'xlsx';
+import { Button } from '../shared/ui/Button';
 
 interface UnshippedOrdersModalProps {
     isOpen: boolean;
@@ -476,30 +477,24 @@ Link: ${url}`;
 
     const controls = (
         <div className="flex items-center gap-1 lg:gap-2 hide-on-export">
-            <button onClick={handleCopyOverdueEmployees} title="Copy danh sách NV có đơn quá hạn xuất" className="p-1.5 lg:p-2 border border-amber-300 dark:border-amber-600 rounded-md shadow-sm text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors flex items-center justify-center">
-                <Icon name="clipboard-list" size={3.5} className="lg:hidden" />
-                <Icon name="clipboard-list" size={4} className="hidden lg:block" />
-            </button>
-            <button onClick={toggleAllDetails} title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'} className="p-1.5 lg:p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center">
-                <Icon name="chevrons-down-up" size={3.5} className="lg:hidden" />
-                <Icon name="chevrons-down-up" size={4} className="hidden lg:block" />
-            </button>
-             <button onClick={handleBatchExport} disabled={isExporting} title="Xuất ảnh hàng loạt theo từng nhân viên" className="p-1.5 lg:p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center">
-                 <Icon name="images" size={3.5} className="lg:hidden" />
-                 <Icon name="images" size={4} className="hidden lg:block" />
-            </button>
-            <button onClick={handleExportAll} disabled={isExporting} title="Xuất ảnh toàn bộ danh sách" className="p-1.5 lg:p-2 border border-slate-300 dark:border-slate-600 rounded-md shadow-sm text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors flex items-center justify-center">
-                 <Icon name="camera" size={3.5} className="lg:hidden" />
-                 <Icon name="camera" size={4} className="hidden lg:block" />
-            </button>
-            <button onClick={handleExportExcel} disabled={isExporting} title="Xuất File Excel" className="px-2 lg:px-3 gap-1 lg:gap-2 border border-green-300 dark:border-green-600 rounded-md shadow-sm text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors flex items-center justify-center h-8 lg:h-10 font-bold text-xs lg:text-sm">
-                 <Icon name="file-spreadsheet" size={3.5} className="lg:hidden" />
-                 <Icon name="file-spreadsheet" size={4} className="hidden lg:block" /> Excel
-            </button>
-            <button onClick={handleExportGoogleSheet} disabled={isExporting} title="Xuất lên Google Sheet" className="px-2 lg:px-3 gap-1 lg:gap-2 border border-blue-300 dark:border-blue-600 rounded-md shadow-sm text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors flex items-center justify-center h-8 lg:h-10 font-bold text-xs lg:text-sm">
-                 <Icon name="sheet" size={3.5} className="lg:hidden" />
-                 <Icon name="sheet" size={4} className="hidden lg:block" /> Sheet
-            </button>
+            <Button onClick={handleCopyOverdueEmployees} variant="ghost" size="icon" title="Copy danh sách NV có đơn quá hạn xuất" className="border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 shadow-sm">
+                <Icon name="clipboard-list" size={4} />
+            </Button>
+            <Button onClick={toggleAllDetails} variant="secondary" size="icon" title={isAllExpanded ? 'Thu gọn tất cả' : 'Hiển thị tất cả'}>
+                <Icon name="chevrons-down-up" size={4} />
+            </Button>
+             <Button onClick={handleBatchExport} disabled={isExporting} variant="secondary" size="icon" title="Xuất ảnh hàng loạt theo từng nhân viên">
+                 <Icon name="images" size={4} />
+            </Button>
+            <Button onClick={handleExportAll} disabled={isExporting} variant="secondary" size="icon" title="Xuất ảnh toàn bộ danh sách">
+                 <Icon name="camera" size={4} />
+            </Button>
+            <Button onClick={handleExportExcel} disabled={isExporting} variant="ghost" title="Xuất File Excel" leftIcon={<Icon name="file-spreadsheet" size={4} />} className="border border-green-300 dark:border-green-600 text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 shadow-sm font-bold text-xs lg:text-sm">
+                 Excel
+            </Button>
+            <Button onClick={handleExportGoogleSheet} disabled={isExporting} variant="ghost" title="Xuất lên Google Sheet" leftIcon={<Icon name="sheet" size={4} />} className="border border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 shadow-sm font-bold text-xs lg:text-sm">
+                 Sheet
+            </Button>
         </div>
     );
     
@@ -554,9 +549,9 @@ Link: ${url}`;
                                             <span className="text-slate-600 dark:text-slate-300">DT Thực: <span className="font-bold text-red-600 dark:text-red-400">{formatCurrency(creator.totalRevenue)}</span></span>
                                             <span className="text-slate-600 dark:text-slate-300">DTQĐ: <span className="font-bold text-blue-600 dark:text-blue-400">{formatCurrency(creator.totalRevenueQD)}</span></span>
                                             <span className="text-slate-600 dark:text-slate-300">HQQĐ: <span className={`font-bold ${creator.hieuQuaQD < 40 ? 'text-red-500' : 'text-green-500'}`}>{creator.hieuQuaQD.toFixed(0)}%</span></span>
-                                            <button onClick={(e) => handleExportCreator(e, creator.name)} title={`Xuất ảnh của ${creator.name}`} className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-md transition-colors hide-on-export ml-2">
+                                            <Button onClick={(e) => handleExportCreator(e, creator.name)} title={`Xuất ảnh của ${creator.name}`} variant="ghost" size="icon" className="h-7 w-7 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hide-on-export ml-2">
                                                 <Icon name="camera" size={4} />
-                                            </button>
+                                            </Button>
                                             <div className="accordion-icon text-slate-400 transition-transform duration-300 hide-on-export ml-2">
                                                 <Icon name="chevron-down" />
                                             </div>

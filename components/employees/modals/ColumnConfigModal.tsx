@@ -8,6 +8,8 @@ import { CalculatedColumnForm } from './column-config/CalculatedColumnForm';
 import { TargetColumnForm } from './column-config/TargetColumnForm';
 import { FormattingRulesForm } from './column-config/FormattingRulesForm';
 import { DATA_STATUS_COLORS } from '../../../constants';
+import { Button } from '../../shared/ui/Button';
+import { Input } from '../../shared/ui/Input';
 
 interface ColumnModalProps {
     isOpen: boolean;
@@ -303,24 +305,19 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                                     Tiêu đề nhóm
                                 </label>
                                 <div className="relative">
-                                    <Icon name="layers" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input 
+                                    <Input 
                                         id="mainHeader" 
                                         type="text" 
+                                        leftIcon="layers"
                                         value={mainHeader} 
                                         onChange={e => { setMainHeader(e.target.value); setShowHeadersList(true); }}
                                         onFocus={() => setShowHeadersList(true)}
                                         placeholder="Tạo nhóm mới hoặc chọn..." 
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-10 pr-10 py-2 text-sm font-medium focus:ring-2 focus:ring-indigo-500 transition outline-none shadow-sm" 
+                                        className="h-10 text-sm font-medium" 
                                         autoComplete="off"
+                                        rightIcon="chevron-down"
+                                        onRightIconClick={() => setShowHeadersList(!showHeadersList)}
                                     />
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setShowHeadersList(!showHeadersList)} 
-                                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors p-1.5 rounded-md"
-                                    >
-                                        <Icon name="chevron-down" size={4} />
-                                    </button>
                                 </div>
                                 {showHeadersList && (
                                     <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-56 overflow-y-auto py-1.5 z-20 overflow-hidden ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-1">
@@ -343,15 +340,15 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                             <div>
                                 <label htmlFor="columnName" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tiêu đề cột (Bắt buộc) *</label>
                                 <div className="relative">
-                                    <Icon name="type" size={4} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                                    <input 
+                                    <Input 
                                         ref={columnNameInputRef}
                                         id="columnName" 
                                         type="text" 
+                                        leftIcon="type"
                                         value={columnName} 
                                         onChange={e => setColumnName(e.target.value.toUpperCase())} 
                                         placeholder="VD: SL SIM, DT APPLE..." 
-                                        className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg pl-10 pr-3 py-2 text-sm font-bold text-indigo-700 dark:text-indigo-300 focus:ring-2 focus:ring-indigo-500 transition outline-none shadow-sm" 
+                                        className="h-10 text-sm font-bold text-indigo-700 dark:text-indigo-300" 
                                         required 
                                     />
                                 </div>
@@ -424,10 +421,10 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                 
                 {/* FOOTER */}
                 <div className="p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 rounded-b-xl flex justify-end gap-3 sticky bottom-0 z-30 shadow-sm mt-auto shrink-0">
-                    <button type="button" onClick={onClose} className="px-6 py-2 text-sm font-semibold text-slate-700 bg-white border border-slate-300 hover:bg-slate-50 rounded-lg transition-colors">Hủy Bỏ</button>
-                    <button type="submit" className="px-6 py-2 text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center gap-2 shadow-sm transition-colors">
+                    <Button variant="ghost" type="button" onClick={onClose}>Hủy Bỏ</Button>
+                    <Button variant="primary" type="submit">
                         <Icon name="save" size={4} /> {editingColumn ? "Lưu Thay Đổi" : "Lưu & Bắt Đầu Cột Mới"}
-                    </button>
+                    </Button>
                 </div>
             </form>
         </ModalWrapper>

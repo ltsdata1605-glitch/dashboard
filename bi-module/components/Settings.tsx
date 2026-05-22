@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Card from './Card';
 import { DownloadIcon, UploadIcon, AlertTriangleIcon, SpinnerIcon, TrashIcon, CheckCircleIcon, SaveIcon, ClockIcon } from './Icons';
 import * as db from '../utils/db';
+import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
 
 interface SnapshotMetadata {
     id: string;
@@ -34,6 +35,21 @@ const Settings: React.FC = () => {
     const [isLoading, setIsLoading] = useState<string | null>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [allSnapshots, setAllSnapshots] = useState<Record<string, SnapshotMetadata[]>>({});
+    
+    // Confirm Dialog State
+    const [confirmDialog, setConfirmDialog] = useState<{
+        isOpen: boolean;
+        title: string;
+        message: string;
+        onConfirm: () => void;
+        variant?: 'danger' | 'warning' | 'info' | 'success';
+        confirmText?: string;
+    }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+
+    const showConfirm = (options: { title: string; message: string; onConfirm: () => void; variant?: 'danger' | 'warning' | 'info' | 'success'; confirmText?: string; }) => {
+        setConfirmDialog({ ...options, isOpen: true });
+    };
+    const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
     useEffect(() => {
         const fetchSnapshots = async () => {
             setIsLoading('snapshots');
@@ -171,18 +187,26 @@ const Settings: React.FC = () => {
         reader.readAsText(file);
     };
 
-    const handleDeleteSnapshot = async (supermarket: string, snapshotId: string) => {
-        if (!confirm('Bạn có chắc chắn muốn xoá snapshot này không?')) return;
-        try {
-            const metadataKey = `snapshots-${supermarket}`;
-            const currentMetadata: SnapshotMetadata[] = await db.get(metadataKey) || [];
-            const updatedMetadata = currentMetadata.filter(meta => meta.id !== snapshotId);
-            await db.set(metadataKey, updatedMetadata);
-            await db.deleteEntry(`snapshot-data-${supermarket}-${snapshotId}`);
-            setAllSnapshots(prev => ({ ...prev, [supermarket]: updatedMetadata }));
-        } catch (error) {
-            console.error("Delete failed", error);
-        }
+    const handleDeleteSnapshot = (supermarket: string, snapshotId: string) => {
+        showConfirm({
+            title: 'Xóa Snapshot',
+            message: 'Bạn có chắc chắn muốn xoá snapshot này không?',
+            variant: 'danger',
+            confirmText: 'Xóa',
+            onConfirm: async () => {
+                closeConfirm();
+                try {
+                    const metadataKey = `snapshots-${supermarket}`;
+                    const currentMetadata: SnapshotMetadata[] = await db.get(metadataKey) || [];
+                    const updatedMetadata = currentMetadata.filter(meta => meta.id !== snapshotId);
+                    await db.set(metadataKey, updatedMetadata);
+                    await db.deleteEntry(`snapshot-data-${supermarket}-${snapshotId}`);
+                    setAllSnapshots(prev => ({ ...prev, [supermarket]: updatedMetadata }));
+                } catch (error) {
+                    console.error("Delete failed", error);
+                }
+            }
+        });
     };
 
     return (
@@ -219,7 +243,16 @@ const Settings: React.FC = () => {
                     </div>
                 </div>
             </section>
-
+            
+            <ConfirmDialog 
+                isOpen={confirmDialog.isOpen}
+                onClose={closeConfirm}
+                onConfirm={confirmDialog.onConfirm}
+                title={confirmDialog.title}
+                message={confirmDialog.message}
+                variant={confirmDialog.variant}
+                confirmText={confirmDialog.confirmText}
+            />
         </div>
     );
 };

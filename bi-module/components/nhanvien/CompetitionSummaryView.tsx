@@ -9,6 +9,7 @@ import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVi
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { exportElementAsImage } from '../../../services/uiService';
+import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 
 interface CompetitionSummaryViewProps {
     employees: Employee[];
@@ -41,6 +42,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
     const [filterSearch, setFilterSearch] = useState('');
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(tableName);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const formatter = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
@@ -106,11 +108,12 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
     const handleConfirmDelete = (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation(); // Ngăn chặn sự kiện lan lên Card
-        
-        const confirmMsg = `Bạn có thực sự muốn xoá bảng "${tableName}" không? Thao tác này không thể hoàn tác.`;
-        if (window.confirm(confirmMsg)) {
-            onDelete();
-        }
+        setShowDeleteConfirm(true);
+    };
+
+    const confirmDelete = () => {
+        onDelete();
+        setShowDeleteConfirm(false);
     };
 
     const headerActions = (
@@ -253,6 +256,16 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                     </div>
                 )}
             </Card>
+
+            <ConfirmDialog
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={confirmDelete}
+                title="Xóa bảng thi đua?"
+                message={`Bạn có thực sự muốn xoá bảng "${tableName}" không? Thao tác này không thể hoàn tác.`}
+                confirmText="Xóa bảng"
+                variant="danger"
+            />
         </div>
     );
 };

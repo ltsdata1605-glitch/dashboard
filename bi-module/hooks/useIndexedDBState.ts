@@ -1,6 +1,6 @@
-
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef, useSyncExternalStore } from 'react';
 import * as db from '../utils/db';
+import { configStore } from '../store/configStore';
 
 type SetStateAction<S> = S | ((prevState: S) => S);
 type Dispatch<A> = (value: A) => void;
@@ -8,76 +8,69 @@ type Dispatch<A> = (value: A) => void;
 const DB_CHANGE_EVENT = 'indexeddb-change';
 
 export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, Dispatch<SetStateAction<T>>, boolean] {
-  const [value, setValue] = useState<T>(defaultValue);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const loadIdRef = useRef(0);
-  const writeQueueRef = useRef<(() => Promise<any>)[]>([]);
-  const isWritingRef = useRef(false);
-  // Ref để lưu defaultValue ổn định (tránh object/array literal gây re-render vô tận)
-  const defaultValueRef = useRef(defaultValue);
-  // Ref đánh dấu key vừa ghi — khi nhận event cho key này, bỏ qua reload (vì state đã đúng)
-  const justWroteKeyRef = useRef<string | null>(null);
+    const state = useSyncExternalStore(configStore.subscribe, configStore.getState);
+    const defaultValueRef = useRef(defaultValue);
 
-  useEffect(() => {
-    if (!key) {
-      setValue(defaultValueRef.current);
-      setIsLoaded(true);
-      return;
-    }
+    const writeQueueRef = useRef<(() => Promise<any>)[]>([]);
+    const isWritingRef = useRef(false);
 
-    const currentLoadId = ++loadIdRef.current;
-    
-    const loadValue = () => {
-        db.get(key).then(storedValue => {
-            if (currentLoadId === loadIdRef.current) {
+    useEffect(() => {
+        if (!key) return;
+
+        const loadValue = () => {
+            db.get(key).then(storedValue => {
+                const defValue = defaultValueRef.current;
+                let finalValue = defValue;
                 if (storedValue !== undefined && storedValue !== null) {
-                    // Type safety: if defaultValue is an array, ensure storedValue is also an array
-                    // Prevents Safari/iOS crashes when cloud sync or DB migration corrupts data types
-                    if (Array.isArray(defaultValueRef.current) && !Array.isArray(storedValue)) {
-                        setValue(defaultValueRef.current);
+                    if (Array.isArray(defValue) && !Array.isArray(storedValue)) {
+                        finalValue = defValue;
                     } else {
-                        setValue(storedValue);
+                        finalValue = storedValue;
                     }
-                } else {
-                    setValue(defaultValueRef.current);
                 }
-                setIsLoaded(true);
-            }
-        }).catch(err => {
-            console.error(`Failed to load key "${key}"`, err);
-            if (currentLoadId === loadIdRef.current) setIsLoaded(true);
-        });
-    };
-    
-    loadValue();
+                configStore.setCache(key, finalValue);
+                configStore.setLoaded(key, true);
+            }).catch(err => {
+                console.error(`Failed to load key "${key}"`, err);
+                configStore.setCache(key, defaultValueRef.current);
+                configStore.setLoaded(key, true);
+            });
+        };
 
         const handleDbChange = (event: CustomEvent) => {
             if (event.detail.key === 'ALL') {
-                setValue(defaultValueRef.current);
+                configStore.clearCache();
                 return;
             }
-            if (event.detail.key === key) {
-                // Nếu chính hook này vừa ghi key đó → state đã đúng rồi, bỏ qua reload
-                if (justWroteKeyRef.current === key) {
-                    justWroteKeyRef.current = null;
-                    return;
-                }
+            if (event.detail.key === key && event.detail.source !== 'hook-write') {
                 loadValue();
             }
         };
 
-    window.addEventListener(DB_CHANGE_EVENT, handleDbChange as EventListener);
-    return () => window.removeEventListener(DB_CHANGE_EVENT, handleDbChange as EventListener);
-  }, [key]); // ← ĐÃ XOÁ defaultValue khỏi deps — tránh vòng lặp vô tận
+        window.addEventListener(DB_CHANGE_EVENT, handleDbChange as EventListener);
 
-  const setStoredValue = useCallback((newValue: SetStateAction<T>) => {
-    if (!key) return;
-    
-    setValue(prevValue => {
+        if (!configStore.getState().loaded[key]) {
+            loadValue();
+        }
+
+        return () => window.removeEventListener(DB_CHANGE_EVENT, handleDbChange as EventListener);
+    }, [key]);
+
+    const setStoredValue = useCallback((newValue: SetStateAction<T>) => {
+        if (!key) return;
+        
+        const currentState = configStore.getState();
+        const prevValue = currentState.cache[key] !== undefined ? currentState.cache[key] : defaultValueRef.current;
+        
         const finalValue = typeof newValue === 'function'
             ? (newValue as (prevState: T) => T)(prevValue)
             : newValue;
-        
+            
+        // Immediately update RAM cache
+        configStore.setCache(key, finalValue);
+        configStore.setLoaded(key, true);
+
+        // Async write to IndexedDB
         const processQueue = () => {
             if (isWritingRef.current || writeQueueRef.current.length === 0) return;
             isWritingRef.current = true;
@@ -91,16 +84,23 @@ export function useIndexedDBState<T>(key: string | null, defaultValue: T): [T, D
             }
         };
 
-        // Đánh dấu key đang được ghi bởi hook này
-        justWroteKeyRef.current = key;
         const task = () => db.set(key, finalValue)
+            .then(() => {
+                window.dispatchEvent(new CustomEvent(DB_CHANGE_EVENT, { 
+                    detail: { key, source: 'hook-write' } 
+                }));
+            })
             .catch(err => console.error(`Save error ${key}`, err));
         
         writeQueueRef.current.push(task);
         processQueue();
-        return finalValue;
-    });
-  }, [key]);
+    }, [key]);
 
-  return [value, setStoredValue, isLoaded];
+    const currentValue = (key && state.loaded[key] && state.cache[key] !== undefined) 
+        ? state.cache[key] 
+        : defaultValueRef.current;
+        
+    const isLoaded = key ? !!state.loaded[key] : true;
+
+    return [currentValue, setStoredValue, isLoaded];
 }

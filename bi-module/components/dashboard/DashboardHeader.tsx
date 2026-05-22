@@ -3,6 +3,7 @@ import { MainTab, SubTab, shortenSupermarketName } from '../../utils/dashboardHe
 import { CameraIcon, SpinnerIcon, BuildingStorefrontIcon, ChevronDownIcon, ImagesIcon } from '../Icons';
 import { Icon } from '../../../components/common/Icon';
 import TimeProgressBar from '../nhanvien/shared/TimeProgressBar';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface DashboardHeaderProps {
     title: string;
@@ -165,25 +166,25 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
 
                         {/* Batch export */}
-                        <button
+                        <Button
                             onClick={onBatchExport}
                             disabled={isBatchExporting}
-                            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors disabled:opacity-50"
+                            variant="ghost" size="icon" className="h-7 w-7 text-slate-400"
                             title="Xuất tất cả ảnh"
                         >
                             {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
-                        </button>
+                        </Button>
 
                         {/* Single export */}
                         {onExport && (
-                            <button
+                            <Button
                                 onClick={onExport}
                                 disabled={isExporting}
-                                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors disabled:opacity-50"
+                                variant="ghost" size="icon" className="h-7 w-7 text-slate-400"
                                 title="Xuất ảnh"
                             >
                                 {isExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}
-                            </button>
+                            </Button>
                         )}
                     </div>
                 </div>

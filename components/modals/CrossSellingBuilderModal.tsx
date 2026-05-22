@@ -4,6 +4,10 @@ import ModalWrapper from './ModalWrapper';
 import { Icon } from '../common/Icon';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import { CrossSellingConfig, CrossSellingDynamicSection, CrossSellingDynamicRow, CrossSellingDynamicColumn, CrossSellingColumnType } from '../../types';
+import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
+import { Button } from '../shared/ui/Button';
+import { Input } from '../shared/ui/Input';
+import { Select } from '../shared/ui/Select';
 
 interface CrossSellingBuilderModalProps {
     isOpen: boolean;
@@ -66,6 +70,7 @@ export const SAMPLE_CONFIG: CrossSellingConfig = {
 const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isOpen, onClose }) => {
     const { crossSellingConfig, updateCrossSellingConfig, productConfig, uniqueFilterOptions } = useDashboardContext();
     const [config, setConfig] = useState<CrossSellingConfig>(INITIAL_CONFIG);
+    const [showSampleConfirm, setShowSampleConfirm] = useState(false);
 
     const nganhHangOptions = useMemo(() => {
         if (!productConfig?.subgroups) return [];
@@ -103,9 +108,12 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
     };
 
     const loadSampleConfig = () => {
-        if (window.confirm("Thao tác này sẽ ghi đè toàn bộ cấu hình hiện tại bằng Cấu hình mẫu (y hệt hình ảnh mẫu). Bạn có chắc chắn không?")) {
-            setConfig(SAMPLE_CONFIG);
-        }
+        setShowSampleConfirm(true);
+    };
+
+    const confirmLoadSample = () => {
+        setConfig(SAMPLE_CONFIG);
+        setShowSampleConfirm(false);
     };
 
     // --- Column Actions ---
@@ -256,23 +264,23 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                     </div>
                                     <div className="flex-1 space-y-2">
                                         <div className="flex items-center justify-between gap-3">
-                                            <input 
+                                            <Input 
                                                 type="text" 
                                                 value={col.name} 
                                                 onChange={e => updateColumn(col.id, 'name', e.target.value)}
-                                                className="w-1/3 text-sm font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-1.5 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300"
+                                                className="w-1/3 text-sm font-bold"
                                                 placeholder="Tên cột hiển thị..."
                                             />
                                             {col.type === 'data' && (
                                                 <div className="flex-1 flex gap-2 items-center">
-                                                    <select
+                                                    <Select
                                                         value={col.dataType || 'quantity'}
                                                         onChange={e => updateColumn(col.id, 'dataType', e.target.value)}
-                                                        className="w-32 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 border-none outline-none rounded p-1.5 shadow-sm"
+                                                        className="w-32 text-xs font-bold"
                                                     >
                                                         <option value="quantity">Số Lượng</option>
                                                         <option value="revenueQD">Doanh Thu QĐ</option>
-                                                    </select>
+                                                    </Select>
                                                     <div className="flex-1 grid grid-cols-2 gap-2">
                                                         <MultiSelectDropdown
                                                             label="Lọc Ngành Hàng (Cha)"
@@ -294,27 +302,27 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                             {col.type === 'ratio' && (
                                                 <div className="flex-1 flex flex-col gap-1.5">
                                                     <div className="flex items-center gap-2 bg-fuchsia-50 dark:bg-fuchsia-900/10 p-1 rounded-md border border-fuchsia-100 dark:border-fuchsia-900/50">
-                                                        <select 
+                                                        <Select 
                                                             value={col.numeratorColId || ''} 
                                                             onChange={e => updateColumn(col.id, 'numeratorColId', e.target.value)}
-                                                            className="flex-1 text-xs p-1 bg-white dark:bg-slate-800 border-none outline-none font-bold text-slate-700 dark:text-slate-200 rounded"
+                                                            className="flex-1 text-xs font-bold h-8 border-transparent bg-transparent focus-visible:ring-0 shadow-none"
                                                         >
                                                             <option value="">-- Cột Tử Số (A) --</option>
                                                             {config.columns.filter(c => c.id !== col.id && c.type === 'data').map(c => (
                                                                 <option key={c.id} value={c.id}>Cột: {c.name}</option>
                                                             ))}
-                                                        </select>
+                                                        </Select>
                                                         <span className="font-black text-fuchsia-500">/</span>
-                                                        <select 
+                                                        <Select 
                                                             value={col.denominatorColId || ''} 
                                                             onChange={e => updateColumn(col.id, 'denominatorColId', e.target.value)}
-                                                            className="flex-1 text-xs p-1 bg-white dark:bg-slate-800 border-none outline-none font-bold text-slate-700 dark:text-slate-200 rounded"
+                                                            className="flex-1 text-xs font-bold h-8 border-transparent bg-transparent focus-visible:ring-0 shadow-none"
                                                         >
                                                             <option value="">-- Cột Mẫu Số (B) --</option>
                                                             {config.columns.filter(c => c.id !== col.id && c.type === 'data').map(c => (
                                                                 <option key={c.id} value={c.id}>Cột: {c.name}</option>
                                                             ))}
-                                                        </select>
+                                                        </Select>
                                                     </div>
                                                     <label className="flex items-center gap-2 text-[11px] font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 cursor-pointer w-max ml-1">
                                                         <input 
@@ -362,11 +370,11 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                             {sIdx + 1}
                                         </div>
                                         <div className="flex-1 flex gap-2">
-                                            <input 
+                                            <Input 
                                                 type="text" 
                                                 value={section.header} 
                                                 onChange={e => updateSectionHeader(section.id, e.target.value)}
-                                                className="w-full sm:w-1/2 text-sm font-black bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-600 rounded-lg p-2 outline-none focus:border-indigo-500 uppercase text-slate-800 dark:text-slate-100"
+                                                className="w-full sm:w-1/2 text-sm font-black uppercase text-slate-800 dark:text-slate-100"
                                                 placeholder="Tên Nhóm Dòng (Header)..."
                                             />
                                         </div>
@@ -378,11 +386,11 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                         {section.rows.map((row, rIdx) => (
                                             <div key={row.id} className="flex flex-col lg:flex-row gap-3 p-3 bg-slate-50 dark:bg-slate-800/40 rounded-lg border border-slate-100 dark:border-slate-700/50">
                                                 <div className="flex-1 space-y-2">
-                                                    <input 
+                                                    <Input 
                                                         type="text" 
                                                         value={row.name} 
                                                         onChange={e => updateRow(section.id, row.id, 'name', e.target.value)}
-                                                        className="w-full text-xs font-bold bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-1.5 outline-none focus:border-indigo-500 text-slate-700 dark:text-slate-300"
+                                                        className="w-full text-xs font-bold"
                                                         placeholder="Tên dòng hiển thị..."
                                                     />
                                                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
@@ -407,22 +415,22 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                             onChange={selected => updateRow(section.id, row.id, 'manufacturers', selected)}
                                                             variant="compact"
                                                         />
-                                                        <input 
+                                                        <Input 
                                                             type="text" 
                                                             value={row.keywords || ''} 
                                                             onChange={e => updateRow(section.id, row.id, 'keywords', e.target.value)}
-                                                            className="w-full text-[11px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded p-1.5 outline-none focus:border-indigo-500 text-slate-600 dark:text-slate-400 placeholder-slate-400"
+                                                            className="w-full text-[11px]"
                                                             placeholder="Mã SP (phẩy để tách)"
                                                         />
                                                         <div className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/50 rounded p-1 px-1.5 focus-within:ring-1 focus-within:ring-amber-500">
                                                             <div className="text-[9px] font-black text-amber-700 dark:text-amber-500 uppercase leading-none tracking-tighter w-8 shrink-0">
                                                                 Mục<br/>Tiêu
                                                             </div>
-                                                            <input 
+                                                            <Input 
                                                                 type="number" 
                                                                 value={row.targetValue === undefined ? '' : row.targetValue} 
                                                                 onChange={e => updateRow(section.id, row.id, 'targetValue', e.target.value ? Number(e.target.value) : undefined)}
-                                                                className="w-full h-full text-sm font-black text-amber-600 dark:text-amber-400 bg-transparent border-none outline-none text-right placeholder-amber-200/50"
+                                                                className="w-full h-8 text-sm font-black text-amber-600 dark:text-amber-400 border-none bg-transparent shadow-none focus-visible:ring-0 text-right pr-1"
                                                                 placeholder="%"
                                                             />
                                                         </div>
@@ -448,16 +456,24 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
 
                 {/* Footer */}
                 <div className="flex items-center justify-end gap-2 sm:gap-3 p-3 sm:p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 shrink-0">
-                    <button onClick={onClose} className="px-3 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors shadow-sm">
+                    <Button onClick={onClose} variant="secondary">
                         Hủy bỏ
-                    </button>
-                    <button onClick={handleSave} className="px-4 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg sm:rounded-xl transition-colors shadow-md flex items-center gap-1.5 sm:gap-2">
-                        <Icon name="save" size={4} className="hidden sm:block" />
-                        <Icon name="save" size={3.5} className="sm:hidden" />
+                    </Button>
+                    <Button onClick={handleSave} variant="primary" leftIcon={<Icon name="save" size={4} />}>
                         Lưu cấu hình
-                    </button>
+                    </Button>
                 </div>
             </div>
+
+            <ConfirmDialog
+                isOpen={showSampleConfirm}
+                onClose={() => setShowSampleConfirm(false)}
+                onConfirm={confirmLoadSample}
+                title="Nạp cấu hình mẫu?"
+                message="Thao tác này sẽ ghi đè toàn bộ cấu hình hiện tại bằng Cấu hình mẫu. Bạn có chắc chắn không?"
+                confirmText="Xác nhận"
+                variant="warning"
+            />
         </ModalWrapper>
     );
 };

@@ -3,6 +3,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { db } from '../../services/firebase';
 import { collection, query, where, getDocs, doc, updateDoc, orderBy } from 'firebase/firestore';
 import { Icon } from '../common/Icon';
+import { Input } from '../shared/ui/Input';
+import { Select } from '../shared/ui/Select';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -276,20 +278,25 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                            <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} className="h-9 bg-transparent text-xs font-semibold text-slate-600 dark:text-slate-300 px-2.5 outline-none border-none cursor-pointer">
+                            <Select value={sortBy} onChange={e => setSortBy(e.target.value as any)} className="h-9 text-xs rounded-none border-0 bg-transparent pr-8 shadow-none focus-visible:ring-0">
                                 <option value="date">Ngày ĐK</option>
                                 <option value="name">Tên</option>
                                 <option value="role">Vai trò</option>
                                 <option value="dept">Mã Kho</option>
                                 <option value="logins">Truy cập</option>
-                            </select>
+                            </Select>
                             <button onClick={() => setSortAsc(p => !p)} className="h-9 px-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
                                 <Icon name={sortAsc ? 'arrow-up-narrow-wide' : 'arrow-down-wide-narrow'} size={3.5} />
                             </button>
                         </div>
                         <div className="relative w-full sm:w-56">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400"><Icon name="search" size={3.5} /></div>
-                            <input type="text" placeholder="Tìm kiếm Email, Mã Kho..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="h-9 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 block w-full pl-9 pr-3 text-xs font-medium rounded-md outline-none focus:border-indigo-500 transition-all shadow-sm text-slate-700 dark:text-slate-200" />
+                            <Input 
+                                leftIcon="search"
+                                placeholder="Tìm kiếm Email, Mã Kho..." 
+                                value={searchQuery} 
+                                onChange={e => setSearchQuery(e.target.value)} 
+                                className="h-9 text-xs rounded-md"
+                            />
                         </div>
                     </div>
                 </div>
@@ -336,13 +343,13 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             </div>
                                             <div className="shrink-0">
                                                 {userRole === 'admin' ? (
-                                                    <select value={editRoles[req.id] || req.role || req.requestedRole || 'pending'} onChange={(e) => { setEditRoles(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'role', e.target.value); }} className="h-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md px-2 text-xs font-semibold outline-none focus:border-indigo-500 w-[100px] cursor-pointer">
+                                                    <Select value={editRoles[req.id] || req.role || req.requestedRole || 'pending'} onChange={(e) => { setEditRoles(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'role', e.target.value); }} className="h-7 px-2 text-xs w-[100px] font-semibold cursor-pointer">
                                                         <option value="pending">Chờ duyệt</option>
                                                         <option value="employee">Nhân Viên</option>
                                                         <option value="manager">Quản Lý</option>
                                                         <option value="admin">Admin</option>
                                                         <option value="blocked">Khoá</option>
-                                                    </select>
+                                                    </Select>
                                                 ) : (
                                                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${req.role === 'admin' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400' : req.role === 'manager' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400'}`}>
                                                         <Icon name={req.role === 'admin' ? 'shield' : req.role === 'manager' ? 'briefcase' : 'users'} size={3} />
@@ -377,25 +384,41 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                         {/* Row 2: Fields */}
                                         <div className="flex items-center gap-3 px-4 py-2 bg-slate-50/50 dark:bg-slate-900/20 flex-wrap sm:flex-nowrap">
                                             <div className="flex items-center gap-1.5 shrink-0">
-                                                <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Mã Kho:</span>
                                                 {userRole === 'admin' ? (
-                                                    <input type="text" value={editDepartments[req.id] || ''} onChange={e => { setEditDepartments(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'departmentId', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-200 w-[100px] font-mono uppercase rounded-md" />
-                                                ) : (<span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">{req.departmentId || '—'}</span>)}
+                                                    <div className="flex flex-col gap-1 w-[100px]">
+                                                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">KHO/BỘ PHẬN</span>
+                                                        <Input type="text" value={editDepartments[req.id] || ''} onChange={e => { setEditDepartments(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'departmentId', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs px-2 w-[100px] font-mono uppercase" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Mã Kho:</span>
+                                                        <span className="text-xs font-mono font-bold text-slate-600 dark:text-slate-400">{req.departmentId || '—'}</span>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                                            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                                             <div className="flex items-center gap-1.5 shrink-0">
-                                                <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Mã NV:</span>
                                                 {userRole === 'admin' ? (
-                                                    <input type="text" value={editNames[req.id] || ''} onChange={e => { setEditNames(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'employeeName', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-200 w-[100px] rounded-md" />
-                                                ) : (<span className="text-xs font-bold text-amber-600 dark:text-amber-400">{req.employeeName || '—'}</span>)}
+                                                    <div className="flex flex-col gap-1 w-[100px]">
+                                                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">MÃ NHÂN VIÊN</span>
+                                                        <Input type="text" value={editNames[req.id] || ''} onChange={e => { setEditNames(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'employeeName', e.target.value); }} placeholder="VD: 58614" className="h-7 text-xs px-2 w-[100px]" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-[10px] uppercase font-bold text-slate-400">Mã NV:</span>
+                                                        <span className="text-xs font-bold text-amber-600 dark:text-amber-400">{req.employeeName || '—'}</span>
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                                            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                                             <div className="flex items-center gap-1.5 shrink-0">
-                                                <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Hạn:</span>
-                                                <input type="date" value={expiryDates[req.id] || ''} onChange={e => { setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value })); if (listMode === 'active') autoSave(req.id, 'expiresAt', e.target.value); }} className="h-7 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 outline-none focus:border-indigo-500 text-slate-800 dark:text-slate-200 w-[130px] rounded-md" />
+                                                <div className="flex flex-col gap-1 w-[130px]">
+                                                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400">NGÀY HẾT HẠN</span>
+                                                    <Input type="date" value={expiryDates[req.id] || ''} onChange={e => { setExpiryDates(prev => ({ ...prev, [req.id]: e.target.value })); if (listMode === 'active') autoSave(req.id, 'expiresAt', e.target.value); }} className="h-7 text-xs px-2 w-[130px]" />
+                                                </div>
                                             </div>
-                                            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
-                                            <div className="flex items-center gap-1.5 shrink-0">
+                                            <div className="w-px h-8 bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                                            <div className="flex flex-col gap-1 shrink-0">
                                                 <span className="text-[10px] uppercase font-bold text-slate-400 whitespace-nowrap">Đăng ký:</span>
                                                 <span className="text-xs font-medium text-slate-600 dark:text-slate-400">{req.createdAt?.toDate ? req.createdAt.toDate().toLocaleDateString('vi-VN') : '—'}</span>
                                             </div>

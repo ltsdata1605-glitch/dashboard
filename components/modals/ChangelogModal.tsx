@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icon } from '../common/Icon';
 import ModalWrapper from './ModalWrapper';
+import { Button } from '../shared/ui/Button';
 
 interface ChangelogModalProps {
     isOpen: boolean;
@@ -109,12 +110,9 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
 
             {/* Footer */}
             <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 rounded-b-2xl flex justify-end">
-                <button 
-                    onClick={onClose}
-                    className="px-4 sm:px-6 py-2 bg-slate-800 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white text-xs sm:text-sm font-bold rounded-lg sm:rounded-xl shadow-lg transition-colors focus:ring-4 focus:ring-slate-200 dark:focus:ring-slate-800"
-                >
+                <Button onClick={onClose} variant="primary">
                     Đóng
-                </button>
+                </Button>
             </div>
         </ModalWrapper>
     );

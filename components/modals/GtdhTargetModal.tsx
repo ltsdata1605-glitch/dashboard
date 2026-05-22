@@ -4,6 +4,7 @@ import { useDashboardContext } from '../../contexts/DashboardContext';
 import SearchableSelect from '../common/SearchableSelect';
 import { Icon } from '../common/Icon';
 import { formatCurrency } from '../../utils/dataUtils';
+import { Button } from '../shared/ui/Button';
 
 interface GtdhTargetModalProps {
     isOpen: boolean;
@@ -108,18 +109,15 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                             />
                         </div>
                         <div className="w-full">
-                            <button
+                            <Button
                                 onClick={handleSave}
                                 disabled={!selectedNhomHang || !targetValue}
-                                className={`w-full h-9 sm:h-11 text-xs sm:text-sm font-bold rounded-lg shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 flex justify-center items-center gap-1.5 sm:gap-2 ${
-                                    !selectedNhomHang || !targetValue
-                                     ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-                                     : 'bg-rose-600 hover:bg-rose-700 text-white focus:ring-rose-500 dark:focus:ring-offset-slate-900 border border-transparent'
-                                }`}
+                                variant="danger"
+                                leftIcon={<Icon name="save" size={4} />}
+                                className="w-full"
                             >
-                                <Icon name="save" size={3.5} className="sm:hidden" /><Icon name="save" size={4} className="hidden sm:block" />
                                 LƯU MỤC TIÊU
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -155,13 +153,15 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                                             GTĐH: {formatCurrency(value / 1000000)} T
                                         </span>
                                     </div>
-                                    <button 
+                                    <Button 
                                         onClick={() => deleteGtdhTarget(nhom)}
-                                        className="text-slate-300 hover:text-rose-500 dark:text-slate-600 dark:hover:text-rose-400 p-1.5 rounded-md hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors shrink-0"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-slate-300 hover:text-rose-500 dark:text-slate-600 dark:hover:text-rose-400"
                                         title="Xoá mục tiêu này"
                                     >
                                         <Icon name="trash-2" size={4} />
-                                    </button>
+                                    </Button>
                                 </div>
                             ))}
                         </div>

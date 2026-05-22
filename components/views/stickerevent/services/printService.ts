@@ -2,6 +2,7 @@ import { Product } from '../types';
 import { parseCurrency } from './fileParser';
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
+import toast from 'react-hot-toast';
 
 export interface ModernLayoutPositions {
   productName: { x: number; y: number; w: number; h: number };
@@ -1379,7 +1380,7 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
     // Desktop: Open print dialog
     const printWindow = window.open('', '_blank');
     if (!printWindow) {
-      alert('Vui lòng cho phép cửa sổ bật lên để in.');
+      toast.error('Vui lòng cho phép cửa sổ bật lên để in.');
       return;
     }
     

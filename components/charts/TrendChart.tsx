@@ -12,6 +12,7 @@ import RevenueCalendar from './RevenueCalendar';
 import SavedCalendarCard from './SavedCalendarCard';
 import { saveCustomCalendars, getCustomCalendars } from '../../services/dbService';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
+import { Select } from '../shared/ui/Select';
 
 const CustomTooltip = ({ active, payload, metricName }: any) => {
     if (!active || !payload?.length) return null;
@@ -421,13 +422,13 @@ const TrendChart: React.FC = React.memo(() => {
         <div className="flex flex-wrap items-center gap-2 hide-on-export">
           {displayMode === 'calendar' ? (
               <div className="flex flex-wrap items-center gap-1">
-                  <select
-                      className="text-[10px] font-bold bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer uppercase tracking-wider"
+                  <Select
+                      className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 py-1.5 px-2 h-auto min-h-0 uppercase tracking-wider"
                       value={calendarFilters.month}
                       onChange={(e) => setCalendarFilters(prev => ({ ...prev, month: e.target.value }))}
                   >
                       {availableMonths.map(m => <option key={m} value={m}>{m.split('-')[1]}/{m.split('-')[0]}</option>)}
-                  </select>
+                  </Select>
                   <div className="w-auto">
                       <MultiSelectDropdown
                           label="Ngành"
@@ -446,8 +447,8 @@ const TrendChart: React.FC = React.memo(() => {
                           variant="compact"
                       />
                   </div>
-                  <select
-                      className="text-[10px] font-bold text-rose-600 dark:text-rose-400 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-rose-500 cursor-pointer uppercase tracking-wider"
+                  <Select
+                      className="text-[10px] font-bold text-rose-600 dark:text-rose-400 py-1.5 px-2 h-auto min-h-0 uppercase tracking-wider"
                       value={calendarFilters.metric}
                       onChange={(e) => setCalendarFilters(prev => ({ ...prev, metric: e.target.value }))}
                   >
@@ -455,7 +456,7 @@ const TrendChart: React.FC = React.memo(() => {
                       <option value="revenueQD">DT QĐ</option>
                       <option value="quantity">Số lượng</option>
                       <option value="traChamPercent">Trả Chậm</option>
-                  </select>
+                  </Select>
               </div>
           ) : (
               <>

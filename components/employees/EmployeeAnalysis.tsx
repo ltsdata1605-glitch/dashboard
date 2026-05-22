@@ -11,6 +11,7 @@ import EmployeeAnalysisModals from './EmployeeAnalysisModals';
 import EmployeeAnalysisContent from './EmployeeAnalysisContent';
 import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
 import { getExportFilenamePrefix } from '../../utils/dataUtils';
+import { Button } from '../shared/ui/Button';
 
 export const ICON_OPTIONS = ['bar-chart-3', 'trophy', 'target', 'trending-up', 'star'];
 
@@ -200,14 +201,15 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                         setHideZeroRevenue={setHideZeroRevenue}
                     />
                     <div ref={settingsRef} className="relative">
-                        <button 
+                        <Button
+                            variant="ghost" size="icon"
                             onClick={() => setIsSettingsOpen(prev => !prev)} 
                             title="Tùy chọn hiển thị" 
-                            className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                            className="h-7 w-7 sm:h-9 sm:w-9 text-slate-500 dark:text-slate-400"
                         >
-                            <Icon name="settings-2" size={4} className="sm:hidden"/>
+                            <Icon name="settings-2" size={4.5} className="sm:hidden"/>
                             <Icon name="settings-2" size={5} className="hidden sm:block"/>
-                        </button>
+                        </Button>
                         {isSettingsOpen && (
                             <div className="absolute top-full right-0 mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
                                 <h4 className="font-bold text-xs sm:text-sm mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 text-slate-800 dark:text-slate-100">Hiển thị màn hình thi đua</h4>

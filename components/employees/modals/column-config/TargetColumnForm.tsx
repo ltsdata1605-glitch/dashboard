@@ -1,5 +1,6 @@
 import React from 'react';
 import { Icon } from '../../../common/Icon';
+import { Input } from '../../../shared/ui/Input';
 
 interface TargetColumnFormProps {
     metricType: 'quantity' | 'revenue' | 'revenueQD';
@@ -31,7 +32,7 @@ export const TargetColumnForm: React.FC<TargetColumnFormProps> = ({
                     <div>
                         <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">Tổng Mục Tiêu *</label>
                         <div className="relative">
-                            <input 
+                            <Input 
                                 type="text" 
                                 value={targetValue} 
                                 onChange={(e) => {
@@ -39,11 +40,9 @@ export const TargetColumnForm: React.FC<TargetColumnFormProps> = ({
                                     setTargetValue(raw ? Number(raw).toLocaleString('en-US') : '');
                                 }}
                                 placeholder="VD: 1,500,000,000" 
-                                className="w-full bg-white dark:bg-slate-900 border-2 border-teal-200 dark:border-teal-800 rounded-lg p-2 sm:p-3 pl-7 sm:pl-10 text-xs sm:text-base font-black text-teal-700 dark:text-teal-300 focus:ring-4 focus:ring-teal-500/20 focus:border-teal-500 transition outline-none"
+                                leftIcon={metricType === 'revenue' ? "dollar-sign" : "hash"}
+                                className="h-10 sm:h-12 text-xs sm:text-base font-black text-teal-700 dark:text-teal-300"
                             />
-                            <div className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 text-teal-500">
-                                <Icon name={metricType === 'revenue' ? "dollar-sign" : "hash"} size={3.5} className="sm:hidden" /><Icon name={metricType === 'revenue' ? "dollar-sign" : "hash"} size={5} className="hidden sm:block" />
-                            </div>
                         </div>
                         <p className="mt-1.5 sm:mt-2.5 text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 flex items-start gap-1 sm:gap-1.5 font-medium">
                             <Icon name="info" size={3} className="mt-0.5 text-teal-500 sm:hidden" /><Icon name="info" size={3.5} className="mt-0.5 text-teal-500 hidden sm:block" />
