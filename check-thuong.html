@@ -194,10 +194,10 @@
         <div class="absolute top-[10%] right-[20%] w-[200px] h-[200px] bg-purple-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse [animation-delay:2s] pointer-events-none"></div>
         <div class="absolute -bottom-[20%] left-1/2 -translate-x-1/2 w-[250px] h-[250px] bg-blue-500/30 rounded-full mix-blend-multiply filter blur-[100px] opacity-60 animate-pulse [animation-delay:4s] pointer-events-none"></div>
 
-        <div class="relative z-10 w-full max-w-[1000px] px-6 flex flex-col items-center text-center mt-4">
+        <div class="relative z-10 w-full max-w-[1000px] px-6 flex flex-col items-center text-center mt-8">
             
             <!-- Hero Typography -->
-            <div class="mb-4">
+            <div class="mb-10">
                 <h1 class="text-3xl sm:text-4xl lg:text-[2.8rem] font-extrabold tracking-tight text-slate-900 leading-[1.1] mb-3 drop-shadow-sm">
                     Tra cứu thưởng.<br/>
                     <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600">Phân tích tức thì.</span>
@@ -251,7 +251,7 @@
             </div>
 
             <!-- Footer / Trust Indicators -->
-            <div class="mt-6 flex items-center justify-center gap-6 text-center">
+            <div class="mt-12 flex items-center justify-center gap-6 text-center">
                 <div class="flex items-center gap-1.5 text-slate-400">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path><path d="m9 12 2 2 4-4"></path></svg>
                     <span class="text-[10px] font-semibold text-slate-500">Local Processing</span>
@@ -397,7 +397,7 @@
             const saveState = () => {
                 if (competitionData && competitionData.length > 0) {
                     idbKeyval.set('checkthuong_data', {
-                        // Removed competitionData to prevent massive IDB bloat
+                        competitionData: competitionData,
                         fileName: fileStatus.textContent.replace('Đã tải: ', '').replace(' (từ bộ nhớ tạm)', ''),
                         uploadTime: fileUploadTime,
                         code1: storeCodeInput1.value,
@@ -415,8 +415,20 @@
                     if (savedData.singleViewMode) singleViewMode = savedData.singleViewMode;
                     
                     if (savedData.competitionData && savedData.competitionData.length > 0) {
-                        // Legacy support if they still have old data in IDB, we clear it out to save space
-                        idbKeyval.delete('checkthuong_data');
+                        competitionData = savedData.competitionData;
+                        fileUploadTime = savedData.uploadTime;
+                        fileStatus.textContent = `Đã tải: ${savedData.fileName || 'file_cu.xlsx'} (từ bộ nhớ tạm)`;
+                        preProcessData(competitionData);
+                        renderDashboard();
+                        
+                        // Need to notify parent that file is loaded so it shows the header controls!
+                        if (window.parent) {
+                            window.parent.postMessage({
+                                type: 'CHECK_THUONG_FILE_LOADED',
+                                code1: storeCodeInput1.value,
+                                code2: storeCodeInput2.value
+                            }, '*');
+                        }
                     }
                 }
             }).catch(e => console.warn('IDB Load Error:', e));
@@ -2316,41 +2328,3 @@
     </script>
 </body>
 </html>
-`;
-
-export const CheckThuongView: React.FC = () => {
-    const { activeTab } = useActiveTab();
-    const [mounted, setMounted] = useState(false);
-    const iframeRef = useRef<HTMLIFrameElement>(null);
-    const [hasData, setHasData] = useState(false);
-    const [codes, setCodes] = useState({ code1: '910', code2: '' });
-
-    useEffect(() => {
-        setMounted(true);
-        const handleMessage = (e: MessageEvent) => {
-            if (e.data?.type === 'CHECK_THUONG_FILE_LOADED') {
-                setHasData(true);
-                if (e.data.code1) setCodes(prev => ({ ...prev, code1: e.data.code1 }));
-                if (e.data.code2) setCodes(prev => ({ ...prev, code2: e.data.code2 }));
-            }
-        };
-        window.addEventListener('message', handleMessage);
-        return () => window.removeEventListener('message', handleMessage);
-    }, []);
-
-    // Inject parent's custom font into the iframe document
-    const injectFontIntoIframe = useCallback((fontValue: string) => {
-        const iframeDoc = iframeRef.current?.contentDocument;
-        if (!iframeDoc) return;
-
-        let styleEl = iframeDoc.getElementById('injected-global-font');
-        if (!styleEl) {
-            styleEl = iframeDoc.createElement('style');
-            styleEl.id = 'injected-global-font';
-            iframeDoc.head.appendChild(styleEl);
-        }
-
-        if (fontValue && fontValue !== 'Plus Jakarta Sans') {
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${fontValue}', sans-serif !important; }`;
-        } else {
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }
