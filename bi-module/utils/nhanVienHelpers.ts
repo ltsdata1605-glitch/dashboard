@@ -36,7 +36,10 @@ export const isIgnoredDept = (name: string) => {
 
 export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
     if (!danhSachData) return [];
-    const rows: RevenueRow[] = [];
+    
+    const empMap = new Map<string, RevenueRow>();
+    const deptMap = new Map<string, RevenueRow>();
+    const totalRow: RevenueRow = { type: 'total', name: 'Tổng', dtlk: 0, dtqd: 0, hieuQuaQD: 0, soLuong: 0, donGia: 0 };
     let currentDeptDS = '';
     
     const isValidEmployeeName = (name: string) => {
@@ -52,27 +55,54 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
         const name = parts[0]?.trim() || '';
         const dtlkValue = parseNumber(parts[1]);
         const dtqdValue = parseNumber(parts[2]);
-        const hqqdCalculated = dtlkValue > 0 ? (dtqdValue / dtlkValue) - 1 : 0;
+        
         if (name === 'Tổng') {
-            rows.push({ type: 'total', name, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: hqqdCalculated, soLuong: parseNumber(parts[4]), donGia: parseNumber(parts[5]) });
+            totalRow.dtlk! += dtlkValue;
+            totalRow.dtqd! += dtqdValue;
+            totalRow.soLuong! += parseNumber(parts[4]);
+            totalRow.donGia! += parseNumber(parts[5]);
         } else if (trimmed.startsWith('BP ') && parts.length > 1 && !isNaN(parseNumber(parts[1]))) {
             currentDeptDS = name;
             if (!isIgnoredDept(currentDeptDS)) {
-                rows.push({ type: 'department', name, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: hqqdCalculated });
+                if (deptMap.has(name)) {
+                    const existing = deptMap.get(name)!;
+                    existing.dtlk! += dtlkValue;
+                    existing.dtqd! += dtqdValue;
+                } else {
+                    deptMap.set(name, { type: 'department', name, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: 0 });
+                }
             }
         } else if (currentDeptDS && !isIgnoredDept(currentDeptDS) && isValidEmployeeName(name) && parts.length > 3) {
-            rows.push({ type: 'employee', name: formatEmployeeName(name), originalName: name, department: currentDeptDS, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: hqqdCalculated });
+            if (empMap.has(name)) {
+                const existing = empMap.get(name)!;
+                existing.dtlk! += dtlkValue;
+                existing.dtqd! += dtqdValue;
+            } else {
+                empMap.set(name, { type: 'employee', name: formatEmployeeName(name), originalName: name, department: currentDeptDS, dtlk: dtlkValue, dtqd: dtqdValue, hieuQuaQD: 0 });
+            }
         }
     }
+    
+    totalRow.hieuQuaQD = totalRow.dtlk! > 0 ? (totalRow.dtqd! / totalRow.dtlk!) - 1 : 0;
+    for (const dept of deptMap.values()) {
+        dept.hieuQuaQD = dept.dtlk! > 0 ? (dept.dtqd! / dept.dtlk!) - 1 : 0;
+    }
+    for (const emp of empMap.values()) {
+        emp.hieuQuaQD = emp.dtlk! > 0 ? (emp.dtqd! / emp.dtlk!) - 1 : 0;
+    }
+    
+    const rows: RevenueRow[] = [];
+    if (totalRow.dtlk! > 0 || totalRow.dtqd! > 0) rows.push(totalRow);
+    for (const dept of deptMap.values()) rows.push(dept);
+    for (const emp of empMap.values()) rows.push(emp);
+    
     return rows;
 };
 
 export const parseCrossSellingData = (data: string, employeeDepartmentMap: Map<string, string>): CrossSellingRow[] => {
     if (!data) return [];
-    const rows: CrossSellingRow[] = [];
     const lines = String(data).split('\n');
 
-    // O(1) Lookup Cache
     const normalizedEmployeeMap = new Map<string, string>();
     for (const fullName of employeeDepartmentMap.keys()) {
         const norm = normalizeText(fullName);
@@ -82,16 +112,20 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Map<s
     const findFullName = (shortName: string) => {
         const normalizedShort = normalizeText(shortName);
         if (!normalizedShort) return null;
-        
-        // Exact O(1) match
         const exactMatch = normalizedEmployeeMap.get(normalizedShort);
         if (exactMatch) return exactMatch;
-        
-        // O(N) Fallback for startsWith only runs if exact match fails
         for (const [normFull, fullName] of normalizedEmployeeMap.entries()) {
             if (normFull.startsWith(normalizedShort + " - ")) return fullName;
         }
         return null;
+    };
+
+    const empMap = new Map<string, CrossSellingRow>();
+    const deptMap = new Map<string, CrossSellingRow>();
+    const totalRow: CrossSellingRow = {
+        type: 'total', name: 'Tổng cộng', originalName: 'Tổng',
+        dtlk: 0, billBk: 0, pctBillBk: 0, billMngn: 0, pctBillMngn: 0,
+        totalBill: 0, slBk: 0, pctSpBk: 0, slMngn: 0, pctSpMngn: 0, totalSl: 0
     };
 
     for (const line of lines) {
@@ -118,33 +152,70 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Map<s
         if (department && isIgnoredDept(department)) continue;
         if (isDept && isIgnoredDept(rawName)) continue;
 
-        rows.push({
-            type: isTotal ? 'total' : (isDept ? 'department' : 'employee'),
-            name: isTotal ? 'Tổng cộng' : (isDept ? rawName : formatEmployeeName(originalName)),
-            originalName: isTotal ? 'Tổng' : originalName,
-            department: department,
-            dtlk: parseNumber(parts[1]),
-            billBk: parseNumber(parts[4]),
-            pctBillBk: parseNumber(parts[5]),
-            billMngn: parseNumber(parts[6]),
-            pctBillMngn: parseNumber(parts[7]),
-            totalBill: parseNumber(parts[9]),
-            slBk: parseNumber(parts[10]),
-            pctSpBk: parseNumber(parts[11]),
-            slMngn: parseNumber(parts[12]),
-            pctSpMngn: parseNumber(parts[13]),
-            totalSl: parseNumber(parts[15])
-        });
+        const dtlk = parseNumber(parts[1]);
+        const billBk = parseNumber(parts[4]);
+        const billMngn = parseNumber(parts[6]);
+        const totalBill = parseNumber(parts[9]);
+        const slBk = parseNumber(parts[10]);
+        const slMngn = parseNumber(parts[12]);
+        const totalSl = parseNumber(parts[15]);
+
+        const updateRow = (target: CrossSellingRow) => {
+            target.dtlk! += dtlk;
+            target.billBk! += billBk;
+            target.billMngn! += billMngn;
+            target.totalBill! += totalBill;
+            target.slBk! += slBk;
+            target.slMngn! += slMngn;
+            target.totalSl! += totalSl;
+        };
+
+        if (isTotal) {
+            updateRow(totalRow);
+        } else if (isDept) {
+            if (!deptMap.has(rawName)) {
+                deptMap.set(rawName, {
+                    type: 'department', name: rawName, originalName: rawName,
+                    dtlk: 0, billBk: 0, pctBillBk: 0, billMngn: 0, pctBillMngn: 0,
+                    totalBill: 0, slBk: 0, pctSpBk: 0, slMngn: 0, pctSpMngn: 0, totalSl: 0
+                });
+            }
+            updateRow(deptMap.get(rawName)!);
+        } else {
+            if (!empMap.has(originalName)) {
+                empMap.set(originalName, {
+                    type: 'employee', name: formatEmployeeName(originalName), originalName: originalName, department: department,
+                    dtlk: 0, billBk: 0, pctBillBk: 0, billMngn: 0, pctBillMngn: 0,
+                    totalBill: 0, slBk: 0, pctSpBk: 0, slMngn: 0, pctSpMngn: 0, totalSl: 0
+                });
+            }
+            updateRow(empMap.get(originalName)!);
+        }
     }
+
+    const calcPct = (target: CrossSellingRow) => {
+        target.pctBillBk = target.totalBill! > 0 ? (target.billBk! / target.totalBill!) * 100 : 0;
+        target.pctBillMngn = target.totalBill! > 0 ? (target.billMngn! / target.totalBill!) * 100 : 0;
+        target.pctSpBk = target.totalSl! > 0 ? (target.slBk! / target.totalSl!) * 100 : 0;
+        target.pctSpMngn = target.totalSl! > 0 ? (target.slMngn! / target.totalSl!) * 100 : 0;
+    };
+
+    calcPct(totalRow);
+    deptMap.forEach(calcPct);
+    empMap.forEach(calcPct);
+
+    const rows: CrossSellingRow[] = [];
+    if (totalRow.totalBill! > 0 || totalRow.totalSl! > 0) rows.push(totalRow);
+    deptMap.forEach(dept => rows.push(dept));
+    empMap.forEach(emp => rows.push(emp));
+
     return rows;
 };
 
 export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: Map<string, string>): InstallmentRow[] => {
     if (!traGopData) return [];
-    const rows: InstallmentRow[] = [];
     const lines = String(traGopData).split('\n').map(l => l.trim()).filter(l => l);
 
-    // Xác định cấu trúc dựa trên hàng Tổng (luôn có đầy đủ dữ liệu nhất)
     const totalLine = lines.find(l => l.startsWith('Tổng\t') || l === 'Tổng' || l.startsWith('Tổng cộng\t'));
     if (!totalLine) return [];
     
@@ -181,7 +252,6 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         return { name: fullName, short };
     });
 
-    // O(1) Lookup Cache
     const normalizedEmployeeMap = new Map<string, string>();
     for (const fullName of employeeDepartmentMap.keys()) {
         const norm = normalizeText(fullName);
@@ -191,14 +261,19 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
     const findFullName = (shortName: string) => {
         const normalizedShort = normalizeText(shortName);
         if (!normalizedShort) return null;
-        
         const exactMatch = normalizedEmployeeMap.get(normalizedShort);
         if (exactMatch) return exactMatch;
-
         for (const [normFull, fullName] of normalizedEmployeeMap.entries()) {
             if (normFull.startsWith(normalizedShort + " - ")) return fullName;
         }
         return null;
+    };
+
+    const empMap = new Map<string, InstallmentRow>();
+    const deptMap = new Map<string, InstallmentRow>();
+    const totalRow: InstallmentRow = {
+        type: 'total', name: 'TỔNG CỘNG', originalName: 'Tổng',
+        department: undefined, providers: [], totalDtSieuThi: 0, totalPercent: 0
     };
 
     for (const line of lines) {
@@ -216,31 +291,70 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         if (resolvedDept && isIgnoredDept(resolvedDept)) continue;
         if (isDept && isIgnoredDept(rawName)) continue;
 
-        const totalPercent = parseNumber(parts[parts.length - 1]);
         const totalDtSieuThi = parseNumber(parts[parts.length - 2]);
 
         const providers: InstallmentProvider[] = [];
         for (let i = 0; i < detectedProviders.length; i++) {
             const dtCol = 1 + i * 2;
-            const pctCol = 2 + i * 2;
             providers.push({
                 name: detectedProviders[i].name,
                 shortName: detectedProviders[i].short,
                 dt: parseNumber(parts[dtCol]),
-                percent: parseNumber(parts[pctCol])
+                percent: 0 // Will be recalculated
             });
         }
 
-        rows.push({
-            type: isTotal ? 'total' : (isDept ? 'department' : 'employee'),
-            name: isTotal ? 'TỔNG CỘNG' : (isDept ? rawName : formatEmployeeName(originalName)),
-            originalName: originalName,
-            department: isDept ? rawName : employeeDepartmentMap.get(originalName),
-            providers,
-            totalDtSieuThi,
-            totalPercent
-        });
+        const updateRow = (target: InstallmentRow) => {
+            target.totalDtSieuThi! += totalDtSieuThi;
+            providers.forEach(p => {
+                const existingP = target.providers.find(ep => ep.name === p.name);
+                if (existingP) {
+                    existingP.dt += p.dt;
+                } else {
+                    target.providers.push({ ...p });
+                }
+            });
+        };
+
+        if (isTotal) {
+            updateRow(totalRow);
+        } else if (isDept) {
+            if (!deptMap.has(rawName)) {
+                deptMap.set(rawName, {
+                    type: 'department', name: rawName, originalName: rawName, department: rawName,
+                    providers: [], totalDtSieuThi: 0, totalPercent: 0
+                });
+            }
+            updateRow(deptMap.get(rawName)!);
+        } else {
+            if (!empMap.has(originalName)) {
+                empMap.set(originalName, {
+                    type: 'employee', name: formatEmployeeName(originalName), originalName: originalName, department: resolvedDept,
+                    providers: [], totalDtSieuThi: 0, totalPercent: 0
+                });
+            }
+            updateRow(empMap.get(originalName)!);
+        }
     }
+
+    const calcPct = (target: InstallmentRow) => {
+        let sumPct = 0;
+        target.providers.forEach(p => {
+            p.percent = target.totalDtSieuThi! > 0 ? (p.dt / target.totalDtSieuThi!) * 100 : 0;
+            sumPct += p.percent;
+        });
+        target.totalPercent = sumPct;
+    };
+
+    calcPct(totalRow);
+    deptMap.forEach(calcPct);
+    empMap.forEach(calcPct);
+
+    const rows: InstallmentRow[] = [];
+    if (totalRow.totalDtSieuThi! > 0) rows.push(totalRow);
+    deptMap.forEach(dept => rows.push(dept));
+    empMap.forEach(emp => rows.push(emp));
+
     return rows;
 };
 
@@ -327,12 +441,22 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
                 originalName: matchedOriginalName || namePart,
                 values: { DTLK: [], DTQĐ: [], SLLK: [] }
             });
+            allHeaders.forEach((header, index) => {
+                const metric = header.metric as Criterion;
+                employeeData.get(formattedName)!.values[metric][index] = null;
+            });
         }
         
         const record = employeeData.get(formattedName)!;
-        allHeaders.forEach((header, index) => { 
-            const val = parseNumber(parts[index + 1]); 
-            record.values[header.metric as Criterion].push(val > 0 ? val : null); 
+        const headerIndexMap: Record<Criterion, number> = { DTLK: 0, DTQĐ: 0, SLLK: 0 };
+        
+        allHeaders.forEach((header, colIndex) => { 
+            const metric = header.metric as Criterion;
+            const val = parseNumber(parts[colIndex + 1]); 
+            const idx = headerIndexMap[metric]++;
+            if (val > 0) {
+                record.values[metric][idx] = (record.values[metric][idx] || 0) + val;
+            }
         });
     }
     

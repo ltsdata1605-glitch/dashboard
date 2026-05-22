@@ -6,6 +6,7 @@ import { UsersIcon, XIcon, SpinnerIcon, CameraIcon, ImagesIcon, ChevronDownIcon,
 import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig } from '../../types/nhanVienTypes';
 import { CompetitionGroupCard } from './CompetitionGroupView';
 import { IndividualCompetitionView, IndividualCompetitionViewHandle } from './IndividualCompetitionView';
+import CompetitionCompareView from './CompetitionCompareView';
 import CompetitionSummaryView from './CompetitionSummaryView';
 import { getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
 import { Switch } from '../dashboard/DashboardWidgets';
@@ -33,8 +34,8 @@ interface CompetitionTabProps {
     versions: Version[];
     activeVersionName: string | 'new' | null;
     setActiveVersionName: React.Dispatch<React.SetStateAction<string | 'new' | null>>;
-    activeCompetitionTab: Criterion | 'nhom' | 'canhan' | 'tong';
-    setActiveCompetitionTab: (c: Criterion | 'nhom' | 'canhan' | 'tong') => void;
+    activeCompetitionTab: Criterion | 'nhom' | 'canhan' | 'tong' | 'sosanh';
+    setActiveCompetitionTab: (c: Criterion | 'nhom' | 'canhan' | 'tong' | 'sosanh') => void;
     onVersionTabClick: (version: Version) => void;
     onStartNewVersion: () => void;
     onCancelNewVersion: () => void;
@@ -304,19 +305,19 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     };
 
     const handleSelectAllCompetitions = () => {
-        const allRelevantTitles = (Object.values(relevantCompetitions) as { headers: CompetitionHeader[] }[]).flat().map(c => c.headers).flat().map(h => h.title);
+        const allRelevantTitles = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).flat().map(c => c?.headers || []).flat().map(h => h.title);
         setSelectedCompetitions(prev => { const newSet = new Set(prev); allRelevantTitles.forEach(t => newSet.add(t)); return newSet; });
     };
     const handleDeselectAllCompetitions = () => {
-        const allRelevantTitles = (Object.values(relevantCompetitions) as { headers: CompetitionHeader[] }[]).flat().map(c => c.headers).flat().map(h => h.title);
+        const allRelevantTitles = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).flat().map(c => c?.headers || []).flat().map(h => h.title);
         setSelectedCompetitions(prev => { const newSet = new Set(prev); allRelevantTitles.forEach(t => newSet.delete(t)); return newSet; });
     };
     const handleToggleCompetition = (competitionTitle: string) => {
         setSelectedCompetitions(prev => { const newSet = new Set(prev); if (newSet.has(competitionTitle)) newSet.delete(competitionTitle); else newSet.add(competitionTitle); return newSet; });
     };
 
-    const activeFilterCount = (Object.values(relevantCompetitions) as { headers: CompetitionHeader[] }[]).map(c => c.headers).flat().filter(h => selectedCompetitions.has(h.title)).length;
-    const totalFilterCount = (Object.values(relevantCompetitions) as { headers: CompetitionHeader[] }[]).map(c => c.headers).flat().length;
+    const activeFilterCount = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).map(c => c?.headers || []).flat().filter(h => selectedCompetitions.has(h.title)).length;
+    const totalFilterCount = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).map(c => c?.headers || []).flat().length;
     const isFiltered = activeFilterCount < totalFilterCount;
 
     // --- Logic cho tab Tổng ---
@@ -381,7 +382,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             {/* Toolbar bar - giống Trả Góp */}
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-2 items-center">
-                    {([['canhan', 'Cá nhân'], ['nhom', 'Nhóm'], ['tong', 'Tổng']] as const).map(([key, label]) => (
+                    {([['canhan', 'Cá nhân'], ['nhom', 'Nhóm'], ['tong', 'Tổng'], ['sosanh', 'So sánh']] as const).map(([key, label]) => (
                         <button key={key} onClick={() => { setActiveCompetitionTab(key as any); setActiveVersionName(null); }} className={`px-3 py-1.5 text-[11px] font-bold border transition-all ${activeVersionName === null && activeCompetitionTab === key ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'}`}>{label}</button>
                     ))}
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
@@ -565,6 +566,21 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     </div>
                                 )}
                             </div>
+                        )}
+                        {activeCompetitionTab === 'sosanh' && (
+                            <CompetitionCompareView
+                                allEmployees={individualViewEmployees}
+                                allCompetitionsByCriterion={allCompetitionsByCriterion}
+                                employeeDataMap={employeeDataMap}
+                                employeeCompetitionTargets={employeeCompetitionTargets}
+                                selectedCompetitions={selectedCompetitions}
+                                setSelectedCompetitions={setSelectedCompetitions}
+                                supermarketName={supermarket || undefined}
+                                revenueRows={revenueRows}
+                                installmentRows={installmentRows}
+                                banKemRows={banKemRows}
+                                bonusData={bonusData}
+                            />
                         )}
                     </div>
                 </div>

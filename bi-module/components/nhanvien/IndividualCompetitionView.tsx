@@ -98,7 +98,7 @@ const DkhtDonut: React.FC<{ stats: { dkhtDat: number; dkhtGanDat: number; dkhtCh
         <div className="flex flex-col items-center gap-0">
             <div className="relative" style={{ width: 76, height: 76 }}>
                 <PieChart width={76} height={76} margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
-                    <Pie data={data} cx="50%" cy="50%" innerRadius={22} outerRadius={33} paddingAngle={2} dataKey="value" strokeWidth={0}>
+                    <Pie data={data} cx="50%" cy="50%" innerRadius={22} outerRadius={33} paddingAngle={2} dataKey="value" strokeWidth={0} isAnimationActive={false}>
                         {data.map((_entry, index) => <Cell key={index} fill={DONUT_COLORS[['≥100%', 'Gần đạt', '<80%', 'No Sale'].indexOf(_entry.name)]} />)}
                     </Pie>
                 </PieChart>

@@ -195,8 +195,7 @@ function rebuildNnhChildren(flatChildren: DetailNode[]): DetailNode[] {
 }
 
 /**
- * Better parser: re-parse using a cleaner state machine approach.
- * This replaces the above parseDetailData with correct nhomHang/hang detection.
+ * Better parser: re-parse using a cleaner state machine approach and mathematical prefix sums.
  */
 export function parseDetailDataV2(raw: string): DetailNode[] {
     if (!raw) return [];
@@ -216,13 +215,17 @@ export function parseDetailDataV2(raw: string): DetailNode[] {
         hieuQuaQD: number;
         soLuong: number;
         donGia: number;
+        originalName: string;
+        leadingSpaces: number;
     }
 
     const rawRows: RawRow[] = [];
     for (const line of dataLines) {
         const parts = line.split('\t');
         if (parts.length < 2) continue;
-        const name = parts[0].trim();
+        const rawName = parts[0];
+        const leadingSpaces = rawName.length - rawName.trimStart().length;
+        const name = rawName.trim();
         if (!name) continue;
         if (name.includes('Hỗ trợ BI') || name.includes('Logo BI') || name.includes('Trang chủ')) continue;
         if (name.includes('Doanh thu theo') || name.includes('Ngành hàng chính') || name.includes('Tháng ') || name.includes('Phòng ban') || name.includes('Tất cả ngành hàng') || name.includes('Danh sách')) continue;
@@ -230,6 +233,8 @@ export function parseDetailDataV2(raw: string): DetailNode[] {
 
         rawRows.push({
             name,
+            originalName: rawName,
+            leadingSpaces,
             dtlk: parseNum(parts[1]),
             dtqd: parseNum(parts[2]),
             hieuQuaQD: parseNum(parts[3]),
@@ -238,108 +243,118 @@ export function parseDetailDataV2(raw: string): DetailNode[] {
         });
     }
 
-    // Build tree using stack
+    // Build tree using stack for total -> department -> employee -> NNH
     const roots: DetailNode[] = [];
     const stack: { node: DetailNode; depth: number }[] = [];
 
-    // Depth mapping: total=0, department=1, employee=2, nnh=3, nhomHang=4, hang=5
     const levelDepth: Record<string, number> = {
-        'total': 0, 'department': 1, 'employee': 2, 'nnh': 3, 'nhomHang': 4, 'hang': 5
+        'total': 0, 'department': 1, 'employee': 2, 'nnh': 3
     };
+
+    // We will collect all rows under each NNH as a flat list, and process them mathematically
+    let currentNnhNode: DetailNode | null = null;
 
     for (let i = 0; i < rawRows.length; i++) {
         const row = rawRows[i];
         let level: DetailNode['level'] = detectLevel(row.name);
         
-        // For nhomHang detection: if current level is nhomHang (generic),
-        // check if we're inside an NNH (stack has nnh at depth 3)
-        // If parent is NNH → this is nhomHang
-        // If parent is nhomHang → this is hang
-        let depth: number;
-        
         if (level === 'total' || level === 'department' || level === 'employee' || level === 'nnh') {
-            depth = levelDepth[level];
-        } else {
-            // Determine if nhomHang or hang based on stack
-            const parentOnStack = findParentOnStack(stack, 3); // nnh depth
-            const nhomHangOnStack = findParentOnStack(stack, 4); // nhomHang depth
+            const depth = levelDepth[level];
+            let nodeName = row.name;
+            if (level === 'nnh' && nodeName.startsWith('NNH ')) {
+                nodeName = nodeName.substring(4).trim();
+            }
+            const node: DetailNode = { ...row, name: nodeName, level, children: [] };
+            
+            while (stack.length > 0 && stack[stack.length - 1].depth >= depth) {
+                stack.pop();
+            }
 
-            if (nhomHangOnStack) {
-                // Check: is this a NEW nhomHang or a hang under existing nhomHang?
-                // Look ahead: if the next row is also generic and current row's name 
-                // doesn't match known patterns... 
-                // Simpler: check if there's a row after this that has the SAME parent NNH.
-                // Use dtqd comparison: if this row's dtqd equals the sum hint... too complex.
-                
-                // Best heuristic: look at the NNH's expected children.
-                // If this row matches a known nhomHang name pattern (contains "(IMEI)", 
-                // "Dây da", "Dây kim loại", etc.), treat as nhomHang.
-                // Otherwise: if parent nhomHang exists and this doesn't look like a new nhomHang, 
-                // it's a hang.
-                
-                // Simplest working approach: 
-                // After an NNH, alternate: nhomHang → hang(s) → nhomHang → hang(s)
-                // A new nhomHang is detected when sum of its hangs' dtqd should equal it.
-                // For now: just check if parent NNH dtqd differs significantly from current nhomHang dtqd
-                
-                // Actually the safest: check if the sum of current nhomHang's children 
-                // plus this row would exceed parent NNH. If so, this is a new nhomHang.
-                // But we don't know future rows.
-                
-                // Use a different heuristic: if this row's dtqd is larger than the last hang added,
-                // and it's a category name (not a brand), it's probably a new nhomHang.
-                // But we can't distinguish categories from brands by name alone.
-                
-                // Final approach: 
-                // After NNH, the FIRST row is always nhomHang.
-                // After nhomHang, rows are hang UNTIL a row's values don't fit as a child
-                // (i.e., its dtqd > remaining dtqd of parent nhomHang).
-                // Actually simplest: track running sum. When sum of hangs >= nhomHang dtqd → next is new nhomHang.
-                
-                const parentNhomHang = nhomHangOnStack.node;
-                const childrenDtqd = parentNhomHang.children.reduce((s, c) => s + c.dtqd, 0);
-                const tolerance = 0.5; // Allow small rounding errors
-                
-                if (Math.abs(childrenDtqd - parentNhomHang.dtqd) < tolerance || childrenDtqd >= parentNhomHang.dtqd - tolerance) {
-                    // Current nhomHang is "full" → this is a NEW nhomHang
-                    level = 'nhomHang';
-                    depth = 4;
-                } else {
-                    level = 'hang';
-                    depth = 5;
-                }
-            } else if (parentOnStack) {
-                // First generic row after NNH → nhomHang
-                level = 'nhomHang';
-                depth = 4;
+            if (stack.length === 0) {
+                roots.push(node);
             } else {
-                // Shouldn't happen in well-formed data
-                continue;
+                stack[stack.length - 1].node.children.push(node);
+            }
+
+            stack.push({ node, depth });
+
+            if (level === 'nnh') {
+                currentNnhNode = node;
+            } else {
+                currentNnhNode = null;
+            }
+        } else {
+            // It's a generic row (nhomHang or hang) under an NNH
+            if (currentNnhNode) {
+                // Temporarily add as a flat child. We will rebuild the hierarchy later.
+                const node: DetailNode = { ...row, level: 'nhomHang', children: [] };
+                currentNnhNode.children.push(node);
             }
         }
+    }
 
-        const node: DetailNode = { ...row, level, children: [] };
-
-        // Pop stack until we find proper parent
-        while (stack.length > 0 && stack[stack.length - 1].depth >= depth) {
-            stack.pop();
+    // Rebuild the NNH -> nhomHang -> hang hierarchy using mathematical prefix sums
+    for (const root of roots) {
+        for (const dept of root.children) {
+            for (const emp of dept.children) {
+                for (const nnh of emp.children) {
+                    if (nnh.level === 'nnh') {
+                        nnh.children = rebuildNnhChildrenMathematically(nnh.children);
+                    }
+                }
+            }
         }
-
-        if (stack.length === 0) {
-            roots.push(node);
-        } else {
-            stack[stack.length - 1].node.children.push(node);
-        }
-
-        stack.push({ node, depth });
     }
 
     return roots;
 }
 
-function findParentOnStack(stack: { node: DetailNode; depth: number }[], targetDepth: number): { node: DetailNode; depth: number } | null {
-    for (let i = stack.length - 1; i >= 0; i--) {
-        if (stack[i].depth === targetDepth) return stack[i];
+/**
+ * Mathematically determines the hierarchy of nhomHang and hang.
+ * For each row assumed to be a nhomHang, its children (if any) MUST sum to its dtqd.
+ * We look ahead to find a prefix of subsequent rows that sum to the nhomHang's dtqd.
+ */
+function rebuildNnhChildrenMathematically(flatChildren: DetailNode[]): DetailNode[] {
+    const result: DetailNode[] = [];
+    let i = 0;
+    const tolerance = 1.0; // Allow 1 unit rounding difference
+
+    while (i < flatChildren.length) {
+        const potentialNhomHang = flatChildren[i];
+        potentialNhomHang.level = 'nhomHang';
+        
+        let foundChildren = false;
+        let runningSum = 0;
+        let j = i + 1;
+        
+        // Look ahead to see if there's a prefix summing to potentialNhomHang.dtqd
+        while (j < flatChildren.length) {
+            runningSum += flatChildren[j].dtqd;
+            
+            if (Math.abs(runningSum - potentialNhomHang.dtqd) <= tolerance) {
+                // Found an exact match! The rows from i+1 to j are children.
+                foundChildren = true;
+                for (let k = i + 1; k <= j; k++) {
+                    const child = flatChildren[k];
+                    child.level = 'hang';
+                    potentialNhomHang.children.push(child);
+                }
+                i = j + 1; // Move pointer past the children
+                break;
+            } else if (runningSum > potentialNhomHang.dtqd + tolerance) {
+                // Exceeded the target sum without a match, so it has 0 children
+                break;
+            }
+            j++;
+        }
+
+        if (!foundChildren) {
+            // It has no children. The next row will be treated as the next nhomHang.
+            i++;
+        }
+        
+        result.push(potentialNhomHang);
     }
-    return null;
+
+    return result;
 }

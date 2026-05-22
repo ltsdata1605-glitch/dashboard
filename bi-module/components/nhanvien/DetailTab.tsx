@@ -29,6 +29,9 @@ const LEVEL_STYLES: Record<string, { indent: number; bg: string; text: string; f
 const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeDepartments }) => {
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState('');
+    const [filterEmployee, setFilterEmployee] = useState<string>('all');
+    const [filterNnh, setFilterNnh] = useState<string>('all');
+    const [filterNhomHang, setFilterNhomHang] = useState<string>('all');
     const [isAllExpanded, setIsAllExpanded] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
 
@@ -86,30 +89,64 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         }
     };
 
-    // Filter tree by employee name search
+    const filterOptions = useMemo(() => {
+        const employees = new Set<string>();
+        const nnhs = new Set<string>();
+        const nhomHangs = new Set<string>();
+        
+        const walk = (nodes: DetailNode[]) => {
+            for (const node of nodes) {
+                if (node.level === 'employee') employees.add(node.name);
+                if (node.level === 'nnh') nnhs.add(node.name);
+                if (node.level === 'nhomHang') nhomHangs.add(node.name);
+                walk(node.children);
+            }
+        };
+        walk(tree);
+        return {
+            employees: Array.from(employees).sort(),
+            nnhs: Array.from(nnhs).sort(),
+            nhomHangs: Array.from(nhomHangs).sort(),
+        };
+    }, [tree]);
+
+    // Filter tree by employee name search and dropdown filters
     const filteredTree = useMemo(() => {
-        if (!searchQuery.trim()) return tree;
         const q = searchQuery.toLowerCase().trim();
         
         const filterNodes = (nodes: DetailNode[]): DetailNode[] => {
             return nodes.reduce<DetailNode[]>((acc, node) => {
-                // Match at employee level
-                if (node.level === 'employee' && node.name.toLowerCase().includes(q)) {
-                    acc.push(node);
-                    return acc;
+                const cloned = { ...node };
+                
+                // Recursively filter children first
+                if (cloned.children && cloned.children.length > 0) {
+                    cloned.children = filterNodes(cloned.children);
                 }
-                // For department-level (and above), recurse into children
-                if (node.level === 'department' || node.level === 'total') {
-                    const filteredChildren = filterNodes(node.children);
-                    if (filteredChildren.length > 0) {
-                        acc.push({ ...node, children: filteredChildren });
-                    }
+                
+                let keep = true;
+                
+                // Apply Dropdown Filters
+                if (cloned.level === 'employee') {
+                    if (filterEmployee !== 'all' && cloned.name !== filterEmployee) keep = false;
+                    if (q && !cloned.name.toLowerCase().includes(q)) keep = false;
+                }
+                if (cloned.level === 'nnh' && filterNnh !== 'all' && cloned.name !== filterNnh) keep = false;
+                if (cloned.level === 'nhomHang' && filterNhomHang !== 'all' && cloned.name !== filterNhomHang) keep = false;
+                
+                // If a structural node loses all its children due to active filtering, drop it
+                const isFiltering = filterEmployee !== 'all' || filterNnh !== 'all' || filterNhomHang !== 'all' || q !== '';
+                if (isFiltering && ['department', 'employee', 'nnh'].includes(cloned.level) && cloned.children.length === 0) {
+                    keep = false;
+                }
+                
+                if (keep) {
+                    acc.push(cloned);
                 }
                 return acc;
             }, []);
         };
         return filterNodes(tree);
-    }, [tree, searchQuery]);
+    }, [tree, searchQuery, filterEmployee, filterNnh, filterNhomHang]);
 
     // Auto-expand searched employees
     const displayTree = useMemo(() => {
@@ -197,6 +234,10 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                             )}
                         </div>
                     </td>
+                    {/* Số lượng */}
+                    <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
+                        {fInt.format(node.soLuong)}
+                    </td>
                     {/* DTLK */}
                     <td className={`px-2 py-1.5 text-right ${style.size} ${style.font} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
                         {f.format(node.dtlk)}
@@ -212,12 +253,8 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                             : node.hieuQuaQD > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                             : 'text-slate-400'
                         }`}>
-                            {node.hieuQuaQD.toFixed(2)}
+                            {Math.round(node.hieuQuaQD * 100)}%
                         </span>
-                    </td>
-                    {/* Số lượng */}
-                    <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
-                        {fInt.format(node.soLuong)}
                     </td>
                     {/* Đơn giá */}
                     <td className={`px-2 py-1.5 text-right ${style.size} tabular-nums text-slate-500 dark:text-slate-500`}>
@@ -238,7 +275,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         <div className="space-y-0">
             {/* Thanh bar toolbar — giống tab THƯỞNG */}
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
-                <div className="flex gap-2 items-center">
+                <div className="flex flex-wrap gap-2 items-center">
                     {/* Search */}
                     <div className="relative">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400" />
@@ -247,9 +284,34 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                             placeholder="Tìm nhân viên..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className="pl-8 pr-3 py-1.5 text-[11px] w-40 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700 dark:text-slate-300"
+                            className="pl-8 pr-3 py-1.5 text-[11px] w-36 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700 dark:text-slate-300"
                         />
                     </div>
+                    {/* Filters */}
+                    <select
+                        value={filterEmployee}
+                        onChange={e => setFilterEmployee(e.target.value)}
+                        className="py-1.5 px-2 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700 dark:text-slate-300 max-w-[130px]"
+                    >
+                        <option value="all">Tất cả Nhân viên</option>
+                        {filterOptions.employees.map(e => <option key={e} value={e}>{e}</option>)}
+                    </select>
+                    <select
+                        value={filterNnh}
+                        onChange={e => setFilterNnh(e.target.value)}
+                        className="py-1.5 px-2 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700 dark:text-slate-300 max-w-[130px]"
+                    >
+                        <option value="all">Tất cả Ngành hàng</option>
+                        {filterOptions.nnhs.map(e => <option key={e} value={e}>{e}</option>)}
+                    </select>
+                    <select
+                        value={filterNhomHang}
+                        onChange={e => setFilterNhomHang(e.target.value)}
+                        className="py-1.5 px-2 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700 dark:text-slate-300 max-w-[130px]"
+                    >
+                        <option value="all">Tất cả Nhóm hàng</option>
+                        {filterOptions.nhomHangs.map(e => <option key={e} value={e}>{e}</option>)}
+                    </select>
                     {/* Expand/Collapse all */}
                     <button
                         onClick={handleExpandAll}
@@ -276,6 +338,9 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                                     <th className="px-4 py-3 text-left bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 sticky left-0 z-30 min-w-[260px]">
                                         Danh mục
                                     </th>
+                                    <th className="px-2 py-3 text-center bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[70px]">
+                                        SL
+                                    </th>
                                     <th className="px-2 py-3 text-right bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[90px]">
                                         DTLK
                                     </th>
@@ -284,9 +349,6 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                                     </th>
                                     <th className="px-2 py-3 text-center bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[80px]">
                                         HQ QĐ
-                                    </th>
-                                    <th className="px-2 py-3 text-center bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 border-r border-slate-200 dark:border-slate-700 min-w-[70px]">
-                                        SL
                                     </th>
                                     <th className="px-2 py-3 text-right bg-violet-50 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 border-b-[3px] border-b-slate-300 dark:border-b-slate-600 min-w-[80px]">
                                         Đơn giá
