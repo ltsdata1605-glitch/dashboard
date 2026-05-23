@@ -38,15 +38,25 @@ googleProvider.setCustomParameters({
     prompt: 'select_account'
 });
 
-// Helper to check if running on mobile browser or in-app webview
+// Helper to check if running on mobile browser
 const checkIfMobile = (): boolean => {
     if (typeof navigator === 'undefined') return false;
     const ua = navigator.userAgent || '';
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|FBAN|FBAV|Zalo/i.test(ua);
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+};
+
+// Helper to check if running inside an in-app WebView
+const checkIfInAppWebView = (): boolean => {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    return /FBAN|FBAV|Instagram|Zalo|Line|Twitter|Pinterest|Snapchat|GSA/i.test(ua);
 };
 
 export const loginWithGoogle = async () => {
-    if (checkIfMobile()) {
+    const isInApp = checkIfInAppWebView();
+    
+    if (isInApp) {
+        console.log("In-app webview detected, using redirect flow directly.");
         try {
             await signInWithRedirect(auth, googleProvider);
         } catch (error) {
@@ -62,10 +72,20 @@ export const loginWithGoogle = async () => {
             }
             return result.user;
         } catch (error: any) {
-            // Fallback to redirect if popup is blocked or unsupported
-            if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
+            // Fallback to redirect if popup is blocked, closed, or unsupported
+            if (
+                error.code === 'auth/popup-blocked' || 
+                error.code === 'auth/operation-not-supported-in-this-environment' ||
+                error.code === 'auth/popup-closed-by-user' ||
+                checkIfMobile()
+            ) {
                 console.warn("Popup blocked or not supported, falling back to redirect...");
-                await signInWithRedirect(auth, googleProvider);
+                try {
+                    await signInWithRedirect(auth, googleProvider);
+                } catch (redirError) {
+                    console.error("Lỗi đăng nhập Google Redirect:", redirError);
+                    throw redirError;
+                }
             } else {
                 console.error("Lỗi đăng nhập Google Popup:", error);
                 throw error;
@@ -76,7 +96,6 @@ export const loginWithGoogle = async () => {
 
 /**
  * Force re-consent to ensure all OAuth scopes (including spreadsheets) are granted.
- * Use this when the existing token is missing required scopes.
  */
 export const loginWithGoogleForceConsent = async () => {
     const consentProvider = new GoogleAuthProvider();
@@ -84,7 +103,9 @@ export const loginWithGoogleForceConsent = async () => {
     consentProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
     consentProvider.setCustomParameters({ prompt: 'consent' });
 
-    if (checkIfMobile()) {
+    const isInApp = checkIfInAppWebView();
+
+    if (isInApp) {
         try {
             await signInWithRedirect(auth, consentProvider);
         } catch (error) {
@@ -100,9 +121,19 @@ export const loginWithGoogleForceConsent = async () => {
             }
             return result.user;
         } catch (error: any) {
-            if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
+            if (
+                error.code === 'auth/popup-blocked' || 
+                error.code === 'auth/operation-not-supported-in-this-environment' ||
+                error.code === 'auth/popup-closed-by-user' ||
+                checkIfMobile()
+            ) {
                 console.warn("Popup blocked or not supported (consent), falling back to redirect...");
-                await signInWithRedirect(auth, consentProvider);
+                try {
+                    await signInWithRedirect(auth, consentProvider);
+                } catch (redirError) {
+                    console.error("Lỗi đăng nhập Google Redirect (consent):", redirError);
+                    throw redirError;
+                }
             } else {
                 console.error("Lỗi đăng nhập Google (consent):", error);
                 throw error;

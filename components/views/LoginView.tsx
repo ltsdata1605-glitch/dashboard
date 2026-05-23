@@ -7,6 +7,12 @@ const LoginView: React.FC = () => {
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    const [isInAppWebView] = useState(() => {
+        if (typeof navigator === 'undefined') return false;
+        const ua = navigator.userAgent || '';
+        return /FBAN|FBAV|Instagram|Zalo|Line|Twitter|Pinterest|Snapchat|GSA/i.test(ua);
+    });
+
     const handleLogin = async () => {
         try {
             setError(null);
@@ -50,6 +56,20 @@ const LoginView: React.FC = () => {
                 
                 <h1 className="text-2xl font-black text-center text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Phân Tích Yêu Cầu Xuất</h1>
                 <p className="text-center text-slate-500 dark:text-slate-400 mb-8 text-sm">Đăng nhập để sử dụng nền tảng đồng bộ đám mây và kết nối dữ liệu Google Drive an toàn tuyệt đối.</p>
+
+                {isInAppWebView && (
+                    <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 rounded-2xl text-xs border border-amber-200 dark:border-amber-900/50 flex flex-col gap-2">
+                        <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
+                            <span className="text-base">⚠️</span> Lưu ý Đăng Nhập:
+                        </div>
+                        <p className="leading-relaxed">
+                            Anh/Chị đang truy cập qua trình duyệt của <strong>Zalo/Facebook</strong>. Trình duyệt này chặn cửa sổ đăng nhập Google.
+                        </p>
+                        <p className="font-semibold text-indigo-600 dark:text-indigo-400">
+                            👉 Vui lòng nhấn vào nút ba dấu chấm (...) ở góc màn hình rồi chọn "Mở bằng trình duyệt" (hoặc "Mở bằng Safari / Chrome") để đăng nhập nhé!
+                        </p>
+                    </div>
+                )}
                 
                 {error && (
                     <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-medium border border-red-100 dark:border-red-800 whitespace-pre-line">
