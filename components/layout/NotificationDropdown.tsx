@@ -1,73 +1,142 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { collection, query, orderBy, limit } from 'firebase/firestore';
+import React, { useState, useEffect, useRef } from 'react';
+import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
 import { AppNotification, markAsRead, markAllAsRead } from '../../services/notificationService';
 import { useActiveTab } from '../../contexts/LayoutContext';
+import toast from 'react-hot-toast';
 
 interface NotificationDropdownProps {
     buttonClassName?: string;
 }
 
 const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClassName }) => {
-    const { user } = useAuth();
+    const { user, userRole, departmentId } = useAuth();
     const { setActiveTab } = useActiveTab();
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const isVisibleRef = useRef(document.visibilityState === 'visible');
+    
+    const knownNotifIdsRef = useRef<Set<string>>(new Set());
+    const isInitialLoadRef = useRef(true);
 
-    const fetchNotifications = useCallback(async () => {
-        if (!user || !isVisibleRef.current) return;
-        const { getDocs } = await import('firebase/firestore');
-        const q = query(
+    useEffect(() => {
+        knownNotifIdsRef.current = new Set();
+        isInitialLoadRef.current = true;
+    }, [user?.uid]);
+
+    useEffect(() => {
+        if (!user) {
+            setNotifications([]);
+            return;
+        }
+
+        let unsubPersonal: (() => void) | null = null;
+        let unsubAccessRequests: (() => void) | null = null;
+
+        let personalNotifs: AppNotification[] = [];
+        let accessNotifs: AppNotification[] = [];
+
+        const updateCombinedNotifications = () => {
+            const combined = [...personalNotifs, ...accessNotifs];
+            // Sort by createdAt descending
+            combined.sort((a, b) => {
+                const timeA = a.createdAt?.toMillis?.() || (a.createdAt?.seconds ? a.createdAt.seconds * 1000 : 0) || 0;
+                const timeB = b.createdAt?.toMillis?.() || (b.createdAt?.seconds ? b.createdAt.seconds * 1000 : 0) || 0;
+                return timeB - timeA;
+            });
+
+            // Trigger Toast notifications for new unread ones
+            if (!isInitialLoadRef.current) {
+                combined.forEach(notif => {
+                    if (!notif.read && !knownNotifIdsRef.current.has(notif.id)) {
+                        knownNotifIdsRef.current.add(notif.id);
+                        
+                        toast(
+                            <div className="flex flex-col gap-0.5 text-left">
+                                <span className="font-bold text-xs text-slate-800 dark:text-slate-100">{notif.title}</span>
+                                <span className="text-[11px] text-slate-600 dark:text-slate-300 line-clamp-2">{notif.message}</span>
+                            </div>,
+                            {
+                                duration: 6000,
+                                icon: notif.type === 'success' ? '✅' : notif.type === 'warning' ? '⚠️' : notif.type === 'error' ? '❌' : '🔔'
+                            }
+                        );
+                    }
+                });
+            } else {
+                combined.forEach(notif => {
+                    knownNotifIdsRef.current.add(notif.id);
+                });
+                isInitialLoadRef.current = false;
+            }
+
+            setNotifications(combined);
+        };
+
+        // 1. Personal notifications
+        const personalQuery = query(
             collection(db, 'users', user.uid, 'notifications'),
             orderBy('createdAt', 'desc'),
             limit(20)
         );
-        try {
-            const snapshot = await getDocs(q);
-            const notifs: AppNotification[] = [];
-            snapshot.forEach((doc) => {
-                notifs.push({ id: doc.id, ...doc.data() } as AppNotification);
+
+        unsubPersonal = onSnapshot(personalQuery, (snapshot) => {
+            personalNotifs = [];
+            snapshot.forEach((docSnap) => {
+                personalNotifs.push({ id: docSnap.id, ...docSnap.data() } as AppNotification);
             });
-            setNotifications(notifs);
-        } catch (e) {
-            console.error("Fetch notifications error: ", e);
+            updateCombinedNotifications();
+        }, (error) => {
+            console.error("Personal notifications realtime error: ", error);
+        });
+
+        // 2. Access requests (if admin or manager)
+        if (userRole === 'admin' || userRole === 'manager') {
+            const allowedKhos = departmentId ? departmentId.split(',').map(s => s.trim()).filter(Boolean) : [];
+            const accessQuery = query(
+                collection(db, 'users'),
+                where('status', 'in', ['pending', 'new'])
+            );
+
+            unsubAccessRequests = onSnapshot(accessQuery, (snapshot) => {
+                accessNotifs = [];
+                snapshot.forEach((docSnap) => {
+                    const docData = docSnap.data();
+                    if (docSnap.id === user.uid) return;
+
+                    let shouldAdd = false;
+                    if (userRole === 'admin') {
+                        shouldAdd = true;
+                    } else if (userRole === 'manager') {
+                        if ((docData.requestedRole === 'employee' || docData.role === 'pending') && allowedKhos.includes(docData.departmentId)) {
+                            shouldAdd = true;
+                        }
+                    }
+
+                    if (shouldAdd) {
+                        accessNotifs.push({
+                            id: `pending-${docSnap.id}`,
+                            title: 'Yêu cầu cấp quyền mới',
+                            message: `${docData.displayName || docData.email} đăng ký vai trò ${docData.requestedRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'} tại kho: ${docData.departmentId}`,
+                            type: 'info',
+                            read: false,
+                            createdAt: docData.requestDate || docData.createdAt || null
+                        } as AppNotification);
+                    }
+                });
+                updateCombinedNotifications();
+            }, (error) => {
+                console.error("Access requests realtime error: ", error);
+            });
         }
-    }, [user]);
-
-    useEffect(() => {
-        // Chỉ poll khi tab visible, fetch lần đầu ngay
-        let intervalId: ReturnType<typeof setInterval> | null = null;
-
-        const startPolling = () => {
-            fetchNotifications();
-            intervalId = setInterval(fetchNotifications, 10 * 60 * 1000);
-        };
-
-        const stopPolling = () => {
-            if (intervalId) { clearInterval(intervalId); intervalId = null; }
-        };
-
-        const handleVisibilityChange = () => {
-            isVisibleRef.current = document.visibilityState === 'visible';
-            if (isVisibleRef.current) {
-                startPolling();
-            } else {
-                stopPolling();
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-        if (isVisibleRef.current) startPolling();
 
         return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-            stopPolling();
+            if (unsubPersonal) unsubPersonal();
+            if (unsubAccessRequests) unsubAccessRequests();
         };
-    }, [fetchNotifications]);
+    }, [user, userRole, departmentId]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent | TouchEvent) => {
@@ -78,19 +147,17 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
         if (isOpen) {
             document.addEventListener('mousedown', handleClickOutside);
             document.addEventListener('touchstart', handleClickOutside, { passive: true });
-            // Fetch anew immediately when opened
-            fetchNotifications();
         }
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('touchstart', handleClickOutside);
         };
-    }, [isOpen, fetchNotifications]);
+    }, [isOpen]);
 
     const unreadCount = notifications.filter(n => !n.read).length;
 
     const handleMarkAsRead = (id: string) => {
-        if (user) {
+        if (user && !id.startsWith('pending-')) {
             markAsRead(user.uid, id);
         }
     };
