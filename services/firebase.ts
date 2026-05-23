@@ -9,10 +9,9 @@ import {
 } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics, isSupported } from 'firebase/analytics';
-
 const firebaseConfig = {
     apiKey: "AIzaSyAloEjmYgge4qMEcC5nSEpCKKujXNKCUn4",
-    authDomain: "dashboa-7e20b.firebaseapp.com",
+    authDomain: "auth.dashboard.pro.vn",
     projectId: "dashboa-7e20b",
     storageBucket: "dashboa-7e20b.firebasestorage.app",
     messagingSenderId: "388853115750",
