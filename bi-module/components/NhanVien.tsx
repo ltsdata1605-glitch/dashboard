@@ -40,8 +40,18 @@ const EMPTY_MAP = new Map();
 const EMPTY_ARRAY: any[] = [];
 const NOOP = () => {};
 
-export const NhanVien: React.FC = () => {
+interface NhanVienProps {
+    isActive?: boolean;
+}
+
+export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     const [activeTab, setActiveTab] = useIndexedDBState<Tab>('nhanvien-active-tab', 'revenue');
+
+    useEffect(() => {
+        if (isActive) {
+            setActiveTab('revenue');
+        }
+    }, [isActive, setActiveTab]);
     const [isSmFilterOpen, setIsSmFilterOpen] = useState(false);
     const smRef = useRef<HTMLDivElement>(null);
 
