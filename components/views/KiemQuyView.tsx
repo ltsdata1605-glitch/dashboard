@@ -359,7 +359,7 @@ export default function KiemQuyView() {
                     </span>
                     <button
                       onClick={() => deleteRecord(record.id)}
-                      className="p-1 text-slate-300 hover:text-rose-500 transition-colors opacity-0 group-hover:opacity-100"
+                      className="p-1 text-slate-300 hover:text-rose-500 transition-colors opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                     >
                       <Trash2 size={12} />
                     </button>

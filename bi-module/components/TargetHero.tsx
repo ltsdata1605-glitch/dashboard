@@ -437,7 +437,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                             <span className={`text-[12px] font-black uppercase tracking-wider ${t.label}`}>{dept.name}</span>
                                             <span className="text-[9px] opacity-70 font-bold uppercase">({dept.employeeCount} NV)</span>
                                             {isManual && (
-                                                <div className="flex gap-1 ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex gap-1 ml-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                                     <button onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3 w-3" /></button>
                                                     <button onClick={() => {
                                                         showConfirm({

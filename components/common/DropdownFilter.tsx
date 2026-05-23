@@ -96,7 +96,7 @@ const DropdownFilter: React.FC<DropdownFilterProps> = ({ type, label, options, s
                                                 />
                                                 <span className="ml-3 block text-sm font-medium text-slate-700 dark:text-slate-300 truncate">{option}</span>
                                             </div>
-                                            <Icon name="chevron-right" size={3} className="text-slate-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            <Icon name="chevron-right" size={3} className="text-slate-300 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity" />
                                         </label>
                                     ))}
                                     {filteredOptions.length > 200 && (

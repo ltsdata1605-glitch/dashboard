@@ -58,7 +58,7 @@ const Slider: React.FC<SliderProps> = ({
                         <button
                             type="button"
                             onClick={onReset}
-                            className="p-1 text-slate-400 hover:text-primary-500 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-all opacity-0 group-hover/slider:opacity-100"
+                            className="p-1 text-slate-400 hover:text-primary-500 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-all opacity-100 lg:opacity-0 lg:group-hover/slider:opacity-100"
                             title="Reset về mặc định"
                         >
                             <ResetIcon className="h-3.5 w-3.5" />

@@ -461,7 +461,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                                     <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
                                                 )}
                                             </div>
-                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
+                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
                                                 <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3} /></button>
                                                 <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3} /></button>
                                             </div>
@@ -489,7 +489,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                                     <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
                                                 )}
                                             </div>
-                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
+                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
                                                 <button onClick={(e) => { e.stopPropagation(); onEditColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-primary-600 bg-white shadow-sm border border-slate-200 hover:z-20"><Icon name="edit-3" size={3} /></button>
                                                 <button onClick={(e) => { e.stopPropagation(); onTriggerDeleteColumn(col.id); }} className="p-1.5 text-slate-400 hover:text-rose-600 bg-white shadow-sm border border-slate-200 border-l-0 hover:z-20"><Icon name="trash-2" size={3} /></button>
                                             </div>

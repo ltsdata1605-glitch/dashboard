@@ -94,7 +94,7 @@ const AvatarUploader: React.FC<{ employeeName: string; supermarketName: string }
                     <UsersIcon className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                 </div>
             )}
-            <button onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity no-print"><UploadIcon className="h-3 w-3 text-white" /></button>
+            <button onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="absolute inset-0 bg-black/40 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity no-print"><UploadIcon className="h-3 w-3 text-white" /></button>
             <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
         </div>
     );

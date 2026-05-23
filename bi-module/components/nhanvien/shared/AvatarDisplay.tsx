@@ -74,7 +74,7 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, supermarket
             )}
             <button 
                 onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} 
-                className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-800 p-1 rounded-full shadow-md opacity-0 group-hover:opacity-100 transition-all hover:scale-125 no-print border border-slate-100"
+                className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-800 p-1 rounded-full shadow-md opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:scale-125 no-print border border-slate-100"
             >
                 <UploadIcon className="h-2 w-2 text-primary-600" />
             </button>

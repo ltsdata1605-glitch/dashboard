@@ -1062,7 +1062,7 @@ export default function StickerPrinterView() {
                                     </div>
                                     <button 
                                         onClick={(e) => { e.stopPropagation(); removeManualPage(page.id); }} 
-                                        className="text-slate-400 hover:text-red-500 transition-colors shrink-0 p-1 opacity-0 group-hover:opacity-100"
+                                        className="text-slate-400 hover:text-red-500 transition-colors shrink-0 p-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                     >
                                         <X size={14} />
                                     </button>
@@ -1099,7 +1099,7 @@ export default function StickerPrinterView() {
                                                 <span>{list.pages.length} trang</span>
                                             </div>
                                         </div>
-                                        <div className="flex gap-1 shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex gap-1 shrink-0 ml-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                             <button 
                                                 onClick={() => loadSavedList(list)}
                                                 className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 transition-colors text-[10px] font-bold"
@@ -1363,7 +1363,7 @@ export default function StickerPrinterView() {
                                                     <span>{entry.stickerType === 'gia_soc' ? 'Giá Sốc' : 'Giờ Vàng'}</span>
                                                 </div>
                                             </div>
-                                            <div className="flex gap-1 shrink-0 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex gap-1 shrink-0 ml-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                                 <button 
                                                     onClick={() => restoreHistory(entry)}
                                                     className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"

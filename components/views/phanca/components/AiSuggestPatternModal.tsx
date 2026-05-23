@@ -333,7 +333,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                                                  {i > 0 && (
                                                     <button 
                                                         onClick={() => moveSuggestionItem(i, 'left')}
-                                                        className="opacity-0 group-hover:opacity-100 absolute -left-2 z-10 text-gray-400 hover:text-blue-600"
+                                                        className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 absolute -left-2 z-10 text-gray-400 hover:text-blue-600"
                                                         title="Di chuyển sang trái"
                                                     >
                                                         &#9664;
@@ -345,7 +345,7 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                                                  {i < suggestion.length - 1 && (
                                                     <button 
                                                         onClick={() => moveSuggestionItem(i, 'right')}
-                                                        className="opacity-0 group-hover:opacity-100 absolute -right-2 z-10 text-gray-400 hover:text-blue-600"
+                                                        className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 absolute -right-2 z-10 text-gray-400 hover:text-blue-600"
                                                         title="Di chuyển sang phải"
                                                     >
                                                         &#9654;

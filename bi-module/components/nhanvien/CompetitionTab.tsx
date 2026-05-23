@@ -389,7 +389,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                     {versions.filter(v => v && typeof v === 'object' && v.name).map(version => (
                         <div key={version.name} role="button" tabIndex={0} onClick={() => onVersionTabClick(version)} className={`group relative flex items-center gap-1 pl-2.5 pr-6 py-1.5 text-[11px] font-bold cursor-pointer transition-all border ${activeVersionName === version.name ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}>
                             <span>{version.name}</span>
-                            <button onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }} className="absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-all"><XIcon className="h-3 w-3" /></button>
+                            <button onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }} className="absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"><XIcon className="h-3 w-3" /></button>
                         </div>
                     ))}
                     {activeVersionName === 'new' ? (

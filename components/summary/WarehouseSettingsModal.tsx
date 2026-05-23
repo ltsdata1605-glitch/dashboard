@@ -310,7 +310,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                         Hiển thị {visibleCount}/{cols.length} cột
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-0 md:translate-x-2 group-hover:translate-x-0 pointer-events-auto">
+                                <div className="flex items-center gap-1.5 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all duration-300 transform translate-x-0 lg:translate-x-2 lg:group-hover:translate-x-0 pointer-events-auto">
                                     <div className="text-slate-400 p-1.5 cursor-grab hover:text-slate-600 dark:hover:text-slate-300" title="Giữ và kéo để di chuyển nhóm"><Icon name="grip-horizontal" size={4} /></div>
                                     <div className="w-px h-4 bg-slate-300 dark:bg-slate-600 mx-1"></div>
                                     <button onClick={() => handleToggleGroupVisibility(mainHeader, true)} title="Hiện tất cả trong nhóm" className="p-1.5 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-lg transition-colors"><Icon name="eye" size={4}/></button>
@@ -338,7 +338,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                                         <div className={`w-1.5 h-1.5 rounded-full transition-colors ${col.isVisible ? itemStyle.dot : 'bg-slate-300 dark:bg-slate-600'}`}></div>
                                         <span className="truncate max-w-[80px] sm:max-w-[130px]">{col.subHeader}</span>
                                         
-                                        <div className="flex items-center ml-0.5 border-l border-black/10 dark:border-white/10 opacity-100 md:opacity-0 group-hover/item:opacity-100 transition-opacity pl-1">
+                                        <div className="flex items-center ml-0.5 border-l border-black/10 dark:border-white/10 opacity-100 lg:opacity-0 lg:group-hover/item:opacity-100 transition-opacity pl-1">
                                             <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleEdit(col); }} className="p-1.5 opacity-70 hover:opacity-100 transition-opacity" title="Chỉnh sửa"><Icon name="edit-3" size={3.5} /></button>
                                             {col.isCustom ? (
                                                 <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(col.id); }} className="p-1.5 text-rose-500 hover:text-rose-600 transition-colors" title="Xóa cột"><Icon name="trash-2" size={3.5} /></button>

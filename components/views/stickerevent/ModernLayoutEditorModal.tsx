@@ -72,7 +72,7 @@ const ModernLayoutEditorModal: React.FC<ModernLayoutEditorModalProps> = ({ isOpe
                 className="group border border-dashed border-transparent hover:border-indigo-500 hover:bg-indigo-50/30 transition-colors cursor-move"
                 style={{ ...style, zIndex: 10 }}
             >
-                <div className="absolute -top-6 left-0 bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                <div className="absolute -top-6 left-0 bg-indigo-500 text-white text-[10px] px-2 py-0.5 rounded opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity whitespace-nowrap">
                     {label}
                 </div>
                 {content}

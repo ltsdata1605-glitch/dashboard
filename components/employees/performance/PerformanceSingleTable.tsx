@@ -294,7 +294,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                 {h.label}
                                                 {isTarget && <Icon name="edit-3" size={2.5} className="opacity-60 group-hover/th:opacity-100 ml-0.5 text-indigo-500 hide-on-export" />}
                                                 {canCopyKeys.has(h.key) && (
-                                                    <button onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-0 group-hover/th:opacity-100 ml-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-opacity shrink-0 hide-on-export">
+                                                    <button onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 ml-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-opacity shrink-0 hide-on-export">
                                                         <Icon name="copy" size={3} />
                                                     </button>
                                                 )}

@@ -384,7 +384,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                             <div className="flex items-center justify-center gap-1">
                                                 {dynamicHeaderGroups[f.key]?.label || f.label}
                                             </div>
-                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-0 group-hover/th:opacity-100 transition-opacity hide-on-export">
+                                            <div className="absolute top-0 right-0 z-10 flex items-center opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 transition-opacity hide-on-export">
                                                 {onEditCustomTab && <button onClick={(e) => { e.stopPropagation(); onEditCustomTab(f.key, viewMode); }} className="p-1.5 text-slate-400/70 hover:text-indigo-600 dark:hover:text-indigo-400 hover:scale-110 transition-all hover:z-20" title="Chỉnh sửa"><Icon name="edit-3" size={3.5}/></button>}
                                                 {f.isCustom && onDeleteCustomTab && <button onClick={(e) => { e.stopPropagation(); onDeleteCustomTab(f.key, viewMode); }} className="p-1.5 text-slate-400/70 hover:text-rose-600 dark:hover:text-rose-400 hover:scale-110 transition-all hover:z-20" title="Xóa"><Icon name="trash-2" size={3.5}/></button>}
                                             </div>
