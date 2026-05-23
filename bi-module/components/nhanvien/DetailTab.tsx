@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { parseDetailDataV2, DetailNode } from '../../utils/detailDataParser';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
@@ -24,6 +24,79 @@ const LEVEL_STYLES: Record<string, { indent: number; bg: string; text: string; f
     nnh: { indent: 20, bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-700 dark:text-amber-300', font: 'font-semibold', size: 'text-[12px]' },
     nhomHang: { indent: 40, bg: '', text: 'text-slate-600 dark:text-slate-400', font: 'font-medium', size: 'text-[12px]' },
     hang: { indent: 60, bg: '', text: 'text-slate-500 dark:text-slate-500', font: 'font-normal', size: 'text-[11px]' },
+};
+
+const SearchableSelect: React.FC<{
+    value: string;
+    onChange: (val: string) => void;
+    options: string[];
+    placeholder: string;
+    emptyText: string;
+    widthClass?: string;
+}> = ({ value, onChange, options, placeholder, emptyText, widthClass = 'w-32' }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setIsOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const filtered = useMemo(() => {
+        return options.filter(opt => opt.toLowerCase().includes(search.toLowerCase()));
+    }, [options, search]);
+
+    const displayValue = value === 'all' ? placeholder : value;
+
+    return (
+        <div className={`relative ${widthClass} z-40`} ref={ref}>
+            <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between w-full px-2 py-1.5 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all rounded shadow-sm text-left"
+            >
+                <span className="truncate">{displayValue}</span>
+                <ChevronDownIcon className="h-3.5 w-3.5 ml-1 text-slate-400 shrink-0" />
+            </button>
+            {isOpen && (
+                <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl z-50 overflow-hidden flex flex-col max-h-60">
+                    <div className="p-1.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 sticky top-0">
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                            placeholder="Tìm kiếm..."
+                            className="w-full px-2 py-1 text-[11px] border border-slate-300 dark:border-slate-600 rounded focus:ring-1 focus:ring-sky-300 bg-white dark:bg-slate-700 dark:text-slate-100 outline-none"
+                            autoFocus
+                        />
+                    </div>
+                    <div className="overflow-y-auto flex-1 text-[11px]">
+                        <button
+                            type="button"
+                            onClick={() => { onChange('all'); setIsOpen(false); setSearch(''); }}
+                            className={`w-full text-left px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${value === 'all' ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+                        >
+                            {placeholder}
+                        </button>
+                        {filtered.length > 0 ? filtered.map(opt => (
+                            <button
+                                type="button"
+                                key={opt}
+                                onClick={() => { onChange(opt); setIsOpen(false); setSearch(''); }}
+                                className={`w-full text-left px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${value === opt ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+                            >
+                                {opt}
+                            </button>
+                        )) : <div className="p-2 text-center text-slate-500">{emptyText}</div>}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 };
 
 const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeDepartments }) => {
@@ -56,6 +129,25 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         }
         return departments;
     }, [fullTree, activeDepartments]);
+
+    // Auto-expand departments by default
+    useEffect(() => {
+        if (tree.length > 0) {
+            const initialExpanded = new Set<string>();
+            tree.forEach((node, idx) => {
+                if (node.level === 'department') {
+                    initialExpanded.add(`root-${idx}-${node.name}`);
+                }
+            });
+            if (initialExpanded.size > 0) {
+                setExpandedKeys(prev => {
+                    const next = new Set(prev);
+                    initialExpanded.forEach(k => next.add(k));
+                    return next;
+                });
+            }
+        }
+    }, [tree]);
 
     // Collect all expandable keys
     const allKeys = useMemo(() => {
@@ -288,30 +380,30 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         />
                     </div>
                     {/* Filters */}
-                    <select
+                    <SearchableSelect
                         value={filterEmployee}
-                        onChange={e => setFilterEmployee(e.target.value)}
-                        className="py-1.5 px-2 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700 dark:text-slate-300 max-w-[130px]"
-                    >
-                        <option value="all">Tất cả Nhân viên</option>
-                        {filterOptions.employees.map(e => <option key={e} value={e}>{e}</option>)}
-                    </select>
-                    <select
+                        onChange={setFilterEmployee}
+                        options={filterOptions.employees}
+                        placeholder="Tất cả Nhân viên"
+                        emptyText="Không tìm thấy"
+                        widthClass="w-36"
+                    />
+                    <SearchableSelect
                         value={filterNnh}
-                        onChange={e => setFilterNnh(e.target.value)}
-                        className="py-1.5 px-2 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700 dark:text-slate-300 max-w-[130px]"
-                    >
-                        <option value="all">Tất cả Ngành hàng</option>
-                        {filterOptions.nnhs.map(e => <option key={e} value={e}>{e}</option>)}
-                    </select>
-                    <select
+                        onChange={setFilterNnh}
+                        options={filterOptions.nnhs}
+                        placeholder="Tất cả Ngành hàng"
+                        emptyText="Không tìm thấy"
+                        widthClass="w-36"
+                    />
+                    <SearchableSelect
                         value={filterNhomHang}
-                        onChange={e => setFilterNhomHang(e.target.value)}
-                        className="py-1.5 px-2 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-sky-300 text-slate-700 dark:text-slate-300 max-w-[130px]"
-                    >
-                        <option value="all">Tất cả Nhóm hàng</option>
-                        {filterOptions.nhomHangs.map(e => <option key={e} value={e}>{e}</option>)}
-                    </select>
+                        onChange={setFilterNhomHang}
+                        options={filterOptions.nhomHangs}
+                        placeholder="Tất cả Nhóm hàng"
+                        emptyText="Không tìm thấy"
+                        widthClass="w-36"
+                    />
                     {/* Expand/Collapse all */}
                     <button
                         onClick={handleExpandAll}

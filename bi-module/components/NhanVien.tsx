@@ -382,7 +382,7 @@ export const NhanVien: React.FC = () => {
 
 
             {/* 3. Tab Switcher — minimal bottom-border style */}
-            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60 overflow-hidden">
+            <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700/60">
                 <div className="border-b border-slate-200 dark:border-slate-700 px-4 sm:px-5 pt-3">
                     <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tiêu chí đánh giá hiệu quả</p>
                     <nav className="flex items-center gap-0 overflow-x-auto hide-scrollbar w-full sm:w-auto -mb-px">
@@ -397,7 +397,7 @@ export const NhanVien: React.FC = () => {
                 
                 {/* Embedded Module Content */}
                 <div className="p-0">
-                    <div className="bg-white dark:bg-slate-800 overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800">
                         <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
                             <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={effectiveActiveDepartments} performanceChanges={EMPTY_MAP} onViewTrend={NOOP} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} snapshotId={null} setSnapshotId={NOOP} snapshots={EMPTY_ARRAY} handleSaveSnapshot={NOOP} handleDeleteSnapshot={NOOP} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} />
                         </div>
