@@ -14,7 +14,18 @@ const LoginView: React.FC = () => {
             await loginWithGoogle();
         } catch (err: any) {
             console.error(err);
-            setError(err.message || 'Có lỗi xảy ra khi đăng nhập');
+            let errMsg = err.message || 'Có lỗi xảy ra khi đăng nhập';
+            
+            if (err.code === 'auth/unauthorized-domain') {
+                const currentDomain = window.location.hostname;
+                errMsg = `Tên miền '${currentDomain}' chưa được cấp phép (unauthorized-domain). \n\nCách khắc phục: Anh/Chị vui lòng truy cập Firebase Console -> Authentication -> Settings -> Authorized Domains và thêm tên miền "${currentDomain}" vào danh sách.`;
+            } else if (err.code === 'auth/popup-blocked') {
+                errMsg = 'Cửa sổ đăng nhập Google bị trình duyệt chặn. Vui lòng kiểm tra lại thiết lập chặn cửa sổ bật lên (popup) trên trình duyệt của Anh/Chị.';
+            } else if (err.code === 'auth/operation-not-supported-in-this-environment') {
+                errMsg = 'Môi trường này không hỗ trợ cửa sổ đăng nhập. Hệ thống đang tự chuyển hướng sang phương thức đăng nhập khác, Anh/Chị vui lòng click lại nút Đăng nhập.';
+            }
+            
+            setError(errMsg);
         } finally {
             setIsLoggingIn(false);
         }
@@ -41,9 +52,9 @@ const LoginView: React.FC = () => {
                 <p className="text-center text-slate-500 dark:text-slate-400 mb-8 text-sm">Đăng nhập để sử dụng nền tảng đồng bộ đám mây và kết nối dữ liệu Google Drive an toàn tuyệt đối.</p>
                 
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-medium border border-red-100 dark:border-red-800">
+                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-medium border border-red-100 dark:border-red-800 whitespace-pre-line">
                         {error}
-                        <div className="mt-2 text-xs opacity-80">(Anh/Chị cần chắc chắn đã cấu hình mã Firebase đúng trong thư mục services/firebase.ts nhé!)</div>
+                        <div className="mt-2 text-xs opacity-80 font-normal">(Anh/Chị cần chắc chắn đã cấu hình mã Firebase đúng trong thư mục services/firebase.ts nhé!)</div>
                     </div>
                 )}
                 

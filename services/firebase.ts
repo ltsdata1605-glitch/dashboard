@@ -1,5 +1,12 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, signOut, signInWithPopup } from 'firebase/auth';
+import { 
+    getAuth, 
+    GoogleAuthProvider, 
+    signOut, 
+    signInWithPopup, 
+    signInWithRedirect, 
+    getRedirectResult 
+} from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getAnalytics, isSupported } from 'firebase/analytics';
 
@@ -31,17 +38,39 @@ googleProvider.setCustomParameters({
     prompt: 'select_account'
 });
 
+// Helper to check if running on mobile browser or in-app webview
+const checkIfMobile = (): boolean => {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|FBAN|FBAV|Zalo/i.test(ua);
+};
+
 export const loginWithGoogle = async () => {
-    try {
-        const result = await signInWithPopup(auth, googleProvider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        if (credential?.accessToken) {
-            sessionStorage.setItem('googleOAuthToken', credential.accessToken);
+    if (checkIfMobile()) {
+        try {
+            await signInWithRedirect(auth, googleProvider);
+        } catch (error) {
+            console.error("Lỗi đăng nhập Google Redirect:", error);
+            throw error;
         }
-        return result.user;
-    } catch (error) {
-        console.error("Lỗi đăng nhập Google:", error);
-        throw error;
+    } else {
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            if (credential?.accessToken) {
+                sessionStorage.setItem('googleOAuthToken', credential.accessToken);
+            }
+            return result.user;
+        } catch (error: any) {
+            // Fallback to redirect if popup is blocked or unsupported
+            if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
+                console.warn("Popup blocked or not supported, falling back to redirect...");
+                await signInWithRedirect(auth, googleProvider);
+            } else {
+                console.error("Lỗi đăng nhập Google Popup:", error);
+                throw error;
+            }
+        }
     }
 };
 
@@ -50,22 +79,57 @@ export const loginWithGoogle = async () => {
  * Use this when the existing token is missing required scopes.
  */
 export const loginWithGoogleForceConsent = async () => {
-    try {
-        const consentProvider = new GoogleAuthProvider();
-        consentProvider.addScope('https://www.googleapis.com/auth/drive.file');
-        consentProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
-        consentProvider.setCustomParameters({ prompt: 'consent' });
+    const consentProvider = new GoogleAuthProvider();
+    consentProvider.addScope('https://www.googleapis.com/auth/drive.file');
+    consentProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
+    consentProvider.setCustomParameters({ prompt: 'consent' });
 
-        const result = await signInWithPopup(auth, consentProvider);
-        const credential = GoogleAuthProvider.credentialFromResult(result);
-        if (credential?.accessToken) {
-            sessionStorage.setItem('googleOAuthToken', credential.accessToken);
+    if (checkIfMobile()) {
+        try {
+            await signInWithRedirect(auth, consentProvider);
+        } catch (error) {
+            console.error("Lỗi đăng nhập Google Redirect (consent):", error);
+            throw error;
         }
-        return result.user;
+    } else {
+        try {
+            const result = await signInWithPopup(auth, consentProvider);
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            if (credential?.accessToken) {
+                sessionStorage.setItem('googleOAuthToken', credential.accessToken);
+            }
+            return result.user;
+        } catch (error: any) {
+            if (error.code === 'auth/popup-blocked' || error.code === 'auth/operation-not-supported-in-this-environment') {
+                console.warn("Popup blocked or not supported (consent), falling back to redirect...");
+                await signInWithRedirect(auth, consentProvider);
+            } else {
+                console.error("Lỗi đăng nhập Google (consent):", error);
+                throw error;
+            }
+        }
+    }
+};
+
+/**
+ * Handle redirect result after returning from Google OAuth redirect.
+ * Resolves to the logged in user or null.
+ */
+export const handleRedirectResult = async () => {
+    try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+            const credential = GoogleAuthProvider.credentialFromResult(result);
+            if (credential?.accessToken) {
+                sessionStorage.setItem('googleOAuthToken', credential.accessToken);
+            }
+            return result.user;
+        }
     } catch (error) {
-        console.error("Lỗi đăng nhập Google (consent):", error);
+        console.error("Lỗi xử lý kết quả Google Redirect:", error);
         throw error;
     }
+    return null;
 };
 
 export const logoutUser = async () => {

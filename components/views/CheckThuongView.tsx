@@ -162,7 +162,7 @@ export const CheckThuongView: React.FC = () => {
             )}
             <iframe
                 ref={iframeRef}
-                src={`${import.meta.env.BASE_URL || '/'}check-thuong.html`}
+                src={`${(import.meta as any).env?.BASE_URL || '/'}check-thuong.html`}
                 title="Bảng Tra Cứu Thưởng Thi Đua"
                 className="w-full h-full border-none flex-grow"
                 style={{ width: '100%', height: '100%', border: 'none' }}

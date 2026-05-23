@@ -24,25 +24,76 @@ export const SUMMARY_TABLE_CONFIG_KEY = 'summaryTableConfig';
 let dbPromise: Promise<IDBDatabase> | null = null;
 
 function getDb(): Promise<IDBDatabase> {
+    if (typeof window === 'undefined' || !window.indexedDB) {
+        return Promise.reject(new Error('IndexedDB is not supported/enabled in this environment.'));
+    }
     if (dbPromise) return dbPromise;
 
     dbPromise = new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = (event) => {
-            const db = (event.target as IDBOpenDBRequest).result;
-            if (!db.objectStoreNames.contains(APP_STORE)) db.createObjectStore(APP_STORE);
-            if (!db.objectStoreNames.contains(SETTINGS_STORE)) db.createObjectStore(SETTINGS_STORE);
-        };
-        request.onsuccess = () => {
-            const db = request.result;
-            // Reset cache khi kết nối bị đóng (HMR, tab management, etc.)
-            db.onclose = () => { dbPromise = null; };
-            resolve(db);
-        };
-        request.onerror = () => {
-            dbPromise = null;
-            reject(request.error);
-        };
+        let active = true;
+        
+        // Failsafe timeout: if IndexedDB open takes > 1.5 seconds, reject it to let app fallback
+        const timeoutId = setTimeout(() => {
+            if (active) {
+                active = false;
+                console.warn('[IDB] Connection timeout. Falling back to memory storage.');
+                dbPromise = null; // Allow retrying later
+                reject(new Error('IndexedDB connection timeout'));
+            }
+        }, 1500);
+
+        try {
+            const request = indexedDB.open(DB_NAME, DB_VERSION);
+            request.onupgradeneeded = (event) => {
+                try {
+                    const db = (event.target as IDBOpenDBRequest).result;
+                    if (!db.objectStoreNames.contains(APP_STORE)) db.createObjectStore(APP_STORE);
+                    if (!db.objectStoreNames.contains(SETTINGS_STORE)) db.createObjectStore(SETTINGS_STORE);
+                } catch (e) {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(e);
+                    }
+                }
+            };
+            request.onsuccess = () => {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    const db = request.result;
+                    db.onclose = () => { dbPromise = null; };
+                    resolve(db);
+                } else {
+                    // Timeout already triggered, close this late connection
+                    try { request.result.close(); } catch (e) {}
+                }
+            };
+            request.onerror = () => {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    dbPromise = null;
+                    reject(request.error || new Error('Failed to open database'));
+                }
+            };
+            request.onblocked = () => {
+                console.warn('[IDB] Database open blocked.');
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    dbPromise = null;
+                    reject(new Error('IndexedDB blocked'));
+                }
+            };
+        } catch (error) {
+            if (active) {
+                active = false;
+                clearTimeout(timeoutId);
+                dbPromise = null;
+                reject(error);
+            }
+        }
     });
     return dbPromise;
 }
@@ -67,7 +118,8 @@ export async function saveSetting(key: string, value: any): Promise<void> {
                     }
                     resolve();
                 };
-                tx.onerror = () => reject(tx.error);
+                tx.onerror = () => reject(tx.error || new Error('Transaction failed'));
+                tx.onabort = () => reject(new Error('Transaction aborted'));
             } catch (error) {
                 reject(error);
             }
@@ -78,115 +130,157 @@ export async function saveSetting(key: string, value: any): Promise<void> {
         const db = await getDb();
         await tryTransaction(db);
     } catch (error) {
-        // Retry once with a fresh connection (handles stale/closing connections)
         console.warn(`[IDB] Retry save '${key}' after error:`, (error as Error)?.message);
         dbPromise = null;
-        const db = await getDb();
-        await tryTransaction(db);
+        try {
+            const db = await getDb();
+            await tryTransaction(db);
+        } catch (retryError) {
+            console.error(`[IDB] Permanent failure saving key '${key}':`, retryError);
+        }
     }
 }
 
 export async function getAllSettings(): Promise<Record<string, any>> {
-    const db = await getDb();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(SETTINGS_STORE, 'readonly');
-        const store = tx.objectStore(SETTINGS_STORE);
-        const request = store.getAll();
-        const keysRequest = store.getAllKeys();
-        
-        tx.oncomplete = () => {
-            const keys = keysRequest.result;
-            const values = request.result;
-            const settings: Record<string, any> = {};
-            for (let i = 0; i < keys.length; i++) {
-                settings[keys[i] as string] = values[i];
+    try {
+        const db = await getDb();
+        return new Promise((resolve, reject) => {
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readonly');
+                const store = tx.objectStore(SETTINGS_STORE);
+                const request = store.getAll();
+                const keysRequest = store.getAllKeys();
+                
+                tx.oncomplete = () => {
+                    const keys = keysRequest.result;
+                    const values = request.result;
+                    const settings: Record<string, any> = {};
+                    for (let i = 0; i < keys.length; i++) {
+                        settings[keys[i] as string] = values[i];
+                    }
+                    resolve(settings);
+                };
+                tx.onerror = () => reject(tx.error || new Error('Read transaction failed'));
+            } catch (err) {
+                reject(err);
             }
-            resolve(settings);
-        };
-        tx.onerror = () => reject(tx.error);
-    });
+        });
+    } catch (e) {
+        console.error('[IDB] getAllSettings failed:', e);
+        return {};
+    }
 }
 
 export async function clearAllSettings(): Promise<void> {
-    const db = await getDb();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(SETTINGS_STORE, 'readwrite');
-        const store = tx.objectStore(SETTINGS_STORE);
-        store.clear();
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-    });
+    try {
+        const db = await getDb();
+        return new Promise((resolve, reject) => {
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+                const store = tx.objectStore(SETTINGS_STORE);
+                store.clear();
+                tx.oncomplete = () => resolve();
+                tx.onerror = () => reject(tx.error || new Error('Clear transaction failed'));
+            } catch (err) {
+                reject(err);
+            }
+        });
+    } catch (e) {
+        console.error('[IDB] clearAllSettings failed:', e);
+    }
 }
 
 export async function importAllSettings(settings: Record<string, any>): Promise<void> {
-    const db = await getDb();
-    return new Promise((resolve, reject) => {
-        try {
-            const tx = db.transaction(SETTINGS_STORE, 'readwrite');
-            const store = tx.objectStore(SETTINGS_STORE);
-            // Clear first
-            store.clear();
-            for (const [key, value] of Object.entries(settings)) {
-                store.put(value, key);
-            }
-            tx.oncomplete = () => {
-                if (typeof window !== 'undefined') {
-                    for (const key of Object.keys(settings)) {
-                        window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
-                        if (key.startsWith('bi_')) {
-                            const originalKey = key.slice(3);
-                            window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+    try {
+        const db = await getDb();
+        return new Promise((resolve, reject) => {
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+                const store = tx.objectStore(SETTINGS_STORE);
+                store.clear();
+                for (const [key, value] of Object.entries(settings)) {
+                    store.put(value, key);
+                }
+                tx.oncomplete = () => {
+                    if (typeof window !== 'undefined') {
+                        for (const key of Object.keys(settings)) {
+                            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                            if (key.startsWith('bi_')) {
+                                const originalKey = key.slice(3);
+                                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                            }
                         }
                     }
-                }
-                resolve();
-            };
-            tx.onerror = () => reject(tx.error);
-        } catch (error) {
-            console.error('IndexedDB Error in importAllSettings:', error);
-            reject(error);
-        }
-    });
+                    resolve();
+                };
+                tx.onerror = () => reject(tx.error || new Error('Import transaction failed'));
+            } catch (error) {
+                reject(error);
+            }
+        });
+    } catch (e) {
+        console.error('[IDB] importAllSettings failed:', e);
+    }
 }
 
 export async function mergeSettings(settings: Record<string, any>): Promise<void> {
-    const db = await getDb();
-    return new Promise((resolve, reject) => {
-        try {
-            const tx = db.transaction(SETTINGS_STORE, 'readwrite');
-            const store = tx.objectStore(SETTINGS_STORE);
-            for (const [key, value] of Object.entries(settings)) {
-                store.put(value, key);
-            }
-            tx.oncomplete = () => {
-                if (typeof window !== 'undefined') {
-                    for (const key of Object.keys(settings)) {
-                        window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
-                        if (key.startsWith('bi_')) {
-                            const originalKey = key.slice(3);
-                            window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+    try {
+        const db = await getDb();
+        return new Promise((resolve, reject) => {
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+                const store = tx.objectStore(SETTINGS_STORE);
+                for (const [key, value] of Object.entries(settings)) {
+                    store.put(value, key);
+                }
+                tx.oncomplete = () => {
+                    if (typeof window !== 'undefined') {
+                        for (const key of Object.keys(settings)) {
+                            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                            if (key.startsWith('bi_')) {
+                                const originalKey = key.slice(3);
+                                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                            }
                         }
                     }
-                }
-                resolve();
-            };
-            tx.onerror = () => reject(tx.error);
-        } catch (error) {
-            console.error('IndexedDB Error in mergeSettings:', error);
-            reject(error);
-        }
-    });
+                    resolve();
+                };
+                tx.onerror = () => reject(tx.error || new Error('Merge transaction failed'));
+            } catch (error) {
+                reject(error);
+            }
+        });
+    } catch (e) {
+        console.error('[IDB] mergeSettings failed:', e);
+    }
 }
 
 export async function getSetting<T>(key: string): Promise<T | null> {
-    const db = await getDb();
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(SETTINGS_STORE, 'readonly');
-        const store = tx.objectStore(SETTINGS_STORE);
-        const request = store.get(key);
-        request.onsuccess = () => resolve(request.result === undefined ? null : request.result);
-        request.onerror = () => reject(request.error);
-    });
+    try {
+        const db = await getDb();
+        return new Promise((resolve) => {
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readonly');
+                const store = tx.objectStore(SETTINGS_STORE);
+                const request = store.get(key);
+                request.onsuccess = () => resolve(request.result === undefined ? null : request.result);
+                request.onerror = () => {
+                    console.error(`[IDB] Error reading key "${key}":`, request.error);
+                    resolve(null);
+                };
+                tx.onerror = () => {
+                    console.error(`[IDB] Transaction error reading key "${key}":`, tx.error);
+                    resolve(null);
+                };
+            } catch (err) {
+                console.error(`[IDB] Synchronous error reading key "${key}":`, err);
+                resolve(null);
+            }
+        });
+    } catch (error) {
+        console.error(`[IDB] Failed to get database for key "${key}":`, error);
+        return null;
+    }
 }
 
 // Alias for compatibility
@@ -202,7 +296,7 @@ export async function saveSalesData(data: DataRow[], filename: string, fileLastM
                 const tx = db.transaction(APP_STORE, 'readwrite');
                 tx.objectStore(APP_STORE).put(stored, 'salesData');
                 tx.oncomplete = () => resolve();
-                tx.onerror = () => reject(tx.error);
+                tx.onerror = () => reject(tx.error || new Error('Save sales data transaction failed'));
             } catch (error) {
                 reject(error);
             }
@@ -215,24 +309,51 @@ export async function saveSalesData(data: DataRow[], filename: string, fileLastM
     } catch (error) {
         console.warn('[IDB] Retry saveSalesData after error:', (error as Error)?.message);
         dbPromise = null;
-        const db = await getDb();
-        await tryTransaction(db);
+        try {
+            const db = await getDb();
+            await tryTransaction(db);
+        } catch (retryError) {
+            console.error('[IDB] Permanent failure saving sales data:', retryError);
+        }
     }
 }
 
 export async function getSalesData(): Promise<StoredSalesData | null> {
-    const db = await getDb();
-    return new Promise((resolve) => {
-        const tx = db.transaction(APP_STORE, 'readonly');
-        const request = tx.objectStore(APP_STORE).get('salesData');
-        request.onsuccess = () => resolve(request.result || null);
-    });
+    try {
+        const db = await getDb();
+        return new Promise((resolve) => {
+            try {
+                const tx = db.transaction(APP_STORE, 'readonly');
+                const store = tx.objectStore(APP_STORE);
+                const request = store.get('salesData');
+                request.onsuccess = () => resolve(request.result || null);
+                request.onerror = () => {
+                    console.error('[IDB] getSalesData request error:', request.error);
+                    resolve(null);
+                };
+                tx.onerror = () => {
+                    console.error('[IDB] getSalesData transaction error:', tx.error);
+                    resolve(null);
+                };
+            } catch (err) {
+                console.error('[IDB] getSalesData synchronous error:', err);
+                resolve(null);
+            }
+        });
+    } catch (error) {
+        console.error('[IDB] getSalesData failed to get DB:', error);
+        return null;
+    }
 }
 
 export async function clearSalesData(): Promise<void> {
-    const db = await getDb();
-    const tx = db.transaction(APP_STORE, 'readwrite');
-    tx.objectStore(APP_STORE).delete('salesData');
+    try {
+        const db = await getDb();
+        const tx = db.transaction(APP_STORE, 'readwrite');
+        tx.objectStore(APP_STORE).delete('salesData');
+    } catch (e) {
+        console.error('[IDB] clearSalesData failed:', e);
+    }
 }
 
 // --- Department Map ---

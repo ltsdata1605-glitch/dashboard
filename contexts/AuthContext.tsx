@@ -53,6 +53,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
         window.addEventListener('google-auth-expired', handleAuthExpired);
 
+        // Check redirect result on load (especially on mobile)
+        import('../services/firebase').then(async ({ handleRedirectResult }) => {
+            try {
+                const redirectUser = await handleRedirectResult();
+                if (redirectUser) {
+                    console.log("Đăng nhập thành công từ redirect:", redirectUser.email);
+                }
+            } catch (err: any) {
+                console.error("Lỗi redirect login:", err);
+                // Exclude cancelled/blocked errors if they are not harmful
+                if (err?.code !== 'auth/redirect-cancelled') {
+                    import('react-hot-toast').then(m => m.toast.error("Đăng nhập Google thất bại: " + (err?.message || String(err))));
+                }
+            }
+        }).catch(console.error);
+
         // Failsafe timeout: If Firebase Auth takes more than 5 seconds to respond 
         // (usually due to IDB blockage on iOS/Safari in-app browsers), stop loading.
         const fallbackTimer = setTimeout(() => {
