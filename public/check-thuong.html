@@ -383,6 +383,55 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Simple offline-friendly fallback for idbKeyval if the CDN fails to load
+            if (typeof idbKeyval === 'undefined') {
+                const DB_NAME = 'keyval-store';
+                const STORE_NAME = 'keyval';
+                
+                const getIDB = () => {
+                    return new Promise((resolve, reject) => {
+                        const request = indexedDB.open(DB_NAME, 1);
+                        request.onupgradeneeded = () => {
+                            request.result.createObjectStore(STORE_NAME);
+                        };
+                        request.onsuccess = () => resolve(request.result);
+                        request.onerror = () => reject(request.error);
+                    });
+                };
+                
+                window.idbKeyval = {
+                    get: async (key) => {
+                        try {
+                            const db = await getIDB();
+                            return new Promise((resolve, reject) => {
+                                const transaction = db.transaction(STORE_NAME, 'readonly');
+                                const store = transaction.objectStore(STORE_NAME);
+                                const req = store.get(key);
+                                req.onsuccess = () => resolve(req.result);
+                                req.onerror = () => reject(req.error);
+                            });
+                        } catch (e) {
+                            console.warn('[IDB Fallback] get error:', e);
+                            return null;
+                        }
+                    },
+                    set: async (key, val) => {
+                        try {
+                            const db = await getIDB();
+                            return new Promise((resolve, reject) => {
+                                const transaction = db.transaction(STORE_NAME, 'readwrite');
+                                const store = transaction.objectStore(STORE_NAME);
+                                const req = store.put(val, key);
+                                req.onsuccess = () => resolve();
+                                req.onerror = () => reject(req.error);
+                            });
+                        } catch (e) {
+                            console.warn('[IDB Fallback] set error:', e);
+                        }
+                    }
+                };
+            }
+
             // All element selectors
             const fileInput = document.getElementById('fileInput'), fileStatus = document.getElementById('fileStatus'), landingPage = document.getElementById('landingPage'), mainContent = document.getElementById('mainContent'), changeFileButton = document.getElementById('changeFileButton'), storeCodeInput1 = document.getElementById('storeCodeInput1'), storeCodeInput2 = document.getElementById('storeCodeInput2'), searchCompareButton = document.getElementById('searchCompareButton'), searchSection = document.getElementById('searchSection'), summaryCard = document.getElementById('summaryCard'), top10InfoCard = document.getElementById('top10InfoCard'), analysisSection = document.getElementById('analysisSection'), detailsGrid = document.getElementById('detailsGrid'), messageEl = document.getElementById('message'), groupSummaryContainer = document.getElementById('groupSummaryContainer'), rankingModal = document.getElementById('rankingModal'), modalTitle = document.getElementById('modalTitle'), modalBody = document.getElementById('modalBody'), closeModalButton = document.getElementById('closeModalButton'), versionInfo = document.getElementById('versionInfo'), versionModal = document.getElementById('versionModal'), versionModalBody = document.getElementById('versionModalBody'), closeVersionModalButton = document.getElementById('closeVersionModalButton'), loadingOverlay = document.getElementById('loadingOverlay'), loadingText = document.getElementById('loadingText'), comparisonContent = document.getElementById('comparisonContent');
             
@@ -419,7 +468,15 @@
                         fileUploadTime = savedData.uploadTime;
                         fileStatus.textContent = `Đã tải: ${savedData.fileName || 'file_cu.xlsx'} (từ bộ nhớ tạm)`;
                         preProcessData(competitionData);
-                        renderDashboard();
+                        
+                        // Show the dashboard UI
+                        searchSection.classList.remove('hidden');
+                        landingPage.classList.add('hidden');
+                        changeFileButton.classList.remove('hidden');
+                        
+                        if (storeCodeInput1.value) {
+                            handleSearchOrCompare();
+                        }
                         
                         // Need to notify parent that file is loaded so it shows the header controls!
                         if (window.parent) {
