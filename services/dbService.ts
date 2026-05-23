@@ -101,6 +101,15 @@ function getDb(): Promise<IDBDatabase> {
 export async function saveSetting(key: string, value: any): Promise<void> {
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn(`[IDB] saveSetting timeout for key: ${key}`);
+                    reject(new Error('Transaction timeout'));
+                }
+            }, 1000);
+
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
                 const store = tx.objectStore(SETTINGS_STORE);
@@ -109,19 +118,39 @@ export async function saveSetting(key: string, value: any): Promise<void> {
                     store.put(Date.now(), 'localSettingsLastModified');
                 }
                 tx.oncomplete = () => {
-                    if (typeof window !== 'undefined') {
-                        window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
-                        if (key.startsWith('bi_')) {
-                            const originalKey = key.slice(3);
-                            window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        if (typeof window !== 'undefined') {
+                            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                            if (key.startsWith('bi_')) {
+                                const originalKey = key.slice(3);
+                                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                            }
                         }
+                        resolve();
                     }
-                    resolve();
                 };
-                tx.onerror = () => reject(tx.error || new Error('Transaction failed'));
-                tx.onabort = () => reject(new Error('Transaction aborted'));
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(tx.error || new Error('Transaction failed'));
+                    }
+                };
+                tx.onabort = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(new Error('Transaction aborted'));
+                    }
+                };
             } catch (error) {
-                reject(error);
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    reject(error);
+                }
             }
         });
     };
@@ -145,6 +174,15 @@ export async function getAllSettings(): Promise<Record<string, any>> {
     try {
         const db = await getDb();
         return new Promise((resolve, reject) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn('[IDB] getAllSettings timeout');
+                    resolve({});
+                }
+            }, 1500);
+
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readonly');
                 const store = tx.objectStore(SETTINGS_STORE);
@@ -152,17 +190,31 @@ export async function getAllSettings(): Promise<Record<string, any>> {
                 const keysRequest = store.getAllKeys();
                 
                 tx.oncomplete = () => {
-                    const keys = keysRequest.result;
-                    const values = request.result;
-                    const settings: Record<string, any> = {};
-                    for (let i = 0; i < keys.length; i++) {
-                        settings[keys[i] as string] = values[i];
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        const keys = keysRequest.result;
+                        const values = request.result;
+                        const settings: Record<string, any> = {};
+                        for (let i = 0; i < keys.length; i++) {
+                            settings[keys[i] as string] = values[i];
+                        }
+                        resolve(settings);
                     }
-                    resolve(settings);
                 };
-                tx.onerror = () => reject(tx.error || new Error('Read transaction failed'));
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(tx.error || new Error('Read transaction failed'));
+                    }
+                };
             } catch (err) {
-                reject(err);
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    reject(err);
+                }
             }
         });
     } catch (e) {
@@ -175,14 +227,39 @@ export async function clearAllSettings(): Promise<void> {
     try {
         const db = await getDb();
         return new Promise((resolve, reject) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn('[IDB] clearAllSettings timeout');
+                    resolve();
+                }
+            }, 1000);
+
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
                 const store = tx.objectStore(SETTINGS_STORE);
                 store.clear();
-                tx.oncomplete = () => resolve();
-                tx.onerror = () => reject(tx.error || new Error('Clear transaction failed'));
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(tx.error || new Error('Clear transaction failed'));
+                    }
+                };
             } catch (err) {
-                reject(err);
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    reject(err);
+                }
             }
         });
     } catch (e) {
@@ -194,6 +271,15 @@ export async function importAllSettings(settings: Record<string, any>): Promise<
     try {
         const db = await getDb();
         return new Promise((resolve, reject) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn('[IDB] importAllSettings timeout');
+                    resolve();
+                }
+            }, 2000);
+
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
                 const store = tx.objectStore(SETTINGS_STORE);
@@ -202,20 +288,34 @@ export async function importAllSettings(settings: Record<string, any>): Promise<
                     store.put(value, key);
                 }
                 tx.oncomplete = () => {
-                    if (typeof window !== 'undefined') {
-                        for (const key of Object.keys(settings)) {
-                            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
-                            if (key.startsWith('bi_')) {
-                                const originalKey = key.slice(3);
-                                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        if (typeof window !== 'undefined') {
+                            for (const key of Object.keys(settings)) {
+                                window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                                if (key.startsWith('bi_')) {
+                                    const originalKey = key.slice(3);
+                                    window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                                }
                             }
                         }
+                        resolve();
                     }
-                    resolve();
                 };
-                tx.onerror = () => reject(tx.error || new Error('Import transaction failed'));
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(tx.error || new Error('Import transaction failed'));
+                    }
+                };
             } catch (error) {
-                reject(error);
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    reject(error);
+                }
             }
         });
     } catch (e) {
@@ -227,6 +327,15 @@ export async function mergeSettings(settings: Record<string, any>): Promise<void
     try {
         const db = await getDb();
         return new Promise((resolve, reject) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn('[IDB] mergeSettings timeout');
+                    resolve();
+                }
+            }, 2000);
+
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
                 const store = tx.objectStore(SETTINGS_STORE);
@@ -234,20 +343,34 @@ export async function mergeSettings(settings: Record<string, any>): Promise<void
                     store.put(value, key);
                 }
                 tx.oncomplete = () => {
-                    if (typeof window !== 'undefined') {
-                        for (const key of Object.keys(settings)) {
-                            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
-                            if (key.startsWith('bi_')) {
-                                const originalKey = key.slice(3);
-                                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        if (typeof window !== 'undefined') {
+                            for (const key of Object.keys(settings)) {
+                                window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                                if (key.startsWith('bi_')) {
+                                    const originalKey = key.slice(3);
+                                    window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                                }
                             }
                         }
+                        resolve();
                     }
-                    resolve();
                 };
-                tx.onerror = () => reject(tx.error || new Error('Merge transaction failed'));
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(tx.error || new Error('Merge transaction failed'));
+                    }
+                };
             } catch (error) {
-                reject(error);
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    reject(error);
+                }
             }
         });
     } catch (e) {
@@ -259,22 +382,49 @@ export async function getSetting<T>(key: string): Promise<T | null> {
     try {
         const db = await getDb();
         return new Promise((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn(`[IDB] getSetting timeout for key: ${key}`);
+                    resolve(null);
+                }
+            }, 1000);
+
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readonly');
                 const store = tx.objectStore(SETTINGS_STORE);
                 const request = store.get(key);
-                request.onsuccess = () => resolve(request.result === undefined ? null : request.result);
+                request.onsuccess = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve(request.result === undefined ? null : request.result);
+                    }
+                };
                 request.onerror = () => {
-                    console.error(`[IDB] Error reading key "${key}":`, request.error);
-                    resolve(null);
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        console.error(`[IDB] Error reading key "${key}":`, request.error);
+                        resolve(null);
+                    }
                 };
                 tx.onerror = () => {
-                    console.error(`[IDB] Transaction error reading key "${key}":`, tx.error);
-                    resolve(null);
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        console.error(`[IDB] Transaction error reading key "${key}":`, tx.error);
+                        resolve(null);
+                    }
                 };
             } catch (err) {
-                console.error(`[IDB] Synchronous error reading key "${key}":`, err);
-                resolve(null);
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    console.error(`[IDB] Synchronous error reading key "${key}":`, err);
+                    resolve(null);
+                }
             }
         });
     } catch (error) {
@@ -292,13 +442,38 @@ export async function saveSalesData(data: DataRow[], filename: string, fileLastM
     const stored: StoredSalesData = { data, filename, savedAt: new Date(), fileLastModified };
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn('[IDB] saveSalesData timeout');
+                    reject(new Error('Transaction timeout'));
+                }
+            }, 3000);
+
             try {
                 const tx = db.transaction(APP_STORE, 'readwrite');
                 tx.objectStore(APP_STORE).put(stored, 'salesData');
-                tx.oncomplete = () => resolve();
-                tx.onerror = () => reject(tx.error || new Error('Save sales data transaction failed'));
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(tx.error || new Error('Save sales data transaction failed'));
+                    }
+                };
             } catch (error) {
-                reject(error);
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    reject(error);
+                }
             }
         });
     };
@@ -322,22 +497,49 @@ export async function getSalesData(): Promise<StoredSalesData | null> {
     try {
         const db = await getDb();
         return new Promise((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn('[IDB] getSalesData timeout');
+                    resolve(null);
+                }
+            }, 3000);
+
             try {
                 const tx = db.transaction(APP_STORE, 'readonly');
                 const store = tx.objectStore(APP_STORE);
                 const request = store.get('salesData');
-                request.onsuccess = () => resolve(request.result || null);
+                request.onsuccess = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve(request.result || null);
+                    }
+                };
                 request.onerror = () => {
-                    console.error('[IDB] getSalesData request error:', request.error);
-                    resolve(null);
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        console.error('[IDB] getSalesData request error:', request.error);
+                        resolve(null);
+                    }
                 };
                 tx.onerror = () => {
-                    console.error('[IDB] getSalesData transaction error:', tx.error);
-                    resolve(null);
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        console.error('[IDB] getSalesData transaction error:', tx.error);
+                        resolve(null);
+                    }
                 };
             } catch (err) {
-                console.error('[IDB] getSalesData synchronous error:', err);
-                resolve(null);
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    console.error('[IDB] getSalesData synchronous error:', err);
+                    resolve(null);
+                }
             }
         });
     } catch (error) {
@@ -349,8 +551,41 @@ export async function getSalesData(): Promise<StoredSalesData | null> {
 export async function clearSalesData(): Promise<void> {
     try {
         const db = await getDb();
-        const tx = db.transaction(APP_STORE, 'readwrite');
-        tx.objectStore(APP_STORE).delete('salesData');
+        return new Promise<void>((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn('[IDB] clearSalesData timeout');
+                    resolve();
+                }
+            }, 1500);
+
+            try {
+                const tx = db.transaction(APP_STORE, 'readwrite');
+                tx.objectStore(APP_STORE).delete('salesData');
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+            } catch (e) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    resolve();
+                }
+            }
+        });
     } catch (e) {
         console.error('[IDB] clearSalesData failed:', e);
     }
@@ -366,9 +601,45 @@ export async function getDepartmentMap(): Promise<DepartmentMap | null> {
 }
 
 export async function clearDepartmentMap(): Promise<void> {
-    const db = await getDb();
-    const tx = db.transaction(SETTINGS_STORE, 'readwrite');
-    tx.objectStore(SETTINGS_STORE).delete('departmentMap');
+    try {
+        const db = await getDb();
+        return new Promise<void>((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    resolve();
+                }
+            }, 1000);
+
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+                tx.objectStore(SETTINGS_STORE).delete('departmentMap');
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+            } catch (e) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    resolve();
+                }
+            }
+        });
+    } catch (e) {
+        console.error('[IDB] clearDepartmentMap failed:', e);
+    }
 }
 
 // --- Product Config ---
@@ -402,9 +673,45 @@ export async function getProductConfig(): Promise<{ config: ProductConfig, url: 
 }
 
 export async function clearProductConfig(): Promise<void> {
-    const db = await getDb();
-    const tx = db.transaction(SETTINGS_STORE, 'readwrite');
-    tx.objectStore(SETTINGS_STORE).delete('productConfig');
+    try {
+        const db = await getDb();
+        return new Promise<void>((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    resolve();
+                }
+            }, 1000);
+
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+                tx.objectStore(SETTINGS_STORE).delete('productConfig');
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+            } catch (e) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    resolve();
+                }
+            }
+        });
+    } catch (e) {
+        console.error('[IDB] clearProductConfig failed:', e);
+    }
 }
 
 // --- KPI Targets ---
@@ -538,10 +845,46 @@ export async function getCustomTabs(): Promise<CustomContestTab[] | null> {
 }
 
 export async function clearCustomTabs(): Promise<void> {
-    const db = await getDb();
-    const tx = db.transaction(SETTINGS_STORE, 'readwrite');
-    tx.objectStore(SETTINGS_STORE).delete('customTabs');
-    tx.objectStore(SETTINGS_STORE).delete('industryAnalysisCustomTabs');
+    try {
+        const db = await getDb();
+        return new Promise<void>((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    resolve();
+                }
+            }, 1000);
+
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+                tx.objectStore(SETTINGS_STORE).delete('customTabs');
+                tx.objectStore(SETTINGS_STORE).delete('industryAnalysisCustomTabs');
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+            } catch (e) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    resolve();
+                }
+            }
+        });
+    } catch (e) {
+        console.error('[IDB] clearCustomTabs failed:', e);
+    }
 }
 
 // --- Industry Analysis Custom Tabs ---
