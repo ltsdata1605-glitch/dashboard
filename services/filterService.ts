@@ -12,6 +12,16 @@ import { processIndustryData } from './industryService';
 /** WeakMap cache for deduplication — keyed by allData array reference, auto-GC'd when data changes */
 const _dedupCache = new WeakMap<DataRow[], DataRow[]>();
 
+// Cache variables for warehouse global data and warehouse summary to prevent recalculations on filter changes
+let _lastAllData: DataRow[] | null = null;
+let _lastProductConfig: ProductConfig | null = null;
+let _lastXuat: string = '';
+let _lastStartDate: string = '';
+let _lastEndDate: string = '';
+let _lastSelectedMonthsStr: string = '';
+let _lastWarehouseSummary: any[] | null = null;
+let _lastWarehouseGlobalData: DataRow[] | null = null;
+
 /**
  * PREDICATES (Centralized Filtering Logic)
  */
@@ -192,10 +202,22 @@ export function applyFiltersAndProcess(
     const khoFilterSet = (filters.kho && filters.kho.length > 0 && !filters.kho.includes('all')) ? new Set(filters.kho) : null;
     const departmentFilterSet = (filters.department && filters.department.length > 0) ? new Set(filters.department) : null;
 
+    // Check cache validity for warehouse summary
+    const selectedMonthsStr = JSON.stringify(filters.selectedMonths || []);
+    const isWarehouseCacheValid = 
+        sourceData === _lastAllData &&
+        productConfig === _lastProductConfig &&
+        filters.xuat === _lastXuat &&
+        String(filters.startDate) === _lastStartDate &&
+        String(filters.endDate) === _lastEndDate &&
+        selectedMonthsStr === _lastSelectedMonthsStr &&
+        _lastWarehouseGlobalData !== null &&
+        _lastWarehouseSummary !== null;
+
     const calendarSourceData: DataRow[] = [];
     const baseFilteredData: DataRow[] = [];
     const mainPeriodData: DataRow[] = [];
-    const warehouseGlobalData: DataRow[] = [];
+    const warehouseGlobalData: DataRow[] = isWarehouseCacheValid ? _lastWarehouseGlobalData! : [];
 
     for (let i = 0, len = sourceData.length; i < len; i++) {
         const row = sourceData[i];
@@ -204,7 +226,7 @@ export function applyFiltersAndProcess(
 
         const mDate = isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths);
 
-        if (mDate) {
+        if (!isWarehouseCacheValid && mDate) {
             warehouseGlobalData.push(row);
         }
 
@@ -223,7 +245,20 @@ export function applyFiltersAndProcess(
         }
     }
 
-    const warehouseSummary = calculateWarehouseSummary(warehouseGlobalData, productConfig) || [];
+    let warehouseSummary;
+    if (isWarehouseCacheValid) {
+        warehouseSummary = _lastWarehouseSummary!;
+    } else {
+        warehouseSummary = calculateWarehouseSummary(warehouseGlobalData, productConfig) || [];
+        _lastAllData = sourceData;
+        _lastProductConfig = productConfig;
+        _lastXuat = filters.xuat;
+        _lastStartDate = String(filters.startDate);
+        _lastEndDate = String(filters.endDate);
+        _lastSelectedMonthsStr = selectedMonthsStr;
+        _lastWarehouseGlobalData = warehouseGlobalData;
+        _lastWarehouseSummary = warehouseSummary;
+    }
 
     const mainResult = processDataForPeriod(mainPeriodData, productConfig, filters, departmentMap);
 
