@@ -12,12 +12,17 @@ export const useCloudSync = () => {
     const [lastError, setLastError] = useState<string | null>(null);
     const hasUnsavedChanges = useRef(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const debounceSyncTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     // Clear timeout helper to prevent memory leaks
     const clearSyncTimeout = useCallback(() => {
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
             timeoutRef.current = null;
+        }
+        if (debounceSyncTimeoutRef.current) {
+            clearTimeout(debounceSyncTimeoutRef.current);
+            debounceSyncTimeoutRef.current = null;
         }
     }, []);
 
@@ -74,6 +79,14 @@ export const useCloudSync = () => {
 
         const handleSettingChanged = () => {
             hasUnsavedChanges.current = true;
+            if (debounceSyncTimeoutRef.current) {
+                clearTimeout(debounceSyncTimeoutRef.current);
+            }
+            debounceSyncTimeoutRef.current = setTimeout(() => {
+                if (hasUnsavedChanges.current) {
+                    forceSync();
+                }
+            }, 2000);
         };
 
         const syncIfChanged = () => {

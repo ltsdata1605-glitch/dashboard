@@ -78,19 +78,22 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 <div className="flex flex-1 sm:flex-none flex-row gap-2 sm:gap-3 w-full sm:w-auto justify-end hide-on-export">
                     {/* Supermarket Selector — same style as NhanVien */}
                     <div className="relative w-full sm:w-auto min-w-0">
+                        <select 
+                            value={activeSupermarket}
+                            onChange={(e) => setActiveSupermarket(e.target.value)}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        >
+                            <option value="Tổng">CỤM</option>
+                            {supermarkets?.map(sm => (
+                                <option key={sm} value={sm}>{shortenSupermarketName(sm)}</option>
+                            ))}
+                        </select>
                         <div className="w-full h-full flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-indigo-400 dark:hover:border-indigo-600 transition-all outline-none whitespace-nowrap">
                             <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                                 <BuildingStorefrontIcon className="h-4 w-4 text-indigo-500 flex-shrink-0" />
-                                <select 
-                                    value={activeSupermarket}
-                                    onChange={(e) => setActiveSupermarket(e.target.value)}
-                                    className="appearance-none bg-transparent outline-none cursor-pointer text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 pr-6 truncate max-w-[100px] sm:max-w-[160px]"
-                                >
-                                    <option value="Tổng">CỤM</option>
-                                    {supermarkets?.map(sm => (
-                                        <option key={sm} value={sm}>{shortenSupermarketName(sm)}</option>
-                                    ))}
-                                </select>
+                                <span className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 truncate max-w-[100px] sm:max-w-[160px]">
+                                    {activeSupermarket === 'Tổng' ? 'CỤM' : shortenSupermarketName(activeSupermarket)}
+                                </span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                                 <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{supermarkets.length}</span>
