@@ -23,7 +23,8 @@ export function processKpis(
     let minTime = Infinity;
     let maxTime = -Infinity;
 
-    validSalesData.forEach(row => {
+    for (let i = 0, len = validSalesData.length; i < len; i++) {
+        const row = validSalesData[i];
         const price = Number(getRowValue(row, COL.PRICE)) || 0;
         const rowRevenue = price; // Doanh thu là giá trị của cột Giá bán_1
         const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
@@ -49,7 +50,7 @@ export function processKpis(
             if (t < minTime) minTime = t;
             if (t > maxTime) maxTime = t;
         }
-    });
+    }
 
     const crossSellRate = slMain > 0 ? slPhuKien / slMain : 0;
     
@@ -70,7 +71,10 @@ export function processKpis(
     
     const runRateRevenue = (totalRevenue / daysPassed) * totalDaysExpected;
 
-    const { doanhThuThucChoXuat, doanhThuQDChoXuat } = unshippedOrders.reduce((acc, row) => {
+    let doanhThuThucChoXuat = 0;
+    let doanhThuQDChoXuat = 0;
+    for (let i = 0, len = unshippedOrders.length; i < len; i++) {
+        const row = unshippedOrders[i];
         const price = Number(getRowValue(row, COL.PRICE)) || 0;
         const rowRevenue = price; // Doanh thu là giá trị của cột Giá bán_1
         const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
@@ -78,10 +82,9 @@ export function processKpis(
         const productName = getRowValue(row, COL.PRODUCT);
         
         const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
-        acc.doanhThuThucChoXuat += rowRevenue;
-        acc.doanhThuQDChoXuat += rowRevenue * heso;
-        return acc;
-    }, { doanhThuThucChoXuat: 0, doanhThuQDChoXuat: 0 });
+        doanhThuThucChoXuat += rowRevenue;
+        doanhThuQDChoXuat += rowRevenue * heso;
+    }
 
     let soLuongThuHo = 0;
     for (let i = 0, len = allPeriodData.length; i < len; i++) {

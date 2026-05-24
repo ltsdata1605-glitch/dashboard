@@ -24,38 +24,67 @@ export const isXuatMatch = (row: DataRow, xuatFilter: string) => {
     return (isDa ? 'Đã' : 'Chưa') === xuatFilter;
 };
 
-export const isTrangThaiMatch = (row: DataRow, trangThaiFilter: string[]) => {
-    if (!trangThaiFilter || trangThaiFilter.length === 0) return true;
-    return trangThaiFilter.includes(getRowValue(row, COL.TRANG_THAI));
-};
+let _lastDeptMap: DepartmentMap | null = null;
+const creatorDeptCache = new Map<string, string>();
 
-export const isNguoiTaoMatch = (row: DataRow, nguoiTaoFilter: string[]) => {
-    if (!nguoiTaoFilter || nguoiTaoFilter.length === 0) return true;
-    return nguoiTaoFilter.includes(getRowValue(row, COL.NGUOI_TAO));
-};
-
-export const isKhoMatch = (row: DataRow, khoFilter: string[]) => {
-    if (!khoFilter || khoFilter.length === 0 || khoFilter.includes('all')) return true;
-    return khoFilter.includes(getRowValue(row, COL.KHO).toString());
-};
-
-export const isDepartmentMatch = (row: DataRow, departmentFilter: string[], departmentMap: DepartmentMap | null) => {
-    if (!departmentMap || !departmentFilter || departmentFilter.length === 0) return true;
-
-    const creator = getRowValue(row, COL.NGUOI_TAO);
-    if (!creator) return false;
+export const getCreatorDepartment = (creator: string, departmentMap: DepartmentMap | null): string => {
+    if (departmentMap !== _lastDeptMap) {
+        creatorDeptCache.clear();
+        _lastDeptMap = departmentMap;
+    }
+    let dept = creatorDeptCache.get(creator);
+    if (dept !== undefined) return dept;
 
     const dashIdx = creator.indexOf(' - ');
     const creatorId = dashIdx !== -1 ? creator.substring(0, dashIdx).trim() : creator.trim();
 
-    const rawDept = departmentMap[creatorId];
-    let department = "Chưa xác định";
+    const rawDept = departmentMap ? departmentMap[creatorId] : null;
+    dept = "Chưa xác định";
     if (rawDept) {
         const sepIdx = rawDept.indexOf(';;');
-        department = sepIdx !== -1 ? rawDept.substring(0, sepIdx) : rawDept;
+        dept = sepIdx !== -1 ? rawDept.substring(0, sepIdx) : rawDept;
     }
+    creatorDeptCache.set(creator, dept);
+    return dept;
+};
 
-    return departmentFilter.includes(department);
+export const isTrangThaiMatch = (row: DataRow, trangThaiFilter: string[] | Set<string> | null) => {
+    if (!trangThaiFilter) return true;
+    if (trangThaiFilter instanceof Set) {
+        return trangThaiFilter.has(getRowValue(row, COL.TRANG_THAI));
+    }
+    if (trangThaiFilter.length === 0) return true;
+    return trangThaiFilter.includes(getRowValue(row, COL.TRANG_THAI));
+};
+
+export const isNguoiTaoMatch = (row: DataRow, nguoiTaoFilter: string[] | Set<string> | null) => {
+    if (!nguoiTaoFilter) return true;
+    if (nguoiTaoFilter instanceof Set) {
+        return nguoiTaoFilter.has(getRowValue(row, COL.NGUOI_TAO));
+    }
+    if (nguoiTaoFilter.length === 0) return true;
+    return nguoiTaoFilter.includes(getRowValue(row, COL.NGUOI_TAO));
+};
+
+export const isKhoMatch = (row: DataRow, khoFilter: string[] | Set<string> | null) => {
+    if (!khoFilter) return true;
+    if (khoFilter instanceof Set) {
+        return khoFilter.has(getRowValue(row, COL.KHO).toString());
+    }
+    if (khoFilter.length === 0 || khoFilter.includes('all')) return true;
+    return khoFilter.includes(getRowValue(row, COL.KHO).toString());
+};
+
+export const isDepartmentMatch = (row: DataRow, departmentFilter: string[] | Set<string> | null, departmentMap: DepartmentMap | null) => {
+    if (!departmentFilter) return true;
+    const isSet = departmentFilter instanceof Set;
+    if (!isSet && (!departmentFilter || (departmentFilter as string[]).length === 0)) return true;
+
+    const creator = getRowValue(row, COL.NGUOI_TAO);
+    if (!creator) return false;
+
+    const department = getCreatorDepartment(creator, departmentMap);
+    return isSet ? (departmentFilter as Set<string>).has(department) : (departmentFilter as string[]).includes(department);
 };
 
 export const isDateMatch = (row: DataRow, startDate: Date | null, endDate: Date | null, selectedMonths?: string[]) => {
@@ -158,6 +187,11 @@ export function applyFiltersAndProcess(
     const mainEndDate = filters.endDate ? new Date(filters.endDate) : null;
     if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
 
+    const trangThaiFilterSet = (filters.trangThai && filters.trangThai.length > 0) ? new Set(filters.trangThai) : null;
+    const nguoiTaoFilterSet = (filters.nguoiTao && filters.nguoiTao.length > 0) ? new Set(filters.nguoiTao) : null;
+    const khoFilterSet = (filters.kho && filters.kho.length > 0 && !filters.kho.includes('all')) ? new Set(filters.kho) : null;
+    const departmentFilterSet = (filters.department && filters.department.length > 0) ? new Set(filters.department) : null;
+
     const calendarSourceData: DataRow[] = [];
     const baseFilteredData: DataRow[] = [];
     const mainPeriodData: DataRow[] = [];
@@ -174,13 +208,13 @@ export function applyFiltersAndProcess(
             warehouseGlobalData.push(row);
         }
 
-        if (!isTrangThaiMatch(row, filters.trangThai)) continue;
-        if (!isNguoiTaoMatch(row, filters.nguoiTao)) continue;
-        if (!isDepartmentMatch(row, filters.department, departmentMap)) continue;
+        if (!isTrangThaiMatch(row, trangThaiFilterSet)) continue;
+        if (!isNguoiTaoMatch(row, nguoiTaoFilterSet)) continue;
+        if (!isDepartmentMatch(row, departmentFilterSet, departmentMap)) continue;
 
         calendarSourceData.push(row);
 
-        if (!isKhoMatch(row, filters.kho)) continue;
+        if (!isKhoMatch(row, khoFilterSet)) continue;
 
         baseFilteredData.push(row);
 

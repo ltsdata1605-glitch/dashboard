@@ -24,9 +24,15 @@ function _buildFullEmployeeData(
         }
     }
 
-    const allCreatorsInPeriod = new Set(periodData.map(r => getRowValue(r, COL.NGUOI_TAO)).filter(Boolean));
+    const allCreatorsInPeriod = new Set<string>();
+    for (let i = 0, len = periodData.length; i < len; i++) {
+        const creator = getRowValue(periodData[i], COL.NGUOI_TAO);
+        if (creator) {
+            allCreatorsInPeriod.add(creator);
+        }
+    }
 
-    allCreatorsInPeriod.forEach(creator => {
+    for (const creator of allCreatorsInPeriod) {
         const creatorThuHoCount = thuHoCountByCreator.get(creator) || 0;
         
         if (employeeStats[creator]) {
@@ -49,7 +55,7 @@ function _buildFullEmployeeData(
                 if (exploitationStats[creator]) exploitationStats[creator].department = dept;
             }
         }
-    });
+    }
 
     let finalEmployeeStats = employeeStats;
     let finalExploitationStats = exploitationStats;
@@ -205,9 +211,10 @@ export function processEmployeeData(
     const employeeIndustryStats: { [creator: string]: { [industry: string]: number } } = {};
     const employeeDailyTrend: { [creator: string]: { [date: string]: number } } = {};
 
-    salesData.forEach(row => {
+    for (let i = 0, len = salesData.length; i < len; i++) {
+        const row = salesData[i];
         const creator = getRowValue(row, COL.NGUOI_TAO);
-        if (!creator) return;
+        if (!creator) continue;
 
         const price = Number(getRowValue(row, COL.PRICE)) || 0;
         const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
@@ -319,7 +326,7 @@ export function processEmployeeData(
             else if (childGroup === 'Nồi chiên') stats.slNoiChien! += weightedQuantity;
             else if (childGroup === 'Quạt điện') stats.slQuatDien! += weightedQuantity;
         }
-    });
+    }
 
     // --- Merge employees from DepartmentMap (Shift File) who have NO SALES ---
     if (departmentMap) {

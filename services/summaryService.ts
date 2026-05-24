@@ -42,14 +42,15 @@ export function processSummaryTable(
         ? filters.summaryTable.drilldownOrder
         : ['parent', 'child', 'creator', 'manufacturer', 'product'];
 
-    filteredValidSalesData.forEach(row => {
+    for (let i = 0, len = filteredValidSalesData.length; i < len; i++) {
+        const row = filteredValidSalesData[i];
         // Filter out "Thu Hộ" rows to ensure revenue eligibility
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT);
-        if (HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) return;
+        if (HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) continue;
 
         // Bỏ qua sản phẩm không xác định nhóm hàng (không có trong cấu hình)
         const maNhomHangCheck = getRowValue(row, COL.MA_NHOM_HANG);
-        if (!productConfig.childToParentMap[maNhomHangCheck]) return;
+        if (!productConfig.childToParentMap[maNhomHangCheck]) continue;
 
         // Compute all values ONCE per row (eliminating double computation)
         const allValues: Record<string, string> = {};
@@ -71,12 +72,12 @@ export function processSummaryTable(
         creatorsForFilter.add(creatorVal);
         productsForFilter.add(productVal);
 
-        if (filters.summaryTable.kho?.length > 0 && !filters.summaryTable.kho.includes(khoVal)) return;
-        if (filters.parent?.length > 0 && !filters.parent.includes(parentVal)) return;
-        if (filters.summaryTable.child?.length > 0 && !filters.summaryTable.child.includes(childVal)) return;
-        if (filters.summaryTable.manufacturer?.length > 0 && !filters.summaryTable.manufacturer.includes(manufacturerVal)) return;
-        if (filters.summaryTable.creator?.length > 0 && !filters.summaryTable.creator.includes(creatorVal)) return;
-        if (filters.summaryTable.product?.length > 0 && !filters.summaryTable.product.includes(productVal)) return;
+        if (filters.summaryTable.kho?.length > 0 && !filters.summaryTable.kho.includes(khoVal)) continue;
+        if (filters.parent?.length > 0 && !filters.parent.includes(parentVal)) continue;
+        if (filters.summaryTable.child?.length > 0 && !filters.summaryTable.child.includes(childVal)) continue;
+        if (filters.summaryTable.manufacturer?.length > 0 && !filters.summaryTable.manufacturer.includes(manufacturerVal)) continue;
+        if (filters.summaryTable.creator?.length > 0 && !filters.summaryTable.creator.includes(creatorVal)) continue;
+        if (filters.summaryTable.product?.length > 0 && !filters.summaryTable.product.includes(productVal)) continue;
 
         const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
         const price = Number(getRowValue(row, COL.PRICE)) || 0;
@@ -121,7 +122,7 @@ export function processSummaryTable(
             }
             currentNode = currentNode[key].children;
         });
-    });
+    }
 
     const grandTotal: GrandTotal = Object.values(summaryTableData).reduce((acc, node) => {
         acc.totalQuantity += node.totalQuantity;
@@ -153,31 +154,30 @@ export function calculateWarehouseSummary(
     dataForWarehouseSummary: DataRow[],
     productConfig: ProductConfig
 ): WarehouseSummaryRow[] | null {
-
-    const uniqueKhos = [...new Set(dataForWarehouseSummary.map(r => getRowValue(r, COL.KHO)).filter(Boolean))];
-    if (uniqueKhos.length === 0) return [];
+    if (!dataForWarehouseSummary || dataForWarehouseSummary.length === 0) return [];
 
     const summaryByKho: { [key: string]: any } = {};
-    uniqueKhos.forEach(kho => {
-        summaryByKho[kho] = {
-            customers: new Set<string>(),
-            doanhThuTraCham: 0,
-            slThuHo: 0,
-            metrics: {
-                byIndustry: {},
-                byGroup: {},
-                byManufacturer: {},
-                byIndustryAndManufacturer: {},
-                byGroupAndManufacturer: {},
-            },
-        };
-    });
-
     const initMetricValues = (): MetricValues => ({ quantity: 0, revenue: 0, revenueQD: 0 });
 
-    dataForWarehouseSummary.forEach(row => {
+    for (let i = 0, len = dataForWarehouseSummary.length; i < len; i++) {
+        const row = dataForWarehouseSummary[i];
         const khoName = getRowValue(row, COL.KHO);
-        if (!khoName || !summaryByKho[khoName]) return;
+        if (!khoName) continue;
+
+        if (!summaryByKho[khoName]) {
+            summaryByKho[khoName] = {
+                customers: new Set<string>(),
+                doanhThuTraCham: 0,
+                slThuHo: 0,
+                metrics: {
+                    byIndustry: {},
+                    byGroup: {},
+                    byManufacturer: {},
+                    byIndustryAndManufacturer: {},
+                    byGroupAndManufacturer: {},
+                },
+            };
+        }
 
         const summary = summaryByKho[khoName];
 
@@ -188,7 +188,7 @@ export function calculateWarehouseSummary(
         if (!HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
             // Bỏ qua sản phẩm không xác định nhóm hàng
-            if (!productConfig.childToParentMap[maNhomHang]) return;
+            if (!productConfig.childToParentMap[maNhomHang]) continue;
 
             const price = Number(getRowValue(row, COL.PRICE)) || 0;
             const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
@@ -246,10 +246,9 @@ export function calculateWarehouseSummary(
             summary.metrics.byGroupAndManufacturer[group][manufacturer].revenue += rowRevenue;
             summary.metrics.byGroupAndManufacturer[group][manufacturer].revenueQD += rowRevenueQD;
         }
-    });
+    }
 
-    return uniqueKhos
-        .filter(kho => summaryByKho[kho])
+    return Object.keys(summaryByKho)
         .map(khoName => {
             const summary = summaryByKho[khoName];
 
