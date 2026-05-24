@@ -57,7 +57,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
         <div className="overflow-hidden">
             {isMobile ? (
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {(['DTLK', 'DTQĐ', 'SLLK'] as const).map(criterion => {
+                    {(['SLLK', 'DTLK', 'DTQĐ'] as const).map(criterion => {
                         const programs = groupedAndSortedPrograms[criterion];
                         if (!programs || programs.length === 0) return null;
                         const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-slate-600', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100', badge: '' };
@@ -154,8 +154,8 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                     )}
                                 </tr>
                             </thead>
-                            {(Object.keys(groupedAndSortedPrograms)).map(criterion => {
-                                const programs = groupedAndSortedPrograms[criterion as Criterion];
+                            {(['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).map(criterion => {
+                                const programs = groupedAndSortedPrograms[criterion];
                                 if (!programs || programs.length === 0) return null;
                                 const theme = CRITERIA_THEMES[criterion as keyof typeof CRITERIA_THEMES] || { main: 'bg-slate-600', light: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100', badge: 'bg-white/20 text-white' };
                     

@@ -50,7 +50,7 @@ const CompetitionGridView: React.FC<CompetitionGridViewProps> = ({ groupedAndSor
 
     return (
         <div className="space-y-12">
-            {(['DTLK', 'DTQĐ', 'SLLK'] as const).map(criterion => {
+            {(['SLLK', 'DTLK', 'DTQĐ'] as const).map(criterion => {
                 const programs = groupedAndSortedPrograms[criterion];
                 if (!programs || programs.length === 0) return null;
                 const theme = CRITERIA_CARD_THEMES[criterion];

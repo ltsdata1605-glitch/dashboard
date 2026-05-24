@@ -26,7 +26,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     
     const [viewMode, setViewMode] = useIndexedDBState<'grid' | 'list'>('competition_view_mode', 'list');
     const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>('global-selected-competitions', []);
-    const [sortConfig, setSortConfig] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${isRealtime ? 'rt' : 'lk'}`, null);
+    const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${isRealtime ? 'rt' : 'lk'}`, null);
     const [hiddenColumns, setHiddenColumns] = useIndexedDBState<string[]>(`competition_view_hidden_columns_${isRealtime ? 'rt' : 'lk'}`, []);
     const [defaultSortSet, setDefaultSortSet] = useState(false);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
@@ -111,15 +111,17 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     }, [supermarketData, isRealtime]);
 
     useEffect(() => {
-        if (processedSupermarketData && processedSupermarketData.headers && !defaultSortSet) {
-            const sortHeader = isRealtime ? '%HT V.Trội' : '%HTDK V.Trội';
-            const sortIndex = processedSupermarketData.headers.indexOf(sortHeader);
-            if (sortIndex !== -1) {
-                setSortConfig({ columnIndex: sortIndex, direction: 'desc' });
-                setDefaultSortSet(true);
+        if (isSortConfigLoaded && processedSupermarketData && processedSupermarketData.headers && !defaultSortSet) {
+            if (sortConfig === null) {
+                const sortHeader = isRealtime ? 'Realtime' : 'L.Kế';
+                const sortIndex = processedSupermarketData.headers.indexOf(sortHeader);
+                if (sortIndex !== -1) {
+                    setSortConfig({ columnIndex: sortIndex, direction: 'desc' });
+                }
             }
+            setDefaultSortSet(true);
         }
-    }, [processedSupermarketData, defaultSortSet, isRealtime, setSortConfig]);
+    }, [processedSupermarketData, defaultSortSet, isRealtime, setSortConfig, sortConfig, isSortConfigLoaded]);
     
     useEffect(() => { setDefaultSortSet(false); }, [activeSupermarket, isRealtime]);
 

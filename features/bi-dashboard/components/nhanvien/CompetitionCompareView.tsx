@@ -162,7 +162,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
         const daysPassed = now.getDate() - 1;
         const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
 
-        (['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).forEach(crit => {
+        (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(crit => {
             const headers = allCompetitionsByCriterion[crit]?.headers || [];
             headers.filter(h => selectedCompetitions.has(h.title)).forEach(comp => {
                 const target = employeeCompetitionTargets.get(comp.originalTitle)?.get(emp.originalName) ?? 0;
@@ -196,7 +196,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     const compRows = useMemo(() => {
         if (!empA || !empB) return [];
         const rows: any[] = [];
-        (['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).forEach(crit => {
+        (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(crit => {
             const headers = allCompetitionsByCriterion[crit]?.headers || [];
             const filteredHeaders = headers.filter(h => selectedCompetitions.has(h.title));
             if (filteredHeaders.length === 0) return;
@@ -333,7 +333,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                             </thead>
                             <tbody>
                                 {compRows.length > 0 ? (
-                                    (['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map(crit => {
+                                    (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).map(crit => {
                                         const critRows = compRows.filter(r => r.criterion === crit);
                                         if (critRows.length === 0) return null;
                                         return (

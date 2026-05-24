@@ -23,7 +23,7 @@ export const useCompetitionData = ({
     highlightedEmployees,
     isolatedHighlightEmployee
 }: any) => {
-    const criteriaOrder: Criterion[] = ['DTLK', 'DTQĐ', 'SLLK'];
+    const criteriaOrder: Criterion[] = ['SLLK', 'DTLK', 'DTQĐ'];
 
     const hasAnyData = criteriaOrder.some(c => groupedData[c] && groupedData[c].headers.length > 0);
 

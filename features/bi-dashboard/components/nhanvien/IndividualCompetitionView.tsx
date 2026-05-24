@@ -357,7 +357,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
         if (!selectedEmployee) return {};
         const result: Partial<Record<Criterion, { name: string; originalTitle: string; target: number; actual: number; completion: number; remaining: number }[]>> = {};
         
-        (['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).forEach(criterion => {
+        (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(criterion => {
             const headers = allCompetitionsByCriterion[criterion]?.headers || [];
             const filteredHeaders = headers.filter(h => selectedCompetitions.has(h.title));
             if (filteredHeaders.length === 0) return;
@@ -575,7 +575,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                         
                         {isMobile ? (
                             <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                                {(['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map((criterion) => {
+                                {(['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).map((criterion) => {
                                     const items = groupedPerformanceData[criterion];
                                     if (!items || items.length === 0) return null;
                                     const cStyle = getCriterionStyle(criterion);
@@ -646,7 +646,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                    const now = new Date();
                                    const daysPassed = now.getDate() - 1;
                                    const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-                                   return (['DTLK', 'DTQĐ', 'SLLK'] as Criterion[]).map((criterion, _criterionIndex) => {
+                                   return (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).map((criterion, _criterionIndex) => {
                                        const items = groupedPerformanceData[criterion];
                                        if (!items || items.length === 0) return null;
                                        const cStyle = getCriterionStyle(criterion);
