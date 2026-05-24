@@ -15,6 +15,7 @@ export interface ConfirmDialogProps {
   cancelText?: string;
   variant?: ConfirmVariant;
   isLoading?: boolean;
+  singleButton?: boolean;
 }
 
 export function ConfirmDialog({
@@ -26,7 +27,8 @@ export function ConfirmDialog({
   confirmText = 'Xác nhận',
   cancelText = 'Hủy',
   variant = 'danger',
-  isLoading = false
+  isLoading = false,
+  singleButton = false
 }: ConfirmDialogProps) {
 
   const variants = {
@@ -68,19 +70,21 @@ export function ConfirmDialog({
         <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 mb-2">
           {title}
         </h3>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+        <div className="text-sm text-slate-500 dark:text-slate-400 mb-6 whitespace-pre-line text-left w-full px-2">
           {message}
-        </p>
+        </div>
         
         <div className="flex gap-3 w-full mt-2">
-          <Button 
-            variant="secondary" 
-            className="flex-1" 
-            onClick={onClose}
-            disabled={isLoading}
-          >
-            {cancelText}
-          </Button>
+          {!singleButton && (
+            <Button 
+              variant="secondary" 
+              className="flex-1" 
+              onClick={onClose}
+              disabled={isLoading}
+            >
+              {cancelText}
+            </Button>
+          )}
           <Button 
             variant={selected.button} 
             className="flex-1" 

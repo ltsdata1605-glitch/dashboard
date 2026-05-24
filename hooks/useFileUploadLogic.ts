@@ -1,4 +1,4 @@
-import { useState, useRef, startTransition } from 'react';
+import { useState, useRef, startTransition, useEffect } from 'react';
 // @ts-ignore: Vite virtual module alias for Web Workers
 import SalesWorker from '../services/worker?worker';
 import type { DataRow, Status, AppState, ProductConfig } from '../types';
@@ -40,6 +40,15 @@ export const useFileUploadLogic = ({
     const [isClearingDepartments, setIsClearingDepartments] = useState(false);
     const [processingTime, setProcessingTime] = useState(0);
     const timerRef = useRef<number | undefined>(undefined);
+
+    // Cleanup timer on unmount to prevent memory leaks
+    useEffect(() => {
+        return () => {
+            if (timerRef.current) {
+                clearInterval(timerRef.current);
+            }
+        };
+    }, []);
 
     const startTimer = () => {
         setProcessingTime(0);

@@ -23,7 +23,7 @@ export const SUMMARY_TABLE_CONFIG_KEY = 'summaryTableConfig';
 
 let dbPromise: Promise<IDBDatabase> | null = null;
 
-function getDb(): Promise<IDBDatabase> {
+export function getDb(): Promise<IDBDatabase> {
     if (typeof window === 'undefined' || !window.indexedDB) {
         return Promise.reject(new Error('IndexedDB is not supported/enabled in this environment.'));
     }

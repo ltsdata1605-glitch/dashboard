@@ -26,14 +26,14 @@ const ExternalToolView = lazy(() => import('./components/views/ExternalToolView'
 const UserManagementView = lazy(() => import('./components/views/UserManagementView'));
 const SettingsView = lazy(() => import('./components/views/SettingsView'));
 const AboutView = lazy(() => import('./components/views/AboutView'));
-const StickerPrinterView = lazy(() => import('./components/views/StickerPrinterView'));
-const PhanCaView = lazy(() => import('./components/views/phanca/PhanCaView'));
+const StickerPrinterView = lazy(() => import('./features/sticker-event/StickerPrinterView'));
+const PhanCaView = lazy(() => import('./features/phan-ca/PhanCaView'));
 const BaoCaoKhaiThacView = lazy(() => import('./components/views/reports/BaoCaoKhaiThacView'));
-const KiemQuyView = lazy(() => import('./components/views/KiemQuyView'));
+const KiemQuyView = lazy(() => import('./features/cash-control/KiemQuyView'));
 
 
 // BI Module Wrapper
-const BiWrapper = lazy(() => import('./bi-module/components/BiWrapper'));
+const BiWrapper = lazy(() => import('./features/bi-dashboard/components/BiWrapper'));
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginView from './components/views/LoginView';

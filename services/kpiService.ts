@@ -2,6 +2,7 @@
 import type { DataRow, KpiData, ProductConfig, FilterState } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 import { getRowValue, getHeSoQuyDoi, getHinhThucThanhToan } from '../utils/dataUtils';
+import { calculateHieuQuaQDFraction, calculatePercentage, calculateRunRate } from './metricService';
 
 /**
  * Calculates key performance indicators from various data sources.
@@ -69,7 +70,7 @@ export function processKpis(
          totalDaysExpected = new Date(new Date(maxTime).getFullYear(), new Date(maxTime).getMonth() + 1, 0).getDate();
     }
     
-    const runRateRevenue = (totalRevenue / daysPassed) * totalDaysExpected;
+    const runRateRevenue = calculateRunRate(totalRevenue, daysPassed, totalDaysExpected);
 
     let doanhThuThucChoXuat = 0;
     let doanhThuQDChoXuat = 0;
@@ -98,8 +99,8 @@ export function processKpis(
         doanhThuQD,
         totalRevenue,
         soLuongThuHo,
-        hieuQuaQD: totalRevenue > 0 ? (doanhThuQD - totalRevenue) / totalRevenue : 0,
-        traGopPercent: totalRevenue > 0 ? (traGopValue / totalRevenue) * 100 : 0,
+        hieuQuaQD: calculateHieuQuaQDFraction(doanhThuQD, totalRevenue),
+        traGopPercent: calculatePercentage(traGopValue, totalRevenue),
         traGopValue,
         traGopCount,
         doanhThuThucChoXuat,

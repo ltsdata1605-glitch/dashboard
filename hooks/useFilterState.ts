@@ -90,11 +90,17 @@ export const useFilterState = () => {
         loadSavedFilters();
     }, []);
 
-    // Auto-save any filter state changes to IndexedDB
+    // Auto-save any filter state changes to IndexedDB (debounced to avoid spamming I/O)
     useEffect(() => {
-        if (isLoaded) {
+        if (!isLoaded) return;
+
+        const handler = setTimeout(() => {
             dbService.saveSetting('dashboard_global_filters_v2', filterState).catch(console.error);
-        }
+        }, 500);
+
+        return () => {
+            clearTimeout(handler);
+        };
     }, [filterState, isLoaded]);
 
     const handleFilterChange = useCallback((newFilters: Partial<FilterState>) => {

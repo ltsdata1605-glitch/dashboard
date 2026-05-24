@@ -2,6 +2,7 @@ import type { DataRow, ProductConfig, Employee, EmployeeData, ExploitationData, 
 import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
+import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
 function _buildFullEmployeeData(
     employeeStats: { [key: string]: Partial<Employee> & { name: string, customerSet: Set<string>, totalOrders: number, doanhThuTraCham: number, slCE_ICT: number, slTraCham_CE_ICT: number, doanhThu_CE_ICT: number, doanhThuTraCham_CE_ICT: number } },
@@ -115,21 +116,21 @@ function _buildFullEmployeeData(
             doanhThuThuc,
             doanhThuQD,
             doanhThuTraCham,
-            hieuQuaValue: doanhThuThuc > 0 ? ((doanhThuQD - doanhThuThuc) / doanhThuThuc) * 100 : 0,
+            hieuQuaValue: calculateHieuQuaQDPercent(doanhThuQD, doanhThuThuc),
             slTiepCan,
-            aov: slTiepCan > 0 ? doanhThuThuc / slTiepCan : 0,
+            aov: calculateAOV(doanhThuThuc, slTiepCan),
             slThuHo: emp.slThuHo || 0,
             slTraCham,
             totalOrders: totalOrders,
-            traChamPercent: doanhThuThuc > 0 ? (doanhThuTraCham / doanhThuThuc) * 100 : 0,
+            traChamPercent: calculatePercentage(doanhThuTraCham, doanhThuThuc),
             slCE_ICT,
             slICT,
             slCE_main,
             slTraCham_CE_ICT,
-            traChamPercent_CE_ICT: slCE_ICT > 0 ? (slTraCham_CE_ICT / slCE_ICT) * 100 : 0,
+            traChamPercent_CE_ICT: calculatePercentage(slTraCham_CE_ICT, slCE_ICT),
             doanhThu_CE_ICT,
             doanhThuTraCham_CE_ICT,
-            dtTraChamPercent_CE_ICT: doanhThu_CE_ICT > 0 ? (doanhThuTraCham_CE_ICT / doanhThu_CE_ICT) * 100 : 0,
+            dtTraChamPercent_CE_ICT: calculatePercentage(doanhThuTraCham_CE_ICT, doanhThu_CE_ICT),
             weakPointsRevenue: 0,
             weakPointsExploitation: 0,
         };
@@ -147,7 +148,7 @@ function _buildFullEmployeeData(
                 department: ex.department || 'Không Phân Ca',
                 doanhThuThuc,
                 doanhThuQD,
-                hieuQuaQD: doanhThuThuc > 0 ? (doanhThuQD - doanhThuThuc) / doanhThuThuc * 100 : 0,
+                hieuQuaQD: calculateHieuQuaQDPercent(doanhThuQD, doanhThuThuc),
                 
                 slICT: ex.slICT || 0,
                 doanhThuICT: ex.doanhThuICT || 0,
@@ -157,7 +158,7 @@ function _buildFullEmployeeData(
 
                 slBaoHiem,
                 doanhThuBaoHiem: ex.doanhThuBaoHiem || 0,
-                percentBaoHiem: slSPChinh_Tong > 0 ? (slBaoHiem / slSPChinh_Tong) * 100 : 0,
+                percentBaoHiem: calculatePercentage(slBaoHiem, slSPChinh_Tong),
                 slSim: ex.slSim || 0,
                 doanhThuSim: ex.doanhThuSim || 0,
                 slDongHo: ex.slDongHo || 0,

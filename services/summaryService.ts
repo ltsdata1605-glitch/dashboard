@@ -2,6 +2,7 @@
 import type { DataRow, ProductConfig, FilterState, SummaryTableNode, GrandTotal, WarehouseSummaryRow, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
 import { getRowValue, getHeSoQuyDoi, sortSummaryData, getHinhThucThanhToan, getDisplayParentGroup, abbreviateName } from '../utils/dataUtils';
+import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
 export function processSummaryTable(
     filteredValidSalesData: DataRow[],
@@ -132,8 +133,8 @@ export function processSummaryTable(
         return acc;
     }, { totalQuantity: 0, totalRevenue: 0, totalRevenueQD: 0, totalTraGop: 0, aov: 0, traGopPercent: 0 });
 
-    grandTotal.aov = grandTotal.totalQuantity > 0 ? grandTotal.totalRevenue / grandTotal.totalQuantity : 0;
-    grandTotal.traGopPercent = grandTotal.totalRevenue > 0 ? (grandTotal.totalTraGop / grandTotal.totalRevenue) * 100 : 0;
+    grandTotal.aov = calculateAOV(grandTotal.totalRevenue, grandTotal.totalQuantity);
+    grandTotal.traGopPercent = calculatePercentage(grandTotal.totalTraGop, grandTotal.totalRevenue);
 
     const sortedSummaryTableData = sortSummaryData(summaryTableData, filters.summaryTable.sort.column, filters.summaryTable.sort.direction);
 
@@ -261,8 +262,8 @@ export function calculateWarehouseSummary(
 
             const doanhThuThuc = totalMetrics.revenue;
             const doanhThuQD = totalMetrics.revenueQD;
-            const hieuQuaQD = doanhThuThuc > 0 ? ((doanhThuQD - doanhThuThuc) / doanhThuThuc) * 100 : 0;
-            const traChamPercent = doanhThuThuc > 0 ? (summary.doanhThuTraCham / doanhThuThuc) * 100 : 0;
+            const hieuQuaQD = calculateHieuQuaQDPercent(doanhThuQD, doanhThuThuc);
+            const traChamPercent = calculatePercentage(summary.doanhThuTraCham, doanhThuThuc);
 
             return {
                 khoName,
