@@ -1,0 +1,1 @@
+function n(r,e){return e<=0?0:(r-e)/e}function u(r,e){return e<=0?0:(r-e)/e*100}function c(r,e){return e<=0?0:r/e*100}function a(r,e){return e<=0?0:r/e}function i(r,e,t){return e<=0?0:r/e*t}export{c as a,i as b,n as c,a as d,u as e};
