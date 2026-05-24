@@ -100,6 +100,93 @@ const AvatarUploader: React.FC<{ employeeName: string; supermarketName: string }
     );
 };
 
+interface CrossSellingDesktopRowProps {
+    row: any;
+    isHighlighted: boolean;
+    supermarketName: string;
+    f: Intl.NumberFormat;
+}
+
+const CrossSellingDesktopRow = React.memo<CrossSellingDesktopRowProps>(({
+    row, isHighlighted, supermarketName, f
+}) => {
+    const oldRow = row.oldRow;
+    return (
+        <tr className={`transition-all group cursor-pointer text-[13px] border-b border-slate-200 dark:border-slate-700 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
+            <td className="px-2 py-1 whitespace-nowrap border-r border-slate-200 dark:border-slate-700 min-w-[180px]">
+                <div className="flex items-center gap-2">
+                    <MedalBadge rank={row.rank} />
+                    <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />
+                    <div className="flex flex-col min-w-0">
+                        <span className="font-bold text-sky-600 dark:text-sky-400 text-[13px] whitespace-normal break-words">{row.name}</span>
+                    </div>
+                </div>
+            </td>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold text-slate-700 dark:text-slate-300">{f.format(Math.round(row.dtlk))}</td>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold text-slate-700 dark:text-slate-300">{f.format(row.totalSl)}</td>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold text-slate-700 dark:text-slate-300">{f.format(row.slBk)}</td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${row.pctSpBk >= 25 ? 'text-emerald-600' : (row.pctSpBk < 15 ? 'text-rose-500' : 'text-amber-600')}`}>
+                <div>{Math.round(row.pctSpBk)}%</div>
+                <DeltaBadge current={row.pctSpBk} previous={oldRow?.pctSpBk} />
+            </td>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold text-slate-700 dark:text-slate-300">{f.format(row.totalBill)}</td>
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold text-sky-700 dark:text-sky-400">{f.format(row.billBk)}</td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${row.pctBillBk >= 20 ? 'text-emerald-600' : (row.pctBillBk < 10 ? 'text-rose-500' : 'text-amber-600')}`}>
+                <div>{Math.round(row.pctBillBk)}%</div>
+                <DeltaBadge current={row.pctBillBk} previous={oldRow?.pctBillBk} />
+            </td>
+        </tr>
+    );
+});
+
+interface CrossSellingMobileRowProps {
+    row: any;
+    isHighlighted: boolean;
+    supermarketName: string;
+    f: Intl.NumberFormat;
+}
+
+const CrossSellingMobileRow = React.memo<CrossSellingMobileRowProps>(({
+    row, isHighlighted, supermarketName, f
+}) => {
+    const oldRow = row.oldRow;
+    return (
+        <div className={`p-4 flex flex-col gap-3 ${isHighlighted ? 'bg-amber-50 dark:bg-amber-900/20' : ''}`}>
+            <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                    <MedalBadge rank={row.rank} />
+                    <div className="flex flex-col">
+                        <span className="font-bold text-primary-600 dark:text-primary-400">{row.name}</span>
+                    </div>
+                </div>
+                <div className="flex flex-col items-end">
+                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.pctBillBk >= 20 ? 'bg-emerald-50 text-emerald-600' : (row.pctBillBk < 10 ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600')}`}>
+                        {f.format(row.pctBillBk)}% BILL BK
+                    </span>
+                    <DeltaBadge current={row.pctBillBk} previous={oldRow?.pctBillBk} />
+                </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">DT THỰC</p>
+                    <p className="text-xs font-black tabular-nums">{f.format(row.dtlk)}</p>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">BILL BK/TỔNG</p>
+                    <p className="text-xs font-black tabular-nums">{f.format(row.billBk)}/{f.format(row.totalBill)}</p>
+                </div>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">%SP BK</p>
+                    <p className={`text-xs font-black tabular-nums ${row.pctSpBk >= 25 ? 'text-emerald-600' : (row.pctSpBk < 15 ? 'text-rose-600' : 'text-amber-600')}`}>
+                        {f.format(row.pctSpBk)}%
+                    </p>
+                    <DeltaBadge current={row.pctSpBk} previous={oldRow?.pctSpBk} />
+                </div>
+            </div>
+        </div>
+    );
+});
+
 const CrossSellingTab: React.FC<{
     rows: CrossSellingRow[];
     supermarketName: string;
@@ -393,43 +480,14 @@ const CrossSellingTab: React.FC<{
                                             );
                                         }
                                         const isHighlighted = highlightedEmployees.has(row.originalName || '');
-                                        const oldRow = row.oldRow;
                                         return (
-                                            <div key={row.originalName || idx} className={`p-4 flex flex-col gap-3 ${isHighlighted ? 'bg-amber-50 dark:bg-amber-900/20' : ''}`}>
-                                                <div className="flex justify-between items-start">
-                                                    <div className="flex items-center gap-3">
-                                                        <MedalBadge rank={row.rank} />
-
-                                                        <div className="flex flex-col">
-                                                            <span className="font-bold text-primary-600 dark:text-primary-400">{row.name}</span>
-
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex flex-col items-end">
-                                                        <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.pctBillBk >= 20 ? 'bg-emerald-50 text-emerald-600' : (row.pctBillBk < 10 ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600')}`}>
-                                                            {f.format(row.pctBillBk)}% BILL BK
-                                                        </span>
-                                                        <DeltaBadge current={row.pctBillBk} previous={oldRow?.pctBillBk} />
-                                                    </div>
-                                                </div>
-                                                <div className="grid grid-cols-3 gap-2">
-                                                    <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">DT THỰC</p>
-                                                        <p className="text-xs font-black tabular-nums">{f.format(row.dtlk)}</p>
-                                                    </div>
-                                                    <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">BILL BK/TỔNG</p>
-                                                        <p className="text-xs font-black tabular-nums">{f.format(row.billBk)}/{f.format(row.totalBill)}</p>
-                                                    </div>
-                                                    <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                        <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">%SP BK</p>
-                                                        <p className={`text-xs font-black tabular-nums ${row.pctSpBk >= 25 ? 'text-emerald-600' : (row.pctSpBk < 15 ? 'text-rose-600' : 'text-amber-600')}`}>
-                                                            {f.format(row.pctSpBk)}%
-                                                        </p>
-                                                        <DeltaBadge current={row.pctSpBk} previous={oldRow?.pctSpBk} />
-                                                    </div>
-                                                </div>
-                                            </div>
+                                            <CrossSellingMobileRow
+                                                key={row.originalName || idx}
+                                                row={row}
+                                                isHighlighted={isHighlighted}
+                                                supermarketName={supermarketName}
+                                                f={f}
+                                            />
                                         );
                                     })}
                                 </div>
@@ -486,32 +544,14 @@ const CrossSellingTab: React.FC<{
                                                 );
                                             }
                                             const isHighlighted = highlightedEmployees.has(row.originalName || '');
-                                            const oldRow = row.oldRow;
                                             return (
-                                                <tr key={row.originalName || idx} className={`transition-all group cursor-pointer text-[13px] border-b border-slate-200 dark:border-slate-700 last:border-b-0 ${isHighlighted ? 'bg-sky-50/70 dark:bg-sky-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-800/40'}`}>
-                                                    <td className="px-2 py-1 whitespace-nowrap border-r border-slate-200 dark:border-slate-700 min-w-[180px]">
-                                                        <div className="flex items-center gap-2">
-                                                            <MedalBadge rank={row.rank} />
-                                                            <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />
-                                                            <div className="flex flex-col min-w-0">
-                                                                <span className="font-bold text-sky-600 dark:text-sky-400 text-[13px] whitespace-normal break-words">{row.name}</span>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold text-slate-700 dark:text-slate-300">{f.format(Math.round(row.dtlk))}</td>
-                                                    <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold text-slate-700 dark:text-slate-300">{f.format(row.totalSl)}</td>
-                                                    <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold text-slate-700 dark:text-slate-300">{f.format(row.slBk)}</td>
-                                                    <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${row.pctSpBk >= 25 ? 'text-emerald-600' : (row.pctSpBk < 15 ? 'text-rose-500' : 'text-amber-600')}`}>
-                                                        <div>{Math.round(row.pctSpBk)}%</div>
-                                                        <DeltaBadge current={row.pctSpBk} previous={oldRow?.pctSpBk} />
-                                                    </td>
-                                                    <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold text-slate-700 dark:text-slate-300">{f.format(row.totalBill)}</td>
-                                                    <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold text-sky-700 dark:text-sky-400">{f.format(row.billBk)}</td>
-                                                    <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${row.pctBillBk >= 20 ? 'text-emerald-600' : (row.pctBillBk < 10 ? 'text-rose-500' : 'text-amber-600')}`}>
-                                                        <div>{Math.round(row.pctBillBk)}%</div>
-                                                        <DeltaBadge current={row.pctBillBk} previous={oldRow?.pctBillBk} />
-                                                    </td>
-                                                </tr>
+                                                <CrossSellingDesktopRow
+                                                    key={row.originalName || idx}
+                                                    row={row}
+                                                    isHighlighted={isHighlighted}
+                                                    supermarketName={supermarketName}
+                                                    f={f}
+                                                />
                                             );
                                         })}
                                     </tbody>
@@ -525,4 +565,4 @@ const CrossSellingTab: React.FC<{
         </div>
     );
 };
-export default CrossSellingTab;
+export default React.memo(CrossSellingTab);

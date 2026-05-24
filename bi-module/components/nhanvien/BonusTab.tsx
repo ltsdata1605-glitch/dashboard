@@ -173,6 +173,17 @@ export const BonusDataModal: React.FC<{
     );
 };
 
+const getCellColor = (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong' | 'tong' | 'pnong') => {
+    if (val === 0 || isNaN(val)) return 'text-slate-700 dark:text-slate-300';
+    switch (type) {
+        case 'dtqd': return val >= 50 ? 'text-emerald-600' : (val <= 20 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
+        case 'hqqd': return val > 50 ? 'text-emerald-600' : (val < 40 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
+        case 'pnong': return val > 60 ? 'text-emerald-600' : (val < 40 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
+        case 'tong': return val >= 2000000 ? 'text-emerald-600' : (val <= 500000 ? 'text-rose-500' : 'text-slate-900 dark:text-white');
+    }
+    return 'text-slate-700 dark:text-slate-300';
+};
+
 export const BonusView: React.FC<{ 
     employees: Employee[]; 
     bonusData: Record<string, BonusMetrics | null>; 
@@ -182,7 +193,7 @@ export const BonusView: React.FC<{
     onBatchUpdate: () => void;
     highlightedEmployees: Set<string>; 
     activeDepartments: string[];
-}> = ({ 
+}> = React.memo(({ 
     employees, bonusData, revenueRows, supermarketName, onEmployeeClick, onBatchUpdate,
     highlightedEmployees, activeDepartments
 }) => {
@@ -283,17 +294,6 @@ export const BonusView: React.FC<{
         return updatedAt.includes(today);
     };
 
-    const getCellColor = (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong' | 'tong' | 'pnong') => {
-        if (val === 0 || isNaN(val)) return 'text-slate-700 dark:text-slate-300';
-        switch (type) {
-            case 'dtqd': return val >= 50 ? 'text-emerald-600' : (val <= 20 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
-            case 'hqqd': return val > 50 ? 'text-emerald-600' : (val < 40 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
-            case 'pnong': return val > 60 ? 'text-emerald-600' : (val < 40 ? 'text-rose-500' : 'text-slate-700 dark:text-slate-300');
-            case 'tong': return val >= 2000000 ? 'text-emerald-600' : (val <= 500000 ? 'text-rose-500' : 'text-slate-900 dark:text-white');
-        }
-        return 'text-slate-700 dark:text-slate-300';
-    };
-
     const { showExportOptions } = useExportOptionsContext();
 
     const handleExportPNG = async (customFilename?: string) => {
@@ -384,7 +384,7 @@ export const BonusView: React.FC<{
                                     const bonus = bonusData[item.originalName], rev = revenueMap.get(item.originalName);
                                     const dtqdVal = rev?.dtqd || 0, hqqdVal = rev ? (rev.hieuQuaQD * 100) : 0, erpVal = bonus?.erp || 0, tnongVal = bonus?.tNong || 0, pnongVal = bonus?.pNong || 0, tongVal = bonus?.tong || 0, dkienVal = bonus?.dKien || 0;
                                     const isStale = !isUpdatedToday(bonus?.updatedAt);
-
+ 
                                     return (
                                         <BonusMobileCard
                                             key={item.originalName}
@@ -401,8 +401,7 @@ export const BonusView: React.FC<{
                                             onEmployeeClick={onEmployeeClick}
                                             getCellColor={getCellColor}
                                             f={f}
-                                            avatarElement={<AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item)} />}
-                                            medalElement={<MedalBadge rank={item.rank} />}
+                                            supermarketName={supermarketName}
                                         />
                                     );
                                 })}
@@ -449,7 +448,7 @@ export const BonusView: React.FC<{
                                     const bonus = bonusData[item.originalName], rev = revenueMap.get(item.originalName);
                                     const dtqdVal = rev?.dtqd || 0, hqqdVal = rev ? (rev.hieuQuaQD * 100) : 0, erpVal = bonus?.erp || 0, tnongVal = bonus?.tNong || 0, pnongVal = bonus?.pNong || 0, tongVal = bonus?.tong || 0, dkienVal = bonus?.dKien || 0;
                                     const isStale = !isUpdatedToday(bonus?.updatedAt);
-
+ 
                                     return (
                                         <BonusDesktopRow
                                             key={item.originalName}
@@ -466,8 +465,7 @@ export const BonusView: React.FC<{
                                             onEmployeeClick={onEmployeeClick}
                                             getCellColor={getCellColor}
                                             f={f}
-                                            avatarElement={<AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item)} />}
-                                            medalElement={<MedalBadge rank={item.rank} />}
+                                            supermarketName={supermarketName}
                                         />
                                     );
                                 })}
@@ -480,4 +478,4 @@ export const BonusView: React.FC<{
             </div>
         </div>
     );
-};
+});

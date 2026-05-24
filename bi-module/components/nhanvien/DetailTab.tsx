@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react';
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { parseDetailDataV2, DetailNode } from '../../utils/detailDataParser';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
@@ -25,6 +25,77 @@ const LEVEL_STYLES: Record<string, { indent: number; bg: string; text: string; f
     nhomHang: { indent: 40, bg: '', text: 'text-slate-600 dark:text-slate-400', font: 'font-medium', size: 'text-[12px]' },
     hang: { indent: 60, bg: '', text: 'text-slate-500 dark:text-slate-500', font: 'font-normal', size: 'text-[11px]' },
 };
+
+interface DetailRowProps {
+    node: DetailNode;
+    rowKey: string;
+    isExpanded: boolean;
+    toggleExpand: (key: string) => void;
+    fInt: Intl.NumberFormat;
+    f: Intl.NumberFormat;
+}
+
+const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggleExpand, fInt, f }) => {
+    const style = LEVEL_STYLES[node.level] || LEVEL_STYLES.hang;
+    const hasChildren = node.children.length > 0;
+
+    return (
+        <tr
+            className={`${style.bg} ${style.border || ''} border-b border-slate-100 dark:border-slate-800/60 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50`}
+        >
+            {/* Name column */}
+            <td className={`py-1.5 pr-3 ${style.text} ${style.font} ${style.size} whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-10 bg-inherit`}>
+                <div className="flex items-center" style={{ paddingLeft: `${style.indent + 8}px` }}>
+                    {hasChildren ? (
+                        <button
+                            onClick={() => toggleExpand(rowKey)}
+                            className="mr-1.5 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors flex-shrink-0"
+                        >
+                            {isExpanded
+                                ? <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400" />
+                                : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                            }
+                        </button>
+                    ) : (
+                        <span className="mr-1.5 w-[18px] flex-shrink-0" />
+                    )}
+                    <span className="truncate">{node.name}</span>
+                    {hasChildren && (
+                        <span className="ml-1.5 text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                            {node.children.length}
+                        </span>
+                    )}
+                </div>
+            </td>
+            {/* Số lượng */}
+            <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
+                {fInt.format(node.soLuong)}
+            </td>
+            {/* DTLK */}
+            <td className={`px-2 py-1.5 text-right ${style.size} ${style.font} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
+                {f.format(node.dtlk)}
+            </td>
+            {/* DTQD */}
+            <td className={`px-2 py-1.5 text-right ${style.size} font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-sky-700 dark:text-sky-400`}>
+                {f.format(node.dtqd)}
+            </td>
+            {/* Hiệu quả QĐ */}
+            <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60`}>
+                <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                    node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                    : node.hieuQuaQD > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                    : 'text-slate-400'
+                }`}>
+                    {Math.round(node.hieuQuaQD * 100)}%
+                </span>
+            </td>
+            {/* Đơn giá */}
+            <td className={`px-2 py-1.5 text-right ${style.size} tabular-nums text-slate-500 dark:text-slate-500`}>
+                {f.format(node.donGia)}
+            </td>
+        </tr>
+    );
+});
 
 const SearchableSelect: React.FC<{
     value: string;
@@ -102,11 +173,20 @@ const SearchableSelect: React.FC<{
 const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeDepartments }) => {
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
     const [filterEmployee, setFilterEmployee] = useState<string>('all');
     const [filterNnh, setFilterNnh] = useState<string>('all');
     const [filterNhomHang, setFilterNhomHang] = useState<string>('all');
     const [isAllExpanded, setIsAllExpanded] = useState(false);
     const cardRef = useRef<HTMLDivElement>(null);
+
+    // Debounce search query
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearchQuery(searchQuery);
+        }, 250);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
 
     const fullTree = useMemo(() => parseDetailDataV2(rawData), [rawData]);
 
@@ -163,13 +243,13 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         return keys;
     }, [tree]);
 
-    const toggleExpand = (key: string) => {
+    const toggleExpand = useCallback((key: string) => {
         setExpandedKeys(prev => {
             const next = new Set(prev);
             if (next.has(key)) next.delete(key); else next.add(key);
             return next;
         });
-    };
+    }, []);
 
     const handleExpandAll = () => {
         if (isAllExpanded) {
@@ -204,7 +284,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
 
     // Filter tree by employee name search and dropdown filters
     const filteredTree = useMemo(() => {
-        const q = searchQuery.toLowerCase().trim();
+        const q = debouncedSearchQuery.toLowerCase().trim();
         
         const filterNodes = (nodes: DetailNode[]): DetailNode[] => {
             return nodes.reduce<DetailNode[]>((acc, node) => {
@@ -238,11 +318,11 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             }, []);
         };
         return filterNodes(tree);
-    }, [tree, searchQuery, filterEmployee, filterNnh, filterNhomHang]);
+    }, [tree, debouncedSearchQuery, filterEmployee, filterNnh, filterNhomHang]);
 
     // Auto-expand searched employees
     const displayTree = useMemo(() => {
-        if (searchQuery.trim()) {
+        if (debouncedSearchQuery.trim()) {
             // Auto expand all when searching
             const keys = new Set<string>();
             const walk = (nodes: DetailNode[], prefix: string) => {
@@ -257,7 +337,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             return { tree: filteredTree, expanded: keys };
         }
         return { tree: filteredTree, expanded: expandedKeys };
-    }, [filteredTree, searchQuery, expandedKeys]);
+    }, [filteredTree, debouncedSearchQuery, expandedKeys]);
 
     const { showExportOptions } = useExportOptionsContext();
 
@@ -293,66 +373,19 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         const rows: React.ReactNode[] = [];
         nodes.forEach((node, idx) => {
             const key = `${prefix}-${idx}-${node.name}`;
-            const style = LEVEL_STYLES[node.level] || LEVEL_STYLES.hang;
             const hasChildren = node.children.length > 0;
             const isExpanded = displayTree.expanded.has(key);
 
             rows.push(
-                <tr
+                <DetailRow
                     key={key}
-                    className={`${style.bg} ${style.border || ''} border-b border-slate-100 dark:border-slate-800/60 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50`}
-                >
-                    {/* Name column */}
-                    <td className={`py-1.5 pr-3 ${style.text} ${style.font} ${style.size} whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-10 bg-inherit`}>
-                        <div className="flex items-center" style={{ paddingLeft: `${style.indent + 8}px` }}>
-                            {hasChildren ? (
-                                <button
-                                    onClick={() => toggleExpand(key)}
-                                    className="mr-1.5 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex-shrink-0"
-                                >
-                                    {isExpanded
-                                        ? <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400" />
-                                        : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
-                                    }
-                                </button>
-                            ) : (
-                                <span className="mr-1.5 w-[18px] flex-shrink-0" />
-                            )}
-                            <span className="truncate">{node.name}</span>
-                            {hasChildren && (
-                                <span className="ml-1.5 text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full flex-shrink-0">
-                                    {node.children.length}
-                                </span>
-                            )}
-                        </div>
-                    </td>
-                    {/* Số lượng */}
-                    <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
-                        {fInt.format(node.soLuong)}
-                    </td>
-                    {/* DTLK */}
-                    <td className={`px-2 py-1.5 text-right ${style.size} ${style.font} tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-slate-600 dark:text-slate-400`}>
-                        {f.format(node.dtlk)}
-                    </td>
-                    {/* DTQD */}
-                    <td className={`px-2 py-1.5 text-right ${style.size} font-bold tabular-nums border-r border-slate-100 dark:border-slate-800/60 text-sky-700 dark:text-sky-400`}>
-                        {f.format(node.dtqd)}
-                    </td>
-                    {/* Hiệu quả QĐ */}
-                    <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60`}>
-                        <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                            node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                            : node.hieuQuaQD > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                            : 'text-slate-400'
-                        }`}>
-                            {Math.round(node.hieuQuaQD * 100)}%
-                        </span>
-                    </td>
-                    {/* Đơn giá */}
-                    <td className={`px-2 py-1.5 text-right ${style.size} tabular-nums text-slate-500 dark:text-slate-500`}>
-                        {f.format(node.donGia)}
-                    </td>
-                </tr>
+                    node={node}
+                    rowKey={key}
+                    isExpanded={isExpanded}
+                    toggleExpand={toggleExpand}
+                    fInt={fInt}
+                    f={f}
+                />
             );
 
             // Render children if expanded
@@ -458,4 +491,4 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     );
 };
 
-export default DetailTab;
+export default React.memo(DetailTab);

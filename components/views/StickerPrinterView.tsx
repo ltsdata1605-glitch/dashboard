@@ -188,7 +188,7 @@ export default function StickerPrinterView() {
         setBarcodeImei(match ? match[1] : '');
     };
 
-    const handlePriceInput = (e: React.FormEvent<HTMLDivElement>) => {
+    const handlePriceInput = (e: React.FormEvent<any>) => {
         const el = e.currentTarget;
         const rawText = el.innerText;
         

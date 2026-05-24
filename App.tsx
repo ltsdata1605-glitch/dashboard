@@ -38,9 +38,6 @@ const BiWrapper = lazy(() => import('./bi-module/components/BiWrapper'));
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import LoginView from './components/views/LoginView';
 import PendingApprovalView from './components/views/PendingApprovalView';
-import StaffListView from './components/views/StaffListView';
-import ReportLinkView from './components/views/ReportLinkView';
-import StaffScheduleView from './components/views/StaffScheduleView';
 import CouponConverterView from './components/views/CouponConverterView';
 import { Toaster } from 'react-hot-toast';
 import NotificationDropdown from './components/layout/NotificationDropdown';
@@ -140,7 +137,7 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
 function AppContent() {
     const { isDarkMode, toggleDarkMode } = useLayout();
     const { activeTab } = useActiveTab();
-    const { user, userRole, isDemoMode, isLoading, departmentId } = useAuth();
+    const { user, userRole, isDemoMode, isLoading, departmentId, status } = useAuth();
     
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
 
@@ -192,7 +189,7 @@ function AppContent() {
     }
 
     // Hiển thị màn hình thông tin chờ duyệt hoặc form đăng ký cho user mới
-    if (user?.status === 'pending') {
+    if (status === 'pending') {
         return <PendingApprovalView />;
     }
 

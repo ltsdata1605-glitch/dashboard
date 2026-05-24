@@ -210,7 +210,7 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
 
     useEffect(() => {
         if (!summaryLuyKe || !validateSummaryLuyKeReport(summaryLuyKe)) {
-            if (supermarkets.length > 0) setSupermarkets([]);
+            setSupermarkets([]);
             return;
         }
         // Cải tiến: Nhận diện cả siêu thị ĐM và TGD, và deduplicate theo tên ngắn (shortenSupermarketName)
@@ -228,10 +228,8 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
             }
         }
 
-        if (extractedNames.length > 0 && JSON.stringify(extractedNames.sort()) !== JSON.stringify(supermarkets.sort())) {
-             setSupermarkets(extractedNames);
-        }
-    }, [summaryLuyKe, supermarkets, setSupermarkets]);
+        setSupermarkets(extractedNames);
+    }, [summaryLuyKe, setSupermarkets]);
 
     useEffect(() => {
         if (supermarkets.length > 0 && (!activeSupermarket || !supermarkets.includes(activeSupermarket))) {

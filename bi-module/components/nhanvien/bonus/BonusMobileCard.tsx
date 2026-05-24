@@ -1,5 +1,7 @@
 import React from 'react';
 import { Employee } from '../../../types/nhanVienTypes';
+import { MedalBadge } from '../../shared/Badges';
+import AvatarDisplay from '../shared/AvatarDisplay';
 
 interface BonusMobileCardProps {
     item: any;
@@ -15,13 +17,12 @@ interface BonusMobileCardProps {
     onEmployeeClick: (emp: Employee) => void;
     getCellColor: (val: number, type: 'dtqd' | 'hqqd' | 'erp' | 'tnong' | 'tong' | 'pnong') => string;
     f: Intl.NumberFormat;
-    avatarElement: React.ReactNode;
-    medalElement: React.ReactNode;
+    supermarketName: string;
 }
 
 export const BonusMobileCard = React.memo(({
     item, isHighlighted, isStale, dtqdVal, hqqdVal, erpVal, tnongVal, pnongVal, tongVal, dkienVal,
-    onEmployeeClick, getCellColor, f, avatarElement, medalElement
+    onEmployeeClick, getCellColor, f, supermarketName
 }: BonusMobileCardProps) => {
 
     const bonus = Boolean(erpVal || tnongVal || tongVal || dkienVal);
@@ -31,8 +32,8 @@ export const BonusMobileCard = React.memo(({
         <div onClick={() => onEmployeeClick(item as Employee)} className={`px-4 py-3 cursor-pointer transition-colors ${isHighlighted ? 'bg-indigo-50/60 dark:bg-indigo-900/10 ring-1 ring-inset ring-indigo-200 dark:ring-indigo-800/50' : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'}`}>
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2.5 min-w-0">
-                    {medalElement}
-                    {avatarElement}
+                    <MedalBadge rank={item.rank} />
+                    <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item as Employee)} />
                     <span className={`font-black uppercase tracking-tight truncate text-xs ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : (isStale ? 'text-slate-400 dark:text-slate-500' : 'text-indigo-600 dark:text-indigo-400')}`}>
                         {item.name}
                     </span>

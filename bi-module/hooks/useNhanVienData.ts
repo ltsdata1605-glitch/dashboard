@@ -34,6 +34,7 @@ export function useNhanVienData() {
     }, [supermarkets, isActiveSupermarketsLoaded]);
 
     useEffect(() => {
+        if (!isActiveSupermarketsLoaded) return;
         let isMounted = true;
         const fetchAllData = async () => {
             if (activeSupermarkets.length === 0) {
@@ -101,7 +102,7 @@ export function useNhanVienData() {
         };
         fetchAllData();
         return () => { isMounted = false; };
-    }, [activeSupermarkets, dataVersion]);
+    }, [activeSupermarkets, dataVersion, isActiveSupermarketsLoaded]);
 
     useEffect(() => {
         const handleDbChange = (event: CustomEvent) => {
@@ -114,10 +115,13 @@ export function useNhanVienData() {
         return () => window.removeEventListener('indexeddb-change', handleDbChange as EventListener);
     }, []);
 
+    const parsedRevenueBase = useMemo(() => {
+        return parseRevenueData(aggregatedData.danhSach);
+    }, [aggregatedData.danhSach]);
+
     const employeeDepartmentMap = useMemo(() => {
         const map = new Map<string, string>();
-        const baseRows = parseRevenueData(aggregatedData.danhSach);
-        baseRows.filter(r => r.type === 'employee' && r.originalName && r.department).forEach(r => {
+        parsedRevenueBase.filter(r => r.type === 'employee' && r.originalName && r.department).forEach(r => {
             map.set(r.originalName!, r.department!);
         });
 
@@ -127,7 +131,7 @@ export function useNhanVienData() {
             }
         });
         return map;
-    }, [aggregatedData.danhSach, aggregatedData.manualMapping]);
+    }, [parsedRevenueBase, aggregatedData.manualMapping]);
 
     const installmentRows = useMemo(() => parseInstallmentData(aggregatedData.traGop, employeeDepartmentMap), [aggregatedData.traGop, employeeDepartmentMap]);
     const banKemRows = useMemo(() => parseCrossSellingData(aggregatedData.banKem, employeeDepartmentMap), [aggregatedData.banKem, employeeDepartmentMap]);
@@ -138,7 +142,7 @@ export function useNhanVienData() {
     }, [banKemRows]);
 
     const revenueRows = useMemo(() => {
-        const rows = parseRevenueData(aggregatedData.danhSach);
+        const rows = parsedRevenueBase;
         const mappedRows = rows.map(row => {
             if (row.type === 'employee' && row.originalName) {
                 const pctBillBk = banKemMap.get(row.originalName) || 0;
@@ -169,7 +173,7 @@ export function useNhanVienData() {
             }
         });
         return finalRows;
-    }, [aggregatedData.danhSach, employeeDepartmentMap, banKemMap, banKemRows]);
+    }, [parsedRevenueBase, employeeDepartmentMap, banKemMap, banKemRows]);
 
     const departmentOptions = useMemo(() => {
         const uniqueDepartments = Array.from(new Set(employeeDepartmentMap.values()));

@@ -101,10 +101,18 @@ export const useDashboardLogic = () => {
             const baseTargets = parseCompetitionLuyKeBaseTargets(competitionLuyKe); 
             const newAugmentedData = JSON.parse(JSON.stringify(competitionRealtimeBySupermarket));
             const programTotalTargets: Record<string, number> = {};
-            for (const supermarketName in newAugmentedData) {
-                if (supermarketName === 'Tổng') continue;
+
+            const supermarketNames = Object.keys(newAugmentedData).filter(name => name !== 'Tổng');
+            const adjustmentsResults = await Promise.all(supermarketNames.map(async (supermarketName) => {
                 const safeName = shortenSupermarketName(supermarketName);
-                const adjustments = await db.get(`comptarget-${safeName}-targets`) || {};
+                const adj = await db.get(`comptarget-${safeName}-targets`);
+                return { supermarketName, adjustments: adj || {} };
+            }));
+            const adjustmentsMap = new Map<string, any>();
+            adjustmentsResults.forEach(res => adjustmentsMap.set(res.supermarketName, res.adjustments));
+            
+            for (const supermarketName of supermarketNames) {
+                const adjustments = adjustmentsMap.get(supermarketName) || {};
                 const supermarketData = newAugmentedData[supermarketName];
                 if (!supermarketData || !supermarketData.headers || !supermarketData.programs) continue;
                 const headersToAdd: string[] = [];
@@ -161,10 +169,18 @@ export const useDashboardLogic = () => {
             const baseTargets = parseCompetitionLuyKeBaseTargets(competitionLuyKe);
             const newAugmentedData = JSON.parse(JSON.stringify(competitionLuyKeBySupermarket));
             const programTotals: Record<string, { totalVT: number; totalLK: number }> = {};
-            for (const supermarketName in newAugmentedData) {
-                if (supermarketName === 'Tổng') continue;
+
+            const supermarketNames = Object.keys(newAugmentedData).filter(name => name !== 'Tổng');
+            const adjustmentsResults = await Promise.all(supermarketNames.map(async (supermarketName) => {
                 const safeName = shortenSupermarketName(supermarketName);
-                const adjustments = await db.get(`comptarget-${safeName}-targets`) || {};
+                const adj = await db.get(`comptarget-${safeName}-targets`);
+                return { supermarketName, adjustments: adj || {} };
+            }));
+            const adjustmentsMap = new Map<string, any>();
+            adjustmentsResults.forEach(res => adjustmentsMap.set(res.supermarketName, res.adjustments));
+            
+            for (const supermarketName of supermarketNames) {
+                const adjustments = adjustmentsMap.get(supermarketName) || {};
                 const supermarketData = newAugmentedData[supermarketName];
                 if (!supermarketData || !supermarketData.headers || !supermarketData.programs) continue;
                 const headersToAdd: string[] = [];
@@ -223,13 +239,27 @@ export const useDashboardLogic = () => {
             const now = new Date();
             const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
             const allSupermarketsForTargets = ['Tổng', ...supermarkets];
-            for (const supermarketName of allSupermarketsForTargets) {
+
+            const targetsResults = await Promise.all(allSupermarketsForTargets.map(async (supermarketName) => {
                 const safeName = shortenSupermarketName(supermarketName);
-                const quyDoi = await db.get(`targethero-${safeName}-quydoi`) ?? 40;
-                const traGop = await db.get(`targethero-${safeName}-tragop`) ?? 45;
+                const [quyDoi, traGop, totalTargetPercent] = await Promise.all([
+                    db.get(`targethero-${safeName}-quydoi`),
+                    db.get(`targethero-${safeName}-tragop`),
+                    supermarketName === 'Tổng' ? Promise.resolve(100) : db.get(`targethero-${safeName}-total`)
+                ]);
+                return {
+                    supermarketName,
+                    quyDoi: quyDoi ?? 40,
+                    traGop: traGop ?? 45,
+                    totalTargetPercent: totalTargetPercent ?? 100
+                };
+            }));
+            
+            for (const res of targetsResults) {
+                const { supermarketName, quyDoi, traGop, totalTargetPercent } = res;
                 allTargets[supermarketName] = { quyDoi, traGop };
                 if (supermarketName === 'Tổng') continue;
-                const totalTargetPercent = await db.get(`targethero-${safeName}-total`) ?? 100;
+                
                 const luyKeSupermarketSummary = summaryLuyKeParsed.table.rows.find(r => r[0] === supermarketName);
                 const dtDuKienQd = luyKeSupermarketSummary ? parseNumber(luyKeSupermarketSummary[5]) : 0; 
                 const htTargetDuKienPercent = luyKeSupermarketSummary ? parseNumber(luyKeSupermarketSummary[6]) : 0; 
@@ -240,6 +270,7 @@ export const useDashboardLogic = () => {
                 allDailyTargets[supermarketName] = dailyTarget;
                 allMonthlyTargets[supermarketName] = adjustedMonthTarget;
             }
+            
             setSupermarketDailyTargets(allDailyTargets);
             setSupermarketMonthlyTargets(allMonthlyTargets);
             setSupermarketTargets(allTargets);

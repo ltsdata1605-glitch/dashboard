@@ -46,12 +46,25 @@ interface NhanVienProps {
 
 export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     const [activeTab, setActiveTab] = useIndexedDBState<Tab>('nhanvien-active-tab', 'revenue');
+    const [visitedTabs, setVisitedTabs] = useState<Set<Tab>>(() => new Set<Tab>(['revenue']));
 
     useEffect(() => {
         if (isActive) {
             setActiveTab('revenue');
         }
     }, [isActive, setActiveTab]);
+
+    useEffect(() => {
+        if (activeTab) {
+            setVisitedTabs(prev => {
+                if (prev.has(activeTab)) return prev;
+                const next = new Set(prev);
+                next.add(activeTab);
+                return next;
+            });
+        }
+    }, [activeTab]);
+
     const [isSmFilterOpen, setIsSmFilterOpen] = useState(false);
     const smRef = useRef<HTMLDivElement>(null);
 
@@ -136,6 +149,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     const [employeeCompetitionTargets, setEmployeeCompetitionTargets] = useState<Map<string, Map<string, number>>>(new Map());
 
     useEffect(() => {
+        if (activeTab !== 'competition') return;
         const fetchTargets = async () => {
             if (activeSupermarkets.length === 0) return;
             const targets = new Map<string, Map<string, number>>();
@@ -220,11 +234,12 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             setEmployeeCompetitionTargets(targets);
         };
         fetchTargets();
-    }, [activeSupermarkets, allEmployees, dataVersion]);
+    }, [activeSupermarkets, allEmployees, dataVersion, activeTab]);
 
     const [totalAggregatedTarget, setTotalAggregatedTarget] = useState(0);
 
     useEffect(() => {
+        if (activeTab !== 'revenue') return;
         const loadConfigs = async () => {
             if (activeSupermarkets.length === 0) return;
             // Song song đọc tất cả: summary + target cho mỗi SM
@@ -252,7 +267,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
             setTotalAggregatedTarget(totalT);
         };
         loadConfigs();
-    }, [activeSupermarkets, dataVersion]);
+    }, [activeSupermarkets, dataVersion, activeTab]);
 
     const individualViewEmployees = useMemo(() => {
         const depts = activeDepartments || ['all'];
@@ -408,33 +423,45 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                 {/* Embedded Module Content */}
                 <div className="p-0">
                     <div className="bg-white dark:bg-slate-800">
-                        <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
-                            <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={effectiveActiveDepartments} performanceChanges={EMPTY_MAP} onViewTrend={NOOP} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} snapshotId={null} setSnapshotId={NOOP} snapshots={EMPTY_ARRAY} handleSaveSnapshot={NOOP} handleDeleteSnapshot={NOOP} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} />
-                        </div>
-                        <div className={activeTab === 'crossSelling' ? 'block' : 'hidden'}>
-                            <CrossSellingTab rows={banKemRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />
-                        </div>
-                        <div className={activeTab === 'installment' ? 'block' : 'hidden'}>
-                            <InstallmentTab rows={installmentRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />
-                        </div>
-                        <div className={activeTab === 'competition' ? 'block' : 'hidden'}>
-                            <CompetitionTab groupedData={competitionData} allCompetitionsByCriterion={competitionData} selectedCompetitions={selectedCompetitions} setSelectedCompetitions={setSelectedCompetitions} supermarket={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} versions={versions} activeVersionName={activeVersionName} setActiveVersionName={setActiveVersionName} activeCompetitionTab={activeCompetitionTab} setActiveCompetitionTab={setActiveCompetitionTab} onVersionTabClick={handleVersionTabClick} onStartNewVersion={handleStartNewVersion} onCancelNewVersion={handleCancelNewVersion} onSaveVersion={handleSaveVersion} onDeleteVersion={handleDeleteVersion} employeeCompetitionTargets={employeeCompetitionTargets} allEmployees={allEmployees} performanceChanges={EMPTY_MAP} individualViewEmployees={individualViewEmployees} selectedIndividual={selectedIndividual} onSelectIndividual={setSelectedIndividual} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} activeDepartments={effectiveActiveDepartments} revenueRows={revenueRows} installmentRows={installmentRows} banKemRows={banKemRows} bonusData={aggregatedData.bonusData} />
-                        </div>
-                        <div className={activeTab === 'bonus' ? 'block' : 'hidden'}>
-                            <BonusView 
-                                employees={allEmployees} 
-                                bonusData={aggregatedData.bonusData} 
-                                revenueRows={revenueRows} 
-                                supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} 
-                                onEmployeeClick={(emp) => setEditingBonusEmployee(emp)} 
-                                onBatchUpdate={startBatchBonusUpdate}
-                                highlightedEmployees={highlightedEmployees} 
-                                activeDepartments={effectiveActiveDepartments} 
-                            />
-                        </div>
-                        <div className={activeTab === 'detail' ? 'block' : 'hidden'}>
-                            <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} />
-                        </div>
+                        {visitedTabs.has('revenue') && (
+                            <div className={activeTab === 'revenue' ? 'block' : 'hidden'}>
+                                <RevenueView rows={revenueRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} departmentNames={effectiveActiveDepartments} performanceChanges={EMPTY_MAP} onViewTrend={NOOP} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} snapshotId={null} setSnapshotId={NOOP} snapshots={EMPTY_ARRAY} handleSaveSnapshot={NOOP} handleDeleteSnapshot={NOOP} supermarketTarget={totalAggregatedTarget} departmentWeights={aggregatedWeights} deptEmployeeCounts={deptEmployeeCounts} employeeInstallmentMap={employeeInstallmentMap} />
+                            </div>
+                        )}
+                        {visitedTabs.has('crossSelling') && (
+                            <div className={activeTab === 'crossSelling' ? 'block' : 'hidden'}>
+                                <CrossSellingTab rows={banKemRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />
+                            </div>
+                        )}
+                        {visitedTabs.has('installment') && (
+                            <div className={activeTab === 'installment' ? 'block' : 'hidden'}>
+                                <InstallmentTab rows={installmentRows} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} />
+                            </div>
+                        )}
+                        {visitedTabs.has('competition') && (
+                            <div className={activeTab === 'competition' ? 'block' : 'hidden'}>
+                                <CompetitionTab groupedData={competitionData} allCompetitionsByCriterion={competitionData} selectedCompetitions={selectedCompetitions} setSelectedCompetitions={setSelectedCompetitions} supermarket={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} versions={versions} activeVersionName={activeVersionName} setActiveVersionName={setActiveVersionName} activeCompetitionTab={activeCompetitionTab} setActiveCompetitionTab={setActiveCompetitionTab} onVersionTabClick={handleVersionTabClick} onStartNewVersion={handleStartNewVersion} onCancelNewVersion={handleCancelNewVersion} onSaveVersion={handleSaveVersion} onDeleteVersion={handleDeleteVersion} employeeCompetitionTargets={employeeCompetitionTargets} allEmployees={allEmployees} performanceChanges={EMPTY_MAP} individualViewEmployees={individualViewEmployees} selectedIndividual={selectedIndividual} onSelectIndividual={setSelectedIndividual} highlightedEmployees={highlightedEmployees} setHighlightedEmployees={setHighlightedEmployees} activeDepartments={effectiveActiveDepartments} revenueRows={revenueRows} installmentRows={installmentRows} banKemRows={banKemRows} bonusData={aggregatedData.bonusData} />
+                            </div>
+                        )}
+                        {visitedTabs.has('bonus') && (
+                            <div className={activeTab === 'bonus' ? 'block' : 'hidden'}>
+                                <BonusView 
+                                    employees={allEmployees} 
+                                    bonusData={aggregatedData.bonusData} 
+                                    revenueRows={revenueRows} 
+                                    supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} 
+                                    onEmployeeClick={(emp) => setEditingBonusEmployee(emp)} 
+                                    onBatchUpdate={startBatchBonusUpdate}
+                                    highlightedEmployees={highlightedEmployees} 
+                                    activeDepartments={effectiveActiveDepartments} 
+                                />
+                            </div>
+                        )}
+                        {visitedTabs.has('detail') && (
+                            <div className={activeTab === 'detail' ? 'block' : 'hidden'}>
+                                <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} />
+                            </div>
+                        )}
                     </div>
                 </div>
                 {/* BonusDataModal — giữ conditional vì là modal overlay */}

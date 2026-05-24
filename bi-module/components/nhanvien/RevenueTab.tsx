@@ -93,19 +93,19 @@ const RevenueView: React.FC<{
         return { dayPassed, daysInMonth, percentage };
     }, []);
 
-    const getHtColor = (htValue: number) => {
+    const getHtColor = React.useCallback((htValue: number) => {
         const progress = timeProgressData.percentage;
         if (htValue < progress) return '#ef4444'; 
         if (htValue >= progress + 20) return '#22c55e'; 
         return '#f97316'; 
-    };
+    }, [timeProgressData.percentage]);
 
-    const getDynamicColor = (val: number, config: CriterionConfig) => {
+    const getDynamicColor = React.useCallback((val: number, config: CriterionConfig) => {
         if (!config) return undefined;
         if (val >= config.good.threshold) return config.good.color;
         if (val >= config.average.threshold) return config.average.color;
         return config.bad.color;
-    };
+    }, []);
 
     const { displayList } = useRevenueData({
         rows,
@@ -363,4 +363,4 @@ const RevenueView: React.FC<{
     );
 };
 
-export default RevenueView;
+export default React.memo(RevenueView);

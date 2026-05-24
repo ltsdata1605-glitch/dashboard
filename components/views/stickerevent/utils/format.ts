@@ -1,4 +1,3 @@
-import { Product, InventoryItem } from './types';
 
 /**
  * Shared cached Intl.NumberFormat instance for VND currency formatting.

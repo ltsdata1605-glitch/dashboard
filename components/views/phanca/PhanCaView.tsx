@@ -25,6 +25,27 @@ import BusyReportModal from './components/BusyReportModal';
 import AiSuggestPatternModal from './components/AiSuggestPatternModal';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 
+import { 
+  StaffMember, 
+  ScheduleInfo, 
+  SchedulingRules, 
+  DailyRequirements, 
+  ScheduleTargets, 
+  ScheduleHistoryEntry, 
+  StaffInitialData, 
+  BalancingFeedback, 
+  EditShiftModalInfo, 
+  UnresolvedConflict, 
+  ImportedStaff, 
+  StaffWithGender, 
+  ShiftDefinitions, 
+  BusySchedule,
+  MonthlyStats,
+  ScheduleConfig
+} from './types';
+
+import { createFullSchedule } from './services/scheduleService';
+
 import { abbreviateVietnameseName } from './utils/stringUtils';
 import { DEFAULT_PATTERNS_HUNG_VUONG_910_99, DEFAULT_SHIFT_DEFINITIONS } from './constants';
 
@@ -929,13 +950,16 @@ const App: React.FC = () => {
               <ScheduleTable 
                 staffList={listForTable} config={{ year, month, startDay, duration }} targets={targets} tableRef={tableRef}
                 includeTnInSbh={includeTnInSbh}
-                onDeleteEmployee={(id) => setEmployeeToDelete(id)} onEditShift={(id, d) => setEditingCellInfo({
-                    employeeId: id, dayIndex: d, employeeName: staffList.find(s => s.id === id)!.name, department: staffList.find(s => s.id === id)!.department,
-                    gender: staffList.find(s => s.id === id)!.gender, date: `${new Date(year, month - 1, startDay + d - 1).getDate()}/${month}`,
-                    currentShift: staffList.find(s => s.id === id)!.schedule[d] || { shift: 'Trống', role: 'Trống' },
-                    isSpecialShift: (staffList.find(s => s.id === id)!.schedule[d]?.role || '').includes('('),
-                    employeeStats: staffList.find(s => s.id === id)!.stats, changeHistory: staffList.find(s => s.id === id)!.changeHistory
-                }) || setEditShiftModalOpen(true)}
+                onDeleteEmployee={(id) => setEmployeeToDelete(id)} onEditShift={(id, d) => {
+                    setEditingCellInfo({
+                        employeeId: id, dayIndex: d, employeeName: staffList.find(s => s.id === id)!.name, department: staffList.find(s => s.id === id)!.department,
+                        gender: staffList.find(s => s.id === id)!.gender, date: `${new Date(year, month - 1, startDay + d - 1).getDate()}/${month}`,
+                        currentShift: staffList.find(s => s.id === id)!.schedule[d] || { shift: 'Trống', role: 'Trống' },
+                        isSpecialShift: (staffList.find(s => s.id === id)!.schedule[d]?.role || '').includes('('),
+                        employeeStats: staffList.find(s => s.id === id)!.stats, changeHistory: staffList.find(s => s.id === id)!.changeHistory
+                    });
+                    setEditShiftModalOpen(true);
+                }}
                 onDayHover={(d) => { if(d) setStatsDay(d); setHoveredDay(d); }} hoveredDay={hoveredDay} weekRange={weeklyExportConfig} highlightId={currentHighlightedId}
                 onSwapShift={handleSwapShifts}
               />

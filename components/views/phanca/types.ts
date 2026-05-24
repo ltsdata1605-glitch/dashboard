@@ -29,6 +29,7 @@ export interface ChangeHistoryEntry {
     date: string; // e.g., "5/12"
     from: string; // original role
     to: string;   // new role
+    description?: string;
 }
 
 export interface StaffMember {
@@ -182,4 +183,11 @@ export interface BalancingFeedback {
   reduced: string[];   // Danh sách tên nhân viên được giảm ca
   increased: string[]; // Danh sách tên nhân viên được tăng ca
   message: string;
+}
+
+export interface ScheduleSuggestion {
+  type: 'kho' | 'tn';
+  dateString: string;
+  highCountStaff: StaffMember;
+  lowCountStaff: StaffMember;
 }

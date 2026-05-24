@@ -12,8 +12,97 @@ import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
+interface InstallmentDesktopRowProps {
+    row: any;
+    isTotal: boolean;
+    isHighlighted: boolean;
+    supermarketName: string;
+    hidePercent: boolean;
+    f: Intl.NumberFormat;
+}
 
+const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
+    row, isTotal, isHighlighted, supermarketName, hidePercent, f
+}) => {
+    const oldRow = row.oldRow;
+    return (
+        <tr className={`transition-all cursor-pointer text-[13px] border-b border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-200 border-t-2 border-emerald-200 dark:border-emerald-800' : (isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10' : 'hover:bg-slate-50/80 dark:hover:bg-slate-750')}`}>
+            <td className={`px-2 py-1 whitespace-nowrap border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'text-center uppercase tracking-wider text-[13px]' : ''}`}>
+                <div className={`flex items-center ${isTotal ? 'justify-center' : 'gap-2'}`}>
+                    {!isTotal && <MedalBadge rank={row.rank} />}
+                    {!isTotal && <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />}
+                    <div className="flex flex-col min-w-0">
+                        <span className={`font-bold ${isTotal ? '' : 'text-sky-600 dark:text-sky-400 text-[13px] whitespace-normal break-words'}`}>{row.name}</span>
+                    </div>
+                </div>
+            </td>
+            {row.providers.map((p: InstallmentProvider, pIdx: number) => {
+                const oldP = oldRow?.providers[pIdx];
+                return (
+                    <React.Fragment key={pIdx}>
+                        <td className="px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums text-slate-700 dark:text-slate-300"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
+                        {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-400'}`}><div>{p.percent > 0 ? `${Math.round(p.percent)}%` : '-'}</div><DeltaBadge current={p.percent} previous={oldP?.percent} /></td>}
+                    </React.Fragment>
+                )
+            })}
+            <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-emerald-600' : (row.totalPercent < 40 ? 'text-rose-500' : 'text-amber-600')}`}><div>{Math.round(row.totalPercent)}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
+        </tr>
+    );
+});
 
+interface InstallmentMobileRowProps {
+    row: any;
+    isHighlighted: boolean;
+    supermarketName: string;
+    f: Intl.NumberFormat;
+}
+
+const InstallmentMobileRow = React.memo<InstallmentMobileRowProps>(({
+    row, isHighlighted, supermarketName, f
+}) => {
+    const oldRow = row.oldRow;
+    return (
+        <div className={`p-4 flex flex-col gap-3 transition-all ${isHighlighted ? 'bg-amber-50 dark:bg-amber-900/20' : 'active:bg-slate-50'}`}>
+            <div className="flex items-center gap-3">
+                <MedalBadge rank={row.rank} />
+                <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-start">
+                        <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
+                        <div className="flex flex-col items-end">
+                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.totalPercent >= 45 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'}`}>{f.format(Math.ceil(row.totalPercent))}% TG</span>
+                            <DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-2">
+                {row.providers.map((p: InstallmentProvider, pIdx: number) => {
+                    const oldP = oldRow?.providers[pIdx];
+                    if (p.dt === 0) return null;
+                    return (
+                        <div key={pIdx} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                            <div>
+                                <p className="text-[9px] font-bold text-slate-400 uppercase">{p.shortName}</p>
+                                <p className="text-xs font-black tabular-nums">{f.format(Math.ceil(p.dt))} Tr</p>
+                            </div>
+                            <div className="text-right">
+                                <p className={`text-xs font-bold tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-500'}`}>{f.format(Math.ceil(p.percent))}%</p>
+                                <DeltaBadge current={p.percent} previous={oldP?.percent} />
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+            
+            <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
+                <span>Doanh thu siêu thị:</span>
+                <span className="text-slate-900 dark:text-slate-200 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))} Triệu</span>
+            </div>
+        </div>
+    );
+});
 
 const InstallmentTab: React.FC<{
     rows: InstallmentRow[];
@@ -291,51 +380,17 @@ const InstallmentTab: React.FC<{
                                         );
                                     }
                                     const isHighlighted = highlightedEmployees.has(row.originalName || '');
-                                    const oldRow = row.oldRow;
                                     return (
                                         <div 
-                                            key={row.originalName || idx} 
-                                            className={`p-4 flex flex-col gap-3 transition-all ${isHighlighted ? 'bg-amber-50 dark:bg-amber-900/20' : 'active:bg-slate-50'}`}
+                                            key={row.originalName || idx}
                                             onClick={() => setHighlightedEmployees((prev: Set<string>) => { const n = new Set(prev); if (n.has(row.originalName!)) n.delete(row.originalName!); else n.add(row.originalName!); return n; })}
                                         >
-                                            <div className="flex items-center gap-3">
-                                                <MedalBadge rank={row.rank} />
-
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex justify-between items-start">
-                                                        <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
-                                                        <div className="flex flex-col items-end">
-                                                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.totalPercent >= 45 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'}`}>{f.format(Math.ceil(row.totalPercent))}% TG</span>
-                                                            <DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} />
-                                                        </div>
-                                                    </div>
-
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="grid grid-cols-2 gap-2">
-                                                {row.providers.map((p: InstallmentProvider, pIdx: number) => {
-                                                    const oldP = oldRow?.providers[pIdx];
-                                                    if (p.dt === 0) return null;
-                                                    return (
-                                                        <div key={pIdx} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700 flex justify-between items-center">
-                                                            <div>
-                                                                <p className="text-[9px] font-bold text-slate-400 uppercase">{p.shortName}</p>
-                                                                <p className="text-xs font-black tabular-nums">{f.format(Math.ceil(p.dt))} Tr</p>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <p className={`text-xs font-bold tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-500'}`}>{f.format(Math.ceil(p.percent))}%</p>
-                                                                <DeltaBadge current={p.percent} previous={oldP?.percent} />
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                            
-                                            <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 uppercase">
-                                                <span>Doanh thu siêu thị:</span>
-                                                <span className="text-slate-900 dark:text-slate-200 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))} Triệu</span>
-                                            </div>
+                                            <InstallmentMobileRow
+                                                row={row}
+                                                isHighlighted={isHighlighted}
+                                                supermarketName={supermarketName}
+                                                f={f}
+                                            />
                                         </div>
                                     );
                                 })}
@@ -374,31 +429,16 @@ const InstallmentTab: React.FC<{
                                         }
                                         const isTotal = row.type === 'total';
                                         const isHighlighted = highlightedEmployees.has(row.originalName || '');
-                                        const oldRow = row.oldRow;
-
                                         return (
-                                            <tr key={row.originalName || idx} className={`transition-all cursor-pointer text-[13px] border-b border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-200 border-t-2 border-emerald-200 dark:border-emerald-800' : (isHighlighted ? 'bg-sky-50/50 dark:bg-sky-900/10' : 'hover:bg-slate-50/80 dark:hover:bg-slate-750')}`}>
-                                                <td className={`px-2 py-1 whitespace-nowrap border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'text-center uppercase tracking-wider text-[13px]' : ''}`}>
-                                                    <div className={`flex items-center ${isTotal ? 'justify-center' : 'gap-2'}`}>
-                                                        {!isTotal && <MedalBadge rank={row.rank} />}
-                                                        {!isTotal && <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} />}
-                                                        <div className="flex flex-col min-w-0">
-                                                            <span className={`font-bold ${isTotal ? '' : 'text-sky-600 dark:text-sky-400 text-[13px] whitespace-normal break-words'}`}>{row.name}</span>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                {row.providers.map((p: InstallmentProvider, pIdx: number) => {
-                                                    const oldP = oldRow?.providers[pIdx];
-                                                    return (
-                                                        <React.Fragment key={pIdx}>
-                                                            <td className="px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums text-slate-700 dark:text-slate-300"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
-                                                            {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-400'}`}><div>{p.percent > 0 ? `${Math.round(p.percent)}%` : '-'}</div><DeltaBadge current={p.percent} previous={oldP?.percent} /></td>}
-                                                        </React.Fragment>
-                                                    )
-                                                })}
-                                                <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-                                                <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-emerald-600' : (row.totalPercent < 40 ? 'text-rose-500' : 'text-amber-600')}`}><div>{Math.round(row.totalPercent)}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
-                                            </tr>
+                                            <InstallmentDesktopRow
+                                                key={row.originalName || idx}
+                                                row={row}
+                                                isTotal={isTotal}
+                                                isHighlighted={isHighlighted}
+                                                supermarketName={supermarketName}
+                                                hidePercent={hidePercent}
+                                                f={f}
+                                            />
                                         );
                                     })}
                                 </tbody>
@@ -411,4 +451,4 @@ const InstallmentTab: React.FC<{
         </div>
     );
 };
-export default InstallmentTab;
+export default React.memo(InstallmentTab);
