@@ -176,7 +176,7 @@ const StatusTile: React.FC<{
     );
 };
 
-const DataUpdater: React.FC = () => {
+const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavigateToDashboard }) => {
     const [summaryRealtime, setSummaryRealtime] = useIndexedDBState('summary-realtime', '');
     const [summaryLuyKe, setSummaryLuyKe] = useIndexedDBState('summary-luy-ke', '');
     const [competitionRealtime, setCompetitionRealtime] = useIndexedDBState('competition-realtime', '');

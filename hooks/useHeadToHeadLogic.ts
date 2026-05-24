@@ -35,20 +35,26 @@ export const useHeadToHeadLogic = ({
         const dateRangeString = `${startDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${endDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
         
         const isValidSale = (row: DataRow): boolean => {
-            const getStr = (col: string) => String(getRowValue(row, col) || '').trim();
-            const huy = getStr(COL.TRANG_THAI_HUY);
+            const huy = String(getRowValue(row, COL.TRANG_THAI_HUY) || '').trim();
             if (huy !== 'Chưa hủy' && huy.toLowerCase() !== 'chưa hủy') return false;
             
-            const tra = getStr(COL.TINH_TRANG_NHAP_TRA);
+            const tra = String(getRowValue(row, COL.TINH_TRANG_NHAP_TRA) || '').trim();
             if (tra !== 'Chưa trả' && tra.toLowerCase() !== 'chưa trả') return false;
             
-            const thu = getStr(COL.TRANG_THAI_THU_TIEN);
+            const thu = String(getRowValue(row, COL.TRANG_THAI_THU_TIEN) || '').trim();
             if (thu !== 'Đã thu' && thu.toLowerCase() !== 'đã thu') return false;
             
             return true;
         };
 
-        const dataForTab = baseFilteredData.filter(row => !HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT)) && isValidSale(row));
+        const dataForTab: DataRow[] = [];
+        const baseLen = baseFilteredData.length;
+        for (let i = 0; i < baseLen; i++) {
+            const row = baseFilteredData[i];
+            if (!HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT)) && isValidSale(row)) {
+                dataForTab.push(row);
+            }
+        }
         
         const computedCache = new Map<string, any[]>();
         
@@ -59,10 +65,15 @@ export const useHeadToHeadLogic = ({
             
             if (cfg.type === 'target') {
                 const targetVal = cfg.targetValue || 0;
-                resultRows = employeeData.map(emp => {
+                const empLen = employeeData.length;
+                resultRows = new Array(empLen);
+                for (let i = 0; i < empLen; i++) {
+                    const emp = employeeData[i];
                     const dailyValues: { [dateKey: string]: number } = {};
-                    dateHeaders.forEach(d => dailyValues[toLocalISOString(d)] = targetVal);
-                    return {
+                    for (let j = 0, dhLen = dateHeaders.length; j < dhLen; j++) {
+                        dailyValues[toLocalISOString(dateHeaders[j])] = targetVal;
+                    }
+                    resultRows[i] = {
                         name: emp.name,
                         department: employeeDepartments.get(emp.name) || 'Không Phân Ca',
                         dailyValues,
@@ -70,7 +81,7 @@ export const useHeadToHeadLogic = ({
                         daysWithNoSales: 0,
                         rowAverage: targetVal
                     };
-                });
+                }
             } else if (cfg.type === 'calculated') {
                 const t1 = allConfigs?.find(c => c.id === cfg.operand1_tableId);
                 const t2 = allConfigs?.find(c => c.id === cfg.operand2_tableId);
@@ -78,14 +89,31 @@ export const useHeadToHeadLogic = ({
                 const r1 = t1 ? evaluateConfig(t1) : null;
                 const r2 = t2 ? evaluateConfig(t2) : null;
                 
-                resultRows = employeeData.map(emp => {
+                const row1Map = new Map<string, any>();
+                const row2Map = new Map<string, any>();
+                if (r1) {
+                    for (let i = 0, len = r1.length; i < len; i++) {
+                        row1Map.set(r1[i].name, r1[i]);
+                    }
+                }
+                if (r2) {
+                    for (let i = 0, len = r2.length; i < len; i++) {
+                        row2Map.set(r2[i].name, r2[i]);
+                    }
+                }
+                
+                const empLen = employeeData.length;
+                resultRows = new Array(empLen);
+                for (let i = 0; i < empLen; i++) {
+                    const emp = employeeData[i];
                     const dailyValues: { [dateKey: string]: number } = {};
-                    const row1 = r1?.find(r => r.name === emp.name);
-                    const row2 = r2?.find(r => r.name === emp.name);
+                    const row1 = row1Map.get(emp.name);
+                    const row2 = row2Map.get(emp.name);
                     let total = 0;
                     let daysWithSales = 0;
                     
-                    dateHeaders.forEach(date => {
+                    for (let j = 0, dhLen = dateHeaders.length; j < dhLen; j++) {
+                        const date = dateHeaders[j];
                         const dateKey = toLocalISOString(date);
                         const v1 = row1?.dailyValues[dateKey] || 0;
                         const v2 = row2?.dailyValues[dateKey] || 0;
@@ -100,13 +128,21 @@ export const useHeadToHeadLogic = ({
                         dailyValues[dateKey] = finalV;
                         if (finalV > 0) daysWithSales++;
                         total += finalV;
-                    });
+                    }
                     
                     if (cfg.totalCalculationMethod === 'average') total /= 7;
-                    const rowValues = Object.values(dailyValues);
-                    const rowAverage = rowValues.reduce((a, b) => a + b, 0) / (rowValues.filter(v => v > 0).length || 1);
                     
-                    return {
+                    let rowSum = 0;
+                    let nonZeroCount = 0;
+                    for (let j = 0, dhLen = dateHeaders.length; j < dhLen; j++) {
+                        const dateKey = toLocalISOString(dateHeaders[j]);
+                        const val = dailyValues[dateKey] || 0;
+                        rowSum += val;
+                        if (val > 0) nonZeroCount++;
+                    }
+                    const rowAverage = rowSum / (nonZeroCount || 1);
+                    
+                    resultRows[i] = {
                         name: emp.name,
                         department: employeeDepartments.get(emp.name) || 'Không Phân Ca',
                         dailyValues,
@@ -114,7 +150,7 @@ export const useHeadToHeadLogic = ({
                         daysWithNoSales: 7 - daysWithSales,
                         rowAverage
                     };
-                });
+                }
             } else {
                 // Data type (default)
                 const groupFilteredData = dataForTab.filter(row => {
@@ -153,17 +189,22 @@ export const useHeadToHeadLogic = ({
                 });
                 
                 const salesByEmpDate: Record<string, Record<string, {rev:number, revQD:number, qty:number}>> = {};
-                
-                groupFilteredData.forEach(row => {
+                const gfLen = groupFilteredData.length;
+                for (let i = 0; i < gfLen; i++) {
+                    const row = groupFilteredData[i];
                     const date = row.parsedDate;
-                    if (!date || date < startDate || date > endDate) return;
+                    if (!date || date < startDate || date > endDate) continue;
 
                     const emp = getRowValue(row, COL.NGUOI_TAO);
-                    if (!emp) return;
+                    if (!emp) continue;
                     const dateKey = toLocalISOString(date);
 
                     if (!salesByEmpDate[emp]) salesByEmpDate[emp] = {};
-                    if (!salesByEmpDate[emp][dateKey]) salesByEmpDate[emp][dateKey] = { rev: 0, revQD: 0, qty: 0 };
+                    let eDate = salesByEmpDate[emp][dateKey];
+                    if (!eDate) {
+                        eDate = { rev: 0, revQD: 0, qty: 0 };
+                        salesByEmpDate[emp][dateKey] = eDate;
+                    }
                     
                     const price = Number(getRowValue(row, COL.PRICE)) || 0;
                     const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
@@ -175,12 +216,15 @@ export const useHeadToHeadLogic = ({
                     const isVieon = productConfig.childToSubgroupMap[maNhomHang] === 'Vieon' || productConfig.childToParentMap[maNhomHang] === 'Vieon' || String(productName || '').includes('VieON');
                     const wQty = isVieon ? quantity * heso : quantity;
                     
-                    salesByEmpDate[emp][dateKey].rev += price;
-                    salesByEmpDate[emp][dateKey].revQD += price * heso;
-                    salesByEmpDate[emp][dateKey].qty += wQty;
-                });
+                    eDate.rev += price;
+                    eDate.revQD += price * heso;
+                    eDate.qty += wQty;
+                }
                 
-                resultRows = employeeData.map(emp => {
+                const empLen = employeeData.length;
+                resultRows = new Array(empLen);
+                for (let i = 0; i < empLen; i++) {
+                    const emp = employeeData[i];
                     const eSales = salesByEmpDate[emp.name] || {};
                     const dailyValues: { [dateKey: string]: number } = {};
                     let total = 0;
@@ -188,7 +232,8 @@ export const useHeadToHeadLogic = ({
                     let tRev = 0;
                     let tRevQD = 0;
                     
-                    dateHeaders.forEach(d => {
+                    for (let j = 0, dhLen = dateHeaders.length; j < dhLen; j++) {
+                        const d = dateHeaders[j];
                         const dk = toLocalISOString(d);
                         const m = eSales[dk] || {rev:0, revQD:0, qty:0};
                         tRev += m.rev;
@@ -203,7 +248,7 @@ export const useHeadToHeadLogic = ({
                         dailyValues[dk] = val;
                         if (val > 0) daysWithSales++;
                         if (cfg.metricType !== 'hieuQuaQD') total += val;
-                    });
+                    }
                     
                     if (cfg.metricType === 'hieuQuaQD') {
                         total = tRev > 0 ? ((tRevQD / tRev) - 1) * 100 : 0;
@@ -211,10 +256,17 @@ export const useHeadToHeadLogic = ({
                         total /= 7;
                     }
                     
-                    const rowVals = Object.values(dailyValues);
-                    const rowAvg = rowVals.reduce((a,b)=>a+b, 0) / (rowVals.filter(v=>v>0).length||1);
+                    let rowSum = 0;
+                    let nonZeroCount = 0;
+                    for (let j = 0, dhLen = dateHeaders.length; j < dhLen; j++) {
+                        const dk = toLocalISOString(dateHeaders[j]);
+                        const val = dailyValues[dk] || 0;
+                        rowSum += val;
+                        if (val > 0) nonZeroCount++;
+                    }
+                    const rowAvg = rowSum / (nonZeroCount || 1);
                     
-                    return {
+                    resultRows[i] = {
                         name: emp.name,
                         department: employeeDepartments.get(emp.name) || 'Không Phân Ca',
                         dailyValues,
@@ -222,7 +274,7 @@ export const useHeadToHeadLogic = ({
                         daysWithNoSales: 7 - daysWithSales,
                         rowAverage: rowAvg
                     };
-                });
+                }
             }
             
             computedCache.set(cfg.id, resultRows);
@@ -233,31 +285,51 @@ export const useHeadToHeadLogic = ({
 
         // Calculate bottom 30%
         const rowsByDept: { [key: string]: typeof tableRows } = {};
-        tableRows.forEach(row => {
+        for (let i = 0, len = tableRows.length; i < len; i++) {
+            const row = tableRows[i];
             if (!rowsByDept[row.department]) rowsByDept[row.department] = [];
             rowsByDept[row.department].push(row);
-        });
+        }
 
         const bottom30PercentNames = new Set<string>();
-        Object.values(rowsByDept).forEach(deptRows => {
+        const deptKeys = Object.keys(rowsByDept);
+        for (let i = 0, kLen = deptKeys.length; i < kLen; i++) {
+            const deptRows = rowsByDept[deptKeys[i]];
             if (deptRows.length > 3) {
                 const sorted = [...deptRows].sort((a,b) => a.total - b.total);
                 const tIndex = Math.floor(deptRows.length * 0.3);
                 const tVal = sorted[tIndex].total;
-                sorted.forEach(r => { if(r.total <= tVal && r.total > 0) bottom30PercentNames.add(r.name); });
+                for (let j = 0, drLen = sorted.length; j < drLen; j++) {
+                    const r = sorted[j];
+                    if (r.total <= tVal && r.total > 0) {
+                        bottom30PercentNames.add(r.name);
+                    }
+                }
             }
-        });
+        }
 
-        tableRows.forEach(r => r.isBottom30 = bottom30PercentNames.has(r.name));
+        for (let i = 0, len = tableRows.length; i < len; i++) {
+            tableRows[i].isBottom30 = bottom30PercentNames.has(tableRows[i].name);
+        }
 
         const top30PercentNoSalesNames = new Set<string>();
-        const rowsWithAct = tableRows.filter(r => r.daysWithNoSales < 7);
+        const rowsWithAct: any[] = [];
+        for (let i = 0, len = tableRows.length; i < len; i++) {
+            if (tableRows[i].daysWithNoSales < 7) {
+                rowsWithAct.push(tableRows[i]);
+            }
+        }
         if (rowsWithAct.length > 3) {
             const sorted = [...rowsWithAct].sort((a,b)=>b.daysWithNoSales - a.daysWithNoSales);
             const tIndex = Math.floor(sorted.length * 0.3);
             if (tIndex < sorted.length) {
                 const tVal = sorted[tIndex].daysWithNoSales;
-                sorted.forEach(r => { if(r.daysWithNoSales >= tVal && r.daysWithNoSales > 0) top30PercentNoSalesNames.add(r.name); });
+                for (let j = 0, sLen = sorted.length; j < sLen; j++) {
+                    const r = sorted[j];
+                    if (r.daysWithNoSales >= tVal && r.daysWithNoSales > 0) {
+                        top30PercentNoSalesNames.add(r.name);
+                    }
+                }
             }
         }
 
@@ -268,56 +340,59 @@ export const useHeadToHeadLogic = ({
         const deptTop3ByDate = new Map<string, Map<string, number[]>>();
         const deptTop3Total = new Map<string, number[]>();
 
-        dateHeaders.forEach(date => {
+        for (let d = 0, dhLen = dateHeaders.length; d < dhLen; d++) {
+            const date = dateHeaders[d];
             const dateKey = toLocalISOString(date);
             const dStats = new Map<string, {sum:number, count:number}>();
             const dValues = new Map<string, Set<number>>();
             
-            tableRows.forEach(r => {
+            for (let i = 0, rLen = tableRows.length; i < rLen; i++) {
+                const r = tableRows[i];
                 const val = r.dailyValues[dateKey] || 0;
                 if (!dStats.has(r.department)) dStats.set(r.department, {sum:0, count:0});
                 if (!dValues.has(r.department)) dValues.set(r.department, new Set());
                 
                 if (val > 0) {
-                    dStats.get(r.department)!.sum += val;
-                    dStats.get(r.department)!.count++;
+                    const stats = dStats.get(r.department)!;
+                    stats.sum += val;
+                    stats.count++;
                     dValues.get(r.department)!.add(val);
                 }
                 
                 // Track total column stats only once per row
-                if (dateHeaders.indexOf(date) === 0) {
+                if (d === 0) {
                     if (!deptTotalStats.has(r.department)) deptTotalStats.set(r.department, {sum:0, count:0});
                     if (r.total > 0) {
-                        deptTotalStats.get(r.department)!.sum += r.total;
-                        deptTotalStats.get(r.department)!.count++;
+                        const stats = deptTotalStats.get(r.department)!;
+                        stats.sum += r.total;
+                        stats.count++;
                     }
                 }
-            });
+            }
             const avgMap = new Map<string, number>();
             const top3Map = new Map<string, number[]>();
             
-            dStats.forEach((s, d) => avgMap.set(d, s.count > 0 ? s.sum / s.count : 0));
-            dValues.forEach((set, d) => {
-                top3Map.set(d, Array.from(set).sort((a,b)=>b-a).slice(0, 3));
+            dStats.forEach((s, dName) => avgMap.set(dName, s.count > 0 ? s.sum / s.count : 0));
+            dValues.forEach((set, dName) => {
+                top3Map.set(dName, Array.from(set).sort((a,b)=>b-a).slice(0, 3));
             });
             
             deptAvgByDate.set(dateKey, avgMap);
             deptTop3ByDate.set(dateKey, top3Map);
-        });
+        }
 
-        deptTotalStats.forEach((s, d) => deptAvgTotal.set(d, s.count > 0 ? s.sum / s.count : 0));
+        deptTotalStats.forEach((s, dName) => deptAvgTotal.set(dName, s.count > 0 ? s.sum / s.count : 0));
         
         // Calculate Top 3 Total for each dept
         const dTotalValues = new Map<string, Set<number>>();
-        tableRows.forEach(r => {
+        for (let i = 0, len = tableRows.length; i < len; i++) {
+            const r = tableRows[i];
             if (!dTotalValues.has(r.department)) dTotalValues.set(r.department, new Set());
             if (r.total > 0) dTotalValues.get(r.department)!.add(r.total);
+        }
+        dTotalValues.forEach((set, dName) => {
+            deptTop3Total.set(dName, Array.from(set).sort((a,b)=>b-a).slice(0, 3));
         });
-        dTotalValues.forEach((set, d) => {
-            deptTop3Total.set(d, Array.from(set).sort((a,b)=>b-a).slice(0, 3));
-        });
-
-        deptTotalStats.forEach((s, d) => deptAvgTotal.set(d, s.count > 0 ? s.sum / s.count : 0));
 
         tableRows.sort((a, b) => {
             const valA = a[sortConfig.key];
@@ -328,52 +403,65 @@ export const useHeadToHeadLogic = ({
             return b.total - a.total;
         });
 
-        const groupedRows = tableRows.reduce((a, r) => {
-            if (!a[r.department]) a[r.department] = [];
-            a[r.department].push(r);
-            return a;
-        }, {} as Record<string, typeof tableRows>);
+        const groupedRows: Record<string, typeof tableRows> = {};
+        for (let i = 0, len = tableRows.length; i < len; i++) {
+            const r = tableRows[i];
+            if (!groupedRows[r.department]) groupedRows[r.department] = [];
+            groupedRows[r.department].push(r);
+        }
 
         const sortedDepartments = Object.keys(groupedRows).sort((a,b)=>a.localeCompare(b));
 
         const departmentTotals = new Map<string, any>();
-        sortedDepartments.forEach(dept => {
+        for (let i = 0, sdLen = sortedDepartments.length; i < sdLen; i++) {
+            const dept = sortedDepartments[i];
             const rdept = groupedRows[dept];
             const dt = { daily: new Map<string, number>(), total: 0, daysWithNoSales: 0 };
-            if (rdept.length > 0) {
-                dateHeaders.forEach(d => {
+            const rdeptLen = rdept.length;
+            if (rdeptLen > 0) {
+                for (let j = 0, dhLen = dateHeaders.length; j < dhLen; j++) {
+                    const d = dateHeaders[j];
                     const dk = toLocalISOString(d);
-                    const sum = rdept.reduce((s, r)=>s + (r.dailyValues[dk]||0), 0);
-                    // For HieuQuaQD we can't just sum, but doing full daily recalculation per dept is complex.
-                    // For simplicity, we just average the values or sum them depending on calculation method. 
-                    // To keep it 100% accurate we'd need to re-evaluate the config on group level, but average is acceptable
-                    dt.daily.set(dk, config.metricType === 'hieuQuaQD' || config.type === 'calculated' ? sum / rdept.length : sum);
-                });
-                dt.total = rdept.reduce((s, r) => s + r.total, 0);
-                if (config.metricType === 'hieuQuaQD' || config.type === 'calculated' || config.totalCalculationMethod === 'average') dt.total /= rdept.length;
-                dt.daysWithNoSales = rdept.reduce((s, r)=>s+r.daysWithNoSales, 0)/rdept.length;
+                    let sum = 0;
+                    for (let k = 0; k < rdeptLen; k++) {
+                        sum += rdept[k].dailyValues[dk] || 0;
+                    }
+                    dt.daily.set(dk, config.metricType === 'hieuQuaQD' || config.type === 'calculated' ? sum / rdeptLen : sum);
+                }
+                
+                let sumTotal = 0;
+                let sumNoSales = 0;
+                for (let k = 0; k < rdeptLen; k++) {
+                    sumTotal += rdept[k].total;
+                    sumNoSales += rdept[k].daysWithNoSales;
+                }
+                dt.total = sumTotal;
+                if (config.metricType === 'hieuQuaQD' || config.type === 'calculated' || config.totalCalculationMethod === 'average') dt.total /= rdeptLen;
+                dt.daysWithNoSales = sumNoSales / rdeptLen;
             }
             departmentTotals.set(dept, dt);
-        });
+        }
 
         const totals = { daily: new Map<string, number>(), total: 0, daysWithNoSales: 0 };
-        if (tableRows.length > 0) {
-            tableRows.forEach(r => {
-                dateHeaders.forEach(d => {
-                    const dk = toLocalISOString(d);
-                    totals.daily.set(dk, (totals.daily.get(dk)||0) + (r.dailyValues[dk]||0));
-                });
+        const trLen = tableRows.length;
+        if (trLen > 0) {
+            for (let i = 0; i < trLen; i++) {
+                const r = tableRows[i];
+                for (let j = 0, dhLen = dateHeaders.length; j < dhLen; j++) {
+                    const dk = toLocalISOString(dateHeaders[j]);
+                    totals.daily.set(dk, (totals.daily.get(dk) || 0) + (r.dailyValues[dk] || 0));
+                }
                 totals.total += r.total;
                 totals.daysWithNoSales += r.daysWithNoSales;
-            });
-            dateHeaders.forEach(d => {
-                const dk = toLocalISOString(d);
+            }
+            for (let j = 0, dhLen = dateHeaders.length; j < dhLen; j++) {
+                const dk = toLocalISOString(dateHeaders[j]);
                 if (config.metricType === 'hieuQuaQD' || config.type === 'calculated') {
-                    totals.daily.set(dk, totals.daily.get(dk)! / tableRows.length);
+                    totals.daily.set(dk, totals.daily.get(dk)! / trLen);
                 }
-            });
-            if (config.metricType === 'hieuQuaQD' || config.type === 'calculated' || config.totalCalculationMethod === 'average') totals.total /= tableRows.length;
-            totals.daysWithNoSales /= tableRows.length;
+            }
+            if (config.metricType === 'hieuQuaQD' || config.type === 'calculated' || config.totalCalculationMethod === 'average') totals.total /= trLen;
+            totals.daysWithNoSales /= trLen;
         }
 
         return {

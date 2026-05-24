@@ -174,6 +174,7 @@ export interface CustomColumnConfig {
             productCodes: string[];
         };
     };
+    [key: string]: any;
 }
 
 export interface CustomExploitationTabConfig {
@@ -393,11 +394,51 @@ export interface ColumnConfig {
     headerColor?: string;
 }
 
-export interface IndustryColumnConfig extends ColumnConfig {
+export interface IndustryColumnConfig {
+    id: string;
     order: number;
     isVisible: boolean;
     isCustom: boolean;
+    mainHeader: string;
     subHeader: string;
+    type?: 'data' | 'calculated' | 'target';
+    columnName?: string;
+    
+    // For 'data' type
+    metricType?: WarehouseMetricType;
+    filters?: {
+        selectedIndustries: string[];
+        selectedSubgroups: string[];
+        selectedManufacturers: string[];
+        productCodes: string[];
+        priceType?: 'original' | 'discounted';
+        priceCondition?: 'greater' | 'less' | 'equal' | 'between';
+        priceValue1?: number;
+        priceValue2?: number;
+    };
+
+    // For 'calculated' type
+    operation?: '+' | '-' | '*' | '/';
+    operand1_columnId?: string;
+    operand2_columnId?: string;
+    displayAs?: 'number' | 'percentage';
+    decimalPlaces?: 0 | 1 | 2;
+
+    // For 'target' type
+    targetValue?: number;
+
+    conditionalFormatting?: {
+        condition: '>' | '<' | '=' | 'between' | '>avg' | '<avg';
+        value1: number;
+        value2?: number;
+        color: string;
+    }[];
+
+    categoryType?: WarehouseCategoryType;
+    categoryName?: string;
+    manufacturerName?: string;
+    productCodes?: string[];
+    headerColor?: string;
 }
 
 

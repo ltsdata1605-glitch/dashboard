@@ -347,6 +347,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         handleSaveTable,
         handleSaveColumn,
         handleDeleteTab,
+        handleDeleteTable,
         handleConfirmDeleteColumn,
         handleDeleteColumnDirect,
         handleSaveCustomExploitationTab,

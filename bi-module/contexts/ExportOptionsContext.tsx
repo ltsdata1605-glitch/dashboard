@@ -8,12 +8,12 @@ const ExportOptionsContext = createContext<ExportOptionsContextType | null>(null
 
 export const ExportOptionsProvider = ExportOptionsContext.Provider;
 
-export function useExportOptionsContext() {
+export function useExportOptionsContext(): ExportOptionsContextType {
     const ctx = useContext(ExportOptionsContext);
     if (!ctx) {
         // Fallback: direct download if no context
         return {
-            showExportOptions: async (blob: Blob, filename: string) => {
+            showExportOptions: async (blob: Blob, filename: string): Promise<'download' | 'share' | 'cancel'> => {
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.download = filename;

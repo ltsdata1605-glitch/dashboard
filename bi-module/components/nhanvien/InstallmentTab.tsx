@@ -268,7 +268,7 @@ const InstallmentTab: React.FC<{
                     <button onClick={() => setViewMode('list')} title="Danh sách" className={`p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <button onClick={handleBatchExportByDept} disabled={isExportingByDept} title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'} className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-50">{isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}</button>
-                    <ExportButton onExportPNG={() => handleExportPNG()} />
+                    <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
                 </div>
             </div>
             <div ref={cardRef}>

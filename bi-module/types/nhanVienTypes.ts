@@ -38,6 +38,11 @@ export interface RevenueRow {
     soLuong?: number;
     donGia?: number;
     pctBillBk?: number;
+    prevCompData?: any;
+    rank?: number;
+    calculatedCompletion?: number;
+    calculatedTarget?: number;
+    calculatedInstallment?: number;
 }
 
 export interface CrossSellingRow {

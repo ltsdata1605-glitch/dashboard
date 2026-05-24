@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { useDashboardContext } from '../../contexts/DashboardContext';
 import { CHART_ANIMATION_ENABLED } from '../../utils/chartConfig';
 
 const data = [
@@ -14,6 +15,7 @@ const data = [
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
 export const ProportionChart: React.FC = () => {
+  const { isExporting } = useDashboardContext();
   return (
     <div className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border border-slate-100 dark:border-slate-800 overflow-hidden rounded-none mb-8 transition-all duration-300">
       <header className="px-6 py-5 border-b border-slate-100 dark:border-slate-800">

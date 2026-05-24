@@ -315,7 +315,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                                     supermarketDailyTargets={supermarketDailyTargets}
                                     supermarketMonthlyTargets={supermarketMonthlyTargets}
                                     activeSupermarket={activeSupermarket}
-                                    onExport={() => handleExportPNG(summaryTableRef, `BangDoanhThu${!isRealtimeView ? 'LuyKe' : ''}_${activeSupermarket}`)}
+                                    onExport={async () => { await handleExportPNG(summaryTableRef, `BangDoanhThu${!isRealtimeView ? 'LuyKe' : ''}_${activeSupermarket}`); }}
                                     updateTimestamp={isRealtimeView ? summaryRealtimeTs : null}
                                     supermarketTargets={supermarketTargets}
                                 />
@@ -347,7 +347,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                                 onBatchExport={() => runBatchExport('competition')}
                                 isBatchExporting={isBatchExportingCompetition}
                                 updateTimestamp={isRealtimeView ? competitionRealtimeTs : competitionLuyKeTs}
-                                onExport={() => handleExportPNG(printableRef, `ThiDua_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`)}
+                                onExport={async () => { await handleExportPNG(printableRef, `ThiDua_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`); }}
                             />
                         </div>
                     )}
@@ -362,7 +362,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                                 realtimeData={industryRealtimeParsed}
                                 luykeData={industryLuyKeParsed}
                                 activeSupermarket={activeSupermarket}
-                                onExport={() => handleExportPNG(industryTableRef, `NganhHang_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`)}
+                                onExport={async () => { await handleExportPNG(industryTableRef, `NganhHang_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`); }}
                             />
                         </div>
                     )}

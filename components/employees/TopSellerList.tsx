@@ -59,6 +59,14 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
         }, {} as { [key: string]: Employee[] });
     }, [displayedSellers]);
 
+    const sellerRanks = useMemo(() => {
+        const ranks = new Map<string, number>();
+        for (let i = 0, len = sortedSellers.length; i < len; i++) {
+            ranks.set(sortedSellers[i].name, i);
+        }
+        return ranks;
+    }, [sortedSellers]);
+
     const sortedDepartments = useMemo(() => Object.keys(groupedSellers).sort(), [groupedSellers]);
     
 
@@ -124,7 +132,7 @@ const TopSellerList = React.memo(forwardRef<HTMLDivElement, TopSellerListProps>(
                                 )}
                                 <div className="space-y-1 sm:space-y-2">
                                     {groupedSellers[dept].map((seller) => {
-                                        const rankIndex = sortedSellers.findIndex(s => s.name === seller.name);
+                                        const rankIndex = sellerRanks.get(seller.name) ?? -1;
                                         let rankDisplay = <div className="w-5 sm:w-8 text-center"><RankBadge rank={rankIndex} /></div>;
 
                                         const hieuQuaClass = Number(seller.hieuQuaValue || 0) < 35 ? 'text-red-500 font-bold' : 'text-green-500 font-bold';

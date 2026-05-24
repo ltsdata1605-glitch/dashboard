@@ -228,7 +228,7 @@ const RevenueView: React.FC<{
                     >
                         {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
                     </button>
-                    <ExportButton onExportPNG={() => handleExportPNG()} />
+                    <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
                 </div>
             </div>
             <div ref={cardRef}>

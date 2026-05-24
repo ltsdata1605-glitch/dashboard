@@ -48,7 +48,7 @@ const TrendChart: React.FC = React.memo(() => {
   const trendData = processedData?.trendData;
 
   const chartCardRef = useRef<HTMLDivElement>(null);
-  const [trendState, setTrendState] = useState({ view: 'shift', metric: 'thuc' });
+  const [trendState, setTrendState] = useState<{ view: 'shift' | 'daily' | 'weekly' | 'monthly'; metric: string; _filterOpen?: boolean }>({ view: 'shift', metric: 'thuc', _filterOpen: false });
   const [displayMode, setDisplayMode] = useState<'chart' | 'calendar'>('chart');
   
   // Local Filter States for Calendar
@@ -463,9 +463,9 @@ const TrendChart: React.FC = React.memo(() => {
           {/* Mobile: icon button with popover */}
           <div className="lg:hidden relative">
               <button
-                  onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: !prev._filterOpen } as any))}
+                  onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: !prev._filterOpen }))}
                   className={`p-1.5 rounded-md transition-colors relative ${
-                      (trendState as any)._filterOpen 
+                      trendState._filterOpen 
                       ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' 
                       : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
@@ -476,9 +476,9 @@ const TrendChart: React.FC = React.memo(() => {
                       {trendState.view === 'shift' ? 'Ca' : trendState.view === 'daily' ? 'N' : trendState.view === 'weekly' ? 'T' : 'Th'}
                   </span>
               </button>
-              {(trendState as any)._filterOpen && (
+              {trendState._filterOpen && (
                   <>
-                      <div className="fixed inset-0 z-[98]" onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: false } as any))} />
+                      <div className="fixed inset-0 z-[98]" onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: false }))} />
                       <div className="absolute right-0 top-full mt-1 z-[99] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 py-1 min-w-[100px]">
                           {([
                               { value: 'shift', label: 'Ca' },
@@ -488,7 +488,7 @@ const TrendChart: React.FC = React.memo(() => {
                           ] as const).map((item) => (
                               <button
                                   key={item.value}
-                                  onClick={() => setTrendState(prev => ({ ...prev, view: item.value, _filterOpen: false } as any))}
+                                  onClick={() => setTrendState(prev => ({ ...prev, view: item.value, _filterOpen: false }))}
                                   className={`w-full text-left px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
                                       trendState.view === item.value 
                                       ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' 

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { LineChartIcon, ArchiveBoxIcon, BuildingStorefrontIcon, ChevronDownIcon, FilterIcon, CreditCardIcon, SparklesIcon } from './Icons';
-import { Tab, Employee } from '../types/nhanVienTypes';
+import { Tab, Employee, Criterion, Version } from '../types/nhanVienTypes';
 import RevenueView from './nhanvien/RevenueTab';
 import InstallmentTab from './nhanvien/InstallmentTab';
 import { BonusView, BonusDataModal } from './nhanvien/BonusTab';
@@ -118,7 +118,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
 
     const competitionData = useMemo(() => parseCompetitionData(aggregatedData.thiDua, employeeDepartmentMap), [aggregatedData.thiDua, employeeDepartmentMap]);
     // Fix: Updated type to include 'tong'
-    const [activeCompetitionTab, setActiveCompetitionTab] = useIndexedDBState<Criterion | 'nhom' | 'canhan' | 'tong'>('nhanvien-active-competition-tab', 'nhom');
+    const [activeCompetitionTab, setActiveCompetitionTab] = useIndexedDBState<Criterion | 'nhom' | 'canhan' | 'tong' | 'sosanh'>('nhanvien-active-competition-tab', 'nhom');
     const [highlightedEmpArray, setHighlightedEmpArray] = useIndexedDBState<string[]>('highlight-employees-multi', []);
     const highlightedEmployees = useMemo(() => new Set(highlightedEmpArray), [highlightedEmpArray]);
     const setHighlightedEmployees = (updater: React.SetStateAction<Set<string>>) => { 

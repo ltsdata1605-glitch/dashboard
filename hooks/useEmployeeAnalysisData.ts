@@ -45,21 +45,36 @@ export const useEmployeeAnalysisData = () => {
                 allDepartments: [], 
             };
         }
-        
+
         const industries = new Set(Object.values(productConfig.childToParentMap));
         const subgroups = new Set<string>();
-        Object.values(productConfig.subgroups).forEach(parent => {
-            Object.keys(parent).forEach(subgroup => subgroups.add(subgroup));
-        });
-        const manufacturers = new Set<string>(originalData.map(row => String(getRowValue(row, COL.MANUFACTURER) || '')).filter(Boolean));
+        const subgroupsArr = Object.values(productConfig.subgroups);
+        for (let i = 0, len = subgroupsArr.length; i < len; i++) {
+            const parent = subgroupsArr[i];
+            const keys = Object.keys(parent);
+            for (let j = 0, kLen = keys.length; j < kLen; j++) {
+                subgroups.add(keys[j]);
+            }
+        }
+
+        const manufacturers = new Set<string>();
+        for (let i = 0, len = originalData.length; i < len; i++) {
+            const mfg = getRowValue(originalData[i], COL.MANUFACTURER);
+            if (mfg) {
+                manufacturers.add(String(mfg));
+            }
+        }
+
         const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
         const depts = new Set<string>();
-        employeeAnalysisData.fullSellerArray.forEach(emp => {
+        const sellers = employeeAnalysisData.fullSellerArray;
+        for (let i = 0, len = sellers.length; i < len; i++) {
+            const emp = sellers[i];
             const dept = String(emp.department || '');
             if (dept && !excludedKeywords.some(keyword => dept.toLowerCase().includes(keyword))) {
                 depts.add(dept);
             }
-        });
+        }
         
         return { 
             allIndustries: Array.from(industries).sort(), 
@@ -92,16 +107,31 @@ export const useEmployeeAnalysisData = () => {
         const mainEndDate = filterState.endDate ? new Date(filterState.endDate) : null;
         if (mainEndDate) mainEndDate.setHours(23, 59, 59, 999);
 
-        // Filter baseFilteredData as well
-        const filteredBaseData = baseFilteredData.filter(row => {
+        // Pre-build O(1) lookup Map for sellers
+        const sellerMap = new Map<string, any>();
+        const sellers = employeeAnalysisData.fullSellerArray;
+        for (let i = 0, len = sellers.length; i < len; i++) {
+            const emp = sellers[i];
+            sellerMap.set(emp.name, emp);
+        }
+
+        // Filter baseFilteredData using O(1) Map lookup
+        const filteredBaseData: any[] = [];
+        for (let i = 0, len = baseFilteredData.length; i < len; i++) {
+            const row = baseFilteredData[i];
             // Apply Date Filter!
-            if (!isDateMatch(row, mainStartDate, mainEndDate, filterState.selectedMonths)) return false;
+            if (!isDateMatch(row, mainStartDate, mainEndDate, filterState.selectedMonths)) continue;
 
             const empName = getRowValue(row, COL.NGUOI_TAO);
-            const empObj = empName ? employeeAnalysisData.fullSellerArray.find(e => e.name === empName) : null;
-            if (!empObj) return !hideZeroRevenue; // If name not found, usually means 0 revenue info in this context, but follow filter
-            return filterEmployee(empObj);
-        });
+            const empObj = empName ? sellerMap.get(empName) : null;
+            if (!empObj) {
+                if (!hideZeroRevenue) filteredBaseData.push(row);
+                continue;
+            }
+            if (filterEmployee(empObj)) {
+                filteredBaseData.push(row);
+            }
+        }
 
         return {
             ...employeeAnalysisData,

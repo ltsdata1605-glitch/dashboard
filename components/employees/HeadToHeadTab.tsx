@@ -19,7 +19,7 @@ interface HeadToHeadTabProps {
     employeeData: Employee[];
     onExport?: () => void;
     isExporting?: boolean;
-    colorThemes: { header: string; row: string; border: string; }[];
+    colorThemes: { header: string; row: string; border: string; activeTab?: string; }[];
 }
 
 
@@ -51,10 +51,11 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
 
     const allManufacturers = useMemo(() => {
         const m = new Set<string>();
-        props.baseFilteredData.forEach(row => {
-            const hang = getRowValue(row, COL.MANUFACTURER);
+        const data = props.baseFilteredData;
+        for (let i = 0, len = data.length; i < len; i++) {
+            const hang = getRowValue(data[i], COL.MANUFACTURER);
             if (hang) m.add(hang);
-        });
+        }
         return Array.from(m).sort();
     }, [props.baseFilteredData]);
 

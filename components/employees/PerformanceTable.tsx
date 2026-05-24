@@ -118,15 +118,28 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
 
     const trueGrandTotal = useMemo(() => {
         const all = employeeData?.fullSellerArray || [];
-        const totalDTThuc = all.reduce((s, e) => s + Number(e.doanhThuThuc || 0), 0);
-        const totalDTQD   = all.reduce((s, e) => s + Number(e.doanhThuQD || 0), 0);
-        const totalSlTC   = all.reduce((s, e) => s + Number(e.slTiepCan || 0), 0);
-        const totalSlICT = all.reduce((s, e) => s + Number(e.slICT || 0), 0);
-        const totalSlCE_main = all.reduce((s, e) => s + Number(e.slCE_main || 0), 0);
-        const totalSlCE_ICT = all.reduce((s, e) => s + Number(e.slCE_ICT || 0), 0);
-        const totalSlTraCham_CE_ICT = all.reduce((s, e) => s + Number(e.slTraCham_CE_ICT || 0), 0);
-        const totalRevCE_ICT = all.reduce((s, e) => s + Number(e.doanhThu_CE_ICT || 0), 0);
-        const totalRevTraCham_CE_ICT = all.reduce((s, e) => s + Number(e.doanhThuTraCham_CE_ICT || 0), 0);
+        let totalDTThuc = 0;
+        let totalDTQD   = 0;
+        let totalSlTC   = 0;
+        let totalSlICT  = 0;
+        let totalSlCE_main = 0;
+        let totalSlCE_ICT  = 0;
+        let totalSlTraCham_CE_ICT = 0;
+        let totalRevCE_ICT = 0;
+        let totalRevTraCham_CE_ICT = 0;
+        
+        for (let i = 0, len = all.length; i < len; i++) {
+            const e = all[i];
+            totalDTThuc += Number(e.doanhThuThuc || 0);
+            totalDTQD   += Number(e.doanhThuQD || 0);
+            totalSlTC   += Number(e.slTiepCan || 0);
+            totalSlICT  += Number(e.slICT || 0);
+            totalSlCE_main += Number(e.slCE_main || 0);
+            totalSlCE_ICT  += Number(e.slCE_ICT || 0);
+            totalSlTraCham_CE_ICT += Number(e.slTraCham_CE_ICT || 0);
+            totalRevCE_ICT += Number(e.doanhThu_CE_ICT || 0);
+            totalRevTraCham_CE_ICT += Number(e.doanhThuTraCham_CE_ICT || 0);
+        }
         
         const totalTarget = targetPerEmployee * all.length;
         

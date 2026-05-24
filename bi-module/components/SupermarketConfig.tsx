@@ -113,13 +113,14 @@ const StatusTile: React.FC<{
     title: string;
     lastUpdated: string | null;
     value: string;
-    placeholder: string;
+    placeholder?: string;
     onChange: (val: string) => void;
     onClear: (title: string) => void;
     error?: string | null;
     icon?: React.ReactNode;
     colorTheme?: 'emerald' | 'sky' | 'rose' | 'amber' | 'indigo' | 'purple';
-}> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, icon, colorTheme = 'sky' }) => {
+    downloadUrl?: string;
+}> = ({ title, lastUpdated, value, placeholder, onChange, onClear, error, icon, colorTheme = 'sky', downloadUrl }) => {
     const [isPasting, setIsPasting] = useState(false);
     const hasData = value && value.length > 0 && !error;
 
@@ -213,6 +214,20 @@ const StatusTile: React.FC<{
                     </div>
                 )}
             </div>
+            {downloadUrl && !isPasting && (
+                <a 
+                    href={downloadUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => { 
+                        e.stopPropagation(); 
+                    }} 
+                    className={`absolute top-1/2 -translate-y-1/2 p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10 ${hasData ? 'right-10' : 'right-2'}`} 
+                    title="Mở link tải báo cáo từ BI"
+                >
+                    <DownloadIcon className="h-3.5 w-3.5" />
+                </a>
+            )}
             {hasData && !isPasting && (
                 <button 
                     onClick={(e) => { 

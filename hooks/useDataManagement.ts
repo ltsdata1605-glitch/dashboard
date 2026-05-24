@@ -301,10 +301,10 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
 
                 let rbacData = originalData;
                 if (!isDemoMode && (userRole === 'employee' || userRole === 'manager') && user?.email !== 'nguyendangkhoafit2@gmail.com') {
+                    const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
                     rbacData = originalData.filter(row => {
                         const kho = String(row['Mã kho tạo'] || '').trim();
                         // 1. Manager & Employee both need Kho matching
-                        const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
                         if (!allowedKhos.includes(kho)) return false;
                         
                         // 2. Employee additional check for exact name match
@@ -371,16 +371,42 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
         const hangSXOptions = Array.from(hangSxs).sort();
         
         let deptOptions: string[] = [];
-        if(departmentMap) {
-            const uniqueDepartments = Array.from(new Set(Object.values(departmentMap).map(v => (v as string).split(';;')[0]))).sort();
+        if (departmentMap) {
+            const deptsSet = new Set<string>();
             const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
-            deptOptions = uniqueDepartments.filter(d => !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)));
+            const mapValues = Object.values(departmentMap);
+            for (let i = 0, len = mapValues.length; i < len; i++) {
+                const val = mapValues[i] as string;
+                if (!val) continue;
+                const sepIdx = val.indexOf(';;');
+                const deptName = sepIdx !== -1 ? val.substring(0, sepIdx) : val;
+                if (deptName) {
+                    const deptLower = deptName.toLowerCase();
+                    let isExcluded = false;
+                    for (let j = 0; j < excludedKeywords.length; j++) {
+                        if (deptLower.includes(excludedKeywords[j])) {
+                            isExcluded = true;
+                            break;
+                        }
+                    }
+                    if (!isExcluded) {
+                        deptsSet.add(deptName);
+                    }
+                }
+            }
+            deptOptions = Array.from(deptsSet).sort();
             
             // Check for unassigned employees
-            const hasUnassigned = nguoiTaoOptions.some(empStr => {
-                const id = empStr.split(' - ')[0].trim();
-                return !departmentMap[id];
-            });
+            let hasUnassigned = false;
+            for (let i = 0, len = nguoiTaoOptions.length; i < len; i++) {
+                const empStr = nguoiTaoOptions[i];
+                const dashIdx = empStr.indexOf(' - ');
+                const id = dashIdx !== -1 ? empStr.substring(0, dashIdx).trim() : empStr.trim();
+                if (!departmentMap[id]) {
+                    hasUnassigned = true;
+                    break;
+                }
+            }
             if (hasUnassigned && !deptOptions.includes('Chưa xác định')) {
                 deptOptions.push('Chưa xác định');
             }
