@@ -79,11 +79,11 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   const isIndividualExport = staffList.length === 1;
 
   const weekThemes = [
-    { bg: '#f1f5f9', text: '#475569', border: '#e2e8f0' }, // Slate
-    { bg: '#eff6ff', text: '#2563eb', border: '#dbeafe' }, // Blue
-    { bg: '#f0fdf4', text: '#16a34a', border: '#dcfce7' }, // Green
-    { bg: '#fffbeb', text: '#d97706', border: '#fef3c7' }, // Amber
-    { bg: '#faf5ff', text: '#9333ea', border: '#f3e8ff' }, // Purple
+    { bg: '#f1f5f9', text: '#1e293b', border: '#e2e8f0' }, // Slate-800
+    { bg: '#eff6ff', text: '#1e3a8a', border: '#dbeafe' }, // Blue-900
+    { bg: '#f0fdf4', text: '#14532d', border: '#dcfce7' }, // Green-900
+    { bg: '#fffbeb', text: '#78350f', border: '#fef3c7' }, // Amber-900
+    { bg: '#faf5ff', text: '#581c87', border: '#f3e8ff' }, // Purple-900
   ];
 
   const dayToWeekMap = useMemo(() => {
@@ -292,31 +292,31 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
           <tr>
             {!isIndividualExport && (
                 <>
-                    <th rowSpan={2} className="sticky-col px-1 text-center border-r border-slate-300 bg-slate-50 z-40 text-sm font-black uppercase tracking-wider" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
-                    <th rowSpan={2} className="sticky-col px-5 text-left border-r border-slate-300 bg-slate-50 z-40 text-sm font-black uppercase tracking-wider" style={{ left: '40px', minWidth: '220px' }}>Họ và Tên</th>
+                    <th rowSpan={2} className="sticky-col px-1 text-center border-r border-slate-300 bg-slate-50 z-40 text-sm font-black uppercase tracking-wider text-slate-800" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
+                    <th rowSpan={2} className="sticky-col px-5 text-left border-r border-slate-300 bg-slate-50 z-40 text-sm font-black uppercase tracking-wider text-slate-800" style={{ left: '40px', minWidth: '220px' }}>Họ và Tên</th>
                 </>
             )}
-            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-indigo-50/50 text-indigo-700 font-black text-sm uppercase tracking-widest">Giờ Công</th>
-            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-purple-50/50 text-purple-700 font-black text-sm uppercase tracking-widest">Số Ngày SBH</th>
-            <th colSpan={2} className="border-r-2 border-slate-300 py-2.5 bg-slate-100 font-black text-sm uppercase tracking-widest text-slate-500">Số Lần</th>
+            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-indigo-50/50 text-indigo-900 font-black text-sm uppercase tracking-widest">Giờ Công</th>
+            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-purple-50/50 text-purple-900 font-black text-sm uppercase tracking-widest">Số Ngày SBH</th>
+            <th colSpan={2} className="border-r-2 border-slate-300 py-2.5 bg-slate-100 font-black text-sm uppercase tracking-widest text-slate-800">Số Lần</th>
             {weekHeaders}
           </tr>
-          <tr className="text-xs font-black uppercase tracking-tighter">
-            <th className="px-1 border-r border-slate-200 bg-indigo-50/20 text-indigo-400">SBH</th>
-            <th className="px-1 border-r border-slate-200 bg-indigo-50/20 text-indigo-400">TV</th>
-            <th className="px-1 border-r-2 border-slate-300 bg-indigo-50/20 text-indigo-700">TỔNG</th>
-            <th className="px-1 border-r border-slate-200 bg-purple-50/20 text-purple-400">GH</th>
-            <th className="px-1 border-r border-slate-200 bg-purple-50/20 text-purple-400">KH</th>
-            <th className="px-1 border-r-2 border-slate-300 bg-purple-50/20 text-purple-700">TN</th>
-            <th className="px-1 border-r border-slate-200 text-slate-400">ĐỔI</th>
-            <th className="px-1 border-r-2 border-slate-300 text-slate-400">OFF</th>
+          <tr className="text-sm font-black uppercase tracking-tighter">
+            <th className="px-1 border-r border-slate-200 bg-indigo-50/20 text-indigo-800">SBH</th>
+            <th className="px-1 border-r border-slate-200 bg-indigo-50/20 text-indigo-800">TV</th>
+            <th className="px-1 border-r-2 border-slate-300 bg-indigo-50/20 text-indigo-900">TỔNG</th>
+            <th className="px-1 border-r border-slate-200 bg-purple-50/20 text-purple-800">GH</th>
+            <th className="px-1 border-r border-slate-200 bg-purple-50/20 text-purple-800">KH</th>
+            <th className="px-1 border-r-2 border-slate-300 bg-purple-50/20 text-purple-900">TN</th>
+            <th className="px-1 border-r border-slate-200 text-slate-700">ĐỔI</th>
+            <th className="px-1 border-r-2 border-slate-300 text-slate-700">OFF</th>
             {Array.from({ length: duration }).map((_, i) => {
                 const date = new Date(year, month - 1, startDay + i);
                 const isSun = date.getDay() === 0;
                 return (
-                    <th key={i} className={`px-1 min-w-[50px] border-r border-slate-200 ${isSun ? 'bg-rose-50 text-rose-600' : 'bg-white'}`}>
-                        <div className="font-black text-base">{date.getDate()}</div>
-                        <div className="opacity-60 text-[11px] tracking-widest">{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</div>
+                    <th key={i} className={`px-1 min-w-[50px] border-r border-slate-200 ${isSun ? 'bg-rose-50 text-rose-800' : 'bg-white text-slate-800'}`}>
+                        <div className="font-black text-sm">{date.getDate()}</div>
+                        <div className="opacity-90 text-sm tracking-widest">{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</div>
                     </th>
                 );
             })}
