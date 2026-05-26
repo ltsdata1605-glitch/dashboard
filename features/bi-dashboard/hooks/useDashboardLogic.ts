@@ -37,8 +37,8 @@ export const useDashboardLogic = () => {
     const [dataVersion, setDataVersion] = useState(0);
 
     // --- Derived Data Parsing ---
-    const [industryRealtimeData] = useIndexedDBState(activeSupermarket && activeSupermarket !== 'Tổng' ? `config-${String(activeSupermarket)}-industry-realtime` : null, '');
-    const [industryLuyKeData] = useIndexedDBState(activeSupermarket && activeSupermarket !== 'Tổng' ? `config-${String(activeSupermarket)}-industry-luyke` : null, '');
+    const [industryRealtimeData] = useIndexedDBState(activeSupermarket && activeSupermarket !== 'Tổng' ? `config-${shortenSupermarketName(activeSupermarket)}-industry-realtime` : null, '');
+    const [industryLuyKeData] = useIndexedDBState(activeSupermarket && activeSupermarket !== 'Tổng' ? `config-${shortenSupermarketName(activeSupermarket)}-industry-luyke` : null, '');
     
     const summaryRealtimeParsed = useMemo(() => parseSummaryData(summaryRealtime), [summaryRealtime]);
     const summaryLuyKeParsed = useMemo(() => parseSummaryData(summaryLuyKe), [summaryLuyKe]);
