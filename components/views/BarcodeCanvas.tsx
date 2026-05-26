@@ -60,11 +60,10 @@ interface BarcodeCanvasProps {
 }
 
 export default function BarcodeCanvas({ value, height = 40, barColor = '#000', className, style }: BarcodeCanvasProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [dataUrl, setDataUrl] = React.useState<string>('');
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas || !value) return;
+    if (!value) return;
 
     const patterns = encodeCode128B(value);
     
@@ -81,10 +80,9 @@ export default function BarcodeCanvas({ value, height = 40, barColor = '#000', c
 
     // Set canvas size with high DPI
     const scale = 3;
+    const canvas = document.createElement('canvas');
     canvas.width = totalWidth * scale;
     canvas.height = height * scale;
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -104,15 +102,17 @@ export default function BarcodeCanvas({ value, height = 40, barColor = '#000', c
         x += barWidth;
       }
     }
+    setDataUrl(canvas.toDataURL('image/png'));
   }, [value, height, barColor]);
 
-  if (!value) return null;
+  if (!value || !dataUrl) return null;
 
   return (
-    <canvas
-      ref={canvasRef}
+    <img
+      src={dataUrl}
       className={className}
-      style={{ imageRendering: 'pixelated', ...style }}
+      style={{ imageRendering: 'pixelated', width: '100%', height: '100%', objectFit: 'fill', ...style }}
+      alt={value}
     />
   );
 }

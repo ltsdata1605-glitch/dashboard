@@ -444,7 +444,10 @@ export default function StickerPrinterView() {
 
         const printHost = document.createElement('div');
         printHost.id = 'print-host';
-        printHost.innerHTML = printSection.innerHTML;
+        
+        if (batchItems.length > 0 || manualPages.length === 0) {
+            printHost.innerHTML = printSection.innerHTML;
+        }
 
         manualPages.forEach(page => {
             printHost.innerHTML += page.html;
@@ -456,7 +459,7 @@ export default function StickerPrinterView() {
         if (root) root.style.display = 'none';
 
         const selectedCount = batchItems.filter(i => i.selected).length;
-        const totalPages = Math.max(selectedCount, 1) + manualPages.length;
+        const totalPages = batchItems.length > 0 ? selectedCount + manualPages.length : Math.max(manualPages.length, 1);
         const historyEntry: PrintHistoryEntry = {
             id: `history_${Date.now()}`,
             timestamp: Date.now(),

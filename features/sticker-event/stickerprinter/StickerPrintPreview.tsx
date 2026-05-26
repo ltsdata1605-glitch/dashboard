@@ -54,7 +54,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     }, [previewName]);
 
     useEffect(() => {
-        if (footerRef.current && footerRef.current.innerText !== footerTextContent) {
+        if (footerRef.current && document.activeElement !== footerRef.current && footerRef.current.innerText !== footerTextContent) {
             footerRef.current.innerText = footerTextContent;
         }
     }, [footerTextContent]);
@@ -114,13 +114,16 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
             }
         }
 
-        autoCalcPercent();
+        const container = el.closest('.sticker-container');
+        if (container) {
+            autoCalcPercentForContainer(container);
+        }
     };
 
-    const autoCalcPercent = () => {
-        const oldEl = oldPriceRef.current;
-        const newEl = newPriceRef.current;
-        const pctEl = percentRef.current;
+    const autoCalcPercentForContainer = (container: Element) => {
+        const oldEl = container.querySelector('.old') as HTMLElement;
+        const newEl = container.querySelector('.extra2') as HTMLElement;
+        const pctEl = container.querySelector('.extra1') as HTMLElement;
         if (!oldEl || !newEl || !pctEl) return;
 
         const oldVal = Number(oldEl.innerText.replace(/\D/g, ''));
@@ -382,15 +385,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 <div className="sub-header" contentEditable suppressContentEditableWarning>{subHeaderTextContent}</div>
                             )}
                             <div className="extra1" contentEditable suppressContentEditableWarning>{item.percent}</div>
-                            <div className="old" contentEditable suppressContentEditableWarning>{item.oldPrice}</div>
+                            <div className="old" onInput={handlePriceInput} contentEditable suppressContentEditableWarning>{item.oldPrice}</div>
                             <div className="name" contentEditable suppressContentEditableWarning>{item.name}</div>
                             {stickerType === 'gio_vang' ? (
                                 <div className="extra2 flex items-baseline justify-center">
-                                    <span contentEditable suppressContentEditableWarning>{item.newPrice}</span>
+                                    <span onInput={handlePriceInput} contentEditable suppressContentEditableWarning>{item.newPrice}</span>
                                     <span className="small-zeros" contentEditable={false}>.000</span>
                                 </div>
                             ) : (
-                                <div className="extra2" contentEditable suppressContentEditableWarning>{item.newPrice}</div>
+                                <div className="extra2" onInput={handlePriceInput} contentEditable suppressContentEditableWarning>{item.newPrice}</div>
                             )}
                             <div className="footer-text" contentEditable suppressContentEditableWarning>{footerTextContent}</div>
                         </div>
@@ -402,13 +405,13 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 <BarcodeCanvas value={barcodeImei} />
                             </div>
                         )}
-                        <div className="header-text" ref={headerRef} onInput={handleTextInput} contentEditable suppressContentEditableWarning />
+                        <div className="header-text" ref={headerRef} onInput={handleTextInput} contentEditable suppressContentEditableWarning>{headerTextContent}</div>
                         {stickerType === 'gio_vang' && (
-                            <div className="sub-header" ref={subHeaderRef} onInput={handleSubHeaderInput} contentEditable suppressContentEditableWarning />
+                            <div className="sub-header" ref={subHeaderRef} onInput={handleSubHeaderInput} contentEditable suppressContentEditableWarning>{subHeaderTextContent}</div>
                         )}
                         <div className="extra1" ref={percentRef} contentEditable suppressContentEditableWarning>-36%</div>
                         <div className="old" ref={oldPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>5.490.000</div>
-                        <div className="name" ref={nameRef} onInput={handleNameInput} contentEditable suppressContentEditableWarning />
+                        <div className="name" ref={nameRef} onInput={handleNameInput} contentEditable suppressContentEditableWarning>{previewName}</div>
                         {stickerType === 'gio_vang' ? (
                             <div className="extra2 flex items-baseline justify-center">
                                 <span ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>10.990</span>
@@ -417,7 +420,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         ) : (
                             <div className="extra2" ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>3.490</div>
                         )}
-                        <div className="footer-text" ref={footerRef} onInput={handleFooterTextInput} contentEditable suppressContentEditableWarning />
+                        <div className="footer-text" ref={footerRef} onInput={handleFooterTextInput} contentEditable suppressContentEditableWarning>{footerTextContent}</div>
                     </div>
                 )}
             </div>
