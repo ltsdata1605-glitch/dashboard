@@ -213,7 +213,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                             onDrop={(e) => handleDrop(e, staff.id, dayIndex)}
                             onDragEnd={handleDragEnd}
                             onMouseEnter={() => onDayHover(dayIndex)} onClick={() => onEditShift(staff.id, dayIndex)}>
-                            <div className="flex flex-col items-center justify-center min-h-[48px] pointer-events-none">
+                            <div className="flex flex-col items-center justify-center pointer-events-none">
                                 <span className="leading-tight">{info.role === "OFF" ? "OFF" : info.shift}</span>
                                 {rolePill}
                             </div>
@@ -293,7 +293,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
             {!isIndividualExport && (
                 <>
                     <th rowSpan={2} className="sticky-col px-1 text-center border-r border-slate-300 bg-slate-50 z-40 text-sm font-black uppercase tracking-wider text-slate-800" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
-                    <th rowSpan={2} className="sticky-col px-5 text-left border-r border-slate-300 bg-slate-50 z-40 text-sm font-black uppercase tracking-wider text-slate-800" style={{ left: '40px', minWidth: '220px' }}>Họ và Tên</th>
+                    <th rowSpan={2} className="sticky-col px-5 text-left border-r border-slate-300 bg-slate-50 z-40 text-sm font-black uppercase tracking-wider text-slate-800" style={{ left: '40px' }}>Họ và Tên</th>
                 </>
             )}
             <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-indigo-50/50 text-indigo-900 font-black text-sm uppercase tracking-widest">Giờ Công</th>
