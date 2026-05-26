@@ -6,12 +6,15 @@ import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, roundUp
 import { Switch } from './DashboardWidgets';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 
+import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+
 interface IndustryViewProps {
     realtimeData: ReturnType<typeof parseIndustryRealtimeData>;
     luykeData: ReturnType<typeof parseIndustryLuyKeData>;
     isRealtime: boolean;
     activeSupermarket: string | null;
     onExport?: () => Promise<void>;
+    isReportMode?: boolean;
 }
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
@@ -40,7 +43,9 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
 };
 
 const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props, ref) => {
-    const { realtimeData, luykeData, isRealtime, onExport } = props;
+    const { realtimeData, luykeData, isRealtime, activeSupermarket, onExport, isReportMode } = props;
+    
+    const [reportTargets, setReportTargets] = useIndexedDBState<Record<string, string>>(`report-industry-targets-${activeSupermarket || 'all'}`, {});
     
 
     const [isIndustryFilterOpen, setIsIndustryFilterOpen] = useState(false);
@@ -48,6 +53,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const selectorRef = useRef<HTMLDivElement>(null);
     const [industryFilterSearch, setIndustryFilterSearch] = useState('');
+
+    const [isSubIndustryFilterOpen, setIsSubIndustryFilterOpen] = useState(false);
+    const subIndustryFilterRef = useRef<HTMLDivElement>(null);
+    const [subIndustryFilterSearch, setSubIndustryFilterSearch] = useState('');
 
     const logic = useIndustryViewLogic(realtimeData, luykeData, isRealtime);
     const {
@@ -63,7 +72,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         toggleRow,
         expandAll,
         collapseAll,
-        toggleColumn
+        toggleColumn,
+        hiddenSubIndustries,
+        setHiddenSubIndustries,
+        allSubIndustries
     } = logic;
 
     const data = isRealtime ? realtimeData : luykeData.table;
@@ -117,13 +129,16 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             if (industryFilterRef.current && !industryFilterRef.current.contains(event.target as Node)) {
                 setIsIndustryFilterOpen(false);
             }
+            if (subIndustryFilterRef.current && !subIndustryFilterRef.current.contains(event.target as Node)) {
+                setIsSubIndustryFilterOpen(false);
+            }
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const actionButton = (
-        <div className="industry-view-controls flex items-center gap-1 no-print">
+        <div className="industry-view-controls flex items-center gap-1 sm:gap-2 no-print flex-wrap justify-end">
              {/* Expand/Collapse buttons for tree mode */}
              {hasTreeData && (
                 <div className="flex items-center gap-0.5">
@@ -148,22 +163,27 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
              {/* Divider: expand/collapse | filter+column */}
              {hasTreeData && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />}
 
-             {/* Filter */}
+             {/* Filter Ngành Hàng */}
              <div className="relative" ref={industryFilterRef}>
                 <button
                     onClick={() => setIsIndustryFilterOpen(prev => !prev)}
-                    className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                    className={`p-1.5 transition-colors ${
+                        hiddenIndustries.length > 0
+                            ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
+                            : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                    }`}
                     title="Lọc ngành hàng"
                 >
                     <FilterIcon className="h-4 w-4" />
                 </button>
                 {isIndustryFilterOpen && (
                     <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Ngành hàng</p>
                         <input
                             type="text"
                             value={industryFilterSearch}
                             onChange={(e) => setIndustryFilterSearch(e.target.value)}
-                            placeholder="Tìm kiếm ngành hàng..."
+                            placeholder="Tìm kiếm..."
                             className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
                         />
                         <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
@@ -185,6 +205,54 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     </div>
                 )}
             </div>
+
+            {/* Filter Nhóm Hàng */}
+            {hasTreeData && (
+                <div className="relative" ref={subIndustryFilterRef}>
+                    <button
+                        onClick={() => setIsSubIndustryFilterOpen(prev => !prev)}
+                        className={`p-1.5 transition-colors ${
+                            hiddenSubIndustries.length > 0
+                                ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
+                                : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                        }`}
+                        title="Lọc nhóm hàng"
+                    >
+                        <div className="relative">
+                            <FilterIcon className="h-4 w-4" />
+                            <span className="absolute -bottom-1 -right-1 text-[8px] font-black text-slate-400">N</span>
+                        </div>
+                    </button>
+                    {isSubIndustryFilterOpen && (
+                        <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Nhóm hàng</p>
+                            <input
+                                type="text"
+                                value={subIndustryFilterSearch}
+                                onChange={(e) => setSubIndustryFilterSearch(e.target.value)}
+                                placeholder="Tìm kiếm..."
+                                className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
+                            />
+                            <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
+                                {allSubIndustries.filter(n => n.toLowerCase().includes(subIndustryFilterSearch.toLowerCase())).map(sub => (
+                                    <div key={sub} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                        <label
+                                            className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
+                                            onClick={() => setHiddenSubIndustries(prev => prev.includes(sub) ? prev.filter(i => i !== sub) : [...prev, sub])}
+                                        >
+                                            {sub}
+                                        </label>
+                                        <Switch
+                                            checked={!hiddenSubIndustries.includes(sub)}
+                                            onChange={() => setHiddenSubIndustries(prev => prev.includes(sub) ? prev.filter(i => i !== sub) : [...prev, sub])}
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Column settings */}
             <div className="relative" ref={selectorRef}>
@@ -252,7 +320,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     };
 
     // --- Shared cell rendering logic ---
-    const renderCell = (cell: any, headerName: string, originalCellIndex: number, isTotalRow: boolean, level: number, rowKey: string, hasChildren: boolean, isExpanded: boolean) => {
+    const renderCell = (cell: any, headerName: string, originalCellIndex: number, isTotalRow: boolean, level: number, rowKey: string, hasChildren: boolean, isExpanded: boolean, fullRow: any[]) => {
         const numericValue = parseNumber(cell);
         const isPercentCol = headerName.includes('%') || headerName === 'Tỷ Trọng Trả Góp' || headerName === 'DT Trả Gộp' || headerName === 'DT TRẢ GÓP' || headerName === 'DT Trả Góp' || headerName === 'DTTRẢGÓP';
         const isNumericCol = !isNaN(numericValue) && !String(cell).includes('%') && originalCellIndex > 0;
@@ -304,13 +372,49 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     </div>
                 );
             }
+            if (isReportMode && headerName === 'Target Ngày (QĐ)') {
+                const industryName = String(fullRow[0]).replace('NNH ', '').trim();
+                const storageKey = isTotalRow ? 'TỔNG CỘNG' : industryName;
+                const handleTargetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    const numericValue = e.target.value.replace(/[^0-9]/g, '');
+                    setReportTargets(prev => ({ ...prev, [storageKey]: numericValue }));
+                };
+                return (
+                    <div className="flex justify-end">
+                        <input 
+                            type="text" 
+                            className="w-full min-w-[50px] max-w-[80px] text-right bg-slate-50 dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600 rounded px-1.5 py-1 focus:outline-none focus:ring-1 focus:ring-indigo-500 text-[12px] font-bold tabular-nums text-slate-800 dark:text-slate-200 no-print"
+                            value={reportTargets[storageKey] ? new Intl.NumberFormat('vi-VN').format(parseInt(reportTargets[storageKey], 10)) : ''}
+                            onChange={handleTargetChange}
+                            placeholder="Nhập..."
+                        />
+                        <span className="hidden print:inline text-[12px] font-bold tabular-nums">
+                            {reportTargets[storageKey] ? new Intl.NumberFormat('vi-VN').format(parseInt(reportTargets[storageKey], 10)) : '-'}
+                        </span>
+                    </div>
+                );
+            }
             if (isTotalRow && (isPercentCol || isNumericCol)) return isPercentCol ? `${roundUp(numericValue)}%` : isGTDHCol ? fmtGTDH.format(numericValue) : new Intl.NumberFormat('vi-VN').format(roundUp(numericValue));
             if (isHtCol) {
+                let computedValue = numericValue;
+                if (isReportMode && headerName === '% HT Target Ngày (QĐ)') {
+                    const industryName = String(fullRow[0]).replace('NNH ', '').trim();
+                    const storageKey = isTotalRow ? 'TỔNG CỘNG' : industryName;
+                    const tarNum = parseNumber(reportTargets[storageKey] || '');
+                    const actualIdx = processedTable.headers.indexOf('DT Realtime (QĐ)');
+                    const actualVal = actualIdx !== -1 ? parseNumber(fullRow[actualIdx]) : 0;
+                    computedValue = tarNum > 0 ? (actualVal / tarNum) * 100 : 0;
+                }
+                
                 return (
                     <div className="flex justify-center items-center">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${numericValue >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : numericValue >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
-                            {roundUp(numericValue)}%
-                        </span>
+                        {(isReportMode && headerName === '% HT Target Ngày (QĐ)' && parseNumber(reportTargets[isTotalRow ? 'TỔNG CỘNG' : String(fullRow[0]).replace('NNH ', '').trim()] || '') <= 0) ? (
+                            <span className="text-slate-400">-</span>
+                        ) : (
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${computedValue >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : computedValue >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                                {roundUp(computedValue)}%
+                            </span>
+                        )}
                     </div>
                 );
             }
@@ -558,7 +662,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             if (!visibleColumns.has(headerName)) return null;
                                                             const originalCellIndex = processedTable.headers.indexOf(headerName);
                                                             const cell = flatRow.values[originalCellIndex];
-                                                            return renderCell(cell, headerName, originalCellIndex, isTotalRow, flatRow.level, flatRow.rowKey, flatRow.hasChildren, flatRow.isExpanded);
+                                                            return renderCell(cell, headerName, originalCellIndex, isTotalRow, flatRow.level, flatRow.rowKey, flatRow.hasChildren, flatRow.isExpanded, flatRow.values);
                                                         })}
                                                     </tr>
                                                 );
@@ -582,7 +686,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             if (!visibleColumns.has(headerName)) return null;
                                                             const originalCellIndex = processedTable.headers.indexOf(headerName);
                                                             const cell = row[originalCellIndex];
-                                                            return renderCell(cell, headerName, originalCellIndex, isTotalRow, 0, `flat-${rIdx}`, false, false);
+                                                            return renderCell(cell, headerName, originalCellIndex, isTotalRow, 0, `flat-${rIdx}`, false, false, row);
                                                         })}
                                                     </tr>
                                                 );

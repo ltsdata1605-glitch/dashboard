@@ -5,7 +5,7 @@ export interface SupermarketCompetitionData {
     programs: { name: string; data: (string | number)[]; metric: string }[];
 }
 
-export type MainTab = 'realtime' | 'cumulative';
+export type MainTab = 'realtime' | 'cumulative' | 'report';
 export type SubTab = 'revenue' | 'competition';
 export type Criterion = 'DTLK' | 'DTQĐ' | 'SLLK';
 
@@ -124,14 +124,92 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
     return supermarketData;
 };
 
-export const parseIndustryRealtimeData = (text: string): { headers: string[], rows: string[][] } => {
-    if (!text) return { headers: [], rows: [] };
+export const parseIndustryRealtimeData = (text: string) => {
+    const result: {
+        headers: string[];
+        rows: string[][];
+        tree: IndustryTreeNode[];
+        totalRow: string[] | null;
+    } = {
+        headers: [],
+        rows: [],
+        tree: [],
+        totalRow: null
+    };
+
+    if (!text) return result;
     const lines = text.split('\n');
     const headerIndex = lines.findIndex(line => line.trim().startsWith('Nhóm ngành hàng\tSL Realtime'));
-    if (headerIndex === -1) return { headers: [], rows: [] };
-    const headers = lines[headerIndex].trim().split('\t');
-    const rows = lines.slice(headerIndex + 1).map(l => l.trim()).filter(l => l.startsWith('NNH ') || l.startsWith('Tổng')).map(l => l.split('\t'));
-    return { headers, rows };
+    if (headerIndex === -1) return result;
+    
+    result.headers = lines[headerIndex].trim().split('\t');
+    
+    const allDataRows: string[][] = [];
+    for (let i = headerIndex + 1; i < lines.length; i++) {
+        const trimmed = lines[i].trim();
+        if (!trimmed) continue;
+        if (trimmed.toLowerCase().includes('hỗ trợ bi')) break;
+        const parts = trimmed.split('\t');
+        if (parts.length >= 2) {
+            allDataRows.push(parts);
+        }
+    }
+
+    result.rows = allDataRows.filter(r => (r[0] || '').startsWith('NNH ') || r[0] === 'Tổng');
+
+    const targetIndex = result.headers.indexOf('Target Ngày (QĐ)');
+
+    let currentNNH: IndustryTreeNode | null = null;
+    let currentNhomHang: IndustryTreeNode | null = null;
+
+    const flushNhomHang = () => {
+        if (currentNhomHang && currentNNH) {
+            currentNNH.children.push(currentNhomHang);
+            currentNhomHang = null;
+        }
+    };
+
+    const flushNNH = () => {
+        flushNhomHang();
+        if (currentNNH) {
+            result.tree.push(currentNNH);
+            currentNNH = null;
+        }
+    };
+
+    for (const row of allDataRows) {
+        const name = (row[0] || '').trim();
+
+        if (name === 'Tổng') {
+            result.totalRow = row;
+            continue;
+        }
+
+        if (name.startsWith('NNH ')) {
+            flushNNH();
+            currentNNH = { name, values: row, children: [], level: 0 };
+            continue;
+        }
+
+        if (!currentNNH) continue;
+
+        const targetVal = targetIndex >= 0 && row[targetIndex] ? parseNumber(row[targetIndex]) : 0;
+
+        if (targetVal > 0.001) {
+            flushNhomHang();
+            currentNhomHang = { name, values: row, children: [], level: 1 };
+        } else {
+            if (currentNhomHang) {
+                currentNhomHang.children.push({ name, values: row, children: [], level: 2 });
+            } else {
+                currentNNH.children.push({ name, values: row, children: [], level: 1 });
+            }
+        }
+    }
+
+    flushNNH();
+
+    return result;
 };
 
 // --- INDUSTRY TREE TYPES ---

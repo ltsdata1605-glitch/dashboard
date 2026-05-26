@@ -6,7 +6,7 @@ import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
-import { CameraIcon } from 'lucide-react';
+import { CameraIcon, Images } from 'lucide-react';
 
 interface CompetitionCompareViewProps {
     allEmployees: Employee[];
@@ -71,7 +71,7 @@ const ProfileAvatar: React.FC<{ emp: Employee, colorClass: string }> = ({ emp, c
     return (
         <div className={`w-16 h-16 sm:w-20 sm:h-20 rounded-full border-4 ${colorClass} overflow-hidden shadow-lg mx-auto bg-white flex items-center justify-center shrink-0`}>
             {avatarSrc ? (
-                <img src={avatarSrc} alt={emp.name} className="w-full h-full object-cover" />
+                <img src={avatarSrc} alt={emp.name} className="w-full h-full object-cover rounded-full" />
             ) : (
                 <span className="text-xl font-black text-slate-400">{emp.name.charAt(emp.name.lastIndexOf(' ') + 1) || '?'}</span>
             )}
@@ -135,12 +135,37 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     banKemRows,
     bonusData
 }) => {
-    const [empA, setEmpA] = useState<Employee | null>(allEmployees[0] || null);
-    const [empB, setEmpB] = useState<Employee | null>(allEmployees.length > 1 ? allEmployees[1] : null);
-    const [displayMode, setDisplayMode] = useState<'pct' | 'actual'>('pct');
+    const [empAId, setEmpAId] = useIndexedDBState<string | null>('global-compare-emp-a', null);
+    const [empBId, setEmpBId] = useIndexedDBState<string | null>('global-compare-emp-b', null);
+    
+    const empA = useMemo(() => allEmployees.find(e => e.originalName === empAId) || allEmployees[0] || null, [allEmployees, empAId]);
+    const empB = useMemo(() => allEmployees.find(e => e.originalName === empBId) || (allEmployees.length > 1 ? allEmployees[1] : null), [allEmployees, empBId]);
+
+    const setEmpA = (emp: Employee) => setEmpAId(emp.originalName);
+    const setEmpB = (emp: Employee) => setEmpBId(emp.originalName);
+
+    const [displayMode, setDisplayMode] = useIndexedDBState<'pct' | 'actual'>('global-compare-display-mode', 'actual');
     const cardRef = useRef<HTMLDivElement>(null);
     const { showExportOptions } = useExportOptionsContext();
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
+    const [isBatchExporting, setIsBatchExporting] = useState(false);
+
+    const autoPairs = useMemo(() => {
+        const empRows = (revenueRows || []).filter(r => r.type === 'employee').sort((a, b) => (b.dtqd || 0) - (a.dtqd || 0));
+        const sortedEmps = empRows.map(r => allEmployees.find(e => e.originalName === r.originalName)).filter(Boolean) as Employee[];
+        const pairs: { a: Employee, b: Employee, label: string }[] = [];
+        for (let i = 0; i < sortedEmps.length - 1; i += 2) {
+            pairs.push({ a: sortedEmps[i], b: sortedEmps[i+1], label: `Top ${i+1} vs ${i+2}` });
+        }
+        return pairs;
+    }, [revenueRows, allEmployees]);
+
+    useEffect(() => {
+        if (!empAId && !empBId && autoPairs.length > 0) {
+            setEmpAId(autoPairs[0].a.originalName);
+            setEmpBId(autoPairs[0].b.originalName);
+        }
+    }, [empAId, empBId, autoPairs, setEmpAId, setEmpBId]);
 
     const getEmpStats = (emp: Employee | null) => {
         if (!emp) return { dtqd: 0, dtlk: 0, tg: 0, bk: 0, thuong: 0, dtRank: 0, tgRank: 0, bkRank: 0, compStats: { total: 0, dkhtDat: 0, noSale: 0 } };
@@ -226,15 +251,86 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
         return rows;
     }, [empA, empB, allCompetitionsByCriterion, selectedCompetitions, employeeDataMap, employeeCompetitionTargets, nameOverrides]);
 
-    const handleExportPNG = async () => {
-        if (!cardRef.current) return;
-        const filename = `SoSanh_${empA?.name.replace(/[\s/]/g, '')}_vs_${empB?.name.replace(/[\s/]/g, '')}.png`;
-        const blob = await exportElementAsImage(cardRef.current, filename, { mode: 'blob-only', elementsToHide: ['.no-print'] });
-        if (blob) await showExportOptions(blob, filename);
+    const handleExportPNG = async (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
+        if (!cardRef.current) return null;
+        try {
+            const defaultFilename = `SoSanh_${empA?.name.replace(/[\s/]/g, '')}_vs_${empB?.name.replace(/[\s/]/g, '')}.png`;
+            const filename = customFilename || defaultFilename;
+            const blob = await exportElementAsImage(cardRef.current, filename, { mode: 'blob-only', elementsToHide: ['.no-print'] });
+            if (blob) {
+                if (autoAction === 'download') {
+                    downloadBlob(blob, filename);
+                    return 'download';
+                } else if (autoAction === 'share') {
+                    await shareBlob(blob, filename);
+                    return 'share';
+                } else {
+                    return await showExportOptions(blob, filename);
+                }
+            }
+            return null;
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+
+    const performBatchExport = async () => {
+        if (isBatchExporting) return;
+        setIsBatchExporting(true);
+        const originalEmpAId = empAId;
+        const originalEmpBId = empBId;
+        let autoAction: 'download' | 'share' | 'cancel' | null = null;
+        try {
+            for (const pair of autoPairs) {
+                setEmpAId(pair.a.originalName);
+                setEmpBId(pair.b.originalName);
+                await new Promise(resolve => setTimeout(resolve, 300));
+                const filename = `SoSanh_${pair.a.name.replace(/[\s/]/g, '')}_vs_${pair.b.name.replace(/[\s/]/g, '')}.png`;
+                const action = await handleExportPNG(filename, autoAction);
+                if (action === 'cancel') break;
+                autoAction = action;
+            }
+        } finally {
+            setEmpAId(originalEmpAId);
+            setEmpBId(originalEmpBId);
+            setIsBatchExporting(false);
+        }
+    };
+
+    const getCriterionStyle = (crit: Criterion) => {
+        switch (crit) {
+            case 'SLLK': return { bg: 'bg-rose-600', text: 'text-white', badge: 'bg-rose-500/80', border: 'border-rose-700 dark:border-rose-800' };
+            case 'DTLK': return { bg: 'bg-sky-600', text: 'text-white', badge: 'bg-sky-500/80', border: 'border-sky-700 dark:border-sky-800' };
+            case 'DTQĐ': return { bg: 'bg-emerald-600', text: 'text-white', badge: 'bg-emerald-500/80', border: 'border-emerald-700 dark:border-emerald-800' };
+            default: return { bg: 'bg-slate-600', text: 'text-white', badge: 'bg-slate-500/80', border: 'border-slate-700 dark:border-slate-800' };
+        }
     };
 
     return (
         <div className="space-y-4 pb-10">
+            {/* Auto Pairing Quick Select */}
+            {autoPairs.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 px-2 no-print justify-center sm:justify-start">
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cặp So Sánh Nhanh (Theo DTQĐ):</span>
+                    <div className="flex flex-wrap gap-1.5">
+                        {autoPairs.map(pair => (
+                            <button
+                                key={pair.label}
+                                onClick={() => { setEmpA(pair.a); setEmpB(pair.b); }}
+                                className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-colors border ${
+                                    (empA?.originalName === pair.a.originalName && empB?.originalName === pair.b.originalName)
+                                        ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
+                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:text-indigo-600'
+                                }`}
+                            >
+                                {pair.label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             {/* Toolbar */}
             <div className="flex flex-wrap items-center justify-between gap-4 px-2 no-print relative z-50">
                 <div className="flex flex-1 items-center gap-4 max-w-2xl mx-auto">
@@ -251,7 +347,10 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         <button onClick={() => setDisplayMode('pct')} className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</button>
                         <button onClick={() => setDisplayMode('actual')} className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</button>
                     </div>
-                    <button onClick={handleExportPNG} title="Xuất ảnh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 transition-colors">
+                    <button onClick={performBatchExport} disabled={isBatchExporting || autoPairs.length === 0} title="Xuất tất cả cặp so sánh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 disabled:opacity-50 transition-colors">
+                        <Images className={`w-4 h-4 ${isBatchExporting ? 'animate-pulse text-indigo-500' : ''}`} />
+                    </button>
+                    <button onClick={() => handleExportPNG()} title="Xuất ảnh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 transition-colors">
                         <CameraIcon className="w-4 h-4" />
                     </button>
                 </div>
@@ -272,9 +371,10 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                             <ProfileAvatar emp={empA} colorClass="border-sky-500" />
                             <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empA.name}</h3>
                             <p className="text-[11px] text-sky-300 font-bold uppercase tracking-wider">{empA.department}</p>
-                            <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
-                                <div className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[10px] font-black">{statsA.compStats.dkhtDat} Đạt 100%</div>
-                                {statsA.compStats.noSale > 0 && <div className="px-2 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[10px] font-black">{statsA.compStats.noSale} No Sale</div>}
+                            <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
+                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[10px] font-black">{statsA.compStats.dkhtDat} Đạt 100%</div>
+                                {statsA.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[10px] font-black">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
+                                {statsA.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[10px] font-black">{statsA.compStats.noSale} No Sale</div>}
                             </div>
                         </div>
 
@@ -288,9 +388,10 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                             <ProfileAvatar emp={empB} colorClass="border-rose-500" />
                             <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empB.name}</h3>
                             <p className="text-[11px] text-rose-300 font-bold uppercase tracking-wider">{empB.department}</p>
-                            <div className="flex items-center gap-2 mt-3 flex-wrap justify-center">
-                                <div className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[10px] font-black">{statsB.compStats.dkhtDat} Đạt 100%</div>
-                                {statsB.compStats.noSale > 0 && <div className="px-2 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[10px] font-black">{statsB.compStats.noSale} No Sale</div>}
+                            <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
+                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[10px] font-black">{statsB.compStats.dkhtDat} Đạt 100%</div>
+                                {statsB.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[10px] font-black">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
+                                {statsB.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[10px] font-black">{statsB.compStats.noSale} No Sale</div>}
                             </div>
                         </div>
                     </div>
@@ -336,30 +437,31 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                                     (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).map(crit => {
                                         const critRows = compRows.filter(r => r.criterion === crit);
                                         if (critRows.length === 0) return null;
+                                        const cStyle = getCriterionStyle(crit);
                                         return (
                                             <React.Fragment key={crit}>
-                                                <tr className="bg-slate-50 dark:bg-slate-800/50">
-                                                    <td colSpan={5} className="px-4 py-1.5 text-[10px] font-black uppercase text-slate-700 dark:text-slate-300 tracking-wider border-y border-slate-200 dark:border-slate-700">
-                                                        {crit}
+                                                <tr className={`${cStyle.bg}`}>
+                                                    <td colSpan={5} className={`px-4 py-1 text-[11px] font-black uppercase ${cStyle.text} tracking-wider border-y ${cStyle.border}`}>
+                                                        <span className={`px-2 py-0.5 rounded mr-2 ${cStyle.badge}`}>Tiêu chí</span> {crit}
                                                     </td>
                                                 </tr>
                                                 {critRows.map((row, idx) => (
                                                     <tr key={`${row.criterion}-${row.originalTitle}`} className="border-b border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-                                                        <td className="px-4 py-2.5 text-[11px] font-bold text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50">{idx + 1}</td>
-                                                        <td className="px-4 py-2.5 border-r border-slate-100 dark:border-slate-800/50">
+                                                        <td className="px-4 py-1 text-[11px] font-bold text-slate-400 text-center border-r border-slate-100 dark:border-slate-800/50">{idx + 1}</td>
+                                                        <td className="px-4 py-1 border-r border-slate-100 dark:border-slate-800/50">
                                                             <div className="flex items-center gap-1.5">
                                                                 <span className="text-[12px] font-bold text-slate-800 dark:text-slate-200">{row.name}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-2 py-2.5 text-center text-[13px] font-black text-sky-600 dark:text-sky-400 bg-sky-50/30 dark:bg-sky-900/10">
+                                                        <td className="px-2 py-1 text-center text-[13px] font-black text-sky-600 dark:text-sky-400 bg-sky-50/30 dark:bg-sky-900/10">
                                                             {displayMode === 'pct' ? `${row.pctA.toFixed(0)}%` : fMoney.format(row.actualA)}
                                                         </td>
-                                                        <td className="px-2 py-2.5 text-center">
+                                                        <td className="px-2 py-1 text-center">
                                                             <div className="flex justify-center">
                                                                 <DeltaBadge a={displayMode === 'pct' ? row.pctA : row.actualA} b={displayMode === 'pct' ? row.pctB : row.actualB} mode={displayMode} />
                                                             </div>
                                                         </td>
-                                                        <td className="px-2 py-2.5 text-center text-[13px] font-black text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-900/10">
+                                                        <td className="px-2 py-1 text-center text-[13px] font-black text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-900/10">
                                                             {displayMode === 'pct' ? `${row.pctB.toFixed(0)}%` : fMoney.format(row.actualB)}
                                                         </td>
                                                     </tr>

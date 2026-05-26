@@ -50,6 +50,9 @@ export function useIndexedDBState<T>(
                 window.dispatchEvent(new CustomEvent(DB_CHANGE_EVENT, { 
                     detail: { key: keyToSave, source: 'hook-write' } 
                 }));
+                window.dispatchEvent(new CustomEvent('ycx-setting-changed', { 
+                    detail: { key: keyToSave } 
+                }));
             })
             .catch(err => console.error(`Save error ${keyToSave}`, err));
         

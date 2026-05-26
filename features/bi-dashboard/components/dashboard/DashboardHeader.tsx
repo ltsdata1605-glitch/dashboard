@@ -57,10 +57,11 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
     const contentTitle = useMemo(() => {
         const isRealtime = activeMainTab === 'realtime';
+        const isReport = activeMainTab === 'report';
         const typePart = activeSubTab === 'revenue' ? 'DOANH THU' : 'THI ĐUA';
-        const modePart = isRealtime ? 'REALTIME' : 'LUỸ KẾ';
+        const modePart = isRealtime ? 'REALTIME' : isReport ? 'BÁO CÁO' : 'LUỸ KẾ';
         
-        return `${modePart} ${typePart} ĐẾN NGÀY ${getDateLabel(isRealtime)}`;
+        return `${modePart} ${typePart} ĐẾN NGÀY ${getDateLabel(isRealtime || isReport)}`;
     }, [activeSubTab, activeMainTab, activeSupermarket]);
 
     return (
@@ -147,14 +148,26 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         </button>
                         <button
                             onClick={() => setActiveMainTab('cumulative')}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors ${
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${
                                 activeMainTab === 'cumulative'
-                                    ? 'bg-indigo-600 text-white'
+                                    ? 'bg-indigo-600 text-white border-transparent'
                                     : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
                             }`}
                         >
                             Luỹ kế
                         </button>
+                        {activeSubTab === 'revenue' && (
+                            <button
+                                onClick={() => setActiveMainTab('report')}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${
+                                    activeMainTab === 'report'
+                                        ? 'bg-indigo-600 text-white border-transparent'
+                                        : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                }`}
+                            >
+                                Báo cáo
+                            </button>
+                        )}
                     </div>
 
                     {/* Right: [⚙️ Column settings] | [🖼️ Batch export] [📷 Export] */}

@@ -26,8 +26,8 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
     
     const [viewMode, setViewMode] = useIndexedDBState<'grid' | 'list'>('competition_view_mode', 'list');
     const [selectedPrograms, setSelectedPrograms] = useIndexedDBState<string[]>('global-selected-competitions', []);
-    const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>(`competition-sort-config-${isRealtime ? 'rt' : 'lk'}`, null);
-    const [hiddenColumns, setHiddenColumns] = useIndexedDBState<string[]>(`competition_view_hidden_columns_${isRealtime ? 'rt' : 'lk'}`, []);
+    const [sortConfig, setSortConfig, isSortConfigLoaded] = useIndexedDBState<{ columnIndex: number | 'conLai' | 'htdkVT' | -1; direction: 'asc' | 'desc' } | null>('global-competition-sort-config', null);
+    const [hiddenColumns, setHiddenColumns] = useIndexedDBState<string[]>('global-competition_view_hidden_columns', []);
     const [defaultSortSet, setDefaultSortSet] = useState(false);
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const [isExporting, setIsExporting] = useState(false);

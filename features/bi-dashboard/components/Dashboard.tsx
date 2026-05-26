@@ -6,6 +6,7 @@ import { UploadIcon, CogIcon } from './Icons';
 import { Switch } from './dashboard/DashboardWidgets';
 import { useDashboardLogic } from '../hooks/useDashboardLogic';
 import SummaryTableView from './dashboard/SummaryTableView';
+import ReportView from './dashboard/ReportView';
 import CompetitionView from './dashboard/CompetitionView';
 import IndustryView from './dashboard/IndustryView';
 import DashboardHeader from './dashboard/DashboardHeader';
@@ -219,8 +220,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
         }
     };
 
-    const runBatchExport = async (mode: 'realtime' | 'cumulative' | 'competition') => {
-        const setExporting = mode === 'competition' ? setIsBatchExportingCompetition : (mode === 'realtime' ? setIsBatchExporting : setIsBatchExportingCumulative);
+    const runBatchExport = async (mode: 'realtime' | 'cumulative' | 'competition' | 'report') => {
+        const setExporting = mode === 'competition' ? setIsBatchExportingCompetition : (mode === 'realtime' || mode === 'report' ? setIsBatchExporting : setIsBatchExportingCumulative);
         setExporting(true);
         const originalSm = activeSupermarket;
         const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
@@ -232,7 +233,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                 setActiveSupermarket(sm);
                 await sleep(1500);
                 const targetRef = pageRef;
-                const prefix = mode === 'competition' ? `ThiDua_${activeMainTab}` : (mode === 'realtime' ? 'DoanhThu' : 'DoanhThu_LuyKe');
+                const prefix = mode === 'competition' ? `ThiDua_${activeMainTab}` : (mode === 'report' ? 'BaoCao' : (mode === 'realtime' ? 'DoanhThu' : 'DoanhThu_LuyKe'));
                 const action = await handleExportPNG(targetRef, `${prefix}_${sm}`, autoAction);
                 if (action === 'cancel') break;
                 autoAction = action;
@@ -256,7 +257,8 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
     }
 
     const isRealtimeView = activeMainTab === 'realtime';
-    const hasData = isRealtimeView ? hasRealtimeData : hasCumulativeData;
+    const isReportView = activeMainTab === 'report';
+    const hasData = (isRealtimeView || isReportView) ? hasRealtimeData : hasCumulativeData;
     const currentKpiData = getKpiData(isRealtimeView);
     const activeTargets = supermarketTargets[activeSupermarket] || { quyDoi: 40, traGop: 45 };
 
@@ -273,7 +275,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                 <EmptyState
                     onNavigate={onNavigateToUpdater}
                     onRestore={handleRestoreClick}
-                    message={`Không có dữ liệu ${isRealtimeView ? 'Realtime' : 'Luỹ kế'}. Vui lòng cập nhật.`}
+                    message={`Không có dữ liệu ${(isRealtimeView || isReportView) ? 'Realtime' : 'Luỹ kế'}. Vui lòng cập nhật.`}
                 />
                 <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
             </div>
@@ -295,7 +297,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                         setActiveSupermarket={setActiveSupermarket}
                         onBatchExport={() => {
                             if (activeSubTab === 'competition') runBatchExport('competition');
-                            else runBatchExport(isRealtimeView ? 'realtime' : 'cumulative');
+                            else runBatchExport(isReportView ? 'report' : (isRealtimeView ? 'realtime' : 'cumulative'));
                         }}
                         isBatchExporting={isBatchExporting || isBatchExportingCumulative || isBatchExportingCompetition}
                         onExport={async () => {
@@ -307,7 +309,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                         isExporting={isHeaderExporting}
                     >
                         {/* Revenue tab: SummaryTableView merges into header container */}
-                        {activeSubTab === 'revenue' && (
+                        {activeSubTab === 'revenue' && !isReportView && (
                             <div>
                                 <SummaryTableView
                                     ref={summaryTableRef}
@@ -322,9 +324,15 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                                 />
                             </div>
                         )}
+                        {activeSubTab === 'revenue' && isReportView && (
+                            <ReportView 
+                                data={summaryRealtimeParsed.table} 
+                                activeSupermarket={activeSupermarket} 
+                            />
+                        )}
                     </DashboardHeader>
 
-                    {activeSubTab === 'revenue' && (
+                    {activeSubTab === 'revenue' && !isReportView && (
                         <div className="mt-3 sm:mt-4">
                             <KpiOverview
                                 isRealtime={isRealtimeView}
@@ -359,11 +367,12 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
                         <div className="js-industry-view-container">
                             <IndustryView
                                 ref={industryTableRef}
-                                isRealtime={isRealtimeView}
+                                isRealtime={isRealtimeView || isReportView}
                                 realtimeData={industryRealtimeParsed}
                                 luykeData={industryLuyKeParsed}
                                 activeSupermarket={activeSupermarket}
-                                onExport={async () => { await handleExportPNG(industryTableRef, `NganhHang_${isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`); }}
+                                isReportMode={isReportView}
+                                onExport={async () => { await handleExportPNG(industryTableRef, `NganhHang_${isReportView ? 'BC' : isRealtimeView ? 'RT' : 'LK'}_${activeSupermarket}`); }}
                             />
                         </div>
                     )}
