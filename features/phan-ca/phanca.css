@@ -14,16 +14,16 @@
             --border-light: #e2e8f0;
             --border-default: #cbd5e1;
 
-            /* Shift cell colors — softer, more professional */
-            --cell-gh-bg: #fff7ed; /* orange-50 */
-            --cell-gh-border: #fdba74; /* orange-300 */
-            --cell-gh-text: #c2410c; /* orange-700 */
-            --cell-kho-bg: #f0fdf4; /* green-50 */
-            --cell-kho-border: #86efac; /* green-300 */
-            --cell-kho-text: #15803d; /* green-700 */
-            --cell-tn-bg: #faf5ff; /* purple-50 */
-            --cell-tn-border: #d8b4fe; /* purple-300 */
-            --cell-tn-text: #7e22ce; /* purple-700 */
+            /* Shift cell colors — warm pastel scheme */
+            --cell-gh-bg: #fff1f2; /* rose-50 */
+            --cell-gh-border: #fecdd3; /* rose-200 */
+            --cell-gh-text: #e11d48; /* rose-600 */
+            --cell-kho-bg: #fff7ed; /* orange-50 */
+            --cell-kho-border: #fed7aa; /* orange-200 */
+            --cell-kho-text: #c2410c; /* orange-700 */
+            --cell-tn-bg: #fffbeb; /* amber-50 */
+            --cell-tn-border: #fde68a; /* amber-200 */
+            --cell-tn-text: #b45309; /* amber-700 */
             --cell-off-bg: #fff1f2;
             --cell-off-text: #be123c;
         }
@@ -129,21 +129,18 @@
         }
         .pill-gh {
             background-color: var(--cell-gh-border);
-            color: #fff;
+            color: var(--cell-gh-text);
             border: 1px solid var(--cell-gh-text);
-            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
         .pill-kho {
             background-color: var(--cell-kho-border);
-            color: #fff;
+            color: var(--cell-kho-text);
             border: 1px solid var(--cell-kho-text);
-            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
         .pill-tn {
             background-color: var(--cell-tn-border);
-            color: #fff;
+            color: var(--cell-tn-text);
             border: 1px solid var(--cell-tn-text);
-            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
 
         /* ═══════════════════════════════════════
