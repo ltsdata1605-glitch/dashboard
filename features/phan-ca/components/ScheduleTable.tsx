@@ -29,7 +29,7 @@ const StatCell: React.FC<{ value: number; target: number; className?: string }> 
     const displayValue = value === 0 ? '-' : value;
     
     return (
-        <td className={`col-stat ${isOk ? '' : 'stat-warn'} ${className} text-[11px] font-bold`}>
+        <td className={`col-stat ${isOk ? '' : 'stat-warn'} ${className} text-sm font-bold`}>
             {displayValue}
         </td>
     );
@@ -119,7 +119,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
         if (!isIndividualExport && staff.department !== lastDepartment) {
             rows.push(
                 <tr key={`dept-${staff.department}`} className="bg-slate-50">
-                    <td colSpan={isIndividualExport ? 8 + duration : 10 + duration} className="p-3 text-left font-black text-slate-400 border-y border-slate-200 uppercase tracking-[0.15em] text-[9px] sticky left-0 z-10">
+                    <td colSpan={isIndividualExport ? 8 + duration : 10 + duration} className="p-3 text-left font-black text-slate-400 border-y border-slate-200 uppercase tracking-[0.15em] text-xs sticky left-0 z-10">
                         🏢 {staff.department}
                     </td>
                 </tr>
@@ -139,10 +139,10 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
             <tr key={staff.id} className={`${isRowHighlighted ? 'row-export-highlight' : ''} group ${isIndividualExport ? 'h-24' : ''} border-b border-slate-200 even:bg-slate-50/50 hover:bg-slate-100/50 transition-colors`}>
                 {!isIndividualExport && (
                     <>
-                        <td className="sticky-col text-center border-r border-slate-200 text-[10px] font-bold bg-white text-slate-400" style={{ left: 0, width: '40px', minWidth: '40px' }}>
+                        <td className="sticky-col text-center border-r border-slate-200 text-xs font-bold bg-white text-slate-400" style={{ left: 0, width: '40px', minWidth: '40px' }}>
                             {index + 1}
                         </td>
-                        <td className="sticky-col text-left px-4 border-r border-slate-200 text-[11px] font-semibold bg-white" style={{ left: '40px' }}>
+                        <td className="sticky-col text-left px-4 border-r border-slate-200 text-sm font-semibold bg-white" style={{ left: '40px' }}>
                             <div className="flex justify-between items-center">
                                 <span style={{ color: staff.gender === 'Nu' ? '#db2777' : '#2563eb' }}>
                                     {formatDisplayName(staff.name)}
@@ -155,13 +155,13 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                     </>
                 )}
                 {/* GIỜ CÔNG */}
-                <td className={`col-total border-r border-slate-200 text-[11px] font-bold text-center ${
+                <td className={`col-total border-r border-slate-200 text-sm font-bold text-center ${
                     targets.targetSpecialHours && Math.abs(specialHours - targets.targetSpecialHours) > 0.1 ? 'text-rose-600 bg-rose-50' : 'text-slate-500'
                 }`} title={`Mục tiêu: ${Math.round(targets.targetSpecialHours || 0)}h`}>
                     {Math.round(specialHours)}
                 </td>
-                <td className="col-total border-r border-slate-200 text-[11px] font-bold text-center text-slate-400">{Math.round(normalHours)}</td>
-                <td className="col-total col-total-final border-r-2 border-slate-300 text-[11px] font-black text-center">{Math.round(totalHours)}</td>
+                <td className="col-total border-r border-slate-200 text-sm font-bold text-center text-slate-400">{Math.round(normalHours)}</td>
+                <td className="col-total col-total-final border-r-2 border-slate-300 text-sm font-black text-center">{Math.round(totalHours)}</td>
                 
                 {/* SỐ NGÀY SBH */}
                 <StatCell value={stats.gh} target={staff.gender === 'Nam' ? safeTargets.gh : 0} className="border-r border-slate-100" />
@@ -169,8 +169,8 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 <StatCell value={stats.tn} target={safeTargets.tn} className="border-r-2 border-slate-200" />
                 
                 {/* SỐ LẦN */}
-                <td className={`col-stat border-r border-slate-200 text-[11px] font-bold text-center ${stats.swapCount > 8 ? 'stat-warn' : 'text-slate-400'}`}>{stats.swapCount || '-'}</td>
-                <td className={`col-stat border-r-2 border-slate-300 text-[11px] font-bold text-center ${stats.offDays > 4 ? 'stat-warn' : 'text-slate-400'}`}>{stats.offDays || '-'}</td>
+                <td className={`col-stat border-r border-slate-200 text-sm font-bold text-center ${stats.swapCount > 8 ? 'stat-warn' : 'text-slate-400'}`}>{stats.swapCount || '-'}</td>
+                <td className={`col-stat border-r-2 border-slate-300 text-sm font-bold text-center ${stats.offDays > 4 ? 'stat-warn' : 'text-slate-400'}`}>{stats.offDays || '-'}</td>
                 
                 {/* LỊCH LÀM VIỆC */}
                 {staff.schedule.slice(1).map((info, dIndex) => {
@@ -179,7 +179,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                     const isWeekend = dayDate.getDay() === 0 || dayDate.getDay() === 6;
                     const weekendClass = isWeekend ? 'bg-slate-100/60' : 'bg-transparent';
                     
-                    if (!info) return <td key={dayIndex} className={`editable-cell border-r border-slate-200 text-[11px] ${weekendClass}`} onClick={() => onEditShift(staff.id, dayIndex)}></td>;
+                    if (!info) return <td key={dayIndex} className={`editable-cell border-r border-slate-200 text-sm ${weekendClass}`} onClick={() => onEditShift(staff.id, dayIndex)}></td>;
                     
                     let className = `cell-normal ${weekendClass}`;
                     let rolePill = null;
@@ -206,14 +206,14 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                     const dragClass = isDragging ? 'opacity-50 scale-90 ring-2 ring-indigo-400 z-50' : isDragOver ? 'bg-indigo-100 ring-2 ring-indigo-500 scale-105 z-50 shadow-lg' : '';
 
                     return (
-                        <td key={dayIndex} className={`editable-cell ${className} ${manualClass} ${hoverClass} ${warningClass} ${dragClass} text-[11px] font-black transition-all duration-200`} 
+                        <td key={dayIndex} className={`editable-cell ${className} ${manualClass} ${hoverClass} ${warningClass} ${dragClass} text-[13px] font-black transition-all duration-200`} 
                             draggable={true}
                             onDragStart={(e) => handleDragStart(e, staff.id, dayIndex)}
                             onDragOver={(e) => handleDragOver(e, staff.id, dayIndex)}
                             onDrop={(e) => handleDrop(e, staff.id, dayIndex)}
                             onDragEnd={handleDragEnd}
                             onMouseEnter={() => onDayHover(dayIndex)} onClick={() => onEditShift(staff.id, dayIndex)}>
-                            <div className="flex flex-col items-center justify-center min-h-[36px] pointer-events-none">
+                            <div className="flex flex-col items-center justify-center min-h-[44px] pointer-events-none">
                                 <span className="leading-tight">{info.role === "OFF" ? "OFF" : info.shift}</span>
                                 {rolePill}
                             </div>
@@ -245,21 +245,21 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
 
         rows.push(
             <tr key="summary-row" className="bg-slate-100/80 font-black border-t-2 border-slate-300">
-                <td colSpan={2} className="sticky-col text-right px-4 py-3 border-r border-slate-300 text-[10px] uppercase tracking-widest text-slate-500 bg-slate-100">
+                <td colSpan={2} className="sticky-col text-right px-4 py-3 border-r border-slate-300 text-xs uppercase tracking-widest text-slate-500 bg-slate-100">
                     GIỜ CÔNG TRUNG BÌNH
                 </td>
-                <td className="col-total border-r border-slate-200 text-[11px] text-indigo-700">
+                <td className="col-total border-r border-slate-200 text-sm text-indigo-700">
                     {Math.round(avgSpecial)}
                     {targets.targetSpecialHours && (
-                        <div className="text-[8px] font-bold opacity-50">Target: {Math.round(targets.targetSpecialHours)}</div>
+                        <div className="text-[10px] font-bold opacity-50">Target: {Math.round(targets.targetSpecialHours)}</div>
                     )}
                 </td>
-                <td className="col-total border-r border-slate-200 text-[11px] text-slate-500">{Math.round(avgNormal)}</td>
-                <td className="col-total col-total-final border-r-2 border-slate-300 text-[11px] text-slate-900">{Math.round(avgTotal)}</td>
+                <td className="col-total border-r border-slate-200 text-sm text-slate-500">{Math.round(avgNormal)}</td>
+                <td className="col-total col-total-final border-r-2 border-slate-300 text-sm text-slate-900">{Math.round(avgTotal)}</td>
                 
-                <td className="col-stat border-r border-slate-200 text-[11px] text-purple-700" title="TB Giờ GH">{Math.round(avgGh)}h</td>
-                <td className="col-stat border-r border-slate-200 text-[11px] text-purple-700" title="TB Giờ KH">{Math.round(avgKho)}h</td>
-                <td className="col-stat border-r-2 border-slate-300 text-[11px] text-purple-700" title="TB Giờ TN">{Math.round(avgTn)}h</td>
+                <td className="col-stat border-r border-slate-200 text-sm text-purple-700" title="TB Giờ GH">{Math.round(avgGh)}h</td>
+                <td className="col-stat border-r border-slate-200 text-sm text-purple-700" title="TB Giờ KH">{Math.round(avgKho)}h</td>
+                <td className="col-stat border-r-2 border-slate-300 text-sm text-purple-700" title="TB Giờ TN">{Math.round(avgTn)}h</td>
                 
                 <td colSpan={2} className="border-r-2 border-slate-300 bg-slate-50"></td>
                 <td colSpan={duration} className="bg-slate-50"></td>
@@ -279,7 +279,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
         const len = Math.min(7 - dow, duration - day + 1);
         const weekNum = dayToWeekMap[day];
         const theme = weekThemes[(weekNum - 1) % weekThemes.length];
-        headers.push(<th key={day} colSpan={len} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b border-r text-[9px] py-2 font-black uppercase tracking-widest">Tuần {weekNum}</th>);
+        headers.push(<th key={day} colSpan={len} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b border-r text-xs py-2 font-black uppercase tracking-widest">Tuần {weekNum}</th>);
         day += len;
     }
     return headers;
@@ -292,16 +292,16 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
           <tr>
             {!isIndividualExport && (
                 <>
-                    <th rowSpan={2} className="sticky-col px-1 text-center border-r border-slate-300 bg-slate-50 z-40 text-[10px] font-black uppercase tracking-wider" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
-                    <th rowSpan={2} className="sticky-col px-5 text-left border-r border-slate-300 bg-slate-50 z-40 text-[11px] font-black uppercase tracking-wider" style={{ left: '40px' }}>Họ và Tên</th>
+                    <th rowSpan={2} className="sticky-col px-1 text-center border-r border-slate-300 bg-slate-50 z-40 text-xs font-black uppercase tracking-wider" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
+                    <th rowSpan={2} className="sticky-col px-5 text-left border-r border-slate-300 bg-slate-50 z-40 text-xs font-black uppercase tracking-wider" style={{ left: '40px', minWidth: '220px' }}>Họ và Tên</th>
                 </>
             )}
-            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-indigo-50/50 text-indigo-700 font-black text-[10px] uppercase tracking-widest">Giờ Công</th>
-            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-purple-50/50 text-purple-700 font-black text-[10px] uppercase tracking-widest">Số Ngày SBH</th>
-            <th colSpan={2} className="border-r-2 border-slate-300 py-2.5 bg-slate-100 font-black text-[10px] uppercase tracking-widest text-slate-500">Số Lần</th>
+            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-indigo-50/50 text-indigo-700 font-black text-xs uppercase tracking-widest">Giờ Công</th>
+            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-purple-50/50 text-purple-700 font-black text-xs uppercase tracking-widest">Số Ngày SBH</th>
+            <th colSpan={2} className="border-r-2 border-slate-300 py-2.5 bg-slate-100 font-black text-xs uppercase tracking-widest text-slate-500">Số Lần</th>
             {weekHeaders}
           </tr>
-          <tr className="text-[9px] font-black uppercase tracking-tighter">
+          <tr className="text-[10px] font-black uppercase tracking-tighter">
             <th className="px-1 border-r border-slate-200 bg-indigo-50/20 text-indigo-400">SBH</th>
             <th className="px-1 border-r border-slate-200 bg-indigo-50/20 text-indigo-400">TV</th>
             <th className="px-1 border-r-2 border-slate-300 bg-indigo-50/20 text-indigo-700">TỔNG</th>
@@ -314,9 +314,9 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 const date = new Date(year, month - 1, startDay + i);
                 const isSun = date.getDay() === 0;
                 return (
-                    <th key={i} className={`px-1 min-w-[42px] border-r border-slate-200 ${isSun ? 'bg-rose-50 text-rose-600' : 'bg-white'}`}>
-                        <div className="font-black text-[13px]">{date.getDate()}</div>
-                        <div className="opacity-60 text-[8px] tracking-widest">{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</div>
+                    <th key={i} className={`px-1 min-w-[50px] border-r border-slate-200 ${isSun ? 'bg-rose-50 text-rose-600' : 'bg-white'}`}>
+                        <div className="font-black text-[15px]">{date.getDate()}</div>
+                        <div className="opacity-60 text-[10px] tracking-widest">{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</div>
                     </th>
                 );
             })}

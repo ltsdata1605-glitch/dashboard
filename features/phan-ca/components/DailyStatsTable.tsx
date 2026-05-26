@@ -50,7 +50,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
     return (
         <div className="mt-4 mb-2 bg-white rounded-none border-t border-x border-slate-200 overflow-hidden shadow-sm relative">
             <div className="px-4 py-3 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Thống Kê Nhân Sự Theo Ca</h3>
+                <h3 className="text-sm font-bold text-slate-700 uppercase tracking-wider">Thống Kê Nhân Sự Theo Ca</h3>
                 {unresolvedConflicts.length > 0 && (
                     <button 
                         onClick={onShowUnresolvedConflicts}
@@ -69,9 +69,9 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                 <table className="w-full text-left border-collapse min-w-max">
                     <thead>
                         <tr>
-                            <th className="sticky left-0 bg-slate-50 z-20 border-r border-b border-slate-200 px-3 py-2 text-[10px] font-bold text-slate-500 uppercase w-20 text-center">Ca Làm Việc</th>
+                            <th className="sticky left-0 bg-slate-50 z-20 border-r border-b border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 uppercase w-24 text-center">Ca Làm Việc</th>
                             {canEditRequirements && (
-                                <th className="sticky left-[80px] bg-slate-50 z-20 border-r border-b border-slate-200 px-2 py-2 text-[10px] font-bold text-slate-500 uppercase w-16 text-center">Yêu Cầu</th>
+                                <th className="sticky left-[96px] bg-slate-50 z-20 border-r border-b border-slate-200 px-2 py-2 text-xs font-bold text-slate-500 uppercase w-20 text-center">Yêu Cầu</th>
                             )}
                             {dayHeaders.map((dh, idx) => {
                                 const isSelected = dh.d === selectedDay;
@@ -79,13 +79,13 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                     <th 
                                         key={idx} 
                                         onClick={() => setSelectedDay(dh.d)}
-                                        className={`px-1 py-1.5 text-center border-b border-r border-slate-200 min-w-[36px] cursor-pointer transition-colors ${
+                                        className={`px-1 py-1.5 text-center border-b border-r border-slate-200 min-w-[48px] cursor-pointer transition-colors ${
                                             isSelected ? 'bg-indigo-100 border-b-2 border-b-indigo-500' :
                                             dh.isWeekend ? 'bg-rose-50 hover:bg-rose-100 text-rose-600' : 'bg-slate-50 hover:bg-slate-100 text-slate-500'
                                         }`}
                                     >
-                                        <div className="text-[9px] font-bold opacity-70 mb-px leading-none">{dh.dowLabel}</div>
-                                        <div className="text-xs font-black leading-none">{dh.date}</div>
+                                        <div className="text-xs font-bold opacity-70 mb-px leading-none">{dh.dowLabel}</div>
+                                        <div className="text-sm font-black leading-none">{dh.date}</div>
                                     </th>
                                 )
                             })}
@@ -96,11 +96,11 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                             const required = requirements[slot] || 0;
                             return (
                                 <tr key={slot} className="hover:bg-slate-50/50">
-                                    <td className="sticky left-0 bg-white z-10 border-r border-b border-slate-200 px-2 py-1.5 text-xs font-black text-slate-700 text-center">
+                                    <td className="sticky left-0 bg-white z-10 border-r border-b border-slate-200 px-2 py-2 text-sm font-black text-slate-700 text-center">
                                         CA {slot}
                                     </td>
                                     {canEditRequirements && (
-                                        <td className="sticky left-[80px] bg-white z-10 border-r border-b border-slate-200 px-1 py-1 text-center">
+                                        <td className="sticky left-[96px] bg-white z-10 border-r border-b border-slate-200 px-1 py-2 text-center">
                                             <input
                                                 id={`req-input-${slot}`}
                                                 type="number"
@@ -117,7 +117,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                                         }
                                                     }
                                                 }}
-                                                className="w-full text-center font-bold bg-slate-50 border border-slate-200 p-1 text-xs outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-none"
+                                                className="w-full text-center font-bold bg-slate-50 border border-slate-200 p-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-none"
                                                 min="0"
                                             />
                                         </td>
@@ -148,7 +148,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                             <td 
                                                 key={dIdx} 
                                                 onClick={() => setSelectedDay(d)}
-                                                className={`px-1 py-1.5 text-center border-b border-r border-slate-200 text-xs cursor-pointer transition-colors ${textColor} ${bgClass}`}
+                                                className={`px-1 py-2 text-center border-b border-r border-slate-200 text-sm cursor-pointer transition-colors ${textColor} ${bgClass}`}
                                             >
                                                 {count}
                                             </td>
