@@ -14,16 +14,16 @@
             --border-light: #e2e8f0;
             --border-default: #cbd5e1;
 
-            /* Shift cell colors — warm pastel scheme */
+            /* Shift cell colors — matches provided buttons */
             --cell-gh-bg: #fff1f2; /* rose-50 */
-            --cell-gh-border: #fecdd3; /* rose-200 */
-            --cell-gh-text: #e11d48; /* rose-600 */
+            --cell-gh-border: #fca5a5; /* red-300 */
+            --cell-gh-text: #e11d48; /* rose-600 (Cho nghỉ) */
             --cell-kho-bg: #fff7ed; /* orange-50 */
-            --cell-kho-border: #fed7aa; /* orange-200 */
-            --cell-kho-text: #c2410c; /* orange-700 */
-            --cell-tn-bg: #fffbeb; /* amber-50 */
-            --cell-tn-border: #fde68a; /* amber-200 */
-            --cell-tn-text: #b45309; /* amber-700 */
+            --cell-kho-border: #fdba74; /* orange-300 */
+            --cell-kho-text: #ea580c; /* orange-600 (Bận sáng) */
+            --cell-tn-bg: #ecfeff; /* cyan-50 */
+            --cell-tn-border: #67e8f9; /* cyan-300 */
+            --cell-tn-text: #0891b2; /* cyan-600 (Bận chiều) */
             --cell-off-bg: #fff1f2;
             --cell-off-text: #be123c;
         }
@@ -124,19 +124,22 @@
             box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
         .pill-gh {
-            background-color: var(--cell-gh-border);
-            color: var(--cell-gh-text);
+            background-color: var(--cell-gh-text);
+            color: #fff;
             border: 1px solid var(--cell-gh-text);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
         .pill-kho {
-            background-color: var(--cell-kho-border);
-            color: var(--cell-kho-text);
+            background-color: var(--cell-kho-text);
+            color: #fff;
             border: 1px solid var(--cell-kho-text);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
         .pill-tn {
-            background-color: var(--cell-tn-border);
-            color: var(--cell-tn-text);
+            background-color: var(--cell-tn-text);
+            color: #fff;
             border: 1px solid var(--cell-tn-text);
+            text-shadow: 0 1px 1px rgba(0,0,0,0.1);
         }
 
         /* ═══════════════════════════════════════
