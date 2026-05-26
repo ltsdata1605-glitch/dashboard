@@ -79,11 +79,11 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   const isIndividualExport = staffList.length === 1;
 
   const weekThemes = [
-    { bg: 'bg-violet-50', text: 'text-violet-700', border: 'border-violet-200' },
-    { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
-    { bg: 'bg-teal-50', text: 'text-teal-700', border: 'border-teal-200' },
-    { bg: 'bg-indigo-50', text: 'text-indigo-700', border: 'border-indigo-200' },
-    { bg: 'bg-fuchsia-50', text: 'text-fuchsia-700', border: 'border-fuchsia-200' },
+    { bg: '#f0fdfa', text: '#0f766e', border: '#ccfbf1' }, // Teal
+    { bg: '#f0f9ff', text: '#0369a1', border: '#e0f2fe' }, // Sky
+    { bg: '#fdf4ff', text: '#a21caf', border: '#fae8ff' }, // Fuchsia
+    { bg: '#fefce8', text: '#a16207', border: '#fef08a' }, // Yellow
+    { bg: '#ecfdf5', text: '#047857', border: '#d1fae5' }, // Emerald
   ];
 
   const dayToWeekMap = useMemo(() => {
@@ -136,18 +136,16 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
         const isRowHighlighted = highlightId === staff.id;
 
         rows.push(
-            <tr key={staff.id} className={`${isRowHighlighted ? 'row-export-highlight' : ''} group ${isIndividualExport ? 'h-24' : ''} border-b border-slate-200 bg-white hover:bg-slate-50 transition-colors`}>
+            <tr key={staff.id} className={`${isRowHighlighted ? 'row-export-highlight' : ''} group ${isIndividualExport ? 'h-24' : ''} border-b border-slate-200 even:bg-slate-50/50 hover:bg-slate-100/50 transition-colors`}>
                 {!isIndividualExport && (
                     <>
-                        <td className="sticky-col text-center border-r border-slate-200 text-[11px] sm:text-[13px] font-extrabold bg-white group-hover:bg-slate-50 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] text-slate-500" style={{ left: 0, width: '40px', minWidth: '40px' }}>
+                        <td className="sticky-col text-center border-r border-slate-200 text-xs font-bold bg-white text-slate-400" style={{ left: 0, width: '40px', minWidth: '40px' }}>
                             {index + 1}
                         </td>
-                        <td className="sticky-col text-left px-1.5 sm:px-4 py-1.5 sm:py-3 border-r border-slate-200 bg-white group-hover:bg-slate-50 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: '40px' }}>
+                        <td className="sticky-col text-left px-4 border-r border-slate-200 text-sm font-semibold bg-white" style={{ left: '40px' }}>
                             <div className="flex justify-between items-center">
-                                <span className="font-extrabold text-[11px] sm:text-[13px] text-slate-900 underline decoration-dotted decoration-slate-400 underline-offset-4 cursor-pointer leading-tight">
-                                    <span style={{ color: staff.gender === 'Nu' ? '#db2777' : '#2563eb' }}>{staff.id}</span>
-                                    <span className="text-slate-900 mx-1">-</span>
-                                    <span className="text-slate-900">{abbreviateVietnameseName(staff.name.split(' - ').slice(1).join(' - '))}</span>
+                                <span style={{ color: staff.gender === 'Nu' ? '#db2777' : '#2563eb' }}>
+                                    {formatDisplayName(staff.name)}
                                 </span>
                                 <button onClick={() => onDeleteEmployee(staff.id)} className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 p-1 text-slate-300 hover:text-rose-600 transition-all export-hidden">
                                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -281,55 +279,58 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
         const len = Math.min(7 - dow, duration - day + 1);
         const weekNum = dayToWeekMap[day];
         const theme = weekThemes[(weekNum - 1) % weekThemes.length];
-        headers.push(<th key={day} colSpan={len} className={`px-2 py-3 border-b border-r border-slate-200 text-center align-middle text-[11px] sm:text-[12px] font-bold uppercase tracking-wider ${theme.bg} ${theme.text}`}>TUẦN {weekNum}</th>);
+        headers.push(<th key={day} colSpan={len} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b border-r text-base py-3 font-black uppercase tracking-widest shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tuần {weekNum}</th>);
         day += len;
     }
     return headers;
   }, [duration, year, month, startDay, dayToWeekMap]);
 
   return (
-    <div className={`overflow-x-auto custom-scroll p-1.5 sm:p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative bg-white border-t border-slate-200 ${isIndividualExport ? 'flex justify-center' : ''}`} onMouseLeave={() => onDayHover(null)}>
-      <table id="scheduleTable" ref={tableRef} className="w-full min-w-max text-[11px] sm:text-[13px] text-center border-collapse border border-slate-200 whitespace-nowrap">
-        <thead>
-          <tr className="text-[10px] sm:text-[12px] font-bold uppercase tracking-wider">
+    <div className={`overflow-x-auto custom-scroll rounded-none bg-white border border-slate-200 shadow-xl ${isIndividualExport ? 'flex justify-center' : ''}`} onMouseLeave={() => onDayHover(null)}>
+      <table id="scheduleTable" ref={tableRef} className="w-full border-collapse">
+        <thead className="bg-slate-50">
+          <tr>
             {!isIndividualExport && (
                 <>
-                    <th rowSpan={2} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[11px] sm:text-[13px] font-bold text-rose-700 bg-rose-50 border-b-[3px] !border-b-slate-300 border-r border-slate-200 select-none align-middle sticky left-0 z-20 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ width: '40px', minWidth: '40px' }}>STT</th>
-                    <th rowSpan={2} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[11px] sm:text-[13px] font-bold text-rose-700 bg-rose-50 border-b-[3px] !border-b-slate-300 border-r border-slate-200 select-none align-middle sticky left-[40px] z-20 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">MÃ NV - HỌ TÊN</th>
+                    <th rowSpan={2} className="sticky-col px-1 text-center border-r border-slate-300 z-40 text-base font-black uppercase tracking-wider bg-teal-50 text-teal-700 border-b-[3px] !border-b-slate-300 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
+                    <th rowSpan={2} className="sticky-col px-5 text-left border-r border-slate-300 z-40 text-base font-black uppercase tracking-wider bg-teal-50 text-teal-700 border-b-[3px] !border-b-slate-300 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: '40px' }}>Họ và Tên</th>
                 </>
             )}
-            <th colSpan={3} className="px-2 py-2 border-b border-r border-slate-200 text-center align-middle text-[11px] sm:text-[12px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-700">GIỜ CÔNG</th>
-            <th colSpan={3} className="px-2 py-2 border-b border-r border-slate-200 text-center align-middle text-[11px] sm:text-[12px] font-bold uppercase tracking-wider bg-sky-50 text-sky-700">SỐ NGÀY SBH</th>
-            <th colSpan={2} className="px-2 py-2 border-b border-r border-slate-200 text-center align-middle text-[11px] sm:text-[12px] font-bold uppercase tracking-wider bg-amber-50 text-amber-700">SỐ LẦN</th>
+            <th colSpan={3} className="border-r-2 border-slate-300 py-3 bg-sky-50 text-sky-700 font-black text-base uppercase tracking-widest border-b border-slate-200">Giờ Công</th>
+            <th colSpan={3} className="border-r-2 border-slate-300 py-3 bg-fuchsia-50 text-fuchsia-700 font-black text-base uppercase tracking-widest border-b border-slate-200">Số Ngày SBH</th>
+            <th colSpan={2} className="border-r-2 border-slate-300 py-3 bg-orange-50 text-orange-700 font-black text-base uppercase tracking-widest border-b border-slate-200">Số Lần</th>
             {weekHeaders}
           </tr>
-          <tr>
-            <th className="px-1 sm:px-2 py-2 border-b-[3px] !border-b-slate-300 border-r border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle bg-emerald-50 text-emerald-700">SBH</th>
-            <th className="px-1 sm:px-2 py-2 border-b-[3px] !border-b-slate-300 border-r border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle bg-emerald-50 text-emerald-700">TV</th>
-            <th className="px-1 sm:px-2 py-2 border-b-[3px] !border-b-slate-300 border-r border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle bg-emerald-50 text-emerald-700">TỔNG</th>
-            <th className="px-1 sm:px-2 py-2 border-b-[3px] !border-b-slate-300 border-r border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle bg-sky-50 text-sky-700">GH</th>
-            <th className="px-1 sm:px-2 py-2 border-b-[3px] !border-b-slate-300 border-r border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle bg-sky-50 text-sky-700">KH</th>
-            <th className="px-1 sm:px-2 py-2 border-b-[3px] !border-b-slate-300 border-r border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle bg-sky-50 text-sky-700">TN</th>
-            <th className="px-1 sm:px-2 py-2 border-b-[3px] !border-b-slate-300 border-r border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle bg-amber-50 text-amber-700">ĐỔI</th>
-            <th className="px-1 sm:px-2 py-2 border-b-[3px] !border-b-slate-300 border-r border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle bg-amber-50 text-amber-700">OFF</th>
+          <tr className="text-[15px] font-black uppercase tracking-tighter">
+            <th className="px-1 border-r border-slate-200 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-300">SBH</th>
+            <th className="px-1 border-r border-slate-200 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-300">TV</th>
+            <th className="px-1 border-r-2 border-slate-300 bg-sky-50 text-sky-800 border-b-[3px] !border-b-slate-300">TỔNG</th>
+            <th className="px-1 border-r border-slate-200 bg-fuchsia-50 text-fuchsia-700 border-b-[3px] !border-b-slate-300">GH</th>
+            <th className="px-1 border-r border-slate-200 bg-fuchsia-50 text-fuchsia-700 border-b-[3px] !border-b-slate-300">KH</th>
+            <th className="px-1 border-r-2 border-slate-300 bg-fuchsia-50 text-fuchsia-800 border-b-[3px] !border-b-slate-300">TN</th>
+            <th className="px-1 border-r border-slate-200 bg-orange-50 text-orange-700 border-b-[3px] !border-b-slate-300">ĐỔI</th>
+            <th className="px-1 border-r-2 border-slate-300 bg-orange-50 text-orange-700 border-b-[3px] !border-b-slate-300">OFF</th>
             {Array.from({ length: duration }).map((_, i) => {
                 const date = new Date(year, month - 1, startDay + i);
                 const isSun = date.getDay() === 0;
                 
+                // Get the theme for this specific day based on the week it belongs to
                 const day = startDay + i;
                 const weekNum = dayToWeekMap[day] || 1;
                 const theme = weekThemes[(weekNum - 1) % weekThemes.length];
                 
+                // We use inline styles for background and text color to match the week, except for Sunday which can still be distinct (or not). Let's use week theme bg for consistency, or keep white. "Chi tiết kho" uses groupColorMap styles.
+                
                 return (
-                    <th key={i} className={`px-1 sm:px-2 py-1.5 border-b-[3px] !border-b-slate-300 border-r border-slate-200 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle ${theme.bg} ${theme.text}`}>
-                        <div className="font-extrabold text-[13px] sm:text-[14px]">{date.getDate()}</div>
-                        <div className="opacity-90 tracking-widest">{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</div>
+                    <th key={i} className={`px-1 min-w-[50px] border-r border-slate-200 border-b-[3px] !border-b-slate-300 ${isSun ? 'bg-rose-50 text-rose-700' : ''}`} style={!isSun ? { backgroundColor: theme.bg, color: theme.text } : {}}>
+                        <div className="font-black text-[15px]">{date.getDate()}</div>
+                        <div className="opacity-90 text-[13px] tracking-widest">{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</div>
                     </th>
                 );
             })}
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-200">
+        <tbody className="divide-y divide-slate-100">
             {renderBody()}
         </tbody>
       </table>
