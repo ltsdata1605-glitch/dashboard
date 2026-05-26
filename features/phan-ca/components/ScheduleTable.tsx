@@ -206,14 +206,14 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                     const dragClass = isDragging ? 'opacity-50 scale-90 ring-2 ring-indigo-400 z-50' : isDragOver ? 'bg-indigo-100 ring-2 ring-indigo-500 scale-105 z-50 shadow-lg' : '';
 
                     return (
-                        <td key={dayIndex} className={`editable-cell ${className} ${manualClass} ${hoverClass} ${warningClass} ${dragClass} text-[13px] font-black transition-all duration-200`} 
+                        <td key={dayIndex} className={`editable-cell ${className} ${manualClass} ${hoverClass} ${warningClass} ${dragClass} font-black transition-all duration-200`} 
                             draggable={true}
                             onDragStart={(e) => handleDragStart(e, staff.id, dayIndex)}
                             onDragOver={(e) => handleDragOver(e, staff.id, dayIndex)}
                             onDrop={(e) => handleDrop(e, staff.id, dayIndex)}
                             onDragEnd={handleDragEnd}
                             onMouseEnter={() => onDayHover(dayIndex)} onClick={() => onEditShift(staff.id, dayIndex)}>
-                            <div className="flex flex-col items-center justify-center min-h-[44px] pointer-events-none">
+                            <div className="flex flex-col items-center justify-center min-h-[48px] pointer-events-none">
                                 <span className="leading-tight">{info.role === "OFF" ? "OFF" : info.shift}</span>
                                 {rolePill}
                             </div>
