@@ -79,11 +79,11 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   const isIndividualExport = staffList.length === 1;
 
   const weekThemes = [
-    { bg: '#f1f5f9', text: '#1e293b', border: '#e2e8f0' }, // Slate-800
-    { bg: '#eff6ff', text: '#1e3a8a', border: '#dbeafe' }, // Blue-900
-    { bg: '#f0fdf4', text: '#14532d', border: '#dcfce7' }, // Green-900
-    { bg: '#fffbeb', text: '#78350f', border: '#fef3c7' }, // Amber-900
-    { bg: '#faf5ff', text: '#581c87', border: '#f3e8ff' }, // Purple-900
+    { bg: '#f0fdfa', text: '#0f766e', border: '#ccfbf1' }, // Teal
+    { bg: '#f0f9ff', text: '#0369a1', border: '#e0f2fe' }, // Sky
+    { bg: '#fdf4ff', text: '#a21caf', border: '#fae8ff' }, // Fuchsia
+    { bg: '#fefce8', text: '#a16207', border: '#fef08a' }, // Yellow
+    { bg: '#ecfdf5', text: '#047857', border: '#d1fae5' }, // Emerald
   ];
 
   const dayToWeekMap = useMemo(() => {
@@ -279,7 +279,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
         const len = Math.min(7 - dow, duration - day + 1);
         const weekNum = dayToWeekMap[day];
         const theme = weekThemes[(weekNum - 1) % weekThemes.length];
-        headers.push(<th key={day} colSpan={len} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b border-r text-sm py-2 font-black uppercase tracking-widest">Tuần {weekNum}</th>);
+        headers.push(<th key={day} colSpan={len} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b border-r text-[15px] py-2.5 font-black uppercase tracking-widest shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tuần {weekNum}</th>);
         day += len;
     }
     return headers;
@@ -292,31 +292,39 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
           <tr>
             {!isIndividualExport && (
                 <>
-                    <th rowSpan={2} className="sticky-col px-1 text-center border-r border-slate-300 bg-slate-50 z-40 text-sm font-black uppercase tracking-wider text-slate-800" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
-                    <th rowSpan={2} className="sticky-col px-5 text-left border-r border-slate-300 bg-slate-50 z-40 text-sm font-black uppercase tracking-wider text-slate-800" style={{ left: '40px' }}>Họ và Tên</th>
+                    <th rowSpan={2} className="sticky-col px-1 text-center border-r border-slate-300 z-40 text-[15px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 border-b-[3px] !border-b-slate-300 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
+                    <th rowSpan={2} className="sticky-col px-5 text-left border-r border-slate-300 z-40 text-[15px] font-black uppercase tracking-wider bg-rose-50 text-rose-700 border-b-[3px] !border-b-slate-300 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: '40px' }}>Họ và Tên</th>
                 </>
             )}
-            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-indigo-50/50 text-indigo-900 font-black text-sm uppercase tracking-widest">Giờ Công</th>
-            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-purple-50/50 text-purple-900 font-black text-sm uppercase tracking-widest">Số Ngày SBH</th>
-            <th colSpan={2} className="border-r-2 border-slate-300 py-2.5 bg-slate-100 font-black text-sm uppercase tracking-widest text-slate-800">Số Lần</th>
+            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-indigo-50 text-indigo-700 font-black text-[15px] uppercase tracking-widest border-b border-slate-200">Giờ Công</th>
+            <th colSpan={3} className="border-r-2 border-slate-300 py-2.5 bg-purple-50 text-purple-700 font-black text-[15px] uppercase tracking-widest border-b border-slate-200">Số Ngày SBH</th>
+            <th colSpan={2} className="border-r-2 border-slate-300 py-2.5 bg-amber-50 text-amber-700 font-black text-[15px] uppercase tracking-widest border-b border-slate-200">Số Lần</th>
             {weekHeaders}
           </tr>
           <tr className="text-sm font-black uppercase tracking-tighter">
-            <th className="px-1 border-r border-slate-200 bg-indigo-50/20 text-indigo-800">SBH</th>
-            <th className="px-1 border-r border-slate-200 bg-indigo-50/20 text-indigo-800">TV</th>
-            <th className="px-1 border-r-2 border-slate-300 bg-indigo-50/20 text-indigo-900">TỔNG</th>
-            <th className="px-1 border-r border-slate-200 bg-purple-50/20 text-purple-800">GH</th>
-            <th className="px-1 border-r border-slate-200 bg-purple-50/20 text-purple-800">KH</th>
-            <th className="px-1 border-r-2 border-slate-300 bg-purple-50/20 text-purple-900">TN</th>
-            <th className="px-1 border-r border-slate-200 text-slate-700">ĐỔI</th>
-            <th className="px-1 border-r-2 border-slate-300 text-slate-700">OFF</th>
+            <th className="px-1 border-r border-slate-200 bg-indigo-50 text-indigo-700 border-b-[3px] !border-b-slate-300">SBH</th>
+            <th className="px-1 border-r border-slate-200 bg-indigo-50 text-indigo-700 border-b-[3px] !border-b-slate-300">TV</th>
+            <th className="px-1 border-r-2 border-slate-300 bg-indigo-50 text-indigo-800 border-b-[3px] !border-b-slate-300">TỔNG</th>
+            <th className="px-1 border-r border-slate-200 bg-purple-50 text-purple-700 border-b-[3px] !border-b-slate-300">GH</th>
+            <th className="px-1 border-r border-slate-200 bg-purple-50 text-purple-700 border-b-[3px] !border-b-slate-300">KH</th>
+            <th className="px-1 border-r-2 border-slate-300 bg-purple-50 text-purple-800 border-b-[3px] !border-b-slate-300">TN</th>
+            <th className="px-1 border-r border-slate-200 bg-amber-50 text-amber-700 border-b-[3px] !border-b-slate-300">ĐỔI</th>
+            <th className="px-1 border-r-2 border-slate-300 bg-amber-50 text-amber-700 border-b-[3px] !border-b-slate-300">OFF</th>
             {Array.from({ length: duration }).map((_, i) => {
                 const date = new Date(year, month - 1, startDay + i);
                 const isSun = date.getDay() === 0;
+                
+                // Get the theme for this specific day based on the week it belongs to
+                const day = startDay + i;
+                const weekNum = dayToWeekMap[day] || 1;
+                const theme = weekThemes[(weekNum - 1) % weekThemes.length];
+                
+                // We use inline styles for background and text color to match the week, except for Sunday which can still be distinct (or not). Let's use week theme bg for consistency, or keep white. "Chi tiết kho" uses groupColorMap styles.
+                
                 return (
-                    <th key={i} className={`px-1 min-w-[50px] border-r border-slate-200 ${isSun ? 'bg-rose-50 text-rose-800' : 'bg-white text-slate-800'}`}>
-                        <div className="font-black text-sm">{date.getDate()}</div>
-                        <div className="opacity-90 text-sm tracking-widest">{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</div>
+                    <th key={i} className={`px-1 min-w-[50px] border-r border-slate-200 border-b-[3px] !border-b-slate-300 ${isSun ? 'bg-rose-50 text-rose-700' : ''}`} style={!isSun ? { backgroundColor: theme.bg, color: theme.text } : {}}>
+                        <div className="font-black text-[15px]">{date.getDate()}</div>
+                        <div className="opacity-90 text-[13px] tracking-widest">{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</div>
                     </th>
                 );
             })}
