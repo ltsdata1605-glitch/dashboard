@@ -128,11 +128,13 @@ export const parseIndustryRealtimeData = (text: string) => {
     const result: {
         headers: string[];
         rows: string[][];
+        allRows: string[][];
         tree: IndustryTreeNode[];
         totalRow: string[] | null;
     } = {
         headers: [],
         rows: [],
+        allRows: [],
         tree: [],
         totalRow: null
     };
@@ -155,6 +157,7 @@ export const parseIndustryRealtimeData = (text: string) => {
         }
     }
 
+    result.allRows = allDataRows;
     result.rows = allDataRows.filter(r => (r[0] || '').startsWith('NNH ') || r[0] === 'Tổng');
 
     const targetIndex = result.headers.indexOf('Target Ngày (QĐ)');

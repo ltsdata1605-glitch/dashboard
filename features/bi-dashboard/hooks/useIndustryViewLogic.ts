@@ -101,8 +101,8 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
 
         if (isRealtime) {
             const realtimeRowsMap = new Map<string, any>();
-            if (realtimeData && realtimeData.rows) {
-                realtimeData.rows.forEach((r: any) => {
+            if (realtimeData && realtimeData.allRows) {
+                realtimeData.allRows.forEach((r: any) => {
                     if (r[0]) realtimeRowsMap.set(r[0].trim(), r);
                 });
             }
