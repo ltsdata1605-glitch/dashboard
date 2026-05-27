@@ -9,6 +9,7 @@ export interface ScheduleInfo {
     originalShiftRole: string;
     partnerId?: string;
   };
+  addedWeekendShifts?: string;
 }
 
 export interface StaffStats {

@@ -23,6 +23,11 @@ export const calculateSpecialHours = (staff: StaffMember, includeTn: boolean = t
             for (const char of cleanStr) {
                 if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
             }
+            if (info.addedWeekendShifts && (info.role.includes('(Kho)') || info.role.includes('(TN)'))) {
+                for (const char of info.addedWeekendShifts) {
+                    if (HOURS_CONFIG[char]) total -= HOURS_CONFIG[char];
+                }
+            }
         }
     });
     return total;
@@ -31,10 +36,18 @@ export const calculateSpecialHours = (staff: StaffMember, includeTn: boolean = t
 export const calculateNormalHours = (staff: StaffMember): number => {
     let total = 0;
     staff.schedule.forEach(info => {
-        if (info && info.role && info.role !== 'OFF' && !info.role.includes('(')) {
-             const cleanStr = info.shift.replace(/[^0-9]/g, '');
-            for (const char of cleanStr) {
-                if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
+        if (info && info.role && info.role !== 'OFF') {
+            if (!info.role.includes('(')) {
+                const cleanStr = info.shift.replace(/[^0-9]/g, '');
+                for (const char of cleanStr) {
+                    if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
+                }
+            } else {
+                if (info.addedWeekendShifts && (info.role.includes('(Kho)') || info.role.includes('(TN)'))) {
+                    for (const char of info.addedWeekendShifts) {
+                        if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
+                    }
+                }
             }
         }
     });
@@ -62,6 +75,11 @@ export const calculateKhoHours = (staff: StaffMember): number => {
             for (const char of cleanStr) {
                 if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
             }
+            if (info.addedWeekendShifts) {
+                for (const char of info.addedWeekendShifts) {
+                    if (HOURS_CONFIG[char]) total -= HOURS_CONFIG[char];
+                }
+            }
         }
     });
     return total;
@@ -74,6 +92,11 @@ export const calculateTnHours = (staff: StaffMember): number => {
             const cleanStr = info.shift.replace(/[^0-9]/g, '');
             for (const char of cleanStr) {
                 if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
+            }
+            if (info.addedWeekendShifts) {
+                for (const char of info.addedWeekendShifts) {
+                    if (HOURS_CONFIG[char]) total -= HOURS_CONFIG[char];
+                }
             }
         }
     });

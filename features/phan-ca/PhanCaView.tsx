@@ -10,6 +10,7 @@ import * as idb from './db/idb';
 import Controls from './components/Controls';
 import Legend from './components/Legend';
 import ScheduleTable from './components/ScheduleTable';
+import VerticalIndividualSchedule from './components/VerticalIndividualSchedule';
 import EditRulesModal from './components/EditRulesModal';
 import ConfirmModal from './components/ConfirmModal';
 import EditShiftModal from './components/EditShiftModal';
@@ -100,6 +101,7 @@ const App: React.FC = () => {
   const [busySchedule, setBusySchedule] = useState<BusySchedule>({});
   const [departmentFilter, setDepartmentFilter] = useState('');
   const [includeTnInSbh, setIncludeTnInSbh] = useState<boolean>(true);
+  const [autoAddWeekendShifts, setAutoAddWeekendShifts] = useState<boolean>(false);
   const [isEditRulesModalOpen, setEditRulesModalOpen] = useState(false);
   const [isEditShiftModalOpen, setEditShiftModalOpen] = useState(false);
   const [isImportModalOpen, setImportModalOpen] = useState(false);
@@ -193,6 +195,7 @@ const App: React.FC = () => {
         setStartDay(savedUiState.startDay || 1);
         setDuration(savedUiState.duration || 30);
         setIncludeTnInSbh(savedUiState.includeTnInSbh !== undefined ? savedUiState.includeTnInSbh : true);
+        setAutoAddWeekendShifts(savedUiState.autoAddWeekendShifts !== undefined ? savedUiState.autoAddWeekendShifts : false);
       }
       setIsDbLoaded(true);
     };
@@ -301,9 +304,9 @@ const App: React.FC = () => {
     idb.saveData(busyScheduleKey, busySchedule);
     const unresolvedKey = getKey(`unresolved-${monthYear}`);
     idb.saveData(unresolvedKey, unresolvedConflicts);
-    const uiState = { monthYear, startDay, duration, includeTnInSbh, lastSupermarket: currentSupermarket };
+    const uiState = { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, lastSupermarket: currentSupermarket };
     idb.saveData('uiState', uiState);
-  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, currentSupermarket, getKey, unresolvedConflicts]);
+  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, currentSupermarket, getKey, unresolvedConflicts]);
 
   const logHistory = useCallback((description: string) => {
     const newEntry: ScheduleHistoryEntry = {
@@ -514,6 +517,90 @@ const App: React.FC = () => {
     return result;
   };
 
+  const handleAutoAddWeekendShiftsChange = (checked: boolean) => {
+    setAutoAddWeekendShifts(checked);
+    
+    if (staffList.length === 0 || !monthYear) return;
+    const [yearVal, monthVal] = monthYear.split('-').map(Number);
+    
+    const isWeekend = (year: number, month: number, startDay: number, dayIndex: number) => {
+        const date = new Date(year, month - 1, startDay + dayIndex - 1);
+        const day = date.getDay();
+        return day === 0 || day === 6; // Sunday or Saturday
+    };
+    
+    const updatedStaffList = staffList.map(staff => {
+        const newStaff = { ...staff, schedule: [...staff.schedule] };
+        let hasChanges = false;
+        
+        for (let d = 1; d <= duration; d++) {
+            if (isWeekend(yearVal, monthVal, startDay, d)) {
+                const info = newStaff.schedule[d];
+                if (info && info.role !== 'OFF') {
+                    if (checked) {
+                        let added = "";
+                        let newShift = info.shift;
+                        if (!newShift.includes('2')) {
+                            newShift += '2';
+                            added += '2';
+                        }
+                        if (!newShift.includes('5')) {
+                            newShift += '5';
+                            added += '5';
+                        }
+                        if (added) {
+                            newShift = newShift.split('').sort().join('');
+                            let newRole = newShift;
+                            const match = info.role.match(/\(([^)]+)\)/);
+                            if (match) {
+                                newRole = `${newShift} (${match[1]})`;
+                            }
+                            
+                            newStaff.schedule[d] = {
+                                ...info,
+                                shift: newShift,
+                                role: newRole,
+                                addedWeekendShifts: (info.addedWeekendShifts || "") + added,
+                                isManual: true
+                            };
+                            hasChanges = true;
+                        }
+                    } else {
+                        if (info.addedWeekendShifts) {
+                            let newShift = info.shift;
+                            for (const char of info.addedWeekendShifts) {
+                                newShift = newShift.replace(char, '');
+                            }
+                            
+                            let newRole = newShift;
+                            const match = info.role.match(/\(([^)]+)\)/);
+                            if (match) {
+                                newRole = `${newShift} (${match[1]})`;
+                            }
+                            
+                            newStaff.schedule[d] = {
+                                ...info,
+                                shift: newShift,
+                                role: newRole,
+                                addedWeekendShifts: undefined
+                            };
+                            hasChanges = true;
+                        }
+                    }
+                }
+            }
+        }
+        
+        if (hasChanges) {
+            newStaff.stats = recalculateStatsForStaff(newStaff);
+        }
+        return newStaff;
+    });
+    
+    setStaffList(updatedStaffList);
+    logHistory(checked ? "Tự động tăng ca 2,5 T7-CN" : "Gỡ tự động tăng ca 2,5 T7-CN");
+  };
+
   // --- XUẤT ẢNH ---
 
   const handleExportAll = async () => {
@@ -633,6 +720,106 @@ const App: React.FC = () => {
     const ws = XLSX.utils.aoa_to_sheet(data);
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Lich");
     XLSX.writeFile(wb, `Lich_${monthVal}_${yearVal}.xlsx`);
+  };
+
+  const handleExportGoogleSheet = async () => {
+    if (!nams.length && !nus.length) return showToast("Chưa có dữ liệu.", 'error');
+    
+    const toastEl = document.createElement('div');
+    toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
+    toastEl.textContent = '📊 Đang tạo Google Sheet...';
+    document.body.appendChild(toastEl);
+
+    const attemptExport = async (retryCount = 0): Promise<void> => {
+        toastEl.textContent = '🔑 Đang xác thực Google...';
+        sessionStorage.removeItem('googleOAuthToken');
+        const { loginWithGoogleForceConsent } = await import('../../services/firebase');
+        await loginWithGoogleForceConsent();
+        let token = sessionStorage.getItem('googleOAuthToken');
+        if (!token) throw new Error('Không thể lấy token xác thực.');
+
+        toastEl.textContent = '📊 Đang tạo Google Sheet...';
+        const { exportToGoogleSheet } = await import('../../services/googleSheetsService');
+
+        const sortedList = getSortedStaffForExport();
+        const [yearVal, monthVal] = monthYear.split('-').map(Number);
+        
+        const headers = ['HỌ VÀ TÊN', 'SBH', 'TỔNG', ...Array.from({length: duration}, (_, i) => `Ngày ${i+1}`)];
+        const rows = sortedList.map(staff => {
+            const row: (string | number)[] = [
+                staff.name, 
+                Math.ceil(calculateSpecialHours(staff, includeTnInSbh)), 
+                Math.ceil(calculateTotalHours(staff))
+            ];
+            for (let d = 1; d <= duration; d++) {
+                row.push(staff.schedule[d]?.role || '');
+            }
+            return row;
+        });
+
+        toastEl.textContent = `📊 Đang ghi ${rows.length} nhân viên...`;
+
+        try {
+            const url = await exportToGoogleSheet(token, {
+                title: `Lịch Phân Ca - Tháng ${monthVal}/${yearVal}`,
+                headers,
+                rows,
+                sheetName: 'LichPhanCa'
+            });
+
+            toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:14px 20px;border-radius:12px;font-size:13px;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .2s;display:flex;flex-direction:column;gap:10px;max-width:420px;width:90vw';
+            toastEl.innerHTML = '';
+
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = '✅ Đã tạo Google Sheet thành công!';
+            msgDiv.style.fontWeight = '600';
+            toastEl.appendChild(msgDiv);
+
+            const btnRow = document.createElement('div');
+            btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
+
+            const openBtn = document.createElement('a');
+            openBtn.href = url;
+            openBtn.target = '_blank';
+            openBtn.textContent = '📄 Mở Sheet';
+            openBtn.style.cssText = 'padding:6px 14px;background:#fff;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;cursor:pointer';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Đóng';
+            closeBtn.style.cssText = 'padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer';
+            closeBtn.onclick = () => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); };
+
+            btnRow.appendChild(openBtn);
+            btnRow.appendChild(closeBtn);
+            toastEl.appendChild(btnRow);
+
+            setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 15000);
+        } catch (apiErr: any) {
+            if (apiErr?.message === 'AUTH_EXPIRED' && retryCount < 1) {
+                toastEl.textContent = '🔄 Token hết hạn, đang xác thực lại...';
+                return attemptExport(retryCount + 1);
+            }
+            throw apiErr;
+        }
+    };
+
+    try {
+        await attemptExport();
+    } catch (err: any) {
+        console.error('Google Sheets export error:', err);
+        const errMsg = (err?.message || '').toLowerCase();
+        if (errMsg.includes('popup') || errMsg.includes('cancel')) {
+            toastEl.textContent = '❌ Đăng nhập bị huỷ.';
+        } else if (errMsg.includes('network') || errMsg.includes('failed to fetch')) {
+            toastEl.textContent = '🌐 Không có kết nối mạng.';
+        } else if (errMsg === 'auth_expired') {
+            toastEl.textContent = '🔑 Phiên đăng nhập hết hạn. Vui lòng thử lại.';
+        } else {
+            toastEl.textContent = `⚠️ Lỗi: ${err?.message || 'Không xác định'}`;
+        }
+        toastEl.style.background = '#dc2626';
+        setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);
+    }
   };
 
   const handleSaveShift = (newShiftData: ScheduleInfo) => {
@@ -816,11 +1003,13 @@ const App: React.FC = () => {
     return result;
   }, [staffListForExport, staffList, departmentFilter]);
 
+  const isIndividualExport = isExportingImage && staffListForExport && staffListForExport.length === 1 && !weeklyExportConfig;
+
   return (
     <div className="min-h-screen bg-[#f0f2f5] pb-20">
       {/* EXPORT OVERLAY */}
       {batchExportProgress && (
-          <div className="fixed inset-0 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center z-[100] text-white">
+          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-[100]">
               <div className="bg-white p-10 shadow-2xl flex flex-col items-center max-w-md w-full border border-slate-200">
                 <div className="spinner !w-14 !h-14 !border-[5px] mb-6"></div>
                 <p className="text-xl font-extrabold text-slate-800 mb-3">Đang xử lý dữ liệu</p>
@@ -870,6 +1059,9 @@ const App: React.FC = () => {
               <button onClick={handleExportExcel} className="px-4 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 border-l border-emerald-700 transition-colors" disabled={!hasStaff}>
                   Excel
               </button>
+              <button onClick={handleExportGoogleSheet} className="px-4 py-2 text-sm font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 border-l border-blue-200 transition-colors" disabled={!hasStaff} title="Xuất ra Google Sheet">
+                  Sheet
+              </button>
             </div>
           </div>,
           document.getElementById('global-header-actions')!
@@ -905,6 +1097,9 @@ const App: React.FC = () => {
           <button onClick={handleExportExcel} className="h-8 px-2.5 text-xs font-bold text-white bg-emerald-600 rounded-md transition-colors shrink-0" disabled={!hasStaff}>
               Excel
           </button>
+          <button onClick={handleExportGoogleSheet} className="h-8 px-2.5 text-xs font-bold text-blue-700 bg-blue-50 rounded-md transition-colors shrink-0" disabled={!hasStaff} title="Xuất ra Google Sheet">
+              Sheet
+          </button>
       </div>
 
       <main className="max-w-[1600px] mx-auto px-6 mt-6">
@@ -917,16 +1112,12 @@ const App: React.FC = () => {
           />
         </div>
 
-        <div ref={exportContainerRef} className="bg-white overflow-hidden border border-slate-200 shadow-sm">
-          <div className="px-8 pt-8 pb-6 border-b border-slate-100">
+        <div ref={exportContainerRef} className={`bg-white overflow-hidden border border-slate-200 shadow-sm ${isIndividualExport ? 'max-w-5xl mx-auto' : ''}`}>
+          <div className={`px-8 pt-8 pb-6 border-b border-slate-100 ${isIndividualExport ? 'hidden' : ''}`}>
             <div className="flex justify-between items-start mb-6">
               <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="bg-indigo-600 text-white text-[9px] font-bold px-2.5 py-0.5 uppercase tracking-[0.12em]">Official Schedule</span>
-                  <span className="text-slate-300 text-[9px] font-semibold uppercase tracking-[0.12em]">Tháng {monthYear.split('-')[1]}/{monthYear.split('-')[0]}</span>
-                </div>
-                <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-                  {exportTitle || `Lịch Công Tác: ${currentSupermarket || 'Cửa Hàng'}`}
+                <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
+                  {exportTitle || `LỊCH PHÂN CA - ${currentSupermarket || 'Cửa Hàng'}`}
                 </h1>
               </div>
               {!isExportingImage && (
@@ -935,7 +1126,17 @@ const App: React.FC = () => {
                 </button>
               )}
             </div>
-            <Legend targets={targets} onEditRule={(k) => { setEditingRuleKey(k); setEditRulesModalOpen(true); }} includeTnInSbh={includeTnInSbh} onIncludeTnInSbhChange={setIncludeTnInSbh} onboardingStep={onboardingStep} />
+            <div>
+               <Legend 
+                 targets={targets} 
+                 onEditRule={(k) => { setEditingRuleKey(k); setEditRulesModalOpen(true); }} 
+                 includeTnInSbh={includeTnInSbh} 
+                 onIncludeTnInSbhChange={setIncludeTnInSbh} 
+                 onboardingStep={onboardingStep} 
+                 autoAddWeekendShifts={autoAddWeekendShifts}
+                 onAutoAddWeekendShiftsChange={handleAutoAddWeekendShiftsChange}
+               />
+            </div>
           </div>
 
           <div className={`px-5 pb-0 ${isExportingImage ? 'export-hidden' : ''}`}>
@@ -947,22 +1148,31 @@ const App: React.FC = () => {
 
           <div className="px-5 py-6">
             {hasStaff && targets ? (
-              <ScheduleTable 
-                staffList={listForTable} config={{ year, month, startDay, duration }} targets={targets} tableRef={tableRef}
-                includeTnInSbh={includeTnInSbh}
-                onDeleteEmployee={(id) => setEmployeeToDelete(id)} onEditShift={(id, d) => {
-                    setEditingCellInfo({
-                        employeeId: id, dayIndex: d, employeeName: staffList.find(s => s.id === id)!.name, department: staffList.find(s => s.id === id)!.department,
-                        gender: staffList.find(s => s.id === id)!.gender, date: `${new Date(year, month - 1, startDay + d - 1).getDate()}/${month}`,
-                        currentShift: staffList.find(s => s.id === id)!.schedule[d] || { shift: 'Trống', role: 'Trống' },
-                        isSpecialShift: (staffList.find(s => s.id === id)!.schedule[d]?.role || '').includes('('),
-                        employeeStats: staffList.find(s => s.id === id)!.stats, changeHistory: staffList.find(s => s.id === id)!.changeHistory
-                    });
-                    setEditShiftModalOpen(true);
-                }}
-                onDayHover={(d) => { if(d) setStatsDay(d); setHoveredDay(d); }} hoveredDay={hoveredDay} weekRange={weeklyExportConfig} highlightId={currentHighlightedId}
-                onSwapShift={handleSwapShifts}
-              />
+              isIndividualExport ? (
+                 <VerticalIndividualSchedule 
+                    staff={listForTable[0]} 
+                    config={{ year, month, startDay, duration }} 
+                    targets={targets} 
+                    includeTnInSbh={includeTnInSbh} 
+                 />
+              ) : (
+                <ScheduleTable 
+                    staffList={listForTable} config={{ year, month, startDay, duration }} targets={targets} tableRef={tableRef}
+                    includeTnInSbh={includeTnInSbh}
+                    onDeleteEmployee={(id) => setEmployeeToDelete(id)} onEditShift={(id, d) => {
+                        setEditingCellInfo({
+                            employeeId: id, dayIndex: d, employeeName: staffList.find(s => s.id === id)!.name, department: staffList.find(s => s.id === id)!.department,
+                            gender: staffList.find(s => s.id === id)!.gender, date: `${new Date(year, month - 1, startDay + d - 1).getDate()}/${month}`,
+                            currentShift: staffList.find(s => s.id === id)!.schedule[d] || { shift: 'Trống', role: 'Trống' },
+                            isSpecialShift: (staffList.find(s => s.id === id)!.schedule[d]?.role || '').includes('('),
+                            employeeStats: staffList.find(s => s.id === id)!.stats, changeHistory: staffList.find(s => s.id === id)!.changeHistory
+                        });
+                        setEditShiftModalOpen(true);
+                    }}
+                    onDayHover={(d) => { if(d) setStatsDay(d); setHoveredDay(d); }} hoveredDay={hoveredDay} weekRange={weeklyExportConfig} highlightId={currentHighlightedId}
+                    onSwapShift={handleSwapShifts}
+                />
+              )
             ) : hasStaff ? (
               <div className="py-32 flex flex-col items-center justify-center">
                 <div className="spinner !w-10 !h-10"></div>
@@ -977,7 +1187,7 @@ const App: React.FC = () => {
           </div>
           
           {/* Footer signature for official exports */}
-          {isExportingImage && (
+          {!isIndividualExport && isExportingImage && (
               <div className="px-8 py-8 flex justify-end">
                   <div className="text-center w-56 border-t-2 border-slate-200 pt-4">
                       <p className="font-bold text-slate-800 uppercase text-[10px] tracking-wider mb-10">Quản Lý Duyệt</p>
