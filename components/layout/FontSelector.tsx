@@ -15,15 +15,12 @@ const FONTS = [
     { label: 'Alata Regular', value: 'Alata Regular', style: { fontFamily: "'Alata Regular', sans-serif" } },
     { label: 'Shopee Text', value: 'Shopee Text', style: { fontFamily: "'Shopee Text', sans-serif" } },
     { label: 'SF Pro Display', value: 'SF Pro Display', style: { fontFamily: "'SF Pro Display', sans-serif" } },
-    { label: 'SVN-Gilroy', value: 'SVN-Gilroy', style: { fontFamily: "'SVN-Gilroy', sans-serif" } },
     { label: 'Samsung Sharp Sans', value: 'Samsung Sharp Sans', style: { fontFamily: "'Samsung Sharp Sans', sans-serif" } },
     { label: 'Shopee Display', value: 'Shopee Display', style: { fontFamily: "'Shopee Display', sans-serif" } },
 
     { label: 'UTM Avo', value: 'UTM Avo', style: { fontFamily: "'UTM Avo', sans-serif" } },
 
-    { label: 'UTM Colossalis', value: 'UTM Colossalis', style: { fontFamily: "'UTM Colossalis', sans-serif" } },
-
-    { label: 'UTM Penumbra', value: 'UTM Penumbra', style: { fontFamily: "'UTM Penumbra', sans-serif" } }
+    { label: 'UTM Colossalis', value: 'UTM Colossalis', style: { fontFamily: "'UTM Colossalis', sans-serif" } }
 ];
 
 const FontSelector: React.FC = () => {

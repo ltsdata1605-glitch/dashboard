@@ -246,7 +246,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     font-weight: bold !important;
                     top: 66.6%;
                     height: 9.8%;
-                    font-family: 'UTM Penumbra', sans-serif !important;
+                    font-family: 'UTM Avo', sans-serif !important;
                 }
 
                 .sticker-container .extra2 {
