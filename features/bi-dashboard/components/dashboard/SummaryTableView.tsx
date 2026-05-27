@@ -324,7 +324,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         <th
                                             rowSpan={2}
                                             className={`
-                                                    px-2 py-2 text-center text-[11px] font-black
+                                                    px-3 py-2 text-left text-[11px] font-black
                                                     text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30
                                                     border-b-2 border-b-indigo-100 dark:border-b-indigo-800
                                                     border-r border-slate-200 dark:border-slate-700
@@ -435,7 +435,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                                 text-[13px] font-bold
                                                                 tabular-nums align-middle
                                                                 ${isTotal ? 'text-[15px] font-extrabold text-emerald-800 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}
-                                                                ${h === 'Tên miền' ? `text-center sticky left-0 z-[5] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-[#1c1c1e]'}` : 'text-center'}
+                                                                ${h === 'Tên miền' ? `text-left px-3 sticky left-0 z-[5] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-[#1c1c1e]'}` : 'text-center'}
                                                                 ${colorCls}
                                                             `}
                                                         >

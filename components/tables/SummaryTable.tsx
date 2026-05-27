@@ -231,7 +231,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-1 sm:px-2 lg:px-4 py-1 sm:py-2 text-center uppercase text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-2 sm:px-3 lg:px-5 py-1 sm:py-2 text-left uppercase text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
                                     >
                                         DANH MỤC
                                     </th>
@@ -335,7 +335,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                                     <th 
                                         rowSpan={2} 
                                         scope="col" 
-                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-1 sm:px-2 lg:px-4 py-1 sm:py-2 text-center uppercase text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
+                                        className={`w-auto min-w-[80px] sm:min-w-[100px] lg:w-[350px] px-2 sm:px-3 lg:px-5 py-1 sm:py-2 text-left uppercase text-[9px] sm:text-xs lg:text-sm font-bold tracking-wider text-slate-700 dark:text-slate-300 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 bg-slate-50 sticky left-0 z-40 dark:bg-[#1c1c1e]`}
                                     >
                                         DANH MỤC
                                     </th>
@@ -437,7 +437,7 @@ const SummaryTable: React.FC<SummaryTableProps> = React.memo(() => {
                         </tbody>
                         <tfoot className="bg-teal-100 dark:bg-teal-900/40 font-bold text-sm border-t-2 border-teal-200 dark:border-teal-800">
                            <tr>
-                                <td className={`px-2 sm:px-4 py-1 sm:py-2 text-center sticky left-0 z-40 bg-teal-100 dark:bg-teal-900/60 font-extrabold text-[10px] sm:text-[13px] uppercase tracking-widest text-teal-700 dark:text-teal-300 ${separatorClass}`}>TỔNG</td>
+                                <td className={`px-2 sm:px-4 py-1 sm:py-2 text-left sticky left-0 z-40 bg-teal-100 dark:bg-teal-900/60 font-extrabold text-[10px] sm:text-[13px] uppercase tracking-widest text-teal-700 dark:text-teal-300 ${separatorClass}`}>TỔNG</td>
                                 {/* Quantity */}
                                 {visibleColumns.includes('totalQuantity') && (
                                     <>

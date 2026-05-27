@@ -51,19 +51,19 @@
         /* ═══════════════════════════════════════
            TABLE STRUCTURE — Sharp & Dense
            ═══════════════════════════════════════ */
-        .sticky-col {
+        .phan-ca-layout .sticky-col {
             position: sticky;
             left: 0;
             background-color: var(--surface-0);
             z-index: 20;
             border-right: 2px solid var(--border-light);
         }
-        th.sticky-col {
+        .phan-ca-layout th.sticky-col {
             z-index: 30;
             background-color: var(--surface-1);
         }
 
-        td, th {
+        .phan-ca-layout td, .phan-ca-layout th {
             white-space: nowrap;
             text-align: center;
             padding: 7px 5px;
@@ -72,7 +72,7 @@
             font-weight: 500;
             font-size: 11px;
         }
-        thead th {
+        .phan-ca-layout thead th {
             font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
@@ -83,9 +83,9 @@
             border-bottom: 2px solid var(--border-light);
         }
 
-        tbody tr { transition: background-color 0.1s ease; }
-        tbody tr:hover { background-color: #f1f5f9 !important; }
-        tbody tr:hover td.sticky-col { background-color: #f1f5f9 !important; }
+        .phan-ca-layout tbody tr { transition: background-color 0.1s ease; }
+        .phan-ca-layout tbody tr:hover { background-color: #f1f5f9 !important; }
+        .phan-ca-layout tbody tr:hover td.sticky-col { background-color: #f1f5f9 !important; }
 
         /* ═══════════════════════════════════════
            SHIFT CELLS — Color-coded & Interactive

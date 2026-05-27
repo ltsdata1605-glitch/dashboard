@@ -1237,7 +1237,7 @@ const App: React.FC = () => {
   const isIndividualExport = isExportingImage && staffListForExport && staffListForExport.length === 1 && !weeklyExportConfig;
 
   return (
-    <div className="min-h-screen bg-[#f0f2f5] pb-20">
+    <div className="phan-ca-layout min-h-screen bg-[#f0f2f5] pb-20">
       {/* EXPORT OVERLAY */}
       {batchExportProgress && (
           <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-[100]">

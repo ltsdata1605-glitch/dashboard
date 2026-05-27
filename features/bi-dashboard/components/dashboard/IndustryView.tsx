@@ -567,7 +567,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                 <th
                                                     rowSpan={2}
                                                     className={`
-                                                        px-2 py-1 text-center text-[11px] font-black
+                                                        px-3 py-1 text-left text-[11px] font-black
                                                         text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800
                                                         border-b-2 border-b-slate-100 dark:border-b-slate-700
                                                         border-r border-slate-200 dark:border-slate-700
