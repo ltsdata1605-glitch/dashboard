@@ -60,7 +60,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
         const isReport = activeMainTab === 'report';
         const typePart = activeSubTab === 'revenue' ? 'DOANH THU' : 'THI ĐUA';
         const modePart = isRealtime ? 'REALTIME' : isReport ? 'BÁO CÁO' : 'LUỸ KẾ';
-        
+
         return `${modePart} ${typePart} ĐẾN NGÀY ${getDateLabel(isRealtime || isReport)}`;
     }, [activeSubTab, activeMainTab, activeSupermarket]);
 
@@ -79,7 +79,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 <div className="flex flex-1 sm:flex-none flex-row gap-2 sm:gap-3 w-full sm:w-auto justify-end hide-on-export">
                     {/* Supermarket Selector — same style as NhanVien */}
                     <div className="relative w-full sm:w-auto min-w-0">
-                        <select 
+                        <select
                             value={activeSupermarket}
                             onChange={(e) => setActiveSupermarket(e.target.value)}
                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
@@ -138,32 +138,29 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                     <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
                         <button
                             onClick={() => setActiveMainTab('realtime')}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors ${
-                                activeMainTab === 'realtime'
-                                    ? 'bg-indigo-600 text-white'
-                                    : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                            }`}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors ${activeMainTab === 'realtime'
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                }`}
                         >
                             Realtime
                         </button>
                         <button
                             onClick={() => setActiveMainTab('cumulative')}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${
-                                activeMainTab === 'cumulative'
-                                    ? 'bg-indigo-600 text-white border-transparent'
-                                    : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                            }`}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${activeMainTab === 'cumulative'
+                                ? 'bg-indigo-600 text-white border-transparent'
+                                : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                }`}
                         >
                             Luỹ kế
                         </button>
                         {activeSubTab === 'revenue' && (
                             <button
                                 onClick={() => setActiveMainTab('report')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${
-                                    activeMainTab === 'report'
-                                        ? 'bg-indigo-600 text-white border-transparent'
-                                        : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
-                                }`}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${activeMainTab === 'report'
+                                    ? 'bg-indigo-600 text-white border-transparent'
+                                    : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                    }`}
                             >
                                 Báo cáo
                             </button>
