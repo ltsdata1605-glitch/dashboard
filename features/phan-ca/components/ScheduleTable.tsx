@@ -346,4 +346,6 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   );
 };
 
-export default ScheduleTable;
+const MemoizedScheduleTable = React.memo(ScheduleTable);
+MemoizedScheduleTable.displayName = 'ScheduleTable';
+export default MemoizedScheduleTable;

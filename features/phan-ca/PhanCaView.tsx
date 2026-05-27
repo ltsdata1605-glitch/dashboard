@@ -1080,6 +1080,47 @@ const App: React.FC = () => {
       staff.changeHistory.push({ dayIndex, date: dateString, from: fromRole, to: toRole });
   };
 
+  const handleDeleteEmployee = useCallback((id: string) => {
+      setEmployeeToDelete(id);
+  }, []);
+
+  const handleEditShift = useCallback((id: string, d: number) => {
+      setStaffList(currentList => {
+          const staff = currentList.find(s => s.id === id);
+          if (!staff) return currentList;
+          
+          const [yearVal, monthVal] = monthYear.split('-').map(Number);
+          const dateString = `${new Date(yearVal, monthVal - 1, startDay + d - 1).getDate()}/${monthVal}`;
+          const currentShift = staff.schedule[d] || { shift: 'Trống', role: 'Trống' };
+          const isSpecialShift = (currentShift.role || '').includes('(');
+
+          setEditingCellInfo({
+              employeeId: id,
+              dayIndex: d,
+              employeeName: staff.name,
+              department: staff.department,
+              gender: staff.gender,
+              date: dateString,
+              currentShift,
+              isSpecialShift,
+              employeeStats: staff.stats,
+              changeHistory: staff.changeHistory
+          });
+          setEditShiftModalOpen(true);
+          return currentList;
+      });
+  }, [monthYear, startDay]);
+
+  const handleDayHover = useCallback((d: number | null) => {
+      setHoveredDay(prev => {
+          if (prev === d) return prev;
+          if (d !== null) {
+              setStatsDay(d);
+          }
+          return d;
+      });
+  }, []);
+
   const handleSwapShifts = useCallback((id1: string, id2: string, dayIndex: number) => {
       setStaffList(prev => {
           const idx1 = prev.findIndex(s => s.id === id1);
@@ -1390,17 +1431,8 @@ const App: React.FC = () => {
                 <ScheduleTable 
                     staffList={listForTable} config={{ year, month, startDay, duration }} targets={targets} tableRef={tableRef}
                     includeTnInSbh={includeTnInSbh}
-                    onDeleteEmployee={(id) => setEmployeeToDelete(id)} onEditShift={(id, d) => {
-                        setEditingCellInfo({
-                            employeeId: id, dayIndex: d, employeeName: staffList.find(s => s.id === id)!.name, department: staffList.find(s => s.id === id)!.department,
-                            gender: staffList.find(s => s.id === id)!.gender, date: `${new Date(year, month - 1, startDay + d - 1).getDate()}/${month}`,
-                            currentShift: staffList.find(s => s.id === id)!.schedule[d] || { shift: 'Trống', role: 'Trống' },
-                            isSpecialShift: (staffList.find(s => s.id === id)!.schedule[d]?.role || '').includes('('),
-                            employeeStats: staffList.find(s => s.id === id)!.stats, changeHistory: staffList.find(s => s.id === id)!.changeHistory
-                        });
-                        setEditShiftModalOpen(true);
-                    }}
-                    onDayHover={(d) => { if(d) setStatsDay(d); setHoveredDay(d); }} hoveredDay={hoveredDay} weekRange={weeklyExportConfig} highlightId={currentHighlightedId}
+                    onDeleteEmployee={handleDeleteEmployee} onEditShift={handleEditShift}
+                    onDayHover={handleDayHover} hoveredDay={hoveredDay} weekRange={weeklyExportConfig} highlightId={currentHighlightedId}
                     onSwapShift={handleSwapShifts}
                 />
               )
