@@ -5,9 +5,10 @@
 
 interface SheetExportOptions {
     title: string;
-    headers: string[];
+    headers?: string[];
     rows: (string | number)[][];
     sheetName?: string;
+    formattingRequests?: any[] | ((sheetId: number) => any[]);
 }
 
 /**
@@ -18,7 +19,7 @@ export async function exportToGoogleSheet(
     token: string,
     options: SheetExportOptions
 ): Promise<string> {
-    const { title, headers, rows, sheetName = 'Sheet1' } = options;
+    const { title, headers, rows, sheetName = 'Sheet1', formattingRequests = [] } = options;
 
     // 1. Create a new blank spreadsheet
     const createRes = await fetch('https://sheets.googleapis.com/v4/spreadsheets', {
@@ -70,7 +71,7 @@ export async function exportToGoogleSheet(
     const sheetId = spreadsheet.sheets[0].properties.sheetId;
 
     // 2. Write data (headers + rows)
-    const allRows = [headers, ...rows];
+    const allRows = headers ? [headers, ...rows] : rows;
     const writeRes = await fetch(
         `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}?valueInputOption=USER_ENTERED`,
         {
@@ -93,46 +94,58 @@ export async function exportToGoogleSheet(
     }
 
     // 3. Format header row (bold, background color, auto-resize)
-    const numCols = headers.length;
-    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            requests: [
-                // Bold header
-                {
-                    repeatCell: {
-                        range: { sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: numCols },
-                        cell: {
-                            userEnteredFormat: {
-                                textFormat: { bold: true, fontSize: 11 },
-                                backgroundColor: { red: 0.85, green: 0.92, blue: 1.0 },
-                                horizontalAlignment: 'CENTER',
-                                verticalAlignment: 'MIDDLE'
-                            }
-                        },
-                        fields: 'userEnteredFormat(textFormat,backgroundColor,horizontalAlignment,verticalAlignment)'
-                    }
-                },
-                // Auto-resize all columns
-                {
-                    autoResizeDimensions: {
-                        dimensions: { sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: numCols }
-                    }
-                },
-                // Freeze header row
-                {
-                    updateSheetProperties: {
-                        properties: { sheetId, gridProperties: { frozenRowCount: 1 } },
-                        fields: 'gridProperties.frozenRowCount'
-                    }
+    const numCols = allRows[0]?.length || 0;
+    
+    let defaultRequests: any[] = [];
+    if (headers) {
+        defaultRequests = [
+            {
+                repeatCell: {
+                    range: { sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: numCols },
+                    cell: {
+                        userEnteredFormat: {
+                            textFormat: { bold: true, fontSize: 11 },
+                            backgroundColor: { red: 0.85, green: 0.92, blue: 1.0 },
+                            horizontalAlignment: 'CENTER',
+                            verticalAlignment: 'MIDDLE'
+                        }
+                    },
+                    fields: 'userEnteredFormat(textFormat,backgroundColor,horizontalAlignment,verticalAlignment)'
                 }
-            ]
-        })
-    }).catch(() => { /* formatting is non-critical */ });
+            },
+            {
+                autoResizeDimensions: {
+                    dimensions: { sheetId, dimension: 'COLUMNS', startIndex: 0, endIndex: numCols }
+                }
+            },
+            {
+                updateSheetProperties: {
+                    properties: { sheetId, gridProperties: { frozenRowCount: 1 } },
+                    fields: 'gridProperties.frozenRowCount'
+                }
+            }
+        ];
+    }
+    
+    const reqs = typeof formattingRequests === 'function' ? formattingRequests(sheetId) : formattingRequests;
+    const finalRequests = [...defaultRequests, ...reqs];
+
+    if (finalRequests.length > 0) {
+        const batchRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                requests: finalRequests
+            })
+        });
+        if (!batchRes.ok) {
+            const err = await batchRes.text();
+            throw new Error(`Formatting failed: ${err}`);
+        }
+    }
 
     // 4. Share the spreadsheet publicly (anyone with link can edit)
     await fetch(`https://www.googleapis.com/drive/v3/files/${spreadsheetId}/permissions`, {
