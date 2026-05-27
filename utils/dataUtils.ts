@@ -110,7 +110,7 @@ export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productCo
         return 1;
     }
 
-    const parentGroup = productConfig?.childToParentMap?.[maNhomHang];
+    const parentGroup = getParentGroup(maNhomHang, productConfig);
 
     // Priority 1: Use parent group from config file for primary categories
     if (parentGroup) {
@@ -122,7 +122,8 @@ export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productCo
             case 'Tablet': return 1.2;
             case 'Gia dụng': return 1.85;
             case 'Sim': return 5.45;
-            case 'Bảo hiểm': return 4.18;
+            case 'Bảo hiểm':
+            case 'Bảo Dưỡng': return 4.18;
             case 'IT': return 2.0;
             case 'Thẻ cào':
             case 'ICT': // Smartphones are in here
@@ -296,4 +297,44 @@ export const shortenSupermarketName = (name: string): string => {
     shortName = shortName.replace(/^(Thửa\s*)?\d+\s*/, '').replace(/Thử/g, '').trim();
     return shortName;
 };
+
+export function getParentGroup(maNhomHang: string | null | undefined, productConfig: ProductConfig | null): string {
+    if (!maNhomHang || !productConfig || !productConfig.childToParentMap) return '';
+    const key = String(maNhomHang).trim();
+    
+    // 1. Exact match
+    if (productConfig.childToParentMap[key]) return productConfig.childToParentMap[key];
+    
+    // 2. Lowercase match
+    const lowerKey = key.toLowerCase();
+    if (productConfig.childToParentMap[lowerKey]) return productConfig.childToParentMap[lowerKey];
+    
+    // 3. ID match (e.g. "7161" from "7161 - Dịch vụ...")
+    const idMatch = key.match(/^(\d+)/);
+    if (idMatch && productConfig.childToParentMap[idMatch[1]]) {
+        return productConfig.childToParentMap[idMatch[1]];
+    }
+    
+    return '';
+}
+
+export function getSubgroup(maNhomHang: string | null | undefined, productConfig: ProductConfig | null): string {
+    if (!maNhomHang || !productConfig || !productConfig.childToSubgroupMap) return '';
+    const key = String(maNhomHang).trim();
+    
+    // 1. Exact match
+    if (productConfig.childToSubgroupMap[key]) return productConfig.childToSubgroupMap[key];
+    
+    // 2. Lowercase match
+    const lowerKey = key.toLowerCase();
+    if (productConfig.childToSubgroupMap[lowerKey]) return productConfig.childToSubgroupMap[lowerKey];
+    
+    // 3. ID match (e.g. "7161" from "7161 - Dịch vụ...")
+    const idMatch = key.match(/^(\d+)/);
+    if (idMatch && productConfig.childToSubgroupMap[idMatch[1]]) {
+        return productConfig.childToSubgroupMap[idMatch[1]];
+    }
+    
+    return '';
+}
 

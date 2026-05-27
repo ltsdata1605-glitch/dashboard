@@ -1,7 +1,7 @@
 
 import type { DataRow, ProductConfig, FilterState, SummaryTableNode, GrandTotal, WarehouseSummaryRow, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, getHeSoQuyDoi, sortSummaryData, getHinhThucThanhToan, getDisplayParentGroup, abbreviateName } from '../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, sortSummaryData, getHinhThucThanhToan, getDisplayParentGroup, abbreviateName, getParentGroup, getSubgroup } from '../utils/dataUtils';
 import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
 export function processSummaryTable(
@@ -28,11 +28,10 @@ export function processSummaryTable(
     const creatorsForFilter = new Set<string>();
     const productsForFilter = new Set<string>();
 
-    // Mapping key codes to data extraction logic
     const valueExtractors: { [key: string]: (row: DataRow) => string } = {
         'kho': (row) => String(getRowValue(row, COL.KHO) || 'Không xác định'),
-        'parent': (row) => productConfig.childToParentMap[getRowValue(row, COL.MA_NHOM_HANG)] || 'Không xác định',
-        'child': (row) => productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || 'Không xác định',
+        'parent': (row) => getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig) || 'Không xác định',
+        'child': (row) => getSubgroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig) || 'Không xác định',
         'manufacturer': (row) => getRowValue(row, COL.MANUFACTURER) || 'Không rõ',
         'creator': (row) => abbreviateName(getRowValue(row, COL.NGUOI_TAO) || 'Không xác định'),
         'product': (row) => getRowValue(row, COL.PRODUCT) || 'N/A'
@@ -51,7 +50,7 @@ export function processSummaryTable(
 
         // Bỏ qua sản phẩm không xác định nhóm hàng (không có trong cấu hình)
         const maNhomHangCheck = getRowValue(row, COL.MA_NHOM_HANG);
-        if (!productConfig.childToParentMap[maNhomHangCheck]) continue;
+        if (!getParentGroup(maNhomHangCheck, productConfig)) continue;
 
         // Compute all values ONCE per row (eliminating double computation)
         const allValues: Record<string, string> = {};
@@ -189,7 +188,7 @@ export function calculateWarehouseSummary(
         if (!HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
             // Bỏ qua sản phẩm không xác định nhóm hàng
-            if (!productConfig.childToParentMap[maNhomHang]) continue;
+            if (!getParentGroup(maNhomHang, productConfig)) continue;
 
             const price = Number(getRowValue(row, COL.PRICE)) || 0;
             const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
@@ -202,8 +201,8 @@ export function calculateWarehouseSummary(
             const rowRevenueQD = rowRevenue * heso;
 
             // Trọng số số lượng dựa trên mã sản phẩm (cột AF) và bảng hệ số từ file cấu hình
-            const industry = productConfig.childToParentMap[maNhomHang] || 'Khác';
-            const group = productConfig.childToSubgroupMap[maNhomHang] || 'Khác';
+            const industry = getParentGroup(maNhomHang, productConfig) || 'Khác';
+            const group = getSubgroup(maNhomHang, productConfig) || 'Khác';
             const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
             const qtyMultiplier = productConfig.quantityMultiplierMap?.[productCode];
             const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;

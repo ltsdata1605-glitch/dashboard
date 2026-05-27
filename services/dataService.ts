@@ -102,6 +102,18 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                     
                     config.childToParentMap[productCode] = parentGroup;
                     config.childToSubgroupMap[productCode] = childGroup;
+
+                    // Also store with normalized keys for robust match fallbacks
+                    const trimmedLower = productCode.trim().toLowerCase();
+                    config.childToParentMap[trimmedLower] = parentGroup;
+                    config.childToSubgroupMap[trimmedLower] = childGroup;
+
+                    const idMatch = productCode.match(/^(\d+)/);
+                    if (idMatch) {
+                        const codeId = idMatch[1];
+                        config.childToParentMap[codeId] = parentGroup;
+                        config.childToSubgroupMap[codeId] = childGroup;
+                    }
                 }
             }
         });

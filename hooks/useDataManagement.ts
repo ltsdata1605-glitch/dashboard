@@ -68,9 +68,15 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 ]);
 
                 let config: ProductConfig | null = cachedConfigReq ? cachedConfigReq.config : null;
+                const cachedUrl = cachedConfigReq ? cachedConfigReq.url : '';
                 
-                // If core config is essentially missing locally, fetch it from Sheet as ultimate fallback
-                if (!config || !config.groups || Object.keys(config.groups).length === 0) {
+                // If core config is missing, URL has changed, or the new product groups (7161/7139) are missing, force load from sheet
+                const isConfigOutOfDate = !config || !config.groups || Object.keys(config.groups).length === 0 || 
+                                          cachedUrl !== configUrl || 
+                                          !config.childToParentMap['7161 - Dịch vụ bảo hành 1 đổi 1 Thợ Điện Máy Xanh'] ||
+                                          !config.childToParentMap['7139 - Dịch vụ Bảo hành mở rộng Thợ Điện Máy Xanh'];
+
+                if (isConfigOutOfDate) {
                     try {
                         setStatus({ message: 'Tải cấu hình lõi từ Sheet...', type: 'info', progress: 15 });
                         config = await loadConfigFromSheet(configUrl, () => {});
@@ -256,8 +262,8 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                     });
                 }
 
-                // 3. Background Sheet Check
-                if (isLocalDataPushed && config) {
+                // 3. Background Sheet Check (Always run to keep config updated)
+                if (config) {
                     setTimeout(async () => {
                         try {
                             const latestConfig = await loadConfigFromSheet(configUrl, () => {});
