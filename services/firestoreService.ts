@@ -173,3 +173,29 @@ export const deleteSharedConfig = async (configId: string) => {
     const { deleteDoc } = await import('firebase/firestore');
     await deleteDoc(doc(db, 'shared_configs', configId));
 };
+
+export const syncScheduleToCloud = async (user: User, key: string, value: any) => {
+    if (!user) return;
+    const safeKey = key.replace(/::/g, '__');
+    const docRef = doc(db, 'users', user.uid, 'schedules', safeKey);
+    
+    // Convert undefined to null for Firestore compatibility
+    const cleanValue = JSON.parse(JSON.stringify(value, (k, v) => v === undefined ? null : v));
+    
+    await setDoc(docRef, {
+        data: cleanValue,
+        updatedAt: serverTimestamp()
+    }, { merge: false });
+};
+
+export const fetchScheduleFromCloud = async (user: User, key: string) => {
+    if (!user) return null;
+    const safeKey = key.replace(/::/g, '__');
+    const docRef = doc(db, 'users', user.uid, 'schedules', safeKey);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+        return snap.data().data;
+    }
+    return null;
+};
+

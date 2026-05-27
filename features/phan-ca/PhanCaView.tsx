@@ -25,6 +25,8 @@ import ConflictListModal from './components/ConflictListModal';
 import BusyReportModal from './components/BusyReportModal';
 import AiSuggestPatternModal from './components/AiSuggestPatternModal';
 import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
+import { useAuth } from '../../contexts/AuthContext';
+import { syncScheduleToCloud, fetchScheduleFromCloud } from '../../services/firestoreService';
 
 import { 
   StaffMember, 
@@ -81,6 +83,8 @@ const ZERO_REQUIREMENTS: DailyRequirements = {
 
 const App: React.FC = () => {
   const { activeTab } = useActiveTab();
+  const { user } = useAuth();
+  const lastSyncedRef = useRef<{ [key: string]: string }>({});
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -177,11 +181,36 @@ const App: React.FC = () => {
     staffListRef.current = staffList;
   }, [staffList]);
 
+  const loadWithFallback = useCallback(async <T,>(key: string, defaultValue: T): Promise<T> => {
+      let localData = await idb.loadData<T>(key);
+      if (localData !== null && localData !== undefined) {
+          return localData;
+      }
+      if (user) {
+          try {
+              const cloudData = await fetchScheduleFromCloud(user, key);
+              if (cloudData !== null && cloudData !== undefined) {
+                  await idb.saveData(key, cloudData);
+                  return cloudData;
+              }
+          } catch (e) {
+              console.error("Lỗi khi tải dữ liệu từ cloud:", e);
+          }
+      }
+      return defaultValue;
+  }, [user]);
+
   useEffect(() => {
     const initApp = async () => {
       await idb.initDB();
-      const savedSupermarkets = await idb.loadData<string[]>('meta_supermarkets') || [];
-      const savedUiState = await idb.loadData<any>('uiState');
+      const savedSupermarkets = await loadWithFallback<string[]>('meta_supermarkets', []);
+      const savedUiState = await loadWithFallback<any>('uiState', null);
+      
+      lastSyncedRef.current['meta_supermarkets'] = JSON.stringify(savedSupermarkets);
+      if (savedUiState) {
+          lastSyncedRef.current['uiState'] = JSON.stringify(savedUiState);
+      }
+      
       if (savedSupermarkets.length > 0) {
         setSupermarkets(savedSupermarkets);
         const lastSupermarket = savedUiState?.lastSupermarket;
@@ -200,7 +229,7 @@ const App: React.FC = () => {
       setIsDbLoaded(true);
     };
     initApp();
-  }, []);
+  }, [user, loadWithFallback]);
 
   const handleSupermarketChange = (supermarket: string) => {
     setIsDataLoadedForSupermarket(false);
@@ -218,38 +247,52 @@ const App: React.FC = () => {
       return;
     }
     const loadSupermarketData = async () => {
-      const savedNams = await idb.loadData<StaffInitialData[]>(getKey('nams')) || [];
-      const savedNus = await idb.loadData<StaffInitialData[]>(getKey('nus')) || [];
-      const savedRules = await idb.loadData<SchedulingRules>(getKey('rules'));
-      const savedPatterns = await idb.loadData<{ [key: string]: string[] }>(getKey('departmentPatterns'));
-      const savedReqs = await idb.loadData<DailyRequirements>(getKey('dailyRequirements'));
-      const savedShiftDefs = await idb.loadData<ShiftDefinitions>(getKey('shiftDefinitions'));
+      const savedNams = await loadWithFallback<StaffInitialData[]>(getKey('nams'), []);
+      const savedNus = await loadWithFallback<StaffInitialData[]>(getKey('nus'), []);
+      const savedRules = await loadWithFallback<SchedulingRules>(getKey('rules'), DEFAULT_RULES);
+      const savedPatterns = await loadWithFallback<{ [key: string]: string[] }>(getKey('departmentPatterns'), {});
+      const savedReqs = await loadWithFallback<DailyRequirements>(getKey('dailyRequirements'), ZERO_REQUIREMENTS);
+      const savedShiftDefs = await loadWithFallback<ShiftDefinitions>(getKey('shiftDefinitions'), DEFAULT_SHIFT_DEFINITIONS);
+      
+      const scheduleKey = getKey(`schedule-${monthYear}`);
+      const historyKey = getKey(`history-${monthYear}`);
+      const unresolvedKey = getKey(`unresolved-${monthYear}`);
+      const busyScheduleKey = getKey(`busySchedule-${monthYear}`);
+      
+      const savedSchedule = await loadWithFallback<StaffMember[]>(scheduleKey, []);
+      const savedHistory = await loadWithFallback<ScheduleHistoryEntry[]>(historyKey, []);
+      const savedUnresolved = await loadWithFallback<UnresolvedConflict[]>(unresolvedKey, []);
+      const savedBusySchedule = await loadWithFallback<BusySchedule>(busyScheduleKey, {});
+      
+      // Populate lastSyncedRef to prevent immediate write-back of fetched data
+      lastSyncedRef.current[getKey('nams')] = JSON.stringify(savedNams);
+      lastSyncedRef.current[getKey('nus')] = JSON.stringify(savedNus);
+      lastSyncedRef.current[getKey('rules')] = JSON.stringify(savedRules);
+      lastSyncedRef.current[getKey('departmentPatterns')] = JSON.stringify(savedPatterns);
+      lastSyncedRef.current[getKey('dailyRequirements')] = JSON.stringify(savedReqs);
+      lastSyncedRef.current[getKey('shiftDefinitions')] = JSON.stringify(savedShiftDefs);
+      lastSyncedRef.current[scheduleKey] = JSON.stringify(savedSchedule);
+      lastSyncedRef.current[historyKey] = JSON.stringify(savedHistory);
+      lastSyncedRef.current[unresolvedKey] = JSON.stringify(savedUnresolved);
+      lastSyncedRef.current[busyScheduleKey] = JSON.stringify(savedBusySchedule);
+
       setNams(savedNams);
       setNus(savedNus);
       const allDepts = [...new Set([...savedNams, ...savedNus].map(s => s.department))].sort();
       if (allDepts.length > 0) setDepartmentFilter(allDepts[0]);
       else setDepartmentFilter('');
-      setDailyRequirements(savedReqs || ZERO_REQUIREMENTS);
-      setShiftDefinitions(savedShiftDefs || DEFAULT_SHIFT_DEFINITIONS);
-      setRules(savedRules || DEFAULT_RULES);
-      setDepartmentPatterns(savedPatterns || {});
-      const scheduleKey = getKey(`schedule-${monthYear}`);
-      const historyKey = getKey(`history-${monthYear}`);
-      const unresolvedKey = getKey(`unresolved-${monthYear}`);
-      const savedSchedule = await idb.loadData<StaffMember[]>(scheduleKey);
-      const savedHistory = await idb.loadData<ScheduleHistoryEntry[]>(historyKey);
-      const savedUnresolved = await idb.loadData<UnresolvedConflict[]>(unresolvedKey);
-      setScheduleHistory(savedHistory || []);
-      setUnresolvedConflicts(savedUnresolved || []);
-      if (savedSchedule && savedSchedule.length > 0) setStaffList(savedSchedule);
-      else setStaffList([]);
-      const busyScheduleKey = getKey(`busySchedule-${monthYear}`);
-      const savedBusySchedule = await idb.loadData<BusySchedule>(busyScheduleKey);
-      setBusySchedule(savedBusySchedule || {});
+      setDailyRequirements(savedReqs);
+      setShiftDefinitions(savedShiftDefs);
+      setRules(savedRules);
+      setDepartmentPatterns(savedPatterns);
+      setScheduleHistory(savedHistory);
+      setUnresolvedConflicts(savedUnresolved);
+      setStaffList(savedSchedule);
+      setBusySchedule(savedBusySchedule);
       setIsDataLoadedForSupermarket(true);
     };
     loadSupermarketData();
-  }, [isDbLoaded, currentSupermarket, getKey, monthYear, supermarkets.length]);
+  }, [isDbLoaded, currentSupermarket, getKey, monthYear, supermarkets.length, user, loadWithFallback]);
 
   useEffect(() => {
      if (isDataLoadedForSupermarket && (nams.length > 0 || nus.length > 0)) {
@@ -282,7 +325,7 @@ const App: React.FC = () => {
           };
           setTargets(newTargets);
      } else if(isDataLoadedForSupermarket) {
-         setTargets(null);
+          setTargets(null);
      }
   }, [isDataLoadedForSupermarket, nams, nus, rules, duration, departmentPatterns, staffList, includeTnInSbh]);
 
@@ -307,6 +350,39 @@ const App: React.FC = () => {
     const uiState = { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, lastSupermarket: currentSupermarket };
     idb.saveData('uiState', uiState);
   }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, currentSupermarket, getKey, unresolvedConflicts]);
+
+  // Hiệu ứng tự động đồng bộ đám mây (debounced 3s)
+  useEffect(() => {
+    if (!user || !isDbLoaded || !isDataLoadedForSupermarket || !currentSupermarket || isImportingRef.current) return;
+
+    const timer = setTimeout(async () => {
+      const syncIfChanged = async (key: string, data: any) => {
+        const serialized = JSON.stringify(data);
+        if (lastSyncedRef.current[key] === serialized) return;
+        try {
+          await syncScheduleToCloud(user, key, data);
+          lastSyncedRef.current[key] = serialized;
+        } catch (err) {
+          console.error(`Lỗi khi đồng bộ ${key}:`, err);
+        }
+      };
+
+      await syncIfChanged('meta_supermarkets', supermarkets);
+      await syncIfChanged('uiState', { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, lastSupermarket: currentSupermarket });
+      await syncIfChanged(getKey('nams'), nams);
+      await syncIfChanged(getKey('nus'), nus);
+      await syncIfChanged(getKey('rules'), rules);
+      await syncIfChanged(getKey('departmentPatterns'), departmentPatterns);
+      await syncIfChanged(getKey('dailyRequirements'), dailyRequirements);
+      await syncIfChanged(getKey('shiftDefinitions'), shiftDefinitions);
+      await syncIfChanged(getKey(`schedule-${monthYear}`), staffList);
+      await syncIfChanged(getKey(`history-${monthYear}`), scheduleHistory);
+      await syncIfChanged(getKey(`busySchedule-${monthYear}`), busySchedule);
+      await syncIfChanged(getKey(`unresolved-${monthYear}`), unresolvedConflicts);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, currentSupermarket, getKey, unresolvedConflicts, user, supermarkets]);
 
   const logHistory = useCallback((description: string) => {
     const newEntry: ScheduleHistoryEntry = {

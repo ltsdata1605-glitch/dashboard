@@ -22,7 +22,7 @@ export const useSummaryTableLogic = () => {
     const {
         localDrilldownOrder, setLocalDrilldownOrder,
         crossSellingDrilldownOrder, setCrossSellingDrilldownOrder,
-        activeDrilldownOrder, deferredDrilldownOrder,
+        activeDrilldownOrder,
         localKhoFilters, localParentFilters, localChildFilters,
         localManufacturerFilters, localCreatorFilters, localProductFilters,
         activeFilterKey, setActiveFilterKey,
@@ -54,7 +54,7 @@ export const useSummaryTableLogic = () => {
     } = useSummaryComparison(
         isComparisonMode, baseFilteredData, productConfig, filters,
         localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters,
-        deferredDrilldownOrder, localKhoFilters
+        activeDrilldownOrder, localKhoFilters
     );
 
     const [visibleColumns, setVisibleColumns] = useState<string[]>(() => {
@@ -77,7 +77,7 @@ export const useSummaryTableLogic = () => {
             parent: localParentFilters,
             summaryTable: {
                 ...filters.summaryTable,
-                drilldownOrder: deferredDrilldownOrder,
+                drilldownOrder: activeDrilldownOrder,
                 kho: localKhoFilters,
                 child: localChildFilters,
                 manufacturer: localManufacturerFilters,
@@ -87,7 +87,7 @@ export const useSummaryTableLogic = () => {
         };
 
         return processSummaryTable(dataToUse, productConfig, localFilterState);
-    }, [processedData?.filteredValidSalesData, filters, productConfig, deferredDrilldownOrder, localKhoFilters, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
+    }, [processedData?.filteredValidSalesData, filters, productConfig, activeDrilldownOrder, localKhoFilters, localParentFilters, localChildFilters, localManufacturerFilters, localCreatorFilters, localProductFilters, filters.summaryTable.sort]);
 
     // Calculate global filter options independent of standardSummaryData so they are available in comparison mode
     const filterOptions = useMemo(() => {

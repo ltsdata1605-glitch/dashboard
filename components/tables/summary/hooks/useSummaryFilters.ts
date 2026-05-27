@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useDeferredValue, useCallback, useTransition } from 'react';
+import { useState, useEffect, useRef, useCallback, useTransition } from 'react';
 import { saveSummaryTableConfig } from '../../../../services/dbService';
 
 export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSellingMode: boolean) => {
@@ -20,7 +20,6 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
     const [crossSellingDrilldownOrder, setCrossSellingDrilldownOrder] = useState<string[]>(['parent', 'child']);
     
     const activeDrilldownOrder = isCrossSellingMode ? crossSellingDrilldownOrder : localDrilldownOrder;
-    const deferredDrilldownOrder = useDeferredValue(activeDrilldownOrder);
 
     const [localParentFilters, setLocalParentFilters] = useState<string[]>(globalParentFilters || []);
     const [localKhoFilters, setLocalKhoFilters] = useState<string[]>(summaryTableFilters?.kho || []);
@@ -161,7 +160,6 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
         crossSellingDrilldownOrder,
         setCrossSellingDrilldownOrder,
         activeDrilldownOrder,
-        deferredDrilldownOrder,
         localKhoFilters,
         localParentFilters,
         localChildFilters,
