@@ -173,4 +173,6 @@ const Controls: React.FC<ControlsProps> = ({
   );
 };
 
-export default Controls;
+const MemoizedControls = React.memo(Controls);
+MemoizedControls.displayName = 'Controls';
+export default MemoizedControls;

@@ -134,4 +134,6 @@ const Legend: React.FC<LegendProps> = ({ targets, onEditRule, includeTnInSbh, on
     );
 }
 
-export default Legend;
+const MemoizedLegend = React.memo(Legend);
+MemoizedLegend.displayName = 'Legend';
+export default MemoizedLegend;

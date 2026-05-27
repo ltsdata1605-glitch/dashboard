@@ -517,7 +517,7 @@ const App: React.FC = () => {
     return result;
   };
 
-  const handleAutoAddWeekendShiftsChange = (checked: boolean) => {
+  const handleAutoAddWeekendShiftsChange = useCallback((checked: boolean) => {
     setAutoAddWeekendShifts(checked);
     
     if (staffList.length === 0 || !monthYear) return;
@@ -599,7 +599,7 @@ const App: React.FC = () => {
     
     setStaffList(updatedStaffList);
     logHistory(checked ? "Tự động tăng ca 2,5 T7-CN" : "Gỡ tự động tăng ca 2,5 T7-CN");
-  };
+  }, [staffList, monthYear, duration, startDay]);
 
   // --- XUẤT ẢNH ---
 
@@ -1121,6 +1121,30 @@ const App: React.FC = () => {
       });
   }, []);
 
+  const scheduleConfig = useMemo(() => ({
+    year,
+    month,
+    startDay,
+    duration
+  }), [year, month, startDay, duration]);
+
+  const handleEditRule = useCallback((k: 'kho' | 'tn' | 'gh') => {
+    setEditingRuleKey(k);
+    setEditRulesModalOpen(true);
+  }, []);
+
+  const handleShowConflicts = useCallback(() => {
+    setConflictModalOpen(true);
+  }, []);
+
+  const handleGenerateClick = useCallback(() => {
+    generateNewSchedule();
+  }, [generateNewSchedule]);
+
+  const handleDateControlClick = useCallback(() => {
+    if (onboardingStep === 3) setOnboardingStep(4);
+  }, [onboardingStep]);
+
   const handleSwapShifts = useCallback((id1: string, id2: string, dayIndex: number) => {
       setStaffList(prev => {
           const idx1 = prev.findIndex(s => s.id === id1);
@@ -1378,9 +1402,9 @@ const App: React.FC = () => {
         <div className={`bg-white p-5 border border-slate-200 mb-6 ${isExportingImage ? 'export-hidden' : ''}`}>
           <Controls 
             monthYear={monthYear} setMonthYear={setMonthYear} startDay={startDay} setStartDay={setStartDay} duration={duration} setDuration={setDuration}
-            onGenerate={() => generateNewSchedule()} departments={uniqueDepartments} departmentFilter={departmentFilter} setDepartmentFilter={setDepartmentFilter}
+            onGenerate={handleGenerateClick} departments={uniqueDepartments} departmentFilter={departmentFilter} setDepartmentFilter={setDepartmentFilter}
             supermarkets={supermarkets} currentSupermarket={currentSupermarket} setSupermarket={handleSupermarketChange} onboardingStep={onboardingStep}
-            hasStaff={hasStaff} hasPatternsForCurrentDept={!!departmentPatterns[departmentFilter]} onDateControlClick={() => onboardingStep === 3 && setOnboardingStep(4)}
+            hasStaff={hasStaff} hasPatternsForCurrentDept={!!departmentPatterns[departmentFilter]} onDateControlClick={handleDateControlClick}
           />
         </div>
 
@@ -1401,7 +1425,7 @@ const App: React.FC = () => {
             <div>
                <Legend 
                  targets={targets} 
-                 onEditRule={(k) => { setEditingRuleKey(k); setEditRulesModalOpen(true); }} 
+                 onEditRule={handleEditRule} 
                  includeTnInSbh={includeTnInSbh} 
                  onIncludeTnInSbhChange={setIncludeTnInSbh} 
                  onboardingStep={onboardingStep} 
@@ -1413,8 +1437,8 @@ const App: React.FC = () => {
 
           <div className={`px-5 pb-0 ${isExportingImage ? 'export-hidden' : ''}`}>
              <DailyStatsTable 
-                staffList={staffList} config={{ year, month, startDay, duration }} requirements={dailyRequirements} setRequirements={setDailyRequirements}
-                selectedDay={statsDay} setSelectedDay={setStatsDay} departmentFilter={departmentFilter} unresolvedConflicts={unresolvedConflicts} onShowUnresolvedConflicts={() => setConflictModalOpen(true)}
+                staffList={staffList} config={scheduleConfig} requirements={dailyRequirements} setRequirements={setDailyRequirements}
+                selectedDay={statsDay} setSelectedDay={setStatsDay} departmentFilter={departmentFilter} unresolvedConflicts={unresolvedConflicts} onShowUnresolvedConflicts={handleShowConflicts}
              />
           </div>
 
@@ -1423,16 +1447,23 @@ const App: React.FC = () => {
               isIndividualExport ? (
                  <VerticalIndividualSchedule 
                     staff={listForTable[0]} 
-                    config={{ year, month, startDay, duration }} 
+                    config={scheduleConfig} 
                     targets={targets} 
                     includeTnInSbh={includeTnInSbh} 
                  />
               ) : (
                 <ScheduleTable 
-                    staffList={listForTable} config={{ year, month, startDay, duration }} targets={targets} tableRef={tableRef}
+                    staffList={listForTable} 
+                    config={scheduleConfig} 
+                    targets={targets} 
+                    tableRef={tableRef}
                     includeTnInSbh={includeTnInSbh}
-                    onDeleteEmployee={handleDeleteEmployee} onEditShift={handleEditShift}
-                    onDayHover={handleDayHover} hoveredDay={hoveredDay} weekRange={weeklyExportConfig} highlightId={currentHighlightedId}
+                    onDeleteEmployee={handleDeleteEmployee} 
+                    onEditShift={handleEditShift}
+                    onDayHover={handleDayHover} 
+                    hoveredDay={hoveredDay} 
+                    weekRange={weeklyExportConfig} 
+                    highlightId={currentHighlightedId}
                     onSwapShift={handleSwapShifts}
                 />
               )

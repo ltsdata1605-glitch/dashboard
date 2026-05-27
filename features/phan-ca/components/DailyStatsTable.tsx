@@ -164,4 +164,6 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
     );
 };
 
-export default DailyStatsTable;
+const MemoizedDailyStatsTable = React.memo(DailyStatsTable);
+MemoizedDailyStatsTable.displayName = 'DailyStatsTable';
+export default MemoizedDailyStatsTable;

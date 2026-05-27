@@ -149,4 +149,6 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
   );
 };
 
-export default VerticalIndividualSchedule;
+const MemoizedVerticalIndividualSchedule = React.memo(VerticalIndividualSchedule);
+MemoizedVerticalIndividualSchedule.displayName = 'VerticalIndividualSchedule';
+export default MemoizedVerticalIndividualSchedule;
