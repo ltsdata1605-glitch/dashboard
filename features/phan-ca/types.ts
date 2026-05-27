@@ -23,6 +23,7 @@ export interface StaffStats {
 export interface StaffInitialData {
   name: string;
   department: string;
+  importIndex?: number;
 }
 
 export interface ChangeHistoryEntry {
@@ -41,12 +42,14 @@ export interface StaffMember {
   stats: StaffStats;
   schedule: (ScheduleInfo | null)[];
   changeHistory: ChangeHistoryEntry[];
+  importIndex?: number;
 }
 
 export interface ImportedStaff {
   id: string;
   name: string;
   department: string;
+  importIndex?: number;
 }
 
 export interface StaffWithGender extends ImportedStaff {

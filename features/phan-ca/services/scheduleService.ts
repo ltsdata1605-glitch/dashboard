@@ -33,7 +33,8 @@ function initStaffList(
                 gender: 'Nam', 
                 stats: {gh:0, kho:0, tn:0, offDays: 0, swapCount: 0}, 
                 schedule: Array(duration + 1).fill(null),
-                changeHistory: []
+                changeHistory: [],
+                importIndex: staffData.importIndex
             });
         }
         if (i < nusRotated.length) {
@@ -45,7 +46,8 @@ function initStaffList(
                 gender: 'Nu', 
                 stats: {gh:0, kho:0, tn:0, offDays: 0, swapCount: 0}, 
                 schedule: Array(duration + 1).fill(null),
-                changeHistory: []
+                changeHistory: [],
+                importIndex: staffData.importIndex
             });
         }
     }

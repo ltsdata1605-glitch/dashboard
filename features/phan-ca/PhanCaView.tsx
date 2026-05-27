@@ -428,7 +428,7 @@ const App: React.FC = () => {
                     if (department.includes("BP Kế Toán")) return;
                     if (department.includes("BP Trưởng Ca") || department.includes("BP Quản Lý Siêu Thị")) department = "BP Quản Lý/Trưởng Ca";
                     const combinedName = `${staffCode} - ${staffName}`;
-                    imported.push({ id: combinedName, name: combinedName, department: department });
+                    imported.push({ id: combinedName, name: combinedName, department: department, importIndex: imported.length });
                 }
             });
             if (imported.length > 0) { setImportedStaff(imported); setImportModalOpen(true); }
@@ -499,19 +499,42 @@ const App: React.FC = () => {
   }, [duration, isDbLoaded, nams, nus]);
 
   const getSortedStaffForExport = (): StaffMember[] => {
-    const staffListCopy = JSON.parse(JSON.stringify(staffList));
-    const depts = [...new Set(staffListCopy.map((s: StaffMember) => s.department))].sort();
-    let result: StaffMember[] = [];
+    const staffListCopy = JSON.parse(JSON.stringify(staffList)) as StaffMember[];
+    const hasImportIndex = staffListCopy.some(s => s.importIndex !== undefined);
     
+    let depts: string[];
+    if (hasImportIndex) {
+        const getDeptMinIndex = (dept: string) => {
+            const deptStaff = staffListCopy.filter(s => s.department === dept);
+            return Math.min(...deptStaff.map(s => s.importIndex ?? 999999));
+        };
+        depts = [...new Set(staffListCopy.map(s => s.department))].sort((a, b) => {
+            return getDeptMinIndex(a) - getDeptMinIndex(b);
+        });
+    } else {
+        depts = [...new Set(staffListCopy.map(s => s.department))].sort();
+    }
+    
+    let result: StaffMember[] = [];
     depts.forEach(dept => {
-        const deptStaff = staffListCopy.filter((s: StaffMember) => s.department === dept);
-        const namsInDept = deptStaff.filter((s: StaffMember) => s.gender === 'Nam').sort((a: StaffMember, b: StaffMember) => a.name.localeCompare(b.name));
-        const nusInDept = deptStaff.filter((s: StaffMember) => s.gender === 'Nu').sort((a: StaffMember, b: StaffMember) => a.name.localeCompare(b.name));
-        
-        let i = 0, j = 0;
-        while (i < namsInDept.length || j < nusInDept.length) {
-            if (i < namsInDept.length) result.push(namsInDept[i++]);
-            if (j < nusInDept.length) result.push(nusInDept[j++]);
+        const deptStaff = staffListCopy.filter(s => s.department === dept);
+        if (hasImportIndex) {
+            const sortedDeptStaff = deptStaff.sort((a, b) => {
+                const indexA = a.importIndex ?? 999999;
+                const indexB = b.importIndex ?? 999999;
+                if (indexA !== indexB) return indexA - indexB;
+                return a.name.localeCompare(b.name);
+            });
+            result.push(...sortedDeptStaff);
+        } else {
+            const namsInDept = deptStaff.filter(s => s.gender === 'Nam').sort((a: StaffMember, b: StaffMember) => a.name.localeCompare(b.name));
+            const nusInDept = deptStaff.filter(s => s.gender === 'Nu').sort((a: StaffMember, b: StaffMember) => a.name.localeCompare(b.name));
+            
+            let i = 0, j = 0;
+            while (i < namsInDept.length || j < nusInDept.length) {
+                if (i < namsInDept.length) result.push(namsInDept[i++]);
+                if (j < nusInDept.length) result.push(nusInDept[j++]);
+            }
         }
     });
     return result;
@@ -1225,8 +1248,8 @@ const App: React.FC = () => {
     isImportingRef.current = true; 
     
     try {
-        const newNams = staffWithGenders.filter(s => s.gender === 'Nam').map(s => ({ name: s.name, department: s.department }));
-        const newNus = staffWithGenders.filter(s => s.gender === 'Nu').map(s => ({ name: s.name, department: s.department }));
+        const newNams = staffWithGenders.filter(s => s.gender === 'Nam').map(s => ({ name: s.name, department: s.department, importIndex: s.importIndex }));
+        const newNus = staffWithGenders.filter(s => s.gender === 'Nu').map(s => ({ name: s.name, department: s.department, importIndex: s.importIndex }));
         
         const depts = [...new Set(staffWithGenders.map(s => s.department))];
         const patternsToSet: { [key: string]: string[] } = {};
