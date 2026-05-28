@@ -46,6 +46,20 @@ export default function StickerPrinterView() {
     const [isMobile, setIsMobile] = useState(false);
 
     useEffect(() => {
+        const match = previewName.match(/(?:IMEI|CODE):\s*([A-Za-z0-9]+)/i);
+        if (match) {
+            setBarcodeImei(match[1]);
+        } else {
+            const fallbackMatch = previewName.match(/\(([A-Za-z0-9]+)\)/);
+            if (fallbackMatch) {
+                setBarcodeImei(fallbackMatch[1]);
+            } else {
+                setBarcodeImei('');
+            }
+        }
+    }, [previewName]);
+
+    useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 1024);
         checkMobile();
         window.addEventListener('resize', checkMobile);
@@ -127,6 +141,10 @@ export default function StickerPrinterView() {
                     } else if (aqUpper.includes('CODE:')) {
                         imeiRaw = aq.substring(aqUpper.indexOf('CODE:') + 5).trim();
                         imeiRaw = imeiRaw.replace(/\)$/, '').trim();
+                    } else if (aq) {
+                        if (/^[A-Za-z0-9]+$/.test(aq) && aq.length > 3) {
+                            imeiRaw = aq;
+                        }
                     }
 
                     const nameParts = [e, f].filter(Boolean);
@@ -499,15 +517,7 @@ export default function StickerPrinterView() {
         setFooterTextContent(footerText);
         setPreviewName(nameText);
 
-        setBatchItems([{
-            id: `loaded_${Date.now()}`,
-            name: nameText,
-            oldPrice: oldPriceText,
-            newPrice: newPriceText,
-            percent: percentText,
-            imei: '',
-            selected: true,
-        }]);
+        setBatchItems([]);
     };
 
     const removeManualPage = (id: string) => {
