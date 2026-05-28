@@ -44,7 +44,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, []);
     
     const [isLoading, setIsLoading] = useState(true);
-    const [isDemoMode, setDemoMode] = useState(false);
+    const [isDemoMode, setDemoModeRaw] = useState(() => {
+        if (typeof window !== 'undefined') {
+            return sessionStorage.getItem('ycx_demo_mode') === 'true';
+        }
+        return false;
+    });
+
+    const setDemoMode = (val: boolean) => {
+        setDemoModeRaw(val);
+        if (typeof window !== 'undefined') {
+            if (val) {
+                sessionStorage.setItem('ycx_demo_mode', 'true');
+            } else {
+                sessionStorage.removeItem('ycx_demo_mode');
+            }
+        }
+    };
 
     useEffect(() => {
         const handleAuthExpired = () => {

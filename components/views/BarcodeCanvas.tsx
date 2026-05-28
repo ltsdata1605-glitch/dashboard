@@ -51,6 +51,48 @@ function encodeCode128B(text: string): number[][] {
   return patterns;
 }
 
+export function generateBarcodeDataUrl(value: string, height: number = 40, barColor: string = '#000'): string {
+  if (!value) return '';
+  const patterns = encodeCode128B(value);
+  
+  // Calculate total width
+  let totalModules = 0;
+  for (const pattern of patterns) {
+    for (const bar of pattern) {
+      totalModules += bar;
+    }
+  }
+  // Add quiet zones (10 modules each side)
+  const quietZone = 10;
+  const totalWidth = totalModules + quietZone * 2;
+
+  // Set canvas size with high DPI
+  const scale = 3;
+  const canvas = document.createElement('canvas');
+  canvas.width = totalWidth * scale;
+  canvas.height = height * scale;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return '';
+
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.fillStyle = barColor;
+  let x = quietZone * scale;
+  for (const pattern of patterns) {
+    for (let i = 0; i < pattern.length; i++) {
+      const barWidth = pattern[i] * scale;
+      if (i % 2 === 0) {
+        // Even index = bar (dark)
+        ctx.fillRect(x, 0, barWidth, canvas.height);
+      }
+      x += barWidth;
+    }
+  }
+  return canvas.toDataURL('image/png');
+}
+
 interface BarcodeCanvasProps {
   value: string;
   height?: number;
@@ -64,45 +106,12 @@ export default function BarcodeCanvas({ value, height = 40, barColor = '#000', c
 
   useEffect(() => {
     if (!value) return;
-
-    const patterns = encodeCode128B(value);
-    
-    // Calculate total width
-    let totalModules = 0;
-    for (const pattern of patterns) {
-      for (const bar of pattern) {
-        totalModules += bar;
-      }
+    try {
+      const url = generateBarcodeDataUrl(value, height, barColor);
+      setDataUrl(url);
+    } catch (e) {
+      console.error('Error generating barcode data URL:', e);
     }
-    // Add quiet zones (10 modules each side)
-    const quietZone = 10;
-    const totalWidth = totalModules + quietZone * 2;
-
-    // Set canvas size with high DPI
-    const scale = 3;
-    const canvas = document.createElement('canvas');
-    canvas.width = totalWidth * scale;
-    canvas.height = height * scale;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    ctx.fillStyle = barColor;
-    let x = quietZone * scale;
-    for (const pattern of patterns) {
-      for (let i = 0; i < pattern.length; i++) {
-        const barWidth = pattern[i] * scale;
-        if (i % 2 === 0) {
-          // Even index = bar (dark)
-          ctx.fillRect(x, 0, barWidth, canvas.height);
-        }
-        x += barWidth;
-      }
-    }
-    setDataUrl(canvas.toDataURL('image/png'));
   }, [value, height, barColor]);
 
   if (!value || !dataUrl) return null;
@@ -116,3 +125,4 @@ export default function BarcodeCanvas({ value, height = 40, barColor = '#000', c
     />
   );
 }
+

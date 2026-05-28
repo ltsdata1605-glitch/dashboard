@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import BarcodeCanvas from '../../../components/views/BarcodeCanvas';
 import { BatchItem } from './types';
 
@@ -21,6 +21,47 @@ interface StickerPrintPreviewProps {
     setPreviewName: (val: string) => void;
 }
 
+/**
+ * Hook to manage a contentEditable div without cursor-jumping.
+ * Uses a ref to track if this is the first render. On subsequent
+ * external value changes, only updates the DOM when the element
+ * is NOT focused (user is not typing).
+ */
+function useContentEditable(
+    externalValue: string,
+    onChange?: (text: string) => void,
+) {
+    const ref = useRef<HTMLDivElement>(null);
+    const isInitialized = useRef(false);
+
+    // After first render, mark as initialized and set text
+    useEffect(() => {
+        if (ref.current && !isInitialized.current) {
+            isInitialized.current = true;
+            // Set initial text from prop (in case it differs from JSX children)
+            if (ref.current.innerText !== externalValue) {
+                ref.current.innerText = externalValue;
+            }
+        }
+    });
+
+    // Sync from external state → DOM, but ONLY when element is NOT focused
+    useEffect(() => {
+        if (!isInitialized.current) return;
+        if (ref.current && document.activeElement !== ref.current) {
+            if (ref.current.innerText !== externalValue) {
+                ref.current.innerText = externalValue;
+            }
+        }
+    }, [externalValue]);
+
+    const handleInput = useCallback((e: React.FormEvent<HTMLDivElement>) => {
+        onChange?.(e.currentTarget.innerText);
+    }, [onChange]);
+
+    return { ref, handleInput };
+}
+
 export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     batchItems,
     stickerType,
@@ -38,63 +79,26 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     setBarcodeImei,
     setPreviewName,
 }) => {
-    const nameRef = useRef<HTMLDivElement>(null);
-    const footerRef = useRef<HTMLDivElement>(null);
-    const headerRef = useRef<HTMLDivElement>(null);
-    const subHeaderRef = useRef<HTMLDivElement>(null);
     const oldPriceRef = useRef<HTMLDivElement>(null);
     const newPriceRef = useRef<HTMLDivElement>(null);
     const percentRef = useRef<HTMLDivElement>(null);
 
-    // Sync contentEditable elements with state
-    useEffect(() => {
-        if (nameRef.current && nameRef.current.innerText !== previewName) {
-            nameRef.current.innerText = previewName;
-        }
-    }, [previewName]);
-
-    useEffect(() => {
-        if (footerRef.current && document.activeElement !== footerRef.current && footerRef.current.innerText !== footerTextContent) {
-            footerRef.current.innerText = footerTextContent;
-        }
-    }, [footerTextContent]);
-
-    useEffect(() => {
-        if (headerRef.current && document.activeElement !== headerRef.current) {
-            headerRef.current.innerText = headerTextContent;
-        }
-    }, [headerTextContent]);
-
-    useEffect(() => {
-        if (subHeaderRef.current && document.activeElement !== subHeaderRef.current) {
-            subHeaderRef.current.innerText = subHeaderTextContent;
-        }
-    }, [subHeaderTextContent]);
-
-    const handleTextInput = (e: React.FormEvent<HTMLDivElement>) => {
-        setHeaderTextContent(e.currentTarget.innerText);
-    };
-
-    const handleSubHeaderInput = (e: React.FormEvent<HTMLDivElement>) => {
-        setSubHeaderTextContent(e.currentTarget.innerText);
-    };
-
-    const handleFooterTextInput = (e: React.FormEvent<HTMLDivElement>) => {
-        setFooterTextContent(e.currentTarget.innerText);
-    };
-
-    const handleNameInput = (e: React.FormEvent<HTMLDivElement>) => {
-        const text = e.currentTarget.innerText;
+    // --- contentEditable hooks for each editable field (preview mode only) ---
+    const handleNameChange = useCallback((text: string) => {
         setPreviewName(text);
         const match = text.match(/(?:IMEI|CODE):\s*([A-Za-z0-9]+)/i);
         setBarcodeImei(match ? match[1] : '');
-    };
+    }, [setPreviewName, setBarcodeImei]);
+
+    const nameEditable = useContentEditable(previewName, handleNameChange);
+    const headerEditable = useContentEditable(headerTextContent, setHeaderTextContent);
+    const subHeaderEditable = useContentEditable(subHeaderTextContent, setSubHeaderTextContent);
+    const footerEditable = useContentEditable(footerTextContent, setFooterTextContent);
 
     const handlePriceInput = (e: React.FormEvent<any>) => {
         const el = e.currentTarget;
         const rawText = el.innerText;
         
-        // Skip if contains alphabet characters
         if (/[a-zA-Z]/.test(rawText)) return;
         
         const numericStr = rawText.replace(/\D/g, '');
@@ -374,7 +378,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
             <div id="print-section" className="w-full">
                 {batchItems.length > 0 ? (
                     batchItems.filter(it => it.selected).map((item, index, arr) => (
-                        <div key={item.id} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto' }}>
+                        <div key={item.id} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto', backgroundImage: `url(${bgImage})` }}>
                             {showBarcode && item.imei && (
                                 <div className="barcode">
                                     <BarcodeCanvas value={item.imei} />
@@ -399,19 +403,20 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         </div>
                     ))
                 ) : (
-                    <div className="sticker-container" data-type={stickerType}>
+                    <div className="sticker-container" data-type={stickerType} style={{ backgroundImage: `url(${bgImage})` }}>
                         {showBarcode && barcodeImei && (
                             <div className="barcode">
                                 <BarcodeCanvas value={barcodeImei} />
                             </div>
                         )}
-                        <div className="header-text" ref={headerRef} onInput={handleTextInput} contentEditable suppressContentEditableWarning>{headerTextContent}</div>
+                        {/* Render initial text as children for immediate display; useContentEditable manages sync after mount */}
+                        <div className="header-text" ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning>{headerTextContent}</div>
                         {stickerType === 'gio_vang' && (
-                            <div className="sub-header" ref={subHeaderRef} onInput={handleSubHeaderInput} contentEditable suppressContentEditableWarning>{subHeaderTextContent}</div>
+                            <div className="sub-header" ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning>{subHeaderTextContent}</div>
                         )}
                         <div className="extra1" ref={percentRef} contentEditable suppressContentEditableWarning>-36%</div>
                         <div className="old" ref={oldPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>5.490.000</div>
-                        <div className="name" ref={nameRef} onInput={handleNameInput} contentEditable suppressContentEditableWarning>{previewName}</div>
+                        <div className="name" ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning>{previewName}</div>
                         {stickerType === 'gio_vang' ? (
                             <div className="extra2 flex items-baseline justify-center">
                                 <span ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>10.990</span>
@@ -420,10 +425,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         ) : (
                             <div className="extra2" ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>3.490</div>
                         )}
-                        <div className="footer-text" ref={footerRef} onInput={handleFooterTextInput} contentEditable suppressContentEditableWarning>{footerTextContent}</div>
+                        <div className="footer-text" ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning>{footerTextContent}</div>
                     </div>
                 )}
             </div>
         </div>
     );
 };
+

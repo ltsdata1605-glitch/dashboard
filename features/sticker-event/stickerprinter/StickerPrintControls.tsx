@@ -67,10 +67,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                     className="flex-1 bg-[#fbbc04] hover:bg-[#f0b400] text-black font-black text-lg py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-transform active:scale-95 shadow-lg shadow-yellow-500/30"
                 >
                     <Printer size={24} />
-                    BẤM ĐỂ IN {
-                        (batchItems.length > 0 || manualPages.length > 0) && 
-                        `(${batchItems.length > 0 ? selectedCount + manualPages.length : manualPages.length})`
-                    }
+                    BẤM ĐỂ IN ({batchItems.length > 0 ? selectedCount + manualPages.length : manualPages.length})
                 </button>
                 <button 
                     onClick={addCurrentPage}
