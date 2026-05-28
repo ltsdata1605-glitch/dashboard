@@ -236,7 +236,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container .header-text {
                     font-size: ${headerTextSize}cqw;
                     font-weight: 900;
-                    top: 3.5%;
+                    top: 4.0%;
                     height: 8.5%;
                     color: white;
                     font-family: 'UTM Avo', sans-serif;
@@ -318,7 +318,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="gio_vang"] .header-text {
                     font-size: ${headerTextSize}cqw;
                     font-weight: 400;
-                    top: 43.0%;
+                    top: 43.5%;
                     height: 8%;
                     color: black;
                     font-family: 'UTM Colossalis', sans-serif !important;
@@ -330,7 +330,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="gio_vang"] .sub-header {
                     font-size: ${subHeaderTextSize}cqw;
                     font-weight: 400;
-                    top: 51.0%;
+                    top: 51.5%;
                     height: 10%;
                     color: black;
                     font-family: 'UTM Colossalis', sans-serif !important;
