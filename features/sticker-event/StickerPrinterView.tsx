@@ -585,7 +585,7 @@ export default function StickerPrinterView() {
         const printSection = document.getElementById('print-section');
         if (!printSection) return;
 
-        const previewPageCount = batchItems.length > 0 ? batchItems.filter(i => i.selected).length : 0;
+        const previewPageCount = batchItems.length > 0 ? batchItems.filter(i => i.selected).length : (manualPages.length === 0 ? 1 : 0);
         const totalPages = previewPageCount + manualPages.length;
 
         if (totalPages === 0) {
@@ -596,7 +596,7 @@ export default function StickerPrinterView() {
         const printHost = document.createElement('div');
         printHost.id = 'print-host';
         
-        if (batchItems.length > 0) {
+        if (batchItems.length > 0 || manualPages.length === 0) {
             printHost.innerHTML = printSection.innerHTML;
         } else {
             printHost.innerHTML = '';
