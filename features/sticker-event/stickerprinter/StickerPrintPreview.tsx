@@ -86,9 +86,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     // --- contentEditable hooks for each editable field (preview mode only) ---
     const handleNameChange = useCallback((text: string) => {
         setPreviewName(text);
-        const match = text.match(/(?:IMEI|CODE):\s*([A-Za-z0-9]+)/i);
-        setBarcodeImei(match ? match[1] : '');
-    }, [setPreviewName, setBarcodeImei]);
+    }, [setPreviewName]);
 
     const nameEditable = useContentEditable(previewName, handleNameChange);
     const headerEditable = useContentEditable(headerTextContent, setHeaderTextContent);

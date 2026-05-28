@@ -53,8 +53,6 @@ export default function StickerPrinterView() {
             const fallbackMatch = previewName.match(/\(([A-Za-z0-9]+)\)/);
             if (fallbackMatch) {
                 setBarcodeImei(fallbackMatch[1]);
-            } else {
-                setBarcodeImei('');
             }
         }
     }, [previewName]);
@@ -515,8 +513,15 @@ export default function StickerPrinterView() {
         setHeaderTextContent(headerText);
         setSubHeaderTextContent(subHeader);
         setFooterTextContent(footerText);
-        setPreviewName(nameText);
 
+        // Extract barcode value from img alt attribute if it exists
+        const barcodeImg = sticker.querySelector('.barcode img');
+        const barcodeVal = barcodeImg?.getAttribute('alt') || '';
+        if (barcodeVal) {
+            setBarcodeImei(barcodeVal);
+        }
+
+        setPreviewName(nameText);
         setBatchItems([]);
     };
 
