@@ -341,7 +341,12 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     font-family: 'UTM Avo', sans-serif !important;
                 }
                 
-                .sticker-container .extra1 .discount-label,
+                .sticker-container .extra1 .discount-label {
+                    font-size: calc(1em / 1.5);
+                    position: relative;
+                    top: -0.18em;
+                }
+                
                 .sticker-container .extra1 .discount-unit.unit-k {
                     font-size: calc(1em / 1.5);
                 }
