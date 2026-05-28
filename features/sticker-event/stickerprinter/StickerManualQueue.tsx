@@ -44,7 +44,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
     const allChecked = manualPages.length > 0 && manualPages.every(p => p.selected !== false);
 
     return (
-        <div className="w-full max-w-[550px] no-print space-y-4">
+        <div className="w-full no-print space-y-4">
             {/* Manual Pages Queue */}
             {manualPages.length > 0 && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-4">
