@@ -11,6 +11,9 @@ import { StickerPrintPreview } from './stickerprinter/StickerPrintPreview';
 import { StickerManualQueue } from './stickerprinter/StickerManualQueue';
 import { StickerPrintControls } from './stickerprinter/StickerPrintControls';
 import { generateBarcodeDataUrl } from '../../components/views/BarcodeCanvas';
+import { useAuth } from '../../contexts/AuthContext';
+import { db } from '../../services/firebase';
+import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 
 const StickerEventApp = lazy(() => import('./StickerEventApp'));
@@ -21,12 +24,65 @@ const STICKER_SAVED_LISTS_KEY = 'stickerSavedLists';
 
 export default function StickerPrinterView() {
     const { activeTab } = useActiveTab();
+    const { user } = useAuth();
     const [mounted, setMounted] = useState(false);
     const [stickerMode, setStickerMode] = useState<'sticker' | 'event'>('sticker');
     const [eventEverOpened, setEventEverOpened] = useState(false);
     const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang'>('gia_soc');
     const [bgImage, setBgImage] = useState('/frame/X24_NEW.png');
+    
+    // Dynamic Font Sizes and Active Field Trackers
+    const [activeField, setActiveField] = useState<'header' | 'subHeader' | 'percent' | 'oldPrice' | 'name' | 'newPrice' | 'footer'>('header');
     const [headerTextSize, setHeaderTextSize] = useState(8);
+    const [subHeaderTextSize, setSubHeaderTextSize] = useState(13);
+    const [percentTextSize, setPercentTextSize] = useState(36.9);
+    const [oldPriceTextSize, setOldPriceTextSize] = useState(14.2);
+    const [nameTextSize, setNameTextSize] = useState(3.6);
+    const [newPriceTextSize, setNewPriceTextSize] = useState(26.5);
+    const [footerTextSize, setFooterTextSize] = useState(3.2);
+
+    const getActiveFieldLabel = () => {
+        switch (activeField) {
+            case 'header': return 'Tiêu đề';
+            case 'subHeader': return 'Tiêu đề phụ';
+            case 'percent': return '% Giảm';
+            case 'oldPrice': return 'Giá cũ';
+            case 'name': return 'Tên SP';
+            case 'newPrice': return 'Giá mới';
+            case 'footer': return 'Khuyến mãi';
+            default: return 'Cỡ chữ';
+        }
+    };
+
+    const getActiveFontSize = (): number => {
+        switch (activeField) {
+            case 'header': return headerTextSize;
+            case 'subHeader': return subHeaderTextSize;
+            case 'percent': return percentTextSize;
+            case 'oldPrice': return oldPriceTextSize;
+            case 'name': return nameTextSize;
+            case 'newPrice': return newPriceTextSize;
+            case 'footer': return footerTextSize;
+            default: return headerTextSize;
+        }
+    };
+
+    const setActiveFontSize = (val: number | ((s: number) => number)) => {
+        const update = (s: number) => {
+            const nextVal = typeof val === 'function' ? val(s) : val;
+            return Number(nextVal.toFixed(1));
+        };
+        switch (activeField) {
+            case 'header': setHeaderTextSize(update); break;
+            case 'subHeader': setSubHeaderTextSize(update); break;
+            case 'percent': setPercentTextSize(update); break;
+            case 'oldPrice': setOldPriceTextSize(update); break;
+            case 'name': setNameTextSize(update); break;
+            case 'newPrice': setNewPriceTextSize(update); break;
+            case 'footer': setFooterTextSize(update); break;
+        }
+    };
+
     const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
     const [headerTextContent, setHeaderTextContent] = useState('QUẠT ĐIỀU HOÀ');
     const [subHeaderTextContent, setSubHeaderTextContent] = useState('0 SUẤT/NGÀY');
@@ -64,22 +120,9 @@ export default function StickerPrinterView() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Load saved state from IndexedDB on mount
+    // Load print history and saved lists only once on mount
     useEffect(() => {
         setMounted(true);
-        getSetting<any>(STICKER_DB_KEY).then(saved => {
-            if (saved) {
-                if (saved.stickerType) setStickerType(saved.stickerType);
-                if (saved.bgImage) setBgImage(saved.bgImage);
-                if (saved.headerTextSize != null) setHeaderTextSize(saved.headerTextSize);
-                if (saved.headerTextContent) setHeaderTextContent(saved.headerTextContent);
-                if (saved.subHeaderTextContent) setSubHeaderTextContent(saved.subHeaderTextContent);
-                if (saved.footerTextContent) setFooterTextContent(saved.footerTextContent);
-                if (saved.showBarcode != null) setShowBarcode(saved.showBarcode);
-                if (saved.previewName) setPreviewName(saved.previewName);
-            }
-            setIsLoaded(true);
-        }).catch(() => setIsLoaded(true));
         // Load print history
         getSetting<PrintHistoryEntry[]>(STICKER_HISTORY_KEY).then(history => {
             if (history) setPrintHistory(history);
@@ -90,23 +133,117 @@ export default function StickerPrinterView() {
         }).catch(() => {});
     }, []);
 
-    // Save state to IndexedDB whenever key values change (debounced)
+    // Load settings from Firestore (if logged in) or IndexedDB
+    useEffect(() => {
+        let active = true;
+        async function loadSettings() {
+            try {
+                let saved: any = null;
+                if (user) {
+                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerPrinter');
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        saved = docSnap.data();
+                    }
+                }
+                
+                if (!saved) {
+                    saved = await getSetting<any>(STICKER_DB_KEY);
+                }
+                
+                if (saved && active) {
+                    if (saved.stickerType) setStickerType(saved.stickerType);
+                    if (saved.bgImage) setBgImage(saved.bgImage);
+                    if (saved.headerTextContent) setHeaderTextContent(saved.headerTextContent);
+                    if (saved.subHeaderTextContent) setSubHeaderTextContent(saved.subHeaderTextContent);
+                    if (saved.footerTextContent) setFooterTextContent(saved.footerTextContent);
+                    if (saved.showBarcode != null) setShowBarcode(saved.showBarcode);
+                    if (saved.previewName) setPreviewName(saved.previewName);
+                    
+                    // Font sizes
+                    if (saved.headerTextSize != null) setHeaderTextSize(saved.headerTextSize);
+                    if (saved.subHeaderTextSize != null) setSubHeaderTextSize(saved.subHeaderTextSize);
+                    if (saved.percentTextSize != null) setPercentTextSize(saved.percentTextSize);
+                    if (saved.oldPriceTextSize != null) setOldPriceTextSize(saved.oldPriceTextSize);
+                    if (saved.nameTextSize != null) setNameTextSize(saved.nameTextSize);
+                    if (saved.newPriceTextSize != null) setNewPriceTextSize(saved.newPriceTextSize);
+                    if (saved.footerTextSize != null) setFooterTextSize(saved.footerTextSize);
+                    
+                    // Sync loaded Firestore settings to local IndexedDB
+                    if (user) {
+                        await saveSetting(STICKER_DB_KEY, saved);
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading settings:", err);
+            } finally {
+                if (active) {
+                    setIsLoaded(true);
+                }
+            }
+        }
+        loadSettings();
+        return () => {
+            active = false;
+        };
+    }, [user]);
+
+    // Save state to IndexedDB and Firebase whenever key values change (debounced)
     useEffect(() => {
         if (!isLoaded) return;
-        const timer = setTimeout(() => {
-            saveSetting(STICKER_DB_KEY, {
+        const timer = setTimeout(async () => {
+            const dataToSave = {
                 stickerType,
                 bgImage,
-                headerTextSize,
                 headerTextContent,
                 subHeaderTextContent,
                 footerTextContent,
                 showBarcode,
                 previewName,
-            }).catch(() => {});
+                headerTextSize,
+                subHeaderTextSize,
+                percentTextSize,
+                oldPriceTextSize,
+                nameTextSize,
+                newPriceTextSize,
+                footerTextSize,
+                updatedAt: new Date().toISOString()
+            };
+            
+            try {
+                await saveSetting(STICKER_DB_KEY, dataToSave);
+            } catch (e) {
+                console.error("IndexedDB save failed", e);
+            }
+            
+            if (user) {
+                try {
+                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerPrinter');
+                    await setDoc(docRef, dataToSave);
+                } catch (e) {
+                    console.error("Firebase save failed", e);
+                }
+            }
         }, 500);
         return () => clearTimeout(timer);
-    }, [isLoaded, stickerType, bgImage, headerTextSize, headerTextContent, subHeaderTextContent, footerTextContent, showBarcode, previewName]);
+    }, [
+        isLoaded,
+        user,
+        stickerType,
+        bgImage,
+        headerTextContent,
+        subHeaderTextContent,
+        footerTextContent,
+        showBarcode,
+        previewName,
+        headerTextSize,
+        subHeaderTextSize,
+        percentTextSize,
+        oldPriceTextSize,
+        nameTextSize,
+        newPriceTextSize,
+        footerTextSize
+    ]);
 
 
     const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -583,6 +720,12 @@ export default function StickerPrinterView() {
         setStickerType(entry.stickerType);
         setBgImage(entry.bgImage);
         setHeaderTextSize(entry.headerTextSize);
+        if (entry.subHeaderTextSize != null) setSubHeaderTextSize(entry.subHeaderTextSize);
+        if (entry.percentTextSize != null) setPercentTextSize(entry.percentTextSize);
+        if (entry.oldPriceTextSize != null) setOldPriceTextSize(entry.oldPriceTextSize);
+        if (entry.nameTextSize != null) setNameTextSize(entry.nameTextSize);
+        if (entry.newPriceTextSize != null) setNewPriceTextSize(entry.newPriceTextSize);
+        if (entry.footerTextSize != null) setFooterTextSize(entry.footerTextSize);
         setBatchItems(entry.batchItems);
         setHeaderTextContent(entry.headerTextContent);
         setSubHeaderTextContent(entry.subHeaderTextContent);
@@ -648,6 +791,12 @@ export default function StickerPrinterView() {
             stickerType,
             bgImage,
             headerTextSize,
+            subHeaderTextSize,
+            percentTextSize,
+            oldPriceTextSize,
+            nameTextSize,
+            newPriceTextSize,
+            footerTextSize,
             batchItems,
             headerTextContent,
             subHeaderTextContent,
@@ -721,10 +870,11 @@ export default function StickerPrinterView() {
                     
                     {stickerMode === 'sticker' && (
                         <div className="flex items-center gap-1 ml-0.5 lg:ml-1 pl-1.5 lg:pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
+                            <span className="text-[10px] lg:text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400">{getActiveFieldLabel()}:</span>
                             <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[22px] lg:h-[26px]">
-                                <button onClick={() => setHeaderTextSize(s => Number((s - 0.2).toFixed(1)))} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Giảm size">-</button>
-                                <span className="px-0 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 w-5 lg:w-7 text-center">{headerTextSize}</span>
-                                <button onClick={() => setHeaderTextSize(s => Number((s + 0.2).toFixed(1)))} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Tăng size">+</button>
+                                <button onClick={() => setActiveFontSize(s => Math.max(1, s - 0.2))} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Giảm size">-</button>
+                                <span className="px-0 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 w-6 lg:w-8 text-center">{getActiveFontSize()}</span>
+                                <button onClick={() => setActiveFontSize(s => s + 0.2)} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Tăng size">+</button>
                             </div>
                         </div>
                     )}
@@ -759,7 +909,15 @@ export default function StickerPrinterView() {
                         barcodeImei={barcodeImei}
                         bgImage={bgImage}
                         headerTextSize={headerTextSize}
+                        subHeaderTextSize={subHeaderTextSize}
+                        percentTextSize={percentTextSize}
+                        oldPriceTextSize={oldPriceTextSize}
+                        nameTextSize={nameTextSize}
+                        newPriceTextSize={newPriceTextSize}
+                        footerTextSize={footerTextSize}
                         previewName={previewName}
+                        activeField={activeField}
+                        setActiveField={setActiveField}
                         setHeaderTextContent={setHeaderTextContent}
                         setSubHeaderTextContent={setSubHeaderTextContent}
                         setFooterTextContent={setFooterTextContent}

@@ -12,7 +12,15 @@ interface StickerPrintPreviewProps {
     barcodeImei: string;
     bgImage: string;
     headerTextSize: number;
+    subHeaderTextSize: number;
+    percentTextSize: number;
+    oldPriceTextSize: number;
+    nameTextSize: number;
+    newPriceTextSize: number;
+    footerTextSize: number;
     previewName: string;
+    activeField: string;
+    setActiveField: (field: any) => void;
     
     setHeaderTextContent: (val: string) => void;
     setSubHeaderTextContent: (val: string) => void;
@@ -72,7 +80,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     barcodeImei,
     bgImage,
     headerTextSize,
+    subHeaderTextSize,
+    percentTextSize,
+    oldPriceTextSize,
+    nameTextSize,
+    newPriceTextSize,
+    footerTextSize,
     previewName,
+    activeField,
+    setActiveField,
     setHeaderTextContent,
     setSubHeaderTextContent,
     setFooterTextContent,
@@ -181,6 +197,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     #print-host .sticker-container:last-child {
                         page-break-after: auto;
                     }
+                    #print-host .sticker-container * {
+                        outline: none !important;
+                    }
                 }
 
                 .sticker-container {
@@ -217,7 +236,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container .header-text {
                     font-size: ${headerTextSize}cqw;
                     font-weight: 900;
-                    top: 5.5%;
+                    top: 3.5%;
                     height: 8.5%;
                     color: white;
                     font-family: 'UTM Avo', sans-serif;
@@ -228,7 +247,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 }
 
                 .sticker-container .extra1 {
-                    font-size: 36.9cqw;
+                    font-size: ${percentTextSize}cqw;
                     font-weight: 900 !important;
                     top: 30.9%;
                     height: 25.8%;
@@ -236,7 +255,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 }
 
                 .sticker-container .name {
-                    font-size: 3.6cqw;
+                    font-size: ${nameTextSize}cqw;
                     font-weight: bold !important;
                     top: 60.8%;
                     height: 4.6%;
@@ -244,7 +263,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 }
 
                 .sticker-container .old {
-                    font-size: 14.2cqw;
+                    font-size: ${oldPriceTextSize}cqw;
                     font-weight: bold !important;
                     top: 66.6%;
                     height: 9.8%;
@@ -252,7 +271,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 }
 
                 .sticker-container .extra2 {
-                    font-size: 26.5cqw;
+                    font-size: ${newPriceTextSize}cqw;
                     font-weight: 400 !important;
                     top: 76.5%;
                     height: 21%;
@@ -282,7 +301,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 }
 
                 .sticker-container .footer-text {
-                    font-size: 3.2cqw;
+                    font-size: ${footerTextSize}cqw;
                     font-weight: 900 !important;
                     font-family: 'UTM Avo', sans-serif !important;
                     top: 95.5%;
@@ -299,7 +318,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="gio_vang"] .header-text {
                     font-size: ${headerTextSize}cqw;
                     font-weight: 400;
-                    top: 44.5%;
+                    top: 43.0%;
                     height: 8%;
                     color: black;
                     font-family: 'UTM Colossalis', sans-serif !important;
@@ -309,9 +328,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     align-items: center;
                 }
                 .sticker-container[data-type="gio_vang"] .sub-header {
-                    font-size: 13cqw;
+                    font-size: ${subHeaderTextSize}cqw;
                     font-weight: 400;
-                    top: 52.5%;
+                    top: 51.0%;
                     height: 10%;
                     color: black;
                     font-family: 'UTM Colossalis', sans-serif !important;
@@ -326,7 +345,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     outline: none;
                 }
                 .sticker-container[data-type="gio_vang"] .name {
-                    font-size: 4cqw;
+                    font-size: ${nameTextSize}cqw;
                     font-weight: bold !important;
                     top: 65.8%;
                     height: 4.5%;
@@ -334,7 +353,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     font-family: 'Alata Regular', sans-serif !important;
                 }
                 .sticker-container[data-type="gio_vang"] .old {
-                    font-size: 11cqw;
+                    font-size: ${oldPriceTextSize}cqw;
                     font-weight: 400 !important;
                     top: 73%;
                     height: 9%;
@@ -344,7 +363,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     text-decoration-thickness: 3px;
                 }
                 .sticker-container[data-type="gio_vang"] .extra2 {
-                    font-size: 24cqw;
+                    font-size: ${newPriceTextSize}cqw;
                     font-weight: 400 !important;
                     top: 77%;
                     height: 20%;
@@ -371,6 +390,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="gio_vang"] .footer-text {
                     display: none !important;
                 }
+                .sticker-container .active-field {
+                    outline: 1.5px dashed #6366f1;
+                    outline-offset: 1px;
+                }
                 `}
             </style>
             <div id="print-section" className="w-full">
@@ -382,22 +405,22 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                     <BarcodeCanvas value={item.imei} />
                                 </div>
                             )}
-                            <div className="header-text" contentEditable suppressContentEditableWarning>{headerTextContent}</div>
+                            <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')}>{headerTextContent}</div>
                             {stickerType === 'gio_vang' && (
-                                <div className="sub-header" contentEditable suppressContentEditableWarning>{subHeaderTextContent}</div>
+                                <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')}>{subHeaderTextContent}</div>
                             )}
-                            <div className="extra1" contentEditable suppressContentEditableWarning>{item.percent}</div>
-                            <div className="old" onInput={handlePriceInput} contentEditable suppressContentEditableWarning>{item.oldPrice}</div>
-                            <div className="name" contentEditable suppressContentEditableWarning>{item.name}</div>
+                            <div className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>{item.percent}</div>
+                            <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} onInput={handlePriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')}>{item.oldPrice}</div>
+                            <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')}>{item.name}</div>
                             {stickerType === 'gio_vang' ? (
-                                <div className="extra2 flex items-baseline justify-center">
+                                <div className={`extra2 flex items-baseline justify-center ${activeField === 'newPrice' ? 'active-field' : ''}`} onClick={() => setActiveField('newPrice')}>
                                     <span onInput={handlePriceInput} contentEditable suppressContentEditableWarning>{item.newPrice}</span>
                                     <span className="small-zeros" contentEditable={false}>.000</span>
                                 </div>
                             ) : (
-                                <div className="extra2" onInput={handlePriceInput} contentEditable suppressContentEditableWarning>{item.newPrice}</div>
+                                <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} onInput={handlePriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')}>{item.newPrice}</div>
                             )}
-                            <div className="footer-text" contentEditable suppressContentEditableWarning>{footerTextContent}</div>
+                            <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')}>{footerTextContent}</div>
                         </div>
                     ))
                 ) : (
@@ -408,22 +431,22 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             </div>
                         )}
                         {/* Render initial text as children for immediate display; useContentEditable manages sync after mount */}
-                        <div className="header-text" ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning>{headerTextContent}</div>
+                        <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')}>{headerTextContent}</div>
                         {stickerType === 'gio_vang' && (
-                            <div className="sub-header" ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning>{subHeaderTextContent}</div>
+                            <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')}>{subHeaderTextContent}</div>
                         )}
-                        <div className="extra1" ref={percentRef} contentEditable suppressContentEditableWarning>-36%</div>
-                        <div className="old" ref={oldPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>5.490.000</div>
-                        <div className="name" ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning>{previewName}</div>
+                        <div className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={percentRef} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>-36%</div>
+                        <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')}>5.490.000</div>
+                        <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')}>{previewName}</div>
                         {stickerType === 'gio_vang' ? (
-                            <div className="extra2 flex items-baseline justify-center">
+                            <div className={`extra2 flex items-baseline justify-center ${activeField === 'newPrice' ? 'active-field' : ''}`} onClick={() => setActiveField('newPrice')}>
                                 <span ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>10.990</span>
                                 <span className="small-zeros" contentEditable={false}>.000</span>
                             </div>
                         ) : (
-                            <div className="extra2" ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>3.490</div>
+                            <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')}>3.490</div>
                         )}
-                        <div className="footer-text" ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning>{footerTextContent}</div>
+                        <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')}>{footerTextContent}</div>
                     </div>
                 )}
             </div>

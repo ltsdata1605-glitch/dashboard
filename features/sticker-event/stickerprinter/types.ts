@@ -25,6 +25,12 @@ export interface PrintHistoryEntry {
     stickerType: 'gia_soc' | 'gio_vang';
     bgImage: string;
     headerTextSize: number;
+    subHeaderTextSize?: number;
+    percentTextSize?: number;
+    oldPriceTextSize?: number;
+    nameTextSize?: number;
+    newPriceTextSize?: number;
+    footerTextSize?: number;
     batchItems: BatchItem[];
     headerTextContent: string;
     subHeaderTextContent: string;
