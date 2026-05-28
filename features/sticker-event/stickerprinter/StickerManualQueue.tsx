@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, Save, Trash2, X, Image as ImageIcon, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
+import { Clock, Save, Trash2, X, Image as ImageIcon, ChevronUp, ChevronDown, RotateCcw, Percent, Coins } from 'lucide-react';
 import { StickerPage, SavedStickerList } from './types';
 
 interface StickerManualQueueProps {
@@ -19,6 +19,8 @@ interface StickerManualQueueProps {
     handleDiscountThresholdChange: (val: string) => void;
     activeQueuePageId: string | null;
     setActiveQueuePageId: (id: string | null) => void;
+    discountDisplayMode: 'percent' | 'amount';
+    setDiscountDisplayMode: (mode: 'percent' | 'amount') => void;
 }
 
 export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
@@ -38,6 +40,8 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
     handleDiscountThresholdChange,
     activeQueuePageId,
     setActiveQueuePageId,
+    discountDisplayMode,
+    setDiscountDisplayMode,
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -76,6 +80,13 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 className="w-14 text-center px-1.5 py-1 text-[11px] border border-slate-300 dark:border-slate-700 rounded-md font-bold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
                                 title="Nhập % giảm tối thiểu (ví dụ: 20%)"
                             />
+                            <button 
+                                onClick={() => setDiscountDisplayMode(discountDisplayMode === 'percent' ? 'amount' : 'percent')} 
+                                className="p-1.5 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg transition-colors"
+                                title={discountDisplayMode === 'percent' ? "Hiển thị: % Giảm (Click đổi sang Số tiền)" : "Hiển thị: Số tiền (Click đổi sang % Giảm)"}
+                            >
+                                {discountDisplayMode === 'percent' ? <Percent size={16} /> : <Coins size={16} />}
+                            </button>
                             <button onClick={saveCurrentList} className="p-1.5 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg transition-colors" title="Lưu danh sách">
                                 <Save size={16} />
                             </button>

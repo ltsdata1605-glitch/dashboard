@@ -245,49 +245,18 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             )}
                         </div>
 
-                        {/* Combined Settings Panel */}
-                        <div className="p-2 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-700/30 flex flex-col gap-1.5">
-                            <div className="flex items-center justify-between">
-                                <label htmlFor="toggle-barcode" className="text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-                                    Hiển thị Mã Vạch (Barcode)
-                                </label>
-                                <input 
-                                    type="checkbox" 
-                                    id="toggle-barcode" 
-                                    checked={showBarcode} 
-                                    onChange={(e) => setShowBarcode(e.target.checked)}
-                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
-                                />
-                            </div>
-                            <div className="flex items-center justify-between border-t border-slate-200/40 dark:border-slate-700/40 pt-1.5">
-                                <span className="text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300">
-                                    Kiểu giảm giá
-                                </span>
-                                <div className="flex bg-slate-200/50 dark:bg-slate-800/80 p-0.5 rounded-md border border-slate-200/20 dark:border-slate-700/20 text-[9px] lg:text-[10px] font-black">
-                                    <button
-                                        type="button"
-                                        onClick={() => setDiscountDisplayMode('percent')}
-                                        className={`px-1.5 py-0.5 rounded transition-all ${
-                                            discountDisplayMode === 'percent'
-                                                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm font-black'
-                                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                                        }`}
-                                    >
-                                        % Giảm
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setDiscountDisplayMode('amount')}
-                                        className={`px-1.5 py-0.5 rounded transition-all ${
-                                            discountDisplayMode === 'amount'
-                                                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                                        }`}
-                                    >
-                                        Số tiền
-                                    </button>
-                                </div>
-                            </div>
+                        {/* Barcode Settings Panel */}
+                        <div className="p-2 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-700/30 flex items-center justify-between">
+                            <label htmlFor="toggle-barcode" className="text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                                Hiển thị Mã Vạch (Barcode)
+                            </label>
+                            <input 
+                                type="checkbox" 
+                                id="toggle-barcode" 
+                                checked={showBarcode} 
+                                onChange={(e) => setShowBarcode(e.target.checked)}
+                                className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                            />
                         </div>
 
                         {/* Batch items list */}
@@ -399,6 +368,8 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             handleDiscountThresholdChange={handleDiscountThresholdChange}
                             activeQueuePageId={activeQueuePageId}
                             setActiveQueuePageId={setActiveQueuePageId}
+                            discountDisplayMode={discountDisplayMode}
+                            setDiscountDisplayMode={setDiscountDisplayMode}
                         />
                     </div>
                 )}
