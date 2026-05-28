@@ -91,20 +91,20 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     return (
         <div className="w-full max-w-sm aspect-[197/285] bg-white dark:bg-slate-800 rounded-none shadow-xl border border-slate-200 dark:border-slate-700 p-5 lg:p-6 no-print flex flex-col overflow-hidden">
             {/* Primary Action Buttons */}
-            <div className="flex gap-2 mb-4 shrink-0">
+            <div className="flex gap-2 mb-3 shrink-0">
                 <button 
                     onClick={handlePrint}
-                    className="flex-1 bg-[#fbbc04] hover:bg-[#f0b400] text-black font-black text-base lg:text-lg py-3 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg shadow-yellow-500/20"
+                    className="flex-1 bg-[#fbbc04] hover:bg-[#f0b400] text-black font-black text-sm py-2 rounded-lg flex items-center justify-center gap-1.5 transition-transform active:scale-95 shadow-md shadow-yellow-500/10"
                 >
-                    <Printer size={20} />
+                    <Printer size={16} />
                     BẤM ĐỂ IN ({batchItems.length > 0 ? selectedCount + selectedManualPagesCount : (manualPages.length > 0 ? selectedManualPagesCount : 1)})
                 </button>
                 <button 
                     onClick={addCurrentPage}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs lg:text-sm py-3 px-3.5 rounded-xl flex items-center justify-center gap-1 transition-transform active:scale-95 shadow-lg shadow-indigo-500/20"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1 transition-transform active:scale-95 shadow-md shadow-indigo-500/10"
                     title="Thêm trang hiện tại vào hàng đợi in"
                 >
-                    <Plus size={18} />
+                    <Plus size={16} />
                     Thêm
                 </button>
             </div>
@@ -154,7 +154,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             </div>
 
             {/* Tab Content (Scrollable Area) */}
-            <div className="flex-1 overflow-y-auto pr-1.5 -mr-1.5 space-y-4 scrollbar-thin">
+            <div className={`flex-1 pr-1.5 -mr-1.5 scrollbar-thin ${activeTab === 'queue' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto space-y-4'}`}>
                 {activeTab === 'data' && (
                     <div className="space-y-4 animate-in fade-in duration-200 pb-2">
                         {/* File upload actions */}
@@ -378,7 +378,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 )}
 
                 {activeTab === 'queue' && (
-                    <div className="animate-in fade-in duration-200 pb-2">
+                    <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-200 pb-2">
                         <StickerManualQueue
                             manualPages={manualPages}
                             savedLists={savedLists}

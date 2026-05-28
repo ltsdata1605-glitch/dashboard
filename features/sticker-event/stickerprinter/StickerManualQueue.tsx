@@ -44,11 +44,11 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
     const allChecked = manualPages.length > 0 && manualPages.every(p => p.selected !== false);
 
     return (
-        <div className="w-full no-print space-y-4">
+        <div className="w-full h-full flex flex-col no-print space-y-3 overflow-hidden">
             {/* Manual Pages Queue */}
             {manualPages.length > 0 && (
-                <div className="p-0 space-y-3">
-                    <div className="flex items-center justify-between mb-3">
+                <div className="p-0 space-y-3 flex-1 flex flex-col overflow-hidden">
+                    <div className="flex items-center justify-between shrink-0">
                         <h4 className="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
                             <input 
                                 type="checkbox"
@@ -58,14 +58,14 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 title="Chọn tất cả / Bỏ chọn tất cả"
                             />
                             <Clock size={16} className="text-indigo-500 shrink-0" />
-                            <span>Hàng đợi in ({manualPages.length} trang)</span>
+                            <span>Số lượng: {manualPages.length}</span>
                         </h4>
-                        <div className="flex items-center gap-2">
-                            <button onClick={saveCurrentList} className="text-[11px] text-indigo-600 hover:text-indigo-700 font-bold uppercase flex items-center gap-1" title="Lưu danh sách này">
-                                <CheckCircle2 size={12} /> Lưu DS
+                        <div className="flex items-center gap-1.5">
+                            <button onClick={saveCurrentList} className="p-1.5 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg transition-colors" title="Lưu danh sách">
+                                <CheckCircle2 size={16} />
                             </button>
-                            <button onClick={clearManualPages} className="text-[11px] text-red-500 hover:text-red-600 font-bold uppercase flex items-center gap-1">
-                                <Trash2 size={12} /> Xóa tất cả
+                            <button onClick={clearManualPages} className="p-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors" title="Xóa tất cả">
+                                <Trash2 size={16} />
                             </button>
                         </div>
                     </div>
@@ -89,7 +89,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                         )}
                     </div>
 
-                    <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                    <div className="space-y-2 flex-1 overflow-y-auto pr-1">
                         {filteredPages.map((page, idx) => (
                             <div 
                                 key={page.id} 
@@ -136,10 +136,10 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
 
             {/* Saved Lists */}
             {savedLists.length > 0 && manualPages.length === 0 && (
-                <div className="p-0 space-y-3">
+                <div className="p-0 space-y-3 flex-1 flex flex-col overflow-hidden">
                     <button 
                         onClick={() => setShowSavedLists(!showSavedLists)}
-                        className="w-full flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition-colors"
+                        className="w-full flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition-colors shrink-0"
                     >
                         <span className="flex items-center gap-2">
                             <ImageIcon size={16} className="text-emerald-500" />
@@ -148,7 +148,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                         {showSavedLists ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
                     {showSavedLists && (
-                        <div className="mt-3 space-y-2 max-h-[200px] overflow-y-auto">
+                        <div className="mt-3 space-y-2 flex-1 overflow-y-auto pr-1">
                             {savedLists.map(list => (
                                 <div key={list.id} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 group">
                                     <div className="min-w-0 flex-1">
