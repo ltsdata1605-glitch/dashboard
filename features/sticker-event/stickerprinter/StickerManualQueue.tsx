@@ -17,6 +17,8 @@ interface StickerManualQueueProps {
     toggleAllPagesSelection: (select: boolean) => void;
     discountThreshold: string;
     handleDiscountThresholdChange: (val: string) => void;
+    activeQueuePageId: string | null;
+    setActiveQueuePageId: (id: string | null) => void;
 }
 
 export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
@@ -34,6 +36,8 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
     toggleAllPagesSelection,
     discountThreshold,
     handleDiscountThresholdChange,
+    activeQueuePageId,
+    setActiveQueuePageId,
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -105,9 +109,45 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                         {filteredPages.map((page, idx) => (
                             <div 
                                 key={page.id} 
-                                className={`flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-colors group ${page.selected === false ? 'opacity-50' : ''}`}
-                                onClick={() => loadPageToEditor(page)}
-                                title="Click để load lại và chỉnh sửa"
+                                tabIndex={0}
+                                data-queue-index={idx}
+                                className={`flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-all group outline-none ${
+                                    page.id === activeQueuePageId 
+                                        ? 'border-indigo-600 dark:border-indigo-500 ring-2 ring-indigo-500/20 bg-indigo-50/30 dark:bg-indigo-950/20' 
+                                        : 'border-slate-100 dark:border-slate-700'
+                                } ${page.selected === false ? 'opacity-50' : ''}`}
+                                onClick={() => {
+                                    setActiveQueuePageId(page.id);
+                                    loadPageToEditor(page);
+                                }}
+                                onKeyDown={(e) => {
+                                    if (e.key === 'ArrowDown') {
+                                        e.preventDefault();
+                                        const nextIdx = idx + 1;
+                                        if (nextIdx < filteredPages.length) {
+                                            const nextPage = filteredPages[nextIdx];
+                                            setActiveQueuePageId(nextPage.id);
+                                            loadPageToEditor(nextPage);
+                                            setTimeout(() => {
+                                                const nextEl = document.querySelector(`[data-queue-index="${nextIdx}"]`) as HTMLElement;
+                                                nextEl?.focus();
+                                            }, 10);
+                                        }
+                                    } else if (e.key === 'ArrowUp') {
+                                        e.preventDefault();
+                                        const prevIdx = idx - 1;
+                                        if (prevIdx >= 0) {
+                                            const prevPage = filteredPages[prevIdx];
+                                            setActiveQueuePageId(prevPage.id);
+                                            loadPageToEditor(prevPage);
+                                            setTimeout(() => {
+                                                const prevEl = document.querySelector(`[data-queue-index="${prevIdx}"]`) as HTMLElement;
+                                                prevEl?.focus();
+                                            }, 10);
+                                        }
+                                    }
+                                }}
+                                title="Click hoặc dùng mũi tên Lên/Xuống để chỉnh sửa"
                             >
                                 <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                     <input 

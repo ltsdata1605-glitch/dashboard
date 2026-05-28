@@ -42,6 +42,7 @@ export default function StickerPrinterView() {
     const [footerTextSize, setFooterTextSize] = useState(3.2);
     const [discountDisplayMode, setDiscountDisplayMode] = useState<'percent' | 'amount'>('percent');
     const [discountThreshold, setDiscountThreshold] = useState('');
+    const [activeQueuePageId, setActiveQueuePageId] = useState<string | null>(null);
 
     const getActiveFieldLabel = () => {
         switch (activeField) {
@@ -721,10 +722,14 @@ export default function StickerPrinterView() {
 
     const removeManualPage = (id: string) => {
         setManualPages(prev => prev.filter(p => p.id !== id));
+        if (activeQueuePageId === id) {
+            setActiveQueuePageId(null);
+        }
     };
 
     const clearManualPages = () => {
         setManualPages([]);
+        setActiveQueuePageId(null);
     };
 
     const togglePageSelection = (id: string) => {
@@ -759,6 +764,7 @@ export default function StickerPrinterView() {
         if (list.stickerType) setStickerType(list.stickerType);
         if (list.headerTextContent) setHeaderTextContent(list.headerTextContent);
         setShowSavedLists(false);
+        setActiveQueuePageId(null);
     };
 
     const deleteSavedList = (id: string) => {
@@ -787,6 +793,7 @@ export default function StickerPrinterView() {
         setManualPages(entry.manualPages || []);
         if (entry.discountDisplayMode) setDiscountDisplayMode(entry.discountDisplayMode);
         setShowHistory(false);
+        setActiveQueuePageId(null);
     };
 
     const deleteHistory = (id: string) => {
@@ -803,6 +810,7 @@ export default function StickerPrinterView() {
         setHeaderTextContent('HÀNG TRƯNG BÀY');
         setFooterTextContent('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
         setHeaderTextSize(8);
+        setActiveQueuePageId(null);
     };
 
     const handlePrint = () => {
@@ -1047,6 +1055,8 @@ export default function StickerPrinterView() {
                     deleteHistory={deleteHistory}
                     discountThreshold={discountThreshold}
                     handleDiscountThresholdChange={handleDiscountThresholdChange}
+                    activeQueuePageId={activeQueuePageId}
+                    setActiveQueuePageId={setActiveQueuePageId}
                 />
             </div>
         </div>

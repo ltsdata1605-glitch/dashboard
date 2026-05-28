@@ -45,6 +45,8 @@ interface StickerPrintControlsProps {
     toggleAllPagesSelection: (select: boolean) => void;
     discountThreshold: string;
     handleDiscountThresholdChange: (val: string) => void;
+    activeQueuePageId: string | null;
+    setActiveQueuePageId: (id: string | null) => void;
 }
 
 export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
@@ -86,6 +88,8 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     toggleAllPagesSelection,
     discountThreshold,
     handleDiscountThresholdChange,
+    activeQueuePageId,
+    setActiveQueuePageId,
 }) => {
     const [activeTab, setActiveTab] = useState<'data' | 'queue' | 'help' | 'history'>('data');
     const selectedCount = batchItems.filter(i => i.selected).length;
@@ -158,40 +162,40 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             </div>
 
             {/* Tab Content (Scrollable Area) */}
-            <div className={`flex-1 pr-1.5 -mr-1.5 scrollbar-thin ${activeTab === 'queue' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto space-y-4'}`}>
+            <div className={`flex-1 pr-1 -mr-1 scrollbar-thin ${activeTab === 'queue' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto space-y-2'}`}>
                 {activeTab === 'data' && (
-                    <div className="space-y-4 animate-in fade-in duration-200 pb-2">
+                    <div className="space-y-2.5 animate-in fade-in duration-200 pb-2">
                         {/* File upload actions */}
-                        <div className="flex gap-2 bg-slate-50 dark:bg-slate-900/30 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                            <label className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-sm text-xs">
-                                <Upload size={16} />
+                        <div className="flex gap-2 bg-slate-50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-100 dark:border-slate-700/30">
+                            <label className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-sm text-[11px] lg:text-xs">
+                                <Upload size={14} />
                                 File giá ĐSD - TBBM
                                 <input type="file" accept=".xlsx, .xls, .csv" onChange={handleExcelUpload} className="hidden" />
                             </label>
                             <button 
                                 onClick={handleReset}
-                                className="px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-bold transition-colors shadow-sm text-xs"
+                                className="px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-bold transition-colors shadow-sm text-[11px] lg:text-xs"
                             >
                                 Reset
                             </button>
                         </div>
 
                         {/* Import from template */}
-                        <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
-                            <p className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-2 flex items-center gap-1.5">
-                                <FileSpreadsheet size={14} />
+                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
+                            <p className="text-[10px] lg:text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1">
+                                <FileSpreadsheet size={12} />
                                 Nhập từ File Mẫu
                             </p>
-                            <div className="flex gap-2">
+                            <div className="flex gap-1.5">
                                 <button 
                                     onClick={downloadTemplate}
-                                    className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm"
+                                    className="flex-1 flex items-center justify-center gap-1 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm"
                                 >
-                                    <Download size={12} />
+                                    <Download size={10} />
                                     Tải File Mẫu
                                 </button>
-                                <label className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm">
-                                    <Upload size={12} />
+                                <label className="flex-1 flex items-center justify-center gap-1 py-1 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm">
+                                    <Upload size={10} />
                                     Nhập File Mẫu
                                     <input type="file" accept=".xlsx, .xls, .csv" onChange={handleTemplateUpload} className="hidden" />
                                 </label>
@@ -199,32 +203,32 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                         </div>
 
                         {/* Display inventory filter */}
-                        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800/50">
-                            <p className="text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-2 flex items-center gap-1.5">
-                                <Package size={14} />
+                        <div className="p-2 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-800/30">
+                            <p className="text-[10px] lg:text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-1 flex items-center gap-1">
+                                <Package size={12} />
                                 Lọc tồn kho trưng bày
                             </p>
-                            <div className="grid grid-cols-2 gap-2">
+                            <div className="grid grid-cols-2 gap-1.5">
                                 <a 
                                     href="https://report.mwgroup.vn/home/dashboard/17" 
                                     target="_blank" 
                                     rel="noopener noreferrer"
-                                    className="flex items-center justify-center gap-1 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm"
+                                    className="flex items-center justify-center gap-1 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm"
                                 >
-                                    <Package size={12} />
+                                    <Package size={10} />
                                     Đổ tồn Trưng bày
                                 </a>
-                                <label className="flex items-center justify-center gap-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[11px] cursor-pointer transition-colors shadow-sm">
-                                    <Upload size={12} />
-                                    {inventoryCodes ? `Đổi file (${inventoryCodes.size})` : 'Nhập File Tồn'}
+                                <label className="flex items-center justify-center gap-1 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm">
+                                    <Upload size={10} />
+                                    {inventoryCodes ? `Đổi (${inventoryCodes.size})` : 'Nhập File Tồn'}
                                     <input type="file" accept=".xlsx, .xls, .csv" onChange={handleInventoryUpload} className="hidden" />
                                 </label>
                             </div>
                             {inventoryCodes && (
-                                <div className="mt-2 flex items-center justify-between text-[10px] font-bold">
-                                    <div className="flex items-center gap-1.5">
+                                <div className="mt-1 flex items-center justify-between text-[9px] lg:text-[10px] font-bold">
+                                    <div className="flex items-center gap-1">
                                         <span className="text-emerald-600 dark:text-emerald-400">
-                                            ✓ {batchItems.filter(i => i.selected).length} có tồn
+                                            ✓ {batchItems.filter(i => i.selected).length} có
                                         </span>
                                         <span className="text-slate-300">|</span>
                                         <span className="text-red-500 dark:text-red-400">
@@ -233,18 +237,18 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                     </div>
                                     <button 
                                         onClick={clearInventory}
-                                        className="text-amber-600 hover:text-amber-800 dark:text-amber-400 uppercase"
+                                        className="text-amber-600 hover:text-amber-800 dark:text-amber-400 uppercase text-[9px]"
                                     >
-                                        Xoá lọc
+                                        Xoá
                                     </button>
                                 </div>
                             )}
                         </div>
 
-                        {/* Barcode toggle */}
-                        <div className="flex flex-col gap-1.5 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                        {/* Combined Settings Panel */}
+                        <div className="p-2 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-700/30 flex flex-col gap-1.5">
                             <div className="flex items-center justify-between">
-                                <label htmlFor="toggle-barcode" className="text-[13px] font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
+                                <label htmlFor="toggle-barcode" className="text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
                                     Hiển thị Mã Vạch (Barcode)
                                 </label>
                                 <input 
@@ -252,45 +256,40 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                     id="toggle-barcode" 
                                     checked={showBarcode} 
                                     onChange={(e) => setShowBarcode(e.target.checked)}
-                                    className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
+                                    className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
                                 />
                             </div>
-                            <p className="text-[10px] text-slate-400 leading-relaxed">
-                                Mã vạch chỉ hiện khi tên sản phẩm chứa từ khoá <strong className="text-indigo-600 dark:text-indigo-400 font-bold">IMEI:</strong> hoặc <strong className="text-indigo-600 dark:text-indigo-400 font-bold">Code:</strong> liền trước mã số.
-                            </p>
-                        </div>
-
-                        {/* Discount Display Mode Toggle */}
-                        <div className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
-                            <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300">
-                                Định dạng chiết khấu (Giảm giá)
-                            </label>
-                            <div className="grid grid-cols-2 gap-1 bg-slate-200/80 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
-                                <button
-                                    type="button"
-                                    onClick={() => setDiscountDisplayMode('percent')}
-                                    className={`py-1.5 rounded-md text-xs font-bold transition-all ${
-                                        discountDisplayMode === 'percent'
-                                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                                    }`}
-                                >
-                                    Phần trăm (%)
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setDiscountDisplayMode('amount')}
-                                    className={`py-1.5 rounded-md text-xs font-bold transition-all ${
-                                        discountDisplayMode === 'amount'
-                                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                                    }`}
-                                >
-                                    Số tiền (đ)
-                                </button>
+                            <div className="flex items-center justify-between border-t border-slate-200/40 dark:border-slate-700/40 pt-1.5">
+                                <span className="text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300">
+                                    Kiểu giảm giá
+                                </span>
+                                <div className="flex bg-slate-200/50 dark:bg-slate-800/80 p-0.5 rounded-md border border-slate-200/20 dark:border-slate-700/20 text-[9px] lg:text-[10px] font-black">
+                                    <button
+                                        type="button"
+                                        onClick={() => setDiscountDisplayMode('percent')}
+                                        className={`px-1.5 py-0.5 rounded transition-all ${
+                                            discountDisplayMode === 'percent'
+                                                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm font-black'
+                                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                                        }`}
+                                    >
+                                        % Giảm
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setDiscountDisplayMode('amount')}
+                                        className={`px-1.5 py-0.5 rounded transition-all ${
+                                            discountDisplayMode === 'amount'
+                                                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                                        }`}
+                                    >
+                                        Số tiền
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                        
+
                         {/* Batch items list */}
                         {batchItems.length > 0 && (
                             <div className="mt-4 border-t border-slate-200 dark:border-slate-700 pt-4">
@@ -398,6 +397,8 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             toggleAllPagesSelection={toggleAllPagesSelection}
                             discountThreshold={discountThreshold}
                             handleDiscountThresholdChange={handleDiscountThresholdChange}
+                            activeQueuePageId={activeQueuePageId}
+                            setActiveQueuePageId={setActiveQueuePageId}
                         />
                     </div>
                 )}
