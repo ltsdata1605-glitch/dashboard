@@ -41,6 +41,7 @@ export default function StickerPrinterView() {
     const [newPriceTextSize, setNewPriceTextSize] = useState(26.5);
     const [footerTextSize, setFooterTextSize] = useState(3.2);
     const [discountDisplayMode, setDiscountDisplayMode] = useState<'percent' | 'amount'>('percent');
+    const [discountThreshold, setDiscountThreshold] = useState('');
 
     const getActiveFieldLabel = () => {
         switch (activeField) {
@@ -258,6 +259,33 @@ export default function StickerPrinterView() {
     ]);
 
 
+    const parsePercentValue = (percentStr: string | undefined): number => {
+        if (!percentStr) return 0;
+        const clean = percentStr.replace(/[^0-9]/g, '');
+        const val = parseInt(clean, 10);
+        return isNaN(val) ? 0 : val;
+    };
+
+    const handleDiscountThresholdChange = (val: string) => {
+        setDiscountThreshold(val);
+        const cleanInput = val.replace(/[^0-9]/g, '');
+        const limit = parseInt(cleanInput, 10);
+        
+        if (isNaN(limit)) {
+            setManualPages(prev => prev.map(p => ({ ...p, selected: true })));
+            setBatchItems(prev => prev.map(i => ({ ...i, selected: true })));
+        } else {
+            setManualPages(prev => prev.map(p => {
+                const pct = parsePercentValue(p.percent);
+                return { ...p, selected: pct >= limit };
+            }));
+            setBatchItems(prev => prev.map(i => {
+                const pct = parsePercentValue(i.percent);
+                return { ...i, selected: pct >= limit };
+            }));
+        }
+    };
+
     const handleExcelUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -319,6 +347,10 @@ export default function StickerPrinterView() {
                         if (digits) newPrice = Number(Math.floor(Number(digits) / 1000)).toLocaleString('vi-VN');
                     }
 
+                    const cleanInput = discountThreshold.replace(/[^0-9]/g, '');
+                    const limit = parseInt(cleanInput, 10);
+                    const isSelected = isNaN(limit) ? true : parsePercentValue(percent) >= limit;
+
                     items.push({
                         id: `item_${i}_${Date.now()}`,
                         name,
@@ -326,7 +358,7 @@ export default function StickerPrinterView() {
                         newPrice,
                         percent,
                         imei: imeiRaw,
-                        selected: true
+                        selected: isSelected
                     });
                 }
                 setBatchItems(items);
@@ -545,6 +577,10 @@ export default function StickerPrinterView() {
                         <div class="footer-text">${rowFooter}</div>
                     </div>`;
 
+                    const cleanInput = discountThreshold.replace(/[^0-9]/g, '');
+                    const limit = parseInt(cleanInput, 10);
+                    const isSelected = isNaN(limit) ? true : parsePercentValue(percent) >= limit;
+
                     newPages.push({
                         id: `tpl_${i}_${Date.now()}`,
                         html,
@@ -554,7 +590,7 @@ export default function StickerPrinterView() {
                         percent,
                         timestamp: Date.now(),
                         code: code,
-                        selected: true,
+                        selected: isSelected,
                     });
                 }
 
@@ -635,6 +671,10 @@ export default function StickerPrinterView() {
         const oldPrice = firstSticker.querySelector('.old')?.textContent || '';
         const newPrice = firstSticker.querySelector('.extra2')?.textContent || '';
         const percent = firstSticker.querySelector('.extra1')?.textContent || '';
+        const cleanInput = discountThreshold.replace(/[^0-9]/g, '');
+        const limit = parseInt(cleanInput, 10);
+        const isSelected = isNaN(limit) ? true : parsePercentValue(percent) >= limit;
+
         const page: StickerPage = {
             id: `page_${Date.now()}`,
             html: firstSticker.outerHTML,
@@ -644,7 +684,7 @@ export default function StickerPrinterView() {
             percent,
             timestamp: Date.now(),
             code: barcodeImei,
-            selected: true,
+            selected: isSelected,
         };
         setManualPages(prev => [...prev, page]);
     };
@@ -1005,6 +1045,8 @@ export default function StickerPrinterView() {
                     clearBatchItems={() => setBatchItems([])}
                     restoreHistory={restoreHistory}
                     deleteHistory={deleteHistory}
+                    discountThreshold={discountThreshold}
+                    handleDiscountThresholdChange={handleDiscountThresholdChange}
                 />
             </div>
         </div>

@@ -43,6 +43,8 @@ interface StickerPrintControlsProps {
     deleteSavedList: (id: string) => void;
     togglePageSelection: (id: string) => void;
     toggleAllPagesSelection: (select: boolean) => void;
+    discountThreshold: string;
+    handleDiscountThresholdChange: (val: string) => void;
 }
 
 export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
@@ -82,6 +84,8 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     deleteSavedList,
     togglePageSelection,
     toggleAllPagesSelection,
+    discountThreshold,
+    handleDiscountThresholdChange,
 }) => {
     const [activeTab, setActiveTab] = useState<'data' | 'queue' | 'help' | 'history'>('data');
     const selectedCount = batchItems.filter(i => i.selected).length;
@@ -129,7 +133,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     }`}
                 >
-                    Hàng đợi ({manualPages.length})
+                    D.Sách ({manualPages.length})
                 </button>
                 <button
                     onClick={() => setActiveTab('help')}
@@ -392,6 +396,8 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             deleteSavedList={deleteSavedList}
                             togglePageSelection={togglePageSelection}
                             toggleAllPagesSelection={toggleAllPagesSelection}
+                            discountThreshold={discountThreshold}
+                            handleDiscountThresholdChange={handleDiscountThresholdChange}
                         />
                     </div>
                 )}

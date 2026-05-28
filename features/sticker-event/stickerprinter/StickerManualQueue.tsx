@@ -15,6 +15,8 @@ interface StickerManualQueueProps {
     deleteSavedList: (id: string) => void;
     togglePageSelection: (id: string) => void;
     toggleAllPagesSelection: (select: boolean) => void;
+    discountThreshold: string;
+    handleDiscountThresholdChange: (val: string) => void;
 }
 
 export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
@@ -30,6 +32,8 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
     deleteSavedList,
     togglePageSelection,
     toggleAllPagesSelection,
+    discountThreshold,
+    handleDiscountThresholdChange,
 }) => {
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -61,6 +65,14 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                             <span>Số lượng: {manualPages.length}</span>
                         </h4>
                         <div className="flex items-center gap-1.5">
+                            <input 
+                                type="text"
+                                placeholder="% Giảm"
+                                value={discountThreshold}
+                                onChange={(e) => handleDiscountThresholdChange(e.target.value)}
+                                className="w-14 text-center px-1.5 py-1 text-[11px] border border-slate-300 dark:border-slate-700 rounded-md font-bold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
+                                title="Nhập % giảm tối thiểu (ví dụ: 20%)"
+                            />
                             <button onClick={saveCurrentList} className="p-1.5 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg transition-colors" title="Lưu danh sách">
                                 <Save size={16} />
                             </button>
@@ -182,7 +194,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                 </div>
             )}
             {manualPages.length === 0 && savedLists.length === 0 && (
-                <p className="text-xs text-slate-400 text-center py-12">Hàng đợi in trống</p>
+                <p className="text-xs text-slate-400 text-center py-12">D.Sách in trống</p>
             )}
         </div>
     );
