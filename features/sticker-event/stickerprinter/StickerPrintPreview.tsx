@@ -6,6 +6,7 @@ interface StickerPrintPreviewProps {
     batchItems: BatchItem[];
     stickerType: 'gia_soc' | 'gio_vang';
     showBarcode: boolean;
+    discountDisplayMode: 'percent' | 'amount';
     headerTextContent: string;
     subHeaderTextContent: string;
     footerTextContent: string;
@@ -70,10 +71,44 @@ function useContentEditable(
     return { ref, handleInput };
 }
 
+const renderAmountDiscount = (oldPriceStr: string, newPriceStr: string) => {
+    const oldVal = Number(oldPriceStr.replace(/\D/g, ''));
+    let newVal = Number(newPriceStr.replace(/\D/g, ''));
+    
+    if (oldVal <= 0 || newVal <= 0) return null;
+    
+    if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
+        newVal = newVal * 1000;
+    }
+    
+    const diff = oldVal - newVal;
+    if (diff <= 0) return null;
+    
+    let num = '';
+    let unit = '';
+    if (diff < 1000000) {
+        num = (diff / 1000).toString();
+        unit = 'K';
+    } else {
+        const trVal = diff / 1000000;
+        num = Number(trVal.toFixed(2)).toString();
+        unit = 'triệu';
+    }
+    
+    return (
+        <span className="discount-amount font-bold">
+            <span className="discount-label">GIẢM </span>
+            <span className="discount-num">{num}</span>
+            <span className="discount-unit">{unit}</span>
+        </span>
+    );
+};
+
 export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     batchItems,
     stickerType,
     showBarcode,
+    discountDisplayMode,
     headerTextContent,
     subHeaderTextContent,
     footerTextContent,
@@ -151,9 +186,29 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
             if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
                 newVal = newVal * 1000;
             }
-            const ratio = Math.round((newVal / oldVal - 1) * 100);
-            if (ratio < 0) {
-                pctEl.innerText = `${ratio}%`;
+            if (discountDisplayMode === 'amount') {
+                const diff = oldVal - newVal;
+                if (diff > 0) {
+                    let num = '';
+                    let unit = '';
+                    if (diff < 1000000) {
+                        num = (diff / 1000).toString();
+                        unit = 'K';
+                    } else {
+                        num = Number((diff / 1000000).toFixed(2)).toString();
+                        unit = 'triệu';
+                    }
+                    pctEl.innerHTML = `<span class="discount-amount font-bold"><span class="discount-label">GIẢM </span><span class="discount-num">${num}</span><span class="discount-unit">${unit}</span></span>`;
+                } else {
+                    pctEl.innerText = '';
+                }
+            } else {
+                const ratio = Math.round((newVal / oldVal - 1) * 100);
+                if (ratio < 0) {
+                    pctEl.innerText = `${ratio}%`;
+                } else {
+                    pctEl.innerText = '';
+                }
             }
         }
     };
@@ -251,6 +306,25 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     font-weight: 900 !important;
                     top: 30.9%;
                     height: 25.8%;
+                    font-family: 'UTM Avo', sans-serif !important;
+                }
+
+                .sticker-container .extra1 .discount-amount {
+                    display: flex;
+                    align-items: baseline;
+                    justify-content: center;
+                }
+                
+                .sticker-container .extra1 .discount-label,
+                .sticker-container .extra1 .discount-unit {
+                    font-size: calc(1em / 1.5);
+                    font-weight: 900 !important;
+                    font-family: 'UTM Avo', sans-serif !important;
+                }
+                
+                .sticker-container .extra1 .discount-num {
+                    font-size: 1em;
+                    font-weight: 900 !important;
                     font-family: 'UTM Avo', sans-serif !important;
                 }
 
@@ -409,7 +483,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             {stickerType === 'gio_vang' && (
                                 <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')}>{subHeaderTextContent}</div>
                             )}
-                            <div className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>{item.percent}</div>
+                            <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>
+                                {discountDisplayMode === 'amount'
+                                    ? renderAmountDiscount(item.oldPrice, item.newPrice) || item.percent
+                                    : item.percent}
+                            </div>
                             <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} onInput={handlePriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')}>{item.oldPrice}</div>
                             <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')}>{item.name}</div>
                             {stickerType === 'gio_vang' ? (
@@ -435,7 +513,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         {stickerType === 'gio_vang' && (
                             <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')}>{subHeaderTextContent}</div>
                         )}
-                        <div className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={percentRef} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>-36%</div>
+                        <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={percentRef} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>
+                            {discountDisplayMode === 'amount'
+                                ? renderAmountDiscount('5.490.000', '3.490')
+                                : '-36%'}
+                        </div>
                         <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')}>5.490.000</div>
                         <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')}>{previewName}</div>
                         {stickerType === 'gio_vang' ? (

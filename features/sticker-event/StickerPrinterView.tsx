@@ -40,6 +40,7 @@ export default function StickerPrinterView() {
     const [nameTextSize, setNameTextSize] = useState(3.6);
     const [newPriceTextSize, setNewPriceTextSize] = useState(26.5);
     const [footerTextSize, setFooterTextSize] = useState(3.2);
+    const [discountDisplayMode, setDiscountDisplayMode] = useState<'percent' | 'amount'>('percent');
 
     const getActiveFieldLabel = () => {
         switch (activeField) {
@@ -159,6 +160,7 @@ export default function StickerPrinterView() {
                     if (saved.footerTextContent) setFooterTextContent(saved.footerTextContent);
                     if (saved.showBarcode != null) setShowBarcode(saved.showBarcode);
                     if (saved.previewName) setPreviewName(saved.previewName);
+                    if (saved.discountDisplayMode) setDiscountDisplayMode(saved.discountDisplayMode);
                     
                     // Font sizes
                     if (saved.headerTextSize != null) setHeaderTextSize(saved.headerTextSize);
@@ -200,6 +202,7 @@ export default function StickerPrinterView() {
                 footerTextContent,
                 showBarcode,
                 previewName,
+                discountDisplayMode,
                 headerTextSize,
                 subHeaderTextSize,
                 percentTextSize,
@@ -242,7 +245,8 @@ export default function StickerPrinterView() {
         oldPriceTextSize,
         nameTextSize,
         newPriceTextSize,
-        footerTextSize
+        footerTextSize,
+        discountDisplayMode
     ]);
 
 
@@ -732,6 +736,7 @@ export default function StickerPrinterView() {
         setFooterTextContent(entry.footerTextContent);
         setShowBarcode(entry.showBarcode);
         setManualPages(entry.manualPages || []);
+        if (entry.discountDisplayMode) setDiscountDisplayMode(entry.discountDisplayMode);
         setShowHistory(false);
     };
 
@@ -803,6 +808,7 @@ export default function StickerPrinterView() {
             footerTextContent,
             showBarcode,
             manualPages,
+            discountDisplayMode,
         };
         setPrintHistory(prev => {
             const next = [historyEntry, ...prev].slice(0, 20);
@@ -903,6 +909,7 @@ export default function StickerPrinterView() {
                         batchItems={batchItems}
                         stickerType={stickerType}
                         showBarcode={showBarcode}
+                        discountDisplayMode={discountDisplayMode}
                         headerTextContent={headerTextContent}
                         subHeaderTextContent={subHeaderTextContent}
                         footerTextContent={footerTextContent}
@@ -944,6 +951,8 @@ export default function StickerPrinterView() {
                     batchItems={batchItems}
                     showBarcode={showBarcode}
                     setShowBarcode={setShowBarcode}
+                    discountDisplayMode={discountDisplayMode}
+                    setDiscountDisplayMode={setDiscountDisplayMode}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
                     inventoryCodes={inventoryCodes}

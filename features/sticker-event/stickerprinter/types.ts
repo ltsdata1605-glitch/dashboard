@@ -6,6 +6,7 @@ export interface StickerPage {
     newPrice: string;
     percent: string;
     timestamp: number;
+    discountDisplayMode?: 'percent' | 'amount';
 }
 
 export interface SavedStickerList {
@@ -37,6 +38,7 @@ export interface PrintHistoryEntry {
     footerTextContent: string;
     showBarcode: boolean;
     manualPages: StickerPage[];
+    discountDisplayMode?: 'percent' | 'amount';
 }
 
 export interface BatchItem {
@@ -48,3 +50,4 @@ export interface BatchItem {
     imei: string;
     selected: boolean;
 }
+

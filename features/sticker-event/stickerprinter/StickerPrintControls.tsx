@@ -29,6 +29,8 @@ interface StickerPrintControlsProps {
     clearBatchItems: () => void;
     restoreHistory: (entry: PrintHistoryEntry) => void;
     deleteHistory: (id: string) => void;
+    discountDisplayMode: 'percent' | 'amount';
+    setDiscountDisplayMode: (mode: 'percent' | 'amount') => void;
 }
 
 export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
@@ -36,6 +38,8 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     batchItems,
     showBarcode,
     setShowBarcode,
+    discountDisplayMode,
+    setDiscountDisplayMode,
     searchTerm,
     setSearchTerm,
     inventoryCodes,
@@ -217,6 +221,37 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             <p className="text-[10px] text-slate-400 leading-relaxed">
                                 Mã vạch chỉ hiện khi tên sản phẩm chứa từ khoá <strong className="text-indigo-600 dark:text-indigo-400 font-bold">IMEI:</strong> hoặc <strong className="text-indigo-600 dark:text-indigo-400 font-bold">Code:</strong> liền trước mã số.
                             </p>
+                        </div>
+
+                        {/* Discount Display Mode Toggle */}
+                        <div className="flex flex-col gap-2 bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                            <label className="text-[13px] font-semibold text-slate-700 dark:text-slate-300">
+                                Định dạng chiết khấu (Giảm giá)
+                            </label>
+                            <div className="grid grid-cols-2 gap-1 bg-slate-200/80 dark:bg-slate-800/80 p-0.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
+                                <button
+                                    type="button"
+                                    onClick={() => setDiscountDisplayMode('percent')}
+                                    className={`py-1.5 rounded-md text-xs font-bold transition-all ${
+                                        discountDisplayMode === 'percent'
+                                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                                    }`}
+                                >
+                                    Phần trăm (%)
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setDiscountDisplayMode('amount')}
+                                    className={`py-1.5 rounded-md text-xs font-bold transition-all ${
+                                        discountDisplayMode === 'amount'
+                                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                                    }`}
+                                >
+                                    Số tiền (đ)
+                                </button>
+                            </div>
                         </div>
                         
                         {/* Batch items list */}
