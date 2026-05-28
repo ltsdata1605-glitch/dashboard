@@ -62,9 +62,9 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     const filteredItems = batchItems.filter(it => it.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
-        <div className="w-full max-w-sm bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-5 lg:p-6 no-print">
+        <div className="w-full max-w-sm aspect-[197/285] bg-white dark:bg-slate-800 rounded-none shadow-xl border border-slate-200 dark:border-slate-700 p-5 lg:p-6 no-print flex flex-col overflow-hidden">
             {/* Primary Action Buttons */}
-            <div className="flex gap-2 mb-5">
+            <div className="flex gap-2 mb-4 shrink-0">
                 <button 
                     onClick={handlePrint}
                     className="flex-1 bg-[#fbbc04] hover:bg-[#f0b400] text-black font-black text-base lg:text-lg py-3 rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-95 shadow-lg shadow-yellow-500/20"
@@ -83,7 +83,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex border-b border-slate-100 dark:border-slate-700 mb-4">
+            <div className="flex border-b border-slate-100 dark:border-slate-700 mb-4 shrink-0">
                 <button
                     onClick={() => setActiveTab('data')}
                     className={`flex-1 pb-2 text-[13px] font-bold text-center border-b-2 transition-all ${
@@ -116,10 +116,10 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 </button>
             </div>
 
-            {/* Tab Content */}
-            <div className="min-h-[300px]">
+            {/* Tab Content (Scrollable Area) */}
+            <div className="flex-1 overflow-y-auto pr-1.5 -mr-1.5 space-y-4 scrollbar-thin">
                 {activeTab === 'data' && (
-                    <div className="space-y-4 animate-in fade-in duration-200">
+                    <div className="space-y-4 animate-in fade-in duration-200 pb-2">
                         {/* File upload actions */}
                         <div className="flex gap-2 bg-slate-50 dark:bg-slate-900/30 p-2.5 rounded-xl border border-slate-100 dark:border-slate-700/50">
                             <label className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-sm text-xs">
@@ -239,7 +239,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     className="w-full px-3 py-2 mb-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50"
                                 />
-                                <div className="max-h-[300px] overflow-y-auto pr-2 space-y-2 -mr-2">
+                                <div className="space-y-2">
                                     {filteredItems.map(item => (
                                         <label key={item.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${item.selected ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' : 'border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800'}`}>
                                             <input 
@@ -265,7 +265,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 )}
 
                 {activeTab === 'help' && (
-                    <div className="space-y-4 animate-in fade-in duration-200">
+                    <div className="space-y-4 animate-in fade-in duration-200 pb-2">
                         <div className="space-y-3">
                             <h4 className="text-sm font-bold text-slate-800 dark:text-white">HƯỚNG DẪN IN CHROME</h4>
                             <p className="text-xs text-slate-500 dark:text-slate-400">Cấu hình in (Ctrl + P) để có kết quả tốt nhất:</p>
@@ -310,7 +310,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 )}
 
                 {activeTab === 'history' && (
-                    <div className="space-y-2 max-h-[450px] overflow-y-auto pr-1 -mr-1 animate-in fade-in duration-200">
+                    <div className="space-y-2 animate-in fade-in duration-200 pb-2">
                         {printHistory.length === 0 ? (
                             <p className="text-xs text-slate-400 text-center py-12">Chưa có lịch sử in</p>
                         ) : (
