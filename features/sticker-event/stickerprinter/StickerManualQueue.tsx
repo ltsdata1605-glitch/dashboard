@@ -65,7 +65,6 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer shrink-0"
                                 title="Chọn tất cả / Bỏ chọn tất cả"
                             />
-                            <Clock size={16} className="text-indigo-500 shrink-0" />
                             <span>Số lượng: {manualPages.length}</span>
                         </h4>
                         <div className="flex items-center gap-1.5">
