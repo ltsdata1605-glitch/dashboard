@@ -95,7 +95,7 @@ const renderAmountDiscount = (oldPriceStr: string, newPriceStr: string) => {
         unit = 'K';
     } else {
         const trVal = diff / 1000000;
-        num = Number(trVal.toFixed(2)).toString();
+        num = Number(trVal.toFixed(1)).toString();
         unit = 'triệu';
     }
     
@@ -214,7 +214,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         num = (diff / 1000).toString();
                         unit = 'K';
                     } else {
-                        num = Number((diff / 1000000).toFixed(2)).toString();
+                        num = Number((diff / 1000000).toFixed(1)).toString();
                         unit = 'triệu';
                     }
                     const unitClass = unit === 'triệu' ? 'unit-trieu' : 'unit-k';

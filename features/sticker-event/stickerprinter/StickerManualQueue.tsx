@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Clock, CheckCircle2, Trash2, X, Image as ImageIcon, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
+import { Clock, Save, Trash2, X, Image as ImageIcon, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
 import { StickerPage, SavedStickerList } from './types';
 
 interface StickerManualQueueProps {
@@ -62,7 +62,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                         </h4>
                         <div className="flex items-center gap-1.5">
                             <button onClick={saveCurrentList} className="p-1.5 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg transition-colors" title="Lưu danh sách">
-                                <CheckCircle2 size={16} />
+                                <Save size={16} />
                             </button>
                             <button onClick={clearManualPages} className="p-1.5 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors" title="Xóa tất cả">
                                 <Trash2 size={16} />
