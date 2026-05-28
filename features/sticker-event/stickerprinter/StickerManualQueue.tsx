@@ -47,7 +47,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
         <div className="w-full no-print space-y-4">
             {/* Manual Pages Queue */}
             {manualPages.length > 0 && (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-4">
+                <div className="p-0 space-y-3">
                     <div className="flex items-center justify-between mb-3">
                         <h4 className="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
                             <input 
@@ -136,7 +136,7 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
 
             {/* Saved Lists */}
             {savedLists.length > 0 && manualPages.length === 0 && (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-4">
+                <div className="p-0 space-y-3">
                     <button 
                         onClick={() => setShowSavedLists(!showSavedLists)}
                         className="w-full flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition-colors"
@@ -180,6 +180,9 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                         </div>
                     )}
                 </div>
+            )}
+            {manualPages.length === 0 && savedLists.length === 0 && (
+                <p className="text-xs text-slate-400 text-center py-12">Hàng đợi in trống</p>
             )}
         </div>
     );

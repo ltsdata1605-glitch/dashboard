@@ -3,7 +3,8 @@ import {
     Printer, Settings, CheckCircle2, Upload, Plus, Trash2, 
     RotateCcw, Download, FileSpreadsheet, Package 
 } from 'lucide-react';
-import { StickerPage, BatchItem, PrintHistoryEntry } from './types';
+import { StickerPage, BatchItem, PrintHistoryEntry, SavedStickerList } from './types';
+import { StickerManualQueue } from './StickerManualQueue';
 
 interface StickerPrintControlsProps {
     manualPages: StickerPage[];
@@ -31,6 +32,17 @@ interface StickerPrintControlsProps {
     deleteHistory: (id: string) => void;
     discountDisplayMode: 'percent' | 'amount';
     setDiscountDisplayMode: (mode: 'percent' | 'amount') => void;
+    savedLists: SavedStickerList[];
+    showSavedLists: boolean;
+    setShowSavedLists: (show: boolean) => void;
+    saveCurrentList: () => void;
+    clearManualPages: () => void;
+    loadPageToEditor: (page: StickerPage) => void;
+    removeManualPage: (id: string) => void;
+    loadSavedList: (list: SavedStickerList) => void;
+    deleteSavedList: (id: string) => void;
+    togglePageSelection: (id: string) => void;
+    toggleAllPagesSelection: (select: boolean) => void;
 }
 
 export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
@@ -59,8 +71,19 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     clearBatchItems,
     restoreHistory,
     deleteHistory,
+    savedLists,
+    showSavedLists,
+    setShowSavedLists,
+    saveCurrentList,
+    clearManualPages,
+    loadPageToEditor,
+    removeManualPage,
+    loadSavedList,
+    deleteSavedList,
+    togglePageSelection,
+    toggleAllPagesSelection,
 }) => {
-    const [activeTab, setActiveTab] = useState<'data' | 'help' | 'history'>('data');
+    const [activeTab, setActiveTab] = useState<'data' | 'queue' | 'help' | 'history'>('data');
     const selectedCount = batchItems.filter(i => i.selected).length;
     const selectedManualPagesCount = manualPages.filter(p => p.selected !== false).length;
     const filteredItems = batchItems.filter(it => it.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -90,7 +113,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             <div className="flex border-b border-slate-100 dark:border-slate-700 mb-4 shrink-0">
                 <button
                     onClick={() => setActiveTab('data')}
-                    className={`flex-1 pb-2 text-[13px] font-bold text-center border-b-2 transition-all ${
+                    className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
                         activeTab === 'data'
                             ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                             : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
@@ -99,18 +122,28 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                     Dữ liệu
                 </button>
                 <button
+                    onClick={() => setActiveTab('queue')}
+                    className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
+                        activeTab === 'queue'
+                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                            : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                    }`}
+                >
+                    Hàng đợi ({manualPages.length})
+                </button>
+                <button
                     onClick={() => setActiveTab('help')}
-                    className={`flex-1 pb-2 text-[13px] font-bold text-center border-b-2 transition-all ${
+                    className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
                         activeTab === 'help'
                             ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                             : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     }`}
                 >
-                    Hướng dẫn
+                    H.Dẫn
                 </button>
                 <button
                     onClick={() => setActiveTab('history')}
-                    className={`flex-1 pb-2 text-[13px] font-bold text-center border-b-2 transition-all ${
+                    className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
                         activeTab === 'history'
                             ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                             : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
@@ -341,6 +374,25 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 </p>
                             </div>
                         </div>
+                    </div>
+                )}
+
+                {activeTab === 'queue' && (
+                    <div className="animate-in fade-in duration-200 pb-2">
+                        <StickerManualQueue
+                            manualPages={manualPages}
+                            savedLists={savedLists}
+                            showSavedLists={showSavedLists}
+                            setShowSavedLists={setShowSavedLists}
+                            saveCurrentList={saveCurrentList}
+                            clearManualPages={clearManualPages}
+                            loadPageToEditor={loadPageToEditor}
+                            removeManualPage={removeManualPage}
+                            loadSavedList={loadSavedList}
+                            deleteSavedList={deleteSavedList}
+                            togglePageSelection={togglePageSelection}
+                            toggleAllPagesSelection={toggleAllPagesSelection}
+                        />
                     </div>
                 )}
 

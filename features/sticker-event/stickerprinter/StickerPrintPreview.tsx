@@ -20,6 +20,8 @@ interface StickerPrintPreviewProps {
     newPriceTextSize: number;
     footerTextSize: number;
     previewName: string;
+    previewOldPrice: string;
+    previewNewPrice: string;
     activeField: string;
     setActiveField: (field: any) => void;
     
@@ -28,6 +30,8 @@ interface StickerPrintPreviewProps {
     setFooterTextContent: (val: string) => void;
     setBarcodeImei: (val: string) => void;
     setPreviewName: (val: string) => void;
+    setPreviewOldPrice: (val: string) => void;
+    setPreviewNewPrice: (val: string) => void;
 }
 
 /**
@@ -122,6 +126,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     newPriceTextSize,
     footerTextSize,
     previewName,
+    previewOldPrice,
+    previewNewPrice,
     activeField,
     setActiveField,
     setHeaderTextContent,
@@ -129,12 +135,25 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     setFooterTextContent,
     setBarcodeImei,
     setPreviewName,
+    setPreviewOldPrice,
+    setPreviewNewPrice,
 }) => {
-    const oldPriceRef = useRef<HTMLDivElement>(null);
-    const newPriceRef = useRef<HTMLDivElement>(null);
     const percentRef = useRef<HTMLDivElement>(null);
 
     // --- contentEditable hooks for each editable field (preview mode only) ---
+    const oldPriceEditable = useContentEditable(previewOldPrice, setPreviewOldPrice);
+    const newPriceEditable = useContentEditable(previewNewPrice, setPreviewNewPrice);
+
+    const onOldPriceInput = (e: React.FormEvent<HTMLDivElement>) => {
+        handlePriceInput(e);
+        oldPriceEditable.handleInput(e);
+    };
+
+    const onNewPriceInput = (e: React.FormEvent<HTMLDivElement>) => {
+        handlePriceInput(e);
+        newPriceEditable.handleInput(e);
+    };
+
     const handleNameChange = useCallback((text: string) => {
         setPreviewName(text);
     }, [setPreviewName]);
@@ -524,18 +543,18 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         )}
                         <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={percentRef} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>
                             {discountDisplayMode === 'amount'
-                                ? renderAmountDiscount('5.490.000', '3.490')
+                                ? renderAmountDiscount(previewOldPrice, previewNewPrice)
                                 : '-36%'}
                         </div>
-                        <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')}>5.490.000</div>
+                        <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceEditable.ref} onInput={onOldPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')}>{previewOldPrice}</div>
                         <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')}>{previewName}</div>
                         {stickerType === 'gio_vang' ? (
                             <div className={`extra2 flex items-baseline justify-center ${activeField === 'newPrice' ? 'active-field' : ''}`} onClick={() => setActiveField('newPrice')}>
-                                <span ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning>10.990</span>
+                                <span ref={newPriceEditable.ref} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning>{previewNewPrice}</span>
                                 <span className="small-zeros" contentEditable={false}>.000</span>
                             </div>
                         ) : (
-                            <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceRef} onInput={handlePriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')}>3.490</div>
+                            <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceEditable.ref} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')}>{previewNewPrice}</div>
                         )}
                         <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')}>{footerTextContent}</div>
                     </div>

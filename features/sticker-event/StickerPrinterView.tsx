@@ -98,6 +98,8 @@ export default function StickerPrinterView() {
     const [savedLists, setSavedLists] = useState<SavedStickerList[]>([]);
     const [showSavedLists, setShowSavedLists] = useState(false);
     const [previewName, setPreviewName] = useState('Quạt điều hoà Daikiosan DMI03');
+    const [previewOldPrice, setPreviewOldPrice] = useState('5.490.000');
+    const [previewNewPrice, setPreviewNewPrice] = useState('3.490');
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -160,6 +162,8 @@ export default function StickerPrinterView() {
                     if (saved.footerTextContent) setFooterTextContent(saved.footerTextContent);
                     if (saved.showBarcode != null) setShowBarcode(saved.showBarcode);
                     if (saved.previewName) setPreviewName(saved.previewName);
+                    if (saved.previewOldPrice) setPreviewOldPrice(saved.previewOldPrice);
+                    if (saved.previewNewPrice) setPreviewNewPrice(saved.previewNewPrice);
                     if (saved.discountDisplayMode) setDiscountDisplayMode(saved.discountDisplayMode);
                     
                     // Font sizes
@@ -202,6 +206,8 @@ export default function StickerPrinterView() {
                 footerTextContent,
                 showBarcode,
                 previewName,
+                previewOldPrice,
+                previewNewPrice,
                 discountDisplayMode,
                 headerTextSize,
                 subHeaderTextSize,
@@ -239,6 +245,8 @@ export default function StickerPrinterView() {
         footerTextContent,
         showBarcode,
         previewName,
+        previewOldPrice,
+        previewNewPrice,
         headerTextSize,
         subHeaderTextSize,
         percentTextSize,
@@ -650,14 +658,15 @@ export default function StickerPrinterView() {
         const headerText = sticker.querySelector('.header-text')?.textContent || headerTextContent;
         const nameText = sticker.querySelector('.name')?.textContent || '';
         const oldPriceText = sticker.querySelector('.old')?.textContent || '';
-        const newPriceText = sticker.querySelector('.extra2')?.textContent || '';
-        const percentText = sticker.querySelector('.extra1')?.textContent || '';
+        const newPriceText = sticker.querySelector('.extra2 span')?.textContent || sticker.querySelector('.extra2')?.textContent || '';
         const footerText = sticker.querySelector('.footer-text')?.textContent || footerTextContent;
         const subHeader = sticker.querySelector('.sub-header')?.textContent || subHeaderTextContent;
 
         setHeaderTextContent(headerText);
         setSubHeaderTextContent(subHeader);
         setFooterTextContent(footerText);
+        setPreviewOldPrice(oldPriceText);
+        setPreviewNewPrice(newPriceText);
 
         // Extract barcode value from img alt attribute if it exists
         const barcodeImg = sticker.querySelector('.barcode img');
@@ -781,6 +790,29 @@ export default function StickerPrinterView() {
         // Then append queued manual pages
         selectedManualPages.forEach(page => {
             printHost.innerHTML += page.html;
+        });
+
+        // Loop through all stickers inside printHost and force percentage discount!
+        const stickers = printHost.querySelectorAll('.sticker-container');
+        stickers.forEach(sticker => {
+            const oldEl = sticker.querySelector('.old') as HTMLElement;
+            const newEl = sticker.querySelector('.extra2') as HTMLElement;
+            const pctEl = sticker.querySelector('.extra1') as HTMLElement;
+            if (oldEl && newEl && pctEl) {
+                const oldVal = Number(oldEl.innerText.replace(/\D/g, ''));
+                let newVal = Number(newEl.innerText.replace(/\D/g, ''));
+                if (oldVal > 0 && newVal > 0) {
+                    if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
+                        newVal = newVal * 1000;
+                    }
+                    const ratio = Math.round((newVal / oldVal - 1) * 100);
+                    if (ratio < 0) {
+                        pctEl.innerText = `${ratio}%`;
+                    } else {
+                        pctEl.innerText = '';
+                    }
+                }
+            }
         });
 
         document.body.appendChild(printHost);
@@ -923,6 +955,10 @@ export default function StickerPrinterView() {
                         newPriceTextSize={newPriceTextSize}
                         footerTextSize={footerTextSize}
                         previewName={previewName}
+                        previewOldPrice={previewOldPrice}
+                        previewNewPrice={previewNewPrice}
+                        setPreviewOldPrice={setPreviewOldPrice}
+                        setPreviewNewPrice={setPreviewNewPrice}
                         activeField={activeField}
                         setActiveField={setActiveField}
                         setHeaderTextContent={setHeaderTextContent}
@@ -931,24 +967,21 @@ export default function StickerPrinterView() {
                         setBarcodeImei={setBarcodeImei}
                         setPreviewName={setPreviewName}
                     />
-                    <StickerManualQueue
-                        manualPages={manualPages}
-                        savedLists={savedLists}
-                        showSavedLists={showSavedLists}
-                        setShowSavedLists={setShowSavedLists}
-                        saveCurrentList={saveCurrentList}
-                        clearManualPages={clearManualPages}
-                        loadPageToEditor={loadPageToEditor}
-                        removeManualPage={removeManualPage}
-                        loadSavedList={loadSavedList}
-                        deleteSavedList={deleteSavedList}
-                        togglePageSelection={togglePageSelection}
-                        toggleAllPagesSelection={toggleAllPagesSelection}
-                    />
                 </div>
                 <StickerPrintControls
                     manualPages={manualPages}
                     batchItems={batchItems}
+                    savedLists={savedLists}
+                    showSavedLists={showSavedLists}
+                    setShowSavedLists={setShowSavedLists}
+                    saveCurrentList={saveCurrentList}
+                    clearManualPages={clearManualPages}
+                    loadPageToEditor={loadPageToEditor}
+                    removeManualPage={removeManualPage}
+                    loadSavedList={loadSavedList}
+                    deleteSavedList={deleteSavedList}
+                    togglePageSelection={togglePageSelection}
+                    toggleAllPagesSelection={toggleAllPagesSelection}
                     showBarcode={showBarcode}
                     setShowBarcode={setShowBarcode}
                     discountDisplayMode={discountDisplayMode}
