@@ -143,7 +143,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     };
 
     return (
-        <div className="bg-white p-0 shadow-xl border border-slate-200 shrink-0 w-full max-w-[550px] overflow-hidden no-print-bg">
+        <div className="bg-white p-0 shadow-xl border border-slate-200 shrink-0 w-full max-w-[275px] mx-auto overflow-hidden no-print-bg">
             <style>
                 {`
                 @media print {

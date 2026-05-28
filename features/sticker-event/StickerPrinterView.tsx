@@ -404,6 +404,8 @@ export default function StickerPrinterView() {
                         newPrice,
                         percent,
                         timestamp: Date.now(),
+                        code: code,
+                        selected: true,
                     });
                 }
 
@@ -492,6 +494,8 @@ export default function StickerPrinterView() {
             newPrice,
             percent,
             timestamp: Date.now(),
+            code: barcodeImei,
+            selected: true,
         };
         setManualPages(prev => [...prev, page]);
     };
@@ -531,6 +535,14 @@ export default function StickerPrinterView() {
 
     const clearManualPages = () => {
         setManualPages([]);
+    };
+
+    const togglePageSelection = (id: string) => {
+        setManualPages(prev => prev.map(p => p.id === id ? { ...p, selected: p.selected === false ? true : false } : p));
+    };
+
+    const toggleAllPagesSelection = (select: boolean) => {
+        setManualPages(prev => prev.map(p => ({ ...p, selected: select })));
     };
 
     const saveCurrentList = () => {
@@ -601,7 +613,8 @@ export default function StickerPrinterView() {
         if (!printSection) return;
 
         const previewPageCount = batchItems.length > 0 ? batchItems.filter(i => i.selected).length : (manualPages.length === 0 ? 1 : 0);
-        const totalPages = previewPageCount + manualPages.length;
+        const selectedManualPages = manualPages.filter(p => p.selected !== false);
+        const totalPages = previewPageCount + selectedManualPages.length;
 
         if (totalPages === 0) {
             toast.error("Không có trang nào để in!");
@@ -618,7 +631,7 @@ export default function StickerPrinterView() {
         }
 
         // Then append queued manual pages
-        manualPages.forEach(page => {
+        selectedManualPages.forEach(page => {
             printHost.innerHTML += page.html;
         });
 
@@ -764,6 +777,8 @@ export default function StickerPrinterView() {
                         removeManualPage={removeManualPage}
                         loadSavedList={loadSavedList}
                         deleteSavedList={deleteSavedList}
+                        togglePageSelection={togglePageSelection}
+                        toggleAllPagesSelection={toggleAllPagesSelection}
                     />
                 </div>
                 <StickerPrintControls

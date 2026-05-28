@@ -57,6 +57,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     deleteHistory,
 }) => {
     const selectedCount = batchItems.filter(i => i.selected).length;
+    const selectedManualPagesCount = manualPages.filter(p => p.selected !== false).length;
     const filteredItems = batchItems.filter(it => it.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
@@ -67,7 +68,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                     className="flex-1 bg-[#fbbc04] hover:bg-[#f0b400] text-black font-black text-lg py-3.5 rounded-xl flex items-center justify-center gap-2.5 transition-transform active:scale-95 shadow-lg shadow-yellow-500/30"
                 >
                     <Printer size={24} />
-                    BẤM ĐỂ IN ({batchItems.length > 0 ? selectedCount + manualPages.length : (manualPages.length > 0 ? manualPages.length : 1)})
+                    BẤM ĐỂ IN ({batchItems.length > 0 ? selectedCount + selectedManualPagesCount : (manualPages.length > 0 ? selectedManualPagesCount : 1)})
                 </button>
                 <button 
                     onClick={addCurrentPage}

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Clock, CheckCircle2, Trash2, X, Image as ImageIcon, ChevronUp, ChevronDown, RotateCcw } from 'lucide-react';
 import { StickerPage, SavedStickerList } from './types';
 
@@ -13,6 +13,8 @@ interface StickerManualQueueProps {
     removeManualPage: (id: string) => void;
     loadSavedList: (list: SavedStickerList) => void;
     deleteSavedList: (id: string) => void;
+    togglePageSelection: (id: string) => void;
+    toggleAllPagesSelection: (select: boolean) => void;
 }
 
 export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
@@ -26,7 +28,21 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
     removeManualPage,
     loadSavedList,
     deleteSavedList,
+    togglePageSelection,
+    toggleAllPagesSelection,
 }) => {
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredPages = manualPages.filter(page => {
+        const q = searchQuery.toLowerCase().trim();
+        if (!q) return true;
+        const nameMatch = page.label.toLowerCase().includes(q);
+        const codeMatch = page.code ? page.code.toLowerCase().includes(q) : false;
+        return nameMatch || codeMatch;
+    });
+
+    const allChecked = manualPages.length > 0 && manualPages.every(p => p.selected !== false);
+
     return (
         <div className="w-full max-w-[550px] no-print space-y-4">
             {/* Manual Pages Queue */}
@@ -34,8 +50,15 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-4">
                     <div className="flex items-center justify-between mb-3">
                         <h4 className="font-bold text-sm text-slate-800 dark:text-white flex items-center gap-2">
-                            <Clock size={16} className="text-indigo-500" />
-                            Hàng đợi in ({manualPages.length} trang)
+                            <input 
+                                type="checkbox"
+                                checked={allChecked}
+                                onChange={(e) => toggleAllPagesSelection(e.target.checked)}
+                                className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer shrink-0"
+                                title="Chọn tất cả / Bỏ chọn tất cả"
+                            />
+                            <Clock size={16} className="text-indigo-500 shrink-0" />
+                            <span>Hàng đợi in ({manualPages.length} trang)</span>
                         </h4>
                         <div className="flex items-center gap-2">
                             <button onClick={saveCurrentList} className="text-[11px] text-indigo-600 hover:text-indigo-700 font-bold uppercase flex items-center gap-1" title="Lưu danh sách này">
@@ -46,18 +69,49 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                             </button>
                         </div>
                     </div>
+
+                    {/* Search Input Filter */}
+                    <div className="mb-3 relative">
+                        <input
+                            type="text"
+                            placeholder="Tìm theo tên hoặc mã sản phẩm..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full text-xs px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                        />
+                        {searchQuery && (
+                            <button 
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                            >
+                                <X size={14} />
+                            </button>
+                        )}
+                    </div>
+
                     <div className="space-y-2 max-h-[200px] overflow-y-auto">
-                        {manualPages.map((page, idx) => (
+                        {filteredPages.map((page, idx) => (
                             <div 
                                 key={page.id} 
-                                className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-colors group"
+                                className={`flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 cursor-pointer hover:border-indigo-300 hover:bg-indigo-50/50 dark:hover:bg-indigo-900/10 transition-colors group ${page.selected === false ? 'opacity-50' : ''}`}
                                 onClick={() => loadPageToEditor(page)}
                                 title="Click để load lại và chỉnh sửa"
                             >
-                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                    <input 
+                                        type="checkbox"
+                                        checked={page.selected !== false}
+                                        onChange={(e) => {
+                                            e.stopPropagation();
+                                            togglePageSelection(page.id);
+                                        }}
+                                        className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 cursor-pointer shrink-0"
+                                    />
                                     <span className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 w-6 h-6 flex items-center justify-center rounded-full shrink-0">{idx + 1}</span>
                                     <div className="min-w-0 flex-1">
-                                        <p className="text-xs text-slate-700 dark:text-slate-300 truncate font-medium">{page.label}</p>
+                                        <p className="text-xs text-slate-700 dark:text-slate-300 truncate font-medium">
+                                            {page.code ? `[${page.code}] ` : ''}{page.label}
+                                        </p>
                                         <div className="flex gap-2 mt-0.5 text-[10px]">
                                             <span className="text-red-600 font-bold">{page.newPrice}</span>
                                             <span className="line-through text-slate-400">{page.oldPrice}</span>
@@ -73,6 +127,9 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 </button>
                             </div>
                         ))}
+                        {filteredPages.length === 0 && (
+                            <p className="text-xs text-slate-400 dark:text-slate-500 text-center py-4">Không tìm thấy sticker nào phù hợp</p>
+                        )}
                     </div>
                 </div>
             )}
