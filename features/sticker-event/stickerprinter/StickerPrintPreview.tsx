@@ -236,7 +236,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container .header-text {
                     font-size: ${headerTextSize}cqw;
                     font-weight: 900;
-                    top: 4.0%;
+                    top: 4.3%;
                     height: 8.5%;
                     color: white;
                     font-family: 'UTM Avo', sans-serif;
