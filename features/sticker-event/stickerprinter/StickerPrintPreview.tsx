@@ -97,9 +97,9 @@ const renderAmountDiscount = (oldPriceStr: string, newPriceStr: string) => {
     
     return (
         <span className="discount-amount font-bold">
-            <span className="discount-label">GIẢM </span>
+            <span className="discount-label">-</span>
             <span className="discount-num">{num}</span>
-            <span className="discount-unit">{unit}</span>
+            <span className={`discount-unit ${unit === 'triệu' ? 'unit-trieu' : 'unit-k'}`}>{unit}</span>
         </span>
     );
 };
@@ -198,7 +198,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         num = Number((diff / 1000000).toFixed(2)).toString();
                         unit = 'triệu';
                     }
-                    pctEl.innerHTML = `<span class="discount-amount font-bold"><span class="discount-label">GIẢM </span><span class="discount-num">${num}</span><span class="discount-unit">${unit}</span></span>`;
+                    const unitClass = unit === 'triệu' ? 'unit-trieu' : 'unit-k';
+                    pctEl.innerHTML = `<span class="discount-amount font-bold"><span class="discount-label">-</span><span class="discount-num">${num}</span><span class="discount-unit ${unitClass}">${unit}</span></span>`;
                 } else {
                     pctEl.innerText = '';
                 }
@@ -317,9 +318,17 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 
                 .sticker-container .extra1 .discount-label,
                 .sticker-container .extra1 .discount-unit {
-                    font-size: calc(1em / 1.5);
                     font-weight: 900 !important;
                     font-family: 'UTM Avo', sans-serif !important;
+                }
+                
+                .sticker-container .extra1 .discount-label,
+                .sticker-container .extra1 .discount-unit.unit-k {
+                    font-size: calc(1em / 1.5);
+                }
+                
+                .sticker-container .extra1 .discount-unit.unit-trieu {
+                    font-size: calc(1em / 3);
                 }
                 
                 .sticker-container .extra1 .discount-num {
