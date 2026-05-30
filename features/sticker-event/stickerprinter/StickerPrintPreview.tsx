@@ -40,11 +40,11 @@ interface StickerPrintPreviewProps {
  * external value changes, only updates the DOM when the element
  * is NOT focused (user is not typing).
  */
-function useContentEditable(
+function useContentEditable<T extends HTMLElement = HTMLDivElement>(
     externalValue: string,
     onChange?: (text: string) => void,
 ) {
-    const ref = useRef<HTMLDivElement>(null);
+    const ref = useRef<T>(null);
     const isInitialized = useRef(false);
 
     // After first render, mark as initialized and set text
@@ -68,7 +68,7 @@ function useContentEditable(
         }
     }, [externalValue]);
 
-    const handleInput = useCallback((e: React.FormEvent<HTMLDivElement>) => {
+    const handleInput = useCallback((e: React.FormEvent<T>) => {
         onChange?.(e.currentTarget.innerText);
     }, [onChange]);
 
@@ -108,6 +108,23 @@ const renderAmountDiscount = (oldPriceStr: string, newPriceStr: string) => {
     );
 };
 
+const renderPercentDiscount = (oldPriceStr: string, newPriceStr: string) => {
+    const oldVal = Number(oldPriceStr.replace(/\D/g, ''));
+    let newVal = Number(newPriceStr.replace(/\D/g, ''));
+    
+    if (oldVal <= 0 || newVal <= 0) return null;
+    
+    if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
+        newVal = newVal * 1000;
+    }
+    
+    const ratio = Math.round((newVal / oldVal - 1) * 100);
+    if (ratio < 0) {
+        return `${ratio}%`;
+    }
+    return '';
+};
+
 export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     batchItems,
     stickerType,
@@ -142,14 +159,14 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
     // --- contentEditable hooks for each editable field (preview mode only) ---
     const oldPriceEditable = useContentEditable(previewOldPrice, setPreviewOldPrice);
-    const newPriceEditable = useContentEditable(previewNewPrice, setPreviewNewPrice);
+    const newPriceEditable = useContentEditable<HTMLElement>(previewNewPrice, setPreviewNewPrice);
 
     const onOldPriceInput = (e: React.FormEvent<HTMLDivElement>) => {
         handlePriceInput(e);
         oldPriceEditable.handleInput(e);
     };
 
-    const onNewPriceInput = (e: React.FormEvent<HTMLDivElement>) => {
+    const onNewPriceInput = (e: React.FormEvent<HTMLElement>) => {
         handlePriceInput(e);
         newPriceEditable.handleInput(e);
     };
@@ -549,17 +566,17 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={percentRef} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>
                             {discountDisplayMode === 'amount'
                                 ? renderAmountDiscount(previewOldPrice, previewNewPrice)
-                                : '-36%'}
+                                : renderPercentDiscount(previewOldPrice, previewNewPrice)}
                         </div>
                         <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceEditable.ref} onInput={onOldPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')}>{previewOldPrice}</div>
                         <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')}>{previewName}</div>
                         {stickerType === 'gio_vang' ? (
                             <div className={`extra2 flex items-baseline justify-center ${activeField === 'newPrice' ? 'active-field' : ''}`} onClick={() => setActiveField('newPrice')}>
-                                <span ref={newPriceEditable.ref} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning>{previewNewPrice}</span>
+                                <span ref={newPriceEditable.ref as React.RefObject<HTMLSpanElement>} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning>{previewNewPrice}</span>
                                 <span className="small-zeros" contentEditable={false}>.000</span>
                             </div>
                         ) : (
-                            <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceEditable.ref} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')}>{previewNewPrice}</div>
+                            <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceEditable.ref as React.RefObject<HTMLDivElement>} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')}>{previewNewPrice}</div>
                         )}
                         <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')}>{footerTextContent}</div>
                     </div>

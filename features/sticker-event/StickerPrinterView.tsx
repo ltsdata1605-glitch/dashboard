@@ -22,6 +22,102 @@ const STICKER_DB_KEY = 'stickerPrinterState';
 const STICKER_HISTORY_KEY = 'stickerPrintHistory';
 const STICKER_SAVED_LISTS_KEY = 'stickerSavedLists';
 
+const cleanWaterPurifierName = (nameStr: string): string => {
+    if (!nameStr) return '';
+    let cleaned = nameStr;
+    cleaned = cleaned.replace(/Máy lọc nước/gi, 'MLN');
+    const removeSubstrings = [
+        'RO nóng lạnh tủ đứng',
+        '\\(IMEI\\)',
+        'nước nóng lạnh',
+        'RO âm tủ',
+        'RO tủ đứng',
+        'điện giải nóng nguội',
+        'nóng lạnh RO',
+        'RO nóng nguội lạnh tủ đứng'
+    ];
+    for (const sub of removeSubstrings) {
+        const regex = new RegExp(sub, 'gi');
+        cleaned = cleaned.replace(regex, '');
+    }
+    cleaned = cleaned.replace(/\s+/g, ' ').trim();
+    return cleaned;
+};
+
+const resolvePagePrices = (page: StickerPage, priceSource: 'sale' | 'service') => {
+    let newPrice = page.newPrice;
+    let percent = page.percent;
+
+    if (priceSource === 'service' && page.servicePrice) {
+        newPrice = page.servicePrice;
+        if (page.oldPrice && page.servicePrice) {
+            const oldVal = Number(page.oldPrice.replace(/\D/g, ''));
+            let newVal = Number(page.servicePrice.replace(/\D/g, ''));
+            if (oldVal > 0 && newVal > 0) {
+                if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
+                    newVal = newVal * 1000;
+                }
+                const ratio = Math.round((newVal / oldVal - 1) * 100);
+                percent = ratio < 0 ? `${ratio}%` : '';
+            }
+        }
+    } else if (page.salePrice) {
+        newPrice = page.salePrice;
+        if (page.oldPrice && page.salePrice) {
+            const oldVal = Number(page.oldPrice.replace(/\D/g, ''));
+            let newVal = Number(page.salePrice.replace(/\D/g, ''));
+            if (oldVal > 0 && newVal > 0) {
+                if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
+                    newVal = newVal * 1000;
+                }
+                const ratio = Math.round((newVal / oldVal - 1) * 100);
+                percent = ratio < 0 ? `${ratio}%` : '';
+            }
+        }
+    }
+    return { newPrice, percent };
+};
+
+const generatePageHtml = (
+    page: StickerPage, 
+    priceSource: 'sale' | 'service', 
+    stickerType: 'gia_soc' | 'gio_vang',
+    bgImage: string
+) => {
+    const { newPrice, percent } = resolvePagePrices(page, priceSource);
+    
+    let barcodeHtml = '';
+    if (page.code) {
+        try {
+            const url = generateBarcodeDataUrl(page.code);
+            barcodeHtml = `<div class="barcode"><img src="${url}" style="image-rendering:pixelated;width:100%;height:100%;object-fit:fill" alt="${page.code}" /></div>`;
+        } catch (e) {
+            console.error('Barcode error:', e);
+        }
+    }
+
+    const subHeaderHtml = stickerType === 'gio_vang' 
+        ? `<div class="sub-header">${page.subHeader || ''}</div>` : '';
+    
+    let priceHtml = '';
+    if (stickerType === 'gio_vang') {
+        priceHtml = `<div class="extra2" style="display:flex;align-items:baseline;justify-content:center"><span>${newPrice}</span><span class="small-zeros">.000</span></div>`;
+    } else {
+        priceHtml = `<div class="extra2">${newPrice}</div>`;
+    }
+
+    return `<div class="sticker-container" data-type="${stickerType}" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:197/285;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;">
+        ${barcodeHtml}
+        <div class="header-text">${page.header || ''}</div>
+        ${subHeaderHtml}
+        <div class="extra1">${percent}</div>
+        <div class="old">${page.oldPrice}</div>
+        <div class="name">${page.label}</div>
+        ${priceHtml}
+        <div class="footer-text">${page.footer || ''}</div>
+    </div>`;
+};
+
 export default function StickerPrinterView() {
     const { activeTab } = useActiveTab();
     const { user } = useAuth();
@@ -30,6 +126,7 @@ export default function StickerPrinterView() {
     const [eventEverOpened, setEventEverOpened] = useState(false);
     const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang'>('gia_soc');
     const [bgImage, setBgImage] = useState('/frame/X24_NEW.png');
+    const [priceSource, setPriceSource] = useState<'sale' | 'service'>('sale');
     
     // Dynamic Font Sizes and Active Field Trackers
     const [activeField, setActiveField] = useState<'header' | 'subHeader' | 'percent' | 'oldPrice' | 'name' | 'newPrice' | 'footer'>('header');
@@ -43,6 +140,7 @@ export default function StickerPrinterView() {
     const [discountDisplayMode, setDiscountDisplayMode] = useState<'percent' | 'amount'>('percent');
     const [discountThreshold, setDiscountThreshold] = useState('');
     const [activeQueuePageId, setActiveQueuePageId] = useState<string | null>(null);
+    const [activeSubTab, setActiveSubTab] = useState<'data' | 'queue' | 'history'>('data');
 
     const getActiveFieldLabel = () => {
         switch (activeField) {
@@ -92,7 +190,6 @@ export default function StickerPrinterView() {
     const [footerTextContent, setFooterTextContent] = useState('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
     const [searchTerm, setSearchTerm] = useState('');
     const [showBarcode, setShowBarcode] = useState(false);
-    const [inventoryCodes, setInventoryCodes] = useState<Set<string> | null>(null);
     const [barcodeImei, setBarcodeImei] = useState('123456');
     const [manualPages, setManualPages] = useState<StickerPage[]>([]);
     const [printHistory, setPrintHistory] = useState<PrintHistoryEntry[]>([]);
@@ -119,78 +216,125 @@ export default function StickerPrinterView() {
     }, [previewName]);
 
     useEffect(() => {
+        if (!activeQueuePageId) return;
+        const activePage = manualPages.find(p => p.id === activeQueuePageId);
+        if (activePage) {
+            const { newPrice } = resolvePagePrices(activePage, priceSource);
+            setPreviewNewPrice(newPrice);
+        }
+    }, [priceSource, activeQueuePageId, manualPages]);
+
+    useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 1024);
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Load print history and saved lists only once on mount
+    // Set mounted state
     useEffect(() => {
         setMounted(true);
-        // Load print history
-        getSetting<PrintHistoryEntry[]>(STICKER_HISTORY_KEY).then(history => {
-            if (history) setPrintHistory(history);
-        }).catch(() => {});
-        // Load saved lists
-        getSetting<SavedStickerList[]>(STICKER_SAVED_LISTS_KEY).then(lists => {
-            if (lists) setSavedLists(lists);
-        }).catch(() => {});
     }, []);
 
-    // Load settings from Firestore (if logged in) or IndexedDB
+    // Load settings, saved lists, and print history from Firestore (if logged in) or IndexedDB
     useEffect(() => {
         let active = true;
-        async function loadSettings() {
+        async function loadAllData() {
             try {
-                let saved: any = null;
+                // 1. Load sticker printer settings / states
+                let savedState: any = null;
                 if (user) {
                     const docRef = doc(db, 'users', user.uid, 'settings', 'stickerPrinter');
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
-                        saved = docSnap.data();
+                        savedState = docSnap.data();
                     }
                 }
-                
-                if (!saved) {
-                    saved = await getSetting<any>(STICKER_DB_KEY);
+                if (!savedState) {
+                    savedState = await getSetting<any>(STICKER_DB_KEY);
                 }
                 
-                if (saved && active) {
-                    if (saved.stickerType) setStickerType(saved.stickerType);
-                    if (saved.bgImage) setBgImage(saved.bgImage);
-                    if (saved.headerTextContent) setHeaderTextContent(saved.headerTextContent);
-                    if (saved.subHeaderTextContent) setSubHeaderTextContent(saved.subHeaderTextContent);
-                    if (saved.footerTextContent) setFooterTextContent(saved.footerTextContent);
-                    if (saved.showBarcode != null) setShowBarcode(saved.showBarcode);
-                    if (saved.previewName) setPreviewName(saved.previewName);
-                    if (saved.previewOldPrice) setPreviewOldPrice(saved.previewOldPrice);
-                    if (saved.previewNewPrice) setPreviewNewPrice(saved.previewNewPrice);
-                    if (saved.discountDisplayMode) setDiscountDisplayMode(saved.discountDisplayMode);
+                if (savedState && active) {
+                    if (savedState.stickerMode) setStickerMode(savedState.stickerMode);
+                    if (savedState.stickerType) setStickerType(savedState.stickerType);
+                    if (savedState.bgImage) setBgImage(savedState.bgImage);
+                    if (savedState.headerTextContent) setHeaderTextContent(savedState.headerTextContent);
+                    if (savedState.subHeaderTextContent) setSubHeaderTextContent(savedState.subHeaderTextContent);
+                    if (savedState.footerTextContent) setFooterTextContent(savedState.footerTextContent);
+                    if (savedState.showBarcode != null) setShowBarcode(savedState.showBarcode);
+                    if (savedState.previewName) setPreviewName(savedState.previewName);
+                    if (savedState.previewOldPrice) setPreviewOldPrice(savedState.previewOldPrice);
+                    if (savedState.previewNewPrice) setPreviewNewPrice(savedState.previewNewPrice);
+                    if (savedState.discountDisplayMode) setDiscountDisplayMode(savedState.discountDisplayMode);
+                    if (savedState.barcodeImei) setBarcodeImei(savedState.barcodeImei);
+                    if (savedState.discountThreshold != null) setDiscountThreshold(savedState.discountThreshold);
+                    if (savedState.searchTerm != null) setSearchTerm(savedState.searchTerm);
+                    if (savedState.activeQueuePageId !== undefined) setActiveQueuePageId(savedState.activeQueuePageId);
+                    if (savedState.activeSubTab) setActiveSubTab(savedState.activeSubTab === 'help' ? 'data' : savedState.activeSubTab);
+                    if (savedState.manualPages) setManualPages(savedState.manualPages);
+                    if (savedState.batchItems) setBatchItems(savedState.batchItems);
+                    if (savedState.priceSource) setPriceSource(savedState.priceSource);
                     
                     // Font sizes
-                    if (saved.headerTextSize != null) setHeaderTextSize(saved.headerTextSize);
-                    if (saved.subHeaderTextSize != null) setSubHeaderTextSize(saved.subHeaderTextSize);
-                    if (saved.percentTextSize != null) setPercentTextSize(saved.percentTextSize);
-                    if (saved.oldPriceTextSize != null) setOldPriceTextSize(saved.oldPriceTextSize);
-                    if (saved.nameTextSize != null) setNameTextSize(saved.nameTextSize);
-                    if (saved.newPriceTextSize != null) setNewPriceTextSize(saved.newPriceTextSize);
-                    if (saved.footerTextSize != null) setFooterTextSize(saved.footerTextSize);
+                    if (savedState.headerTextSize != null) setHeaderTextSize(savedState.headerTextSize);
+                    if (savedState.subHeaderTextSize != null) setSubHeaderTextSize(savedState.subHeaderTextSize);
+                    if (savedState.percentTextSize != null) setPercentTextSize(savedState.percentTextSize);
+                    if (savedState.oldPriceTextSize != null) setOldPriceTextSize(savedState.oldPriceTextSize);
+                    if (savedState.nameTextSize != null) setNameTextSize(savedState.nameTextSize);
+                    if (savedState.newPriceTextSize != null) setNewPriceTextSize(savedState.newPriceTextSize);
+                    if (savedState.footerTextSize != null) setFooterTextSize(savedState.footerTextSize);
                     
-                    // Sync loaded Firestore settings to local IndexedDB
                     if (user) {
-                        await saveSetting(STICKER_DB_KEY, saved);
+                        await saveSetting(STICKER_DB_KEY, savedState);
+                    }
+                }
+
+                // 2. Load saved lists
+                let savedListsData: any = null;
+                if (user) {
+                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerSavedLists');
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        savedListsData = docSnap.data()?.lists;
+                    }
+                }
+                if (!savedListsData) {
+                    savedListsData = await getSetting<SavedStickerList[]>(STICKER_SAVED_LISTS_KEY);
+                }
+                if (savedListsData && active) {
+                    setSavedLists(savedListsData);
+                    if (user) {
+                        await saveSetting(STICKER_SAVED_LISTS_KEY, savedListsData);
+                    }
+                }
+
+                // 3. Load print history
+                let printHistoryData: any = null;
+                if (user) {
+                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerPrintHistory');
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        printHistoryData = docSnap.data()?.history;
+                    }
+                }
+                if (!printHistoryData) {
+                    printHistoryData = await getSetting<PrintHistoryEntry[]>(STICKER_HISTORY_KEY);
+                }
+                if (printHistoryData && active) {
+                    setPrintHistory(printHistoryData);
+                    if (user) {
+                        await saveSetting(STICKER_HISTORY_KEY, printHistoryData);
                     }
                 }
             } catch (err) {
-                console.error("Error loading settings:", err);
+                console.error("Error loading sticker data:", err);
             } finally {
                 if (active) {
                     setIsLoaded(true);
                 }
             }
         }
-        loadSettings();
+        loadAllData();
         return () => {
             active = false;
         };
@@ -201,6 +345,7 @@ export default function StickerPrinterView() {
         if (!isLoaded) return;
         const timer = setTimeout(async () => {
             const dataToSave = {
+                stickerMode,
                 stickerType,
                 bgImage,
                 headerTextContent,
@@ -218,6 +363,14 @@ export default function StickerPrinterView() {
                 nameTextSize,
                 newPriceTextSize,
                 footerTextSize,
+                barcodeImei,
+                discountThreshold,
+                searchTerm,
+                activeQueuePageId,
+                activeSubTab,
+                manualPages,
+                batchItems,
+                priceSource,
                 updatedAt: new Date().toISOString()
             };
             
@@ -240,6 +393,7 @@ export default function StickerPrinterView() {
     }, [
         isLoaded,
         user,
+        stickerMode,
         stickerType,
         bgImage,
         headerTextContent,
@@ -256,8 +410,58 @@ export default function StickerPrinterView() {
         nameTextSize,
         newPriceTextSize,
         footerTextSize,
-        discountDisplayMode
+        discountDisplayMode,
+        barcodeImei,
+        discountThreshold,
+        searchTerm,
+        activeQueuePageId,
+        activeSubTab,
+        manualPages,
+        batchItems,
+        priceSource
     ]);
+
+    // Sync savedLists to IndexedDB and Firebase
+    useEffect(() => {
+        if (!isLoaded) return;
+        const timer = setTimeout(async () => {
+            try {
+                await saveSetting(STICKER_SAVED_LISTS_KEY, savedLists);
+            } catch (e) {
+                console.error("IndexedDB save savedLists failed", e);
+            }
+            if (user) {
+                try {
+                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerSavedLists');
+                    await setDoc(docRef, { lists: savedLists, updatedAt: new Date().toISOString() });
+                } catch (e) {
+                    console.error("Firebase save savedLists failed", e);
+                }
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [isLoaded, user, savedLists]);
+
+    // Sync printHistory to IndexedDB and Firebase
+    useEffect(() => {
+        if (!isLoaded) return;
+        const timer = setTimeout(async () => {
+            try {
+                await saveSetting(STICKER_HISTORY_KEY, printHistory);
+            } catch (e) {
+                console.error("IndexedDB save printHistory failed", e);
+            }
+            if (user) {
+                try {
+                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerPrintHistory');
+                    await setDoc(docRef, { history: printHistory, updatedAt: new Date().toISOString() });
+                } catch (e) {
+                    console.error("Firebase save printHistory failed", e);
+                }
+            }
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [isLoaded, user, printHistory]);
 
 
     const parsePercentValue = (percentStr: string | undefined): number => {
@@ -363,6 +567,7 @@ export default function StickerPrinterView() {
                     });
                 }
                 setBatchItems(items);
+                setActiveSubTab('queue');
             } catch (err) {
                 toast.error("Lỗi đọc file Excel");
             }
@@ -389,10 +594,22 @@ export default function StickerPrinterView() {
                 { wch: 20 }, { wch: 15 }, { wch: 40 }, { wch: 18 }, { wch: 18 }, { wch: 45 }
             ];
         } else {
+            const today = new Date();
+            const currentDay = today.getDay();
+            const dayOfWeek = currentDay === 0 ? 7 : currentDay;
+            const friday = new Date(today);
+            friday.setDate(today.getDate() + (5 - dayOfWeek));
+            const sunday = new Date(today);
+            sunday.setDate(today.getDate() + (7 - dayOfWeek));
+            const pad = (n: number) => String(n).padStart(2, '0');
+            const fridayStr = `${pad(friday.getDate())}/${pad(friday.getMonth() + 1)}`;
+            const sundayStr = `${pad(sunday.getDate())}/${pad(sunday.getMonth() + 1)}`;
+            const timeRangeStr = `TỪ ${fridayStr} ĐẾN ${sundayStr}`;
+
             header = ['CODE', 'SẢN PHẨM', 'GIÁ NIÊM YẾT', 'GIÁ GIẢM', 'THỜI GIAN ÁP DỤNG', 'SỐ LƯỢNG SUẤT'];
             sampleData = [
-                ['ABC123', 'Quạt điều hoà Daikiosan DMI03', '5490000', '3490000', 'TỪ 08/05 ĐẾN 10/05', '5 SUẤT/NGÀY'],
-                ['DEF456', 'Tủ lạnh Samsung RT29K5012S8', '8990000', '6990000', 'TỪ 08/05 ĐẾN 10/05', '5 SUẤT/NGÀY'],
+                ['ABC123', 'Quạt điều hoà Daikiosan DMI03', '5490000', '3490000', timeRangeStr, '5 SUẤT/NGÀY'],
+                ['DEF456', 'Tủ lạnh Samsung RT29K5012S8', '8990000', '6990000', timeRangeStr, '5 SUẤT/NGÀY'],
             ];
             filename = 'Sticker_Template_Gio_Vang.xlsx';
             cols = [
@@ -602,6 +819,7 @@ export default function StickerPrinterView() {
 
                 // Add all imported stickers to the print queue
                 setManualPages(prev => [...prev, ...newPages]);
+                setActiveSubTab('queue');
                 toast.success(`Đã thêm ${newPages.length} sticker vào hàng đợi in`);
             } catch (err) {
                 toast.error('Lỗi đọc file Excel');
@@ -612,47 +830,137 @@ export default function StickerPrinterView() {
     };
 
 
-    const handleInventoryUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatPriceInThousands = (rawVal: any): string => {
+        if (rawVal == null || rawVal === '') return '';
+        const digits = String(rawVal).replace(/\D/g, '');
+        if (!digits) return '';
+        const val = Number(digits);
+        return Number(Math.floor(val / 1000)).toLocaleString('vi-VN');
+    };
+
+    const formatFullPrice = (rawVal: any): string => {
+        if (rawVal == null || rawVal === '') return '';
+        const digits = String(rawVal).replace(/\D/g, '');
+        if (!digits) return '';
+        return Number(digits).toLocaleString('vi-VN');
+    };
+
+    const handleErpPriceUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'purifier' | 'appliance') => {
         const file = e.target.files?.[0];
         if (!file) return;
+
         const reader = new FileReader();
         reader.onload = (evt) => {
             try {
                 const bstr = evt.target?.result;
                 const wb = XLSX.read(bstr, { type: 'binary' });
-                const ws = wb.Sheets[wb.SheetNames[0]];
+                const wsname = wb.SheetNames[0];
+                const ws = wb.Sheets[wsname];
                 const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
-                const codes = new Set<string>();
-                for (let i = 1; i < data.length; i++) {
-                    const row = data[i];
-                    if (!row || row.length < 6) continue;
-                    const colF = row[5];
-                    if (colF == null) continue;
-                    const normalized = String(colF).trim().replace(/\D/g, '').replace(/^0+/, '');
-                    if (normalized) codes.add(normalized);
-                }
-                if (codes.size === 0) {
-                    toast.error('Không tìm thấy mã sản phẩm trong cột F của file tồn kho.');
+                
+                if (!data || data.length < 2) {
+                    toast.error('File không chứa đủ dữ liệu');
                     return;
                 }
-                setInventoryCodes(codes);
-                if (batchItems.length > 0) {
-                    setBatchItems(prev => prev.map(it => ({
-                        ...it,
-                        selected: codes.has(String(it.imei).replace(/\D/g, '').replace(/^0+/, ''))
-                    })));
+
+                const newPages: StickerPage[] = [];
+                for (let i = 1; i < data.length; i++) {
+                    const row = data[i];
+                    if (!row || row.length === 0) continue;
+
+                    let rawCode = '';
+                    let rawName = '';
+                    let rawOldPrice = '';
+                    let rawSalePrice = '';
+                    let rawServicePrice = '';
+                    let rawPromo = '';
+                    let header = '';
+
+                    if (type === 'purifier') {
+                        header = 'MÁY LỌC NƯỚC';
+                        rawCode = row[55] != null ? String(row[55]).trim() : '';
+                        rawName = row[44] != null ? String(row[44]).trim() : '';
+                        rawOldPrice = row[33] != null ? String(row[33]).trim() : '';
+                        rawSalePrice = row[20] != null ? String(row[20]).trim() : '';
+                        rawServicePrice = row[1] != null ? String(row[1]).trim() : '';
+                        rawPromo = row[31] != null ? String(row[31]).trim() : '';
+
+                        if (rawName) {
+                            rawName = cleanWaterPurifierName(rawName);
+                        }
+                    } else {
+                        header = 'DUY NHẤT HÔM NAY';
+                        rawCode = row[28] != null ? String(row[28]).trim() : '';
+                        rawName = row[27] != null ? String(row[27]).trim() : '';
+                        rawOldPrice = row[16] != null ? String(row[16]).trim() : '';
+                        rawSalePrice = row[17] != null ? String(row[17]).trim() : '';
+                        rawServicePrice = row[8] != null ? String(row[8]).trim() : '';
+                        rawPromo = row[31] != null ? String(row[31]).trim() : '';
+                    }
+
+                    if (!rawName) continue;
+
+                    let code = rawCode;
+                    if (code.includes('-')) {
+                        code = code.split('-')[0].trim();
+                    }
+
+                    const oldPrice = formatFullPrice(rawOldPrice);
+                    const salePrice = formatPriceInThousands(rawSalePrice);
+                    const servicePrice = formatPriceInThousands(rawServicePrice);
+
+                    const currentPrice = priceSource === 'service' ? (servicePrice || salePrice) : (salePrice || servicePrice);
+                    
+                    let percent = '';
+                    const oldVal = Number(oldPrice.replace(/\D/g, ''));
+                    let newVal = Number(currentPrice.replace(/\D/g, ''));
+                    if (oldVal > 0 && newVal > 0) {
+                        if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
+                            newVal = newVal * 1000;
+                        }
+                        const ratio = Math.round((newVal / oldVal - 1) * 100);
+                        percent = ratio < 0 ? `${ratio}%` : '';
+                    }
+
+                    const cleanInput = discountThreshold.replace(/[^0-9]/g, '');
+                    const limit = parseInt(cleanInput, 10);
+                    const isSelected = isNaN(limit) ? true : parsePercentValue(percent) >= limit;
+
+                    const page: StickerPage = {
+                        id: `erp_${type}_${i}_${Date.now()}`,
+                        html: '',
+                        label: rawName,
+                        oldPrice,
+                        newPrice: currentPrice,
+                        percent,
+                        timestamp: Date.now(),
+                        code,
+                        selected: isSelected,
+                        salePrice,
+                        servicePrice,
+                        header,
+                        footer: rawPromo,
+                    };
+
+                    page.html = generatePageHtml(page, priceSource, stickerType, bgImage);
+                    newPages.push(page);
                 }
+
+                if (newPages.length === 0) {
+                    toast.error('Không tìm thấy dữ liệu hợp lệ trong file.');
+                    return;
+                }
+
+                setManualPages(prev => [...prev, ...newPages]);
+                setActiveSubTab('queue');
+                toast.success(`Đã thêm ${newPages.length} sticker vào hàng đợi in`);
             } catch (err) {
-                toast.error('Lỗi đọc file tồn kho');
+                console.error(err);
+                toast.error('Lỗi đọc file Excel ERP');
             }
         };
         reader.readAsBinaryString(file);
         e.target.value = '';
-    };
-
-    const clearInventory = () => {
-        setInventoryCodes(null);
-        setBatchItems(prev => prev.map(it => ({ ...it, selected: true })));
     };
 
     const toggleItemSelection = (id: string) => {
@@ -686,37 +994,52 @@ export default function StickerPrinterView() {
             timestamp: Date.now(),
             code: barcodeImei,
             selected: isSelected,
+            salePrice: newPrice,
+            header: headerTextContent,
+            footer: footerTextContent,
+            subHeader: subHeaderTextContent,
         };
         setManualPages(prev => [...prev, page]);
     };
 
     const loadPageToEditor = (page: StickerPage) => {
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = page.html;
-        const sticker = tempDiv.querySelector('.sticker-container') as HTMLElement;
-        if (!sticker) return;
+        if (page.label) setPreviewName(page.label);
+        if (page.oldPrice) setPreviewOldPrice(page.oldPrice);
+        if (page.code) setBarcodeImei(page.code);
+        if (page.header != null) setHeaderTextContent(page.header);
+        if (page.footer != null) setFooterTextContent(page.footer);
+        if (page.subHeader != null) setSubHeaderTextContent(page.subHeader);
 
-        const headerText = sticker.querySelector('.header-text')?.textContent || headerTextContent;
-        const nameText = sticker.querySelector('.name')?.textContent || '';
-        const oldPriceText = sticker.querySelector('.old')?.textContent || '';
-        const newPriceText = sticker.querySelector('.extra2 span')?.textContent || sticker.querySelector('.extra2')?.textContent || '';
-        const footerText = sticker.querySelector('.footer-text')?.textContent || footerTextContent;
-        const subHeader = sticker.querySelector('.sub-header')?.textContent || subHeaderTextContent;
+        const { newPrice } = resolvePagePrices(page, priceSource);
+        setPreviewNewPrice(newPrice);
 
-        setHeaderTextContent(headerText);
-        setSubHeaderTextContent(subHeader);
-        setFooterTextContent(footerText);
-        setPreviewOldPrice(oldPriceText);
-        setPreviewNewPrice(newPriceText);
+        // Fallback for older pages without properties
+        if (!page.label && page.html) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = page.html;
+            const sticker = tempDiv.querySelector('.sticker-container') as HTMLElement;
+            if (sticker) {
+                const headerText = sticker.querySelector('.header-text')?.textContent || headerTextContent;
+                const nameText = sticker.querySelector('.name')?.textContent || '';
+                const oldPriceText = sticker.querySelector('.old')?.textContent || '';
+                const newPriceText = sticker.querySelector('.extra2 span')?.textContent || sticker.querySelector('.extra2')?.textContent || '';
+                const footerText = sticker.querySelector('.footer-text')?.textContent || footerTextContent;
+                const subHeader = sticker.querySelector('.sub-header')?.textContent || subHeaderTextContent;
 
-        // Extract barcode value from img alt attribute if it exists
-        const barcodeImg = sticker.querySelector('.barcode img');
-        const barcodeVal = barcodeImg?.getAttribute('alt') || '';
-        if (barcodeVal) {
-            setBarcodeImei(barcodeVal);
+                setHeaderTextContent(headerText);
+                setSubHeaderTextContent(subHeader);
+                setFooterTextContent(footerText);
+                setPreviewOldPrice(oldPriceText);
+                setPreviewNewPrice(newPriceText);
+
+                const barcodeImg = sticker.querySelector('.barcode img');
+                const barcodeVal = barcodeImg?.getAttribute('alt') || '';
+                if (barcodeVal) {
+                    setBarcodeImei(barcodeVal);
+                }
+                setPreviewName(nameText);
+            }
         }
-
-        setPreviewName(nameText);
         setBatchItems([]);
     };
 
@@ -837,7 +1160,7 @@ export default function StickerPrinterView() {
 
         // Then append queued manual pages
         selectedManualPages.forEach(page => {
-            printHost.innerHTML += page.html;
+            printHost.innerHTML += generatePageHtml(page, priceSource, stickerType, bgImage);
         });
 
         // Loop through all stickers inside printHost and force percentage discount!
@@ -1036,7 +1359,6 @@ export default function StickerPrinterView() {
                     setDiscountDisplayMode={setDiscountDisplayMode}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
-                    inventoryCodes={inventoryCodes}
                     printHistory={printHistory}
                     showHistory={showHistory}
                     setShowHistory={setShowHistory}
@@ -1044,9 +1366,7 @@ export default function StickerPrinterView() {
                     addCurrentPage={addCurrentPage}
                     handleExcelUpload={handleExcelUpload}
                     handleTemplateUpload={handleTemplateUpload}
-                    handleInventoryUpload={handleInventoryUpload}
                     downloadTemplate={downloadTemplate}
-                    clearInventory={clearInventory}
                     handleReset={handleReset}
                     toggleAllSelection={toggleAllSelection}
                     toggleItemSelection={toggleItemSelection}
@@ -1057,6 +1377,11 @@ export default function StickerPrinterView() {
                     handleDiscountThresholdChange={handleDiscountThresholdChange}
                     activeQueuePageId={activeQueuePageId}
                     setActiveQueuePageId={setActiveQueuePageId}
+                    activeSubTab={activeSubTab}
+                    setActiveSubTab={setActiveSubTab}
+                    priceSource={priceSource}
+                    setPriceSource={setPriceSource}
+                    handleErpPriceUpload={handleErpPriceUpload}
                 />
             </div>
         </div>

@@ -11,6 +11,7 @@ export interface ModalProps {
   footer?: React.ReactNode;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | 'full';
   hideCloseButton?: boolean;
+  zIndex?: string;
 }
 
 export function Modal({
@@ -20,7 +21,8 @@ export function Modal({
   children,
   footer,
   maxWidth = 'md',
-  hideCloseButton = false
+  hideCloseButton = false,
+  zIndex = 'z-50'
 }: ModalProps) {
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -58,7 +60,7 @@ export function Modal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div className={cn("fixed inset-0 flex items-center justify-center p-4 sm:p-6", zIndex)}>
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}

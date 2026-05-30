@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { XIcon, SwitchCameraIcon, CheckCircleIcon, XCircleIcon } from './Icons';
-import { Html5Qrcode } from 'html5-qrcode';
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 interface CameraDevice {
   id: string;
@@ -87,21 +87,32 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
   }, [playSound]);
 
   const config = useMemo(() => ({
-    fps: 10, // 10 FPS is sufficient for barcode scanning, saves CPU/battery
+    fps: 25, // Increased FPS from 10 to 25 for faster scan interval and smoother feed
     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
-        const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-        // Use 70% of the smaller screen dimension for the scan box, making it responsive.
-        const qrboxSize = Math.floor(minEdge * 0.7);
-        return {
-            width: qrboxSize,
-            height: qrboxSize,
-        };
+        // Wider rectangular scan area (aspect ratio ~ 1.7) optimized for EAN-13/Code-128 barcodes while keeping QR support
+        const width = Math.floor(viewfinderWidth * 0.85);
+        const height = Math.floor(viewfinderWidth * 0.5);
+        return { width, height };
     },
     rememberLastUsedCamera: true,
+    aspectRatio: 1.0, // Force square aspect ratio constraint on the video feed to match our container aspect-square!
   }), []);
 
   useEffect(() => {
-    const html5Qrcode = new Html5Qrcode(readerId, { verbose: false });
+    const html5Qrcode = new Html5Qrcode(readerId, { 
+      verbose: false,
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.QR_CODE,
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.CODE_128,
+        Html5QrcodeSupportedFormats.CODE_39,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E,
+        Html5QrcodeSupportedFormats.ITF
+      ],
+      useBarCodeDetectorIfSupported: true
+    });
     scannerRef.current = html5Qrcode;
     
     const startWithFallback = (devices: CameraDevice[]) => {
@@ -197,13 +208,34 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/30 flex flex-col items-center justify-center p-4 backdrop-blur-md">
+      <style dangerouslySetInnerHTML={{ __html: `
+        #html5-qrcode-reader {
+          border: none !important;
+        }
+        #html5-qrcode-reader video {
+          object-fit: cover !important;
+          border-radius: 1rem;
+          width: 100% !important;
+          height: 100% !important;
+        }
+        @keyframes scan-laser {
+          0%, 100% { top: 8%; }
+          50% { top: 92%; }
+        }
+        .animate-laser {
+          animation: scan-laser 2s infinite ease-in-out;
+        }
+      ` }} />
       <div className="relative w-full max-w-md bg-slate-900 rounded-2xl overflow-hidden shadow-2xl">
         <div id={readerId} className="w-full aspect-square"></div>
         
         {/* Overlay for scanning frame */}
         {!scanResult && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-2/3 h-2/3 border-4 border-dashed border-white/50 rounded-lg"></div>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
+              <div className="w-[85%] h-[50%] border-4 border-dashed border-white/70 rounded-2xl relative flex flex-col justify-between">
+                  {/* Glowing laser line to indicate scanning */}
+                  <div className="absolute left-1 right-1 h-0.5 bg-red-500 shadow-[0_0_8px_#ef4444] animate-laser"></div>
+              </div>
           </div>
         )}
         
@@ -226,7 +258,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         )}
 
       </div>
-      <div className="text-center text-white mt-4 max-w-md">
+      <div className="text-center text-white mt-4 w-full max-w-md px-4">
         {error ? (
           <div className="font-semibold text-red-400 bg-red-900 bg-opacity-50 px-4 py-3 rounded-lg space-y-3">
               <p>{error}</p>
@@ -242,6 +274,15 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         ) : (
           <p className="font-medium bg-slate-900 bg-opacity-50 px-4 py-2 rounded-lg">{!scanResult ? status : ' '}</p>
         )}
+        
+        {/* Prominent mobile close/stop button */}
+        <button
+          onClick={onClose}
+          className="w-full mt-4 py-3.5 px-6 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-lg shadow-rose-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 text-base cursor-pointer"
+        >
+          <XIcon className="h-5 w-5" />
+          Đóng / Dừng quét
+        </button>
       </div>
        <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
           {cameras.length > 1 && (

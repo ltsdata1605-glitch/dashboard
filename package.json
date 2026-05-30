@@ -21,6 +21,7 @@
     "html2canvas": "^1.4.1",
     "html5-qrcode": "^2.3.8",
     "jspdf": "^4.2.1",
+    "level": "^10.0.0",
     "lucide-react": "^0.577.0",
     "lunar-javascript": "^1.7.7",
     "motion": "^12.38.0",
@@ -28,9 +29,11 @@
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-hot-toast": "^2.6.0",
+    "react-rnd": "^10.5.3",
     "recharts": "^3.8.0",
     "sortablejs": "^1.15.7",
     "tailwind-merge": "^3.5.0",
+    "ws": "^8.21.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import { parseNumber } from '../../utils/dataUtils';
+import { parseNumber, shortenSupermarketName } from '../../utils/dataUtils';
 
 export interface Employee {
     originalName: string;
@@ -180,7 +180,7 @@ export const parseEmployeeCompetitionTargets = (
                 }
             }
             
-            if (currentComp && parts[0] === sm) {
+            if (currentComp && shortenSupermarketName(parts[0]) === shortenSupermarketName(sm)) {
                 const targetValRaw = parts[currentComp.targetIdx];
                 if (targetValRaw) {
                     const baseTarget = parseNumber(targetValRaw);

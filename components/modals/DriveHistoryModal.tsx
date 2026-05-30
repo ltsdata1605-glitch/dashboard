@@ -178,6 +178,43 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
         });
     };
 
+    const handleDeleteSelected = () => {
+        if (selectedIds.size === 0) return;
+        showConfirm({
+            title: 'Xóa Báo Cáo Đã Chọn',
+            message: `Bạn có chắc chắn muốn xóa ${selectedIds.size} báo cáo đã chọn khỏi Drive?`,
+            variant: 'danger',
+            confirmText: 'Xóa',
+            onConfirm: async () => {
+                closeConfirm();
+                setIsDeletingAll(true);
+                const loadingToast = toast.loading('Đang xóa các báo cáo đã chọn...');
+                try {
+                    const token = sessionStorage.getItem('googleOAuthToken');
+                    if (!token) {
+                        setNeedsReconnect(true);
+                        throw new Error('Mất kết nối Google, vui lòng kết nối lại.');
+                    }
+                    
+                    const idsToRemove = Array.from(selectedIds);
+                    for (const fileId of idsToRemove) {
+                        await deleteFileFromDrive(fileId, token);
+                    }
+                    
+                    setFiles(prev => prev.filter(f => !selectedIds.has(f.id)));
+                    setSelectedIds(new Set());
+                    toast.success('Đã xóa các báo cáo đã chọn!', { id: loadingToast });
+                } catch (error: any) {
+                    console.error(error);
+                    toast.error('Có lỗi xảy ra khi xóa', { id: loadingToast });
+                    fetchFiles();
+                } finally {
+                    setIsDeletingAll(false);
+                }
+            }
+        });
+    };
+
     if (!isOpen) return null;
 
     return (
@@ -213,10 +250,10 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                         <div className="flex items-center gap-1 sm:gap-2">
                             {files.length > 0 && !isLoading && (
                                 <button
-                                    onClick={handleDeleteAll}
+                                    onClick={selectedIds.size > 0 ? handleDeleteSelected : handleDeleteAll}
                                     disabled={isDeletingAll}
-                                    className="p-2 mr-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors"
-                                    title="Xóa toàn bộ dữ liệu trên Drive"
+                                    className="p-2 mr-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-xl transition-colors cursor-pointer"
+                                    title={selectedIds.size > 0 ? `Xóa các báo cáo đã chọn (${selectedIds.size})` : "Xóa toàn bộ dữ liệu trên Drive"}
                                 >
                                     <Icon name={isDeletingAll ? "loader-2" : "trash-2"} size={4} className={`sm:hidden ${isDeletingAll ? "animate-spin" : ""}`} />
                                     <Icon name={isDeletingAll ? "loader-2" : "trash-2"} size={5} className={`hidden sm:block ${isDeletingAll ? "animate-spin" : ""}`} />
@@ -273,6 +310,37 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                             </div>
                         ) : (
                             <div className="space-y-2 sm:space-y-3">
+                                <div className="flex items-center justify-between px-3 py-2 border-b border-slate-100 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-900/30 rounded-lg mb-2">
+                                    <label className="flex items-center gap-2 cursor-pointer text-[11px] sm:text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                                        <input 
+                                            type="checkbox"
+                                            checked={selectedIds.size === files.length}
+                                            ref={el => {
+                                                if (el) {
+                                                    el.indeterminate = selectedIds.size > 0 && selectedIds.size < files.length;
+                                                }
+                                            }}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedIds(new Set(files.map(f => f.id)));
+                                                } else {
+                                                    setSelectedIds(new Set());
+                                                }
+                                            }}
+                                            className="w-4 h-4 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-700 dark:checked:bg-indigo-500 cursor-pointer"
+                                        />
+                                        Chọn tất cả
+                                    </label>
+                                    {selectedIds.size > 0 && (
+                                        <button
+                                            onClick={handleDeleteSelected}
+                                            className="text-[11px] sm:text-xs font-semibold text-rose-500 hover:text-rose-700 flex items-center gap-1 cursor-pointer"
+                                        >
+                                            <Icon name="trash-2" size={3.5} />
+                                            Xóa đã chọn ({selectedIds.size})
+                                        </button>
+                                    )}
+                                </div>
                                 {files.map(file => (
                                     <motion.div
                                         key={file.id}
@@ -346,6 +414,7 @@ const DriveHistoryModal: React.FC<DriveHistoryModalProps> = ({ isOpen, onClose, 
                 message={confirmDialog.message}
                 variant={confirmDialog.variant}
                 confirmText={confirmDialog.confirmText}
+                zIndex="z-[250]"
             />
         </AnimatePresence>
     );

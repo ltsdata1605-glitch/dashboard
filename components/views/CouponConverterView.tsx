@@ -191,7 +191,7 @@ export default function CouponConverterView() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 flex-grow">
                     {/* Input Section */}
                     <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md rounded-xl">
-                         <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
+                          <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                   <div className="w-2.5 h-2.5 bg-indigo-500" />
                                   Nguồn Dữ Liệu
@@ -199,24 +199,24 @@ export default function CouponConverterView() {
                               <div className="flex items-center gap-2">
                                   <button
                                       onClick={handlePasteClick}
-                                      className="flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 transition-all hover:scale-105 active:scale-95 rounded-lg"
+                                      className="flex items-center justify-center text-xs font-semibold py-1.5 px-2.5 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 border border-indigo-100 dark:border-indigo-800 transition-all hover:scale-105 active:scale-95 rounded-lg"
                                       title="Làm mới và chuẩn bị dán"
                                   >
-                                      <Icon name="clipboard-paste" size={4} /> <span className="hidden sm:inline">Dán</span>
+                                      <Icon name="clipboard-paste" size={4} />
                                   </button>
                                   <button
                                       onClick={handleClearContent}
-                                      className="flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800 transition-all hover:scale-105 active:scale-95 rounded-lg"
+                                      className="flex items-center justify-center text-xs font-semibold py-1.5 px-2.5 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-800 transition-all hover:scale-105 active:scale-95 rounded-lg"
                                       title="Xóa nội dung, giữ tiêu đề"
                                   >
-                                      <Icon name="trash-2" size={4} /> <span className="hidden sm:inline">Nội dung</span>
+                                      <Icon name="trash-2" size={4} />
                                   </button>
                                   <button
                                       onClick={handleClearAll}
-                                      className="flex items-center gap-1.5 text-xs font-semibold py-1.5 px-3 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800 transition-all hover:scale-105 active:scale-95 rounded-lg"
+                                      className="flex items-center justify-center text-xs font-semibold py-1.5 px-2.5 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800 transition-all hover:scale-105 active:scale-95 rounded-lg"
                                       title="Xóa toàn bộ"
                                   >
-                                      <Icon name="trash-2" size={4} /> <span className="hidden sm:inline">Tất cả</span>
+                                      <Icon name="trash-2" size={4} />
                                   </button>
                               </div>
                          </div>
@@ -270,22 +270,17 @@ export default function CouponConverterView() {
                             <button
                                 onClick={handleManualCopyClick}
                                 disabled={!outputText}
-                                className={`flex items-center gap-2 text-sm font-bold py-1.5 px-4 transition-all duration-300 rounded-lg ${
+                                title={isCopied ? "Đã lưu!" : "Sao chép"}
+                                className={`flex items-center justify-center text-sm font-bold py-1.5 px-3 transition-all duration-300 rounded-lg ${
                                     isCopied
                                         ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800'
                                         : 'bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-600'
                                 } disabled:bg-slate-100 disabled:dark:bg-slate-800 disabled:text-slate-400 disabled:dark:text-slate-500 disabled:border-slate-200 disabled:dark:border-slate-700 disabled:shadow-none hover:scale-105 active:scale-95`}
                             >
                                 {isCopied ? (
-                                    <>
-                                        <Icon name="check-circle" size={4} />
-                                        <span>Đã lưu!</span>
-                                    </>
+                                    <Icon name="check-circle" size={4} />
                                 ) : (
-                                    <>
-                                        <Icon name="copy" size={4} />
-                                        <span>Sao chép</span>
-                                    </>
+                                    <Icon name="copy" size={4} />
                                 )}
                             </button>
                         </div>

@@ -13,7 +13,6 @@ interface StickerPrintControlsProps {
     setShowBarcode: (show: boolean) => void;
     searchTerm: string;
     setSearchTerm: (term: string) => void;
-    inventoryCodes: Set<string> | null;
     printHistory: PrintHistoryEntry[];
     showHistory: boolean;
     setShowHistory: (show: boolean) => void;
@@ -21,9 +20,7 @@ interface StickerPrintControlsProps {
     addCurrentPage: () => void;
     handleExcelUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     handleTemplateUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-    handleInventoryUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
     downloadTemplate: () => void;
-    clearInventory: () => void;
     handleReset: () => void;
     toggleAllSelection: (select: boolean) => void;
     toggleItemSelection: (id: string) => void;
@@ -47,6 +44,11 @@ interface StickerPrintControlsProps {
     handleDiscountThresholdChange: (val: string) => void;
     activeQueuePageId: string | null;
     setActiveQueuePageId: (id: string | null) => void;
+    activeSubTab: 'data' | 'queue' | 'history';
+    setActiveSubTab: (tab: 'data' | 'queue' | 'history') => void;
+    priceSource: 'sale' | 'service';
+    setPriceSource: (source: 'sale' | 'service') => void;
+    handleErpPriceUpload: (e: React.ChangeEvent<HTMLInputElement>, type: 'purifier' | 'appliance') => void;
 }
 
 export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
@@ -58,7 +60,6 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     setDiscountDisplayMode,
     searchTerm,
     setSearchTerm,
-    inventoryCodes,
     printHistory,
     showHistory,
     setShowHistory,
@@ -66,9 +67,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     addCurrentPage,
     handleExcelUpload,
     handleTemplateUpload,
-    handleInventoryUpload,
     downloadTemplate,
-    clearInventory,
     handleReset,
     toggleAllSelection,
     toggleItemSelection,
@@ -90,8 +89,12 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     handleDiscountThresholdChange,
     activeQueuePageId,
     setActiveQueuePageId,
+    activeSubTab,
+    setActiveSubTab,
+    priceSource,
+    setPriceSource,
+    handleErpPriceUpload,
 }) => {
-    const [activeTab, setActiveTab] = useState<'data' | 'queue' | 'help' | 'history'>('data');
     const selectedCount = batchItems.filter(i => i.selected).length;
     const selectedManualPagesCount = manualPages.filter(p => p.selected !== false).length;
     const filteredItems = batchItems.filter(it => it.name.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -120,9 +123,9 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             {/* Tab Navigation */}
             <div className="flex border-b border-slate-100 dark:border-slate-700 mb-4 shrink-0">
                 <button
-                    onClick={() => setActiveTab('data')}
+                    onClick={() => setActiveSubTab('data')}
                     className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
-                        activeTab === 'data'
+                        activeSubTab === 'data'
                             ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                             : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     }`}
@@ -130,9 +133,9 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                     Dữ liệu
                 </button>
                 <button
-                    onClick={() => setActiveTab('queue')}
+                    onClick={() => setActiveSubTab('queue')}
                     className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
-                        activeTab === 'queue'
+                        activeSubTab === 'queue'
                             ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                             : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     }`}
@@ -140,19 +143,9 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                     D.Sách ({manualPages.length})
                 </button>
                 <button
-                    onClick={() => setActiveTab('help')}
+                    onClick={() => setActiveSubTab('history')}
                     className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
-                        activeTab === 'help'
-                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                    }`}
-                >
-                    H.Dẫn
-                </button>
-                <button
-                    onClick={() => setActiveTab('history')}
-                    className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
-                        activeTab === 'history'
+                        activeSubTab === 'history'
                             ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                             : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     }`}
@@ -162,8 +155,8 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             </div>
 
             {/* Tab Content (Scrollable Area) */}
-            <div className={`flex-1 pr-1 -mr-1 scrollbar-thin ${activeTab === 'queue' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto space-y-2'}`}>
-                {activeTab === 'data' && (
+            <div className={`flex-1 pr-1 -mr-1 scrollbar-thin ${activeSubTab === 'queue' ? 'flex flex-col overflow-hidden' : 'overflow-y-auto space-y-2'}`}>
+                {activeSubTab === 'data' && (
                     <div className="space-y-2.5 animate-in fade-in duration-200 pb-2">
                         {/* File upload actions */}
                         <div className="flex gap-2 bg-slate-50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-100 dark:border-slate-700/30">
@@ -202,61 +195,24 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             </div>
                         </div>
 
-                        {/* Display inventory filter */}
+                        {/* Import price file from ERP */}
                         <div className="p-2 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-800/30">
-                            <p className="text-[10px] lg:text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-1 flex items-center gap-1">
+                            <p className="text-[10px] lg:text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-1.5 flex items-center gap-1">
                                 <Package size={12} />
-                                Lọc tồn kho trưng bày
+                                Nhập file in giá từ ERP
                             </p>
-                            <div className="grid grid-cols-2 gap-1.5">
-                                <a 
-                                    href="https://report.mwgroup.vn/home/dashboard/17" 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="flex items-center justify-center gap-1 py-1 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm"
-                                >
-                                    <Package size={10} />
-                                    Đổ tồn Trưng bày
-                                </a>
-                                <label className="flex items-center justify-center gap-1 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm">
+                            <div className="grid grid-cols-1 gap-2">
+                                <label className="flex items-center justify-center gap-1 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm text-center">
                                     <Upload size={10} />
-                                    {inventoryCodes ? `Đổi (${inventoryCodes.size})` : 'Nhập File Tồn'}
-                                    <input type="file" accept=".xlsx, .xls, .csv" onChange={handleInventoryUpload} className="hidden" />
+                                    Máy Lọc Nước (Mẫu in 99)
+                                    <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'purifier')} className="hidden" />
+                                </label>
+                                <label className="flex items-center justify-center gap-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm text-center">
+                                    <Upload size={10} />
+                                    Điện Tử/Lạnh (Mẫu in 97)
+                                    <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'appliance')} className="hidden" />
                                 </label>
                             </div>
-                            {inventoryCodes && (
-                                <div className="mt-1 flex items-center justify-between text-[9px] lg:text-[10px] font-bold">
-                                    <div className="flex items-center gap-1">
-                                        <span className="text-emerald-600 dark:text-emerald-400">
-                                            ✓ {batchItems.filter(i => i.selected).length} có
-                                        </span>
-                                        <span className="text-slate-300">|</span>
-                                        <span className="text-red-500 dark:text-red-400">
-                                            ✗ {batchItems.filter(i => !i.selected).length} không
-                                        </span>
-                                    </div>
-                                    <button 
-                                        onClick={clearInventory}
-                                        className="text-amber-600 hover:text-amber-800 dark:text-amber-400 uppercase text-[9px]"
-                                    >
-                                        Xoá
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Barcode Settings Panel */}
-                        <div className="p-2 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-700/30 flex items-center justify-between">
-                            <label htmlFor="toggle-barcode" className="text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
-                                Hiển thị Mã Vạch (Barcode)
-                            </label>
-                            <input 
-                                type="checkbox" 
-                                id="toggle-barcode" 
-                                checked={showBarcode} 
-                                onChange={(e) => setShowBarcode(e.target.checked)}
-                                className="w-3.5 h-3.5 text-indigo-600 rounded border-slate-300 focus:ring-indigo-500 cursor-pointer"
-                            />
                         </div>
 
                         {/* Batch items list */}
@@ -301,55 +257,43 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 </div>
                             </div>
                         )}
-                    </div>
-                )}
 
-                {activeTab === 'help' && (
-                    <div className="space-y-4 animate-in fade-in duration-200 pb-2">
-                        <div className="space-y-3">
-                            <h4 className="text-sm font-bold text-slate-800 dark:text-white">HƯỚNG DẪN IN CHROME</h4>
-                            <p className="text-xs text-slate-500 dark:text-slate-400">Cấu hình in (Ctrl + P) để có kết quả tốt nhất:</p>
-                            <ul className="space-y-2.5 text-xs text-slate-600 dark:text-slate-300 pl-1">
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 size={15} className="text-emerald-500 mt-0.5 shrink-0" />
-                                    <span>Chọn <strong>Cài Đặt Khác (More settings)</strong>.</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 size={15} className="text-emerald-500 mt-0.5 shrink-0" />
-                                    <span>Chọn Khổ Giấy (Khuyên dùng <strong>A4</strong>).</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 size={15} className="text-emerald-500 mt-0.5 shrink-0" />
-                                    <span>Chọn Lề (Margins): <strong>Không Có (None)</strong>.</span>
-                                </li>
-                                <li className="flex items-start gap-2">
-                                    <CheckCircle2 size={15} className="text-emerald-500 mt-0.5 shrink-0" />
-                                    <span>Tích Chọn: <strong>Hiển Thị Đồ Họa Nền (Background graphics)</strong>.</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-100 dark:border-blue-800/50">
-                            <div className="flex gap-2">
-                                <Settings className="text-blue-500 shrink-0 mt-0.5" size={16} />
-                                <p className="text-[11px] text-blue-700 dark:text-blue-300 leading-relaxed">
-                                    <strong>Chỉnh sửa nội dung:</strong> Click trực tiếp vào các ô chữ trên nhãn (tiêu đề, tên, giá...) ở khung bên trái để sửa nhanh.
-                                </p>
+                        {/* Guide Section */}
+                        <div className="mt-4 border-t border-slate-100 dark:border-slate-700/60 pt-4 space-y-2.5">
+                            <div className="flex items-center gap-1.5">
+                                <Settings size={13} className="text-indigo-500" />
+                                <span className="text-[11px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">H.Dẫn in & Sử dụng</span>
                             </div>
-                        </div>
-
-                        <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
-                            <div className="flex gap-2">
-                                <CheckCircle2 className="text-emerald-500 shrink-0 mt-0.5" size={16} />
-                                <p className="text-[11px] text-emerald-700 dark:text-emerald-300 leading-relaxed">
-                                    <strong>Tính % tự động:</strong> Chỉ cần nhập <strong>Giá cũ</strong> và <strong>Giá mới</strong>, phần trăm giảm giá tự động tính toán chính xác.
-                                </p>
+                            
+                            <div className="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-xl border border-slate-100 dark:border-slate-800/60 space-y-3">
+                                <div className="space-y-1.5">
+                                    <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400">CẤU HÌNH IN CHROME (CTRL + P):</p>
+                                    <ul className="space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
+                                        <li className="flex items-center gap-1.5">
+                                            <span className="w-1 h-1 rounded-full bg-indigo-500 shrink-0" />
+                                            <span>Khổ giấy khuyên dùng: <strong>A4</strong></span>
+                                        </li>
+                                        <li className="flex items-center gap-1.5">
+                                            <span className="w-1 h-1 rounded-full bg-indigo-500 shrink-0" />
+                                            <span>Lề (Margins): <strong>Không Có (None)</strong></span>
+                                        </li>
+                                        <li className="flex items-center gap-1.5">
+                                            <span className="w-1 h-1 rounded-full bg-indigo-500 shrink-0" />
+                                            <span>Chọn: <strong>Hiển thị đồ họa nền (Background graphics)</strong></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div className="border-t border-slate-200/60 dark:border-slate-700/60 pt-2 space-y-1.5 text-[11px] text-slate-600 dark:text-slate-300">
+                                    <p>⚡ <strong>Sửa nhanh:</strong> Click trực tiếp vào chữ trên sticker ở khung preview.</p>
+                                    <p>⚡ <strong>Tính % tự động:</strong> Chỉ cần nhập Giá cũ & Giá mới.</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {activeTab === 'queue' && (
+                {activeSubTab === 'queue' && (
                     <div className="flex-1 flex flex-col overflow-hidden animate-in fade-in duration-200 pb-2">
                         <StickerManualQueue
                             manualPages={manualPages}
@@ -370,11 +314,15 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             setActiveQueuePageId={setActiveQueuePageId}
                             discountDisplayMode={discountDisplayMode}
                             setDiscountDisplayMode={setDiscountDisplayMode}
+                            showBarcode={showBarcode}
+                            setShowBarcode={setShowBarcode}
+                            priceSource={priceSource}
+                            setPriceSource={setPriceSource}
                         />
                     </div>
                 )}
 
-                {activeTab === 'history' && (
+                {activeSubTab === 'history' && (
                     <div className="space-y-2 animate-in fade-in duration-200 pb-2">
                         {printHistory.length === 0 ? (
                             <p className="text-xs text-slate-400 text-center py-12">Chưa có lịch sử in</p>

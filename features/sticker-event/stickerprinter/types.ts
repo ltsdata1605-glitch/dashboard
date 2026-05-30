@@ -7,6 +7,13 @@ export interface StickerPage {
     percent: string;
     timestamp: number;
     discountDisplayMode?: 'percent' | 'amount';
+    salePrice?: string;
+    servicePrice?: string;
+    header?: string;
+    subHeader?: string;
+    footer?: string;
+    code?: string;
+    selected?: boolean;
 }
 
 export interface SavedStickerList {
