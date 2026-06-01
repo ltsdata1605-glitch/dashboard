@@ -82,6 +82,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         revenueRows,
         employeeInstallmentMap,
         allEmployees,
+        hiddenEmployees,
         deptEmployeeCounts,
         toggleSupermarket,
         toggleDepartment,
@@ -123,7 +124,19 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         }
     }, [allEmployees]);
 
-    const competitionData = useMemo(() => parseCompetitionData(aggregatedData.thiDua, employeeDepartmentMap), [aggregatedData.thiDua, employeeDepartmentMap]);
+    const competitionData = useMemo(() => {
+        const parsed = parseCompetitionData(aggregatedData.thiDua, employeeDepartmentMap);
+        const hiddenSet = new Set(hiddenEmployees || []);
+        const filteredResult = { ...parsed };
+        Object.keys(filteredResult).forEach(key => {
+            const criterion = key as Criterion;
+            filteredResult[criterion] = {
+                headers: parsed[criterion].headers,
+                employees: parsed[criterion].employees.filter(emp => !hiddenSet.has(emp.originalName || ''))
+            };
+        });
+        return filteredResult;
+    }, [aggregatedData.thiDua, employeeDepartmentMap, hiddenEmployees]);
     // Fix: Updated type to include 'tong'
     const [activeCompetitionTab, setActiveCompetitionTab] = useIndexedDBState<Criterion | 'nhom' | 'canhan' | 'tong' | 'sosanh'>('nhanvien-active-competition-tab', 'nhom');
     const [highlightedEmpArray, setHighlightedEmpArray] = useIndexedDBState<string[]>('highlight-employees-multi', []);
@@ -399,7 +412,7 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                         )}
                         {visitedTabs.has('detail') && (
                             <div className={activeTab === 'detail' ? 'block' : 'hidden'}>
-                                <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} />
+                                <DetailTab rawData={aggregatedData.danhSach} supermarketName={activeSupermarkets.length === 1 ? activeSupermarkets[0] : 'Tổng hợp'} activeDepartments={effectiveActiveDepartments} hiddenEmployees={hiddenEmployees} />
                             </div>
                         )}
                     </div>

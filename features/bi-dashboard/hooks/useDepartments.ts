@@ -20,11 +20,15 @@ export const useDepartments = ({
         const manualNames = Object.keys(manualMapping);
         if (manualNames.length === 0) return defaultDepartments.filter(d => d.employeeCount > 0);
         
-        const manualList = manualNames.map(name => ({ 
-            name, 
-            employeeCount: manualMapping[name].length, 
-            isManual: true 
-        }));
+        const activeEmpNames = new Set(allEmployees.map(e => e.originalName));
+        
+        const manualList = manualNames
+            .map(name => ({ 
+                name, 
+                employeeCount: (manualMapping[name] || []).filter(empName => activeEmpNames.has(empName)).length, 
+                isManual: true 
+            }))
+            .filter(d => d.employeeCount > 0);
         
         return manualList.sort((a, b) => {
             if (a.name === 'BP Khác') return 1;

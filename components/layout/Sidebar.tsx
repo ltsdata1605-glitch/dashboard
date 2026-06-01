@@ -198,7 +198,7 @@ export default function Sidebar() {
             icon: Wrench, 
             path: '/tools',
             subItems: [
-                { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck },
+                { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-487587635482.asia-southeast1.run.app' },
                 { id: 'tools-print-sticker', label: 'In Sticker', icon: Sticker },
                 { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
                 { id: 'tools-coupon', label: 'Rút gọn Coupon', icon: Ticket },

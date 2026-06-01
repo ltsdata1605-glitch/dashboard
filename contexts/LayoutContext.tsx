@@ -35,7 +35,20 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             getSetting<boolean>('sidebar_collapsed'),
             getSetting<boolean>('dark_mode')
         ]).then(([savedTab, savedSidebar, savedDark]) => {
-            if (savedTab) setActiveTabRaw(savedTab);
+            // Check URL query parameter first (has highest priority)
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlTab = urlParams.get('tab');
+            const initialTab = urlTab || savedTab || 'analysis';
+            
+            setActiveTabRaw(initialTab);
+            
+            // Sync URL with initial tab if not present
+            if (!urlTab) {
+                const newUrl = new URL(window.location.href);
+                newUrl.searchParams.set('tab', initialTab);
+                window.history.replaceState(null, '', newUrl.toString());
+            }
+
             if (savedSidebar !== undefined && savedSidebar !== null) setIsSidebarCollapsed(savedSidebar);
             if (savedDark !== undefined && savedDark !== null) {
                 setIsDarkMode(savedDark);
@@ -53,6 +66,19 @@ export const LayoutProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             setActiveTabRaw(tab);
         });
         saveSetting('active_tab', tab).catch(() => {});
+        
+        // Sync URL tab query parameter
+        try {
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('tab', tab);
+            // If switching away from print sticker, clean up sub tab parameter
+            if (tab !== 'tools-print-sticker') {
+                newUrl.searchParams.delete('sub');
+            }
+            window.history.replaceState(null, '', newUrl.toString());
+        } catch (e) {
+            console.error("Failed to sync tab to URL:", e);
+        }
     }, []);
 
     useEffect(() => {

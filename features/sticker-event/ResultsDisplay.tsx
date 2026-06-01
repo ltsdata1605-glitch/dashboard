@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect, memo } from 'react';
 import { Product } from './types';
 import { InfoIcon, SearchIcon, CheckboxIcon, CheckboxCheckedIcon, MinusCircleIcon, PlusCircleIcon, PrintIcon, Trash2Icon } from './Icons';
 
@@ -33,7 +33,7 @@ const parsePrice = (priceStr: string): number => {
   return parseInt(priceStr.replace(/[^\d]/g, '')) || 0;
 };
 
-const ProductCard: React.FC<ProductCardProps> = ({ result, isHighlighted, onToggleSelect, onQuantityChange, onSetQuantity, onPrintSingle, onDelete, isMobile }) => {
+const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, onToggleSelect, onQuantityChange, onSetQuantity, onPrintSingle, onDelete, isMobile }) => {
   const giaGocNum = parsePrice(result.giaGoc);
   const giaGiamNum = parsePrice(result.giaGiam);
   const discountPercent = giaGocNum > 0 ? Math.round(((giaGocNum - giaGiamNum) / giaGocNum) * 100) : 0;
@@ -148,7 +148,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ result, isHighlighted, onTogg
     </div>
   </div>
   );
-};
+});
+ProductCard.displayName = 'ProductCard';
 
 const EmptyState: React.FC<{ icon: React.ReactNode; title: string; message: string }> = ({ icon, title, message }) => (
     <div className="flex flex-col items-center justify-center text-center p-8 bg-white rounded-2xl shadow-lg border border-slate-200 min-h-[400px]">
@@ -270,14 +271,21 @@ const InstructionsPanel = () => (
 
 
 const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highlightedMsp, onToggleSelect, onQuantityChange, onSetQuantity, onPrintSingle, onDelete, isMobile }) => {
+  const [visibleCount, setVisibleCount] = useState(30);
+
+  useEffect(() => {
+    setVisibleCount(30);
+  }, [results]);
+
   if (!hasData) {
     return <InstructionsPanel />;
   }
 
   if (results.length > 0) {
+    const visibleResults = results.slice(0, visibleCount);
     return (
         <div className={`flex flex-col ${isMobile ? 'gap-1' : 'gap-1.5'}`}>
-            {results.map((product) => (
+            {visibleResults.map((product) => (
                 <ProductCard 
                     key={product.msp} 
                     result={product} 
@@ -290,6 +298,16 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
                     isMobile={isMobile}
                 />
             ))}
+            {results.length > visibleCount && (
+                <div className="flex justify-center py-4">
+                    <button
+                        onClick={() => setVisibleCount(prev => prev + 50)}
+                        className="px-6 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-semibold rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors text-sm shadow-sm flex items-center gap-2"
+                    >
+                        Hiển thị thêm (còn {results.length - visibleCount} sản phẩm)
+                    </button>
+                </div>
+            )}
         </div>
     );
   }

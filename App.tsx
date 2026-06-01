@@ -29,7 +29,6 @@ const AboutView = lazy(() => import('./components/views/AboutView'));
 const StickerPrinterView = lazy(() => import('./features/sticker-event/StickerPrinterView'));
 const PhanCaView = lazy(() => import('./features/phan-ca/PhanCaView'));
 const BaoCaoKhaiThacView = lazy(() => import('./components/views/reports/BaoCaoKhaiThacView'));
-const KiemQuyView = lazy(() => import('./features/cash-control/KiemQuyView'));
 
 
 // BI Module Wrapper
@@ -76,7 +75,6 @@ const TabContent = React.memo(() => {
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
         { id: 'reports', className: 'w-full h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative flex flex-col', component: <BaoCaoKhaiThacView /> },
-        { id: 'tools-audit', className: 'w-full h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative flex flex-col', component: <KiemQuyView /> },
     ], []);
 
     return (
@@ -105,7 +103,7 @@ const TabContent = React.memo(() => {
             )}
 
             {/* Render External Tool view when applicable */}
-            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'tools-audit', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports'].includes(activeTab) && (
+            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports'].includes(activeTab) && (
                 <div style={{ display: !['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports'].includes(activeTab) ? 'block' : 'none' }} className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>
@@ -126,7 +124,6 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'tools-print-sticker': { main: 'In', highlight: 'Sticker' },
     'tools-coupon': { main: 'Rút gọn', highlight: 'Coupon' },
     'tools-tax': { main: 'Hoàn', highlight: 'Thuế' },
-    'tools-audit': { main: 'Kiểm', highlight: 'Quỹ' },
     'tools-phanca': { main: 'Phân', highlight: 'Ca' },
 
     'settings': { main: 'Cài đặt', highlight: 'Hệ thống' },
@@ -152,7 +149,6 @@ function AppContent() {
             case 'tools-phanca': return <Calendar size={15} color="white" strokeWidth={2.5} />;
             case 'tools-coupon': return <Ticket size={15} color="white" strokeWidth={2.5} />;
             case 'tools-tax': return <Calculator size={15} color="white" strokeWidth={2.5} />;
-            case 'tools-audit': return <ClipboardCheck size={15} color="white" strokeWidth={2.5} />;
             case 'settings': return <Settings size={15} color="white" strokeWidth={2.5} />;
             case 'help': return <HelpCircle size={15} color="white" strokeWidth={2.5} />;
             case 'pending-approval': return <Shield size={15} color="white" strokeWidth={2.5} />;

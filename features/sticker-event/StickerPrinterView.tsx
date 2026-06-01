@@ -16,6 +16,8 @@ import { db } from '../../services/firebase';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 
 
+import ErrorBoundary from '../../components/common/ErrorBoundary';
+
 const StickerEventApp = lazy(() => import('./StickerEventApp'));
 
 const STICKER_DB_KEY = 'stickerPrinterState';
@@ -231,9 +233,50 @@ export default function StickerPrinterView() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Set mounted state
+    // Helper to update sub tab in URL
+    const updateSubQueryParam = (sub: string) => {
+        try {
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set('sub', sub);
+            window.history.replaceState(null, '', newUrl.toString());
+        } catch (e) {
+            console.error("Failed to sync sub-tab to URL:", e);
+        }
+    };
+
+    // Set mounted state and preload StickerEventApp
     useEffect(() => {
         setMounted(true);
+        
+        // Read initial sub tab from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sub = urlParams.get('sub');
+        if (sub) {
+            if (sub === 'gia-soc') {
+                setStickerMode('sticker');
+                setStickerType('gia_soc');
+                setHeaderTextContent('QUẠT ĐIỀU HOÀ');
+                setBgImage('/frame/X24_NEW.png');
+                setHeaderTextSize(8);
+            } else if (sub === 'gio-vang') {
+                setStickerMode('sticker');
+                setStickerType('gio_vang');
+                setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
+                setBgImage('/frame/GVO2-scaled.png');
+                setHeaderTextSize(8);
+            } else if (sub === 'event') {
+                setStickerMode('event');
+                setEventEverOpened(true);
+            }
+        }
+        
+        // Preload StickerEventApp in background to avoid lag on click
+        const timer = setTimeout(() => {
+            import('./StickerEventApp').catch(err => {
+                console.warn('Failed to preload StickerEventApp:', err);
+            });
+        }, 1000);
+        return () => clearTimeout(timer);
     }, []);
 
     // Load settings, saved lists, and print history from Firestore (if logged in) or IndexedDB
@@ -1237,6 +1280,7 @@ export default function StickerPrinterView() {
                                 setHeaderTextContent('QUẠT ĐIỀU HOÀ');
                                 setBgImage('/frame/X24_NEW.png');
                                 setHeaderTextSize(8);
+                                updateSubQueryParam('gia-soc');
                             }}
                             className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
                                 stickerMode === 'sticker' && stickerType === 'gia_soc' 
@@ -1254,6 +1298,7 @@ export default function StickerPrinterView() {
                                 setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
                                 setBgImage('/frame/GVO2-scaled.png');
                                 setHeaderTextSize(8);
+                                updateSubQueryParam('gio-vang');
                             }}
                             className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
                                 stickerMode === 'sticker' && stickerType === 'gio_vang' 
@@ -1265,7 +1310,11 @@ export default function StickerPrinterView() {
                             <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'gio_vang' && <CheckCircle2 size={14} className="inline mr-1 text-amber-600 dark:text-amber-400" />}Giờ Vàng</span>
                         </button>
                         <button
-                            onClick={() => { setStickerMode('event'); setEventEverOpened(true); }}
+                            onClick={() => { 
+                                setStickerMode('event'); 
+                                setEventEverOpened(true); 
+                                updateSubQueryParam('event');
+                            }}
                             className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
                                 stickerMode === 'event' 
                                     ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 shadow-sm' 
@@ -1293,16 +1342,18 @@ export default function StickerPrinterView() {
 
             {eventEverOpened && (
                 <div className={`absolute inset-0 z-10 w-full h-full overflow-y-auto transition-opacity duration-200 ${stickerMode === 'event' ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
-                    <Suspense fallback={
-                        <div className="w-full h-full flex items-center justify-center bg-slate-50">
-                            <div className="flex flex-col items-center gap-3">
-                                <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
-                                <p className="text-sm text-slate-500 font-medium">Đang tải Event - Tồn kho...</p>
+                    <ErrorBoundary name="Event - Tồn kho">
+                        <Suspense fallback={
+                            <div className="w-full h-full flex items-center justify-center bg-slate-50">
+                                <div className="flex flex-col items-center gap-3">
+                                    <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+                                    <p className="text-sm text-slate-500 font-medium">Đang tải Event - Tồn kho...</p>
+                                </div>
                             </div>
-                        </div>
-                    }>
-                        <StickerEventApp />
-                    </Suspense>
+                        }>
+                            <StickerEventApp />
+                        </Suspense>
+                    </ErrorBoundary>
                 </div>
             )}
 

@@ -8,6 +8,7 @@ import { parseRevenueData, parseInstallmentData, parseCrossSellingData, formatEm
 export function useNhanVienData() {
     const [supermarketsRaw] = useIndexedDBState<string[]>('supermarket-list', []);
     const [activeSupermarketsRaw, setActiveSupermarkets, isActiveSupermarketsLoaded] = useIndexedDBState<string[]>('nhanvien-active-supermarkets', []);
+    const [hiddenEmployees, setHiddenEmployees] = useState<string[]>([]);
     // Defensive: ensure arrays are always valid (Safari/iOS IndexedDB edge case)
     const supermarkets = useMemo(() => Array.isArray(supermarketsRaw) ? supermarketsRaw : [], [supermarketsRaw]);
     const activeSupermarkets = useMemo(() => Array.isArray(activeSupermarketsRaw) 
@@ -59,7 +60,8 @@ export function useNhanVienData() {
                     db.get(`config-${safeName}-bankem`),
                     db.get(`manual-dept-mapping-${safeName}`),
                     db.get(`bonus-data-${safeName}`),
-                    db.get(`targethero-${safeName}-departmentweights`)
+                    db.get(`targethero-${safeName}-departmentweights`),
+                    db.get(`hidden-employees-${safeName}`)
                 ]);
             }));
 
@@ -70,13 +72,15 @@ export function useNhanVienData() {
             let combinedBonus: Record<string, BonusMetrics | null> = {};
             const allWeights: Record<string, number[]> = {};
 
-            results.forEach(([ds, td, tg, bk, mm, bonus, weights]) => {
+            const combinedHidden: string[] = [];
+            results.forEach(([ds, td, tg, bk, mm, bonus, weights, hidden]) => {
                 if (ds) combinedDS += (combinedDS ? '\n' : '') + ds;
                 if (td) combinedTD += (combinedTD ? '\n' : '') + td;
                 if (tg) combinedTG += (combinedTG ? '\n' : '') + tg;
                 if (bk) combinedBK += (combinedBK ? '\n' : '') + bk;
                 if (mm) Object.assign(combinedMM, mm);
                 if (bonus) Object.assign(combinedBonus, bonus);
+                if (Array.isArray(hidden)) combinedHidden.push(...hidden);
                 if (weights) {
                     Object.entries(weights as Record<string, number>).forEach(([dept, w]) => {
                         if (!allWeights[dept]) allWeights[dept] = [];
@@ -91,6 +95,7 @@ export function useNhanVienData() {
             });
 
             setAggregatedWeights(finalWeights);
+            setHiddenEmployees(combinedHidden);
             setAggregatedData({
                 danhSach: combinedDS,
                 thiDua: combinedTD,
@@ -107,7 +112,7 @@ export function useNhanVienData() {
     useEffect(() => {
         const handleDbChange = (event: CustomEvent) => {
             const key = event.detail.key;
-            if (key.startsWith('config-') || key.startsWith('manual-dept-mapping') || key.startsWith('bonus-data-') || key.startsWith('targethero-') || key.startsWith('comptarget-') || key === 'summary-luy-ke') {
+            if (key.startsWith('config-') || key.startsWith('manual-dept-mapping') || key.startsWith('bonus-data-') || key.startsWith('targethero-') || key.startsWith('comptarget-') || key.startsWith('hidden-employees-') || key === 'summary-luy-ke') {
                 setDataVersion(v => v + 1);
             }
         };
@@ -115,9 +120,12 @@ export function useNhanVienData() {
         return () => window.removeEventListener('indexeddb-change', handleDbChange as EventListener);
     }, []);
 
+    const hiddenEmployeesSet = useMemo(() => new Set(hiddenEmployees), [hiddenEmployees]);
+
     const parsedRevenueBase = useMemo(() => {
-        return parseRevenueData(aggregatedData.danhSach);
-    }, [aggregatedData.danhSach]);
+        const base = parseRevenueData(aggregatedData.danhSach);
+        return base.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName));
+    }, [aggregatedData.danhSach, hiddenEmployeesSet]);
 
     const employeeDepartmentMap = useMemo(() => {
         const map = new Map<string, string>();
@@ -127,14 +135,26 @@ export function useNhanVienData() {
 
         Object.entries(aggregatedData.manualMapping).forEach(([deptName, employees]) => {
             if (Array.isArray(employees)) {
-                employees.forEach(empName => map.set(empName, deptName));
+                employees.forEach(empName => {
+                    if (!hiddenEmployeesSet.has(empName)) {
+                        map.set(empName, deptName);
+                    }
+                });
             }
         });
         return map;
-    }, [parsedRevenueBase, aggregatedData.manualMapping]);
+    }, [parsedRevenueBase, aggregatedData.manualMapping, hiddenEmployeesSet]);
 
-    const installmentRows = useMemo(() => parseInstallmentData(aggregatedData.traGop, employeeDepartmentMap), [aggregatedData.traGop, employeeDepartmentMap]);
-    const banKemRows = useMemo(() => parseCrossSellingData(aggregatedData.banKem, employeeDepartmentMap), [aggregatedData.banKem, employeeDepartmentMap]);
+    const installmentRows = useMemo(() => {
+        const rows = parseInstallmentData(aggregatedData.traGop, employeeDepartmentMap);
+        return rows.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName));
+    }, [aggregatedData.traGop, employeeDepartmentMap, hiddenEmployeesSet]);
+
+    const banKemRows = useMemo(() => {
+        const rows = parseCrossSellingData(aggregatedData.banKem, employeeDepartmentMap);
+        return rows.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName));
+    }, [aggregatedData.banKem, employeeDepartmentMap, hiddenEmployeesSet]);
+
     const banKemMap = useMemo(() => {
         const map = new Map<string, number>();
         banKemRows.forEach(row => { if (row.originalName) map.set(row.originalName, row.pctBillBk); });
@@ -270,6 +290,7 @@ export function useNhanVienData() {
         revenueRows,
         employeeInstallmentMap,
         allEmployees,
+        hiddenEmployees,
         deptEmployeeCounts,
         toggleSupermarket,
         toggleDepartment,

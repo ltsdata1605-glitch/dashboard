@@ -11,6 +11,7 @@ interface DetailTabProps {
     rawData: string;
     supermarketName: string;
     activeDepartments: string[];
+    hiddenEmployees?: string[];
 }
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 });
@@ -170,7 +171,7 @@ const SearchableSelect: React.FC<{
     );
 };
 
-const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeDepartments }) => {
+const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeDepartments, hiddenEmployees }) => {
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -191,14 +192,23 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     const fullTree = useMemo(() => parseDetailDataV2(rawData), [rawData]);
 
     // Remove 'Tổng' level and filter departments by activeDepartments
+    const hiddenSet = useMemo(() => new Set(hiddenEmployees || []), [hiddenEmployees]);
+
     const tree = useMemo(() => {
         // Flatten: skip 'total' nodes, take their department children directly
         let departments: DetailNode[] = [];
         for (const node of fullTree) {
             if (node.level === 'total') {
-                departments.push(...node.children);
+                // Clone dept nodes to avoid mutating cached fullTree
+                departments.push(...node.children.map(d => ({
+                    ...d,
+                    children: d.children.filter(emp => emp.level !== 'employee' || !hiddenSet.has(emp.name))
+                })));
             } else {
-                departments.push(node);
+                departments.push({
+                    ...node,
+                    children: node.children.filter(emp => emp.level !== 'employee' || !hiddenSet.has(emp.name))
+                });
             }
         }
         // Filter by active departments
@@ -208,7 +218,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             );
         }
         return departments;
-    }, [fullTree, activeDepartments]);
+    }, [fullTree, activeDepartments, hiddenSet]);
 
     // Auto-expand departments by default
     useEffect(() => {
