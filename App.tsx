@@ -28,7 +28,6 @@ const SettingsView = lazy(() => import('./components/views/SettingsView'));
 const AboutView = lazy(() => import('./components/views/AboutView'));
 const StickerPrinterView = lazy(() => import('./features/sticker-event/StickerPrinterView'));
 const PhanCaView = lazy(() => import('./features/phan-ca/PhanCaView'));
-const BaoCaoKhaiThacView = lazy(() => import('./components/views/reports/BaoCaoKhaiThacView'));
 
 
 // BI Module Wrapper
@@ -74,7 +73,6 @@ const TabContent = React.memo(() => {
         { id: 'employees', className: 'w-full', component: <BiWrapper /> },
         { id: 'tools-print-sticker', className: 'w-full h-full', component: <StickerPrinterView /> },
         { id: 'tools-phanca', className: 'w-full h-full bg-slate-50', component: <PhanCaView /> },
-        { id: 'reports', className: 'w-full h-full bg-slate-50 dark:bg-slate-900 overflow-hidden relative flex flex-col', component: <BaoCaoKhaiThacView /> },
     ], []);
 
     return (
@@ -103,8 +101,8 @@ const TabContent = React.memo(() => {
             )}
 
             {/* Render External Tool view when applicable */}
-            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports'].includes(activeTab) && (
-                <div style={{ display: !['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'employees', 'tools-print-sticker', 'tools-phanca', 'reports'].includes(activeTab) ? 'block' : 'none' }} className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
+            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) && (
+                <div style={{ display: !['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) ? 'block' : 'none' }} className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>
                 </div>
@@ -119,7 +117,6 @@ const TAB_TITLES: Record<string, { main: string, highlight?: string }> = {
     'check-thuong': { main: 'Check', highlight: 'Thưởng' },
     'employees': { main: 'Report', highlight: 'BI' },
     'inventory': { main: 'Kho', highlight: 'Hàng' },
-    'reports': { main: 'Báo', highlight: 'Cáo' },
     'tools': { main: 'Công', highlight: 'Cụ' },
     'tools-print-sticker': { main: 'In', highlight: 'Sticker' },
     'tools-coupon': { main: 'Rút gọn', highlight: 'Coupon' },
@@ -143,7 +140,6 @@ function AppContent() {
             case 'analysis': return <BarChart3 size={15} color="white" strokeWidth={2.5} />;
             case 'check-thuong': return <LayoutDashboard size={15} color="white" strokeWidth={2.5} />;
             case 'employees': return <Users size={15} color="white" strokeWidth={2.5} />;
-            case 'reports': return <FileText size={15} color="white" strokeWidth={2.5} />;
             case 'inventory': return <FileText size={15} color="white" strokeWidth={2.5} />;
             case 'tools-print-sticker': return <Printer size={15} color="white" strokeWidth={2.5} />;
             case 'tools-phanca': return <Calendar size={15} color="white" strokeWidth={2.5} />;

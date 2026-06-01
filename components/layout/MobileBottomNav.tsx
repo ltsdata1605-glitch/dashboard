@@ -38,7 +38,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
 
     const moreTabs = [
         { id: 'inventory', label: 'Kho hàng', icon: Package },
-        { id: 'reports', label: 'Báo cáo', icon: FileText },
+        { id: 'reports', label: 'Báo cáo', icon: FileText, externalUrl: 'https://baocao-ycx-placeholder.netlify.app' },
         { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-487587635482.asia-southeast1.run.app' },
         { id: 'tools-print-sticker', label: 'In Sticker', icon: Printer },
         { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
@@ -133,6 +133,22 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 <div className="space-y-1">
                                     {moreTabs.filter(t => !t.id.startsWith('tools-')).map(tab => {
                                         const isActive = activeTab === tab.id;
+                                        if ('externalUrl' in tab) {
+                                            return (
+                                                <a
+                                                    key={tab.id}
+                                                    href={(tab as any).externalUrl}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                                    onClick={() => setIsMoreOpen(false)}
+                                                >
+                                                    <tab.icon size={20} />
+                                                    <span className="font-medium text-sm flex-grow">{tab.label}</span>
+                                                    <ExternalLink size={14} className="opacity-50" />
+                                                </a>
+                                            );
+                                        }
                                         return (
                                             <button
                                                 key={tab.id}

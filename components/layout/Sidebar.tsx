@@ -66,6 +66,8 @@ const NavItem = React.memo(({
                 onClick={(e) => {
                     if (hasSubItems && !isCollapsed) {
                         toggleExpand(e);
+                    } else if (item.externalUrl) {
+                        window.open(item.externalUrl, '_blank');
                     } else {
                         if (item.path === '/analysis') setActiveTab('analysis');
                         else if (item.path === '/') setActiveTab('check-thuong');
@@ -191,7 +193,7 @@ export default function Sidebar() {
         { id: 'employees', label: 'Report BI', icon: Users, path: '/employees' },
 
         { id: 'inventory', label: 'Kho hàng', icon: Package, path: '/inventory' },
-        { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports' },
+        { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports', externalUrl: 'https://baocao-ycx-placeholder.netlify.app' },
         { 
             id: 'tools', 
             label: 'Công cụ', 
