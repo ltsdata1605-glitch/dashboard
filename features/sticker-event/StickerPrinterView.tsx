@@ -88,6 +88,27 @@ const generatePageHtml = (
 ) => {
     const { newPrice, percent } = resolvePagePrices(page, priceSource);
     
+    // Fallback parsing for header, subHeader, and footer from page.html
+    let header = page.header;
+    let subHeader = page.subHeader;
+    let footer = page.footer;
+    
+    if (page.html && (!header || !subHeader || !footer)) {
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(page.html, 'text/html');
+            const headerEl = doc.querySelector('.header-text');
+            const subHeaderEl = doc.querySelector('.sub-header');
+            const footerEl = doc.querySelector('.footer-text');
+            
+            if (header === undefined && headerEl) header = headerEl.textContent || '';
+            if (subHeader === undefined && subHeaderEl) subHeader = subHeaderEl.textContent || '';
+            if (footer === undefined && footerEl) footer = footerEl.textContent || '';
+        } catch (e) {
+            console.error('Error parsing fallback fields from page.html:', e);
+        }
+    }
+    
     let barcodeHtml = '';
     if (page.code) {
         try {
@@ -99,7 +120,7 @@ const generatePageHtml = (
     }
 
     const subHeaderHtml = stickerType === 'gio_vang' 
-        ? `<div class="sub-header">${page.subHeader || ''}</div>` : '';
+        ? `<div class="sub-header">${subHeader || ''}</div>` : '';
     
     let priceHtml = '';
     if (stickerType === 'gio_vang') {
@@ -110,13 +131,13 @@ const generatePageHtml = (
 
     return `<div class="sticker-container" data-type="${stickerType}" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:197/285;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;">
         ${barcodeHtml}
-        <div class="header-text">${page.header || ''}</div>
+        <div class="header-text">${header || ''}</div>
         ${subHeaderHtml}
         <div class="extra1">${percent}</div>
         <div class="old">${page.oldPrice}</div>
         <div class="name">${page.label}</div>
         ${priceHtml}
-        <div class="footer-text">${page.footer || ''}</div>
+        <div class="footer-text">${footer || ''}</div>
     </div>`;
 };
 
@@ -312,8 +333,13 @@ export default function StickerPrinterView() {
                     if (savedState.barcodeImei) setBarcodeImei(savedState.barcodeImei);
                     if (savedState.discountThreshold != null) setDiscountThreshold(savedState.discountThreshold);
                     if (savedState.searchTerm != null) setSearchTerm(savedState.searchTerm);
-                    if (savedState.activeQueuePageId !== undefined) setActiveQueuePageId(savedState.activeQueuePageId);
-                    if (savedState.activeSubTab) setActiveSubTab(savedState.activeSubTab === 'help' ? 'data' : savedState.activeSubTab);
+                    const loadedPages = savedState.manualPages || [];
+                    const loadedItems = savedState.batchItems || [];
+                    if (loadedPages.length === 0 && loadedItems.length === 0) {
+                        setActiveSubTab('data');
+                    } else if (savedState.activeSubTab) {
+                        setActiveSubTab(savedState.activeSubTab === 'help' ? 'data' : savedState.activeSubTab);
+                    }
                     if (savedState.manualPages) setManualPages(savedState.manualPages);
                     if (savedState.batchItems) setBatchItems(savedState.batchItems);
                     if (savedState.priceSource) setPriceSource(savedState.priceSource);
@@ -610,7 +636,14 @@ export default function StickerPrinterView() {
                     });
                 }
                 setBatchItems(items);
-                setActiveSubTab('queue');
+                setActiveSubTab('data');
+                if (items.length > 0) {
+                    const first = items[0];
+                    setPreviewName(first.name);
+                    setPreviewOldPrice(first.oldPrice);
+                    setPreviewNewPrice(first.newPrice);
+                    setBarcodeImei(first.imei);
+                }
             } catch (err) {
                 toast.error("Lỗi đọc file Excel");
             }
@@ -670,6 +703,47 @@ export default function StickerPrinterView() {
         if (val == null) return 0;
         const str = String(val).replace(/[^0-9]/g, '');
         return str ? Number(str) : 0;
+    };
+
+    const loadPageToEditor = (page: StickerPage) => {
+        if (page.label) setPreviewName(page.label);
+        if (page.oldPrice) setPreviewOldPrice(page.oldPrice);
+        if (page.code) setBarcodeImei(page.code);
+        if (page.header != null) setHeaderTextContent(page.header);
+        if (page.footer != null) setFooterTextContent(page.footer);
+        if (page.subHeader != null) setSubHeaderTextContent(page.subHeader);
+
+        const { newPrice } = resolvePagePrices(page, priceSource);
+        setPreviewNewPrice(newPrice);
+
+        // Fallback for older pages without properties
+        if (!page.label && page.html) {
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = page.html;
+            const sticker = tempDiv.querySelector('.sticker-container') as HTMLElement;
+            if (sticker) {
+                const headerText = sticker.querySelector('.header-text')?.textContent || headerTextContent;
+                const nameText = sticker.querySelector('.name')?.textContent || '';
+                const oldPriceText = sticker.querySelector('.old')?.textContent || '';
+                const newPriceText = sticker.querySelector('.extra2 span')?.textContent || sticker.querySelector('.extra2')?.textContent || '';
+                const footerText = sticker.querySelector('.footer-text')?.textContent || footerTextContent;
+                const subHeader = sticker.querySelector('.sub-header')?.textContent || subHeaderTextContent;
+
+                setHeaderTextContent(headerText);
+                setSubHeaderTextContent(subHeader);
+                setFooterTextContent(footerText);
+                setPreviewOldPrice(oldPriceText);
+                setPreviewNewPrice(newPriceText);
+
+                const barcodeImg = sticker.querySelector('.barcode img');
+                const barcodeVal = barcodeImg?.getAttribute('alt') || '';
+                if (barcodeVal) {
+                    setBarcodeImei(barcodeVal);
+                }
+                setPreviewName(nameText);
+            }
+        }
+        setBatchItems([]);
     };
 
     const handleTemplateUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -852,6 +926,9 @@ export default function StickerPrinterView() {
                         timestamp: Date.now(),
                         code: code,
                         selected: isSelected,
+                        header: rowHeader,
+                        subHeader: rowSubHeader,
+                        footer: rowFooter,
                     });
                 }
 
@@ -863,6 +940,9 @@ export default function StickerPrinterView() {
                 // Add all imported stickers to the print queue
                 setManualPages(prev => [...prev, ...newPages]);
                 setActiveSubTab('queue');
+                if (newPages.length > 0) {
+                    loadPageToEditor(newPages[0]);
+                }
                 toast.success(`Đã thêm ${newPages.length} sticker vào hàng đợi in`);
             } catch (err) {
                 toast.error('Lỗi đọc file Excel');
@@ -996,6 +1076,9 @@ export default function StickerPrinterView() {
 
                 setManualPages(prev => [...prev, ...newPages]);
                 setActiveSubTab('queue');
+                if (newPages.length > 0) {
+                    loadPageToEditor(newPages[0]);
+                }
                 toast.success(`Đã thêm ${newPages.length} sticker vào hàng đợi in`);
             } catch (err) {
                 console.error(err);
@@ -1045,46 +1128,7 @@ export default function StickerPrinterView() {
         setManualPages(prev => [...prev, page]);
     };
 
-    const loadPageToEditor = (page: StickerPage) => {
-        if (page.label) setPreviewName(page.label);
-        if (page.oldPrice) setPreviewOldPrice(page.oldPrice);
-        if (page.code) setBarcodeImei(page.code);
-        if (page.header != null) setHeaderTextContent(page.header);
-        if (page.footer != null) setFooterTextContent(page.footer);
-        if (page.subHeader != null) setSubHeaderTextContent(page.subHeader);
 
-        const { newPrice } = resolvePagePrices(page, priceSource);
-        setPreviewNewPrice(newPrice);
-
-        // Fallback for older pages without properties
-        if (!page.label && page.html) {
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = page.html;
-            const sticker = tempDiv.querySelector('.sticker-container') as HTMLElement;
-            if (sticker) {
-                const headerText = sticker.querySelector('.header-text')?.textContent || headerTextContent;
-                const nameText = sticker.querySelector('.name')?.textContent || '';
-                const oldPriceText = sticker.querySelector('.old')?.textContent || '';
-                const newPriceText = sticker.querySelector('.extra2 span')?.textContent || sticker.querySelector('.extra2')?.textContent || '';
-                const footerText = sticker.querySelector('.footer-text')?.textContent || footerTextContent;
-                const subHeader = sticker.querySelector('.sub-header')?.textContent || subHeaderTextContent;
-
-                setHeaderTextContent(headerText);
-                setSubHeaderTextContent(subHeader);
-                setFooterTextContent(footerText);
-                setPreviewOldPrice(oldPriceText);
-                setPreviewNewPrice(newPriceText);
-
-                const barcodeImg = sticker.querySelector('.barcode img');
-                const barcodeVal = barcodeImg?.getAttribute('alt') || '';
-                if (barcodeVal) {
-                    setBarcodeImei(barcodeVal);
-                }
-                setPreviewName(nameText);
-            }
-        }
-        setBatchItems([]);
-    };
 
     const removeManualPage = (id: string) => {
         setManualPages(prev => prev.filter(p => p.id !== id));
