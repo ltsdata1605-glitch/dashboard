@@ -343,13 +343,21 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             </div>
                                             <div className="shrink-0">
                                                 {userRole === 'admin' ? (
-                                                    <Select value={editRoles[req.id] || req.role || req.requestedRole || 'pending'} onChange={(e) => { setEditRoles(prev => ({...prev, [req.id]: e.target.value})); if (listMode === 'active') autoSave(req.id, 'role', e.target.value); }} className="h-7 px-2 text-xs w-[100px] font-semibold cursor-pointer">
-                                                        <option value="pending">Chờ duyệt</option>
-                                                        <option value="employee">Nhân Viên</option>
-                                                        <option value="manager">Quản Lý</option>
-                                                        <option value="admin">Admin</option>
-                                                        <option value="blocked">Khoá</option>
-                                                    </Select>
+                                                     <Select 
+                                                         value={editRoles[req.id] || req.role || req.requestedRole || 'pending'} 
+                                                         onChange={(e) => { 
+                                                             setEditRoles(prev => ({...prev, [req.id]: e.target.value})); 
+                                                             if (listMode === 'active') autoSave(req.id, 'role', e.target.value); 
+                                                         }} 
+                                                         fullWidth={false}
+                                                         className="h-8 py-1 pl-2 pr-7 text-xs w-[110px] font-semibold cursor-pointer"
+                                                     >
+                                                         <option value="pending">Chờ duyệt</option>
+                                                         <option value="employee">Nhân Viên</option>
+                                                         <option value="manager">Quản Lý</option>
+                                                         <option value="admin">Admin</option>
+                                                         <option value="blocked">Khoá</option>
+                                                     </Select>
                                                 ) : (
                                                     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold ${req.role === 'admin' ? 'bg-rose-50 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400' : req.role === 'manager' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400' : 'bg-teal-50 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400'}`}>
                                                         <Icon name={req.role === 'admin' ? 'shield' : req.role === 'manager' ? 'briefcase' : 'users'} size={3} />
