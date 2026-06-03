@@ -290,6 +290,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     }
                     #print-host .sticker-container .header-text {
                         color: white !important;
+                        background-color: black !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
