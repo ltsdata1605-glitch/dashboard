@@ -285,6 +285,18 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         page-break-inside: avoid;
                         transform: scale(0.95) !important;
                         transform-origin: center center !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    #print-host .sticker-container .header-text {
+                        color: white !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
+                    }
+                    #print-host .sticker-container .barcode img {
+                        display: block !important;
+                        -webkit-print-color-adjust: exact !important;
+                        print-color-adjust: exact !important;
                     }
                     #print-host .sticker-container:last-child {
                         page-break-after: auto;

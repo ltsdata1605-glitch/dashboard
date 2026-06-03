@@ -1262,10 +1262,12 @@ export default function StickerPrinterView() {
             return next;
         });
 
-        window.print();
-
-        if (root) root.style.display = '';
-        document.body.removeChild(printHost);
+        // Use setTimeout to allow the browser to paint and decode images (including base64 barcodes) before opening print dialog
+        setTimeout(() => {
+            window.print();
+            if (root) root.style.display = '';
+            document.body.removeChild(printHost);
+        }, 200);
     };
 
     return (
