@@ -3,6 +3,7 @@ import { parseCurrency } from './fileParser';
 import { jsPDF } from "jspdf";
 import html2canvas from "html2canvas";
 import toast from 'react-hot-toast';
+import QRCode from 'qrcode';
 
 export interface ModernLayoutPositions {
   productName: { x: number; y: number; w: number; h: number };
@@ -80,7 +81,7 @@ const calculateTagDimensions = (settings: PrintSettings) => {
     return { width: tagWidthMm, height: tagHeightMm };
 }
 
-const generateModernPriceTagHTML = (product: Product, employeeName: string, settings: PrintSettings): string => {
+const generateModernPriceTagHTML = (product: Product, employeeName: string, settings: PrintSettings, qrCodeUrl: string): string => {
     const { width: tagWidthMm, height: tagHeightMm } = calculateTagDimensions(settings);
     
     // Calculate scale to fit content into the tag dimensions
@@ -125,8 +126,6 @@ const generateModernPriceTagHTML = (product: Product, employeeName: string, sett
     }
 
     const discountPercent = originalPrice > 0 ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
-    
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(product.msp)}`;
     
     // Dynamic styles for the wrapper to match aspect ratio
     const wrapperStyle = `width: ${contentWidth}px; height: ${contentHeight}px; transform: scale(${scale});`;
@@ -295,15 +294,13 @@ const shortenAndFormatPrice = (priceString: string): string => {
   return new Intl.NumberFormat('vi-VN').format(Math.round(shortenedValue));
 };
 
-const generatePriceTagHTML = (product: Product, employeeName: string, settings: PrintSettings): string => {
+const generatePriceTagHTML = (product: Product, employeeName: string, settings: PrintSettings, qrCodeUrl: string): string => {
   if (settings.stickerStyle === 'modern') {
-      return generateModernPriceTagHTML(product, employeeName, settings);
+      return generateModernPriceTagHTML(product, employeeName, settings, qrCodeUrl);
   }
 
   const cleanedProductName = product.sanPham.trim().replace(/\(IMEI\)/gi, '').trim();
   const productName = cleanedProductName || 'TÊN SẢN PHẨM';
-
-  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(product.msp)}`;
 
   const qrCodeHTML = settings.showQrCode
     ? `<img src="${qrCodeUrl}" alt="QR Code for ${product.msp}" class="qr-code" />`
@@ -1257,7 +1254,34 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
   
   const abbreviatedEmployeeName = abbreviateName(employeeName);
-  const allTags = products.flatMap(p => Array(p.quantity).fill(p)).map(p => generatePriceTagHTML(p, abbreviatedEmployeeName, settings));
+
+  // Generate QR Code data URLs for all products offline
+  const qrCodeUrls = new Map<string, string>();
+  if (settings.showQrCode) {
+    for (const p of products) {
+      if (p.msp && !qrCodeUrls.has(p.msp)) {
+        try {
+          const url = await QRCode.toDataURL(p.msp, { 
+            margin: 1, 
+            width: 150,
+            color: {
+              dark: '#000000',
+              light: '#ffffff'
+            }
+          });
+          qrCodeUrls.set(p.msp, url);
+        } catch (err) {
+          console.error(`Error generating QR code for ${p.msp}:`, err);
+          qrCodeUrls.set(p.msp, '');
+        }
+      }
+    }
+  }
+
+  const allTags = products.flatMap(p => Array(p.quantity).fill(p)).map(p => {
+    const qrUrl = qrCodeUrls.get(p.msp) || '';
+    return generatePriceTagHTML(p, abbreviatedEmployeeName, settings, qrUrl);
+  });
   
   if (allTags.length === 0) {
       return; // Nothing to print
