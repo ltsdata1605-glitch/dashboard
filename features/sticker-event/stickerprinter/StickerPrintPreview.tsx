@@ -542,7 +542,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                     <BarcodeCanvas value={item.imei} />
                                 </div>
                             )}
-                            <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')}>{headerTextContent}</div>
+                            <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} style={stickerType === 'gia_soc' ? { color: 'white', backgroundColor: 'black' } : { color: 'black' }} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')}>{headerTextContent}</div>
                             {stickerType === 'gio_vang' && (
                                 <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')}>{subHeaderTextContent}</div>
                             )}
@@ -572,7 +572,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             </div>
                         )}
                         {/* Render without React children to prevent React reconciliation from resetting the caret during typing */}
-                        <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} />
+                        <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} style={stickerType === 'gia_soc' ? { color: 'white', backgroundColor: 'black' } : { color: 'black' }} ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} />
                         {stickerType === 'gio_vang' && (
                             <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} />
                         )}
