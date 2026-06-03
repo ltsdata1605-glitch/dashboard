@@ -14,14 +14,6 @@
   --color-indigo-800: #075985;
   --color-indigo-900: #0c4a6e;
 
-  /* Semantic Colors from Design System */
-  --color-primary: var(--color-sky-500);
-  --color-primary-hover: var(--color-sky-600);
-  --color-secondary: var(--color-slate-500);
-  --color-success: var(--color-emerald-500);
-  --color-warning: var(--color-amber-500);
-  --color-danger: var(--color-rose-500);
-
   --animate-blob: blob 7s infinite;
   --animate-marquee: marquee 25s linear infinite;
   --animate-wiggle: wiggle 1.2s ease-in-out infinite;
@@ -391,69 +383,21 @@
 @font-face { font-family: 'Alata Regular'; src: url('/fonts/Alata-Regular.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Shopee Text'; src: url('/fonts/FVHShopeeText-Bold.otf') format('opentype'); font-weight: bold; font-style: normal; font-display: swap; }
 @font-face { font-family: 'SF Pro Display'; src: url('/fonts/SF-Pro-Display-Thin.otf') format('opentype'); font-weight: 100; font-style: normal; font-display: swap; }
-
+@font-face { font-family: 'SVN-Gilroy'; src: url('/fonts/SVN-Gilroy Regular.otf') format('opentype'); font-weight: normal; font-style: normal; font-display: swap; }
+@font-face { font-family: 'SVN-Gilroy'; src: url('/fonts/SVN-Gilroy Bold.otf') format('opentype'); font-weight: bold; font-style: normal; font-display: swap; }
+@font-face { font-family: 'SVN-Gilroy'; src: url('/fonts/SVN-Gilroy XBold.otf') format('opentype'); font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: 'SVN-Gilroy'; src: url('/fonts/SVN-Gilroy Heavy.otf') format('opentype'); font-weight: 900; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Samsung Sharp Sans'; src: url('/fonts/SamsungSharpSans-Medium_SMCP.ttf') format('truetype'); font-weight: 500; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Samsung Sharp Sans'; src: url('/fonts/SamsungSharpSans-Bold_SMCPS.ttf') format('truetype'); font-weight: bold; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Shopee Display'; src: url('/fonts/ShopeeDisplay-Light.ttf') format('truetype'); font-weight: 300; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Shopee Display'; src: url('/fonts/ShopeeDisplay-Bold.ttf') format('truetype'); font-weight: bold; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Shopee Display'; src: url('/fonts/ShopeeDisplay-ExtraBold.ttf') format('truetype'); font-weight: 800; font-style: normal; font-display: swap; }
 @font-face { font-family: 'Shopee Display'; src: url('/fonts/ShopeeDisplay-Black.ttf') format('truetype'); font-weight: 900; font-style: normal; font-display: swap; }
-
+@font-face { font-family: 'UTM Aurora'; src: url('/fonts/UTM Aurora.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
 /* UTM Avo - Map weights explicitly to prevent browser artificial fake bolding */
 @font-face { font-family: 'UTM Avo'; src: url('/fonts/UTM Avo.ttf') format('truetype'); font-weight: 100 500; font-style: normal; font-display: swap; }
 @font-face { font-family: 'UTM Avo'; src: url('/fonts/UTM AvoBold.ttf') format('truetype'); font-weight: 600 900; font-style: normal; font-display: swap; }
 
 @font-face { font-family: 'UTM Colossalis'; src: url('/fonts/UTM Colossalis.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }
 
-@media print {
-    @page {
-        size: A4 portrait;
-        margin: 0;
-    }
-    html, body {
-        width: 210mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: white !important;
-    }
-    #print-host {
-        display: block !important;
-        width: 210mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        background: white !important;
-    }
-    #print-host .sticker-container {
-        width: 210mm !important;
-        height: 297mm !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        box-sizing: border-box !important;
-        background-size: 100% 100% !important;
-        border-radius: 0 !important;
-        overflow: hidden !important;
-        page-break-after: always;
-        page-break-inside: avoid;
-        transform: scale(0.95) !important;
-        transform-origin: center center !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-    #print-host .sticker-container .header-text {
-        color: white !important;
-        background-color: black !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-    #print-host .sticker-container .barcode img {
-        display: block !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-    #print-host .sticker-container:last-child {
-        page-break-after: auto;
-    }
-    #print-host .sticker-container * {
-        outline: none !important;
-    }
-}
+@font-face { font-family: 'UTM Penumbra'; src: url('/fonts/UTM Penumbra.ttf') format('truetype'); font-weight: normal; font-style: normal; font-display: swap; }

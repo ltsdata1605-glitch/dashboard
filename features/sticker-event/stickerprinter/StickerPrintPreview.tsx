@@ -254,59 +254,6 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         <div className="bg-white p-0 shadow-xl border border-slate-200 shrink-0 w-full max-w-sm mx-auto overflow-hidden no-print-bg">
             <style>
                 {`
-                @media print {
-                    @page {
-                        size: A4 portrait;
-                        margin: 0;
-                    }
-                    html, body {
-                        width: 210mm !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        background: white !important;
-                    }
-                    #print-host {
-                        display: block !important;
-                        width: 210mm !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        background: white !important;
-                    }
-                    #print-host .sticker-container {
-                        width: 210mm !important;
-                        height: 297mm !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        box-sizing: border-box !important;
-                        background-size: 100% 100% !important;
-                        border-radius: 0 !important;
-                        overflow: hidden !important;
-                        page-break-after: always;
-                        page-break-inside: avoid;
-                        transform: scale(0.95) !important;
-                        transform-origin: center center !important;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    #print-host .sticker-container .header-text {
-                        color: white !important;
-                        background-color: black !important;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    #print-host .sticker-container .barcode img {
-                        display: block !important;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    #print-host .sticker-container:last-child {
-                        page-break-after: auto;
-                    }
-                    #print-host .sticker-container * {
-                        outline: none !important;
-                    }
-                }
-
                 .sticker-container {
                     width: 100%;
                     aspect-ratio: 197 / 285;
