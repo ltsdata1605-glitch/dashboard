@@ -23,7 +23,7 @@ export const syncToCloud = async (
     }
 
     const userRef = doc(db, 'users', user.uid);
-    const configRef = doc(db, 'users', user.uid, 'settings', 'configuration');
+    const configRef = doc(db, 'users', user.uid, 'setting', 'configuration');
 
     // Cập nhật timestamp lần sync cuối
     await setDoc(userRef, {
@@ -50,7 +50,7 @@ export const syncToCloud = async (
 export const fetchFromCloud = async (user: User) => {
     if (!user) throw new Error("Chưa đăng nhập, không thể tải dữ liệu.");
     
-    const configRef = doc(db, 'users', user.uid, 'settings', 'configuration');
+    const configRef = doc(db, 'users', user.uid, 'setting', 'configuration');
     const snap = await getDoc(configRef);
     
     if (snap.exists()) {
@@ -71,7 +71,7 @@ export const fetchFromCloud = async (user: User) => {
 export const clearCloudSettings = async (user: User) => {
     if (!user) return;
     const { deleteDoc } = await import('firebase/firestore');
-    const configRef = doc(db, 'users', user.uid, 'settings', 'configuration');
+    const configRef = doc(db, 'users', user.uid, 'setting', 'configuration');
     await deleteDoc(configRef);
 };
 

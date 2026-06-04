@@ -270,6 +270,14 @@ Trước khi sửa, tự hỏi:
 - Dự án dùng Git — luôn có thể `git stash` hoặc `git checkout -- <file>` để rollback
 - Backup ZIP được tạo định kỳ tại root project (`dashboardycx_backup_*.zip`)
 
+### 9.4 Cách ly phạm vi & Quy trình báo cáo sửa đổi
+- **Cách ly phạm vi (Không ảnh hưởng chéo)**: Khi sửa code theo yêu cầu, chỉ tác động đúng file và tính năng được yêu cầu, tuyệt đối không làm ảnh hưởng đến tính năng hay mã nguồn của các khu vực/chức năng khác trong hệ thống.
+- **Quy trình báo cáo hoàn tất**: Tất cả yêu cầu khi hoàn tất cần được báo cáo rõ ràng:
+  1. Mô tả lại yêu cầu của người dùng.
+  2. Nêu rõ các bước thực hiện và chi tiết mỗi bước đã thay đổi mã nguồn như thế nào.
+  3. Trình bày cách hoạt động của tính năng mới/sau khi sửa.
+  4. Thực hiện kiểm tra (Typecheck/Lint/Build) để đảm bảo dự án không phát sinh lỗi trước khi báo cáo.
+
 ---
 
 ## 10. MOBILE RESPONSIVE

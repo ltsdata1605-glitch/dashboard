@@ -208,6 +208,9 @@ export default function StickerPrinterView() {
     };
 
     const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
+    const updateBatchItem = (id: string, updates: Partial<BatchItem>) => {
+        setBatchItems(prev => prev.map(it => it.id === id ? { ...it, ...updates } : it));
+    };
     const [headerTextContent, setHeaderTextContent] = useState('QUẠT ĐIỀU HOÀ');
     const [subHeaderTextContent, setSubHeaderTextContent] = useState('0 SUẤT/NGÀY');
     const [footerTextContent, setFooterTextContent] = useState('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
@@ -308,7 +311,7 @@ export default function StickerPrinterView() {
                 // 1. Load sticker printer settings / states
                 let savedState: any = null;
                 if (user) {
-                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerPrinter');
+                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerPrinter');
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         savedState = docSnap.data();
@@ -361,7 +364,7 @@ export default function StickerPrinterView() {
                 // 2. Load saved lists
                 let savedListsData: any = null;
                 if (user) {
-                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerSavedLists');
+                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerSavedLists');
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         savedListsData = docSnap.data()?.lists;
@@ -380,7 +383,7 @@ export default function StickerPrinterView() {
                 // 3. Load print history
                 let printHistoryData: any = null;
                 if (user) {
-                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerPrintHistory');
+                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerPrintHistory');
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         printHistoryData = docSnap.data()?.history;
@@ -451,7 +454,7 @@ export default function StickerPrinterView() {
             
             if (user) {
                 try {
-                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerPrinter');
+                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerPrinter');
                     await setDoc(docRef, dataToSave);
                 } catch (e) {
                     console.error("Firebase save failed", e);
@@ -501,7 +504,7 @@ export default function StickerPrinterView() {
             }
             if (user) {
                 try {
-                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerSavedLists');
+                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerSavedLists');
                     await setDoc(docRef, { lists: savedLists, updatedAt: new Date().toISOString() });
                 } catch (e) {
                     console.error("Firebase save savedLists failed", e);
@@ -522,7 +525,7 @@ export default function StickerPrinterView() {
             }
             if (user) {
                 try {
-                    const docRef = doc(db, 'users', user.uid, 'settings', 'stickerPrintHistory');
+                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerPrintHistory');
                     await setDoc(docRef, { history: printHistory, updatedAt: new Date().toISOString() });
                 } catch (e) {
                     console.error("Firebase save printHistory failed", e);
@@ -1434,6 +1437,7 @@ export default function StickerPrinterView() {
                         setFooterTextContent={setFooterTextContent}
                         setBarcodeImei={setBarcodeImei}
                         setPreviewName={setPreviewName}
+                        updateBatchItem={updateBatchItem}
                     />
                 </div>
                 <StickerPrintControls

@@ -32,26 +32,24 @@ interface StickerPrintPreviewProps {
     setPreviewName: (val: string) => void;
     setPreviewOldPrice: (val: string) => void;
     setPreviewNewPrice: (val: string) => void;
+    updateBatchItem?: (id: string, updates: Partial<BatchItem>) => void;
 }
 
 /**
  * Hook to manage a contentEditable div without cursor-jumping.
- * Uses a ref to track if this is the first render. On subsequent
- * external value changes, only updates the DOM when the element
- * is NOT focused (user is not typing).
+ * Synchronizes external state with DOM while handling element mounting / changing.
  */
 function useContentEditable<T extends HTMLElement = HTMLDivElement>(
     externalValue: string,
     onChange?: (text: string) => void,
 ) {
     const ref = useRef<T>(null);
-    const isInitialized = useRef(false);
+    const lastElementRef = useRef<T | null>(null);
 
-    // After first render, mark as initialized and set text
+    // Sync from external state -> DOM on mount or when DOM element changes
     useEffect(() => {
-        if (ref.current && !isInitialized.current) {
-            isInitialized.current = true;
-            // Set initial text from prop (in case it differs from JSX children)
+        if (ref.current && ref.current !== lastElementRef.current) {
+            lastElementRef.current = ref.current;
             if (ref.current.innerText !== externalValue) {
                 ref.current.innerText = externalValue;
             }
@@ -60,7 +58,6 @@ function useContentEditable<T extends HTMLElement = HTMLDivElement>(
 
     // Sync from external state → DOM, but ONLY when element is NOT focused
     useEffect(() => {
-        if (!isInitialized.current) return;
         if (ref.current && document.activeElement !== ref.current) {
             if (ref.current.innerText !== externalValue) {
                 ref.current.innerText = externalValue;
@@ -154,6 +151,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     setPreviewName,
     setPreviewOldPrice,
     setPreviewNewPrice,
+    updateBatchItem,
 }) => {
     const percentRef = useRef<HTMLDivElement>(null);
 
@@ -489,26 +487,72 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                     <BarcodeCanvas value={item.imei} />
                                 </div>
                             )}
-                            <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} style={stickerType === 'gia_soc' ? { color: 'white', backgroundColor: 'transparent' } : { color: 'black', backgroundColor: 'transparent' }} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')}>{headerTextContent}</div>
+                            <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} style={stickerType === 'gia_soc' ? { color: 'white', backgroundColor: 'transparent' } : { color: 'black', backgroundColor: 'transparent' }} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} onBlur={(e) => setHeaderTextContent(e.currentTarget.innerText)}>{headerTextContent}</div>
                             {stickerType === 'gio_vang' && (
-                                <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')}>{subHeaderTextContent}</div>
+                                <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} onBlur={(e) => setSubHeaderTextContent(e.currentTarget.innerText)}>{subHeaderTextContent}</div>
                             )}
-                            <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>
+                            <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')} onBlur={(e) => updateBatchItem?.(item.id, { percent: e.currentTarget.innerText })}>
                                 {discountDisplayMode === 'amount'
                                     ? renderAmountDiscount(item.oldPrice, item.newPrice) || item.percent
                                     : item.percent}
                             </div>
-                            <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} onInput={handlePriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')}>{item.oldPrice}</div>
-                            <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')}>{item.name}</div>
+                            <div 
+                                className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} 
+                                onInput={handlePriceInput} 
+                                contentEditable 
+                                suppressContentEditableWarning 
+                                onClick={() => setActiveField('oldPrice')}
+                                onBlur={(e) => {
+                                    const val = e.currentTarget.innerText;
+                                    const newPercent = renderPercentDiscount(val, item.newPrice) || '';
+                                    updateBatchItem?.(item.id, { oldPrice: val, percent: newPercent });
+                                }}
+                            >
+                                {item.oldPrice}
+                            </div>
+                            <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} onBlur={(e) => updateBatchItem?.(item.id, { name: e.currentTarget.innerText })}>{item.name}</div>
                             {stickerType === 'gio_vang' ? (
-                                <div className={`extra2 flex items-baseline justify-center ${activeField === 'newPrice' ? 'active-field' : ''}`} onClick={() => setActiveField('newPrice')}>
-                                    <span onInput={handlePriceInput} contentEditable suppressContentEditableWarning>{item.newPrice}</span>
+                                <div 
+                                    className={`extra2 flex items-baseline justify-center ${activeField === 'newPrice' ? 'active-field' : ''}`} 
+                                    onClick={(e) => {
+                                        setActiveField('newPrice');
+                                        const span = e.currentTarget.querySelector('span[contenteditable="true"]') as HTMLElement;
+                                        if (span && document.activeElement !== span) {
+                                            span.focus();
+                                        }
+                                    }}
+                                >
+                                    <span 
+                                        onInput={handlePriceInput} 
+                                        contentEditable 
+                                        suppressContentEditableWarning
+                                        onBlur={(e) => {
+                                            const val = e.currentTarget.innerText;
+                                            const newPercent = renderPercentDiscount(item.oldPrice, val) || '';
+                                            updateBatchItem?.(item.id, { newPrice: val, percent: newPercent });
+                                        }}
+                                    >
+                                        {item.newPrice}
+                                    </span>
                                     <span className="small-zeros" contentEditable={false}>.000</span>
                                 </div>
                             ) : (
-                                <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} onInput={handlePriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')}>{item.newPrice}</div>
+                                <div 
+                                    className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} 
+                                    onInput={handlePriceInput} 
+                                    contentEditable 
+                                    suppressContentEditableWarning 
+                                    onClick={() => setActiveField('newPrice')}
+                                    onBlur={(e) => {
+                                        const val = e.currentTarget.innerText;
+                                        const newPercent = renderPercentDiscount(item.oldPrice, val) || '';
+                                        updateBatchItem?.(item.id, { newPrice: val, percent: newPercent });
+                                    }}
+                                >
+                                    {item.newPrice}
+                                </div>
                             )}
-                            <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')}>{footerTextContent}</div>
+                            <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} onBlur={(e) => setFooterTextContent(e.currentTarget.innerText)}>{footerTextContent}</div>
                         </div>
                     ))
                 ) : (
@@ -531,7 +575,16 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceEditable.ref} onInput={onOldPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')} />
                         <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} />
                         {stickerType === 'gio_vang' ? (
-                            <div className={`extra2 flex items-baseline justify-center ${activeField === 'newPrice' ? 'active-field' : ''}`} onClick={() => setActiveField('newPrice')}>
+                            <div 
+                                className={`extra2 flex items-baseline justify-center ${activeField === 'newPrice' ? 'active-field' : ''}`} 
+                                onClick={(e) => {
+                                    setActiveField('newPrice');
+                                    const span = e.currentTarget.querySelector('span[contenteditable="true"]') as HTMLElement;
+                                    if (span && document.activeElement !== span) {
+                                        span.focus();
+                                    }
+                                }}
+                            >
                                 <span ref={newPriceEditable.ref as React.RefObject<HTMLSpanElement>} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning />
                                 <span className="small-zeros" contentEditable={false}>.000</span>
                             </div>
