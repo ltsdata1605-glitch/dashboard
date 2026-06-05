@@ -122,12 +122,7 @@ const generatePageHtml = (
     const subHeaderHtml = stickerType === 'gio_vang' 
         ? `<div class="sub-header">${subHeader || ''}</div>` : '';
     
-    let priceHtml = '';
-    if (stickerType === 'gio_vang') {
-        priceHtml = `<div class="extra2" style="display:flex;align-items:baseline;justify-content:center"><span>${newPrice}</span><span class="small-zeros">.000</span></div>`;
-    } else {
-        priceHtml = `<div class="extra2">${newPrice}</div>`;
-    }
+    const priceHtml = `<div class="extra2">${newPrice}</div>`;
 
     return `<div class="sticker-container" data-type="${stickerType}" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:197/285;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;">
         ${barcodeHtml}

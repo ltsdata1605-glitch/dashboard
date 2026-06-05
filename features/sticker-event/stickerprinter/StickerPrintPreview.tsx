@@ -458,6 +458,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     letter-spacing: -0.06em;
                     color: black;
                     font-family: 'UTM Colossalis', sans-serif !important;
+                    line-height: 1 !important;
                 }
                 .sticker-container[data-type="gio_vang"] .extra2 span {
                     font-family: 'UTM Colossalis', sans-serif !important;
@@ -469,7 +470,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     letter-spacing: normal;
                     font-weight: 400 !important;
                     align-self: flex-end;
-                    margin-bottom: 0.12em;
+                    margin-bottom: 0.08em;
                 }
                 .sticker-container[data-type="gio_vang"] .extra2 .small-zeros {
                     font-size: 40%;
