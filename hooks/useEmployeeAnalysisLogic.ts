@@ -98,9 +98,100 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
         loadData();
     }, []);
 
+    const isUpdatingFromCloudRef = useRef(false);
+
+    // Lắng nghe sự thay đổi của IndexedDB (từ đồng bộ đám mây) để cập nhật nóng vào UI, tránh cache cũ
+    useEffect(() => {
+        const handleSettingChanged = async (e: any) => {
+            const changedKey = e.detail?.key;
+            if (!changedKey) return;
+
+            if (changedKey === 'customTabs') {
+                const savedTabs = await getCustomTabs();
+                if (savedTabs) {
+                    const migratedTabs = savedTabs.map(tab => ({ ...tab, icon: tab.icon || 'bar-chart-3' }));
+                    setCustomTabs(prev => {
+                        if (JSON.stringify(prev) !== JSON.stringify(migratedTabs)) {
+                            isUpdatingFromCloudRef.current = true;
+                            return migratedTabs;
+                        }
+                        return prev;
+                    });
+                }
+            } else if (changedKey === 'industryAnalysisCustomTabs') {
+                const savedIndustryTabs = await getIndustryAnalysisCustomTabs();
+                if (savedIndustryTabs) {
+                    setIndustryAnalysisTabs(prev => {
+                        if (JSON.stringify(prev) !== JSON.stringify(savedIndustryTabs)) {
+                            isUpdatingFromCloudRef.current = true;
+                            return savedIndustryTabs;
+                        }
+                        return prev;
+                    });
+                }
+            } else if (changedKey === 'customExploitationTabs') {
+                const savedExploitationTabs = await getSetting<CustomExploitationTabConfig[]>('customExploitationTabs');
+                if (savedExploitationTabs) {
+                    const filteredExploitationTabs = savedExploitationTabs.filter(tab => !tab.id.startsWith('preset_'));
+                    const normalizedTabs = filteredExploitationTabs.map(tab => {
+                        if (tab.columns && Array.isArray(tab.columns)) return tab;
+                        const columns: any[] = [];
+                        const displayOpts = tab.displayOptions || { showQuantity: true, showRevenue: true, showPercentage: true };
+                        if (displayOpts.showQuantity) columns.push({ id: `sl`, name: 'SL', type: 'quantity', filters: tab.filters });
+                        if (displayOpts.showRevenue) columns.push({ id: `dt`, name: 'D.THU', type: 'revenue', filters: tab.filters });
+                        if (displayOpts.showPercentage) {
+                            columns.push({ 
+                                id: `pct`, 
+                                name: '%', 
+                                type: 'percentage', 
+                                percentageConfig: {
+                                    numeratorMetric: tab.percentageConfig?.numeratorMetric || 'quantity',
+                                    baseMetric: tab.percentageConfig?.baseMetric || 'quantity',
+                                    numeratorFilters: tab.filters,
+                                    denominatorFilters: tab.percentageConfig?.filters || { selectedIndustries: [], selectedSubgroups: [], selectedManufacturers: [], productCodes: [] }
+                                }
+                            });
+                        }
+                        return { ...tab, columns };
+                    });
+                    setCustomExploitationTabs(prev => {
+                        if (JSON.stringify(prev) !== JSON.stringify(normalizedTabs)) {
+                            isUpdatingFromCloudRef.current = true;
+                            return normalizedTabs;
+                        }
+                        return prev;
+                    });
+                }
+            } else if (changedKey === 'efficiencyExploitationTabs') {
+                const savedEfficiencyTabs = await getSetting<CustomExploitationTabConfig[]>('efficiencyExploitationTabs');
+                if (savedEfficiencyTabs) {
+                    setEfficiencyExploitationTabs(prev => {
+                        if (JSON.stringify(prev) !== JSON.stringify(savedEfficiencyTabs)) {
+                            isUpdatingFromCloudRef.current = true;
+                            return savedEfficiencyTabs;
+                        }
+                        return prev;
+                    });
+                }
+            }
+        };
+
+        window.addEventListener('ycx-setting-changed', handleSettingChanged);
+        window.addEventListener('indexeddb-change', handleSettingChanged);
+        return () => {
+            window.removeEventListener('ycx-setting-changed', handleSettingChanged);
+            window.removeEventListener('indexeddb-change', handleSettingChanged);
+        };
+    }, []);
+
     // Save tabs to DB on change
     useEffect(() => {
         if (isInitialTabsLoaded && isHydratedRef.current) {
+            if (isUpdatingFromCloudRef.current) {
+                // Reset cờ hiệu và bỏ qua việc ghi đè lên IndexedDB để tránh lặp vô tận
+                isUpdatingFromCloudRef.current = false;
+                return;
+            }
             saveCustomTabs(customTabs);
             saveIndustryAnalysisCustomTabs(industryAnalysisTabs);
             saveSetting('customExploitationTabs', customExploitationTabs);
