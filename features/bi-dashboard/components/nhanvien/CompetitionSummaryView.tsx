@@ -3,7 +3,7 @@ import React, { useMemo, useRef, useState, useEffect } from 'react';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
-import { FilterIcon, TrashIcon, PencilIcon, XIcon, CheckCircleIcon } from '../Icons';
+import { FilterIcon, TrashIcon, PencilIcon, XIcon, CheckCircleIcon, PercentIcon, HashIcon } from '../Icons';
 import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
@@ -116,16 +116,32 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
         setShowDeleteConfirm(false);
     };
 
+    const [showPercent, setShowPercent] = useState(false);
+
     const headerActions = (
-        <div className="flex items-center gap-2 no-print relative z-[10]">
+        <div className="flex items-center gap-1.5 no-print relative z-[10]">
+            {/* Toggle % / Luỹ kế */}
+            <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setShowPercent(!showPercent); }}
+                className={`h-6 w-6 p-1 rounded transition-colors ${showPercent ? 'text-indigo-700 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
+                title={showPercent ? 'Đang hiển thị %HT — Bấm để xem Luỹ kế (SL)' : 'Đang hiển thị Luỹ kế (SL) — Bấm để xem %HT'}
+            >
+                {showPercent ? (
+                    <PercentIcon className="h-4 w-4 pointer-events-none mx-auto" />
+                ) : (
+                    <HashIcon className="h-4 w-4 pointer-events-none mx-auto" />
+                )}
+            </button>
+            
             <div className="relative" ref={filterRef}>
                 <button 
                     type="button"
                     onClick={(e) => { e.stopPropagation(); setIsFilterOpen(!isFilterOpen); }}
-                    className={`p-2 rounded-full transition-colors ${isFilterOpen || selectedTitles.length > 0 ? 'bg-indigo-50 text-indigo-600' : 'text-slate-400 hover:bg-slate-100'}`}
+                    className={`relative h-6 w-6 p-1 rounded transition-colors ${isFilterOpen || selectedTitles.length > 0 ? 'text-indigo-700 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
                     title="Lọc nhóm thi đua cho bảng này"
                 >
-                    <FilterIcon className="h-5 w-5 pointer-events-none" />
+                    <FilterIcon className="h-4 w-4 pointer-events-none mx-auto" />
                     {selectedTitles.length > 0 && (
                         <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[8px] font-black px-1 rounded-full">{selectedTitles.length}</span>
                     )}
@@ -150,7 +166,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                     <div key={criterion}>
                                         <p className="px-2 mb-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">{criterion}</p>
                                         {comps.map(comp => (
-                                            <div key={comp.title} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer" onClick={() => handleToggleTitle(comp.title)}>
+                                            <div key={comp.title} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-750/50 cursor-pointer" onClick={() => handleToggleTitle(comp.title)}>
                                                 <span className={`text-xs ${selectedTitles.includes(comp.title) ? 'font-bold text-indigo-600' : 'text-slate-600 dark:text-slate-400'}`}>{shortenName(comp.originalTitle, nameOverrides)}</span>
                                                 <Switch checked={selectedTitles.includes(comp.title)} onChange={() => {}} />
                                             </div>
@@ -162,22 +178,28 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                     </div>
                 )}
             </div>
+
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+
             <button 
                 type="button" 
                 onClick={(e) => { e.stopPropagation(); setIsEditingName(true); }} 
-                className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition-colors" 
+                className="h-6 w-6 p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" 
                 title="Sửa tên bảng"
             >
-                <PencilIcon className="h-5 w-5 pointer-events-none" />
+                <PencilIcon className="h-4 w-4 pointer-events-none mx-auto" />
             </button>
             <button 
                 type="button" 
                 onClick={handleConfirmDelete} 
-                className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors" 
+                className="h-6 w-6 p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" 
                 title="Xóa bảng"
             >
-                <TrashIcon className="h-5 w-5 pointer-events-none" />
+                <TrashIcon className="h-4 w-4 pointer-events-none mx-auto" />
             </button>
+
+            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
+
             <ExportButton onExportPNG={handleExportPNG} />
         </div>
     );
@@ -211,48 +233,91 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                         Bấm biểu tượng lọc <FilterIcon className="inline h-4 w-4" /> để chọn các cột dữ liệu hiển thị cho bảng này.
                     </div>
                 ) : (
-                    <div className="w-full overflow-x-auto border-t border-slate-200 dark:border-slate-700 lg:border-x lg:border-b lg:rounded-xl lg:m-4 overflow-hidden shadow-sm" style={{ WebkitOverflowScrolling: 'touch' }}>
-                        <table className="w-full border-collapse compact-export-table text-[12px]">
-                            <thead className="bg-slate-50 dark:bg-slate-800/80 uppercase text-[10px] font-bold text-slate-500 tracking-wider">
-                                <tr>
-                                    <th className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800/80 px-4 py-3 text-left border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 min-w-[160px] align-middle">Nhân viên</th>
-                                    <th className="px-3 py-3 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 align-middle">Bộ phận</th>
-                                    {visibleHeaders.map(header => (
-                                        <th key={header.title} className="px-3 py-3 text-center border-r border-slate-200 dark:border-slate-700 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 min-w-[100px] leading-tight align-middle">
-                                            {shortenName(header.originalTitle, nameOverrides)}
-                                            <div className="text-[9px] opacity-60 font-medium mt-1 tracking-normal">({header.metric})</div>
+                    <div className="w-full overflow-hidden px-4 pb-4">
+                        <div className="overflow-x-auto border border-slate-200 dark:border-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
+                            <table className="w-full border-collapse compact-export-table">
+                                <thead>
+                                    <tr className="text-[11px] font-black uppercase tracking-wider">
+                                        <th className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 px-2 py-1.5 text-left border-r border-b-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[160px] align-middle">
+                                            Nhân viên
                                         </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-slate-700 bg-white dark:bg-[#1c1c1e]">
-                                {employees.map((emp) => (
-                                    <tr key={emp.originalName} className="hover:bg-slate-50 dark:hover:bg-slate-750 transition-colors">
-                                        <td className="sticky left-0 z-10 bg-white dark:bg-slate-900 px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400 border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
-                                            {emp.name}
-                                        </td>
-                                        <td className="px-3 py-3 text-center border-r border-slate-100 dark:border-slate-800 text-slate-400 font-bold uppercase text-[10px] whitespace-nowrap">
-                                            {emp.department}
-                                        </td>
-                                        {visibleHeaders.map(header => {
-                                            const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
-                                            const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
-                                            const ht = target > 0 ? (actual / target) * 100 : 0;
-                                            return (
-                                                <td key={header.title} className="px-3 py-3 border-r border-slate-100 dark:border-slate-800 text-center tabular-nums">
-                                                    <div className="font-semibold text-slate-700 dark:text-slate-200">{actual > 0 ? formatter.format(roundUp(actual)) : '-'}</div>
-                                                    {actual > 0 && target > 0 && (
-                                                        <div className={`text-[10px] mt-0.5 ${getHtColor(ht)}`}>
-                                                            {roundUp(ht)}%
-                                                        </div>
-                                                    )}
-                                                </td>
-                                            );
-                                        })}
+                                        {(() => {
+                                            const colors = ['sky', 'emerald', 'amber', 'violet', 'rose', 'teal'];
+                                            return visibleHeaders.map((header, index) => {
+                                                const color = colors[index % colors.length];
+                                                return (
+                                                    <th 
+                                                        key={header.title} 
+                                                        className={`px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[100px] leading-tight align-middle`}
+                                                    >
+                                                        {shortenName(header.originalTitle, nameOverrides)}
+                                                    </th>
+                                                );
+                                            });
+                                        })()}
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+                                    {employees.map((emp, idx) => {
+                                        const isEven = idx % 2 === 0;
+                                        const zebraClass = isEven ? 'bg-white dark:bg-[#1c1c1e]' : 'bg-slate-50/70 dark:bg-slate-800/30';
+                                        return (
+                                            <tr key={emp.originalName} className={`${zebraClass} hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700`}>
+                                                <td 
+                                                    className={`sticky left-0 z-10 ${zebraClass} px-2 py-1 font-bold border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-[13px] text-left leading-tight`}
+                                                    style={{ color: 'var(--color-sky-600)' }}
+                                                >
+                                                    {emp.name}
+                                                </td>
+                                                {visibleHeaders.map(header => {
+                                                    const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
+                                                    const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
+                                                    const ht = target > 0 ? (actual / target) * 100 : 0;
+                                                    return (
+                                                        <td key={header.title} className="px-1.5 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums">
+                                                            {showPercent ? (
+                                                                actual > 0 && target > 0 ? (
+                                                                    <span className={getHtColor(ht)}>{roundUp(ht)}%</span>
+                                                                ) : (
+                                                                    <span className="text-slate-300">-</span>
+                                                                )
+                                                            ) : (
+                                                                <span className="font-bold text-slate-700 dark:text-slate-300">{actual > 0 ? formatter.format(roundUp(actual)) : '-'}</span>
+                                                            )}
+                                                        </td>
+                                                    );
+                                                })}
+                                            </tr>
+                                        );
+                                    })}
+                                    {/* Grand Total — indigo accent */}
+                                    <tr className="bg-indigo-50 dark:bg-indigo-900/30 font-extrabold text-indigo-800 dark:text-indigo-300 border-t-2 border-indigo-200 dark:border-indigo-800">
+                                         <td className="sticky left-0 z-10 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-indigo-200 dark:border-indigo-800/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                                             TỔNG
+                                         </td>
+                                         {visibleHeaders.map(header => {
+                                             const totalActual = employees.reduce((sum, emp) => sum + (employeeDataMap.get(emp.name)?.values[header.title] ?? 0), 0);
+                                             const totalTarget = employees.reduce((sum, emp) => sum + (employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0), 0);
+                                             const totalHt = totalTarget > 0 ? (totalActual / totalTarget) * 100 : 0;
+                                             
+                                             return (
+                                                 <td key={header.title} className="px-1.5 py-1 text-center text-[13px] border-r border-indigo-200 dark:border-indigo-800/50 whitespace-nowrap tabular-nums">
+                                                     {showPercent ? (
+                                                         totalActual > 0 && totalTarget > 0 ? (
+                                                             <span>{roundUp(totalHt).toFixed(0)}%</span>
+                                                         ) : (
+                                                             <span className="text-indigo-300 dark:text-indigo-700">-</span>
+                                                         )
+                                                     ) : (
+                                                         <span>{totalActual > 0 ? formatter.format(roundUp(totalActual)) : '-'}</span>
+                                                     )}
+                                                 </td>
+                                             );
+                                         })}
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </Card>

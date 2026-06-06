@@ -171,62 +171,20 @@ export const useFileUploadLogic = ({
                         setAppState('processing');
                     });
                     
-                    // Background Drive Upload (Non-blocking)
-                    if (!isCloudSync) {
-                        const token = sessionStorage.getItem('googleOAuthToken');
-                        if (token) {
-                            (async () => {
-                                try {
-                                    const { toast } = await import('react-hot-toast');
-                                    const { uploadFileToDrive, listDriveFiles } = await import('../services/googleDriveService');
-                                    
-                                    toast('Đang kiểm tra và đồng bộ ngầm lên Google Drive...', { icon: '☁️' });
-                                    const existingFiles = await listDriveFiles(token);
-                                    
-                                    const pad = (n: number) => n.toString().padStart(2, '0');
-                                    const formatDate = (date: Date) => `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
-                                    
-                                    let uploadedCount = 0;
-                                    let skippedCount = 0;
-                                    let lastUploadedFileId: string | null = null;
-                                    let lastUploadedFileName: string | null = null;
-
-                                    for (let i = 0; i < files.length; i++) {
-                                        const file = files[i];
-                                        const formattedCreation = formatDate(new Date(file.lastModified));
-                                        const isDuplicate = existingFiles.some(f => {
-                                            const nameMatches = f.name.includes(`YCX_${formattedCreation}`) || f.name.includes(`Tải file: ${formattedCreation}`);
-                                            const sizeMatches = f.size ? f.size === file.size.toString() : true;
-                                            return nameMatches && sizeMatches;
-                                        });
-                                        
-                                        if (isDuplicate) {
-                                            skippedCount++;
-                                        } else {
-                                            const driveResult = await uploadFileToDrive(file, token, 'dmx_sales');
-                                            lastUploadedFileId = driveResult.id;
-                                            lastUploadedFileName = driveResult.name;
-                                            uploadedCount++;
-                                        }
-                                    }
-
-                                    if (uploadedCount > 0) {
-                                        toast.success(`Đã sao lưu ngầm ${uploadedCount} báo cáo lên Drive!`);
-                                        if (user && lastUploadedFileId && lastUploadedFileName) {
-                                            try {
-                                                const { syncToCloud } = await import('../services/firestoreService');
-                                                await syncToCloud(user, { latestDriveUpload: { fileId: lastUploadedFileId, name: lastUploadedFileName, timestamp: Date.now(), fileLastModified: latestFileTime } });
-                                            } catch (e) {
-                                                console.error("Lỗi đồng bộ metadata Drive:", e);
-                                            }
-                                        }
-                                    }
-                                } catch (err) {
-                                    console.error("Lỗi Google Drive Background Upload:", err);
-                                    import('react-hot-toast').then(m => m.toast.error("Quá trình đẩy file lên Drive gặp sự cố."));
-                                }
-                            })();
-                        }
+                    // Background Firebase Cloud Sync (thay thế Google Drive Upload)
+                    if (user && !isCloudSync) {
+                        (async () => {
+                            try {
+                                const { toast } = await import('react-hot-toast');
+                                toast('☁️ Đang đồng bộ dữ liệu lên đám mây...', { id: 'cloud-sync-start', duration: 2000 });
+                                const { uploadProcessedData } = await import('../services/cloudDataService');
+                                await uploadProcessedData(user, payload, mergedName, latestFileTime);
+                                toast.success('Đã đồng bộ dữ liệu lên đám mây!', { id: 'cloud-sync-done' });
+                            } catch (err) {
+                                console.error('Cloud data sync failed:', err);
+                                import('react-hot-toast').then(m => m.toast('Dữ liệu đã lưu trên máy. Đồng bộ đám mây sẽ thử lại sau.', { icon: '☁️', id: 'cloud-sync-fail' }));
+                            }
+                        })();
                     }
                 } catch (error) {
                     console.error("Lỗi lưu dữ liệu:", error);

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import Card from '../Card';
 import ExportButton from '../ExportButton';
 import { FilterIcon, CogIcon } from '../Icons';
@@ -7,6 +7,12 @@ import { Switch } from './DashboardWidgets';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
 
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+
+type SortDirection = 'asc' | 'desc' | null;
+interface SortConfig {
+    column: string | null;
+    direction: SortDirection;
+}
 
 interface IndustryViewProps {
     realtimeData: ReturnType<typeof parseIndustryRealtimeData>;
@@ -58,6 +64,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     const subIndustryFilterRef = useRef<HTMLDivElement>(null);
     const [subIndustryFilterSearch, setSubIndustryFilterSearch] = useState('');
 
+    // --- Column Sort State ---
+    const [sortConfig, setSortConfig] = useState<SortConfig>({ column: null, direction: null });
+
     const logic = useIndustryViewLogic(realtimeData, luykeData, isRealtime);
     const {
         allIndustries,
@@ -96,6 +105,39 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         });
         return groups;
     }, [orderedHeaders, visibleColumns]);
+
+    // --- Column Sort Handler ---
+    const handleColumnSort = useCallback((headerName: string) => {
+        setSortConfig(prev => {
+            if (prev.column === headerName) {
+                // Cycle: asc -> desc -> none
+                if (prev.direction === 'asc') return { column: headerName, direction: 'desc' };
+                if (prev.direction === 'desc') return { column: null, direction: null };
+            }
+            return { column: headerName, direction: 'asc' };
+        });
+    }, []);
+
+    // --- Sort rows helper ---
+    const sortRows = useCallback(<T extends any[]>(rows: T[], getValues: (row: T) => string[]): T[] => {
+        if (!sortConfig.column || !sortConfig.direction) return rows;
+        const colIdx = processedTable.headers.indexOf(sortConfig.column);
+        if (colIdx === -1) return rows;
+        
+        return [...rows].sort((a, b) => {
+            const valuesA = getValues(a);
+            const valuesB = getValues(b);
+            
+            // Always keep total row at the bottom
+            if (valuesA[0] === 'Tổng') return 1;
+            if (valuesB[0] === 'Tổng') return -1;
+            
+            const numA = parseNumber(valuesA[colIdx]);
+            const numB = parseNumber(valuesB[colIdx]);
+            const diff = numA - numB;
+            return sortConfig.direction === 'asc' ? diff : -diff;
+        });
+    }, [sortConfig, processedTable.headers]);
 
     const headerMapping: Record<string, string> = {
         'Nhóm ngành hàng': 'NGÀNH HÀNG',
@@ -580,18 +622,26 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                             )}
                                             {headerGroups.map((g, idx) => {
                                                 if (g.isSingle) {
+                                                    const isSorted = sortConfig.column === g.singleHeader;
+                                                    const sortIndicator = isSorted ? (sortConfig.direction === 'asc' ? ' ▲' : ' ▼') : '';
                                                     return (
                                                         <th
                                                             key={`group-${idx}`}
                                                             rowSpan={2}
                                                             className={`
                                                                 py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
-                                                                align-middle whitespace-nowrap
+                                                                align-middle whitespace-nowrap cursor-pointer
                                                                 border-b-2 border-r border-slate-200 dark:border-slate-700
+                                                                hover:opacity-80 transition-opacity select-none
                                                                 ${g.bg} ${g.text}
+                                                                ${isSorted ? 'ring-1 ring-inset ring-indigo-400/50 dark:ring-indigo-500/50' : ''}
                                                             `}
-                                                            dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }}
-                                                        />
+                                                            onClick={() => handleColumnSort(g.singleHeader)}
+                                                            title={`Click để sắp xếp theo ${headerMapping[g.singleHeader]?.replace(/<br\/>/g, ' ') || g.singleHeader}`}
+                                                        >
+                                                            <span dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }} />
+                                                            {sortIndicator && <span className="text-indigo-500 dark:text-indigo-400 ml-0.5">{sortIndicator}</span>}
+                                                        </th>
                                                     );
                                                 }
                                                 return (
@@ -618,6 +668,8 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                 const isSingleGroup = headerGroups.some(g => g.isSingle && g.singleHeader === h);
                                                 if (isSingleGroup) return null;
                                                 const g = COLUMN_GROUPS[h] || { text: 'text-slate-600 dark:text-slate-300', bg: '' };
+                                                const isSorted = sortConfig.column === h;
+                                                const sortIndicator = isSorted ? (sortConfig.direction === 'asc' ? ' ▲' : ' ▼') : '';
                                                 return (
                                                     <th
                                                         key={h}
@@ -627,11 +679,16 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             tracking-wider border-r border-slate-200 dark:border-slate-700
                                                             border-b-2
                                                             text-center align-middle whitespace-nowrap
-                                                            hover:opacity-80 transition-opacity select-none
+                                                            cursor-pointer hover:opacity-80 transition-opacity select-none
                                                             ${g.bg} ${g.text}
+                                                            ${isSorted ? 'ring-1 ring-inset ring-indigo-400/50 dark:ring-indigo-500/50' : ''}
                                                         `}
-                                                        dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }}
-                                                    />
+                                                        onClick={() => handleColumnSort(h)}
+                                                        title={`Click để sắp xếp theo ${headerMapping[h]?.replace(/<br\/>/g, ' ') || h}`}
+                                                    >
+                                                        <span dangerouslySetInnerHTML={{ __html: headerMapping[h] || h }} />
+                                                        {sortIndicator && <span className="text-indigo-500 dark:text-indigo-400 ml-0.5">{sortIndicator}</span>}
+                                                    </th>
                                                 );
                                             })}
                                         </tr>
@@ -639,37 +696,76 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                     <tbody>
                                         {treeDisplayRows ? (
                                             /* ─── TREE TABLE ROWS (luyke mode with hierarchy) ─── */
-                                            treeDisplayRows.map((flatRow) => {
-                                                const isTotalRow = flatRow.level === -1;
-                                                const isNNH = flatRow.level === 0;
-                                                const isNhomHang = flatRow.level === 1;
-                                                const isHang = flatRow.level === 2;
-
-                                                return (
-                                                    <tr 
-                                                        key={flatRow.rowKey} 
-                                                        className={`
-                                                            transition-colors duration-100 group
-                                                            ${isTotalRow 
-                                                                ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' 
-                                                                : isNNH ? 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800/30 border-b border-gray-100 dark:border-slate-700'
-                                                                : isNhomHang ? 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-gray-50 dark:hover:bg-slate-800/40 border-b border-gray-100 dark:border-slate-700'
-                                                                : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800/10 border-b border-gray-100 dark:border-slate-700'
+                                            (() => {
+                                                // Apply sorting to tree rows: sort only top-level (NNH, level=0) nodes, keep total at bottom
+                                                let displayRows = treeDisplayRows;
+                                                if (sortConfig.column && sortConfig.direction) {
+                                                    const colIdx = processedTable.headers.indexOf(sortConfig.column);
+                                                    if (colIdx !== -1) {
+                                                        // Group rows by top-level parent
+                                                        const groups: { parent: typeof treeDisplayRows[0]; children: typeof treeDisplayRows }[] = [];
+                                                        let totalRow: typeof treeDisplayRows[0] | null = null;
+                                                        
+                                                        displayRows.forEach(row => {
+                                                            if (row.level === -1) {
+                                                                totalRow = row;
+                                                            } else if (row.level === 0) {
+                                                                groups.push({ parent: row, children: [] });
+                                                            } else if (groups.length > 0) {
+                                                                groups[groups.length - 1].children.push(row);
                                                             }
-                                                        `}
-                                                    >
-                                                        {orderedHeaders.map((headerName) => {
-                                                            if (!visibleColumns.has(headerName)) return null;
-                                                            const originalCellIndex = processedTable.headers.indexOf(headerName);
-                                                            const cell = flatRow.values[originalCellIndex];
-                                                            return renderCell(cell, headerName, originalCellIndex, isTotalRow, flatRow.level, flatRow.rowKey, flatRow.hasChildren, flatRow.isExpanded, flatRow.values);
-                                                        })}
-                                                    </tr>
-                                                );
-                                            })
+                                                        });
+                                                        
+                                                        // Sort groups by the column value of the parent
+                                                        groups.sort((a, b) => {
+                                                            const numA = parseNumber(a.parent.values[colIdx]);
+                                                            const numB = parseNumber(b.parent.values[colIdx]);
+                                                            const diff = numA - numB;
+                                                            return sortConfig.direction === 'asc' ? diff : -diff;
+                                                        });
+                                                        
+                                                        // Flatten back
+                                                        displayRows = [];
+                                                        groups.forEach(g => {
+                                                            displayRows.push(g.parent);
+                                                            displayRows.push(...g.children);
+                                                        });
+                                                        if (totalRow) displayRows.push(totalRow);
+                                                    }
+                                                }
+                                                
+                                                return displayRows.map((flatRow) => {
+                                                    const isTotalRow = flatRow.level === -1;
+                                                    const isNNH = flatRow.level === 0;
+                                                    const isNhomHang = flatRow.level === 1;
+                                                    const isHang = flatRow.level === 2;
+
+                                                    return (
+                                                        <tr 
+                                                            key={flatRow.rowKey} 
+                                                            className={`
+                                                                transition-colors duration-100 group
+                                                                ${isTotalRow 
+                                                                    ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' 
+                                                                    : isNNH ? 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800/30 border-b border-gray-100 dark:border-slate-700'
+                                                                    : isNhomHang ? 'bg-slate-50/50 dark:bg-slate-800/20 hover:bg-gray-50 dark:hover:bg-slate-800/40 border-b border-gray-100 dark:border-slate-700'
+                                                                    : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800/10 border-b border-gray-100 dark:border-slate-700'
+                                                                }
+                                                            `}
+                                                        >
+                                                            {orderedHeaders.map((headerName) => {
+                                                                if (!visibleColumns.has(headerName)) return null;
+                                                                const originalCellIndex = processedTable.headers.indexOf(headerName);
+                                                                const cell = flatRow.values[originalCellIndex];
+                                                                return renderCell(cell, headerName, originalCellIndex, isTotalRow, flatRow.level, flatRow.rowKey, flatRow.hasChildren, flatRow.isExpanded, flatRow.values);
+                                                            })}
+                                                        </tr>
+                                                    );
+                                                });
+                                            })()
                                         ) : (
                                             /* ─── FLAT TABLE ROWS (realtime / fallback) ─── */
-                                            processedTable.rows.map((row, rIdx) => {
+                                            sortRows(processedTable.rows, (row) => row).map((row, rIdx) => {
                                                 const isTotalRow = row[0] === 'Tổng';
                                                 return (
                                                     <tr 

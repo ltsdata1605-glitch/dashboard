@@ -192,18 +192,18 @@ const DashboardView = React.memo(function DashboardView() {
                             </div>
                             <div>
                                 <h4 className="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
-                                    Phát hiện file Excel mới!
+                                    Phát hiện dữ liệu mới trên đám mây!
                                     <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                                        📊 Dữ liệu
+                                        📊 {pendingCloudSync.meta.totalRows} dòng
                                     </span>
                                 </h4>
                                 <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
-                                    File <strong className="text-slate-700 dark:text-slate-300">{pendingCloudSync.name}</strong> đã được tải lên từ thiết bị khác.
+                                    File <strong className="text-slate-700 dark:text-slate-300">{pendingCloudSync.meta.filename}</strong> đã được đồng bộ từ thiết bị khác.
                                 </p>
-                                {pendingCloudSync.timestamp && (
+                                {pendingCloudSync.meta.savedAt && (
                                     <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
                                         <Icon name="clock" size={3} />
-                                        {new Date(pendingCloudSync.timestamp).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        {new Date(pendingCloudSync.meta.savedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 )}
                             </div>
@@ -214,11 +214,11 @@ const DashboardView = React.memo(function DashboardView() {
                     </div>
                     <div className="flex flex-col gap-2">
                         <button
-                            onClick={() => handleAcceptCloudSync(handleFileProcessing)}
+                            onClick={() => handleAcceptCloudSync()}
                             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm transition-colors shadow-sm active:scale-[0.98]"
                         >
                             <Icon name="refresh-cw" size={4} />
-                            Tải & cập nhật dữ liệu mới
+                            Nạp dữ liệu từ đám mây
                         </button>
                         <button
                             onClick={() => setPendingCloudSync(null)}

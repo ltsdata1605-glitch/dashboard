@@ -34,7 +34,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
     const [isHardProcessing, setIsHardProcessing] = useState(false);    // initial load / file upload
     const [isFilterProcessing, setIsFilterProcessing] = useState(false); // filter-only fast re-calc
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
-    const [pendingCloudSync, setPendingCloudSync] = useState<{ fileId: string; name: string; timestamp: number } | null>(null);
+    const [pendingCloudSync, setPendingCloudSync] = useState<{ data: DataRow[]; meta: { filename: string; savedAt: number; fileLastModified: number; totalRows: number } } | null>(null);
 
 // Initial data loading
     useEffect(() => {
@@ -159,8 +159,9 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                     setAppState('upload');
                 }
 
-                // 2. Background Cloud Sync
+                // 2. Background Cloud Sync (Settings + Sales Data)
                 if (user && !isDemoMode) {
+                    // 2a. Settings sync (existing firestoreService)
                     import('../services/firestoreService').then(async ({ fetchFromCloud }) => {
                         try {
                             const cloudData = await fetchFromCloud(user);
@@ -169,94 +170,68 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                             const localLastMod = await dbService.getSetting<number>('localSettingsLastModified') || 0;
                             const cloudLastMod = cloudData.lastSync ? new Date(cloudData.lastSync).getTime() : 0;
 
-                            // Chống ghi đè từ Cloud CŨ xuống Local MỚI (xảy ra khi F5 trước khi sync 15 phút)
                             if (cloudLastMod < localLastMod) {
                                 console.log('[Cloud Sync] Local data is newer than Firebase. Skipping overwrite and pushing local to cloud...');
                                 window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'force_push_override' } }));
                                 return;
                             }
                             
-                            // Ngầm ghi đè và Re-render (Không freeze UI)
                             if (cloudData.settingsStoreBackup) {
                                 const backup = cloudData.settingsStoreBackup;
-                                // 1. Bulk save to IDB first
                                 Object.entries(backup).forEach(([k, v]) => {
                                     dbService.saveSetting(k, v).catch(console.error);
                                 });
-                                
-                                // 2. Hydrate React states safely without breaking app structure
                                 if (backup.departmentMap) setDepartmentMap(backup.departmentMap);
                                 if (backup.warehouseTargets) setWarehouseTargets(backup.warehouseTargets);
                                 if (backup.gtdhTargets) setGtdhTargets(backup.gtdhTargets);
                                 if (backup.kpiTargets) setKpiTargets(backup.kpiTargets);
                                 if (backup.crossSellingConfig) setCrossSellingConfig(backup.crossSellingConfig);
                                 if (backup.kpiCardConfig) setKpiCardsConfig(backup.kpiCardConfig);
-                                
-                                // 3. Re-hydrate product config after saving to IDB to ensure Sets are restored
                                 if (backup.productConfig) {
                                     dbService.getProductConfig().then(res => {
                                         if (res && res.config) setProductConfig(res.config);
                                     }).catch(console.error);
                                 }
+                            }
+                        } catch (e: any) {
+                            const errMsg = (e?.message || '').toLowerCase();
+                            if (errMsg.includes('failed to fetch') || errMsg.includes('network') || errMsg.includes('offline')) {
+                                console.info("☁️ Đồng bộ cài đặt bỏ qua: không có kết nối mạng.");
                             } else {
-                                // Legacy fallback for very old accounts
-                                if (cloudData.productConfig) {
-                                    setProductConfig(cloudData.productConfig);
-                                    dbService.saveProductConfig(cloudData.productConfig, configUrl).catch(console.error);
-                                }
-                                if (cloudData.departmentMap) {
-                                    setDepartmentMap(cloudData.departmentMap);
-                                    dbService.saveDepartmentMap(cloudData.departmentMap).catch(console.error);
-                                }
-                                if (cloudData.warehouseTargets) {
-                                    const map: Record<string, number> = {};
-                                    (cloudData.warehouseTargets as any[]).forEach(t => map[t.kho] = t.dsMucTieu);
-                                    setWarehouseTargets(map);
-                                    dbService.saveWarehouseTargets(map).catch(console.error);
-                                }
-                                if (cloudData.gtdhTargets) {
-                                    const map: Record<string, number> = {};
-                                    (cloudData.gtdhTargets as any[]).forEach(t => map[t.nhomHang] = t.gtdh);
-                                    setGtdhTargets(map);
-                                    dbService.saveGtdhTargets(map).catch(console.error);
-                                }
-                                if (cloudData.kpiTargets) {
-                                    setKpiTargets(cloudData.kpiTargets);
-                                    dbService.saveKpiTargets(cloudData.kpiTargets).catch(console.error);
-                                }
-                                if (cloudData.crossSellingConfig) {
-                                    setCrossSellingConfig(cloudData.crossSellingConfig);
-                                    dbService.saveCrossSellingConfig(cloudData.crossSellingConfig).catch(console.error);
-                                }
-                                if (cloudData.kpiCardConfig) {
-                                    setKpiCardsConfig(cloudData.kpiCardConfig);
-                                    dbService.saveKpiCardConfig(cloudData.kpiCardConfig).catch(console.error);
-                                }
+                                console.warn("⚠️ Đồng bộ cài đặt thất bại (không ảnh hưởng app):", e?.message || e);
+                            }
+                        }
+                    });
+
+                    // 2b. Sales data sync (new cloudDataService — JSON chunks)
+                    import('../services/cloudDataService').then(async ({ getCloudDataMeta, downloadProcessedData }) => {
+                        try {
+                            const cloudMeta = await getCloudDataMeta(user);
+                            if (!cloudMeta) return;
+
+                            const localSavedAt = savedSalesReq ? savedSalesReq.savedAt.getTime() : 0;
+                            const localFileTs = savedSalesReq ? savedSalesReq.fileLastModified : 0;
+
+                            // Skip if same file
+                            if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
+                                console.log('[CloudData] Cloud data is same file as local. Skipping.');
+                                return;
                             }
 
-                            // Always process latestDriveUpload because it is explicitly synced outside settingsStoreBackup
-                            if (cloudData.latestDriveUpload) {
-                                const localSavedAt = savedSalesReq ? savedSalesReq.savedAt.getTime() : 0;
-                                const localFileTs = savedSalesReq ? savedSalesReq.fileLastModified : 0;
-                                
-                                let isExactlySameExcel = false;
-                                if (cloudData.latestDriveUpload.fileLastModified && localFileTs) {
-                                    if (cloudData.latestDriveUpload.fileLastModified === localFileTs) {
-                                        isExactlySameExcel = true;
-                                    }
-                                }
-                                
-                                if (!isExactlySameExcel && cloudData.latestDriveUpload.timestamp > localSavedAt + 15000) {
-                                    setPendingCloudSync(cloudData.latestDriveUpload);
+                            // Only prompt if cloud is newer
+                            if (cloudMeta.savedAt > localSavedAt + 15000) {
+                                console.log(`[CloudData] Cloud data is newer (cloud: ${new Date(cloudMeta.savedAt).toLocaleString()}, local: ${new Date(localSavedAt).toLocaleString()})`);
+                                const cloudResult = await downloadProcessedData(user);
+                                if (cloudResult && cloudResult.data.length > 0) {
+                                    setPendingCloudSync({ data: cloudResult.data, meta: cloudResult.meta });
                                 }
                             }
                         } catch (e: any) {
-                            // Background cloud pull is non-critical — app works fully offline
                             const errMsg = (e?.message || '').toLowerCase();
                             if (errMsg.includes('failed to fetch') || errMsg.includes('network') || errMsg.includes('offline')) {
-                                console.info("☁️ Đồng bộ đám mây bỏ qua: không có kết nối mạng. Đang sử dụng dữ liệu cục bộ.");
+                                console.info("☁️ Đồng bộ dữ liệu bỏ qua: không có kết nối mạng.");
                             } else {
-                                console.warn("⚠️ Đồng bộ đám mây thất bại (không ảnh hưởng app):", e?.message || e);
+                                console.warn("⚠️ Đồng bộ dữ liệu thất bại (không ảnh hưởng app):", e?.message || e);
                             }
                         }
                     });
@@ -421,55 +396,28 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
         return { kho: khoOptions, trangThai: trangThaiOptions, nguoiTao: nguoiTaoOptions, department: deptOptions, hangSX: hangSXOptions };
     }, [originalData, departmentMap]);
 
-    const handleAcceptCloudSync = async (handleFileProcessing: (files: File[], isCloudSync?: boolean) => Promise<void>) => {
+    const handleAcceptCloudSync = async () => {
         if (!pendingCloudSync) return;
         try {
-            setStatus({ message: `📊 Đang kết nối Google Drive để tải file "${pendingCloudSync.name}"...`, type: 'info', progress: 10 });
+            setStatus({ message: `📊 Đang nạp dữ liệu từ đám mây (${pendingCloudSync.meta.totalRows} dòng)...`, type: 'info', progress: 50 });
             setAppState('loading');
             
-            const token = sessionStorage.getItem('googleOAuthToken');
-            if (!token) {
-                setStatus({ message: `🔑 Đang yêu cầu quyền truy cập Google Drive...`, type: 'info', progress: 20 });
-                const { loginWithGoogle } = await import('../services/firebase');
-                await loginWithGoogle();
-            }
+            const cloudData = pendingCloudSync.data;
+            const cloudMeta = pendingCloudSync.meta;
             
-            const activeToken = sessionStorage.getItem('googleOAuthToken');
-            if (!activeToken) throw new Error('AUTH_EXPIRED');
-
-            const { downloadFileFromDrive } = await import('../services/googleDriveService');
-            setStatus({ message: `⬇️ Đang tải file Excel "${pendingCloudSync.name}" từ Google Drive...`, type: 'info', progress: 30 });
-            const blob = await downloadFileFromDrive(pendingCloudSync.fileId, activeToken);
-            
-            const newFile = new File([blob], pendingCloudSync.name, { 
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-                lastModified: pendingCloudSync.timestamp
-            });
+            // Save to local IDB
+            await dbService.saveSalesData(cloudData, cloudMeta.filename, cloudMeta.fileLastModified);
+            setFileInfo({ filename: cloudMeta.filename, savedAt: new Date(cloudMeta.savedAt).toLocaleString('vi-VN') });
             
             setPendingCloudSync(null);
-            await handleFileProcessing([newFile], true);
+            
+            startTransition(() => {
+                setOriginalData(cloudData);
+                setAppState('processing');
+            });
         } catch (e: any) {
-            console.error("Lỗi khi tải đồng bộ:", e);
-            
-            // User-friendly error messages based on error type
-            let userMessage = '';
-            const errMsg = (e?.message || '').toLowerCase();
-            
-            if (errMsg.includes('failed to fetch') || errMsg.includes('networkerror') || errMsg.includes('network')) {
-                userMessage = '🌐 Không thể kết nối mạng. Vui lòng kiểm tra kết nối internet và thử lại. Dữ liệu hiện tại trên máy vẫn hoạt động bình thường.';
-            } else if (errMsg === 'auth_expired' || errMsg.includes('unauthenticated') || errMsg.includes('401')) {
-                userMessage = '🔑 Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại Google để đồng bộ file.';
-            } else if (errMsg.includes('quota') || errMsg.includes('resource-exhausted') || errMsg.includes('429')) {
-                userMessage = '⏳ Máy chủ tạm thời quá tải. Dữ liệu đã lưu an toàn trên máy, hệ thống sẽ tự đồng bộ lại sau.';
-            } else if (errMsg.includes('not found') || errMsg.includes('404')) {
-                userMessage = '📁 File trên Google Drive không còn tồn tại hoặc đã bị xoá. Vui lòng tải lên file mới.';
-            } else if (errMsg.includes('permission') || errMsg.includes('403')) {
-                userMessage = '🔒 Không có quyền truy cập file. Vui lòng kiểm tra quyền chia sẻ trên Google Drive.';
-            } else {
-                userMessage = `⚠️ Lỗi đồng bộ file dữ liệu: ${e.message}. Dữ liệu hiện tại trên máy không bị ảnh hưởng.`;
-            }
-            
-            setStatus({ message: userMessage, type: 'error', progress: 0 });
+            console.error('Lỗi khi nạp dữ liệu từ đám mây:', e);
+            setStatus({ message: `⚠️ Lỗi nạp dữ liệu đám mây: ${e.message}. Dữ liệu trên máy không bị ảnh hưởng.`, type: 'error', progress: 0 });
             setAppState('dashboard');
         }
     };

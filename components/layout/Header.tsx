@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from '../common/Icon';
 import { motion, AnimatePresence } from 'motion/react';
 import ModalWrapper from '../modals/ModalWrapper';
 import EmployeeManagerModal from '../modals/EmployeeManagerModal';
-import DriveHistoryModal from '../modals/DriveHistoryModal';
+
 import FontSelector from './FontSelector';
 import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../../contexts/AuthContext';
@@ -41,40 +41,17 @@ const Header: React.FC<HeaderProps> = ({
     const [deptClearSuccess, setDeptClearSuccess] = useState(false);
     const [showInstructionModal, setShowInstructionModal] = useState(false);
     const [showEmployeeModal, setShowEmployeeModal] = useState(false);
-    const [showDriveHistory, setShowDriveHistory] = useState(false);
     const { syncState, lastError } = useCloudSync();
     const { activeTab } = useActiveTab();
 
     // Prevent hydration warnings
     const [mounted, setMounted] = useState(false);
-    const hasPromptedDrive = useRef(false);
 
     useEffect(() => {
         setMounted(true);
     }, []);
 
-    useEffect(() => {
-        if (user && context.appState === 'upload' && !hasPromptedDrive.current && (userRole === 'admin' || userRole === 'manager')) {
-            hasPromptedDrive.current = true;
-            
-            const token = sessionStorage.getItem('googleOAuthToken');
-            if (token) {
-                // Fetch list silently, only show auto-prompt if there are files
-                import('../../services/googleDriveService').then(({ listDriveFiles }) => {
-                    listDriveFiles(token).then(files => {
-                        if (files && files.length > 0) {
-                            setTimeout(() => {
-                                 setShowDriveHistory(true);
-                            }, 800);
-                        }
-                    }).catch(error => {
-                        console.warn('Silent check drive files failed:', error);
-                    });
-                });
-            }
-            // If no token, we just skip the auto-prompt.
-        }
-    }, [user, context.appState, userRole]);
+
 
     const handleExternalLinkClick = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -98,12 +75,11 @@ const Header: React.FC<HeaderProps> = ({
         <>
             {syncState === 'error' && (
                 <div 
-                    className="w-full bg-red-500 text-white text-xs font-bold py-1.5 px-4 flex items-center justify-between cursor-pointer overflow-hidden relative mb-2 rounded-lg shadow-sm"
-                    onClick={() => setShowDriveHistory(true)}
+                    className="w-full bg-red-500 text-white text-xs font-bold py-1.5 px-4 flex items-center justify-between overflow-hidden relative mb-2 rounded-lg shadow-sm"
                 >
                     <div className="flex-1 overflow-hidden whitespace-nowrap">
                         <div className="inline-block animate-marquee pl-[100%]">
-                            ⚠️ Đồng bộ dữ liệu thất bại: {lastError || "Lỗi lưu trữ đám mây. Dữ liệu tạm thời được lưu trên máy."} - Vui lòng click để mở Lịch Sử trên Mây.
+                            ⚠️ Đồng bộ dữ liệu thất bại: {lastError || "Lỗi lưu trữ đám mây. Dữ liệu tạm thời được lưu trên máy."}
                         </div>
                     </div>
                 </div>
@@ -132,13 +108,7 @@ const Header: React.FC<HeaderProps> = ({
                     >
                         <Icon name="calendar-clock" size={4.5} />
                     </a>
-                    <button
-                        onClick={() => setShowDriveHistory(true)}
-                        className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all active:scale-95 ${syncState === 'error' ? 'text-red-500 animate-pulse' : 'text-slate-400 dark:text-slate-500'}`}
-                        title="Lịch sử đám mây"
-                    >
-                        <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={4.5} />
-                    </button>
+
                 </>,
                 document.getElementById('mobile-topbar-actions')!
             )}
@@ -211,17 +181,6 @@ const Header: React.FC<HeaderProps> = ({
                                 <Icon name="file-up" size={4} />
                                 <span>UpFile YCX</span>
                             </button>
-                            
-                            <button 
-                                onClick={() => setShowDriveHistory(true)}
-                                className={`flex items-center p-2 border-l border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors tooltip ${syncState === 'error' ? 'text-red-500 animate-pulse' : 'text-slate-500 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400'}`}
-                                title="Lịch sử dữ liệu (Mây)"
-                            >
-                                <Icon name={syncState === 'error' ? 'bell-ring' : 'cloud-cog'} size={4} className={syncState === 'error' ? "animate-bounce" : ""} />
-                                {syncState === 'error' && (
-                                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-slate-900 animate-ping"></span>
-                                )}
-                            </button>
                         </>
                     )}
                     <a 
@@ -280,14 +239,6 @@ const Header: React.FC<HeaderProps> = ({
                 onClose={() => setShowEmployeeModal(false)} 
             />
 
-            {/* Drive History Modal */}
-            {onSelectHistoryFile && (
-                <DriveHistoryModal
-                    isOpen={showDriveHistory}
-                    onClose={() => setShowDriveHistory(false)}
-                    onSelectFile={(files) => onSelectHistoryFile && onSelectHistoryFile(files)}
-                />
-            )}
         </>
     );
 };

@@ -62,12 +62,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
+
     useEffect(() => {
-        const handleAuthExpired = () => {
-            import('react-hot-toast').then(m => m.toast.error("Kết nối với Google Drive đã hết hạn. Trong lúc cần dùng Lịch sử trên Mây, bạn có thể kết nối lại.", { duration: 6000 }));
-            // Không bọc tự động ép đăng xuất nữa.
-        };
-        window.addEventListener('google-auth-expired', handleAuthExpired);
 
 
 
@@ -207,7 +203,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return () => {
             clearTimeout(fallbackTimer);
             unsubscribe();
-            window.removeEventListener('google-auth-expired', handleAuthExpired);
             cleanupSyncListeners();
         };
     }, []);
@@ -262,10 +257,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
+// Safe fallback when context is unavailable — prevents entire app crash
+const SAFE_AUTH_FALLBACK: AuthContextType = {
+    user: null,
+    userRole: null,
+    isLoading: true,
+    loginWithGoogle: async () => { console.warn('[Auth] loginWithGoogle called outside AuthProvider'); },
+    logout: async () => { console.warn('[Auth] logout called outside AuthProvider'); },
+    isDemoMode: false,
+    setDemoMode: () => {},
+    requestAccess: async () => { console.warn('[Auth] requestAccess called outside AuthProvider'); },
+};
+
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
+        // In production, this can happen due to chunk-loading race conditions or
+        // module duplication. Return a safe loading state instead of crashing.
+        console.error('[Auth] useAuth called outside AuthProvider — returning safe fallback. This is likely a bundle/caching issue.');
+        return SAFE_AUTH_FALLBACK;
     }
     return context;
 };

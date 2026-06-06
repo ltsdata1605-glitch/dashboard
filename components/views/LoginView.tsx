@@ -55,7 +55,7 @@ const LoginView: React.FC = () => {
                 </div>
                 
                 <h1 className="text-2xl font-black text-center text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Phân Tích Yêu Cầu Xuất</h1>
-                <p className="text-center text-slate-500 dark:text-slate-400 mb-8 text-sm">Đăng nhập để sử dụng nền tảng đồng bộ đám mây và kết nối dữ liệu Google Drive an toàn tuyệt đối.</p>
+                <p className="text-center text-slate-500 dark:text-slate-400 mb-8 text-sm">Đăng nhập để đồng bộ dữ liệu và cài đặt giữa các thiết bị một cách an toàn.</p>
 
                 {isInAppWebView && (
                     <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 rounded-2xl text-xs border border-amber-200 dark:border-amber-900/50 flex flex-col gap-2">

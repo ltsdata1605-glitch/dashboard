@@ -25,7 +25,6 @@ isSupported().then(yes => {
 });
 
 const googleProvider = new GoogleAuthProvider();
-googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
 googleProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
 googleProvider.setCustomParameters({
     prompt: 'select_account'
@@ -47,7 +46,6 @@ export const loginWithGoogle = async () => {
 
 export const loginWithGoogleForceConsent = async () => {
     const consentProvider = new GoogleAuthProvider();
-    consentProvider.addScope('https://www.googleapis.com/auth/drive.file');
     consentProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
     consentProvider.setCustomParameters({ prompt: 'consent' });
     try {

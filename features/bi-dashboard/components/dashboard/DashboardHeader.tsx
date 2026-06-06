@@ -204,9 +204,13 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
                 {/* Content Title + Quote + TimeProgressBar — like NhanVien's RevenueTab */}
                 <div className="px-4 sm:px-5 py-3 sm:py-4">
-                    <h2 className="js-report-title text-lg sm:text-2xl font-black uppercase text-slate-800 dark:text-white leading-tight">
-                        {contentTitle}
-                    </h2>
+                    <div className="flex items-start justify-between gap-2">
+                        <h2 className="js-report-title text-lg sm:text-2xl font-black uppercase text-slate-800 dark:text-white leading-tight">
+                            {contentTitle}
+                        </h2>
+                        {/* Portal target for inline filter/settings buttons from SummaryTableView */}
+                        <div id="summary-table-inline-actions" className="flex items-center gap-0.5 no-print shrink-0" />
+                    </div>
                     <p className="text-[10px] sm:text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold leading-snug">
                         {QUOTES[activeSubTab]}
                     </p>

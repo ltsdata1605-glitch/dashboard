@@ -34,8 +34,38 @@ export const useCloudSync = () => {
         
         try {
             const allSettings = await getAllSettings();
+            
+            // Lọc bỏ các key dữ liệu lớn hoặc cache/tạm thời để tránh vượt quá giới hạn 1MB của Firestore
+            const excludedKeys = new Set([
+                'productConfig',
+                'departmentMap',
+                'localSettingsLastModified',
+                'topSellerAnalysisHistory',
+                'customTabs',
+                'headToHeadTables',
+                'customCalendars',
+                'crossSellingConfig',
+                'industryAnalysisCustomTabs',
+                'summary-realtime',
+                'summary-luy-ke',
+                'competition-realtime',
+                'competition-luy-ke',
+                'last-updates-list'
+            ]);
+            const settingsToSync: Record<string, any> = {};
+            for (const key of Object.keys(allSettings)) {
+                if (
+                    !excludedKeys.has(key) && 
+                    !key.startsWith('cached_') && 
+                    !key.startsWith('summary-') && 
+                    !key.startsWith('competition-')
+                ) {
+                    settingsToSync[key] = allSettings[key];
+                }
+            }
+
             await syncToCloud(user, {
-                settingsStoreBackup: allSettings
+                settingsStoreBackup: settingsToSync
             });
             hasUnsavedChanges.current = false;
             setSyncState('synced');
@@ -77,7 +107,36 @@ export const useCloudSync = () => {
     useEffect(() => {
         if (!user || isDemoMode) return;
 
-        const handleSettingChanged = () => {
+        const handleSettingChanged = (e: any) => {
+            const key = e.detail?.key;
+            // Bỏ qua các key dữ liệu lớn hoặc cache/tạm thời để tránh kích hoạt đồng bộ liên tục
+            const excludedKeys = new Set([
+                'productConfig',
+                'departmentMap',
+                'localSettingsLastModified',
+                'topSellerAnalysisHistory',
+                'customTabs',
+                'headToHeadTables',
+                'customCalendars',
+                'crossSellingConfig',
+                'industryAnalysisCustomTabs',
+                'summary-realtime',
+                'summary-luy-ke',
+                'competition-realtime',
+                'competition-luy-ke',
+                'last-updates-list'
+            ]);
+            if (
+                key && (
+                    excludedKeys.has(key) || 
+                    key.startsWith('cached_') || 
+                    key.startsWith('summary-') || 
+                    key.startsWith('competition-')
+                )
+            ) {
+                return;
+            }
+
             hasUnsavedChanges.current = true;
             if (debounceSyncTimeoutRef.current) {
                 clearTimeout(debounceSyncTimeoutRef.current);

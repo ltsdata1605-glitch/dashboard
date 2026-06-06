@@ -339,13 +339,15 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                                         </tr>
                                         {employeesInDept.map((employee, index) => renderEmployeeRow(employee, index))}
                                         {/* Dept total — emerald style */}
-                                        <tr className="bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-400 border-t-2 border-emerald-200 dark:border-emerald-800">
-                                            <td className="px-2 py-1 text-center uppercase text-[11px] tracking-wider border-r border-emerald-200 dark:border-emerald-800/50">Tổng {deptName}</td>
-                                            <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalTarget))}</td>
-                                            <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalActual))}</td>
-                                            <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{roundUp(totalCompletion).toFixed(0)}%</td>
-                                            <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums">{formatter.format(roundUp(totalRemaining))}</td>
-                                        </tr>
+                                        {departmentNames.length > 1 && (
+                                            <tr className="bg-emerald-50 dark:bg-emerald-900/20 font-extrabold text-emerald-800 dark:text-emerald-400 border-t-2 border-emerald-200 dark:border-emerald-800">
+                                                <td className="px-2 py-1 text-center uppercase text-[11px] tracking-wider border-r border-emerald-200 dark:border-emerald-800/50">Tổng {deptName}</td>
+                                                <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalTarget))}</td>
+                                                <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{formatter.format(roundUp(totalActual))}</td>
+                                                <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums border-r border-emerald-200 dark:border-emerald-800/50">{roundUp(totalCompletion).toFixed(0)}%</td>
+                                                <td className="px-1.5 py-1 text-center text-[13px] whitespace-nowrap tabular-nums">{formatter.format(roundUp(totalRemaining))}</td>
+                                            </tr>
+                                        )}
                                     </React.Fragment>
                                 );
                             } else {

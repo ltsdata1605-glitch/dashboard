@@ -41,8 +41,20 @@ export const useCompetitionData = ({
             if (e && e.name) uniqueEmployeesMap.set(e.name, e);
         });
         const uniqueEmployees = Array.from(uniqueEmployeesMap.values());
+        
+        const isStoreRow = (name: string) => {
+            const cleanName = name.trim();
+            return (
+                /^ĐMX\s*-/i.test(cleanName) || 
+                /^DMX\s*-/i.test(cleanName) || 
+                /^BP\s+/i.test(cleanName) || 
+                cleanName.toLowerCase().includes('all in one')
+            );
+        };
+
         return uniqueEmployees
             .filter((emp: any) => emp && (activeDepartments.includes('all') || activeDepartments.includes(emp.department)))
+            .filter((emp: any) => !isStoreRow(emp.name))
             .sort((a, b) => a.name.localeCompare(b.name));
     }, [groupedData, activeDepartments]);
 

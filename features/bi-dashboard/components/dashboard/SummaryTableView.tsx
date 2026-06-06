@@ -3,7 +3,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import { parseSummaryData, roundUp, shortenSupermarketName, parseNumber } from '../../utils/dashboardHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { CogIcon } from '../Icons';
+import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
@@ -13,22 +13,24 @@ const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }>
     // H.QUA
     'DT Hôm Qua': { label: 'H.QUA', bg: 'bg-slate-100 dark:bg-slate-800', text: 'text-slate-700 dark:text-slate-300' },
 
-    // DOANH THU QĐ
-    'DTLK': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    'DT Dự Kiến': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    // DT THỰC (doanh thu thực tế)
+    'DTLK': { label: 'DT THỰC', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
+    'DT Dự Kiến': { label: 'DT THỰC', bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300' },
     
-    // DOANH THU QĐ
+    // DOANH THU QĐ (quy đổi)
     'DTQĐ': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    'Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    'Target(QĐ) V.Trội': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    '%HT V.Trội': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    '%HT TARGET(QĐ) V.Trội': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
     'DT Dự Kiến (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    '% HT Target Dự Kiến (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
     '+/- DTCK Tháng (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    '% HT Target (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    '% HT Target Ngày (QĐ)': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
-    '%HQQĐ': { label: 'DOANH THU QĐ', bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-300' },
+    
+    // HIỆU QUẢ
+    'Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
+    'Target(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
+    '%HT V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
+    '%HT TARGET(QĐ) V.Trội': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
+    '% HT Target Dự Kiến (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
+    '% HT Target (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
+    '% HT Target Ngày (QĐ)': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
+    '%HQQĐ': { label: 'HIỆU QUẢ', bg: 'bg-violet-100 dark:bg-violet-900/30', text: 'text-violet-800 dark:text-violet-300' },
     
     // TRAFFIC
     'Lượt Khách LK': { label: 'TRAFFIC', bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300' },
@@ -74,17 +76,26 @@ interface SummaryTableViewProps {
 const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>((props, ref) => {
     const { data, isCumulative = false, supermarketMonthlyTargets, activeSupermarket, onExport, updateTimestamp, supermarketTargets } = props;
     const headerMapping: Record<string, string> = {
-        'Tên miền': 'SIÊU THỊ', 'DTLK': 'DT', 'DTQĐ': 'DTQĐ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TARGET<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.Trội', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', 'DT Dự Kiến (QĐ)': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HTQĐ', '% HT Target Ngày (QĐ)': '%HTQĐ', '%HQQĐ': '%QĐ',
+        'Tên miền': 'SIÊU THỊ', 'DTLK': 'L.KẾ', 'DTQĐ': 'L.KẾ', 'Target (QĐ)': 'TAR', 'Target(QĐ) V.Trội': 'TAR<br/>V.TRỘI', '%HT V.Trội': '%HT<br/>V.Trội', '%HT TARGET(QĐ) V.Trội': '%HT<br/>V.Trội', 'Lượt Khách LK': 'LK', 'Lượt Bill Bán Hàng': 'BILL BÁN', 'Lượt bill': 'TỔNG<br/>BILL', 'Lượt Bill Thu Hộ': 'THU HỘ', 'TLPVTC LK': 'TLPV', 'Tỷ Trọng Trả Góp': '%TC', 'Tỷ Trọng Trả Chậm': '%TC', '+/- Tỷ Trọng Trả Góp': '+/-CK', '+/- Tỷ Trọng Trả Chậm': '+/-CK', 'Tỷ lệ duyệt': '%Duyệt', 'DT TRẢ GÓP': 'DT', 'DT Trả Góp': 'DT', 'DT Hôm Qua': 'H.QUA', 'DT Dự Kiến': 'D.Kiến', 'DT Dự Kiến (QĐ)': 'D.Kiến', '+/- DTCK Tháng (QĐ)': '+/-CK', '+/- DTCK Tháng': '+/-CK', '+/- Lượt Khách': '+/-KH', '% HT Target Dự Kiến (QĐ)': '%HTDK', '+/- TLPVTC': '+/-PV', 'Số lượng': 'SL', '% HT Target (QĐ)': '%HT', '% HT Target Ngày (QĐ)': '%HT', '%HQQĐ': '%QĐ',
     };
 
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const selectorRef = useRef<HTMLDivElement>(null);
     const [userHiddenColumns, setUserHiddenColumns] = useIndexedDBState<string[]>(`hidden-cols-summary-${isCumulative ? 'luyke' : 'realtime'}`, ['Lượt Khách LK', 'Lượt Bill Bán Hàng', 'Lượt bill', 'TLPVTC LK', 'Lượt Bill Thu Hộ', 'Lãi gộp QĐ', '%HT Target Dự kiến (LNTT)', '% HT Target Dự Kiến (QĐ)']);
 
+    // --- Supermarket Filter State ---
+    const [isSupermarketFilterOpen, setIsSupermarketFilterOpen] = useState(false);
+    const supermarketFilterRef = useRef<HTMLDivElement>(null);
+    const [supermarketFilterSearch, setSupermarketFilterSearch] = useState('');
+    const [hiddenSupermarkets, setHiddenSupermarkets] = useIndexedDBState<string[]>('hidden-supermarkets-summary', []);
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (selectorRef.current && !selectorRef.current.contains(event.target as Node)) {
                 setIsColumnSelectorOpen(false);
+            }
+            if (supermarketFilterRef.current && !supermarketFilterRef.current.contains(event.target as Node)) {
+                setIsSupermarketFilterOpen(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -180,9 +191,15 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
 
         const desiredOrder = [
             'Tên miền', 'DT Hôm Qua',
+            // DT THỰC
             'DTLK', 'DT Dự Kiến',
-            'DTQĐ', 'DT Dự Kiến (QĐ)', 'Target (QĐ)', '% HT Target Dự Kiến (QĐ)', '% HT Target (QĐ)', 'Target(QĐ) V.Trội', '%HT TARGET(QĐ) V.Trội', '%HT V.Trội', '%HQQĐ',
+            // DOANH THU QĐ
+            'DTQĐ', 'DT Dự Kiến (QĐ)',
+            // HIỆU QUẢ
+            'Target (QĐ)', 'Target(QĐ) V.Trội', '% HT Target Dự Kiến (QĐ)', '% HT Target (QĐ)', '%HT TARGET(QĐ) V.Trội', '%HT V.Trội', '%HQQĐ',
+            // TRAFFIC
             'Lượt Khách LK', 'TLPVTC LK', 'Lượt Bill Bán Hàng', 'Lượt bill', 'Lượt Bill Thu Hộ',
+            // TRẢ CHẬM
             'Tỷ Trọng Trả Góp', 'Tỷ Trọng Trả Chậm', '+/- Tỷ Trọng Trả Góp', '+/- Tỷ Trọng Trả Chậm', 'Tỷ lệ duyệt'
         ];
         
@@ -208,12 +225,20 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         
         let tRowIdx = tempRows.findIndex(r => r[nameIndex] === 'Tổng');
         let tRow = tRowIdx > -1 ? tempRows.splice(tRowIdx, 1)[0] : null;
+
+        // Filter hidden supermarkets
+        const hiddenSupermarketsSet = new Set(hiddenSupermarkets);
+        tempRows = tempRows.filter(row => {
+            const smName = row[nameIndex];
+            return smName && !hiddenSupermarketsSet.has(smName);
+        });
+
         let sK = isCumulative ? (finalH.includes('%HT TARGET(QĐ) V.Trội') ? '%HT TARGET(QĐ) V.Trội' : '% HT Target Dự Kiến (QĐ)') : (finalH.includes('%HT V.Trội') ? '%HT V.Trội' : '% HT Target (QĐ)');
         const sIdx = finalH.indexOf(sK);
         if (sIdx !== -1) tempRows.sort((a,b) => parseNumber(b[sIdx]?.isMerged ? b[sIdx].value : b[sIdx]) - parseNumber(a[sIdx]?.isMerged ? a[sIdx].value : a[sIdx]));
         if (tRow) tempRows.push(tRow);
         return { allHeaders: finalH, allRows: tempRows, title };
-    }, [data, isCumulative, supermarketMonthlyTargets, activeSupermarket]);
+    }, [data, isCumulative, supermarketMonthlyTargets, activeSupermarket, hiddenSupermarkets]);
 
     const orderedHeaders = useMemo(() => {
         const rest = processedTable.allHeaders.filter(h => h !== 'Tên miền');
@@ -250,6 +275,69 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
         });
         return groups;
     }, [orderedHeaders, visibleColumns]);
+
+    // --- All supermarket names from data ---
+    const allSupermarketNames = useMemo(() => {
+        // Get from original data (before filter) to always show all options
+        const { headers, rows } = data;
+        const origNameIdx = headers.indexOf('Tên miền');
+        if (origNameIdx === -1) return [];
+        const seen = new Set<string>();
+        return rows
+            .map(r => r[origNameIdx])
+            .filter((name: string) => {
+                if (!name || name === 'Tổng' || seen.has(name)) return false;
+                seen.add(name);
+                return true;
+            });
+    }, [data]);
+
+    // Supermarket filter dropdown element
+    const supermarketFilterDropdown = (
+        <div className="relative" ref={supermarketFilterRef}>
+            <button
+                onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
+                className={`p-1.5 transition-colors ${
+                    hiddenSupermarkets.length > 0
+                        ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
+                        : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                }`}
+                title="Lọc danh sách siêu thị"
+            >
+                <FilterIcon className="h-4 w-4" />
+            </button>
+            {isSupermarketFilterOpen && (
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Lọc siêu thị</p>
+                    <input
+                        type="text"
+                        value={supermarketFilterSearch}
+                        onChange={(e) => setSupermarketFilterSearch(e.target.value)}
+                        placeholder="Tìm kiếm..."
+                        className="w-full px-3 py-1.5 mb-2 text-xs border rounded-md bg-white dark:bg-slate-700 border-slate-300 dark:border-slate-600 focus:ring-primary-500 focus:border-primary-500 dark:text-slate-200"
+                    />
+                    <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
+                        {allSupermarketNames
+                            .filter(name => shortenSupermarketName(name).toLowerCase().includes(supermarketFilterSearch.toLowerCase()))
+                            .map((sm: string) => (
+                            <div key={sm} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                                <label
+                                    className="text-xs font-medium text-slate-700 dark:text-slate-300 flex-grow cursor-pointer select-none"
+                                    onClick={() => setHiddenSupermarkets(prev => prev.includes(sm) ? prev.filter(i => i !== sm) : [...prev, sm])}
+                                >
+                                    {shortenSupermarketName(sm)}
+                                </label>
+                                <Switch
+                                    checked={!hiddenSupermarkets.includes(sm)}
+                                    onChange={() => setHiddenSupermarkets(prev => prev.includes(sm) ? prev.filter(i => i !== sm) : [...prev, sm])}
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 
     // Column settings dropdown element — exposed for parent to place in toolbar
     const columnSettingsDropdown = (
@@ -306,160 +394,120 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
 
     // Find the portal target in the DashboardHeader action bar
     const portalTarget = typeof document !== 'undefined' ? document.getElementById('column-settings-portal') : null;
+    // Find the inline portal target next to the content title
+    const inlinePortalTarget = typeof document !== 'undefined' ? document.getElementById('summary-table-inline-actions') : null;
 
     return (
         <div className="js-summary-table-container relative z-10" ref={ref}>
             {/* Portal column settings into the DashboardHeader action bar */}
             {portalTarget && ReactDOM.createPortal(columnSettingsDropdown, portalTarget)}
+            {/* Portal filter inline next to the title */}
+            {inlinePortalTarget && ReactDOM.createPortal(supermarketFilterDropdown, inlinePortalTarget)}
 
-            <div className="w-full overflow-hidden px-4 pb-4">
-                    {/* ─── TABLE VIEW ─── */}
-                    <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700">
-                        <table className="w-full border-collapse compact-export-table min-w-max">
+            <div className="w-full overflow-hidden">
+                    {/* ─── TABLE VIEW — styled like Chi Tiết Theo Kho ─── */}
+                    <div className="overflow-x-auto custom-scrollbar p-1.5 sm:p-2 lg:px-6 lg:pb-6 lg:pt-2">
+                        <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap compact-export-table">
                             <thead>
-                                {/* TIER 1: GROUP HEADERS */}
-                                <tr className="text-[11px] font-black uppercase tracking-wider">
-                                    {/* Sticky 'SIÊU THỊ' merged header (rowSpan=2) */}
+                                {/* TIER 1: GROUP HEADERS — pastel bg + colored text like KHO */}
+                                <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
+                                    {/* Sticky 'SIÊU THỊ' merged header (rowSpan=2) — rose style like MÃ KHO */}
                                     {visibleColumns.has('Tên miền') && (
                                         <th
                                             rowSpan={2}
-                                            className={`
-                                                    px-3 py-2 text-left text-[11px] font-black
-                                                    text-indigo-800 dark:text-indigo-300 bg-indigo-100 dark:bg-indigo-900/30
-                                                    border-b-2 border-b-indigo-100 dark:border-b-indigo-800
-                                                    border-r border-slate-200 dark:border-slate-700
-                                                    sticky left-0 z-20 align-middle
-                                                    uppercase tracking-wider
-                                                `}
-                                            >
-                                                SIÊU THỊ
-                                            </th>
-                                        )}
-                                        {headerGroups.map((g, idx) => {
-                                            if (g.isSingle) {
-                                                /* Single-column group: merge into rowSpan=2 like SIÊU THỊ */
-                                                return (
-                                                    <th
-                                                        key={`group-${idx}`}
-                                                        rowSpan={2}
-                                                        className={`
-                                                            py-2 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
-                                                            align-middle whitespace-nowrap
-                                                            border-b-2 border-r border-slate-200 dark:border-slate-700
-                                                            ${g.bg} ${g.text}
-                                                        `}
-                                                        dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }}
-                                                    />
-                                                );
-                                            }
-                                            /* Multi-column group: normal colSpan header */
+                                            className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[10px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 select-none align-middle sticky left-0 z-20 uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]"
+                                        >
+                                            SIÊU THỊ
+                                        </th>
+                                    )}
+                                    {headerGroups.map((g, idx) => {
+                                        if (g.isSingle) {
+                                            /* Single-column group: merge into rowSpan=2 */
                                             return (
                                                 <th
                                                     key={`group-${idx}`}
-                                                    colSpan={g.colspan}
-                                                    className={`
-                                                        py-2 px-1.5 text-[11px] font-black uppercase tracking-wider text-center 
-                                                        border-b border-r border-slate-200 dark:border-slate-700
-                                                        ${g.bg} ${g.text}
-                                                    `}
-                                                >
-                                                    {g.label}
-                                                </th>
-                                            );
-                                        })}
-                                    </tr>
-
-                                    {/* TIER 2: COLUMN HEADERS — skip 'Tên miền' and single-col groups (already rowSpan=2) */}
-                                    <tr>
-                                        {orderedHeaders.map(h => {
-                                            if (!visibleColumns.has(h)) return null;
-                                            if (h === 'Tên miền') return null;
-                                            /* Skip if this column is a single-column group (already rendered as rowSpan=2) */
-                                            const isSingleGroup = headerGroups.some(g => g.isSingle && g.singleHeader === h);
-                                            if (isSingleGroup) return null;
-                                            const g = COLUMN_GROUPS[h] || { bg: 'bg-slate-50 dark:bg-slate-800', text: 'text-slate-600 dark:text-slate-300' };
-                                            return (
-                                                <th
-                                                    key={h}
-                                                    className={`
-                                                        px-1.5 py-2 text-[11px] font-bold uppercase
-                                                        tracking-wider border-r border-slate-200 dark:border-slate-700
-                                                        border-b-2
-                                                        text-center align-middle whitespace-nowrap
-                                                        cursor-pointer hover:opacity-80 transition-opacity select-none
-                                                        ${g.bg} ${g.text}
-                                                    `}
-                                                    dangerouslySetInnerHTML={{ __html: (headerMapping[h] || h).replace(/(<br\/>)?V\.TRỘI/gi, '').trim() }}
+                                                    rowSpan={2}
+                                                    className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                    dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }}
                                                 />
                                             );
-                                        })}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {processedTable.allRows.map((row, rIdx) => {
-                                        const nameIdx = processedTable.allHeaders.indexOf('Tên miền');
-                                        const isTotal = row[nameIdx] === 'Tổng';
-                                        const isSel = !isTotal && row[nameIdx] === activeSupermarket;
+                                        }
+                                        /* Multi-column group: normal colSpan header */
+                                        return (
+                                            <th
+                                                key={`group-${idx}`}
+                                                colSpan={g.colspan}
+                                                className={`px-1 sm:px-2 py-1.5 sm:py-3 ${g.text} ${g.bg} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[9px] sm:text-[11px] font-bold border-r text-center align-middle`}
+                                            >
+                                                {g.label}
+                                            </th>
+                                        );
+                                    })}
+                                </tr>
+
+                                {/* TIER 2: COLUMN HEADERS — sub-headers with pastel bg + thick bottom border */}
+                                <tr>
+                                    {orderedHeaders.map(h => {
+                                        if (!visibleColumns.has(h)) return null;
+                                        if (h === 'Tên miền') return null;
+                                        /* Skip if this column is a single-column group (already rendered as rowSpan=2) */
+                                        const isSingleGroup = headerGroups.some(g => g.isSingle && g.singleHeader === h);
+                                        if (isSingleGroup) return null;
+                                        const g = COLUMN_GROUPS[h] || { bg: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
+                                        return (
+                                            <th
+                                                key={h}
+                                                className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                dangerouslySetInnerHTML={{ __html: (headerMapping[h] || h).replace(/((<br\/?>)?V\.TRỘI)/gi, '').trim() }}
+                                            />
+                                        );
+                                    })}
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+                                {processedTable.allRows.map((row, rIdx) => {
+                                    const nameIdx = processedTable.allHeaders.indexOf('Tên miền');
+                                    const rawName = row[nameIdx];
+                                    const isTotal = rawName === 'Tổng';
+                                    const isSel = !isTotal && rawName === activeSupermarket;
+
+                                    if (isTotal) {
+                                        /* ── TOTAL ROW — styled like KHO tfoot ── */
                                         return (
                                             <tr
                                                 key={rIdx}
-                                                className={`
-                                                    transition-colors group
-                                                    ${isTotal
-                                                        ? 'bg-emerald-50 dark:bg-emerald-900/20 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800'
-                                                        : 'bg-white dark:bg-[#1c1c1e] hover:bg-gray-50 dark:hover:bg-slate-800 border-b border-gray-100 dark:border-slate-700'}
-                                                    ${isSel ? '!bg-indigo-50/60 dark:!bg-indigo-900/20' : ''}
-                                                `}
+                                                className="font-bold text-slate-900 dark:text-slate-100 bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700"
                                             >
                                                 {orderedHeaders.map(h => {
                                                     if (!visibleColumns.has(h)) return null;
                                                     const oIdx = processedTable.allHeaders.indexOf(h);
                                                     const cell = row[oIdx];
                                                     const val = parseNumber(cell?.isMerged ? cell.value : cell);
-                                                    const isHtCol = (h.includes('%HT') || h === '%HT V.Trội') && !isNaN(val);
-                                                    const isHqqd = h === '%HQQĐ' && !isNaN(val);
-                                                    const smKey = row[nameIdx];
-    
-                                                    let colorCls = '';
-                                                    if (!isTotal) {
-                                                        if (isHtCol) colorCls = val >= 100 ? ' text-emerald-600 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-600 dark:text-amber-400 font-bold' : ' text-red-600 dark:text-red-400 font-bold';
-                                                        if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-emerald-600 dark:text-emerald-400 font-bold' : ' text-red-600 dark:text-red-400 font-bold';
-                                                        if (h === 'DTLK') colorCls = ' text-[#b91c1c] dark:text-red-400 font-bold';
-                                                    }
-    
+
                                                     return (
                                                         <td
                                                             key={h}
                                                             className={`
-                                                                px-2 py-2 whitespace-nowrap
-                                                                text-[13px] font-bold
+                                                                px-1 sm:px-2 py-1.5 sm:py-3 leading-tight
+                                                                text-[11px] sm:text-[13px] font-bold
                                                                 tabular-nums align-middle
-                                                                ${isTotal ? 'text-[15px] font-extrabold text-emerald-800 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300'}
-                                                                ${h === 'Tên miền' ? `text-left px-3 sticky left-0 z-[5] border-r border-slate-200 dark:border-slate-700 ${isTotal ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-white dark:bg-[#1c1c1e]'}` : 'text-center'}
-                                                                ${colorCls}
+                                                                bg-slate-100 dark:bg-slate-800
+                                                                ${h === 'Tên miền'
+                                                                    ? 'uppercase tracking-tight sticky left-0 z-10 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]'
+                                                                    : 'text-center'}
                                                             `}
                                                         >
                                                             {cell?.isMerged ? (
                                                                 <div className="flex flex-col items-center leading-tight justify-center">
-                                                                    <span className={h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)' ? 'text-indigo-700 dark:text-indigo-400 font-extrabold text-[12px]' : ''}>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
-                                                                    <span className={`text-[8px] font-black ${
-                                                                        isTotal ? 'opacity-70' : parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
-                                                                    }`}>
+                                                                    <span>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
+                                                                    <span className="text-[8px] font-black opacity-70">
                                                                         {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
                                                                     </span>
                                                                 </div>
                                                             ) : (
                                                                 h === 'Tên miền'
-                                                                    ? (isTotal ? 'TỔNG CỤM' : shortenSupermarketName(String(cell)).toUpperCase())
-                                                                    : (isHtCol || isHqqd) && !isTotal
-                                                                        ? (
-                                                                            <div className="flex justify-center items-center">
-                                                                                <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${val >= 100 ? (isHqqd && val < (supermarketTargets[smKey]?.quyDoi ?? 40) ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400') : val >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
-                                                                                    {roundUp(val)}%
-                                                                                </span>
-                                                                            </div>
-                                                                        )
-                                                                    : h === 'DTQĐ' && !isTotal ? <span className="text-indigo-700 dark:text-indigo-400 font-black text-[12px]">{f.format(roundUp(val))}</span>
+                                                                    ? 'TỔNG CỤM'
+                                                                    : h === 'DTQĐ' ? <span className="text-indigo-700 dark:text-indigo-400">{f.format(roundUp(val))}</span>
                                                                     : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))
                                                             )}
                                                         </td>
@@ -467,9 +515,68 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 })}
                                             </tr>
                                         );
-                                    })}
-                                </tbody>
-                            </table>
+                                    }
+
+                                    /* ── NORMAL DATA ROW — styled like KHO tbody ── */
+                                    return (
+                                        <tr
+                                            key={rIdx}
+                                            className={`group hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${isSel ? '!bg-indigo-50/60 dark:!bg-indigo-900/20' : ''}`}
+                                        >
+                                            {orderedHeaders.map(h => {
+                                                if (!visibleColumns.has(h)) return null;
+                                                const oIdx = processedTable.allHeaders.indexOf(h);
+                                                const cell = row[oIdx];
+                                                const val = parseNumber(cell?.isMerged ? cell.value : cell);
+                                                const isHtCol = (h.includes('%HT') || h === '%HT V.Trội') && !isNaN(val);
+                                                const isHqqd = h === '%HQQĐ' && !isNaN(val);
+                                                const smKey = row[nameIdx];
+    
+                                                let colorCls = '';
+                                                if (isHtCol) colorCls = val >= 100 ? ' text-emerald-600 dark:text-emerald-400 font-bold' : val >= 85 ? ' text-amber-600 dark:text-amber-400 font-bold' : ' text-red-600 dark:text-red-400 font-bold';
+                                                if (isHqqd) colorCls = val >= (supermarketTargets[smKey]?.quyDoi ?? 40) ? ' text-orange-400 font-bold' : ' text-red-600 dark:text-red-400 font-bold';
+                                                if (h === 'DTQĐ') colorCls = ' text-indigo-700 dark:text-indigo-400 font-semibold';
+    
+                                                return (
+                                                    <td
+                                                        key={h}
+                                                        className={`
+                                                            px-1 sm:px-2 py-1.5 sm:py-3 leading-tight
+                                                            tabular-nums align-middle whitespace-nowrap
+                                                            ${h === 'Tên miền'
+                                                                ? `text-left px-1.5 sm:px-3 font-extrabold text-[11px] sm:text-[13px] text-slate-900 dark:text-slate-100 sticky left-0 z-[5] bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)] ${isSel ? '!bg-indigo-50/60 dark:!bg-indigo-900/20' : ''}`
+                                                                : `text-center text-[11px] sm:text-sm ${colorCls || ''}`}
+                                                        `}
+                                                    >
+                                                        {cell?.isMerged ? (
+                                                            <div className="flex flex-col items-center leading-tight justify-center">
+                                                                <span className={h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)' ? 'text-indigo-700 dark:text-indigo-400 font-extrabold' : ''}>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
+                                                                <span className={`text-[8px] font-black ${
+                                                                    parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
+                                                                }`}>
+                                                                    {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
+                                                                </span>
+                                                            </div>
+                                                        ) : (
+                                                            h === 'Tên miền'
+                                                                ? shortenSupermarketName(String(cell)).toUpperCase()
+                                                                : (isHtCol || isHqqd)
+                                                                    ? (
+                                                                        <span className={`font-bold ${colorCls}`}>
+                                                                            {roundUp(val)}%
+                                                                        </span>
+                                                                    )
+                                                                : h === 'DTQĐ' ? <span className="font-semibold text-indigo-700 dark:text-indigo-400">{f.format(roundUp(val))}</span>
+                                                                : (String(cell).includes('%') || h.includes('%') || h.includes('Tỷ') || h.includes('tỷ') ? roundUp(val) + '%' : f.format(roundUp(val)))
+                                                        )}
+                                                    </td>
+                                                );
+                                            })}
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
                 </div>
             </div>
         </div>

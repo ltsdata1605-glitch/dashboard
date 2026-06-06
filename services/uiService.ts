@@ -127,8 +127,15 @@ const waitForImages = (element: HTMLElement): Promise<void[]> => {
             return Promise.resolve();
         }
         return new Promise<void>((resolve) => {
-            img.onload = () => resolve();
-            img.onerror = () => resolve();
+            const timer = setTimeout(() => resolve(), 1500); // 1.5s safety timeout for slow network images
+            img.onload = () => {
+                clearTimeout(timer);
+                resolve();
+            };
+            img.onerror = () => {
+                clearTimeout(timer);
+                resolve();
+            };
         });
     });
     return Promise.all(promises);
@@ -143,7 +150,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
 
     elementsToHide.forEach((s: string) => {
         clone.querySelectorAll(s).forEach((e: any) => {
-            e.style.setProperty('display', 'none', 'important');
+            e.remove(); // Remove hidden elements completely to reduce DOM tree size and boost performance
         });
     });
 
@@ -165,7 +172,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         const cls = el.getAttribute('class') || '';
         // Hide mobile-only chart containers (they have lg:hidden)
         if (cls.includes('lg:hidden') && !cls.includes('export-always-show')) {
-            el.style.setProperty('display', 'none', 'important');
+            el.remove();
         }
         // Show desktop-only chart containers (they have hidden lg:block)  
         if (cls.includes('hidden') && cls.includes('lg:block')) {
@@ -175,6 +182,27 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         if (cls.includes('hidden') && cls.includes('lg:flex')) {
             el.style.setProperty('display', 'flex', 'important');
         }
+    });
+
+    // Remove all truly hidden elements (e.g. display: none or class hidden) to avoid processing them
+    clone.querySelectorAll('.hidden').forEach((el: any) => {
+        if (!(el instanceof HTMLElement)) return;
+        const cls = el.getAttribute('class') || '';
+        
+        // Check if there are any responsive display classes that override 'hidden' on larger viewports
+        const hasResponsiveOverride = /\b(sm|md|lg|xl|2xl):(block|flex|grid|inline|inline-block|table|table-row|table-cell)\b/.test(cls);
+        
+        // If it has no responsive override and is not forced display, it's truly hidden and safe to remove
+        const isForcedDisplay = el.style.display === 'block' || el.style.display === 'flex' || el.style.display === 'grid' || el.style.display === 'inline-block';
+        
+        if (!isForcedDisplay && !hasResponsiveOverride) {
+            el.remove();
+        }
+    });
+
+    // Also remove elements with style containing display: none
+    clone.querySelectorAll('[style*="display: none"]').forEach((el: any) => {
+        el.remove();
     });
 
     // --- RETAINED LAYOUT FIXES FOR EXPORT PRESENTATION ---
@@ -575,12 +603,14 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
                 el.style.setProperty('width', 'auto', 'important');
                 el.style.setProperty('min-width', '0', 'important');
                 el.style.setProperty('white-space', 'nowrap', 'important');
-                // Remove any fixed width / padding classes
-                el.classList.forEach(cls => {
-                    if (cls.startsWith('w-[') || cls.startsWith('w-') || cls.startsWith('min-w-') || cls.startsWith('lg:w-') || cls.startsWith('md:w-') || cls.startsWith('px-') || cls.startsWith('py-') || cls.startsWith('sm:px-') || cls.startsWith('sm:py-') || cls.startsWith('p-')) {
-                        el.classList.remove(cls);
-                    }
-                });
+                // Remove any fixed width / padding classes safely
+                const classesToRemove = Array.from(el.classList).filter(cls => 
+                    cls.startsWith('w-[') || cls.startsWith('w-') || cls.startsWith('min-w-') || 
+                    cls.startsWith('lg:w-') || cls.startsWith('md:w-') || cls.startsWith('px-') || 
+                    cls.startsWith('py-') || cls.startsWith('sm:px-') || cls.startsWith('sm:py-') || 
+                    cls.startsWith('p-')
+                );
+                classesToRemove.forEach(cls => el.classList.remove(cls));
             }
         });
 
@@ -764,7 +794,9 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
             style: {
                 margin: '0',
                 padding: '8px',
-            }
+            },
+            skipFonts: true, // Bỏ qua nhúng font tự động để tránh treo do tải font chậm qua mạng
+            fontEmbedCSS: '', // Tắt nhúng CSS font để tối ưu hiệu năng
         });
 
         if (!blob) {

@@ -20,24 +20,56 @@ export const pullSettingsFromFirebase = async () => {
     }
 };
 
+// Keys that are too large or unnecessary for cloud sync
+const EXCLUDED_SYNC_KEYS = new Set([
+    'productConfig',
+    'departmentMap',
+    'localSettingsLastModified',
+    'topSellerAnalysisHistory',   // Contains Employee[] arrays — can be huge
+    'customTabs',                 // Large contest table configs
+    'headToHeadTables',           // Large table configs
+    'customCalendars',            // Calendar data
+    'crossSellingConfig',         // Can grow large
+    'industryAnalysisCustomTabs', // Large analysis configs
+]);
+
+// Firestore max doc size is 1MB. We target 800KB to leave room for other document fields.
+const MAX_SYNC_BYTES = 800 * 1024;
+
 export const pushSettingsToFirebase = async () => {
     const user = auth.currentUser;
     if (!user) return;
     try {
         const allSettings = await getAllSettings();
         
-        // Lọc chỉ đồng bộ các cấu hình tĩnh, dung lượng nhẹ. KHÔNG ĐỒNG BỘ data lớn (như productConfig, departmentMap).
+        // Lọc chỉ đồng bộ các cấu hình tĩnh, dung lượng nhẹ. KHÔNG ĐỒNG BỘ data lớn.
         const settingsToSync: Record<string, any> = {};
         for (const key of Object.keys(allSettings)) {
-            // Loại bỏ các key không cần thiết hoặc quá lớn
-            if (key !== 'productConfig' && key !== 'departmentMap' && !key.startsWith('cached_') && key !== 'localSettingsLastModified') {
+            if (!EXCLUDED_SYNC_KEYS.has(key) && !key.startsWith('cached_')) {
                 settingsToSync[key] = allSettings[key];
+            }
+        }
+
+        // Safety: estimate size and trim if over limit
+        let jsonStr = JSON.stringify(settingsToSync);
+        if (jsonStr.length > MAX_SYNC_BYTES) {
+            console.warn(`[Sync] Settings too large (${(jsonStr.length / 1024).toFixed(0)}KB). Trimming largest keys...`);
+            // Sort entries by serialized size, remove largest until under limit
+            const entries = Object.entries(settingsToSync)
+                .map(([k, v]) => ({ key: k, size: JSON.stringify(v).length }))
+                .sort((a, b) => b.size - a.size);
+            
+            for (const entry of entries) {
+                if (jsonStr.length <= MAX_SYNC_BYTES) break;
+                delete settingsToSync[entry.key];
+                jsonStr = JSON.stringify(settingsToSync);
+                console.warn(`[Sync] Removed key "${entry.key}" (${(entry.size / 1024).toFixed(1)}KB) to reduce sync size`);
             }
         }
 
         const userRef = doc(db, 'users', user.uid);
         await setDoc(userRef, { settings: settingsToSync }, { merge: true });
-        console.log("[Sync] Đã đồng bộ ngầm cài đặt lên Firebase");
+        console.log(`[Sync] Đã đồng bộ ngầm cài đặt lên Firebase (${(jsonStr.length / 1024).toFixed(0)}KB)`);
     } catch (e) {
         console.error("[Sync] Lỗi push settings lên Firebase:", e);
     }
@@ -61,7 +93,7 @@ export const initSyncListeners = () => {
     // Khi người dùng thay đổi setting (IndexedDB trigger event) -> debounced sync
     const handleSettingChanged = (e: any) => {
         const key = e.detail?.key;
-        if (key && (key === 'productConfig' || key === 'departmentMap' || key.startsWith('cached_'))) return;
+        if (key && (EXCLUDED_SYNC_KEYS.has(key) || key.startsWith('cached_'))) return;
         
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(() => {
