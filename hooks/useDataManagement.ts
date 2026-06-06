@@ -162,36 +162,66 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 // 2. Background Cloud Sync (Settings + Sales Data)
                 if (user && !isDemoMode) {
                     // 2a. Settings sync (existing firestoreService)
-                    import('../services/firestoreService').then(async ({ fetchFromCloud }) => {
+                    import('../services/firestoreService').then(async ({ fetchFromCloud, fetchHeavySettingsFromCloud, syncHeavySettingToCloud, HEAVY_SYNC_KEYS }) => {
                         try {
-                            const cloudData = await fetchFromCloud(user);
-                            if (!cloudData) return;
+                            const [cloudData, heavyCloudData] = await Promise.all([
+                                fetchFromCloud(user).catch(err => { console.warn("Lỗi tải cấu hình nhẹ:", err); return null; }),
+                                fetchHeavySettingsFromCloud(user).catch(err => { console.warn("Lỗi tải cấu hình nặng:", err); return {}; })
+                            ]);
 
-                            const localLastMod = await dbService.getSetting<number>('localSettingsLastModified') || 0;
-                            const cloudLastMod = cloudData.lastSync ? new Date(cloudData.lastSync).getTime() : 0;
+                            // 1. Đồng bộ cấu hình nhẹ
+                            let forcePushLight = false;
+                            if (cloudData) {
+                                const localLastMod = await dbService.getSetting<number>('localSettingsLastModified') || 0;
+                                const cloudLastMod = cloudData.lastSync ? new Date(cloudData.lastSync).getTime() : 0;
 
-                            if (cloudLastMod < localLastMod) {
-                                console.log('[Cloud Sync] Local data is newer than Firebase. Skipping overwrite and pushing local to cloud...');
-                                window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'force_push_override' } }));
-                                return;
-                            }
-                            
-                            if (cloudData.settingsStoreBackup) {
-                                const backup = cloudData.settingsStoreBackup;
-                                Object.entries(backup).forEach(([k, v]) => {
-                                    dbService.saveSetting(k, v).catch(console.error);
-                                });
-                                if (backup.departmentMap) setDepartmentMap(backup.departmentMap);
-                                if (backup.warehouseTargets) setWarehouseTargets(backup.warehouseTargets);
-                                if (backup.gtdhTargets) setGtdhTargets(backup.gtdhTargets);
-                                if (backup.kpiTargets) setKpiTargets(backup.kpiTargets);
-                                if (backup.crossSellingConfig) setCrossSellingConfig(backup.crossSellingConfig);
-                                if (backup.kpiCardConfig) setKpiCardsConfig(backup.kpiCardConfig);
-                                if (backup.productConfig) {
-                                    dbService.getProductConfig().then(res => {
-                                        if (res && res.config) setProductConfig(res.config);
-                                    }).catch(console.error);
+                                if (cloudLastMod < localLastMod) {
+                                    console.log('[Cloud Sync] Cấu hình nhẹ local mới hơn Cloud. Đang chuẩn bị đồng bộ lên...');
+                                    forcePushLight = true;
+                                } else if (cloudData.settingsStoreBackup) {
+                                    const backup = cloudData.settingsStoreBackup;
+                                    Object.entries(backup).forEach(([k, v]) => {
+                                        dbService.saveSetting(k, v).catch(console.error);
+                                    });
+                                    if (backup.warehouseTargets) setWarehouseTargets(backup.warehouseTargets);
+                                    if (backup.gtdhTargets) setGtdhTargets(backup.gtdhTargets);
+                                    if (backup.kpiTargets) setKpiTargets(backup.kpiTargets);
+                                    if (backup.kpiCardConfig) setKpiCardsConfig(backup.kpiCardConfig);
                                 }
+                            } else {
+                                forcePushLight = true;
+                            }
+
+                            // 2. Đồng bộ từng cấu hình nặng độc lập theo dấu thời gian
+                            for (const key of Array.from(HEAVY_SYNC_KEYS)) {
+                                const localTime = await dbService.getSetting<number>(`lastModified_${key}`) || 0;
+                                const cloudItem = heavyCloudData[key];
+                                const cloudTime = cloudItem?.updatedAt || 0;
+
+                                if (cloudTime > localTime) {
+                                    console.log(`[Cloud Sync] Cloud có bản cập nhật mới cho khóa nặng "${key}" (${cloudTime} > ${localTime}). Đang tải xuống...`);
+                                    await dbService.saveSetting(key, cloudItem.value);
+                                    
+                                    // Cập nhật state runtime
+                                    if (key === 'departmentMap') setDepartmentMap(cloudItem.value);
+                                    if (key === 'crossSellingConfig') setCrossSellingConfig(cloudItem.value);
+                                    if (key === 'kpiCardConfig') setKpiCardsConfig(cloudItem.value);
+                                    if (key === 'productConfig') {
+                                        if (cloudItem.value?.config) setProductConfig(cloudItem.value.config);
+                                    }
+                                    
+                                    window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key } }));
+                                } else if (localTime > cloudTime) {
+                                    console.log(`[Cloud Sync] Local mới hơn Cloud cho khóa nặng "${key}" (${localTime} > ${cloudTime}). Đang đồng bộ lên...`);
+                                    const localValue = await dbService.getSetting(key);
+                                    if (localValue !== null) {
+                                        await syncHeavySettingToCloud(user, key, localValue);
+                                    }
+                                }
+                            }
+
+                            if (forcePushLight) {
+                                window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'force_push_override' } }));
                             }
                         } catch (e: any) {
                             const errMsg = (e?.message || '').toLowerCase();

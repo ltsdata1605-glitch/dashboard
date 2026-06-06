@@ -114,8 +114,10 @@ export async function saveSetting(key: string, value: any): Promise<void> {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
                 const store = tx.objectStore(SETTINGS_STORE);
                 store.put(value, key);
-                if (key !== 'localSettingsLastModified') {
-                    store.put(Date.now(), 'localSettingsLastModified');
+                if (key !== 'localSettingsLastModified' && !key.startsWith('lastModified_')) {
+                    const now = Date.now();
+                    store.put(now, 'localSettingsLastModified');
+                    store.put(now, `lastModified_${key}`);
                 }
                 tx.oncomplete = () => {
                     if (active) {

@@ -199,3 +199,70 @@ export const fetchScheduleFromCloud = async (user: User, key: string) => {
     return null;
 };
 
+export const HEAVY_SYNC_KEYS = new Set([
+    'productConfig',
+    'departmentMap',
+    'customTabs',
+    'headToHeadTables',
+    'customCalendars',
+    'crossSellingConfig',
+    'industryAnalysisCustomTabs',
+    'topSellerAnalysisHistory'
+]);
+
+export const syncHeavySettingToCloud = async (user: User, key: string, value: any) => {
+    if (!user) return;
+    const docRef = doc(db, 'users', user.uid, 'configs', key);
+    
+    // Safety check for Set conversion (like in productConfig.groups)
+    let safeValue = value;
+    if (key === 'productConfig' && value && value.config && value.config.groups) {
+        const clonedGroups: { [key: string]: string[] } = {};
+        for (const [gKey, gVal] of Object.entries(value.config.groups)) {
+            clonedGroups[gKey] = gVal instanceof Set ? Array.from(gVal) : (gVal as any);
+        }
+        safeValue = {
+            ...value,
+            config: {
+                ...value.config,
+                groups: clonedGroups
+            }
+        };
+    }
+    
+    const cleanValue = JSON.parse(JSON.stringify(safeValue, (k, v) => v === undefined ? null : v));
+    
+    await setDoc(docRef, {
+        value: cleanValue,
+        updatedAt: serverTimestamp()
+    }, { merge: false });
+};
+
+export const fetchHeavySettingsFromCloud = async (user: User): Promise<Record<string, { value: any, updatedAt: number }>> => {
+    if (!user) return {};
+    const { collection, getDocs } = await import('firebase/firestore');
+    const configsRef = collection(db, 'users', user.uid, 'configs');
+    const snap = await getDocs(configsRef);
+    
+    const settings: Record<string, any> = {};
+    snap.forEach(docSnap => {
+        const key = docSnap.id;
+        const data = docSnap.data();
+        if (data && data.value !== undefined) {
+            let val = data.value;
+            if (key === 'productConfig' && val && val.config && val.config.groups) {
+                const restoredGroups: { [key: string]: Set<string> } = {};
+                for (const [gKey, gVal] of Object.entries(val.config.groups)) {
+                    restoredGroups[gKey] = new Set(gVal as string[]);
+                }
+                val.config.groups = restoredGroups;
+            }
+            settings[key] = {
+                value: val,
+                updatedAt: data.updatedAt?.toMillis ? data.updatedAt.toMillis() : (data.savedAt || 0)
+            };
+        }
+    });
+    return settings;
+};
+
