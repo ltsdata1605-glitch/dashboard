@@ -184,47 +184,49 @@ const DashboardView = React.memo(function DashboardView() {
     return (
         <div className="w-full">
             {pendingCloudSync && (
-                <div className="fixed bottom-6 right-6 z-[250] bg-white dark:bg-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-indigo-100 dark:border-indigo-500/30 rounded-2xl p-5 flex flex-col gap-3 max-w-sm animate-in slide-in-from-bottom-5 fade-in duration-300">
-                    <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-xl">
-                                <Icon name="cloud-download" size={5} />
+                <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[360px] sm:max-w-sm z-[250] bg-white dark:bg-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-indigo-50/50 dark:border-indigo-500/20 rounded-2xl p-4 flex flex-col gap-2.5 animate-in slide-in-from-bottom-5 fade-in duration-300">
+                    <div className="flex items-start justify-between gap-3 w-full min-w-0">
+                        <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                            <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg shrink-0 mt-0.5">
+                                <Icon name="cloud-download" size={4} />
                             </div>
-                            <div>
-                                <h4 className="font-bold text-slate-800 dark:text-white text-sm flex items-center gap-2">
-                                    Phát hiện dữ liệu mới trên đám mây!
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300">
-                                        📊 {pendingCloudSync.meta.totalRows} dòng
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between gap-1.5 w-full min-w-0">
+                                    <h4 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm truncate">
+                                        Dữ liệu đám mây mới
+                                    </h4>
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 shrink-0">
+                                        📊 {pendingCloudSync.meta.totalRows.toLocaleString('vi-VN')} dòng
                                     </span>
-                                </h4>
-                                <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">
-                                    File <strong className="text-slate-700 dark:text-slate-300">{pendingCloudSync.meta.filename}</strong> đã được đồng bộ từ thiết bị khác.
+                                </div>
+                                <p className="text-[11px] text-slate-500 mt-1 leading-normal">
+                                    File: <strong className="text-slate-700 dark:text-slate-300 font-semibold truncate max-w-[130px] sm:max-w-[170px] inline-block align-bottom" title={pendingCloudSync.meta.filename}>{pendingCloudSync.meta.filename}</strong>
                                 </p>
                                 {pendingCloudSync.meta.savedAt && (
-                                    <p className="text-[10px] text-slate-400 mt-1 flex items-center gap-1">
+                                    <p className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
                                         <Icon name="clock" size={3} />
-                                        {new Date(pendingCloudSync.meta.savedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                        {new Date(pendingCloudSync.meta.savedAt).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}
                                     </p>
                                 )}
                             </div>
                         </div>
-                        <button onClick={() => setPendingCloudSync(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 -mr-2 -mt-2">
-                            <Icon name="x" size={4} />
+                        <button onClick={() => setPendingCloudSync(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 -mr-1 -mt-1 shrink-0">
+                            <Icon name="x" size={3.5} />
                         </button>
                     </div>
-                    <div className="flex flex-col gap-2">
-                        <button
-                            onClick={() => handleAcceptCloudSync()}
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm transition-colors shadow-sm active:scale-[0.98]"
-                        >
-                            <Icon name="refresh-cw" size={4} />
-                            Nạp dữ liệu từ đám mây
-                        </button>
+                    <div className="flex gap-2 mt-0.5">
                         <button
                             onClick={() => setPendingCloudSync(null)}
-                            className="w-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs transition-colors hover:bg-slate-50 dark:hover:bg-slate-700/50"
+                            className="flex-1 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium rounded-xl text-[11px] transition-colors"
                         >
-                            Bỏ qua, giữ dữ liệu hiện tại
+                            Bỏ qua
+                        </button>
+                        <button
+                            onClick={() => handleAcceptCloudSync()}
+                            className="flex-[2] py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors shadow-sm active:scale-[0.98]"
+                        >
+                            <Icon name="refresh-cw" size={3.5} />
+                            Nạp dữ liệu đám mây
                         </button>
                     </div>
                 </div>
