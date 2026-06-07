@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import * as dbService from '../../../services/dbService';
 import toast from 'react-hot-toast';
-import { useCloudSync } from '../../../hooks/useCloudSync';
+import { useSync } from '../../../contexts/SyncContext';
 import { shareCloudConfig, fetchSharedConfigs, deleteSharedConfig, type SharedConfig } from '../../../services/firestoreService';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 
@@ -13,7 +13,7 @@ import { DangerZoneSection } from './DangerZoneSection';
 
 export const SettingsDataTab: React.FC = () => {
     const { user, userRole, departmentId, isDemoMode } = useAuth();
-    const { syncState, lastSyncTime, forceSync } = useCloudSync();
+    const { syncState, lastSyncTime, forceSync } = useSync();
     
     const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(true);
     const [configUrl, setConfigUrl] = useState('');

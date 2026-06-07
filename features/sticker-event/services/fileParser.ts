@@ -249,9 +249,10 @@ export const saveInventoryData = async (inventory: InventoryItem[], timestamp: D
     store.put(timestamp, 'inventoryUploadTimestamp');
 };
 
-export const saveDisplayedProducts = async (products: Product[]): Promise<void> => {
+export const saveDisplayedProducts = async (products: Product[], timestamp?: number): Promise<void> => {
     const store = await getStore('readwrite');
     store.put(products, 'displayedProducts');
+    store.put(timestamp || Date.now(), 'displayedProductsLastModified');
 };
 
 export const saveEmployeeName = async (name: string): Promise<void> => {
@@ -259,7 +260,7 @@ export const saveEmployeeName = async (name: string): Promise<void> => {
     store.put(name, 'employeeName');
 };
 
-export const loadData = async (): Promise<{ products: Product[]; displayedProducts: Product[]; inventory: InventoryItem[]; fileInfo: FileInfo | null; employeeName: string; inventoryUploadTimestamp: Date | null; } | null> => {
+export const loadData = async (): Promise<{ products: Product[]; displayedProducts: Product[]; inventory: InventoryItem[]; fileInfo: FileInfo | null; employeeName: string; inventoryUploadTimestamp: Date | null; displayedProductsLastModified: number | null; } | null> => {
     try {
         const store = await getStore('readonly');
         const productsReq = store.get('products');
@@ -268,11 +269,12 @@ export const loadData = async (): Promise<{ products: Product[]; displayedProduc
         const fileInfoReq = store.get('fileInfo');
         const employeeNameReq = store.get('employeeName');
         const inventoryUploadTimestampReq = store.get('inventoryUploadTimestamp');
+        const displayedProductsLastModifiedReq = store.get('displayedProductsLastModified');
 
         return new Promise((resolve) => {
-            const results: any = { products: [], displayedProducts: [], inventory: [], fileInfo: null, employeeName: '', inventoryUploadTimestamp: null };
+            const results: any = { products: [], displayedProducts: [], inventory: [], fileInfo: null, employeeName: '', inventoryUploadTimestamp: null, displayedProductsLastModified: null };
             let completed = 0;
-            const totalRequests = 6;
+            const totalRequests = 7;
 
             const checkCompletion = () => {
                 completed++;
@@ -282,7 +284,6 @@ export const loadData = async (): Promise<{ products: Product[]; displayedProduc
             };
             
             const onError = () => {
-                // In case of error, we still need to "complete" to resolve the promise.
                 checkCompletion();
             };
 
@@ -310,6 +311,10 @@ export const loadData = async (): Promise<{ products: Product[]; displayedProduc
                 results.inventoryUploadTimestamp = inventoryUploadTimestampReq.result || null;
                 checkCompletion();
             };
+            displayedProductsLastModifiedReq.onsuccess = () => {
+                results.displayedProductsLastModified = displayedProductsLastModifiedReq.result || null;
+                checkCompletion();
+            };
             
             productsReq.onerror = onError;
             displayedProductsReq.onerror = onError;
@@ -317,6 +322,7 @@ export const loadData = async (): Promise<{ products: Product[]; displayedProduc
             fileInfoReq.onerror = onError;
             employeeNameReq.onerror = onError;
             inventoryUploadTimestampReq.onerror = onError;
+            displayedProductsLastModifiedReq.onerror = onError;
         });
     } catch (e) {
         console.error("Failed to load data from IndexedDB", e);

@@ -223,7 +223,10 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
         const rows: any[] = [];
         (['SLLK', 'DTLK', 'DTQĐ'] as Criterion[]).forEach(crit => {
             const headers = allCompetitionsByCriterion[crit]?.headers || [];
-            const filteredHeaders = headers.filter(h => selectedCompetitions.has(h.title));
+            const headerMap = new Map(headers.map(h => [h.title, h]));
+            const filteredHeaders = Array.from(selectedCompetitions)
+                .map(title => headerMap.get(title))
+                .filter((h): h is CompetitionHeader => !!h);
             if (filteredHeaders.length === 0) return;
 
             filteredHeaders.forEach(comp => {

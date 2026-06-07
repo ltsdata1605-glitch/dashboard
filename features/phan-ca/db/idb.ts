@@ -31,20 +31,24 @@ export const initDB = (): Promise<boolean> => {
   });
 };
 
-export const saveData = <T,>(key: string, value: T): Promise<void> => {
+export const saveData = <T,>(key: string, value: T, timestamp?: number): Promise<void> => {
   return new Promise((resolve, reject) => {
     if (!db) {
-        initDB().then(() => saveData(key, value).then(resolve).catch(reject));
+        initDB().then(() => saveData(key, value, timestamp).then(resolve).catch(reject));
         return;
     }
     const transaction = db.transaction([STORE_NAME], 'readwrite');
     const store = transaction.objectStore(STORE_NAME);
-    const request = store.put({ key, value });
+    store.put({ key, value });
 
-    request.onsuccess = () => resolve();
-    request.onerror = () => {
-        console.error(`Lỗi khi lưu dữ liệu cho key ${key}:`, request.error);
-        reject(request.error);
+    if (!key.startsWith('lastModified_')) {
+      store.put({ key: `lastModified_${key}`, value: timestamp || Date.now() });
+    }
+
+    transaction.oncomplete = () => resolve();
+    transaction.onerror = () => {
+        console.error(`Lỗi khi lưu dữ liệu cho key ${key}:`, transaction.error);
+        reject(transaction.error);
     };
   });
 };

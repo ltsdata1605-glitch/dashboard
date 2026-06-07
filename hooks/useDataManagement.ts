@@ -162,7 +162,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 // 2. Background Cloud Sync (Settings + Sales Data)
                 if (user && !isDemoMode) {
                     // 2a. Settings sync (existing firestoreService)
-                    import('../services/firestoreService').then(async ({ fetchFromCloud, fetchHeavySettingsFromCloud, syncHeavySettingToCloud, HEAVY_SYNC_KEYS }) => {
+                    import('../services/firestoreService').then(async ({ fetchFromCloud, fetchHeavySettingsFromCloud, syncHeavySettingToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey }) => {
                         try {
                             const [cloudData, heavyCloudData] = await Promise.all([
                                 fetchFromCloud(user).catch(err => { console.warn("Lỗi tải cấu hình nhẹ:", err); return null; }),
@@ -181,7 +181,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                                 } else if (cloudData.settingsStoreBackup) {
                                     const backup = cloudData.settingsStoreBackup;
                                     Object.entries(backup).forEach(([k, v]) => {
-                                        dbService.saveSetting(k, v).catch(console.error);
+                                        dbService.saveSettingFromCloud(k, v, cloudLastMod).catch(console.error);
                                     });
                                     if (backup.warehouseTargets) setWarehouseTargets(backup.warehouseTargets);
                                     if (backup.gtdhTargets) setGtdhTargets(backup.gtdhTargets);
@@ -193,14 +193,32 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                             }
 
                             // 2. Đồng bộ từng cấu hình nặng độc lập theo dấu thời gian
-                            for (const key of Array.from(HEAVY_SYNC_KEYS)) {
+                            const allHeavyKeys = new Set([
+                                ...Array.from(HEAVY_SYNC_KEYS),
+                                ...Object.keys(heavyCloudData)
+                            ]);
+
+                            for (const key of Array.from(allHeavyKeys)) {
+                                if (!isHeavySyncKey(key)) continue;
+
                                 const localTime = await dbService.getSetting<number>(`lastModified_${key}`) || 0;
                                 const cloudItem = heavyCloudData[key];
                                 const cloudTime = cloudItem?.updatedAt || 0;
 
                                 if (cloudTime > localTime) {
                                     console.log(`[Cloud Sync] Cloud có bản cập nhật mới cho khóa nặng "${key}" (${cloudTime} > ${localTime}). Đang tải xuống...`);
-                                    await dbService.saveSetting(key, cloudItem.value);
+                                    await dbService.saveSettingFromCloud(key, cloudItem.value, cloudTime);
+                                    
+                                    // Ghi đè vào IndexedDB của iframe check-thuong nếu là checkthuong_data
+                                    if (key === 'checkthuong_data') {
+                                        try {
+                                            const { saveCheckThuongDataToIframeDb } = await import('../services/checkThuongIframeService');
+                                            await saveCheckThuongDataToIframeDb(cloudItem.value);
+                                            window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync'));
+                                        } catch (err) {
+                                            console.error('[Cloud Sync CheckThuong] Error writing to iframe DB:', err);
+                                        }
+                                    }
                                     
                                     // Cập nhật state runtime
                                     if (key === 'departmentMap') setDepartmentMap(cloudItem.value);

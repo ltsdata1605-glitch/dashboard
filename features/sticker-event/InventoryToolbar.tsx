@@ -3,7 +3,7 @@ import { InventoryItem } from './types';
 import MultiSelectDropdown from './MultiSelectDropdown';
 import { ArrowUpDown, Filter, ImageDown } from 'lucide-react';
 
-export type SortField = 'none' | 'giaGoc' | 'tongThuong' | 'discount' | 'tonKho' | 'sanPham';
+export type SortField = 'none' | 'giaGoc' | 'giaGiam' | 'tongThuong' | 'discount' | 'tonKho' | 'sanPham';
 export type SortDirection = 'asc' | 'desc';
 
 interface InventoryToolbarProps {
@@ -28,6 +28,7 @@ interface InventoryToolbarProps {
 const SORT_OPTIONS: { value: SortField; label: string }[] = [
   { value: 'none', label: 'Mặc định' },
   { value: 'giaGoc', label: 'Giá Gốc' },
+  { value: 'giaGiam', label: 'Giá Đã Giảm' },
   { value: 'tongThuong', label: 'Thưởng' },
   { value: 'discount', label: '% Giảm giá' },
   { value: 'tonKho', label: 'Tồn kho' },

@@ -445,50 +445,73 @@
 
             const saveState = () => {
                 if (competitionData && competitionData.length > 0) {
-                    idbKeyval.set('checkthuong_data', {
+                    const payload = {
                         competitionData: competitionData,
                         fileName: fileStatus.textContent.replace('Đã tải: ', '').replace(' (từ bộ nhớ tạm)', ''),
                         uploadTime: fileUploadTime,
                         code1: storeCodeInput1.value,
                         code2: storeCodeInput2.value,
-                        singleViewMode: singleViewMode
+                        singleViewMode: singleViewMode,
+                        lastModified: Date.now()
+                    };
+                    idbKeyval.set('checkthuong_data', payload).then(() => {
+                        if (window.parent) {
+                            window.parent.postMessage({
+                                type: 'CHECK_THUONG_STATE_CHANGED',
+                                payload: payload
+                            }, '*');
+                        }
                     }).catch(e => console.warn('IDB Save Error:', e));
                 }
             };
 
-            // Load saved state on init (only for codes and view mode, require re-upload for data)
-            idbKeyval.get('checkthuong_data').then(savedData => {
-                if (savedData) {
-                    if (savedData.code1) storeCodeInput1.value = savedData.code1;
-                    if (savedData.code2) storeCodeInput2.value = savedData.code2;
-                    if (savedData.singleViewMode) singleViewMode = savedData.singleViewMode;
-                    
-                    if (savedData.competitionData && savedData.competitionData.length > 0) {
-                        competitionData = savedData.competitionData;
-                        fileUploadTime = savedData.uploadTime;
-                        fileStatus.textContent = `Đã tải: ${savedData.fileName || 'file_cu.xlsx'} (từ bộ nhớ tạm)`;
-                        preProcessData(competitionData);
+            const reloadFromIDB = () => {
+                idbKeyval.get('checkthuong_data').then(savedData => {
+                    if (savedData) {
+                        if (savedData.code1) storeCodeInput1.value = savedData.code1;
+                        if (savedData.code2) storeCodeInput2.value = savedData.code2;
+                        if (savedData.singleViewMode) singleViewMode = savedData.singleViewMode;
                         
-                        // Show the dashboard UI
-                        searchSection.classList.remove('hidden');
-                        landingPage.classList.add('hidden');
-                        changeFileButton.classList.remove('hidden');
-                        
-                        if (storeCodeInput1.value) {
-                            handleSearchOrCompare();
+                        if (savedData.competitionData && savedData.competitionData.length > 0) {
+                            competitionData = savedData.competitionData;
+                            fileUploadTime = savedData.uploadTime;
+                            fileStatus.textContent = `Đã tải: ${savedData.fileName || 'file_cu.xlsx'} (từ bộ nhớ tạm)`;
+                            preProcessData(competitionData);
+                            
+                            // Show the dashboard UI
+                            searchSection.classList.remove('hidden');
+                            landingPage.classList.add('hidden');
+                            changeFileButton.classList.remove('hidden');
+                            
+                            if (storeCodeInput1.value) {
+                                handleSearchOrCompare();
+                            }
+                            
+                            // Need to notify parent that file is loaded so it shows the header controls!
+                            if (window.parent) {
+                                window.parent.postMessage({
+                                    type: 'CHECK_THUONG_FILE_LOADED',
+                                    code1: storeCodeInput1.value,
+                                    code2: storeCodeInput2.value
+                                }, '*');
+                            }
+                        } else {
+                            landingPage.classList.remove('hidden');
+                            searchSection.classList.add('hidden');
+                            changeFileButton.classList.add('hidden');
+                            mainContent.classList.add('hidden');
                         }
-                        
-                        // Need to notify parent that file is loaded so it shows the header controls!
-                        if (window.parent) {
-                            window.parent.postMessage({
-                                type: 'CHECK_THUONG_FILE_LOADED',
-                                code1: storeCodeInput1.value,
-                                code2: storeCodeInput2.value
-                            }, '*');
-                        }
+                    } else {
+                        landingPage.classList.remove('hidden');
+                        searchSection.classList.add('hidden');
+                        changeFileButton.classList.add('hidden');
+                        mainContent.classList.add('hidden');
                     }
-                }
-            }).catch(e => console.warn('IDB Load Error:', e));
+                }).catch(e => console.warn('IDB Load Error:', e));
+            };
+
+            // Load saved state on init
+            reloadFromIDB();
 
             const COLS = { KENH: 3, SIÊU_THỊ: 4, NGANH_HANG: 5, PERCENT_DU_KIEN: 6, DU_KIEN_VUOT: 7, LAY_TOP_10: 8, HANG_VUOT_Uu: 9, HANG_PERCENT_TARGET: 10, THUONG_VUOT_Uu: 11, THUONG_TOP_PERCENT: 12, TONG_THUONG: 13 };
             const EXPECTED_HEADERS = ['siêu thị', 'ngành hàng', 'thưởng'];
@@ -2378,6 +2401,14 @@
                     } else {
                         const btn = document.getElementById('exportSummaryImageButton');
                         if (btn) btn.click();
+                    }
+                } else if (e.data && e.data.type === 'CHECK_THUONG_RELOAD_DATA') {
+                    reloadFromIDB();
+                } else if (e.data && e.data.type === 'CHECK_THUONG_SYNC_FROM_CLOUD') {
+                    if (e.data.payload) {
+                        idbKeyval.set('checkthuong_data', e.data.payload).then(() => {
+                            reloadFromIDB();
+                        });
                     }
                 }
             });

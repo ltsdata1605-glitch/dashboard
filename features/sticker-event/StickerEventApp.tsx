@@ -7,7 +7,7 @@ import { uploadProductsToFirestore, uploadInventoryToFirestore, fetchProductsFro
 import { printPriceTags } from './services/printService';
 import { getSetting, saveSetting } from '../../services/dbService';
 import * as XLSX from 'xlsx';
-import html2canvas from 'html2canvas';
+import { exportElementAsImage, downloadBlob, showExportOverlay, hideExportOverlay } from '../../services/uiService';
 import ResultsDisplay from './ResultsDisplay';
 import { LogoIcon, WarningIcon } from './Icons';
 import Scanner from './Scanner';
@@ -239,14 +239,12 @@ export default function App(): React.JSX.Element {
       // Load local settings first
       const savedData = await loadData();
       
-      // Load user-specific state from Firestore (only if no local data)
+      // Load user-specific state from Firestore
       let userState = null;
-      if (!savedData || !savedData.displayedProducts?.length) {
-        try {
-          userState = await fetchUserState(user.uid);
-        } catch (e) {
-          console.error("Error fetching user state:", e);
-        }
+      try {
+        userState = await fetchUserState(user.uid);
+      } catch (e) {
+        console.error("Error fetching user state:", e);
       }
 
       let currentAllProducts: Product[] = [];
@@ -263,14 +261,27 @@ export default function App(): React.JSX.Element {
         setAllProducts(currentAllProducts);
         setInventory(currentInventory);
         
-        if (userState && userState.displayedProducts) {
+        const localLastMod = savedData.displayedProductsLastModified || 0;
+        const cloudLastMod = userState?.updatedAt || 0;
+
+        if (userState && cloudLastMod > localLastMod) {
+          console.log(`[Cloud Sync Sticker] Cloud is newer (${cloudLastMod} > ${localLastMod}). Loading cloud state...`);
           setDisplayedProducts(userState.displayedProducts);
+          setInventoryFilters(userState.inventoryFilters);
+          await saveDisplayedProducts(userState.displayedProducts, cloudLastMod);
         } else {
           setDisplayedProducts(savedData.displayedProducts || []);
-        }
-
-        if (userState && userState.inventoryFilters) {
-          setInventoryFilters(userState.inventoryFilters);
+          if (userState && userState.inventoryFilters) {
+            setInventoryFilters(userState.inventoryFilters);
+          }
+          
+          if (userState && localLastMod > cloudLastMod && savedData.displayedProducts?.length) {
+            console.log(`[Cloud Sync Sticker] Local is newer (${localLastMod} > ${cloudLastMod}). Syncing up...`);
+            saveUserState(user.uid, {
+              displayedProducts: savedData.displayedProducts,
+              inventoryFilters: userState.inventoryFilters || { maSieuThi: [], nganhHang: [], nhomHang: [], keyword: '' }
+            }).catch(console.error);
+          }
         }
 
         if(savedData.fileInfo && savedData.fileInfo.fileName) {
@@ -293,7 +304,13 @@ export default function App(): React.JSX.Element {
         setEmployeeName(name);
         if (!name) setIsEditingEmployeeName(true);
       } else {
-        setDisplayedProducts([]);
+        if (userState && userState.displayedProducts) {
+          setDisplayedProducts(userState.displayedProducts);
+          setInventoryFilters(userState.inventoryFilters);
+          await saveDisplayedProducts(userState.displayedProducts, userState.updatedAt);
+        } else {
+          setDisplayedProducts([]);
+        }
         let defaultName = userData?.username || '';
         if (defaultName === '21707' || defaultName === 'lts.truongson') {
             defaultName = '';
@@ -491,17 +508,28 @@ export default function App(): React.JSX.Element {
   };
 
   useEffect(() => {
-    // Save to local IndexedDB with debounce to avoid excessive writes
+    // Save to local IndexedDB and Firestore with debounce to avoid excessive writes
     if (!isInitializing) {
       if (saveDisplayedProductsTimeoutRef.current) clearTimeout(saveDisplayedProductsTimeoutRef.current);
-      saveDisplayedProductsTimeoutRef.current = window.setTimeout(() => {
-        saveDisplayedProducts(displayedProducts);
+      saveDisplayedProductsTimeoutRef.current = window.setTimeout(async () => {
+        await saveDisplayedProducts(displayedProducts);
+        if (user) {
+          try {
+            await saveUserState(user.uid, {
+              displayedProducts,
+              inventoryFilters
+            });
+            console.log("[Cloud Sync Sticker] Auto-saved state to cloud.");
+          } catch (e) {
+            console.error("[Cloud Sync Sticker] Error auto-saving to cloud:", e);
+          }
+        }
       }, 2000);
     }
     return () => {
       if (saveDisplayedProductsTimeoutRef.current) clearTimeout(saveDisplayedProductsTimeoutRef.current);
     };
-  }, [displayedProducts, isInitializing]);
+  }, [displayedProducts, inventoryFilters, isInitializing, user]);
 
   const handleSaveUserState = async () => {
     if (!user || displayedProducts.length === 0) return;
@@ -760,6 +788,10 @@ export default function App(): React.JSX.Element {
         case 'giaGoc':
           valA = parseCurrency(a.giaGoc);
           valB = parseCurrency(b.giaGoc);
+          break;
+        case 'giaGiam':
+          valA = parseCurrency(a.giaGiam);
+          valB = parseCurrency(b.giaGiam);
           break;
         case 'tongThuong':
           valA = a.tongThuong;
@@ -1609,32 +1641,22 @@ export default function App(): React.JSX.Element {
                       return;
                     }
                     try {
-                      // Clone the element off-screen so html2canvas can capture full height
-                      const clone = target.cloneNode(true) as HTMLElement;
-                      clone.style.position = 'absolute';
-                      clone.style.left = '-9999px';
-                      clone.style.top = '0';
-                      clone.style.width = target.scrollWidth + 'px';
-                      clone.style.background = '#ffffff';
-                      document.body.appendChild(clone);
-
-                      const canvas = await html2canvas(clone, {
-                        backgroundColor: '#ffffff',
+                      showExportOverlay('Đang xuất ảnh danh sách sản phẩm...');
+                      const filename = `danh-sach-san-pham-${new Date().toISOString().slice(0,10)}.png`;
+                      const blob = await exportElementAsImage(target, filename, {
+                        elementsToHide: ['.hide-on-export'],
                         scale: 2,
-                        useCORS: true,
-                        logging: false,
-                        windowWidth: target.scrollWidth,
-                        windowHeight: clone.scrollHeight,
+                        captureAsDisplayed: true
                       });
-
-                      document.body.removeChild(clone);
-
-                      const link = document.createElement('a');
-                      link.download = `danh-sach-san-pham-${new Date().toISOString().slice(0,10)}.png`;
-                      link.href = canvas.toDataURL('image/png');
-                      link.click();
+                      hideExportOverlay();
+                      if (blob) {
+                        downloadBlob(blob, filename);
+                      } else {
+                        showAlert('Không thể xuất ảnh. Vui lòng thử lại.', 'Lỗi');
+                      }
                     } catch (err) {
                       console.error('Export image error:', err);
+                      hideExportOverlay();
                       showAlert('Không thể xuất ảnh. Vui lòng thử lại.', 'Lỗi');
                     }
                   }}

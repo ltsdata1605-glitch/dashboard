@@ -323,7 +323,7 @@ export const saveUserState = async (userId: string, state: { displayedProducts: 
   }
 };
 
-export const fetchUserState = async (userId: string): Promise<{ displayedProducts: any[], inventoryFilters: any } | null> => {
+export const fetchUserState = async (userId: string): Promise<{ displayedProducts: any[], inventoryFilters: any, updatedAt: number } | null> => {
   if (!userId) return null;
   
   const stateRef = doc(db, 'users', userId, 'state', 'current');
@@ -334,7 +334,8 @@ export const fetchUserState = async (userId: string): Promise<{ displayedProduct
       const data = docSnap.data();
       return {
         displayedProducts: JSON.parse(data.displayedProducts || '[]'),
-        inventoryFilters: JSON.parse(data.inventoryFilters || '{}')
+        inventoryFilters: JSON.parse(data.inventoryFilters || '{}'),
+        updatedAt: data.updatedAt?.toMillis ? data.updatedAt.toMillis() : 0
       };
     }
     return null;

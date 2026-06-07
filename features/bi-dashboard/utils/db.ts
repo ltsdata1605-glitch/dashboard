@@ -95,8 +95,10 @@ export const set = async (key: BIKey, value: any): Promise<void> => {
     const transaction = db.transaction([SETTINGS_STORE], 'readwrite');
     const store = transaction.objectStore(SETTINGS_STORE);
     store.put(value, prefixed);
-    // Cập nhật timestamp chung để hệ thống Cloud Sync nhận biết thay đổi
-    store.put(Date.now(), 'localSettingsLastModified');
+    
+    const now = Date.now();
+    store.put(now, 'localSettingsLastModified');
+    store.put(now, `lastModified_${prefixed}`);
 
     transaction.oncomplete = () => {
       // Bắn event cho hệ thống BI nội bộ (dùng tên key GỐC, không prefix)
@@ -119,10 +121,13 @@ export const setMany = async (items: { key: BIKey; value: any }[]): Promise<void
     const transaction = db.transaction([SETTINGS_STORE], 'readwrite');
     const store = transaction.objectStore(SETTINGS_STORE);
 
+    const now = Date.now();
     items.forEach(item => {
-      store.put(item.value, prefixKey(item.key));
+      const prefixed = prefixKey(item.key);
+      store.put(item.value, prefixed);
+      store.put(now, `lastModified_${prefixed}`);
     });
-    store.put(Date.now(), 'localSettingsLastModified');
+    store.put(now, 'localSettingsLastModified');
 
     transaction.oncomplete = () => {
       // Bắn event tổng hợp

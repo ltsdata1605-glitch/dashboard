@@ -181,30 +181,46 @@ const App: React.FC = () => {
     staffListRef.current = staffList;
   }, [staffList]);
 
-  const loadWithFallback = useCallback(async <T,>(key: string, defaultValue: T): Promise<T> => {
-      let localData = await idb.loadData<T>(key);
-      if (localData !== null && localData !== undefined) {
-          return localData;
+  const syncAndLoadKey = useCallback(async <T,>(key: string, defaultValue: T): Promise<T> => {
+      const localData = await idb.loadData<T>(key);
+      const localTime = await idb.loadData<number>(`lastModified_${key}`) || 0;
+      
+      if (!user) {
+          return localData !== undefined ? localData : defaultValue;
       }
-      if (user) {
-          try {
-              const cloudData = await fetchScheduleFromCloud(user, key);
-              if (cloudData !== null && cloudData !== undefined) {
-                  await idb.saveData(key, cloudData);
+      
+      try {
+          const cloudResult = await fetchScheduleFromCloud(user, key);
+          if (cloudResult) {
+              const cloudTime = cloudResult.updatedAt || 0;
+              const cloudData = cloudResult.data as T;
+              
+              if (cloudTime > localTime || localData === undefined) {
+                  console.log(`[Cloud Sync PhanCa] Cloud is newer for ${key} (${cloudTime} > ${localTime}). Loading cloud...`);
+                  await idb.saveData(key, cloudData, cloudTime);
                   return cloudData;
+              } else if (localTime > cloudTime && localData !== undefined) {
+                  console.log(`[Cloud Sync PhanCa] Local is newer for ${key} (${localTime} > ${cloudTime}). Syncing to cloud...`);
+                  await syncScheduleToCloud(user, key, localData);
+                  lastSyncedRef.current[key] = JSON.stringify(localData);
               }
-          } catch (e) {
-              console.error("Lỗi khi tải dữ liệu từ cloud:", e);
+          } else if (localData !== undefined) {
+              console.log(`[Cloud Sync PhanCa] Cloud is empty for ${key}. Syncing local to cloud...`);
+              await syncScheduleToCloud(user, key, localData);
+              lastSyncedRef.current[key] = JSON.stringify(localData);
           }
+      } catch (e) {
+          console.error(`[Cloud Sync PhanCa] Error syncing key ${key}:`, e);
       }
-      return defaultValue;
+      
+      return localData !== undefined ? localData : defaultValue;
   }, [user]);
 
   useEffect(() => {
     const initApp = async () => {
       await idb.initDB();
-      const savedSupermarkets = await loadWithFallback<string[]>('meta_supermarkets', []);
-      const savedUiState = await loadWithFallback<any>('uiState', null);
+      const savedSupermarkets = await syncAndLoadKey<string[]>('meta_supermarkets', []);
+      const savedUiState = await syncAndLoadKey<any>('uiState', null);
       
       lastSyncedRef.current['meta_supermarkets'] = JSON.stringify(savedSupermarkets);
       if (savedUiState) {
@@ -229,7 +245,7 @@ const App: React.FC = () => {
       setIsDbLoaded(true);
     };
     initApp();
-  }, [user, loadWithFallback]);
+  }, [user, syncAndLoadKey]);
 
   const handleSupermarketChange = (supermarket: string) => {
     setIsDataLoadedForSupermarket(false);
@@ -247,22 +263,22 @@ const App: React.FC = () => {
       return;
     }
     const loadSupermarketData = async () => {
-      const savedNams = await loadWithFallback<StaffInitialData[]>(getKey('nams'), []);
-      const savedNus = await loadWithFallback<StaffInitialData[]>(getKey('nus'), []);
-      const savedRules = await loadWithFallback<SchedulingRules>(getKey('rules'), DEFAULT_RULES);
-      const savedPatterns = await loadWithFallback<{ [key: string]: string[] }>(getKey('departmentPatterns'), {});
-      const savedReqs = await loadWithFallback<DailyRequirements>(getKey('dailyRequirements'), ZERO_REQUIREMENTS);
-      const savedShiftDefs = await loadWithFallback<ShiftDefinitions>(getKey('shiftDefinitions'), DEFAULT_SHIFT_DEFINITIONS);
+      const savedNams = await syncAndLoadKey<StaffInitialData[]>(getKey('nams'), []);
+      const savedNus = await syncAndLoadKey<StaffInitialData[]>(getKey('nus'), []);
+      const savedRules = await syncAndLoadKey<SchedulingRules>(getKey('rules'), DEFAULT_RULES);
+      const savedPatterns = await syncAndLoadKey<{ [key: string]: string[] }>(getKey('departmentPatterns'), {});
+      const savedReqs = await syncAndLoadKey<DailyRequirements>(getKey('dailyRequirements'), ZERO_REQUIREMENTS);
+      const savedShiftDefs = await syncAndLoadKey<ShiftDefinitions>(getKey('shiftDefinitions'), DEFAULT_SHIFT_DEFINITIONS);
       
       const scheduleKey = getKey(`schedule-${monthYear}`);
       const historyKey = getKey(`history-${monthYear}`);
       const unresolvedKey = getKey(`unresolved-${monthYear}`);
       const busyScheduleKey = getKey(`busySchedule-${monthYear}`);
       
-      const savedSchedule = await loadWithFallback<StaffMember[]>(scheduleKey, []);
-      const savedHistory = await loadWithFallback<ScheduleHistoryEntry[]>(historyKey, []);
-      const savedUnresolved = await loadWithFallback<UnresolvedConflict[]>(unresolvedKey, []);
-      const savedBusySchedule = await loadWithFallback<BusySchedule>(busyScheduleKey, {});
+      const savedSchedule = await syncAndLoadKey<StaffMember[]>(scheduleKey, []);
+      const savedHistory = await syncAndLoadKey<ScheduleHistoryEntry[]>(historyKey, []);
+      const savedUnresolved = await syncAndLoadKey<UnresolvedConflict[]>(unresolvedKey, []);
+      const savedBusySchedule = await syncAndLoadKey<BusySchedule>(busyScheduleKey, {});
       
       // Populate lastSyncedRef to prevent immediate write-back of fetched data
       lastSyncedRef.current[getKey('nams')] = JSON.stringify(savedNams);
@@ -292,7 +308,7 @@ const App: React.FC = () => {
       setIsDataLoadedForSupermarket(true);
     };
     loadSupermarketData();
-  }, [isDbLoaded, currentSupermarket, getKey, monthYear, supermarkets.length, user, loadWithFallback]);
+  }, [isDbLoaded, currentSupermarket, getKey, monthYear, supermarkets.length, user, syncAndLoadKey]);
 
   useEffect(() => {
      if (isDataLoadedForSupermarket && (nams.length > 0 || nus.length > 0)) {

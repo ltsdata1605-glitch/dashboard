@@ -90,7 +90,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
     </div>
     
     {/* Right/Bottom: Controls — LARGER */}
-    <div className={`flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 ${isMobile ? 'pt-1' : ''} sm:pl-3 sm:border-l`}>
+    <div className={`flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 ${isMobile ? 'pt-1' : ''} sm:pl-3 sm:border-l hide-on-export`}>
         <div className="flex items-center gap-2">
              <button
                 onClick={() => onToggleSelect(result.msp)}
@@ -299,7 +299,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
                 />
             ))}
             {results.length > visibleCount && (
-                <div className="flex justify-center py-4">
+                <div className="flex justify-center py-4 hide-on-export">
                     <button
                         onClick={() => setVisibleCount(prev => prev + 50)}
                         className="px-6 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-semibold rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors text-sm shadow-sm flex items-center gap-2"

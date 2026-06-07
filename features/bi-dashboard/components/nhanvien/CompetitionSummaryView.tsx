@@ -43,6 +43,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
     const [isEditingName, setIsEditingName] = useState(false);
     const [tempName, setTempName] = useState(tableName);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const formatter = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
@@ -67,8 +68,10 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
     }, [allCompetitionsByCriterion]);
 
     const visibleHeaders = useMemo(() => {
-        const titleSet = new Set(selectedTitles);
-        return allHeaders.filter(h => titleSet.has(h.title));
+        const headerMap = new Map(allHeaders.map(h => [h.title, h]));
+        return selectedTitles
+            .map(title => headerMap.get(title))
+            .filter((h): h is CompetitionHeader => !!h);
     }, [allHeaders, selectedTitles]);
 
     const getHtColor = (val: number) => {
@@ -102,6 +105,27 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
             ? selectedTitles.filter(t => t !== title)
             : [...selectedTitles, title];
         onUpdateTitles(next);
+    };
+
+    const handleDragStart = (e: React.DragEvent, index: number) => {
+        setDraggedIndex(index);
+        e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault();
+    };
+
+    const handleDrop = (e: React.DragEvent, targetIndex: number) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === targetIndex) return;
+
+        const updatedTitles = [...selectedTitles];
+        const [draggedItem] = updatedTitles.splice(draggedIndex, 1);
+        updatedTitles.splice(targetIndex, 0, draggedItem);
+
+        onUpdateTitles(updatedTitles);
+        setDraggedIndex(null);
     };
 
     // Hàm xử lý xoá bảng với các biện pháp bảo vệ sự kiện
@@ -245,12 +269,22 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                             const colors = ['sky', 'emerald', 'amber', 'violet', 'rose', 'teal'];
                                             return visibleHeaders.map((header, index) => {
                                                 const color = colors[index % colors.length];
+                                                const isDragging = draggedIndex === index;
                                                 return (
                                                     <th 
                                                         key={header.title} 
-                                                        className={`px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[100px] leading-tight align-middle`}
+                                                        draggable
+                                                        onDragStart={(e) => handleDragStart(e, index)}
+                                                        onDragOver={(e) => handleDragOver(e, index)}
+                                                        onDrop={(e) => handleDrop(e, index)}
+                                                        onDragEnd={() => setDraggedIndex(null)}
+                                                        className={`px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[100px] leading-tight align-middle cursor-grab active:cursor-grabbing select-none hover:bg-${color}-100 dark:hover:bg-${color}-900/50 transition-all ${isDragging ? 'opacity-30 scale-95 border-dashed border-indigo-500' : ''}`}
+                                                        title="Kéo thả để sắp xếp lại cột"
                                                     >
-                                                        {shortenName(header.originalTitle, nameOverrides)}
+                                                        <div className="flex items-center justify-center gap-1">
+                                                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal no-print">⋮⋮</span>
+                                                            <span>{shortenName(header.originalTitle, nameOverrides)}</span>
+                                                        </div>
                                                     </th>
                                                 );
                                             });

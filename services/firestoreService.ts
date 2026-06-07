@@ -194,7 +194,11 @@ export const fetchScheduleFromCloud = async (user: User, key: string) => {
     const docRef = doc(db, 'users', user.uid, 'schedules', safeKey);
     const snap = await getDoc(docRef);
     if (snap.exists()) {
-        return snap.data().data;
+        const data = snap.data();
+        return {
+            data: data.data,
+            updatedAt: data.updatedAt?.toMillis ? data.updatedAt.toMillis() : (data.savedAt || 0)
+        };
     }
     return null;
 };
@@ -207,8 +211,36 @@ export const HEAVY_SYNC_KEYS = new Set([
     'customCalendars',
     'crossSellingConfig',
     'industryAnalysisCustomTabs',
-    'topSellerAnalysisHistory'
+    'topSellerAnalysisHistory',
+    'checkthuong_data',
+    'stickerSavedLists',
+    'originalDepartmentMap',
+    'customExploitationTabs',
+    'efficiencyExploitationTabs'
 ]);
+
+export const isHeavySyncKey = (key: string): boolean => {
+    if (HEAVY_SYNC_KEYS.has(key)) return true;
+    if (key.startsWith('bi_summary-') || 
+        key.startsWith('bi_competition') || // Matches bi_competition- and bi_competition_
+        key.startsWith('bi_last-updates-') ||
+        key.startsWith('bi_bonus-') ||
+        key.startsWith('bi_snapshot-') ||
+        key.startsWith('bi_config-') ||
+        key.startsWith('bi_comptarget-') ||
+        key.startsWith('bi_prev-month-') ||
+        key.startsWith('bi_avatar-') ||
+        key.startsWith('bi_targethero-') ||
+        key.startsWith('bi_ai-assistant-history') ||
+        key.startsWith('bi_previous-') ||
+        key.startsWith('bi_manual-') ||
+        key.startsWith('bi_hidden-') ||
+        key === 'checkthuong_data'
+    ) {
+        return true;
+    }
+    return false;
+};
 
 export const syncHeavySettingToCloud = async (user: User, key: string, value: any) => {
     if (!user) return;

@@ -10,7 +10,7 @@ import FontSelector from './FontSelector';
 import NotificationDropdown from './NotificationDropdown';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import { useCloudSync } from '../../hooks/useCloudSync';
+import { useSync } from '../../contexts/SyncContext';
 import { useActiveTab } from '../../contexts/LayoutContext';
 
 interface HeaderProps {
@@ -41,7 +41,7 @@ const Header: React.FC<HeaderProps> = ({
     const [deptClearSuccess, setDeptClearSuccess] = useState(false);
     const [showInstructionModal, setShowInstructionModal] = useState(false);
     const [showEmployeeModal, setShowEmployeeModal] = useState(false);
-    const { syncState, lastError } = useCloudSync();
+    const { syncState, lastError } = useSync();
     const { activeTab } = useActiveTab();
 
     // Prevent hydration warnings

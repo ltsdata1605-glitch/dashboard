@@ -1,7 +1,7 @@
 import React, { forwardRef } from 'react';
 import { formatCurrency, abbreviateName, formatQuantityWithFraction, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
-import type { ExploitationData } from '../../types';
+import type { ExploitationData, CustomColumnConfig } from '../../types';
 import { detailQuickFilters, detailHeaderGroups, HeaderCell, getHeatmapClass, SortConfig } from './industry/IndustryTableUtils';
 import { useIndustryAnalysisLogic } from './industry/useIndustryAnalysisLogic';
 import { DEPT_COLORS, RankBadge } from './performance/PerformanceTableUtils';
@@ -41,6 +41,16 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     const formatPct = (value: number) => value > 0 ? `${value.toFixed(0)}%` : '-';
     const formatNum = (value: number) => value > 0 ? formatQuantityWithFraction(value) : '-';
     const formatC = (value: number) => value > 0 ? formatCurrency(value) : '-';
+    const formatCustomColPct = (v: number, col: CustomColumnConfig) => {
+        if (v === 0) return '-';
+        const decimals = col.percentageConfig?.decimalPlaces !== undefined ? col.percentageConfig.decimalPlaces : 0;
+        const formatAs = col.percentageConfig?.formatAs || 'percentage';
+        const formattedVal = Number(v.toFixed(decimals)).toLocaleString('vi-VN', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        });
+        return formatAs === 'percentage' ? `${formattedVal}%` : formattedVal;
+    };
     const boldBlueText = 'font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-2 py-0.5 rounded-lg';
     const warningText = 'text-rose-600 dark:text-rose-400 font-bold bg-rose-50 dark:bg-rose-900/20 px-2 py-0.5 rounded-lg';
     
@@ -260,10 +270,10 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
                                     <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-bold border-b border-r border-slate-200 dark:border-slate-700">
                                         {hasStyle ? (
                                             <div className="inline-block px-1 sm:px-1.5 py-0.5 rounded-md" style={badgeStyle}>
-                                                {formatPct(val)}
+                                                {formatCustomColPct(val, col)}
                                             </div>
                                         ) : (
-                                            <span className={getHeatmapClass(val, 30)}>{formatPct(val)}</span>
+                                            <span className={getHeatmapClass(val, 30)}>{formatCustomColPct(val, col)}</span>
                                         )}
                                     </td>
                                 );

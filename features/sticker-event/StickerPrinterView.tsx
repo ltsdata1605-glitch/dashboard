@@ -12,8 +12,7 @@ import { StickerManualQueue } from './stickerprinter/StickerManualQueue';
 import { StickerPrintControls } from './stickerprinter/StickerPrintControls';
 import { generateBarcodeDataUrl } from '../../components/views/BarcodeCanvas';
 import { useAuth } from '../../contexts/AuthContext';
-import { db } from '../../services/firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
+
 
 
 import ErrorBoundary from '../../components/common/ErrorBoundary';
@@ -298,23 +297,13 @@ export default function StickerPrinterView() {
         return () => clearTimeout(timer);
     }, []);
 
-    // Load settings, saved lists, and print history from Firestore (if logged in) or IndexedDB
+    // Load settings, saved lists, and print history purely from IndexedDB
     useEffect(() => {
         let active = true;
         async function loadAllData() {
             try {
                 // 1. Load sticker printer settings / states
-                let savedState: any = null;
-                if (user) {
-                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerPrinter');
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        savedState = docSnap.data();
-                    }
-                }
-                if (!savedState) {
-                    savedState = await getSetting<any>(STICKER_DB_KEY);
-                }
+                const savedState = await getSetting<any>(STICKER_DB_KEY);
                 
                 if (savedState && active) {
                     if (savedState.stickerMode) setStickerMode(savedState.stickerMode);
@@ -350,48 +339,18 @@ export default function StickerPrinterView() {
                     if (savedState.nameTextSize != null) setNameTextSize(savedState.nameTextSize);
                     if (savedState.newPriceTextSize != null) setNewPriceTextSize(savedState.newPriceTextSize);
                     if (savedState.footerTextSize != null) setFooterTextSize(savedState.footerTextSize);
-                    
-                    if (user) {
-                        await saveSetting(STICKER_DB_KEY, savedState);
-                    }
                 }
 
                 // 2. Load saved lists
-                let savedListsData: any = null;
-                if (user) {
-                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerSavedLists');
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        savedListsData = docSnap.data()?.lists;
-                    }
-                }
-                if (!savedListsData) {
-                    savedListsData = await getSetting<SavedStickerList[]>(STICKER_SAVED_LISTS_KEY);
-                }
+                const savedListsData = await getSetting<SavedStickerList[]>(STICKER_SAVED_LISTS_KEY);
                 if (savedListsData && active) {
                     setSavedLists(savedListsData);
-                    if (user) {
-                        await saveSetting(STICKER_SAVED_LISTS_KEY, savedListsData);
-                    }
                 }
 
                 // 3. Load print history
-                let printHistoryData: any = null;
-                if (user) {
-                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerPrintHistory');
-                    const docSnap = await getDoc(docRef);
-                    if (docSnap.exists()) {
-                        printHistoryData = docSnap.data()?.history;
-                    }
-                }
-                if (!printHistoryData) {
-                    printHistoryData = await getSetting<PrintHistoryEntry[]>(STICKER_HISTORY_KEY);
-                }
+                const printHistoryData = await getSetting<PrintHistoryEntry[]>(STICKER_HISTORY_KEY);
                 if (printHistoryData && active) {
                     setPrintHistory(printHistoryData);
-                    if (user) {
-                        await saveSetting(STICKER_HISTORY_KEY, printHistoryData);
-                    }
                 }
             } catch (err) {
                 console.error("Error loading sticker data:", err);
@@ -405,9 +364,22 @@ export default function StickerPrinterView() {
         return () => {
             active = false;
         };
-    }, [user]);
+    }, []);
 
-    // Save state to IndexedDB and Firebase whenever key values change (debounced)
+    // Lắng nghe sự thay đổi của stickerSavedLists từ cloud sync để cập nhật UI thời gian thực
+    useEffect(() => {
+        const handleDbChange = (event: any) => {
+            if (event.detail?.key === STICKER_SAVED_LISTS_KEY) {
+                getSetting<SavedStickerList[]>(STICKER_SAVED_LISTS_KEY).then(data => {
+                    if (data) setSavedLists(data);
+                });
+            }
+        };
+        window.addEventListener('indexeddb-change', handleDbChange);
+        return () => window.removeEventListener('indexeddb-change', handleDbChange);
+    }, []);
+
+    // Save state to IndexedDB whenever key values change (debounced)
     useEffect(() => {
         if (!isLoaded) return;
         const timer = setTimeout(async () => {
@@ -446,20 +418,10 @@ export default function StickerPrinterView() {
             } catch (e) {
                 console.error("IndexedDB save failed", e);
             }
-            
-            if (user) {
-                try {
-                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerPrinter');
-                    await setDoc(docRef, dataToSave);
-                } catch (e) {
-                    console.error("Firebase save failed", e);
-                }
-            }
         }, 500);
         return () => clearTimeout(timer);
     }, [
         isLoaded,
-        user,
         stickerMode,
         stickerType,
         bgImage,
@@ -488,7 +450,7 @@ export default function StickerPrinterView() {
         priceSource
     ]);
 
-    // Sync savedLists to IndexedDB and Firebase
+    // Sync savedLists to IndexedDB
     useEffect(() => {
         if (!isLoaded) return;
         const timer = setTimeout(async () => {
@@ -497,19 +459,11 @@ export default function StickerPrinterView() {
             } catch (e) {
                 console.error("IndexedDB save savedLists failed", e);
             }
-            if (user) {
-                try {
-                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerSavedLists');
-                    await setDoc(docRef, { lists: savedLists, updatedAt: new Date().toISOString() });
-                } catch (e) {
-                    console.error("Firebase save savedLists failed", e);
-                }
-            }
         }, 500);
         return () => clearTimeout(timer);
-    }, [isLoaded, user, savedLists]);
+    }, [isLoaded, savedLists]);
 
-    // Sync printHistory to IndexedDB and Firebase
+    // Sync printHistory to IndexedDB
     useEffect(() => {
         if (!isLoaded) return;
         const timer = setTimeout(async () => {
@@ -518,17 +472,9 @@ export default function StickerPrinterView() {
             } catch (e) {
                 console.error("IndexedDB save printHistory failed", e);
             }
-            if (user) {
-                try {
-                    const docRef = doc(db, 'users', user.uid, 'setting', 'stickerPrintHistory');
-                    await setDoc(docRef, { history: printHistory, updatedAt: new Date().toISOString() });
-                } catch (e) {
-                    console.error("Firebase save printHistory failed", e);
-                }
-            }
         }, 500);
         return () => clearTimeout(timer);
-    }, [isLoaded, user, printHistory]);
+    }, [isLoaded, printHistory]);
 
 
     const parsePercentValue = (percentStr: string | undefined): number => {

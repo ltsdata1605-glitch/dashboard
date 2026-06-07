@@ -157,6 +157,9 @@ export interface CustomColumnConfig {
         productCodes: string[];
     };
     
+    // Dành cho type = sum
+    excludedColIds?: string[];
+    
     // Dành cho type = percentage
     percentageConfig?: {
         numeratorMetric: 'quantity' | 'revenue';
@@ -173,6 +176,9 @@ export interface CustomColumnConfig {
             selectedManufacturers: string[];
             productCodes: string[];
         };
+        operator?: '+' | '-' | '*' | '/';
+        decimalPlaces?: number;
+        formatAs?: 'percentage' | 'number';
     };
     [key: string]: any;
 }

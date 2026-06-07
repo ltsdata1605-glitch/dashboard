@@ -34,6 +34,7 @@ const PhanCaView = lazy(() => import('./features/phan-ca/PhanCaView'));
 const BiWrapper = lazy(() => import('./features/bi-dashboard/components/BiWrapper'));
 
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { SyncProvider } from './contexts/SyncContext';
 import LoginView from './components/views/LoginView';
 import PendingApprovalView from './components/views/PendingApprovalView';
 import CouponConverterView from './components/views/CouponConverterView';
@@ -255,12 +256,14 @@ function AppContent() {
 export default function App() {
     return (
         <AuthProvider>
-            <LayoutProvider>
-                <ErrorBoundary name="App_Root">
-                    <AppContent />
-                    <Toaster position="bottom-right" containerStyle={{ zIndex: 999999 }} />
-                </ErrorBoundary>
-            </LayoutProvider>
+            <SyncProvider>
+                <LayoutProvider>
+                    <ErrorBoundary name="App_Root">
+                        <AppContent />
+                        <Toaster position="bottom-right" containerStyle={{ zIndex: 999999 }} />
+                    </ErrorBoundary>
+                </LayoutProvider>
+            </SyncProvider>
         </AuthProvider>
     );
 }

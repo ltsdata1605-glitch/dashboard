@@ -172,6 +172,80 @@ export async function saveSetting(key: string, value: any): Promise<void> {
     }
 }
 
+export async function saveSettingFromCloud(key: string, value: any, updatedAt: number): Promise<void> {
+    const tryTransaction = async (db: IDBDatabase) => {
+        return new Promise<void>((resolve, reject) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn(`[IDB] saveSettingFromCloud timeout for key: ${key}`);
+                    reject(new Error('Transaction timeout'));
+                }
+            }, 1000);
+
+            try {
+                const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+                const store = tx.objectStore(SETTINGS_STORE);
+                store.put(value, key);
+                store.put(updatedAt, 'localSettingsLastModified');
+                store.put(updatedAt, `lastModified_${key}`);
+
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        if (typeof window !== 'undefined') {
+                            if (key.startsWith('bi_')) {
+                                const originalKey = key.slice(3);
+                                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey, source: 'cloud-sync' } }));
+                            } else {
+                                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key, source: 'cloud-sync' } }));
+                            }
+                        }
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(tx.error || new Error('Transaction failed'));
+                    }
+                };
+                tx.onabort = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(new Error('Transaction aborted'));
+                    }
+                };
+            } catch (error) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    reject(error);
+                }
+            }
+        });
+    };
+
+    try {
+        const db = await getDb();
+        await tryTransaction(db);
+    } catch (error) {
+        console.warn(`[IDB] Retry saveSettingFromCloud '${key}' after error:`, (error as Error)?.message);
+        dbPromise = null;
+        try {
+            const db = await getDb();
+            await tryTransaction(db);
+        } catch (retryError) {
+            console.error(`[IDB] Permanent failure saveSettingFromCloud key '${key}':`, retryError);
+        }
+    }
+}
+
+
 export async function getAllSettings(): Promise<Record<string, any>> {
     try {
         const db = await getDb();

@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { syncToCloud, HEAVY_SYNC_KEYS } from '../services/firestoreService';
-import { getAllSettings, getSetting } from '../services/dbService';
+import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey } from '../services/firestoreService';
+import { getAllSettings, getSetting, saveSettingFromCloud } from '../services/dbService';
+import { doc, collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../services/firebase';
 
 type SyncState = 'idle' | 'syncing' | 'synced' | 'error';
 
@@ -53,12 +55,15 @@ export const useCloudSync = () => {
                 'summary-luy-ke',
                 'competition-realtime',
                 'competition-luy-ke',
-                'last-updates-list'
+                'last-updates-list',
+                'stickerPrinterState',
+                'stickerPrintHistory'
             ]);
             const settingsToSync: Record<string, any> = {};
             for (const key of Object.keys(allSettings)) {
                 if (
                     !excludedKeys.has(key) && 
+                    !isHeavySyncKey(key) &&
                     !key.startsWith('cached_') && 
                     !key.startsWith('summary-') && 
                     !key.startsWith('competition-')
@@ -110,11 +115,84 @@ export const useCloudSync = () => {
     useEffect(() => {
         if (!user || isDemoMode) return;
 
+        // 1. Setup real-time Firestore listeners
+        const configRef = doc(db, 'users', user.uid, 'setting', 'configuration');
+        const unsubscribeConfig = onSnapshot(configRef, async (snapshot) => {
+            if (!snapshot.exists()) return;
+            const data = snapshot.data();
+            if (!data) return;
+
+            const cloudLastMod = data.updatedAt?.toMillis ? data.updatedAt.toMillis() : 0;
+            if (!cloudLastMod) return;
+
+            const localLastMod = await getSetting<number>('localSettingsLastModified') || 0;
+
+            if (cloudLastMod > localLastMod) {
+                console.log(`[Cloud Sync] Real-time: Cloud has newer configuration document (${cloudLastMod} > ${localLastMod}). Updating light settings...`);
+                const backup = data.settingsStoreBackup;
+                if (backup) {
+                    for (const [k, v] of Object.entries(backup)) {
+                        await saveSettingFromCloud(k, v, cloudLastMod);
+                    }
+                }
+            }
+        }, (err) => {
+            console.error('[Cloud Sync] Error in configuration listener:', err);
+        });
+
+        const configsCollRef = collection(db, 'users', user.uid, 'configs');
+        const unsubscribeConfigs = onSnapshot(configsCollRef, async (snapshot) => {
+            for (const change of snapshot.docChanges()) {
+                if (change.type === 'added' || change.type === 'modified') {
+                    const docSnap = change.doc;
+                    const key = docSnap.id;
+                    
+                    if (!isHeavySyncKey(key)) continue;
+                    
+                    const data = docSnap.data();
+                    if (!data || data.value === undefined) continue;
+                    
+                    const cloudTime = data.updatedAt?.toMillis ? data.updatedAt.toMillis() : 0;
+                    if (!cloudTime) continue;
+                    
+                    const localTime = await getSetting<number>(`lastModified_${key}`) || 0;
+                    
+                    if (cloudTime > localTime) {
+                        console.log(`[Cloud Sync] Real-time: Cloud has newer version for heavy key "${key}" (${cloudTime} > ${localTime}). Writing to local DB...`);
+                        
+                        let val = data.value;
+                        if (key === 'productConfig' && val && val.config && val.config.groups) {
+                            const restoredGroups: { [key: string]: Set<string> } = {};
+                            for (const [gKey, gVal] of Object.entries(val.config.groups)) {
+                                restoredGroups[gKey] = new Set(gVal as string[]);
+                            }
+                            val.config.groups = restoredGroups;
+                        }
+                        
+                        await saveSettingFromCloud(key, val, cloudTime);
+                        
+                        if (key === 'checkthuong_data') {
+                            try {
+                                const { saveCheckThuongDataToIframeDb } = await import('../services/checkThuongIframeService');
+                                await saveCheckThuongDataToIframeDb(val);
+                                window.dispatchEvent(new CustomEvent('check-thuong-cloud-sync'));
+                            } catch (err) {
+                                console.error('[Cloud Sync CheckThuong] Error writing to iframe DB:', err);
+                            }
+                        }
+                    }
+                }
+            }
+        }, (err) => {
+            console.error('[Cloud Sync] Error in configs collection listener:', err);
+        });
+
+        // 2. Setup local change handlers
         const handleSettingChanged = (e: any) => {
             const key = e.detail?.key;
 
             // Nếu là khóa nặng, kích hoạt đồng bộ riêng biệt qua subcollection
-            if (key && HEAVY_SYNC_KEYS.has(key)) {
+            if (key && isHeavySyncKey(key)) {
                 if (heavyTimeoutsRef.current[key]) {
                     clearTimeout(heavyTimeoutsRef.current[key]);
                 }
@@ -148,11 +226,14 @@ export const useCloudSync = () => {
                 'summary-luy-ke',
                 'competition-realtime',
                 'competition-luy-ke',
-                'last-updates-list'
+                'last-updates-list',
+                'stickerPrinterState',
+                'stickerPrintHistory'
             ]);
             if (
                 key && (
                     excludedKeys.has(key) || 
+                    isHeavySyncKey(key) ||
                     key.startsWith('cached_') || 
                     key.startsWith('summary-') || 
                     key.startsWith('competition-')
@@ -212,6 +293,8 @@ export const useCloudSync = () => {
         const intervalId = window.setInterval(syncIfChanged, 15 * 60 * 1000);
 
         return () => {
+            unsubscribeConfig();
+            unsubscribeConfigs();
             window.removeEventListener('ycx-setting-changed', handleSettingChanged);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
             window.removeEventListener('beforeunload', handleBeforeUnload);

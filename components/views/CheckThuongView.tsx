@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { Icon } from '../common/Icon';
-import { getGlobalFont } from '../../services/dbService';
+import { getGlobalFont, saveSetting } from '../../services/dbService';
 
 
 export const CheckThuongView: React.FC = () => {
@@ -19,10 +19,25 @@ export const CheckThuongView: React.FC = () => {
                 setHasData(true);
                 if (e.data.code1) setCodes(prev => ({ ...prev, code1: e.data.code1 }));
                 if (e.data.code2) setCodes(prev => ({ ...prev, code2: e.data.code2 }));
+            } else if (e.data?.type === 'CHECK_THUONG_STATE_CHANGED') {
+                if (e.data.payload) {
+                    saveSetting('checkthuong_data', e.data.payload).catch(console.error);
+                }
             }
         };
+
+        const handleCloudSync = () => {
+            console.log('[CheckThuongView] Cloud sync event received, notifying iframe...');
+            iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_RELOAD_DATA' }, '*');
+        };
+
         window.addEventListener('message', handleMessage);
-        return () => window.removeEventListener('message', handleMessage);
+        window.addEventListener('check-thuong-cloud-sync', handleCloudSync);
+
+        return () => {
+            window.removeEventListener('message', handleMessage);
+            window.removeEventListener('check-thuong-cloud-sync', handleCloudSync);
+        };
     }, []);
 
     // Inject parent's custom font into the iframe document
