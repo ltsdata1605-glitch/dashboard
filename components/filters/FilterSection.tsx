@@ -218,8 +218,14 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                             <MultiSelectDropdown 
                                 label="T.Thái Xuất" 
                                 options={['Đã', 'Chưa']} 
-                                selected={localFilters.xuat === 'all' ? [] : [localFilters.xuat === 'Đã' ? 'Đã' : 'Chưa']} 
-                                onChange={(sel) => updateLocalFilter({ xuat: sel.length > 0 ? sel[sel.length - 1] : 'all' })} 
+                                selected={localFilters.xuat === 'all' ? ['Đã', 'Chưa'] : [localFilters.xuat]} 
+                                onChange={(sel) => {
+                                    if (sel.length === 0 || sel.length === 2) {
+                                        updateLocalFilter({ xuat: 'all' });
+                                    } else {
+                                        updateLocalFilter({ xuat: sel[0] as 'Đã' | 'Chưa' });
+                                    }
+                                }} 
                                 variant="compact"
                             />
                         </div>
