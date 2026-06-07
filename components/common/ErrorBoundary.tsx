@@ -27,6 +27,21 @@ export class ErrorBoundary extends React.Component<Props, State> {
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error(`ErrorBoundary [${this.props.name || 'Unknown'}]:`, error, errorInfo);
+    
+    // Auto-reload on chunk load/dynamic import failure to get the new build
+    const errMsg = error?.message || '';
+    if (
+      errMsg.includes('Failed to fetch dynamically imported module') || 
+      errMsg.includes('Importing a module script failed') ||
+      errMsg.includes('error loading dynamically imported module')
+    ) {
+      const now = Date.now();
+      const lastReload = sessionStorage.getItem('last_module_import_reload');
+      if (!lastReload || now - Number(lastReload) > 10000) {
+        sessionStorage.setItem('last_module_import_reload', String(now));
+        window.location.reload();
+      }
+    }
   }
 
   public render() {
@@ -34,6 +49,12 @@ export class ErrorBoundary extends React.Component<Props, State> {
       if (this.props.fallback) {
         return this.props.fallback;
       }
+
+      const errMsg = this.state.error?.message || '';
+      const isChunkLoadError = 
+        errMsg.includes('Failed to fetch dynamically imported module') || 
+        errMsg.includes('Importing a module script failed') ||
+        errMsg.includes('error loading dynamically imported module');
 
       return (
         <div className="p-6 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl text-center">
@@ -44,12 +65,13 @@ export class ErrorBoundary extends React.Component<Props, State> {
             Đã xảy ra lỗi tại {this.props.name || 'khu vực này'}
           </h3>
           <p className="text-sm text-rose-700 dark:text-rose-400 mb-4 max-w-md mx-auto">
-            {this.state.error?.message || 'Vui lòng thử tải lại trang hoặc kiểm tra lại dữ liệu đầu vào.'}
+            {isChunkLoadError 
+              ? 'Phiên bản mới đã được cập nhật. Hệ thống đang tải lại trang để áp dụng các thay đổi mới nhất.'
+              : (this.state.error?.message || 'Vui lòng thử tải lại trang hoặc kiểm tra lại dữ liệu đầu vào.')}
           </p>
           <button
             onClick={() => {
-              const errMsg = this.state.error?.message || '';
-              if (errMsg.includes('Importing a module script failed') || errMsg.includes('Failed to fetch dynamically imported module')) {
+              if (isChunkLoadError) {
                 // Force reload to get the new index.html with updated chunk hashes
                 window.location.reload();
               } else {
@@ -58,7 +80,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
             }}
             className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors text-sm font-medium"
           >
-            {this.state.error?.message?.includes('module script') ? 'Tải lại trang' : 'Thử lại'}
+            {isChunkLoadError ? 'Tải lại trang' : 'Thử lại'}
           </button>
         </div>
       );
