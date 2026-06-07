@@ -29,11 +29,12 @@ export class ErrorBoundary extends React.Component<Props, State> {
     console.error(`ErrorBoundary [${this.props.name || 'Unknown'}]:`, error, errorInfo);
     
     // Auto-reload on chunk load/dynamic import failure to get the new build
-    const errMsg = error?.message || '';
+    const errMsg = (error?.message || error?.stack || String(error) || '').toLowerCase();
     if (
-      errMsg.includes('Failed to fetch dynamically imported module') || 
-      errMsg.includes('Importing a module script failed') ||
-      errMsg.includes('error loading dynamically imported module')
+      errMsg.includes('failed to fetch dynamically imported module') || 
+      errMsg.includes('importing a module script failed') ||
+      errMsg.includes('error loading dynamically imported module') ||
+      errMsg.includes('chunkloaderror')
     ) {
       const now = Date.now();
       const lastReload = sessionStorage.getItem('last_module_import_reload');
@@ -50,11 +51,12 @@ export class ErrorBoundary extends React.Component<Props, State> {
         return this.props.fallback;
       }
 
-      const errMsg = this.state.error?.message || '';
+      const errMsg = (this.state.error?.message || this.state.error?.stack || String(this.state.error) || '').toLowerCase();
       const isChunkLoadError = 
-        errMsg.includes('Failed to fetch dynamically imported module') || 
-        errMsg.includes('Importing a module script failed') ||
-        errMsg.includes('error loading dynamically imported module');
+        errMsg.includes('failed to fetch dynamically imported module') || 
+        errMsg.includes('importing a module script failed') ||
+        errMsg.includes('error loading dynamically imported module') ||
+        errMsg.includes('chunkloaderror');
 
       return (
         <div className="p-6 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl text-center">
