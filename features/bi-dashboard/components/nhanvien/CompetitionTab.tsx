@@ -424,7 +424,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 </div>
             </div>
             <Card noPadding title={cardTitle} rounded={false}>
-                <div className="w-full overflow-hidden px-4 pb-4">
+                <div className="w-full overflow-visible px-4 pb-4">
                     <div className="pt-2">
                         {activeCompetitionTab === 'nhom' && (
                             <>
