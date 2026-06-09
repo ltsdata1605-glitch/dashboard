@@ -22,16 +22,8 @@
   --color-warning: var(--color-amber-500);
   --color-danger: var(--color-rose-500);
 
-  --animate-blob: blob 7s infinite;
   --animate-marquee: marquee 25s linear infinite;
   --animate-wiggle: wiggle 1.2s ease-in-out infinite;
-
-  @keyframes blob {
-    0% { transform: translate(0px, 0px) scale(1); }
-    33% { transform: translate(30px, -50px) scale(1.1); }
-    66% { transform: translate(-20px, 20px) scale(0.9); }
-    100% { transform: translate(0px, 0px) scale(1); }
-  }
 
   @keyframes marquee {
     0% { transform: translateX(0%); }
@@ -347,6 +339,21 @@
   border-image: linear-gradient(90deg, rgba(99, 102, 241, 0.3), rgba(14, 165, 233, 0.3), rgba(16, 185, 129, 0.2)) 1;
 }
 
+/* Optimized background blobs using static radial gradients (eliminates Gaussian blurs, blend-modes, and constant keyframe animations to prevent high CPU/GPU load and overheating) */
+.bg-static-blobs {
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(216, 180, 254, 0.2) 0%, transparent 45%),
+    radial-gradient(circle at 90% 10%, rgba(165, 180, 252, 0.2) 0%, transparent 45%),
+    radial-gradient(circle at 30% 90%, rgba(110, 231, 183, 0.15) 0%, transparent 45%);
+}
+
+.dark .bg-static-blobs {
+  background-image: 
+    radial-gradient(circle at 10% 10%, rgba(147, 51, 234, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 90% 10%, rgba(79, 70, 229, 0.15) 0%, transparent 45%),
+    radial-gradient(circle at 30% 90%, rgba(16, 185, 129, 0.1) 0%, transparent 45%);
+}
+
 /* ═══ MOBILE ENERGY SAVING (< 1024px) ═══ */
 /* Trên laptop giữ nguyên hiệu ứng, chỉ tắt trên mobile để tiết kiệm pin */
 @media (max-width: 1023px) {
@@ -354,7 +361,6 @@
   .progress-shimmer::after,
   .animate-pulse-glow-green,
   .animate-pulse-glow-amber,
-  .animate-blob,
   .animate-wiggle {
     animation: none !important;
   }

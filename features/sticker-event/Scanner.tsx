@@ -87,7 +87,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
   }, [playSound]);
 
   const config = useMemo(() => ({
-    fps: 25, // Increased FPS from 10 to 25 for faster scan interval and smoother feed
+    fps: 10, // Reduced from 25 to 10 to prevent high CPU utilization and device overheating on mobile
     qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
         // Wider rectangular scan area (aspect ratio ~ 1.7) optimized for EAN-13/Code-128 barcodes while keeping QR support
         const width = Math.floor(viewfinderWidth * 0.85);

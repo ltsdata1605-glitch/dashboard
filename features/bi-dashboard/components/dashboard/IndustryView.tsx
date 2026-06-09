@@ -53,6 +53,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
     
     const [reportTargets, setReportTargets] = useIndexedDBState<Record<string, string>>(`report-industry-targets-${activeSupermarket || 'all'}`, {});
     
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 1024);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
 
     const [isIndustryFilterOpen, setIsIndustryFilterOpen] = useState(false);
     const industryFilterRef = useRef<HTMLDivElement>(null);
@@ -350,7 +357,6 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
         );
     }
 
-    const isMobile = false; // Always show table view, even on mobile
 
     const htKey = isRealtime ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)';
     const dtqdKey = isRealtime ? 'DT Realtime (QĐ)' : 'DTQĐ';

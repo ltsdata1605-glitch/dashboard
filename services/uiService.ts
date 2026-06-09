@@ -205,6 +205,43 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         el.remove();
     });
 
+    // Fix employee names and truncated elements to prevent clipping or wrapping during export
+    const isEmployeeNamePattern = (text: string) => {
+        return text.includes(' - ') && /\d+/.test(text);
+    };
+
+    clone.querySelectorAll('td, span, button, div, th').forEach((el: any) => {
+        if (!(el instanceof HTMLElement)) return;
+        const text = el.textContent?.trim() || '';
+        
+        // Target elements with truncate class or matching employee name pattern
+        if (el.classList.contains('truncate') || isEmployeeNamePattern(text)) {
+            el.classList.remove('truncate');
+            el.style.setProperty('white-space', 'nowrap', 'important');
+            el.style.setProperty('overflow', 'visible', 'important');
+            el.style.setProperty('text-overflow', 'clip', 'important');
+            el.style.setProperty('width', 'auto', 'important');
+            el.style.setProperty('max-width', 'none', 'important');
+            el.style.setProperty('min-width', 'max-content', 'important');
+
+            // Walk up parents to ensure width container doesn't force wrapping/clipping
+            let parent = el.parentElement;
+            while (parent && parent !== clone) {
+                if (parent instanceof HTMLElement) {
+                    const tagName = parent.tagName.toUpperCase();
+                    if (tagName === 'TABLE' || tagName === 'TBODY' || tagName === 'THEAD' || tagName === 'TR') {
+                        break;
+                    }
+                    if (parent.classList.contains('min-w-0') || parent.classList.contains('w-full') || parent.style.width === '100%') {
+                        parent.style.setProperty('min-width', 'max-content', 'important');
+                        parent.style.setProperty('width', 'auto', 'important');
+                    }
+                }
+                parent = parent.parentElement;
+            }
+        }
+    });
+
     // --- RETAINED LAYOUT FIXES FOR EXPORT PRESENTATION ---
     // These are kept because they explicitly change how the data looks in the export format.
 
