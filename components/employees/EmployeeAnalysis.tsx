@@ -146,7 +146,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
         { header: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400', activeTab: 'bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 border-b-[2.5px] border-blue-400', row: '', border: '' },
     ], []);
 
-    const handleMainExport = async () => {
+    const handleMainExport = React.useCallback(async () => {
         if (exportRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
             const tabName = defaultTabs.find(t => t.id === activeTab)?.label || 
@@ -160,15 +160,15 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
             const options = (compactTabs.includes(activeTab) || isCustomTab) ? { isCompactTable: true, fitAllColumns: true } : {};
             await handleExport(exportRef.current, filename, options);
         }
-    };
+    }, [activeTab, filterState.kho, handleExport, customTabs]);
 
-    const handleIndustryTabExport = async () => {
+    const handleIndustryTabExport = React.useCallback(async () => {
          if (industryAnalysisTabRef.current) {
             const prefix = getExportFilenamePrefix(filterState.kho);
             const filename = `${prefix}-Phan-tich-nhan-vien-Khai-thac.png`;
             await handleExport(industryAnalysisTabRef.current, filename, { isCompactTable: true, fitAllColumns: true });
         }
-    };
+    }, [filterState.kho, handleExport]);
 
     const currentTableForColumns = modalState.type === 'CREATE_COLUMN' || modalState.type === 'EDIT_COLUMN'
         ? (modalState.data.tabId === 'industryAnalysis' 

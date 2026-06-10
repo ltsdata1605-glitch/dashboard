@@ -6,7 +6,6 @@ import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity } from '../.
 import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, updateExportOverlay, hideExportOverlay } from '../../services/uiService';
-import * as XLSX from 'xlsx';
 import { Button } from '../shared/ui/Button';
 
 interface UnshippedOrdersModalProps {
@@ -137,7 +136,8 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
         setIsAllExpanded(nextState);
     };
 
-    const handleExportExcel = () => {
+    const handleExportExcel = async () => {
+        const XLSX = await import('xlsx');
         const finalUnshippedOrders = salesData.filter(row =>
             (Number(getRowValue(row, COL.PRICE)) || 0) > 0
         );

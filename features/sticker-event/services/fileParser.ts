@@ -1,5 +1,4 @@
 import { Product, InventoryItem } from '../types';
-import * as XLSX from 'xlsx';
 
 function parseBonus(bonusCode: string | undefined | null): { thuongERP: number; thuongNong: number } {
   if (!bonusCode || typeof bonusCode !== 'string') {
@@ -53,9 +52,10 @@ export const parseProductFile = (file: File): Promise<{ products: Product[], exp
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = (e: ProgressEvent<FileReader>) => {
+    reader.onload = async (e: ProgressEvent<FileReader>) => {
       try {
         const data = e.target?.result;
+        const XLSX = await import('xlsx');
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
@@ -161,9 +161,10 @@ export const parseInventoryFile = (file: File): Promise<InventoryItem[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = (e: ProgressEvent<FileReader>) => {
+    reader.onload = async (e: ProgressEvent<FileReader>) => {
       try {
         const data = e.target?.result;
+        const XLSX = await import('xlsx');
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];

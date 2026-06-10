@@ -40,7 +40,7 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
         };
     }, []);
 
-    const handleBatchPerformanceExport = async () => {
+    const handleBatchPerformanceExport = React.useCallback(async () => {
         const tabs: GroupType[] = ['doanhThu', 'khaiThac', 'vuotTroi'];
         for (const tab of tabs) {
             setActiveTab(tab);
@@ -52,9 +52,9 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
         }
         // Return to original tab or stay on last? Let's stay on last or return to first.
         setActiveTab('doanhThu');
-    };
+    }, [onExport]);
 
-    const handleSaveTarget = () => {
+    const handleSaveTarget = React.useCallback(() => {
         const raw = tempTarget.replace(/[^\d.]/g, '');
         const shortVal = parseFloat(raw);
         if (!isNaN(shortVal) && shortVal > 0) {
@@ -66,9 +66,9 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
             setTempTarget(String(Math.round(targetPerEmployee / 1_000_000)));
         }
         setIsEditingTarget(false);
-    };
+    }, [tempTarget, targetPerEmployee]);
 
-    const handleTabChange = (tab: GroupType) => {
+    const handleTabChange = React.useCallback((tab: GroupType) => {
         setActiveTab(tab);
         let newKey: SortKey = 'doanhThuQD';
         if (tab === 'doanhThu') newKey = 'doanhThuQD';
@@ -79,7 +79,7 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
         setShowSortArrow(true);
         if (sortTimerRef.current) clearTimeout(sortTimerRef.current);
         sortTimerRef.current = setTimeout(() => setShowSortArrow(false), 3000);
-    };
+    }, []);
 
     const { groupedData, outstandingData, sellerCount } = useMemo(() => {
         const sellers = [...(employeeData?.fullSellerArray || [])].filter(Boolean);
@@ -160,12 +160,12 @@ const PerformanceTable = React.memo(forwardRef<HTMLDivElement, PerformanceTableP
         };
     }, [employeeData, targetPerEmployee]);
 
-    const handleSort = (key: SortKey) => {
+    const handleSort = React.useCallback((key: SortKey) => {
         setSortConfig(cur => ({ key, direction: cur.key === key && cur.direction === 'desc' ? 'asc' : 'desc' }));
         setShowSortArrow(true);
         if (sortTimerRef.current) clearTimeout(sortTimerRef.current);
         sortTimerRef.current = setTimeout(() => setShowSortArrow(false), 3000);
-    };
+    }, []);
 
     if (!employeeData) {
         return (

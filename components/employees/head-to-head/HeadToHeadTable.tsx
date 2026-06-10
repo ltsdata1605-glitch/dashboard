@@ -22,7 +22,7 @@ interface HeadToHeadTableProps {
     includeToday: boolean;
 }
 
-const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({ 
+const HeadToHeadTable: React.FC<HeadToHeadTableProps> = React.memo(({ 
     config, 
     allConfigs,
     baseFilteredData, 
@@ -261,6 +261,8 @@ const HeadToHeadTable: React.FC<HeadToHeadTableProps> = ({
             </div>
         </div>
     );
-};
+});
+
+HeadToHeadTable.displayName = 'HeadToHeadTable';
 
 export default HeadToHeadTable;

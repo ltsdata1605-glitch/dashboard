@@ -2,7 +2,6 @@
 import type { DataRow, ProductConfig, Status } from '../types';
 import { getRowValue, parseExcelDate } from '../utils/dataUtils';
 import { COL } from '../constants';
-import * as XLSX from 'xlsx';
 
 type StatusUpdater = (status: Status) => void;
 
@@ -58,7 +57,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
 
         if (parsedRows.length < 2) {
              throw new Error('File cấu hình không hợp lệ hoặc không có dữ liệu.');
-        }
+         }
         
         const headers = parsedRows[0].map(h => h.trim());
         const data = parsedRows.slice(1);
@@ -118,10 +117,6 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             }
         });
         
-        if (Object.keys(config.groups).length === 0) {
-            throw new Error("Không thể xử lý dữ liệu từ file cấu hình. Vui lòng kiểm tra định dạng.");
-        }
-
         // --- Load quantity multiplier map from VIEON sheet ---
         setStatus({ message: 'Đang tải bảng hệ số số lượng...', type: 'info', progress: 70 });
         try {
@@ -167,11 +162,12 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
 export async function processShiftFile(file: File): Promise<{ map: DepartmentMap, uniqueDepartments: string[] }> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = (e: ProgressEvent<FileReader>) => {
+        reader.onload = async (e: ProgressEvent<FileReader>) => {
             try {
                 if (!e.target?.result) throw new Error("Không thể đọc file phân ca.");
                 
                 const data = new Uint8Array(e.target.result as ArrayBuffer);
+                const XLSX = await import('xlsx');
                 const workbook = XLSX.read(data, { type: 'array' });
                 const sheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[sheetName];
@@ -240,6 +236,7 @@ export async function processSalesFile(file: File, enableDeduplication: boolean,
         
         setStatus({ message: 'Đang phân tích Excel...', type: 'info', progress: 30 });
         const data = new Uint8Array(arrayBuffer);
+        const XLSX = await import('xlsx');
         
         let workbook;
         try {

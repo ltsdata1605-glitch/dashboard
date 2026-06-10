@@ -35,9 +35,21 @@ const levelLabels: Record<number, string> = {
     2: 'Hãng / Người tạo',
 };
 
-const IndustryGrid: React.FC = React.memo(() => {
-    const { processedData, productConfig, filterState: filters, handleFilterChange: onFilterChange, baseFilteredData } = useDashboardContext();
-    const industryData = processedData?.industryData ?? [];
+interface IndustryGridInnerProps {
+    industryData: any[];
+    productConfig: any;
+    filters: any;
+    onFilterChange: (update: any) => void;
+    baseFilteredData: any[];
+}
+
+const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
+    industryData,
+    productConfig,
+    filters,
+    onFilterChange,
+    baseFilteredData
+}) => {
     // ✅ Dùng baseFilteredData (chưa filter parent) để drilldown hoạt động đúng
     const allSales = baseFilteredData ?? [];
     const globalParentFilters = filters.parent;
@@ -473,6 +485,20 @@ const IndustryGrid: React.FC = React.memo(() => {
                 </div>
             </div>
         </div>
+    );
+});
+IndustryGridInner.displayName = 'IndustryGridInner';
+
+const IndustryGrid: React.FC = React.memo(() => {
+    const { processedData, productConfig, filterState: filters, handleFilterChange: onFilterChange, baseFilteredData } = useDashboardContext();
+    return (
+        <IndustryGridInner
+            industryData={processedData?.industryData ?? []}
+            productConfig={productConfig}
+            filters={filters}
+            onFilterChange={onFilterChange}
+            baseFilteredData={baseFilteredData}
+        />
     );
 });
 

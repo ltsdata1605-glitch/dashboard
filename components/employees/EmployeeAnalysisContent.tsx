@@ -34,6 +34,95 @@ interface EmployeeAnalysisContentProps {
     handleDeleteColumnDirect: (tabId: string, tableId: string, columnId: string) => void;
 }
 
+interface ContestTableItemProps {
+    tableConfig: any;
+    customTabId: string;
+    allEmployees: any[];
+    baseFilteredData: any[];
+    productConfig: any;
+    tableColorTheme: any;
+    setModalState: (state: any) => void;
+    handleDeleteColumnDirect: (tabId: string, tableId: string, columnId: string) => void;
+}
+
+const ContestTableItem: React.FC<ContestTableItemProps> = React.memo(({
+    tableConfig,
+    customTabId,
+    allEmployees,
+    baseFilteredData,
+    productConfig,
+    tableColorTheme,
+    setModalState,
+    handleDeleteColumnDirect
+}) => {
+    const onManageColumns = React.useCallback(() => {
+        setModalState({ 
+            type: 'EDIT_TABLE', 
+            data: { 
+                tabId: customTabId, 
+                tableId: tableConfig.id, 
+                tableName: tableConfig.tableName, 
+                columns: tableConfig.columns, 
+                initialSortColumnId: tableConfig.defaultSortColumnId 
+            }
+        });
+    }, [setModalState, customTabId, tableConfig.id, tableConfig.tableName, tableConfig.columns, tableConfig.defaultSortColumnId]);
+
+    const onDeleteTable = React.useCallback(() => {
+        setModalState({ 
+            type: 'CONFIRM_DELETE_TABLE', 
+            data: { 
+                tabId: customTabId, 
+                tableId: tableConfig.id, 
+                tableName: tableConfig.tableName 
+            }
+        });
+    }, [setModalState, customTabId, tableConfig.id, tableConfig.tableName]);
+
+    const onAddColumn = React.useCallback(() => {
+        setModalState({ 
+            type: 'CREATE_COLUMN', 
+            data: { 
+                tabId: customTabId, 
+                tableId: tableConfig.id, 
+                existingColumns: tableConfig.columns 
+            }
+        });
+    }, [setModalState, customTabId, tableConfig.id, tableConfig.columns]);
+
+    const onEditColumn = React.useCallback((columnId: string) => {
+        setModalState({ 
+            type: 'EDIT_COLUMN', 
+            data: { 
+                tabId: customTabId, 
+                tableId: tableConfig.id, 
+                existingColumns: tableConfig.columns, 
+                editingColumn: tableConfig.columns.find((c: any) => c.id === columnId) 
+            }
+        });
+    }, [setModalState, customTabId, tableConfig.id, tableConfig.columns]);
+
+    const onTriggerDeleteColumn = React.useCallback((columnId: string) => {
+        handleDeleteColumnDirect(customTabId, tableConfig.id, columnId);
+    }, [handleDeleteColumnDirect, customTabId, tableConfig.id]);
+
+    return (
+        <ContestTable
+            config={tableConfig}
+            allEmployees={allEmployees}
+            baseFilteredData={baseFilteredData}
+            productConfig={productConfig}
+            tableColorTheme={tableColorTheme}
+            onManageColumns={onManageColumns}
+            onDeleteTable={onDeleteTable}
+            onAddColumn={onAddColumn}
+            onEditColumn={onEditColumn}
+            onTriggerDeleteColumn={onTriggerDeleteColumn}
+        />
+    );
+});
+ContestTableItem.displayName = 'ContestTableItem';
+
 const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.memo(({
     activeTab,
     filteredEmployeeAnalysisData,
@@ -59,6 +148,39 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
     defaultTabs,
     handleDeleteColumnDirect
 }) => {
+    const handleManageCustomTabs = React.useCallback((mode: 'detail' | 'efficiency') => {
+        setModalState({ type: 'CREATE_CUSTOM_EXPLOITATION_TAB', data: { targetMode: mode } });
+    }, [setModalState]);
+
+    const handleEditCustomTab = React.useCallback((tabId: string, mode: 'detail' | 'efficiency') => {
+        const activeTabs = mode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
+        let tab = activeTabs.find(t => t.id === tabId);
+        if (!tab && tabId === 'doanhThu') {
+            tab = { id: 'doanhThu', name: 'D.Thu', columns: [ { id: 'doanhThuThuc', name: 'DT Thực', type: 'revenue', filters: {} as any }, { id: 'doanhThuQD', name: 'DTQĐ', type: 'revenue', filters: {} as any }, { id: 'hieuQuaQD', name: 'HQQĐ', type: 'percentage', filters: {} as any } ] };
+        } else if (!tab && tabId === 'spChinh') {
+            tab = { id: 'spChinh', name: 'SP Chính', columns: [ { id: 'slICT', name: 'ICT', type: 'quantity', filters: {} as any }, { id: 'slCE_main', name: 'CE', type: 'quantity', filters: {} as any }, { id: 'slGiaDung_main', name: 'ĐGD', type: 'quantity', filters: {} as any }, { id: 'slSPChinh_Tong', name: 'Tổng', type: 'quantity', filters: {} as any } ] };
+        }
+        if (tab) {
+            setModalState({ type: 'EDIT_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, initialName: tab.name, initialColumns: tab.columns, initialIcon: tab.icon, targetMode: mode } });
+        }
+    }, [customExploitationTabs, efficiencyExploitationTabs, setModalState]);
+
+    const handleDeleteCustomTab = React.useCallback((tabId: string, mode: 'detail' | 'efficiency') => {
+        const activeTabs = mode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
+        const tab = activeTabs.find(t => t.id === tabId);
+        if (tab) {
+            setModalState({ type: 'CONFIRM_DELETE_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, tabName: tab.name, targetMode: mode } });
+        }
+    }, [customExploitationTabs, efficiencyExploitationTabs, setModalState]);
+
+    const handleBatchExportCallback = React.useCallback((exploitationData: any[]) => {
+        const names = new Set(exploitationData.map(d => d.name));
+        if (filteredEmployeeAnalysisData?.fullSellerArray) {
+            const employeesToExport = filteredEmployeeAnalysisData.fullSellerArray.filter(e => names.has(e.name));
+            handleBatchExport(employeesToExport);
+        }
+    }, [filteredEmployeeAnalysisData?.fullSellerArray, handleBatchExport]);
+
     if (!isInitialTabsLoaded || !filteredEmployeeAnalysisData) return null;
 
     switch (activeTab) {
@@ -76,37 +198,13 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                         productConfig={productConfig}
                         customExploitationTabs={customExploitationTabs}
                         efficiencyExploitationTabs={efficiencyExploitationTabs}
-                        onManageCustomTabs={(mode) => setModalState({ type: 'CREATE_CUSTOM_EXPLOITATION_TAB', data: { targetMode: mode } })}
-                        onEditCustomTab={(tabId: string, mode) => {
-                            const activeTabs = mode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
-                            let tab = activeTabs.find(t => t.id === tabId);
-                            if (!tab && tabId === 'doanhThu') {
-                                tab = { id: 'doanhThu', name: 'D.Thu', columns: [ { id: 'doanhThuThuc', name: 'DT Thực', type: 'revenue', filters: {} as any }, { id: 'doanhThuQD', name: 'DTQĐ', type: 'revenue', filters: {} as any }, { id: 'hieuQuaQD', name: 'HQQĐ', type: 'percentage', filters: {} as any } ] };
-                            } else if (!tab && tabId === 'spChinh') {
-                                tab = { id: 'spChinh', name: 'SP Chính', columns: [ { id: 'slICT', name: 'ICT', type: 'quantity', filters: {} as any }, { id: 'slCE_main', name: 'CE', type: 'quantity', filters: {} as any }, { id: 'slGiaDung_main', name: 'ĐGD', type: 'quantity', filters: {} as any }, { id: 'slSPChinh_Tong', name: 'Tổng', type: 'quantity', filters: {} as any } ] };
-                            }
-                            if (tab) {
-                                setModalState({ type: 'EDIT_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, initialName: tab.name, initialColumns: tab.columns, initialIcon: tab.icon, targetMode: mode } });
-                            }
-                        }}
-                        onDeleteCustomTab={(tabId: string, mode) => {
-                            const activeTabs = mode === 'detail' ? customExploitationTabs : efficiencyExploitationTabs;
-                            const tab = activeTabs.find(t => t.id === tabId);
-                            if (tab) {
-                                setModalState({ type: 'CONFIRM_DELETE_CUSTOM_EXPLOITATION_TAB', data: { tabId: tab.id, tabName: tab.name, targetMode: mode } });
-                            }
-                        }}
+                        onManageCustomTabs={handleManageCustomTabs}
+                        onEditCustomTab={handleEditCustomTab}
+                        onDeleteCustomTab={handleDeleteCustomTab}
                         onExport={handleIndustryTabExport} 
                         isExporting={isExporting}
-                        onBatchExport={(exploitationData: ExploitationData[]) => {
-                            const names = new Set(exploitationData.map(d => d.name));
-                            if (filteredEmployeeAnalysisData?.fullSellerArray) {
-                                const employeesToExport = filteredEmployeeAnalysisData.fullSellerArray.filter(e => names.has(e.name));
-                                handleBatchExport(employeesToExport);
-                            }
-                        }}
+                        onBatchExport={handleBatchExportCallback}
                     />
-
                 </div>
             );
         case 'headToHead': 
@@ -152,18 +250,16 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {customTab.tables.map((tableConfig, index) => (
-                                    <ContestTable
+                                    <ContestTableItem
                                         key={tableConfig.id}
-                                        config={tableConfig}
+                                        tableConfig={tableConfig}
+                                        customTabId={customTab.id}
                                         allEmployees={filteredEmployeeAnalysisData.fullSellerArray}
                                         baseFilteredData={baseFilteredData}
                                         productConfig={productConfig!}
                                         tableColorTheme={colorThemes[(index + 2) % colorThemes.length]}
-                                        onManageColumns={() => setModalState({ type: 'EDIT_TABLE', data: { tabId: customTab.id, tableId: tableConfig.id, tableName: tableConfig.tableName, columns: tableConfig.columns, initialSortColumnId: tableConfig.defaultSortColumnId }})}
-                                        onDeleteTable={() => setModalState({ type: 'CONFIRM_DELETE_TABLE', data: { tabId: customTab.id, tableId: tableConfig.id, tableName: tableConfig.tableName }})}
-                                        onAddColumn={() => setModalState({ type: 'CREATE_COLUMN', data: { tabId: customTab.id, tableId: tableConfig.id, existingColumns: tableConfig.columns }})}
-                                        onEditColumn={(columnId) => setModalState({ type: 'EDIT_COLUMN', data: { tabId: customTab.id, tableId: tableConfig.id, existingColumns: tableConfig.columns, editingColumn: tableConfig.columns.find(c => c.id === columnId) }})}
-                                        onTriggerDeleteColumn={(columnId) => handleDeleteColumnDirect(customTab.id, tableConfig.id, columnId)}
+                                        setModalState={setModalState}
+                                        handleDeleteColumnDirect={handleDeleteColumnDirect}
                                     />
                                 ))}
                             </div>

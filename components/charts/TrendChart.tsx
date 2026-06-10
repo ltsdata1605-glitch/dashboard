@@ -42,11 +42,23 @@ const CustomTooltip = ({ active, payload, metricName }: any) => {
     );
 };
 
+interface TrendChartInnerProps {
+  trendData: any;
+  handleExport: any;
+  isExporting: boolean;
+  filterState: any;
+  baseFilteredData: any[];
+  productConfig: any;
+}
 
-const TrendChart: React.FC = React.memo(() => {
-  const { processedData, handleExport, isExporting, filterState, baseFilteredData, calendarSourceData, originalData, productConfig, uniqueFilterOptions } = useDashboardContext();
-  const trendData = processedData?.trendData;
-
+const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
+  trendData,
+  handleExport,
+  isExporting,
+  filterState,
+  baseFilteredData,
+  productConfig
+}) => {
   const chartCardRef = useRef<HTMLDivElement>(null);
   const [trendState, setTrendState] = useState<{ view: 'shift' | 'daily' | 'weekly' | 'monthly'; metric: string; _filterOpen?: boolean }>({ view: 'shift', metric: 'thuc', _filterOpen: false });
   const [displayMode, setDisplayMode] = useState<'chart' | 'calendar'>('chart');
@@ -75,7 +87,6 @@ const TrendChart: React.FC = React.memo(() => {
               setSavedCalendars(cals);
               setActiveCalendarTab(cals[0].id);
           } else {
-              // Mặc định sinh 3 bảng lịch - month sẽ được điền sau khi availableMonths sẵn sàng
               const defaultCals = [
                   { id: '1-thuc', parentGroup: [], childGroup: [], month: '', metric: 'revenue' },
                   { id: '2-qd', parentGroup: [], childGroup: [], month: '', metric: 'revenueQD' },
@@ -103,20 +114,17 @@ const TrendChart: React.FC = React.memo(() => {
       const newList = savedCalendars.filter(c => c.id !== id);
       setSavedCalendars(newList);
       saveCustomCalendars(newList);
-      // If the removed tab was active, switch to the first remaining tab
       if (activeCalendarTab === id && newList.length > 0) {
           setActiveCalendarTab(newList[0].id);
       }
   };
   
-  // Handle sync between display modes
   useEffect(() => {
     if (displayMode === 'calendar' && trendState.view !== 'daily') {
         setTrendState(prev => ({ ...prev, view: 'daily' }));
     }
   }, [displayMode, trendState.view]);
 
-  // Extract unique months for Calendar Filter
   const availableMonths = useMemo(() => {
       if (!baseFilteredData) return [];
       const months = new Set<string>();
@@ -130,14 +138,12 @@ const TrendChart: React.FC = React.memo(() => {
       return Array.from(months).sort().reverse();
   }, [baseFilteredData]);
 
-  // Set initial month for calendar if empty AND update default calendar months
   useEffect(() => {
       if (availableMonths.length > 0) {
           const latestMonth = availableMonths[0];
           if (!calendarFilters.month) {
               setCalendarFilters(prev => ({ ...prev, month: latestMonth }));
           }
-          // Update default calendars that have no month set yet
           setSavedCalendars(prev => {
               const needsUpdate = prev.some(c => !c.month);
               if (!needsUpdate) return prev;
@@ -148,7 +154,6 @@ const TrendChart: React.FC = React.memo(() => {
       }
   }, [availableMonths]);
 
-  // Extract unique parent and child groups exactly like SummaryTable does
   const { uniqueParentGroups, uniqueChildGroups } = useMemo(() => {
       const parents = new Set<string>();
       const children = new Set<string>();
@@ -193,11 +198,9 @@ const TrendChart: React.FC = React.memo(() => {
           const parentGroup = productConfig.childToParentMap[maNhomHang] || 'Không xác định';
           const childGroup = productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định';
 
-          // Apply local filters using centralized predicate
           if (calendarFilters.parentGroup.length > 0 && !calendarFilters.parentGroup.includes(parentGroup)) return;
           if (calendarFilters.childGroup.length > 0 && !calendarFilters.childGroup.includes(childGroup)) return;
 
-          // Exclude "Thu Hộ" from revenue calculations
           const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
           if (HINH_THUC_XUAT_THU_HO?.has(hinhThucXuat) && calendarFilters.metric !== 'quantity') return;
 
@@ -214,9 +217,6 @@ const TrendChart: React.FC = React.memo(() => {
 
           if (calendarFilters.metric === 'revenue' || calendarFilters.metric === 'traChamPercent') {
               totalRevenue = price;
-              // Ensure HINH_THUC_XUAT_TRA_GOP is imported and used, or we just check the output string.
-              // Assuming getHinhThucThanhToan or similar logic exists, let's just use string match for robustness 
-              // since HINH_THUC_XUAT_TRA_GOP might not be explicitly pulled in the import currently.
               if ((hinhThucXuat || '').toLowerCase().includes('trả góp')) {
                   traGopRevenue = price;
               }
@@ -261,7 +261,6 @@ const TrendChart: React.FC = React.memo(() => {
       metric: trendState.metric
   });
   
-  // Draft calendar ref for its own export
   const draftCalendarRef = useRef<HTMLDivElement>(null);
 
   const handleExportDraft = async () => {
@@ -279,7 +278,7 @@ const TrendChart: React.FC = React.memo(() => {
           if (targets.length > 0) {
               for (let i = 0; i < targets.length; i++) {
                   await handleExport(targets[i] as HTMLElement, `${prefix}-Lich-doanh-thu-tab-${i}.png`, { captureAsDisplayed: true, elementsToHide: ['.hide-on-export'] });
-                  await new Promise(r => setTimeout(r, 1000)); // Delay between downloads
+                  await new Promise(r => setTimeout(r, 1000));
               }
           }
       } else {
@@ -460,7 +459,6 @@ const TrendChart: React.FC = React.memo(() => {
               </div>
           ) : (
               <>
-          {/* Mobile: icon button with popover */}
           <div className="lg:hidden relative">
               <button
                   onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: !prev._filterOpen }))}
@@ -502,7 +500,6 @@ const TrendChart: React.FC = React.memo(() => {
                   </>
               )}
           </div>
-          {/* Desktop: button group */}
           <div className="hidden lg:inline-flex rounded-lg p-0.5 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                     {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
                       <button
@@ -566,7 +563,6 @@ const TrendChart: React.FC = React.memo(() => {
         <div className={`w-full ${displayMode === 'calendar' ? '' : 'h-[220px] lg:h-[320px]'}`}>
            {displayMode === 'calendar' ? (
                 <div className="flex flex-col gap-4">
-                    {/* Toast notification */}
                     {toastMsg && (
                         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/50 text-emerald-700 dark:text-emerald-300 text-sm font-bold shadow-lg animate-fade-in flex items-center gap-2 pointer-events-none">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
@@ -574,7 +570,6 @@ const TrendChart: React.FC = React.memo(() => {
                         </div>
                     )}
 
-                    {/* Tab bar for saved calendars */}
                     {savedCalendars.length > 0 && (
                         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar hide-on-export">
                             <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
@@ -613,9 +608,7 @@ const TrendChart: React.FC = React.memo(() => {
                         </div>
                     )}
 
-                    {/* Draft + Active Saved Calendar */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {/* Draft Calendar */}
                         <div ref={draftCalendarRef} className="border border-slate-200 dark:border-slate-800 overflow-hidden relative z-10 w-full pb-2 bg-slate-50 dark:bg-[#121212] calendar-export-target">
                             <RevenueCalendar 
                                 data={calendarData} 
@@ -661,7 +654,6 @@ const TrendChart: React.FC = React.memo(() => {
                             />
                         </div>
 
-                        {/* Active Saved Calendar */}
                         {savedCalendars.filter(cal => cal.id === activeCalendarTab).map(cal => {
                             const pg = Array.isArray(cal.parentGroup) ? cal.parentGroup : [];
                             const cg = Array.isArray(cal.childGroup) ? cal.childGroup : [];
@@ -695,6 +687,21 @@ const TrendChart: React.FC = React.memo(() => {
         </div>
       </div>
     </div>
+  );
+});
+TrendChartInner.displayName = 'TrendChartInner';
+
+const TrendChart: React.FC = React.memo(() => {
+  const { processedData, handleExport, isExporting, filterState, baseFilteredData, productConfig } = useDashboardContext();
+  return (
+    <TrendChartInner
+      trendData={processedData?.trendData}
+      handleExport={handleExport}
+      isExporting={isExporting}
+      filterState={filterState}
+      baseFilteredData={baseFilteredData}
+      productConfig={productConfig}
+    />
   );
 });
 

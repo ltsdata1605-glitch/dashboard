@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { CheckCircle2, Package } from 'lucide-react';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { saveSetting, getSetting } from '../../services/dbService';
-import * as XLSX from 'xlsx';
 import toast from 'react-hot-toast';
 
 import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem } from './stickerprinter/types';
@@ -509,9 +508,10 @@ export default function StickerPrinterView() {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (evt) => {
+        reader.onload = async (evt) => {
             try {
                 const bstr = evt.target?.result;
+                const XLSX = await import('xlsx');
                 const wb = XLSX.read(bstr, { type: 'binary' });
                 const wsname = wb.SheetNames[0];
                 const ws = wb.Sheets[wsname];
@@ -596,7 +596,8 @@ export default function StickerPrinterView() {
         e.target.value = '';
     };
 
-    const downloadTemplate = () => {
+    const downloadTemplate = async () => {
+        const XLSX = await import('xlsx');
         const wb = XLSX.utils.book_new();
         let header: string[];
         let sampleData: string[][];
@@ -695,9 +696,10 @@ export default function StickerPrinterView() {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (evt) => {
+        reader.onload = async (evt) => {
             try {
                 const bstr = evt.target?.result;
+                const XLSX = await import('xlsx');
                 const wb = XLSX.read(bstr, { type: 'binary' });
                 const ws = wb.Sheets[wb.SheetNames[0]];
                 const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
@@ -917,9 +919,10 @@ export default function StickerPrinterView() {
         if (!file) return;
 
         const reader = new FileReader();
-        reader.onload = (evt) => {
+        reader.onload = async (evt) => {
             try {
                 const bstr = evt.target?.result;
+                const XLSX = await import('xlsx');
                 const wb = XLSX.read(bstr, { type: 'binary' });
                 const wsname = wb.SheetNames[0];
                 const ws = wb.Sheets[wsname];

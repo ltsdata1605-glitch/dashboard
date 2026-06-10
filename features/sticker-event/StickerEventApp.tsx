@@ -6,7 +6,6 @@ import { parseProductFile, saveData, loadData, clearData, saveEmployeeName, pars
 import { uploadProductsToFirestore, uploadInventoryToFirestore, fetchProductsFromFirestore, fetchInventoryFromFirestore, saveListToFirestore, saveUserState, fetchUserState, saveManualProduct, fetchManualProducts, deleteManualProduct, ManualProductDoc } from './services/firebaseService';
 import { printPriceTags } from './services/printService';
 import { getSetting, saveSetting } from '../../services/dbService';
-import * as XLSX from 'xlsx';
 import { exportElementAsImage, downloadBlob, showExportOverlay, hideExportOverlay } from '../../services/uiService';
 import ResultsDisplay from './ResultsDisplay';
 import { LogoIcon, WarningIcon } from './Icons';
@@ -667,6 +666,7 @@ export default function App(): React.JSX.Element {
 
     // Create and download a file for each nganhHang
     const downloadFiles = async () => {
+      const XLSX = await import('xlsx');
       const entries = Object.entries(groupedByNganhHang) as [string, string[]][];
       for (let i = 0; i < entries.length; i++) {
         const [nganhHang, maSanPhams] = entries[i];

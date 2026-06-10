@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import toast from 'react-hot-toast';
-import * as XLSX from 'xlsx';
 import './phanca.css';
 import { exportToImage, generateBusyTemplateTSV } from './utils/exportUtils';
 import { useActiveTab } from '../../contexts/LayoutContext';
@@ -479,9 +478,10 @@ const App: React.FC = () => {
     const file = event.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         try {
             const data = new Uint8Array(e.target?.result as ArrayBuffer);
+            const XLSX = await import('xlsx');
             const workbook = XLSX.read(data, { type: 'array' });
             const sheetName = workbook.SheetNames[0];
             const json: any[][] = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
@@ -822,8 +822,9 @@ const App: React.FC = () => {
     });
   };
 
-  const handleExportExcel = () => {
+  const handleExportExcel = async () => {
     if (!nams.length && !nus.length) return showToast("Chưa có dữ liệu.", 'error');
+    const XLSX = await import('xlsx');
     const sortedList = getSortedStaffForExport();
     const [yearVal, monthVal] = monthYear.split('-').map(Number);
     const data: any[][] = [['LỊCH PHÂN CA'], ['HỌ VÀ TÊN', 'SBH', 'TỔNG', ...Array.from({length: duration}, (_, i) => `Ngày ${i+1}`)]];

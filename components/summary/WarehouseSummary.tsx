@@ -17,9 +17,47 @@ interface WarehouseSummaryProps {
     onBatchExport: () => Promise<void>;
 }
 
-const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) => {
-    const { userRole } = useAuth();
-    const { processedData, productConfig, originalData, warehouseFilteredData, handleExport, isExporting, isProcessing, uniqueFilterOptions, warehouseTargets, updateWarehouseTarget, warehouseDTThucTargets, updateWarehouseDTThucTarget, filterState, handleFilterChange, isLuyKe, handleLuyKeChange } = useDashboardContext();
+interface WarehouseSummaryInnerProps {
+    userRole: string | undefined;
+    processedData: any;
+    productConfig: any;
+    originalData: any[];
+    warehouseFilteredData: any[];
+    handleExport: any;
+    isExporting: boolean;
+    isProcessing: boolean;
+    uniqueFilterOptions: any;
+    warehouseTargets: any;
+    updateWarehouseTarget: any;
+    warehouseDTThucTargets: any;
+    updateWarehouseDTThucTarget: any;
+    filterState: any;
+    handleFilterChange: any;
+    isLuyKe: boolean;
+    handleLuyKeChange: any;
+    onBatchExport: () => Promise<void>;
+}
+
+const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo(({
+    userRole,
+    processedData,
+    productConfig,
+    originalData,
+    warehouseFilteredData,
+    handleExport,
+    isExporting,
+    isProcessing,
+    uniqueFilterOptions,
+    warehouseTargets,
+    updateWarehouseTarget,
+    warehouseDTThucTargets,
+    updateWarehouseDTThucTarget,
+    filterState,
+    handleFilterChange,
+    isLuyKe,
+    handleLuyKeChange,
+    onBatchExport
+}) => {
     const data = processedData?.warehouseSummary ?? [];
     
     const summaryRef = useRef<HTMLDivElement>(null);
@@ -698,6 +736,42 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
             </ModalWrapper>
         </>
     );
-};
+});
+WarehouseSummaryInner.displayName = 'WarehouseSummaryInner';
+
+const WarehouseSummary: React.FC<WarehouseSummaryProps> = React.memo(({ onBatchExport }) => {
+    const { userRole } = useAuth();
+    const { 
+        processedData, productConfig, originalData, warehouseFilteredData, 
+        handleExport, isExporting, isProcessing, uniqueFilterOptions, 
+        warehouseTargets, updateWarehouseTarget, warehouseDTThucTargets, 
+        updateWarehouseDTThucTarget, filterState, handleFilterChange, 
+        isLuyKe, handleLuyKeChange 
+    } = useDashboardContext();
+
+    return (
+        <WarehouseSummaryInner
+            userRole={userRole}
+            processedData={processedData}
+            productConfig={productConfig}
+            originalData={originalData}
+            warehouseFilteredData={warehouseFilteredData}
+            handleExport={handleExport}
+            isExporting={isExporting}
+            isProcessing={isProcessing}
+            uniqueFilterOptions={uniqueFilterOptions}
+            warehouseTargets={warehouseTargets}
+            updateWarehouseTarget={updateWarehouseTarget}
+            warehouseDTThucTargets={warehouseDTThucTargets}
+            updateWarehouseDTThucTarget={updateWarehouseDTThucTarget}
+            filterState={filterState}
+            handleFilterChange={handleFilterChange}
+            isLuyKe={isLuyKe}
+            handleLuyKeChange={handleLuyKeChange}
+            onBatchExport={onBatchExport}
+        />
+    );
+});
+WarehouseSummary.displayName = 'WarehouseSummary';
 
 export default WarehouseSummary;

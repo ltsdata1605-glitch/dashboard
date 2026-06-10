@@ -3,11 +3,11 @@ import type { WorkBook } from 'xlsx';
 import type { StaffMember } from '../types';
 import { abbreviateVietnameseName } from './stringUtils';
 
-import * as XLSX from 'xlsx';
 import { exportElementAsImage } from '../../../services/uiService';
 
-export const exportToExcel = (tableRef: RefObject<HTMLTableElement>) => {
+export const exportToExcel = async (tableRef: RefObject<HTMLTableElement>) => {
     if (tableRef.current) {
+        const XLSX = await import('xlsx');
         const wb = XLSX.utils.table_to_book(tableRef.current, { sheet: "LichLamViec" });
         XLSX.writeFile(wb, 'Lich_Phan_Ca.xlsx');
     }
