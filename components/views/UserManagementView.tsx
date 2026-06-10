@@ -7,6 +7,7 @@ import { Input } from '../shared/ui/Input';
 import { Select } from '../shared/ui/Select';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
+import { notifyUser } from '../../services/notificationService';
 
 interface AccessRequest {
     id: string;
@@ -215,7 +216,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 await updateDoc(userRef, updateData);
                 
                 // Thuận nước đẩy Notification
-                const { notifyUser } = await import('../../services/notificationService');
                 await notifyUser(requestId, {
                     title: 'Phân quyền thành công',
                     message: `Hệ thống vừa cập nhật vai trò của bạn thành: ${targetRole === 'manager' ? 'Quản Lý Kho' : targetRole === 'employee' ? 'Nhân Viên' : 'Khác'}. Bạn có thể bắt đầu sử dụng.`,
@@ -228,7 +228,6 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                     status: listMode === 'pending' ? 'rejected' : 'expired'
                 });
                 
-                const { notifyUser } = await import('../../services/notificationService');
                 await notifyUser(requestId, {
                     title: listMode === 'pending' ? 'Yêu cầu bị từ chối' : 'Thu hồi quyền truy cập',
                     message: `Quản trị viên đã ${listMode === 'pending' ? 'từ chối yêu cầu đăng ký' : 'ngừng cấp phép sử dụng'} của bạn. Liên hệ Quản lý Vùng để biết thêm chi tiết.`,

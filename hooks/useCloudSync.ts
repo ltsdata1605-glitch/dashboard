@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey } from '../services/firestoreService';
+import { syncToCloud, HEAVY_SYNC_KEYS, isHeavySyncKey, syncHeavySettingToCloud } from '../services/firestoreService';
 import { getAllSettings, getSetting, saveSettingFromCloud } from '../services/dbService';
 import { doc, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
+import toast from 'react-hot-toast';
 
 type SyncState = 'idle' | 'syncing' | 'synced' | 'error';
 
@@ -90,19 +91,15 @@ export const useCloudSync = () => {
             setLastError(err?.message || 'Đồng bộ dữ liệu thất bại. Lỗi mạng hoặc hết phiên.');
             
             if (errCode === 'resource-exhausted' || errMsg.includes('quota') || errMsg.includes('429')) {
-                import('react-hot-toast').then(({ default: toast }) => {
-                    toast('⏳ Đã lưu cài đặt vào máy. Đồng bộ lên đám mây sẽ tự động thử lại sau.', { 
-                        id: 'quota-limit',
-                        icon: '☁️',
-                        duration: 4000
-                    });
+                toast('⏳ Đã lưu cài đặt vào máy. Đồng bộ lên đám mây sẽ tự động thử lại sau.', { 
+                    id: 'quota-limit',
+                    icon: '☁️',
+                    duration: 4000
                 });
             } else if (errMsg.includes('unauthenticated') || errMsg.includes('permission-denied')) {
-                import('react-hot-toast').then(({ default: toast }) => {
-                    toast('🔑 Phiên đăng nhập hết hạn. Đăng nhập lại để đồng bộ cài đặt.', { 
-                        id: 'auth-expired',
-                        duration: 5000
-                    });
+                toast('🔑 Phiên đăng nhập hết hạn. Đăng nhập lại để đồng bộ cài đặt.', { 
+                    id: 'auth-expired',
+                    duration: 5000
                 });
             }
             // All errors: data is safe in IndexedDB, will sync when possible
@@ -201,7 +198,6 @@ export const useCloudSync = () => {
                     try {
                         const value = await getSetting(key);
                         if (value !== null) {
-                            const { syncHeavySettingToCloud } = await import('../services/firestoreService');
                             await syncHeavySettingToCloud(user, key, value);
                             console.log(`[Cloud Sync] Tự động đồng bộ khóa nặng "${key}" lên Firestore.`);
                         }
@@ -261,7 +257,6 @@ export const useCloudSync = () => {
                     try {
                         const value = await getSetting(key);
                         if (value !== null) {
-                            const { syncHeavySettingToCloud } = await import('../services/firestoreService');
                             await syncHeavySettingToCloud(user, key, value);
                             console.log(`[Cloud Sync] Đồng bộ khẩn cấp khóa nặng "${key}" trước khi đóng trang.`);
                         }

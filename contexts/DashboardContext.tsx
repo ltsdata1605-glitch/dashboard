@@ -1,8 +1,8 @@
 
 import React from 'react';
-import type { ProcessedData, FilterState, ProductConfig, DataRow, Employee, EmployeeData } from '../types';
+import type { ProcessedData, FilterState, ProductConfig, DataRow, Employee, EmployeeData, PendingExport } from '../types';
 import { DepartmentMap } from '../services/dataService';
-import type { PendingExport } from '../hooks/useExportLogic';
+
 
 interface DashboardContextType {
     appState: 'upload' | 'processing' | 'dashboard' | 'loading';

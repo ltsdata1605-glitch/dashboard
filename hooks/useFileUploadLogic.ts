@@ -10,6 +10,8 @@ import {
     clearCustomTabs,
     saveSetting
 } from '../services/dbService';
+import toast from 'react-hot-toast';
+import { initialFilterState } from './useFilterState';
 
 interface FileUploadLogicProps {
     isDeduplicationEnabled: boolean;
@@ -159,7 +161,6 @@ export const useFileUploadLogic = ({
                     
                     // Reset filters to initial state to avoid stale filters from previous data
                     if (setFilterState) {
-                        const { initialFilterState } = await import('./useFilterState');
                         setFilterState(initialFilterState);
                     }
                     
@@ -175,14 +176,13 @@ export const useFileUploadLogic = ({
                     if (user && !isCloudSync) {
                         (async () => {
                             try {
-                                const { toast } = await import('react-hot-toast');
                                 toast('☁️ Đang đồng bộ dữ liệu lên đám mây...', { id: 'cloud-sync-start', duration: 2000 });
                                 const { uploadProcessedData } = await import('../services/cloudDataService');
                                 await uploadProcessedData(user, payload, mergedName, latestFileTime);
                                 toast.success('Đã đồng bộ dữ liệu lên đám mây!', { id: 'cloud-sync-done' });
                             } catch (err) {
                                 console.error('Cloud data sync failed:', err);
-                                import('react-hot-toast').then(m => m.toast('Dữ liệu đã lưu trên máy. Đồng bộ đám mây sẽ thử lại sau.', { icon: '☁️', id: 'cloud-sync-fail' }));
+                                toast('Dữ liệu đã lưu trên máy. Đồng bộ đám mây sẽ thử lại sau.', { icon: '☁️', id: 'cloud-sync-fail' });
                             }
                         })();
                     }

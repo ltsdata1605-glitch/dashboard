@@ -599,3 +599,9 @@ export interface KpiCardConfig {
   customTargetValue?: number;
   trendLabel?: string;
 }
+
+export interface PendingExport {
+    blob: Blob;
+    filename: string;
+}
+

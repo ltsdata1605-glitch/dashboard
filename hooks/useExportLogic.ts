@@ -1,15 +1,10 @@
 
 import React, { useState, useCallback } from 'react';
 import ReactDOM from 'react-dom/client';
-import type { Employee, ProcessedData, ProductConfig, FilterState } from '../types';
+import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport } from '../types';
 import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExportOverlay, updateExportOverlay, hideExportOverlay } from '../services/uiService';
 import type { ExportMode } from '../services/uiService';
 import PerformanceModal from '../components/modals/PerformanceModal';
-
-export interface PendingExport {
-    blob: Blob;
-    filename: string;
-}
 
 interface ExportLogicProps {
     productConfig: ProductConfig | null;

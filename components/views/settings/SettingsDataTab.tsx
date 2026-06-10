@@ -3,7 +3,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import * as dbService from '../../../services/dbService';
 import toast from 'react-hot-toast';
 import { useSync } from '../../../contexts/SyncContext';
-import { shareCloudConfig, fetchSharedConfigs, deleteSharedConfig, type SharedConfig } from '../../../services/firestoreService';
+import { shareCloudConfig, fetchSharedConfigs, deleteSharedConfig, clearCloudSettings, type SharedConfig } from '../../../services/firestoreService';
 import { ConfirmDialog } from '../../shared/ui/ConfirmDialog';
 
 import { BaseDataSection } from './BaseDataSection';
@@ -80,7 +80,6 @@ export const SettingsDataTab: React.FC = () => {
                 closeConfirm();
                 setIsClearing(true);
                 try {
-                    const { clearCloudSettings } = await import('../../../services/firestoreService');
                     if (user) {
                         await clearCloudSettings(user);
                     }

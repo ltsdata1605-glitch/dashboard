@@ -3,6 +3,7 @@ import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth, db, loginWithGoogle as loginProvider, logoutUser as logoutProvider } from '../services/firebase';
 import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService';
 import { initSyncListeners } from '../services/syncService';
+import { notifyAdminsAndManagers } from '../services/notificationService';
 
 interface AuthContextType {
     user: User | null;
@@ -227,7 +228,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setEmployeeName(empName);
             
             // Notification: Alert Admins and Managers of this department
-            const { notifyAdminsAndManagers } = await import('../services/notificationService');
             await notifyAdminsAndManagers(deptId, {
                 title: 'Đăng ký vào Kho mới',
                 message: `${user.displayName} (Email: ${user.email}) vừa đăng ký truy cập mã Kho gốc: ${deptId}.`,

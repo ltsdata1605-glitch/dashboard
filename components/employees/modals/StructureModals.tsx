@@ -2,7 +2,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ModalWrapper from '../../modals/ModalWrapper';
 import { ColumnConfig, ContestTableConfig } from '../../../types';
-import { ICON_OPTIONS } from '../../employees/EmployeeAnalysis';
 import { Input } from '../../shared/ui/Input';
 import { Select } from '../../shared/ui/Select';
 import { Button } from '../../shared/ui/Button';
