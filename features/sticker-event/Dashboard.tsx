@@ -1,8 +1,8 @@
 import React, { useRef, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import html2canvas from 'html2canvas';
 import { ExportIcon, Loader2Icon } from './Icons';
 import AlertModal from './AlertModal';
+import { fixOklchColors } from '../../services/uiService';
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
@@ -46,6 +46,13 @@ export const Dashboard: React.FC = () => {
     
     setIsExporting(true);
     try {
+      const html2canvas = (await import('html2canvas')).default;
+      try {
+        fixOklchColors(dashboardRef.current);
+      } catch (e) {
+        console.warn('Error fixing colors:', e);
+      }
+      
       const canvas = await html2canvas(dashboardRef.current, {
         scale: 2, // Higher resolution
         useCORS: true,

@@ -1,9 +1,8 @@
 import { Product } from '../types';
 import { parseCurrency } from './fileParser';
-import { jsPDF } from "jspdf";
-import html2canvas from "html2canvas";
 import toast from 'react-hot-toast';
 import QRCode from 'qrcode';
+import { fixOklchColors } from '../../../services/uiService';
 
 export interface ModernLayoutPositions {
   productName: { x: number; y: number; w: number; h: number };
@@ -1290,7 +1289,10 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
   const { cols, rows, sizeClass } = getLayoutConfig(settings.tagsPerPage);
   const commonStyles = getPrintStyles(settings);
 
-  if (isMobile && typeof jsPDF !== 'undefined' && typeof html2canvas !== 'undefined') {
+  if (isMobile) {
+    const { jsPDF } = await import('jspdf');
+    const { default: html2canvas } = await import('html2canvas');
+    
     const renderContainer = document.createElement('div');
     renderContainer.style.position = 'fixed';
     renderContainer.style.top = '0';
@@ -1345,6 +1347,10 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
 
             pdf.addPage([billPageWidth, dynamicHeightMm], 'p');
             
+            try {
+                fixOklchColors(pageElement);
+            } catch(e) { console.warn("Error fixing colors", e); }
+            
             const canvas = await html2canvas(pageElement, { 
                 scale: 2,
                 useCORS: true, 
@@ -1381,6 +1387,10 @@ export const printPriceTags = async (products: Product[], employeeName: string, 
       }
       
       await new Promise(resolve => setTimeout(resolve, 50));
+
+      try {
+        fixOklchColors(pageElement);
+      } catch(e) { console.warn("Error fixing colors", e); }
 
       const canvas = await html2canvas(pageElement, { 
           scale: 2, 

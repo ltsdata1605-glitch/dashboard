@@ -1,5 +1,3 @@
-import * as htmlToImage from 'html-to-image';
-
 export type ExportMode = 'download' | 'share' | 'blob-only';
 
 /** Download a blob as a file */
@@ -822,7 +820,7 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
         const defaultBg = isDark ? '#0f172a' : '#f8fafc';
         const isTransparentTable = lowerFilename.includes('bao-cao-kho') || lowerFilename.includes('chi-tiet-nganh-hang');
 
-        // Capture using html-to-image which is faster and natively supports modern CSS (Tailwind v4, oklch, grid)
+        const htmlToImage = await import('html-to-image');
         const blob = await htmlToImage.toBlob(clone, {
             pixelRatio: finalScale,
             backgroundColor: isTransparentTable ? undefined : defaultBg,
@@ -860,6 +858,74 @@ export async function exportElementAsImage(element: HTMLElement, filename: strin
     } finally {
         if (document.body.contains(captureContainer)) {
             document.body.removeChild(captureContainer);
+        }
+    }
+}
+
+/** Helper to convert oklch() color values to standard rgb/rgba/hex format for html2canvas */
+export function fixOklchColors(root: HTMLElement) {
+    const cvs = document.createElement('canvas');
+    cvs.width = 1;
+    cvs.height = 1;
+    const ctx = cvs.getContext('2d');
+    if (!ctx) return;
+
+    function resolveOklch(val: string): string | null {
+        if (!val || typeof val !== 'string' || val.indexOf('oklch') === -1) return null;
+        try {
+            ctx!.clearRect(0, 0, 1, 1);
+            ctx!.fillStyle = '#000000';
+            ctx!.fillStyle = val;
+            const resolved = ctx!.fillStyle;
+            if (resolved !== '#000000' || val.indexOf('0, 0, 0') !== -1 || val.indexOf('0%') !== -1) {
+                return resolved;
+            }
+            ctx!.fillRect(0, 0, 1, 1);
+            const px = ctx!.getImageData(0, 0, 1, 1).data;
+            if (px[3] > 0) {
+                return 'rgba(' + px[0] + ',' + px[1] + ',' + px[2] + ',' + (px[3] / 255).toFixed(2) + ')';
+            }
+            return null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    const els = [root, ...Array.from(root.querySelectorAll('*'))];
+    const colorProps = [
+        ['color', 'color'],
+        ['backgroundColor', 'background-color'],
+        ['borderColor', 'border-color'],
+        ['borderTopColor', 'border-top-color'],
+        ['borderRightColor', 'border-right-color'],
+        ['borderBottomColor', 'border-bottom-color'],
+        ['borderLeftColor', 'border-left-color'],
+        ['outlineColor', 'outline-color'],
+        ['textDecorationColor', 'text-decoration-color'],
+        ['caretColor', 'caret-color']
+    ];
+
+    for (let i = 0; i < els.length; i++) {
+        const el = els[i];
+        if (!(el instanceof HTMLElement)) continue;
+        try {
+            const cs = window.getComputedStyle(el);
+            for (let j = 0; j < colorProps.length; j++) {
+                const val = (cs as any)[colorProps[j][0]];
+                if (val && val.indexOf('oklch') !== -1) {
+                    const rgb = resolveOklch(val);
+                    if (rgb) el.style.setProperty(colorProps[j][1], rgb, 'important');
+                }
+            }
+            const shadow = cs.boxShadow;
+            if (shadow && shadow.indexOf('oklch') !== -1) {
+                const fixed = shadow.replace(/oklch\([^)]+\)/g, (match) => {
+                    return resolveOklch(match) || 'transparent';
+                });
+                el.style.setProperty('box-shadow', fixed, 'important');
+            }
+        } catch (e) {
+            // ignore
         }
     }
 }

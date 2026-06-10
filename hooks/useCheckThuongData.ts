@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import * as XLSX from 'xlsx';
 import { getValue, setValue } from '../services/dbService';
 
 export const COLS = {
@@ -171,12 +170,13 @@ export const useCheckThuongData = () => {
         
         return new Promise<void>((resolve, reject) => {
             const reader = new FileReader();
-            reader.onload = (e) => {
+            reader.onload = async (e) => {
                 try {
                     const isExcel = file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls');
                     let dataArray: any[][];
                     
                     if (isExcel) {
+                        const XLSX = await import('xlsx');
                         const arrayBuffer = e.target?.result as ArrayBuffer;
                         const workbook = XLSX.read(arrayBuffer, { type: 'array' });
                         const sheetName = workbook.SheetNames[0];
