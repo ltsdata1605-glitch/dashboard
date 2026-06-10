@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Icon } from '../../../components/common/Icon';
 import FontSelector from '../../../components/layout/FontSelector';
-import { migrateClusterDataToMain } from '../utils/dbMigration';
+import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
 
 // Lazy load heavy sub-views so the initial BiWrapper mount is near-instant
 const Dashboard = lazy(() => import('./Dashboard'));
@@ -44,13 +44,14 @@ const TabSpinner = () => (
  * 
  * Each sub-view is also lazy-loaded so initial mount only loads the active view's chunk.
  */
-const BiWrapper = React.memo(function BiWrapper() {
+const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boolean }) {
     const { activeTab } = useActiveTab();
     const [activeView, setActiveView] = useState<'dashboard' | 'employee' | 'updater' | 'settings'>('dashboard');
     // Track which views have been visited to enable lazy mounting (mount on first visit, keep alive after)
     const [mountedViews, setMountedViews] = useState<Set<string>>(() => new Set(['dashboard']));
     const [mounted, setMounted] = useState(false);
     const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
+
 
     useEffect(() => {
         setMounted(true);
@@ -61,7 +62,9 @@ const BiWrapper = React.memo(function BiWrapper() {
 
     // Migrate dữ liệu cũ từ ClusterDataDB sang BI_HUB_DATABASE_V2 (chỉ chạy 1 lần)
     useEffect(() => {
-        migrateClusterDataToMain().catch(err => console.warn('[BI Migration] Error:', err));
+        migrateClusterDataToMain()
+            .then(() => migrateOldAvatars())
+            .catch(err => console.warn('[BI Migration] Error:', err));
     }, []);
 
     const handleTabChange = useCallback((id: string) => {
@@ -178,14 +181,14 @@ const BiWrapper = React.memo(function BiWrapper() {
                     {/* Dashboard view */}
                     {mountedViews.has('dashboard') && (
                         <div className={activeView === 'dashboard' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
-                            <Dashboard onNavigateToUpdater={handleNavigateToUpdater} />
+                            <Dashboard onNavigateToUpdater={handleNavigateToUpdater} isActive={isActive && activeView === 'dashboard'} />
                         </div>
                     )}
 
                     {/* Employee view */}
                     {mountedViews.has('employee') && (
                         <div className={activeView === 'employee' ? 'block relative' : 'absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}>
-                            <NhanVien isActive={activeView === 'employee' && activeTab === 'employees'} />
+                            <NhanVien isActive={isActive && activeView === 'employee'} />
                         </div>
                     )}
 
@@ -200,6 +203,7 @@ const BiWrapper = React.memo(function BiWrapper() {
                     {activeView === 'settings' && <Settings />}
                 </Suspense>
             </main>
+
         </div>
     );
 });

@@ -65,6 +65,7 @@ export const useCloudSync = () => {
                     !excludedKeys.has(key) && 
                     !isHeavySyncKey(key) &&
                     !key.startsWith('cached_') && 
+                    !key.startsWith('lastModified_') &&
                     !key.startsWith('summary-') && 
                     !key.startsWith('competition-')
                 ) {

@@ -84,7 +84,7 @@ const TabContent = React.memo(() => {
                         key={view.id} 
                         className={`${view.className || ''} ${activeTab === view.id ? 'flex-1 relative w-full' : '!absolute left-[-9999px] top-0 opacity-0 pointer-events-none w-full h-full overflow-hidden'}`}
                     >
-                        {view.component}
+                        {React.cloneElement(view.component, { isActive: activeTab === view.id })}
                     </div>
                 ) : null
             ))}

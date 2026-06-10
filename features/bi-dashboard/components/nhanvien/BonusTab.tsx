@@ -193,9 +193,10 @@ export const BonusView: React.FC<{
     onBatchUpdate: () => void;
     highlightedEmployees: Set<string>; 
     activeDepartments: string[];
+    isActive?: boolean;
 }> = React.memo(({ 
     employees, bonusData, revenueRows, supermarketName, onEmployeeClick, onBatchUpdate,
-    highlightedEmployees, activeDepartments
+    highlightedEmployees, activeDepartments, isActive
 }) => {
     const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
     const cardRef = useRef<HTMLDivElement>(null);
@@ -205,10 +206,12 @@ export const BonusView: React.FC<{
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('bonus-view-mode-multi', 'group');
     
     const revenueMap = useMemo(() => {
+        if (isActive === false) return new Map();
         const m = new Map(); revenueRows.forEach((r: any) => r.type === 'employee' && m.set(r.originalName, r)); return m;
-    }, [revenueRows]);
+    }, [revenueRows, isActive]);
 
     const displayList = useMemo(() => {
+        if (isActive === false) return [];
         const isFiltering = !activeDepartments.includes('all');
         const allUniqueDepts = Array.from(new Set(employees.map(e => e.department))).sort();
         const depts = isFiltering ? activeDepartments : allUniqueDepts;
@@ -286,7 +289,7 @@ export const BonusView: React.FC<{
             out.push({ type: 'total', name: 'TỔNG CỘNG', sumDtqd: grandSumDtqd, sumErp: grandSumErp, sumTnong: grandSumTnong, sumTong: grandSumTong, sumDkien: grandSumDkien });
         }
         return out;
-    }, [employees, activeDepartments, bonusData, revenueMap, sortField, sortDir, viewMode]);
+    }, [employees, activeDepartments, bonusData, revenueMap, sortField, sortDir, viewMode, isActive]);
 
     const isUpdatedToday = (updatedAt?: string) => {
         if (!updatedAt) return false;
@@ -320,6 +323,10 @@ export const BonusView: React.FC<{
     );
 
     const isMobile = false; // Always show table view, even on mobile
+
+    if (isActive === false) {
+        return <div className="hidden" />;
+    }
 
     return (
         <div className="space-y-0">

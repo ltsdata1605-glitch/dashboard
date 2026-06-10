@@ -54,6 +54,7 @@ interface CompetitionTabProps {
     installmentRows?: any[];
     banKemRows?: any[];
     bonusData?: Record<string, any>;
+    isActive?: boolean;
 }
 
 export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
@@ -84,7 +85,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     revenueRows,
     installmentRows,
     banKemRows,
-    bonusData
+    bonusData,
+    isActive
 }) => {
 
     const [newVersionName, setNewVersionName] = useState('');
@@ -136,7 +138,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         employeeCompetitionTargets,
         allEmployees,
         highlightedEmployees,
-        isolatedHighlightEmployee
+        isolatedHighlightEmployee,
+        isActive
     });
 
     const handleSaveVersionAction = () => {
@@ -357,6 +360,10 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         });
     };
 
+
+    if (isActive === false) {
+        return <div className="hidden" />;
+    }
 
     if (!hasAnyData) {
         return (

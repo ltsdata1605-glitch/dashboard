@@ -189,7 +189,9 @@ export async function saveSettingFromCloud(key: string, value: any, updatedAt: n
                 const store = tx.objectStore(SETTINGS_STORE);
                 store.put(value, key);
                 store.put(updatedAt, 'localSettingsLastModified');
-                store.put(updatedAt, `lastModified_${key}`);
+                if (!key.startsWith('lastModified_')) {
+                    store.put(updatedAt, `lastModified_${key}`);
+                }
 
                 tx.oncomplete = () => {
                     if (active) {
@@ -1016,5 +1018,39 @@ export async function saveGlobalFont(font: string): Promise<void> {
 
 export async function getGlobalFont(): Promise<string | null> {
     return getSetting('globalFont');
+}
+
+export async function cleanupGarbageKeys(): Promise<void> {
+    try {
+        const db = await getDb();
+        return new Promise<void>((resolve, reject) => {
+            const tx = db.transaction(SETTINGS_STORE, 'readwrite');
+            const store = tx.objectStore(SETTINGS_STORE);
+            const request = store.openCursor();
+            let count = 0;
+            request.onsuccess = () => {
+                const cursor = request.result;
+                if (cursor) {
+                    const key = String(cursor.key);
+                    if (key.startsWith('lastModified_lastModified_') || (key.match(/lastModified_/g) || []).length > 1) {
+                        store.delete(key);
+                        count++;
+                    }
+                    cursor.continue();
+                }
+            };
+            tx.oncomplete = () => {
+                if (count > 0) {
+                    console.log(`[IDB Cleanup] Cleaned up ${count} recursive lastModified garbage keys.`);
+                }
+                resolve();
+            };
+            tx.onerror = () => {
+                reject(tx.error || new Error('Cleanup transaction failed'));
+            };
+        });
+    } catch (e) {
+        console.error('[IDB Cleanup] Failed to run garbage cleanup:', e);
+    }
 }
 

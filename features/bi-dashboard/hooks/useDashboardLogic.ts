@@ -11,10 +11,11 @@ import {
     parseIndustryRealtimeData, 
     parseIndustryLuyKeData, 
     parseNumber,
-    shortenSupermarketName
+    shortenSupermarketName,
+    extractSupermarketList
 } from '../utils/dashboardHelpers';
 
-export const useDashboardLogic = () => {
+export const useDashboardLogic = (isActive?: boolean) => {
     // --- State Management ---
     const [activeMainTab, setActiveMainTab] = useIndexedDBState<MainTab>('dashboard-main-tab', 'realtime');
     const [activeSubTab, setActiveSubTab] = useIndexedDBState<SubTab>('dashboard-sub-tab', 'revenue');
@@ -24,9 +25,7 @@ export const useDashboardLogic = () => {
     const [summaryLuyKe] = useIndexedDBState('summary-luy-ke', '');
     const [competitionRealtime] = useIndexedDBState('competition-realtime', '');
     const [competitionLuyKe] = useIndexedDBState('competition-luy-ke', '');
-    const [supermarketsRaw] = useIndexedDBState<string[]>('supermarket-list', []);
-    // Defensive: ensure supermarkets is always a valid array (Safari/iOS IndexedDB edge case)
-    const supermarkets = Array.isArray(supermarketsRaw) ? supermarketsRaw : [];
+    const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
     const [summaryRealtimeTs] = useIndexedDBState<string | null>('summary-realtime-ts', null);
     const [competitionRealtimeTs] = useIndexedDBState<string | null>('competition-realtime-ts', null);
     const [competitionLuyKeTs] = useIndexedDBState<string | null>('competition-luy-ke-ts', null);
@@ -37,16 +36,38 @@ export const useDashboardLogic = () => {
     const [dataVersion, setDataVersion] = useState(0);
 
     // --- Derived Data Parsing ---
-    const [industryRealtimeData] = useIndexedDBState(activeSupermarket && activeSupermarket !== 'Tổng' ? `config-${shortenSupermarketName(activeSupermarket)}-industry-realtime` : null, '');
-    const [industryLuyKeData] = useIndexedDBState(activeSupermarket && activeSupermarket !== 'Tổng' ? `config-${shortenSupermarketName(activeSupermarket)}-industry-luyke` : null, '');
+    const [industryRealtimeData] = useIndexedDBState(activeSupermarket && activeSupermarket !== 'Tổng' && isActive !== false ? `config-${shortenSupermarketName(activeSupermarket)}-industry-realtime` : null, '');
+    const [industryLuyKeData] = useIndexedDBState(activeSupermarket && activeSupermarket !== 'Tổng' && isActive !== false ? `config-${shortenSupermarketName(activeSupermarket)}-industry-luyke` : null, '');
     
-    const summaryRealtimeParsed = useMemo(() => parseSummaryData(summaryRealtime), [summaryRealtime]);
-    const summaryLuyKeParsed = useMemo(() => parseSummaryData(summaryLuyKe), [summaryLuyKe]);
-    const competitionRealtimeBySupermarket = useMemo(() => parseCompetitionDataBySupermarket(competitionRealtime), [competitionRealtime]);
-    const competitionLuyKeBySupermarket = useMemo(() => parseCompetitionDataBySupermarket(competitionLuyKe), [competitionLuyKe]);
+    const summaryRealtimeParsed = useMemo(() => {
+        if (isActive === false) return { kpis: {}, table: { headers: [], rows: [] } };
+        return parseSummaryData(summaryRealtime);
+    }, [summaryRealtime, isActive]);
+
+    const summaryLuyKeParsed = useMemo(() => {
+        if (isActive === false) return { kpis: {}, table: { headers: [], rows: [] } };
+        return parseSummaryData(summaryLuyKe);
+    }, [summaryLuyKe, isActive]);
+
+    const competitionRealtimeBySupermarket = useMemo(() => {
+        if (isActive === false) return {};
+        return parseCompetitionDataBySupermarket(competitionRealtime);
+    }, [competitionRealtime, isActive]);
+
+    const competitionLuyKeBySupermarket = useMemo(() => {
+        if (isActive === false) return {};
+        return parseCompetitionDataBySupermarket(competitionLuyKe);
+    }, [competitionLuyKe, isActive]);
     
-    const industryRealtimeParsed = useMemo(() => parseIndustryRealtimeData(industryRealtimeData), [industryRealtimeData]);
-    const industryLuyKeParsed = useMemo(() => parseIndustryLuyKeData(industryLuyKeData), [industryLuyKeData]);
+    const industryRealtimeParsed = useMemo(() => {
+        if (isActive === false) return { headers: [], rows: [], allRows: [], tree: [], totalRow: [] };
+        return parseIndustryRealtimeData(industryRealtimeData);
+    }, [industryRealtimeData, isActive]);
+
+    const industryLuyKeParsed = useMemo(() => {
+        if (isActive === false) return { kpis: { laiGopQDDuKien: '', chiPhi: '', targetLNTT: '', htTargetDuKienLNTT: '' }, table: { headers: [], rows: [] }, tree: [], totalRow: [] };
+        return parseIndustryLuyKeData(industryLuyKeData);
+    }, [industryLuyKeData, isActive]);
 
     // --- Targets State ---
     const [supermarketDailyTargets, setSupermarketDailyTargets] = useState<Record<string, number>>({});
@@ -91,6 +112,7 @@ export const useDashboardLogic = () => {
     };
 
     useEffect(() => {
+        if (isActive === false) return;
         const augmentData = async () => {
             if (Object.keys(competitionRealtimeBySupermarket).length === 0 || !competitionLuyKe) {
                 setAugmentedRealtimeData(competitionRealtimeBySupermarket);
@@ -155,9 +177,10 @@ export const useDashboardLogic = () => {
             setAugmentedRealtimeData(newAugmentedData);
         };
         augmentData();
-    }, [competitionRealtimeBySupermarket, competitionLuyKe, dataVersion]);
+    }, [competitionRealtimeBySupermarket, competitionLuyKe, dataVersion, isActive]);
 
     useEffect(() => {
+        if (isActive === false) return;
         const augmentData = async () => {
             if (Object.keys(competitionLuyKeBySupermarket).length === 0) {
                 setAugmentedLuyKeData(competitionLuyKeBySupermarket);
@@ -229,9 +252,10 @@ export const useDashboardLogic = () => {
             setAugmentedLuyKeData(newAugmentedData);
         };
         augmentData();
-    }, [competitionLuyKeBySupermarket, competitionLuyKe, dataVersion]);
+    }, [competitionLuyKeBySupermarket, competitionLuyKe, dataVersion, isActive]);
 
     useEffect(() => {
+        if (isActive === false) return;
         const calculateTargets = async () => {
             const allDailyTargets: Record<string, number> = {};
             const allMonthlyTargets: Record<string, number> = {};
@@ -276,7 +300,7 @@ export const useDashboardLogic = () => {
             setSupermarketTargets(allTargets);
         };
         if (summaryLuyKeParsed.table.rows.length > 0) calculateTargets();
-    }, [supermarkets, summaryLuyKeParsed, dataVersion]);
+    }, [supermarkets, summaryLuyKeParsed, dataVersion, isActive]);
 
     useEffect(() => {
         if (supermarkets.length > 0 && !['Tổng', ...supermarkets].includes(activeSupermarket)) setActiveSupermarket('Tổng');

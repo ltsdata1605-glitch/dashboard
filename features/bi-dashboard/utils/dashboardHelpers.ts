@@ -328,3 +328,23 @@ export const parseIndustryLuyKeData = (text: string) => {
 
     return result;
 };
+
+export const extractSupermarketList = (summaryLuyKe: string): string[] => {
+    if (!summaryLuyKe || !summaryLuyKe.includes('Tên miền\tDT Hôm Qua\tDTLK\tDT Dự Kiến\tDTQĐ')) {
+        return [];
+    }
+    const rawExtractedNames = Array.from(new Set(summaryLuyKe.split('\n')
+        .map(line => (line.split('\t')[0] ?? '').trim())
+        .filter(name => (name.startsWith('ĐM') || name.startsWith('TGD')) && name.includes(' - '))));
+
+    const uniqueShortNames = new Set<string>();
+    const extractedNames: string[] = [];
+    for (const name of rawExtractedNames) {
+        const shortName = shortenSupermarketName(name);
+        if (!uniqueShortNames.has(shortName)) {
+            uniqueShortNames.add(shortName);
+            extractedNames.push(name);
+        }
+    }
+    return extractedNames;
+};

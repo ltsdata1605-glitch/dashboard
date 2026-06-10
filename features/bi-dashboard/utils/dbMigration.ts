@@ -75,43 +75,54 @@ export async function migrateClusterDataToMain(): Promise<void> {
     // 3. Ghi vào BI_HUB_DATABASE_V2 với prefix bi_
     try {
         const newDb = await openDb(NEW_DB_NAME, NEW_DB_VERSION);
-        const writeTx = newDb.transaction([NEW_STORE_NAME], 'readwrite');
-        const writeStore = writeTx.objectStore(NEW_STORE_NAME);
+        
+        // Đọc toàn bộ keys hiện tại của store mới để lọc tránh trùng lặp
+        const readTx = newDb.transaction([NEW_STORE_NAME], 'readonly');
+        const readStore = readTx.objectStore(NEW_STORE_NAME);
+        const keysReq = readStore.getAllKeys();
+        
+        const existingKeys = await new Promise<Set<string>>((resolve) => {
+            keysReq.onsuccess = () => resolve(new Set(keysReq.result.map(String)));
+            keysReq.onerror = () => resolve(new Set());
+        });
 
-        let migratedCount = 0;
+        const writesToMake: { key: string; value: any }[] = [];
         for (const item of oldData) {
-            // Cấu trúc cũ: { key: string, value: any }
             const originalKey = item.key;
             const prefixedKey = `${BI_PREFIX}${originalKey}`;
             
-            // Kiểm tra key mới đã tồn tại chưa (không ghi đè nếu đã có)
-            const existingReq = writeStore.get(prefixedKey);
-            await new Promise<void>((resolve) => {
-                existingReq.onsuccess = () => {
-                    if (existingReq.result === undefined) {
-                        writeStore.put(item.value, prefixedKey);
-                        migratedCount++;
-                    }
-                    resolve();
-                };
-                existingReq.onerror = () => resolve();
-            });
+            if (!existingKeys.has(prefixedKey)) {
+                writesToMake.push({ key: prefixedKey, value: item.value });
+            }
         }
 
-        // Đánh cờ hoàn tất
-        writeStore.put(true, MIGRATION_FLAG_KEY);
-        writeStore.put(Date.now(), 'localSettingsLastModified');
+        if (writesToMake.length > 0) {
+            const writeTx = newDb.transaction([NEW_STORE_NAME], 'readwrite');
+            const writeStore = writeTx.objectStore(NEW_STORE_NAME);
 
-        await new Promise<void>((resolve, reject) => {
-            writeTx.oncomplete = () => resolve();
-            writeTx.onerror = () => reject(writeTx.error);
-        });
+            for (const write of writesToMake) {
+                writeStore.put(write.value, write.key);
+            }
+
+            // Đánh cờ hoàn tất
+            writeStore.put(true, MIGRATION_FLAG_KEY);
+            writeStore.put(Date.now(), 'localSettingsLastModified');
+
+            await new Promise<void>((resolve, reject) => {
+                writeTx.oncomplete = () => resolve();
+                writeTx.onerror = () => reject(writeTx.error);
+            });
+
+            console.log(`[BI Migration] ✅ Đã migrate thành công ${writesToMake.length}/${oldData.length} mục từ ClusterDataDB sang BI_HUB_DATABASE_V2.`);
+            
+            // Thông báo cho Cloud Sync biết có dữ liệu mới cần push
+            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'bi_migration_complete' } }));
+        } else {
+            console.log('[BI Migration] Tất cả dữ liệu cũ đã được migrate trước đó.');
+            await setMigrationFlag();
+        }
 
         newDb.close();
-        console.log(`[BI Migration] ✅ Đã migrate ${migratedCount}/${oldData.length} mục từ ClusterDataDB sang BI_HUB_DATABASE_V2.`);
-        
-        // Thông báo cho Cloud Sync biết có dữ liệu mới cần push
-        window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'bi_migration_complete' } }));
     } catch (e) {
         console.error('[BI Migration] ❌ Lỗi khi ghi vào database mới:', e);
     }
@@ -148,4 +159,78 @@ function openDb(name: string, version: number, onUpgrade?: (db: IDBDatabase) => 
         request.onsuccess = () => resolve(request.result);
         request.onerror = () => reject(request.error);
     });
+}
+
+export async function migrateOldAvatars(): Promise<void> {
+    try {
+        const db = await openDb(NEW_DB_NAME, NEW_DB_VERSION);
+        
+        // 1. Đọc tất cả key và value trong settings store ở một read transaction duy nhất
+        const readTx = db.transaction([NEW_STORE_NAME], 'readonly');
+        const store = readTx.objectStore(NEW_STORE_NAME);
+        const keysReq = store.getAllKeys();
+        const valuesReq = store.getAll();
+        
+        const [keys, values] = await Promise.all([
+            new Promise<IDBValidKey[]>((resolve, reject) => {
+                keysReq.onsuccess = () => resolve(keysReq.result);
+                keysReq.onerror = () => reject(keysReq.error);
+            }),
+            new Promise<any[]>((resolve, reject) => {
+                valuesReq.onsuccess = () => resolve(valuesReq.result);
+                valuesReq.onerror = () => reject(valuesReq.error);
+            })
+        ]);
+        
+        // Map các key đến value tương ứng để tra cứu nhanh trong bộ nhớ
+        const dataMap = new Map<string, any>();
+        for (let i = 0; i < keys.length; i++) {
+            dataMap.set(String(keys[i]), values[i]);
+        }
+
+        const avatarRegex = /^bi_avatar-(.+?)-([^-]+ - \d+)$/;
+        const writesToMake: { key: string; value: any }[] = [];
+
+        for (const keyStr of dataMap.keys()) {
+            const match = keyStr.match(avatarRegex);
+            if (match) {
+                const employeePart = match[2];
+                const newKey = `bi_avatar-${employeePart}`;
+                
+                // Nếu newKey chưa có giá trị, copy giá trị cũ sang
+                if (!dataMap.has(newKey)) {
+                    const oldVal = dataMap.get(keyStr);
+                    if (oldVal !== undefined && oldVal !== null) {
+                        writesToMake.push({ key: newKey, value: oldVal });
+                    }
+                }
+            }
+        }
+
+        if (writesToMake.length > 0) {
+            console.log(`[BI Avatar Migration] Phát hiện ${writesToMake.length} ảnh đại diện cũ cần di chuyển.`);
+            const writeTx = db.transaction([NEW_STORE_NAME], 'readwrite');
+            const writeStore = writeTx.objectStore(NEW_STORE_NAME);
+            
+            const now = Date.now();
+            for (const write of writesToMake) {
+                writeStore.put(write.value, write.key);
+                writeStore.put(now, `lastModified_${write.key}`);
+                console.log(`[BI Avatar Migration] Đang ghi key mới: ${write.key}`);
+            }
+            writeStore.put(now, 'localSettingsLastModified');
+            
+            await new Promise<void>((resolve, reject) => {
+                writeTx.oncomplete = () => resolve();
+                writeTx.onerror = () => reject(writeTx.error);
+            });
+            console.log(`[BI Avatar Migration] ✅ Di chuyển thành công ${writesToMake.length} ảnh đại diện cũ.`);
+            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'bi_avatar_migration_complete' } }));
+        } else {
+            console.log('[BI Avatar Migration] Không có ảnh đại diện cũ nào cần di chuyển.');
+        }
+        db.close();
+    } catch (e) {
+        console.warn('[BI Avatar Migration] Lỗi khi di chuyển ảnh đại diện cũ:', e);
+    }
 }

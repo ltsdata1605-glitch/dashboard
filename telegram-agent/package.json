@@ -1,0 +1,14 @@
+{
+  "name": "telegram-agent",
+  "version": "1.0.0",
+  "description": "Telegram Bot Agent for remote project updates",
+  "main": "bot.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-telegram-bot-api": "^0.66.0"
+  }
+}

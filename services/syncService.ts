@@ -1,6 +1,7 @@
 import { db, auth } from './firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { getAllSettings, mergeSettings } from './dbService';
+import { isHeavySyncKey } from './firestoreService';
 
 export const pullSettingsFromFirebase = async () => {
     const user = auth.currentUser;
@@ -45,26 +46,35 @@ export const pushSettingsToFirebase = async () => {
         // Lọc chỉ đồng bộ các cấu hình tĩnh, dung lượng nhẹ. KHÔNG ĐỒNG BỘ data lớn.
         const settingsToSync: Record<string, any> = {};
         for (const key of Object.keys(allSettings)) {
-            if (!EXCLUDED_SYNC_KEYS.has(key) && !key.startsWith('cached_')) {
+            if (
+                !EXCLUDED_SYNC_KEYS.has(key) && 
+                !key.startsWith('cached_') &&
+                !key.startsWith('lastModified_') &&
+                !key.startsWith('bi_') &&
+                !isHeavySyncKey(key)
+            ) {
                 settingsToSync[key] = allSettings[key];
             }
         }
 
-        // Safety: estimate size and trim if over limit
+        // Safety: estimate size and trim if over limit without blocking the thread
         let jsonStr = JSON.stringify(settingsToSync);
         if (jsonStr.length > MAX_SYNC_BYTES) {
             console.warn(`[Sync] Settings too large (${(jsonStr.length / 1024).toFixed(0)}KB). Trimming largest keys...`);
-            // Sort entries by serialized size, remove largest until under limit
+            // Pre-calculate size contributions
             const entries = Object.entries(settingsToSync)
-                .map(([k, v]) => ({ key: k, size: JSON.stringify(v).length }))
+                .map(([k, v]) => ({ key: k, valueStr: JSON.stringify(v) }))
+                .map(item => ({ key: item.key, size: item.valueStr.length + item.key.length + 4 }))
                 .sort((a, b) => b.size - a.size);
             
+            let currentSize = jsonStr.length;
             for (const entry of entries) {
-                if (jsonStr.length <= MAX_SYNC_BYTES) break;
+                if (currentSize <= MAX_SYNC_BYTES) break;
                 delete settingsToSync[entry.key];
-                jsonStr = JSON.stringify(settingsToSync);
+                currentSize -= entry.size;
                 console.warn(`[Sync] Removed key "${entry.key}" (${(entry.size / 1024).toFixed(1)}KB) to reduce sync size`);
             }
+            jsonStr = JSON.stringify(settingsToSync); // stringify only once at the end
         }
 
         const userRef = doc(db, 'users', user.uid);

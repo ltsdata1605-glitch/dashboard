@@ -40,11 +40,13 @@ const RevenueView: React.FC<{
     departmentWeights: Record<string, number>;
     deptEmployeeCounts: Record<string, number>;
     employeeInstallmentMap: Map<string, number>;
+    isActive?: boolean;
 }> = ({ 
     rows, supermarketName, departmentNames, onViewTrend, 
     highlightedEmployees, setHighlightedEmployees, snapshotId, setSnapshotId,
     snapshots,
-    supermarketTarget, departmentWeights, deptEmployeeCounts, employeeInstallmentMap
+    supermarketTarget, departmentWeights, deptEmployeeCounts, employeeInstallmentMap,
+    isActive
 }) => {
     const [isLoading, setIsLoading] = useState(supermarketName && rows.length === 0);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'dtqd', direction: 'desc' });
@@ -64,7 +66,10 @@ const RevenueView: React.FC<{
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('revenue-view-mode', 'group');
     
     const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-revenue-${supermarketName}`, '');
-    const prevMonthRows = useMemo(() => parseRevenueData(prevMonthRaw), [prevMonthRaw]);
+    const prevMonthRows = useMemo(() => {
+        if (isActive === false) return [];
+        return parseRevenueData(prevMonthRaw);
+    }, [prevMonthRaw, isActive]);
 
     const [exportDeptFilter, setExportDeptFilter] = useState<string | null>(null);
     const [isExportingByDept, setIsExportingByDept] = useState(false);
@@ -75,13 +80,14 @@ const RevenueView: React.FC<{
 
     useEffect(() => {
         const loadSnapshotData = async () => {
+            if (isActive === false) return;
             if (snapshotId && supermarketName) {
                 const data: SnapshotData | undefined = await db.get(`snapshot-data-${supermarketName}-${snapshotId}`);
                 if (data?.danhSachData) setSnapshotRows(parseRevenueData(data.danhSachData));
             } else setSnapshotRows([]);
         };
         loadSnapshotData();
-    }, [snapshotId, supermarketName]);
+    }, [snapshotId, supermarketName, isActive]);
 
     useEffect(() => { setIsLoading(!!(supermarketName && rows.length === 0)); }, [rows, supermarketName]);
 
@@ -119,7 +125,8 @@ const RevenueView: React.FC<{
         supermarketTarget,
         employeeInstallmentMap,
         viewMode,
-        exportDeptFilter
+        exportDeptFilter,
+        isActive
     });
 
     const handleSort = (key: string) => setSortConfig(p => ({ key, direction: p.key === key && p.direction === 'desc' ? 'asc' : 'desc' }));
@@ -193,6 +200,10 @@ const RevenueView: React.FC<{
             <TimeProgressBar className="mt-2.5" />
         </div>
     );
+
+    if (isActive === false) {
+        return <div className="hidden" />;
+    }
 
     if (!supermarketName) return <Card title="Phân tích Nhân viên"><div className="py-12 text-center text-slate-500">Vui lòng chọn siêu thị.</div></Card>;
     if (isLoading) return <Card title={cardTitle}><div className="flex items-center justify-center py-20"><SpinnerIcon className="h-12 w-12 text-primary-500 animate-spin" /></div></Card>;

@@ -19,6 +19,7 @@ import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services
 
 interface DashboardProps {
     onNavigateToUpdater: () => void;
+    isActive?: boolean;
 }
 
 const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; message?: string }> = ({ onNavigate, onRestore, message }) => (
@@ -99,7 +100,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
     </div>
 );
 
-const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
+const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) => {
     const {
         activeMainTab, setActiveMainTab,
         activeSubTab, setActiveSubTab,
@@ -118,7 +119,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
         getKpiData,
         hasRealtimeData,
         hasCumulativeData
-    } = useDashboardLogic();
+    } = useDashboardLogic(isActive);
 
     const printableRef = useRef<HTMLDivElement>(null);
     const summaryTableRef = useRef<HTMLDivElement>(null);
@@ -246,6 +247,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater }) => {
             setExporting(false);
         }
     };
+
+    if (isActive === false) {
+        return <div className="hidden" />;
+    }
 
     if (!hasRealtimeData && !hasCumulativeData) {
         return (

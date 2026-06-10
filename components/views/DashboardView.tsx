@@ -52,7 +52,7 @@ const debugInitialData = {
     SummaryTable: { name: "Bảng Chi tiết Ngành hàng (SummaryTable.tsx)", description: "...", design: "..." },
 };
 
-const DashboardView = React.memo(function DashboardView() {
+const DashboardView = React.memo(function DashboardView({ isActive }: { isActive?: boolean }) {
     const logic = useDashboardLogic();
     const {
         status, appState, isProcessing, isClearingDepartments, isExporting, fileInfo,
@@ -176,6 +176,10 @@ const DashboardView = React.memo(function DashboardView() {
     useEffect(() => {
         // Lucide icon initialization is now handled by the Icon component using lucide-react
     }, [appState, processedData, activeModal, isExporting, isDebugPanelVisible, uniqueFilterOptions, isProcessing, filterState, isFilterSidebarOpen]);
+
+    if (isActive === false) {
+        return <div className="hidden" />;
+    }
 
     const showDashboard = appState === 'dashboard' && processedData;
     const showProcessingOverlay = appState === 'loading' || (appState === 'processing' && !processedData);

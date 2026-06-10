@@ -1,0 +1,182 @@
+[
+  {
+    "id": "TASK-815621",
+    "description": "/task Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "status": "pending",
+    "created_at": "2026-06-09T13:30:15.621Z",
+    "plan_file": null,
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-168198",
+    "description": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "status": "pending",
+    "created_at": "2026-06-09T13:36:08.198Z",
+    "plan_file": null,
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-052259",
+    "description": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "content": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "status": "planned",
+    "created_at": "2026-06-09T13:50:52.260Z",
+    "plan_file": "/Users/dangkhoa/Downloads/Vide Coding/dashboardycx/tasks/plan-TASK-052259.md",
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-449011",
+    "description": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "status": "pending",
+    "created_at": "2026-06-09T14:14:09.011Z",
+    "plan_file": null,
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-449717",
+    "description": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "content": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "status": "planned",
+    "created_at": "2026-06-09T14:14:09.717Z",
+    "plan_file": "/Users/dangkhoa/Downloads/Vide Coding/dashboardycx/tasks/plan-TASK-449717.md",
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-759689",
+    "description": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "content": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "status": "planned",
+    "created_at": "2026-06-09T14:19:19.689Z",
+    "plan_file": "/Users/dangkhoa/Downloads/Vide Coding/dashboardycx/tasks/plan-TASK-759689.md",
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-772195",
+    "description": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "content": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "status": "completed",
+    "created_at": "2026-06-09T14:36:12.195Z",
+    "plan_file": "/Users/dangkhoa/Downloads/Vide Coding/dashboardycx/tasks/plan-TASK-772195.md",
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-406329",
+    "description": "chạy localhost",
+    "content": "chạy localhost",
+    "status": "rejected",
+    "created_at": "2026-06-09T14:46:46.329Z",
+    "plan_file": "/Users/dangkhoa/Downloads/Vide Coding/dashboardycx/tasks/plan-TASK-406329.md",
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-451875",
+    "description": "chạy localhost dự án dasgboardycx",
+    "content": "chạy localhost dự án dasgboardycx",
+    "status": "completed",
+    "created_at": "2026-06-09T14:47:31.875Z",
+    "plan_file": "/Users/dangkhoa/Downloads/Vide Coding/dashboardycx/tasks/plan-TASK-451875.md",
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-156844",
+    "description": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "content": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "status": "pending",
+    "type": "CODE_UPGRADE",
+    "run_command": null,
+    "port": null,
+    "created_at": "2026-06-09T14:59:16.844Z",
+    "plan_file": null,
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-801914",
+    "description": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "content": "Kiểm tra toàn bộ dự án theo hướng tối ưu mobile. Tìm các đoạn code gây lag, nóng máy, hao pin: animation nặng, setInterval, render lặp, DOM quá nhiều, ảnh nặng, API gọi liên tục. Không sửa giao diện, không đổi chức năng. Trước tiên chỉ báo cáo danh sách vấn đề và đề xuất cách xử lý.",
+    "status": "pending",
+    "type": "CODE_UPGRADE",
+    "run_command": null,
+    "port": null,
+    "created_at": "2026-06-09T15:10:01.914Z",
+    "plan_file": null,
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-889007",
+    "description": "chạy localhost dự án dashboardycx",
+    "content": "chạy localhost dự án dashboardycx",
+    "status": "completed",
+    "type": "RUN_LOCALHOST",
+    "run_command": "npm run dev -- --host 127.0.0.1",
+    "port": 5173,
+    "created_at": "2026-06-09T15:11:29.007Z",
+    "plan_file": "/Users/dangkhoa/Downloads/Vide Coding/dashboardycx/tasks/plan-TASK-889007.md",
+    "executed_at": null,
+    "completed_at": null,
+    "package_manager": "npm"
+  },
+  {
+    "id": "TASK-041249",
+    "description": "chạy localhost dự án dashboardycx",
+    "content": "chạy localhost dự án dashboardycx",
+    "status": "completed",
+    "type": "RUN_LOCALHOST",
+    "run_command": "npm run dev -- --host 127.0.0.1",
+    "port": 5173,
+    "created_at": "2026-06-09T15:30:41.249Z",
+    "plan_file": "/Users/dangkhoa/Downloads/Vide Coding/dashboardycx/tasks/plan-TASK-041249.md",
+    "executed_at": null,
+    "completed_at": null,
+    "package_manager": "npm"
+  },
+  {
+    "id": "TASK-416118",
+    "description": "test hiển thị câu lệnh này vào khung chat Antigravity",
+    "content": "test hiển thị câu lệnh này vào khung chat Antigravity",
+    "status": "pending",
+    "type": "CODE_UPGRADE",
+    "run_command": null,
+    "port": null,
+    "created_at": "2026-06-09T15:36:56.118Z",
+    "plan_file": null,
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-450248",
+    "description": "test hiển thị câu lệnh này vào khung chat Antigravity",
+    "content": "test hiển thị câu lệnh này vào khung chat Antigravity",
+    "status": "pending",
+    "type": "CODE_UPGRADE",
+    "run_command": null,
+    "port": null,
+    "created_at": "2026-06-09T15:37:30.248Z",
+    "plan_file": null,
+    "executed_at": null,
+    "completed_at": null
+  },
+  {
+    "id": "TASK-619383",
+    "description": "test hiển thị câu lệnh này vào khung chat Antigravity",
+    "content": "test hiển thị câu lệnh này vào khung chat Antigravity",
+    "status": "pending",
+    "type": "CODE_UPGRADE",
+    "run_command": null,
+    "port": null,
+    "created_at": "2026-06-09T15:40:19.383Z",
+    "plan_file": null,
+    "executed_at": null,
+    "completed_at": null
+  }
+]

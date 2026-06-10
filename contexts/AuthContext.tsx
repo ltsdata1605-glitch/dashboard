@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged } from 'firebase/auth';
 import { auth, db, loginWithGoogle as loginProvider, logoutUser as logoutProvider } from '../services/firebase';
-import { getSetting, saveSetting, mergeSettings } from '../services/dbService';
+import { getSetting, saveSetting, mergeSettings, cleanupGarbageKeys } from '../services/dbService';
 import { initSyncListeners } from '../services/syncService';
 
 interface AuthContextType {
@@ -30,6 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [status, setStatus] = useState<'pending' | 'approved' | 'rejected' | 'new' | 'expired'>('new');
     
     useEffect(() => {
+        cleanupGarbageKeys().catch(console.error);
         Promise.all([
             getSetting<any>('cached_user_role'),
             getSetting<string>('cached_dept_id'),

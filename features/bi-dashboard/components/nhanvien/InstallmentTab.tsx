@@ -110,7 +110,8 @@ const InstallmentTab: React.FC<{
     activeDepartments: string[];
     highlightedEmployees: Set<string>;
     setHighlightedEmployees: React.Dispatch<React.SetStateAction<Set<string>>>;
-}> = ({ rows, supermarketName, activeDepartments, highlightedEmployees, setHighlightedEmployees }) => {
+    isActive?: boolean;
+}> = ({ rows, supermarketName, activeDepartments, highlightedEmployees, setHighlightedEmployees, isActive }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const highlightRef = useRef<HTMLDivElement>(null);
     const importFileRef = useRef<HTMLInputElement>(null);
@@ -123,13 +124,14 @@ const InstallmentTab: React.FC<{
     const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-installment-${supermarketName}`, '');
     const prevMonthRows = useMemo(() => {
         try {
+            if (isActive === false) return [];
             if (!prevMonthRaw) return [];
             if (prevMonthRaw.startsWith('[')) return JSON.parse(prevMonthRaw);
             const map = new Map<string, string>();
             rows.forEach(r => { if(r.originalName) map.set(r.originalName, r.department || ''); });
             return parseInstallmentData(prevMonthRaw, map);
         } catch { return []; }
-    }, [prevMonthRaw, rows]);
+    }, [prevMonthRaw, rows, isActive]);
 
     const [exportDeptFilter, setExportDeptFilter] = useState<string | null>(null);
     const [isExportingByDept, setIsExportingByDept] = useState(false);
@@ -146,6 +148,7 @@ const InstallmentTab: React.FC<{
     const handleSort = (key: string) => { setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc' })); };
 
     const displayList = useMemo(() => {
+        if (isActive === false) return [];
         if (rows.length === 0) return [];
         const isFiltering = !activeDepartments.includes('all');
         const allDepts = Array.from(new Set(rows.filter(r => r.type === 'employee' && r.department).map(r => r.department as string))).sort();
@@ -248,7 +251,7 @@ const InstallmentTab: React.FC<{
         }
 
         return finalOutput;
-    }, [rows, activeDepartments, sortConfig, viewMode, exportDeptFilter, prevMonthRows]);
+    }, [rows, activeDepartments, sortConfig, viewMode, exportDeptFilter, prevMonthRows, isActive]);
 
     const { showExportOptions } = useExportOptionsContext();
 
@@ -328,6 +331,10 @@ const InstallmentTab: React.FC<{
         };
         reader.readAsText(file);
     };
+
+    if (isActive === false) {
+        return <div className="hidden" />;
+    }
 
     if (rows.length === 0) return <Card title="Phân tích Trả góp"><div className="py-20 text-center text-slate-500">Chưa có dữ liệu.</div></Card>;
     

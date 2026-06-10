@@ -1,11 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { CheckCircleIcon, DownloadIcon, AlertTriangleIcon, UploadIcon, ClockIcon, TrashIcon, ChartPieIcon, UsersIcon, DocumentReportIcon, ChartBarIcon, SparklesIcon, LinkIcon } from './Icons';
 import SupermarketConfig from './SupermarketConfig';
 import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import toast from 'react-hot-toast';
-import { shortenSupermarketName } from '../utils/dashboardHelpers';
+import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboardHelpers';
 
 // --- Validation ---
 const SUMMARY_REALTIME_REPORT_HEADER = 'Tên miền	DTLK	DTQĐ	Target (QĐ)	% HT Target (QĐ)';
@@ -205,31 +205,8 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
         if (currentData && currentData !== newData) await db.set(`previous-${key}`, currentData);
     };
 
-    const [supermarkets, setSupermarkets] = useIndexedDBState<string[]>('supermarket-list', []);
+    const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
     const [activeSupermarket, setActiveSupermarket] = useState<string | null>(null);
-
-    useEffect(() => {
-        if (!summaryLuyKe || !validateSummaryLuyKeReport(summaryLuyKe)) {
-            setSupermarkets([]);
-            return;
-        }
-        // Cải tiến: Nhận diện cả siêu thị ĐM và TGD, và deduplicate theo tên ngắn (shortenSupermarketName)
-        const rawExtractedNames = Array.from(new Set(summaryLuyKe.split('\n')
-            .map(line => (line.split('\t')[0] ?? '').trim())
-            .filter(name => (name.startsWith('ĐM') || name.startsWith('TGD')) && name.includes(' - '))));
-
-        const uniqueShortNames = new Set<string>();
-        const extractedNames: string[] = [];
-        for (const name of rawExtractedNames) {
-            const shortName = shortenSupermarketName(name);
-            if (!uniqueShortNames.has(shortName)) {
-                uniqueShortNames.add(shortName);
-                extractedNames.push(name);
-            }
-        }
-
-        setSupermarkets(extractedNames);
-    }, [summaryLuyKe, setSupermarkets]);
 
     useEffect(() => {
         if (supermarkets.length > 0 && (!activeSupermarket || !supermarkets.includes(activeSupermarket))) {
@@ -341,7 +318,6 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                                 setSummaryLuyKe(''); 
                                 setSummaryLuyKeTs(null); 
                                 removeUpdate('summary-luy-ke'); 
-                                setSupermarkets([]); 
                                 toast.success(`Đã xoá dữ liệu ${title}`);
                                 
                             }}

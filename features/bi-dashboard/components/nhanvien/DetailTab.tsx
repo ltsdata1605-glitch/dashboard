@@ -12,6 +12,7 @@ interface DetailTabProps {
     supermarketName: string;
     activeDepartments: string[];
     hiddenEmployees?: string[];
+    isActive?: boolean;
 }
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 });
@@ -54,7 +55,7 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
                         >
                             {isExpanded
                                 ? <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400" />
-                                : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                               : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
                             }
                         </button>
                     ) : (
@@ -171,7 +172,7 @@ const SearchableSelect: React.FC<{
     );
 };
 
-const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeDepartments, hiddenEmployees }) => {
+const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeDepartments, hiddenEmployees, isActive }) => {
     const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set());
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -189,12 +190,16 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         return () => clearTimeout(timer);
     }, [searchQuery]);
 
-    const fullTree = useMemo(() => parseDetailDataV2(rawData), [rawData]);
+    const fullTree = useMemo(() => {
+        if (isActive === false) return [];
+        return parseDetailDataV2(rawData);
+    }, [rawData, isActive]);
 
     // Remove 'Tổng' level and filter departments by activeDepartments
     const hiddenSet = useMemo(() => new Set(hiddenEmployees || []), [hiddenEmployees]);
 
     const tree = useMemo(() => {
+        if (isActive === false) return [];
         // Flatten: skip 'total' nodes, take their department children directly
         let departments: DetailNode[] = [];
         for (const node of fullTree) {
@@ -218,10 +223,11 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             );
         }
         return departments;
-    }, [fullTree, activeDepartments, hiddenSet]);
+    }, [fullTree, activeDepartments, hiddenSet, isActive]);
 
     // Auto-expand departments by default
     useEffect(() => {
+        if (isActive === false) return;
         if (tree.length > 0) {
             const initialExpanded = new Set<string>();
             tree.forEach((node, idx) => {
@@ -237,10 +243,11 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                 });
             }
         }
-    }, [tree]);
+    }, [tree, isActive]);
 
     // Collect all expandable keys
     const allKeys = useMemo(() => {
+        if (isActive === false) return new Set<string>();
         const keys = new Set<string>();
         const walk = (nodes: DetailNode[], prefix: string) => {
             nodes.forEach((n, i) => {
@@ -251,7 +258,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         };
         walk(tree, 'root');
         return keys;
-    }, [tree]);
+    }, [tree, isActive]);
 
     const toggleExpand = useCallback((key: string) => {
         setExpandedKeys(prev => {
@@ -272,6 +279,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     };
 
     const filterOptions = useMemo(() => {
+        if (isActive === false) return { employees: [], nnhs: [], nhomHangs: [] };
         const employees = new Set<string>();
         const nnhs = new Set<string>();
         const nhomHangs = new Set<string>();
@@ -290,10 +298,11 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             nnhs: Array.from(nnhs).sort(),
             nhomHangs: Array.from(nhomHangs).sort(),
         };
-    }, [tree]);
+    }, [tree, isActive]);
 
     // Filter tree by employee name search and dropdown filters
     const filteredTree = useMemo(() => {
+        if (isActive === false) return [];
         const q = debouncedSearchQuery.toLowerCase().trim();
         
         const filterNodes = (nodes: DetailNode[]): DetailNode[] => {
@@ -328,10 +337,11 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             }, []);
         };
         return filterNodes(tree);
-    }, [tree, debouncedSearchQuery, filterEmployee, filterNnh, filterNhomHang]);
+    }, [tree, debouncedSearchQuery, filterEmployee, filterNnh, filterNhomHang, isActive]);
 
     // Auto-expand searched employees
     const displayTree = useMemo(() => {
+        if (isActive === false) return { tree: [], expanded: new Set<string>() };
         if (debouncedSearchQuery.trim()) {
             // Auto expand all when searching
             const keys = new Set<string>();
@@ -347,7 +357,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             return { tree: filteredTree, expanded: keys };
         }
         return { tree: filteredTree, expanded: expandedKeys };
-    }, [filteredTree, debouncedSearchQuery, expandedKeys]);
+    }, [filteredTree, debouncedSearchQuery, expandedKeys, isActive]);
 
     const { showExportOptions } = useExportOptionsContext();
 
@@ -358,6 +368,10 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         });
         if (blob) await showExportOptions(blob, `ChiTiet_${supermarketName}.png`);
     };
+
+    if (isActive === false) {
+        return <div className="hidden" />;
+    }
 
     if (!rawData) {
         return (

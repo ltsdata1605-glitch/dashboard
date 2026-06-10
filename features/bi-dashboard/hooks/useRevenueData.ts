@@ -14,6 +14,7 @@ interface UseRevenueDataProps {
     employeeInstallmentMap: Map<string, number>;
     viewMode: 'group' | 'list';
     exportDeptFilter: string | null;
+    isActive?: boolean;
 }
 
 export const useRevenueData = ({
@@ -28,10 +29,12 @@ export const useRevenueData = ({
     supermarketTarget,
     employeeInstallmentMap,
     viewMode,
-    exportDeptFilter
+    exportDeptFilter,
+    isActive
 }: UseRevenueDataProps) => {
 
     const displayList = useMemo(() => {
+        if (isActive === false) return [];
         const isFiltering = !departmentNames.includes('all');
         const allDepts = Array.from(new Set(rows.filter(r => r.type === 'employee' && r.department).map(r => r.department as string))).sort();
         
@@ -229,7 +232,7 @@ export const useRevenueData = ({
         }
 
         return finalOutput;
-    }, [rows, departmentNames, sortConfig, snapshotId, snapshotRows, prevMonthRows, departmentWeights, deptEmployeeCounts, supermarketTarget, employeeInstallmentMap, viewMode, exportDeptFilter]);
+    }, [rows, departmentNames, sortConfig, snapshotId, snapshotRows, prevMonthRows, departmentWeights, deptEmployeeCounts, supermarketTarget, employeeInstallmentMap, viewMode, exportDeptFilter, isActive]);
 
     return { displayList };
 };

@@ -1,16 +1,16 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { shortenSupermarketName } from '../utils/dashboardHelpers';
+import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboardHelpers';
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import { RevenueRow, BonusMetrics, ManualDeptMapping } from '../types/nhanVienTypes';
 import { parseRevenueData, parseInstallmentData, parseCrossSellingData, formatEmployeeName } from '../utils/nhanVienHelpers';
 
-export function useNhanVienData() {
-    const [supermarketsRaw] = useIndexedDBState<string[]>('supermarket-list', []);
+export function useNhanVienData(isActive?: boolean) {
+    const [summaryLuyKe] = useIndexedDBState<string>('summary-luy-ke', '');
     const [activeSupermarketsRaw, setActiveSupermarkets, isActiveSupermarketsLoaded] = useIndexedDBState<string[]>('nhanvien-active-supermarkets', []);
     const [hiddenEmployees, setHiddenEmployees] = useState<string[]>([]);
-    // Defensive: ensure arrays are always valid (Safari/iOS IndexedDB edge case)
-    const supermarkets = useMemo(() => Array.isArray(supermarketsRaw) ? supermarketsRaw : [], [supermarketsRaw]);
+    
+    const supermarkets = useMemo(() => extractSupermarketList(summaryLuyKe), [summaryLuyKe]);
     const activeSupermarkets = useMemo(() => Array.isArray(activeSupermarketsRaw) 
         ? activeSupermarketsRaw.filter(sm => supermarkets.includes(sm)) 
         : [], [activeSupermarketsRaw, supermarkets]);
@@ -31,11 +31,10 @@ export function useNhanVienData() {
         if (isActiveSupermarketsLoaded && activeSupermarkets.length === 0 && supermarkets.length > 0) {
             setActiveSupermarkets([supermarkets[0]]);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [supermarkets, isActiveSupermarketsLoaded]);
+    }, [supermarkets, isActiveSupermarketsLoaded, activeSupermarkets, setActiveSupermarkets]);
 
     useEffect(() => {
-        if (!isActiveSupermarketsLoaded) return;
+        if (!isActiveSupermarketsLoaded || isActive === false) return;
         let isMounted = true;
         const fetchAllData = async () => {
             if (activeSupermarkets.length === 0) {
@@ -107,7 +106,7 @@ export function useNhanVienData() {
         };
         fetchAllData();
         return () => { isMounted = false; };
-    }, [activeSupermarkets, dataVersion, isActiveSupermarketsLoaded]);
+    }, [activeSupermarkets, dataVersion, isActiveSupermarketsLoaded, isActive]);
 
     useEffect(() => {
         const handleDbChange = (event: CustomEvent) => {
@@ -123,11 +122,13 @@ export function useNhanVienData() {
     const hiddenEmployeesSet = useMemo(() => new Set(hiddenEmployees), [hiddenEmployees]);
 
     const parsedRevenueBase = useMemo(() => {
+        if (isActive === false) return [];
         const base = parseRevenueData(aggregatedData.danhSach);
         return base.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName));
-    }, [aggregatedData.danhSach, hiddenEmployeesSet]);
+    }, [aggregatedData.danhSach, hiddenEmployeesSet, isActive]);
 
     const employeeDepartmentMap = useMemo(() => {
+        if (isActive === false) return new Map();
         const map = new Map<string, string>();
         parsedRevenueBase.filter(r => r.type === 'employee' && r.originalName && r.department).forEach(r => {
             map.set(r.originalName!, r.department!);
@@ -143,25 +144,29 @@ export function useNhanVienData() {
             }
         });
         return map;
-    }, [parsedRevenueBase, aggregatedData.manualMapping, hiddenEmployeesSet]);
+    }, [parsedRevenueBase, aggregatedData.manualMapping, hiddenEmployeesSet, isActive]);
 
     const installmentRows = useMemo(() => {
+        if (isActive === false) return [];
         const rows = parseInstallmentData(aggregatedData.traGop, employeeDepartmentMap);
         return rows.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName));
-    }, [aggregatedData.traGop, employeeDepartmentMap, hiddenEmployeesSet]);
+    }, [aggregatedData.traGop, employeeDepartmentMap, hiddenEmployeesSet, isActive]);
 
     const banKemRows = useMemo(() => {
+        if (isActive === false) return [];
         const rows = parseCrossSellingData(aggregatedData.banKem, employeeDepartmentMap);
         return rows.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName));
-    }, [aggregatedData.banKem, employeeDepartmentMap, hiddenEmployeesSet]);
+    }, [aggregatedData.banKem, employeeDepartmentMap, hiddenEmployeesSet, isActive]);
 
     const banKemMap = useMemo(() => {
+        if (isActive === false) return new Map();
         const map = new Map<string, number>();
         banKemRows.forEach(row => { if (row.originalName) map.set(row.originalName, row.pctBillBk); });
         return map;
-    }, [banKemRows]);
+    }, [banKemRows, isActive]);
 
     const revenueRows = useMemo(() => {
+        if (isActive === false) return [];
         const rows = parsedRevenueBase;
         const mappedRows = rows.map(row => {
             if (row.type === 'employee' && row.originalName) {
@@ -193,21 +198,28 @@ export function useNhanVienData() {
             }
         });
         return finalRows;
-    }, [parsedRevenueBase, employeeDepartmentMap, banKemMap, banKemRows]);
+    }, [parsedRevenueBase, employeeDepartmentMap, banKemMap, banKemRows, isActive]);
 
     const departmentOptions = useMemo(() => {
+        if (isActive === false) return [];
         const uniqueDepartments = Array.from(new Set(employeeDepartmentMap.values()));
         const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
         return uniqueDepartments
             .filter(d => !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)))
             .sort();
-    }, [employeeDepartmentMap]);
+    }, [employeeDepartmentMap, isActive]);
     
     const [activeDepartmentsRaw, setActiveDepartments] = useIndexedDBState<string[]>('nhanvien-active-depts-multi', ['all']);
-    const activeDepartments = useMemo(() => Array.isArray(activeDepartmentsRaw) 
-        ? activeDepartmentsRaw.filter(d => d === 'all' || departmentOptions.includes(d)) 
-        : ['all'], [activeDepartmentsRaw, departmentOptions]);
-    const effectiveActiveDepartments = useMemo(() => activeDepartments.length === 0 || activeDepartments.includes('all') ? departmentOptions : activeDepartments, [activeDepartments, departmentOptions]);
+    const activeDepartments = useMemo(() => {
+        if (isActive === false) return ['all'];
+        return Array.isArray(activeDepartmentsRaw) 
+            ? activeDepartmentsRaw.filter(d => d === 'all' || departmentOptions.includes(d)) 
+            : ['all'];
+    }, [activeDepartmentsRaw, departmentOptions, isActive]);
+    const effectiveActiveDepartments = useMemo(() => {
+        if (isActive === false) return [];
+        return activeDepartments.length === 0 || activeDepartments.includes('all') ? departmentOptions : activeDepartments;
+    }, [activeDepartments, departmentOptions, isActive]);
 
     const toggleSupermarket = useCallback((sm: string) => {
         setActiveSupermarkets(prev => {
@@ -229,24 +241,27 @@ export function useNhanVienData() {
     }, [setActiveDepartments]);
 
     const employeeInstallmentMap = useMemo(() => {
+        if (isActive === false) return new Map();
         const map = new Map<string, number>();
         installmentRows.forEach(row => { if (row.originalName) map.set(row.originalName, row.totalPercent); });
         return map;
-    }, [installmentRows]);
+    }, [installmentRows, isActive]);
 
     const allEmployees = useMemo(() => {
+        if (isActive === false) return [];
         return Array.from(employeeDepartmentMap.entries()).map(([originalName, department]) => ({
             name: formatEmployeeName(originalName),
             originalName,
             department
         })).sort((a,b) => a.name.localeCompare(b.name));
-    }, [employeeDepartmentMap]);
+    }, [employeeDepartmentMap, isActive]);
 
     const deptEmployeeCounts = useMemo(() => {
+        if (isActive === false) return {};
         const counts: Record<string, number> = {};
         allEmployees.forEach(emp => { counts[emp.department] = (counts[emp.department] || 0) + 1; });
         return counts;
-    }, [allEmployees]);
+    }, [allEmployees, isActive]);
 
     const handleSaveBonus = useCallback(async (originalName: string, metrics: BonusMetrics) => {
         let safeName = shortenSupermarketName(activeSupermarkets[0]);
@@ -259,6 +274,7 @@ export function useNhanVienData() {
     }, [activeSupermarkets]);
 
     const effectiveAggregatedWeights = useMemo(() => {
+        if (isActive === false) return {};
         if (Object.keys(aggregatedWeights).length > 0) return aggregatedWeights;
         
         const weights: Record<string, number> = {};
@@ -273,7 +289,7 @@ export function useNhanVienData() {
             departmentOptions.forEach(d => { weights[d] = share; });
         }
         return weights;
-    }, [aggregatedWeights, departmentOptions]);
+    }, [aggregatedWeights, departmentOptions, isActive]);
 
     return {
         supermarkets,

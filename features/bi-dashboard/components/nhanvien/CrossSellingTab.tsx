@@ -193,7 +193,8 @@ const CrossSellingTab: React.FC<{
     activeDepartments: string[];
     highlightedEmployees: Set<string>;
     setHighlightedEmployees: React.Dispatch<React.SetStateAction<Set<string>>>;
-}> = ({ rows, supermarketName, activeDepartments, highlightedEmployees, setHighlightedEmployees }) => {
+    isActive?: boolean;
+}> = ({ rows, supermarketName, activeDepartments, highlightedEmployees, setHighlightedEmployees, isActive }) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const highlightRef = useRef<HTMLDivElement>(null);
 
@@ -206,6 +207,7 @@ const CrossSellingTab: React.FC<{
     const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-bankem-${supermarketName}`, '');
     const prevMonthRows = useMemo(() => {
         try {
+            if (isActive === false) return [];
             if (!prevMonthRaw) return [];
             // Kiểm tra xem là chuỗi JSON hay văn bản dán
             if (prevMonthRaw.trim().startsWith('[') || prevMonthRaw.trim().startsWith('{')) {
@@ -220,7 +222,7 @@ const CrossSellingTab: React.FC<{
             console.error("Error parsing cross selling prev data", e);
             return [];
         }
-    }, [prevMonthRaw, rows]);
+    }, [prevMonthRaw, rows, isActive]);
 
     const [exportDeptFilter, setExportDeptFilter] = useState<string | null>(null);
     const [isExportingByDept, setIsExportingByDept] = useState(false);
@@ -237,6 +239,7 @@ const CrossSellingTab: React.FC<{
     const handleSort = (key: string) => { setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc' })); };
 
     const displayList = useMemo(() => {
+        if (isActive === false) return [];
         const isFiltering = !activeDepartments.includes('all');
         const allDepts = Array.from(new Set(rows.filter(r => r.type === 'employee' && r.department).map(r => r.department as string))).sort();
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? activeDepartments : allDepts);
@@ -356,7 +359,7 @@ const CrossSellingTab: React.FC<{
             });
         }
         return finalOutput;
-    }, [rows, activeDepartments, sortConfig, viewMode, exportDeptFilter, prevMonthRows]);
+    }, [rows, activeDepartments, sortConfig, viewMode, exportDeptFilter, prevMonthRows, isActive]);
 
     const { showExportOptions } = useExportOptionsContext();
 
@@ -421,6 +424,10 @@ const CrossSellingTab: React.FC<{
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
     };
+
+    if (isActive === false) {
+        return <div className="hidden" />;
+    }
 
     if (rows.length === 0) return <Card title="Hiệu quả Bán kèm"><div className="py-20 text-center text-slate-500">Chưa có dữ liệu.</div></Card>;
 
