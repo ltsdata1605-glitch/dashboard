@@ -20,8 +20,9 @@ import IndustryGrid from '../charts/IndustryGrid';
 import EmployeeAnalysis from '../employees/EmployeeAnalysis';
 import SummaryTable from '../tables/SummaryTable';
 import WarehouseSummary from '../summary/WarehouseSummary';
-import PerformanceModal from '../modals/PerformanceModal';
 import UnshippedOrdersModal from '../modals/UnshippedOrdersModal';
+
+const PerformanceModal = React.lazy(() => import('../modals/PerformanceModal'));
 import ProcessingLoader from '../common/ProcessingLoader';
 import ExportLoader from '../common/ExportLoader';
 import ChangelogModal from '../modals/ChangelogModal';
@@ -486,7 +487,11 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             </div>
                         </>
                     )}
-                    {activeModal === 'performance' && processedData && <PerformanceModal isOpen={true} onClose={() => setActiveModal(null)} employeeName={modalData.employeeName} onExport={handleExport} />}
+                    {activeModal === 'performance' && processedData && (
+                        <React.Suspense fallback={null}>
+                            <PerformanceModal isOpen={true} onClose={() => setActiveModal(null)} employeeName={modalData.employeeName} onExport={handleExport} />
+                        </React.Suspense>
+                    )}
                     {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
                     {activeModal === 'unshipped_overdue' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onlyOverdue={true} />}
                     <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />

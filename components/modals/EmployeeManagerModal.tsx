@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import ModalWrapper from './ModalWrapper';
+import toast from 'react-hot-toast';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getSetting } from '../../services/dbService';
@@ -122,7 +123,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
             setHasUnsavedChanges(true);
             if (updateDepartmentMap) updateDepartmentMap(originalMap);
         } else {
-            alert('Không tìm thấy bản sao lưu danh sách gốc!');
+            toast.error('Không tìm thấy bản sao lưu danh sách gốc!');
         }
         setShowRestoreConfirm(false);
     };

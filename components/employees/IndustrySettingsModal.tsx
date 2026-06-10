@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import type { IndustryColumnConfig, WarehouseCategoryType, WarehouseMetricType } from '../../types';
 import ModalWrapper from '../modals/ModalWrapper';
 import { Icon } from '../common/Icon';
@@ -205,7 +206,7 @@ const IndustrySettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose, 
         e.preventDefault();
         
         if (!mainHeader.trim() || !subHeader.trim()) {
-            alert('Vui lòng điền đầy đủ Tiêu đề chính và Tiêu đề phụ.');
+            toast.error('Vui lòng điền đầy đủ Tiêu đề chính và Tiêu đề phụ.');
             return;
         }
 

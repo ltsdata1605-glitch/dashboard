@@ -17,6 +17,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import ErrorBoundary from '../../components/common/ErrorBoundary';
 
 const StickerEventApp = lazy(() => import('./StickerEventApp'));
+import SaveListModal from './SaveListModal';
 
 const STICKER_DB_KEY = 'stickerPrinterState';
 const STICKER_HISTORY_KEY = 'stickerPrintHistory';
@@ -221,6 +222,7 @@ export default function StickerPrinterView() {
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
+    const [isSaveListModalOpen, setIsSaveListModalOpen] = useState(false);
 
     useEffect(() => {
         const match = previewName.match(/(?:IMEI|CODE):\s*([A-Za-z0-9]+)/i);
@@ -1099,8 +1101,10 @@ export default function StickerPrinterView() {
 
     const saveCurrentList = () => {
         if (manualPages.length === 0) return;
-        const name = prompt('Đặt tên cho danh sách:', `DS ${new Date().toLocaleDateString('vi-VN')}`);
-        if (!name) return;
+        setIsSaveListModalOpen(true);
+    };
+
+    const handleSaveCurrentList = (name: string) => {
         const list: SavedStickerList = {
             id: `list_${Date.now()}`,
             name,
@@ -1114,6 +1118,8 @@ export default function StickerPrinterView() {
             saveSetting(STICKER_SAVED_LISTS_KEY, next).catch(() => {});
             return next;
         });
+        setIsSaveListModalOpen(false);
+        toast.success(`Đã lưu danh sách "${name}" thành công!`);
     };
 
     const loadSavedList = (list: SavedStickerList) => {
@@ -1429,6 +1435,15 @@ export default function StickerPrinterView() {
                     handleErpPriceUpload={handleErpPriceUpload}
                 />
             </div>
+
+            {isSaveListModalOpen && (
+                <SaveListModal
+                    isOpen={isSaveListModalOpen}
+                    onClose={() => setIsSaveListModalOpen(false)}
+                    onSave={handleSaveCurrentList}
+                    defaultName={`DS ${new Date().toLocaleDateString('vi-VN')}`}
+                />
+            )}
         </div>
     );
 }

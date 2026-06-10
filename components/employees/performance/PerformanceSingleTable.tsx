@@ -35,7 +35,7 @@ interface RenderSingleTableProps {
     kpiTargets?: { hieuQua: number, traGop: number };
 }
 
-export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = React.memo(({
+export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
     groupType, handleTabChange, sortConfig, onSort, tableRef, onSingleExport,
     isExporting, groupedData, outstandingData, grandTotal, targetPerEmployee,
     onEmployeeClick, isEditingTarget, targetInputRef, handleSaveTarget, 
@@ -475,5 +475,5 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = React.me
             </div>
         </div>
     );
-});
+};
 PerformanceSingleTable.displayName = 'PerformanceSingleTable';

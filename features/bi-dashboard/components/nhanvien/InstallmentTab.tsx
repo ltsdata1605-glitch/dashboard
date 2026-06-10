@@ -1,6 +1,7 @@
 
 import React, { useMemo, useRef, useState, useEffect } from 'react';
 import Card from '../Card';
+import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { InstallmentRow, InstallmentProvider } from '../../types/nhanVienTypes';
@@ -325,8 +326,8 @@ const InstallmentTab: React.FC<{
                 const content = e.target?.result as string;
                 JSON.parse(content); 
                 setPrevMonthRaw(content);
-                alert('✅ Đã nạp dữ liệu trả góp cùng kỳ thành công!');
-            } catch (err) { alert('❌ File không hợp lệ.'); }
+                toast.success('Đã nạp dữ liệu trả góp cùng kỳ thành công!');
+            } catch (err) { toast.error('File không hợp lệ.'); }
             if (importFileRef.current) importFileRef.current.value = '';
         };
         reader.readAsText(file);

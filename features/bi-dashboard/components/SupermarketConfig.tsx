@@ -291,8 +291,7 @@ const CompetitionTarget: React.FC<{
         
         const key = `prev-month-target-${safeName}-${compName}`;
         await db.set(key, adjVal);
-        
-        alert(`✅ Đã lưu Target ${shortenName(compName, nameOverrides)} làm mốc so sánh tháng trước!`);
+        toast.success(`Đã lưu Target ${shortenName(compName, nameOverrides)} làm mốc so sánh tháng trước!`);
     };
 
     return (

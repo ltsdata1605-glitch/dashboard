@@ -1,11 +1,10 @@
-
 import React, { useState, useRef, useEffect, useMemo, startTransition } from 'react';
-import type { WarehouseColumnConfig, WarehouseMetricType } from '../../types';
+import type { WarehouseColumnConfig } from '../../types';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getWarehouseColumnConfig, saveWarehouseColumnConfig } from '../../services/dbService';
-import { COL, WAREHOUSE_HEADER_COLORS, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
+import { COL, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
 import { getRowValue, formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
 import LoadingOverlay from '../common/LoadingOverlay';
 import WarehouseSettingsModal from './WarehouseSettingsModal';
@@ -17,47 +16,16 @@ interface WarehouseSummaryProps {
     onBatchExport: () => Promise<void>;
 }
 
-interface WarehouseSummaryInnerProps {
-    userRole: string | undefined;
-    processedData: any;
-    productConfig: any;
-    originalData: any[];
-    warehouseFilteredData: any[];
-    handleExport: any;
-    isExporting: boolean;
-    isProcessing: boolean;
-    uniqueFilterOptions: any;
-    warehouseTargets: any;
-    updateWarehouseTarget: any;
-    warehouseDTThucTargets: any;
-    updateWarehouseDTThucTarget: any;
-    filterState: any;
-    handleFilterChange: any;
-    isLuyKe: boolean;
-    handleLuyKeChange: any;
-    onBatchExport: () => Promise<void>;
-}
+const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) => {
+    const { userRole } = useAuth();
+    const { 
+        processedData, productConfig, originalData, warehouseFilteredData, 
+        handleExport, isExporting, isProcessing, uniqueFilterOptions, 
+        warehouseTargets, updateWarehouseTarget, warehouseDTThucTargets, 
+        updateWarehouseDTThucTarget, filterState, handleFilterChange, 
+        isLuyKe, handleLuyKeChange 
+    } = useDashboardContext();
 
-const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo(({
-    userRole,
-    processedData,
-    productConfig,
-    originalData,
-    warehouseFilteredData,
-    handleExport,
-    isExporting,
-    isProcessing,
-    uniqueFilterOptions,
-    warehouseTargets,
-    updateWarehouseTarget,
-    warehouseDTThucTargets,
-    updateWarehouseDTThucTarget,
-    filterState,
-    handleFilterChange,
-    isLuyKe,
-    handleLuyKeChange,
-    onBatchExport
-}) => {
     const data = processedData?.warehouseSummary ?? [];
     
     const summaryRef = useRef<HTMLDivElement>(null);
@@ -309,9 +277,6 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
 
     // Early returns AFTER all hooks
     if (!data || data.length === 0) return null;
-
-    // Column config loading is no longer a render gate — table renders immediately
-    // with built-in metrics. Custom columns appear after IDB load completes.
 
     return (
         <>
@@ -736,42 +701,6 @@ const WarehouseSummaryInner: React.FC<WarehouseSummaryInnerProps> = React.memo((
             </ModalWrapper>
         </>
     );
-});
-WarehouseSummaryInner.displayName = 'WarehouseSummaryInner';
-
-const WarehouseSummary: React.FC<WarehouseSummaryProps> = React.memo(({ onBatchExport }) => {
-    const { userRole } = useAuth();
-    const { 
-        processedData, productConfig, originalData, warehouseFilteredData, 
-        handleExport, isExporting, isProcessing, uniqueFilterOptions, 
-        warehouseTargets, updateWarehouseTarget, warehouseDTThucTargets, 
-        updateWarehouseDTThucTarget, filterState, handleFilterChange, 
-        isLuyKe, handleLuyKeChange 
-    } = useDashboardContext();
-
-    return (
-        <WarehouseSummaryInner
-            userRole={userRole}
-            processedData={processedData}
-            productConfig={productConfig}
-            originalData={originalData}
-            warehouseFilteredData={warehouseFilteredData}
-            handleExport={handleExport}
-            isExporting={isExporting}
-            isProcessing={isProcessing}
-            uniqueFilterOptions={uniqueFilterOptions}
-            warehouseTargets={warehouseTargets}
-            updateWarehouseTarget={updateWarehouseTarget}
-            warehouseDTThucTargets={warehouseDTThucTargets}
-            updateWarehouseDTThucTarget={updateWarehouseDTThucTarget}
-            filterState={filterState}
-            handleFilterChange={handleFilterChange}
-            isLuyKe={isLuyKe}
-            handleLuyKeChange={handleLuyKeChange}
-            onBatchExport={onBatchExport}
-        />
-    );
-});
-WarehouseSummary.displayName = 'WarehouseSummary';
+};
 
 export default WarehouseSummary;

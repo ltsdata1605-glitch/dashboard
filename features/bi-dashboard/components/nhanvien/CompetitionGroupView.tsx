@@ -1,4 +1,5 @@
 import React, { useRef, useState, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { ChevronDownIcon, ChevronUpIcon, CameraIcon } from '../Icons';
 import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
@@ -62,7 +63,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
 
     const handleExportPNG = async () => {
         if (!cardRef.current) {
-            alert("Không tìm thấy thành phần cần xuất ảnh.");
+            toast.error("Không tìm thấy thành phần cần xuất ảnh.");
             return;
         }
         
@@ -76,7 +77,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             if (blob) showExportOptions(blob, filename);
         } catch (err) {
             console.error('Failed to export image', err);
-            alert('Đã xảy ra lỗi khi xuất ảnh. Vui lòng thử lại.');
+            toast.error('Đã xảy ra lỗi khi xuất ảnh. Vui lòng thử lại.');
         }
     };
     

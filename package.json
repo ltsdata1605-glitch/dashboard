@@ -9,6 +9,9 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "audit": "npm audit || true",
+    "check": "npm run typecheck && npm run build",
     "predeploy": "npm run build",
     "deploy": "git add -A && git commit -m \"chore: sync source code and deploy latest web changes\" || echo \"No changes to commit\" && git push origin main && gh-pages -d dist"
   },

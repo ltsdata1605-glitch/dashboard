@@ -4,7 +4,6 @@ import ReactDOM from 'react-dom/client';
 import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport } from '../types';
 import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExportOverlay, updateExportOverlay, hideExportOverlay } from '../services/uiService';
 import type { ExportMode } from '../services/uiService';
-import PerformanceModal from '../components/modals/PerformanceModal';
 
 interface ExportLogicProps {
     productConfig: ProductConfig | null;
@@ -73,6 +72,10 @@ export const useExportLogic = ({
         setIsExporting(true);
         const total = employeesToExport.length;
         showExportOverlay('Đang xuất ảnh hàng loạt...', `0/${total}`);
+        
+        // Dynamically import PerformanceModal to break circular dependency
+        const { default: PerformanceModal } = await import('../components/modals/PerformanceModal');
+
         const offscreenContainer = document.createElement('div');
         offscreenContainer.style.cssText = 'position: absolute; left: -9999px; top: 0;';
         document.body.appendChild(offscreenContainer);

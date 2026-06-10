@@ -1,5 +1,6 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import toast from 'react-hot-toast';
 import type { WarehouseColumnConfig, WarehouseCategoryType, WarehouseMetricType } from '../../types';
 import ModalWrapper from '../modals/ModalWrapper';
 import { Icon } from '../common/Icon';
@@ -202,7 +203,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
         e.preventDefault();
         
         if (!subHeader.trim()) {
-            alert('Vui lòng điền Tiêu đề phụ (Tên cột).');
+            toast.error('Vui lòng điền Tiêu đề phụ (Tên cột).');
             return;
         }
 

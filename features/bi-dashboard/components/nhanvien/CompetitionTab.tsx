@@ -1,6 +1,7 @@
 
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import Card from '../Card';
+import toast from 'react-hot-toast';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import { UsersIcon, XIcon, SpinnerIcon, CameraIcon, ImagesIcon, ChevronDownIcon, FilterIcon, ViewGridIcon, ViewListIcon, PlusIcon } from '../Icons';
 import { Criterion, CompetitionHeader, Employee, Version, SummaryTableConfig } from '../../types/nhanVienTypes';
@@ -211,14 +212,14 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             return null;
         } catch (err) {
              console.error("Export failed", err);
-             alert("Xuất ảnh thất bại.");
+             toast.error("Xuất ảnh thất bại.");
              return null;
         }
     };
 
     const handleSmartBatchExport = async () => {
         if (highlightedEmployees.size === 0) {
-            alert("Vui lòng chọn ít nhất một nhân viên để xuất báo cáo.");
+            toast.error("Vui lòng chọn ít nhất một nhân viên để xuất báo cáo.");
             return;
         }
         setIsExportingHighlights(true);
@@ -243,7 +244,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             }
         } catch (err) {
             console.error("Batch highlight export failed", err);
-            alert("Có lỗi xảy ra khi xuất hàng loạt.");
+            toast.error("Có lỗi xảy ra khi xuất hàng loạt.");
         } finally {
             setIsolatedHighlightEmployee(null);
             setExportTitleOverride(null);
@@ -299,7 +300,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
         } catch (error: any) {
             if (error.message !== 'cancelled') {
                 console.error("Batch export failed", error);
-                alert("Xuất hàng loạt thất bại.");
+                toast.error("Xuất hàng loạt thất bại.");
             }
         } finally {
             setIsBatchExporting(false);
