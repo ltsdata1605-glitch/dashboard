@@ -259,40 +259,40 @@ const EmployeeProfileCard: React.FC<{
             )}
 
             {/* KPI Grid with Micro Progress Bars */}
-            <div className="grid grid-cols-4 divide-x divide-slate-100 dark:divide-slate-800">
-                <div className="js-kpi-cell p-2.5 space-y-0.5">
+            <div className="grid divide-x divide-slate-100 dark:divide-slate-800" style={{ gridTemplateColumns: '1.15fr 0.8fr 0.8fr 1.25fr' }}>
+                <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
                     <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">💰 DTQĐ</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empRevenue ? f(empRevenue.dtqd) : '-'}</span>
                     <MicroBar value={(empRevenue?.hieuQuaQD || 0) * 100} />
-                    <div className="js-kpi-sub flex gap-3 text-[10px] text-slate-500 mt-1">
+                    <div className="js-kpi-sub flex gap-2 text-[9px] text-slate-500 mt-1">
                         <span>DTLK: <strong className="text-sky-600">{empRevenue ? f(empRevenue.dtlk) : '-'}</strong></span>
                         <span>HQQĐ: <strong className="text-emerald-600">{empRevenue ? pct((empRevenue.hieuQuaQD || 0) * 100) : '-'}</strong></span>
                     </div>
                 </div>
-                <div className="js-kpi-cell p-2.5 space-y-0.5">
+                <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
                     <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">💳 Trả Góp</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empInstallment ? pct(empInstallment.totalPercent) : '-'}</span>
                     <MicroBar value={empInstallment?.totalPercent || 0} />
-                    <div className="js-kpi-sub flex gap-3 text-[10px] text-slate-500 mt-1">
+                    <div className="js-kpi-sub flex gap-2 text-[9px] text-slate-500 mt-1">
                         <span>DT: <strong className="text-indigo-600">{empInstallment ? f(empInstallment.totalDtSieuThi) : '-'}</strong></span>
                     </div>
                 </div>
-                <div className="js-kpi-cell p-2.5 space-y-0.5">
+                <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
                     <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">🛒 Bán Kèm</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empBanKem ? pct(empBanKem.pctBillBk) : '-'}</span>
                     <MicroBar value={empBanKem?.pctBillBk || 0} />
-                    <div className="js-kpi-sub flex gap-3 text-[10px] text-slate-500 mt-1">
+                    <div className="js-kpi-sub flex gap-2 text-[9px] text-slate-500 mt-1">
                         <span>SP: <strong className="text-violet-600">{empBanKem ? pct(empBanKem.pctSpBk) : '-'}</strong></span>
                     </div>
                 </div>
-                <div className="js-kpi-cell p-2.5 space-y-0.5">
+                <div className="js-kpi-cell min-w-0 p-2.5 space-y-0.5">
                     <p className="js-kpi-label text-[10px] font-bold text-slate-400 uppercase tracking-wider">🏆 Thưởng</p>
                     <span className="js-kpi-value text-lg font-black text-slate-800 dark:text-white block">{empBonus ? f(empBonus.tong || ((empBonus.erp || 0) + (empBonus.tNong || 0))) : '-'}</span>
-                    <div className="js-kpi-sub flex gap-3 text-[10px] text-slate-500 mt-1.5">
+                    <div className="js-kpi-sub flex gap-2 text-[9px] text-slate-500 mt-1.5">
                         <span>ERP: <strong className="text-blue-600">{empBonus ? f(empBonus.erp) : '-'}</strong></span>
                         <span>T.Nóng: <strong className="text-orange-600">{empBonus ? f(empBonus.tNong) : '-'}</strong></span>
                     </div>
-                    {empBonus?.pNong != null && <div className="js-kpi-sub text-[10px] text-slate-500">%T.Nóng: <strong className="text-amber-600">{pct(empBonus.pNong)}</strong></div>}
+                    {empBonus?.pNong != null && <div className="js-kpi-sub text-[9px] text-slate-500">%T.Nóng: <strong className="text-amber-600">{pct(empBonus.pNong)}</strong></div>}
                 </div>
             </div>
         </div>
@@ -389,7 +389,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
             const nameToUse = customFilename || selectedEmployee?.name || 'NhanVien';
             const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}.png`;
             const blob = await exportElementAsImage(originalCard, filename, {
-                mode: 'blob-only', forcedWidth: 600, elementsToHide: ['.js-individual-view-toolbar', '.export-button-component', '.no-print']
+                mode: 'blob-only', forcedWidth: 640, elementsToHide: ['.js-individual-view-toolbar', '.export-button-component', '.no-print']
             });
             if (blob) {
                 if (autoAction === 'download') {
