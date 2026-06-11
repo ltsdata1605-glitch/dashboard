@@ -7,10 +7,12 @@ import UserManagementView from './UserManagementView';
 import { SettingsAccountTab } from './settings/SettingsAccountTab';
 import { SettingsDataTab } from './settings/SettingsDataTab';
 import { SettingsAppearanceTab } from './settings/SettingsAppearanceTab';
+import { useAuth } from '../../contexts/AuthContext';
 
 type SettingsTab = 'appearance' | 'data' | 'account' | 'approval_link';
 
 const SettingsView: React.FC = () => {
+    const { userRole } = useAuth();
     const [activeTab, setActiveTab] = useState<SettingsTab>('account');
     const { activeTab: globalActiveTab } = useActiveTab();
     const [mounted, setMounted] = useState(false);
@@ -25,7 +27,7 @@ const SettingsView: React.FC = () => {
 
     const tabs = [
         { id: 'account', label: 'Tài Khoản', icon: 'user' },
-        { id: 'approval_link', label: 'Phân Quyền', icon: 'shield-check' },
+        ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'approval_link', label: 'Phân Quyền', icon: 'shield-check' }] : []),
         { id: 'data', label: 'Lọc Dữ Liệu', icon: 'server' },
         { id: 'appearance', label: 'Giao Diện', icon: 'monitor' } // Ensure appearance is here
     ];

@@ -29,7 +29,7 @@ interface UserManagementViewProps {
 }
 
 const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) => {
-    const { user, userRole, departmentId } = useAuth();
+    const { user, userRole, departmentId, isDemoMode } = useAuth();
     const [requests, setRequests] = useState<AccessRequest[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [expiryDates, setExpiryDates] = useState<Record<string, string>>({});
@@ -48,6 +48,13 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
         // Clear existing timer for this user+field
         const key = `${requestId}_${field}`;
         if (debounceTimers.current[key]) clearTimeout(debounceTimers.current[key]);
+
+        if (isDemoMode) {
+            debounceTimers.current[key] = setTimeout(() => {
+                toast.success('Đã tự động lưu (Demo Mode)!', { duration: 1500, id: `autosave-${requestId}` });
+            }, 800);
+            return;
+        }
 
         debounceTimers.current[key] = setTimeout(async () => {
             try {
@@ -82,12 +89,66 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 setSavingIds(prev => { const n = new Set(prev); n.delete(requestId); return n; });
             }
         }, 800);
-    }, []);
+    }, [isDemoMode]);
 
     const fetchRequests = async () => {
-        if (!userRole) return;
+        if (!userRole || (userRole !== 'admin' && userRole !== 'manager')) {
+            setIsLoading(false);
+            return;
+        }
         setIsLoading(true);
         try {
+            if (isDemoMode) {
+                // Mock data for demo mode to prevent Firestore permission-denied errors
+                const mockRequests: AccessRequest[] = [
+                    {
+                        id: 'demo-user-1',
+                        displayName: 'Nguyễn Văn A',
+                        email: 'nguyenvana@gmail.com',
+                        photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=A',
+                        requestedRole: 'employee',
+                        role: 'pending',
+                        departmentId: '58614',
+                        employeeName: 'Nguyễn Văn A',
+                        status: 'pending',
+                        createdAt: { toDate: () => new Date(), toMillis: () => Date.now() },
+                        requestDate: { toMillis: () => Date.now() },
+                        loginCount: 3
+                    },
+                    {
+                        id: 'demo-user-2',
+                        displayName: 'Trần Thị B',
+                        email: 'tranthib@gmail.com',
+                        photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=B',
+                        requestedRole: 'employee',
+                        role: 'employee',
+                        departmentId: '58614',
+                        employeeName: 'Trần Thị B',
+                        status: 'approved',
+                        createdAt: { toDate: () => new Date(Date.now() - 86400000), toMillis: () => Date.now() - 86400000 },
+                        requestDate: { toMillis: () => Date.now() - 86400000 },
+                        loginCount: 12
+                    }
+                ];
+                
+                const newExpiry: Record<string, string> = {
+                    'demo-user-2': new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0]
+                };
+                const newDept: Record<string, string> = { 'demo-user-1': '58614', 'demo-user-2': '58614' };
+                const newNames: Record<string, string> = { 'demo-user-1': 'Nguyễn Văn A', 'demo-user-2': 'Trần Thị B' };
+                const newRoles: Record<string, string> = { 'demo-user-1': 'pending', 'demo-user-2': 'employee' };
+
+                setExpiryDates(newExpiry);
+                setEditDepartments(newDept);
+                setEditNames(newNames);
+                setEditRoles(newRoles);
+
+                const filteredData = listMode === 'pending' ? [mockRequests[0]] : [mockRequests[1]];
+                setRequests(filteredData);
+                setIsLoading(false);
+                return;
+            }
+
             const usersRef = collection(db, 'users');
             let q;
             
@@ -189,6 +250,15 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
     }, [userRole, departmentId, listMode]);
 
     const handleApproval = async (requestId: string, isApproved: boolean) => {
+        if (isDemoMode) {
+            toast.success(isApproved 
+                ? (listMode === 'pending' ? `Đã CẤP QUYỀN thành công (Demo Mode)!` : `Đã CẬP NHẬT QUYỀN thành công (Demo Mode)!`)
+                : (listMode === 'pending' ? 'Đã TỪ CHỐI yêu cầu (Demo Mode)!' : 'Đã THU HỒI quyền truy cập (Demo Mode)!')
+            );
+            setRequests(prev => prev.filter(req => req.id !== requestId));
+            return;
+        }
+
         try {
             const { Timestamp } = await import('firebase/firestore');
             const userRef = doc(db, 'users', requestId);
