@@ -45,8 +45,13 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
+    // States for sorting
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+    const [showPercent, setShowPercent] = useState(false);
+
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
     const formatter = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
+    const avgFormatter = new Intl.NumberFormat('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
 
     useEffect(() => {
         setTempName(tableName);
@@ -74,14 +79,169 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
             .filter((h): h is CompetitionHeader => !!h);
     }, [allHeaders, selectedTitles]);
 
-    const getHtColor = (val: number) => {
-        const now = new Date();
-        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-        const dayOfMonth = now.getDate();
-        const progress = ((dayOfMonth - 1) / daysInMonth) * 100;
-        if (val >= progress + 20) return 'text-green-600 dark:text-green-400 font-bold';
-        if (val < progress) return 'text-red-600 dark:text-red-400 font-bold';
-        return 'text-amber-600 dark:text-amber-400 font-bold';
+    // Map header title to originalTitle for target lookup
+    const headerOriginalTitleMap = useMemo(() => {
+        return new Map(allHeaders.map(h => [h.title, h.originalTitle]));
+    }, [allHeaders]);
+
+    // Compute column averages across all employees
+    const columnAverages = useMemo(() => {
+        const averages: Record<string, { actual: number; percent: number }> = {};
+        visibleHeaders.forEach(header => {
+            let sumActual = 0;
+            let sumPercent = 0;
+            employees.forEach(emp => {
+                const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
+                const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
+                const ht = target > 0 ? (actual / target) * 100 : 0;
+                sumActual += actual;
+                sumPercent += ht;
+            });
+            averages[header.title] = {
+                actual: employees.length > 0 ? sumActual / employees.length : 0,
+                percent: employees.length > 0 ? sumPercent / employees.length : 0
+            };
+        });
+        return averages;
+    }, [visibleHeaders, employees, employeeDataMap, employeeCompetitionTargets]);
+
+    // Compute dense ranks for each column (descending order, excluding values <= 0)
+    const columnRankings = useMemo(() => {
+        const rankings: Record<string, Map<string, number>> = {};
+        visibleHeaders.forEach(header => {
+            const empValues = employees.map(emp => {
+                const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
+                const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
+                const ht = target > 0 ? (actual / target) * 100 : 0;
+                const value = showPercent ? ht : actual;
+                return { empName: emp.name, value };
+            });
+
+            // Sort descending
+            empValues.sort((a, b) => b.value - a.value);
+
+            // Assign dense ranks
+            const rankMap = new Map<string, number>();
+            let currentRank = 0;
+            let prevValue = -1;
+            empValues.forEach((item) => {
+                if (item.value <= 0) {
+                    rankMap.set(item.empName, 999);
+                    return;
+                }
+                if (item.value !== prevValue) {
+                    currentRank++;
+                    prevValue = item.value;
+                }
+                rankMap.set(item.empName, currentRank);
+            });
+            rankings[header.title] = rankMap;
+        });
+        return rankings;
+    }, [visibleHeaders, employees, employeeDataMap, employeeCompetitionTargets, showPercent]);
+
+    // Helper to calculate "Tổng BOT" for an employee (number of categories below column average)
+    const getEmployeeTongBot = (empName: string, empOriginalName: string) => {
+        let count = 0;
+        visibleHeaders.forEach(header => {
+            const actual = employeeDataMap.get(empName)?.values[header.title] ?? 0;
+            const target = employeeCompetitionTargets.get(header.originalTitle)?.get(empOriginalName) ?? 0;
+            const ht = target > 0 ? (actual / target) * 100 : 0;
+            const averages = columnAverages[header.title];
+            if (averages) {
+                if (showPercent) {
+                    if (ht < averages.percent) {
+                        count++;
+                    }
+                } else {
+                    if (actual < averages.actual) {
+                        count++;
+                    }
+                }
+            }
+        });
+        return count;
+    };
+
+    // Sort employees list based on current sortConfig
+    const sortedEmployees = useMemo(() => {
+        if (!sortConfig) return employees;
+        const { key, direction } = sortConfig;
+        const sorted = [...employees];
+        sorted.sort((a, b) => {
+            if (key === 'employee') {
+                return direction === 'asc' 
+                    ? a.name.localeCompare(b.name, 'vi') 
+                    : b.name.localeCompare(a.name, 'vi');
+            } else if (key === 'tongBot') {
+                const botA = getEmployeeTongBot(a.name, a.originalName);
+                const botB = getEmployeeTongBot(b.name, b.originalName);
+                return direction === 'asc' ? botA - botB : botB - botA;
+            } else {
+                const getVal = (emp: Employee) => {
+                    const actual = employeeDataMap.get(emp.name)?.values[key] ?? 0;
+                    if (showPercent) {
+                        const origTitle = headerOriginalTitleMap.get(key) || '';
+                        const target = employeeCompetitionTargets.get(origTitle)?.get(emp.originalName) ?? 0;
+                        return target > 0 ? (actual / target) * 100 : 0;
+                    }
+                    return actual;
+                };
+                const valA = getVal(a);
+                const valB = getVal(b);
+                return direction === 'asc' ? valA - valB : valB - valA;
+            }
+        });
+        return sorted;
+    }, [employees, sortConfig, employeeDataMap, employeeCompetitionTargets, showPercent, headerOriginalTitleMap]);
+
+    // Handle sort toggling
+    const handleSort = (key: string) => {
+        setSortConfig(current => {
+            if (!current || current.key !== key) {
+                return { key, direction: key === 'employee' ? 'asc' : 'desc' };
+            }
+            if (key === 'employee') {
+                if (current.direction === 'asc') return { key, direction: 'desc' };
+                return null;
+            } else {
+                if (current.direction === 'desc') return { key, direction: 'asc' };
+                return null;
+            }
+        });
+    };
+
+    // Render sort arrow indicators
+    const getSortIndicator = (key: string) => {
+        if (sortConfig?.key !== key) return null;
+        return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+    };
+
+    // Calculate conditional cell coloring: Red (< avg), Green (TOP 1-3), Yellow (TOP 4-6)
+    const getCellStyle = (actual: number, ht: number, headerTitle: string, empName: string) => {
+        const value = showPercent ? ht : actual;
+        const avg = showPercent ? (columnAverages[headerTitle]?.percent ?? 0) : (columnAverages[headerTitle]?.actual ?? 0);
+        
+        if (value <= 0) {
+            if (avg > 0) {
+                return 'text-rose-600 dark:text-rose-400 font-bold';
+            }
+            return 'text-slate-300 dark:text-slate-600';
+        }
+
+        const rank = columnRankings[headerTitle]?.get(empName) ?? 999;
+        if (rank <= 3) {
+            return 'text-emerald-600 dark:text-emerald-400 font-extrabold';
+        }
+        if (rank <= 6) {
+            return 'text-amber-500 dark:text-amber-405 font-bold';
+        }
+        
+        if (value < avg) {
+            return 'text-rose-600 dark:text-rose-400 font-bold';
+        }
+        
+        return 'text-slate-700 dark:text-slate-300 font-medium';
     };
 
     const { showExportOptions } = useExportOptionsContext();
@@ -140,7 +300,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
         setShowDeleteConfirm(false);
     };
 
-    const [showPercent, setShowPercent] = useState(false);
+
 
     const headerActions = (
         <div className="flex items-center gap-1.5 no-print relative z-[30]">
@@ -216,7 +376,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
             <button 
                 type="button" 
                 onClick={handleConfirmDelete} 
-                className="h-6 w-6 p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" 
+                className="h-6 w-6 p-1 text-slate-400 hover:text-red-600 hover:bg-red-55 rounded transition-colors" 
                 title="Xóa bảng"
             >
                 <TrashIcon className="h-4 w-4 pointer-events-none mx-auto" />
@@ -262,8 +422,14 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                             <table className="w-full border-collapse compact-export-table">
                                 <thead>
                                     <tr className="text-[11px] font-black uppercase tracking-wider">
-                                        <th className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 px-2 py-1.5 text-left border-r border-b-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[160px] align-middle">
-                                            Nhân viên
+                                        <th 
+                                            onClick={() => handleSort('employee')}
+                                            className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 px-2 py-1.5 text-left border-r border-b-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[160px] align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <span>Nhân viên</span>
+                                                <span className="text-indigo-600 dark:text-indigo-400 font-bold">{getSortIndicator('employee')}</span>
+                                            </div>
                                         </th>
                                         {(() => {
                                             const colors = ['sky', 'emerald', 'amber', 'violet', 'rose', 'teal'];
@@ -278,23 +444,35 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                                         onDragOver={(e) => handleDragOver(e, index)}
                                                         onDrop={(e) => handleDrop(e, index)}
                                                         onDragEnd={() => setDraggedIndex(null)}
-                                                        className={`px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[100px] leading-tight align-middle cursor-grab active:cursor-grabbing select-none hover:bg-${color}-100 dark:hover:bg-${color}-900/50 transition-all ${isDragging ? 'opacity-30 scale-95 border-dashed border-indigo-500' : ''}`}
-                                                        title="Kéo thả để sắp xếp lại cột"
+                                                        onClick={() => handleSort(header.title)}
+                                                        className={`px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[100px] leading-tight align-middle cursor-pointer hover:bg-${color}-100 dark:hover:bg-${color}-900/50 transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-indigo-500' : ''}`}
+                                                        title="Kéo thả để sắp xếp cột — Click để sắp xếp dòng"
                                                     >
                                                         <div className="flex items-center justify-center gap-1">
-                                                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal no-print">⋮⋮</span>
+                                                            <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal no-print mr-0.5">⋮⋮</span>
                                                             <span>{shortenName(header.originalTitle, nameOverrides)}</span>
+                                                            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 ml-0.5">{getSortIndicator(header.title)}</span>
                                                         </div>
                                                     </th>
                                                 );
                                             });
                                         })()}
+                                        <th 
+                                            onClick={() => handleSort('tongBot')}
+                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 min-w-[100px] leading-tight align-middle cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all"
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                <span>TỔNG BOT</span>
+                                                <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 ml-0.5">{getSortIndicator('tongBot')}</span>
+                                            </div>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
-                                    {employees.map((emp, idx) => {
+                                    {sortedEmployees.map((emp, idx) => {
                                         const isEven = idx % 2 === 0;
                                         const zebraClass = isEven ? 'bg-white dark:bg-[#1c1c1e]' : 'bg-slate-50/70 dark:bg-slate-800/30';
+                                        const tongBot = getEmployeeTongBot(emp.name, emp.originalName);
                                         return (
                                             <tr key={emp.originalName} className={`${zebraClass} hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700`}>
                                                 <td 
@@ -307,23 +485,56 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                                     const actual = employeeDataMap.get(emp.name)?.values[header.title] ?? 0;
                                                     const target = employeeCompetitionTargets.get(header.originalTitle)?.get(emp.originalName) ?? 0;
                                                     const ht = target > 0 ? (actual / target) * 100 : 0;
+                                                    const cellColorClass = getCellStyle(actual, ht, header.title, emp.name);
                                                     return (
                                                         <td key={header.title} className="px-1.5 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums">
                                                             {showPercent ? (
                                                                 actual > 0 && target > 0 ? (
-                                                                    <span className={getHtColor(ht)}>{roundUp(ht)}%</span>
+                                                                    <span className={cellColorClass}>{roundUp(ht)}%</span>
                                                                 ) : (
                                                                     <span className="text-slate-300">-</span>
                                                                 )
                                                             ) : (
-                                                                <span className="font-bold text-slate-700 dark:text-slate-300">{actual > 0 ? formatter.format(roundUp(actual)) : '-'}</span>
+                                                                <span className={cellColorClass}>{actual > 0 ? formatter.format(roundUp(actual)) : '-'}</span>
                                                             )}
                                                         </td>
                                                     );
                                                 })}
+                                                <td className="px-1.5 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap font-bold text-slate-800 dark:text-slate-200 bg-slate-50/50 dark:bg-slate-900/30 tabular-nums">
+                                                    {tongBot > 0 ? tongBot : '-'}
+                                                </td>
                                             </tr>
                                         );
                                     })}
+                                    {/* TRUNG BÌNH row */}
+                                    <tr className="bg-slate-50 dark:bg-slate-800/50 font-bold text-slate-700 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700">
+                                        <td className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-slate-200 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                                            TRUNG BÌNH
+                                        </td>
+                                        {visibleHeaders.map(header => {
+                                            const averages = columnAverages[header.title];
+                                            return (
+                                                <td key={header.title} className="px-1.5 py-1 text-center text-[13px] border-r border-slate-200 dark:border-slate-700/50 whitespace-nowrap tabular-nums">
+                                                    {showPercent ? (
+                                                        averages && averages.percent > 0 ? (
+                                                            <span>{averages.percent.toFixed(1)}%</span>
+                                                        ) : (
+                                                            <span className="text-slate-300">-</span>
+                                                        )
+                                                    ) : (
+                                                        <span>{averages && averages.actual > 0 ? avgFormatter.format(averages.actual) : '-'}</span>
+                                                    )}
+                                                </td>
+                                            );
+                                        })}
+                                        <td className="px-1.5 py-1 text-center text-[13px] border-r border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-bold text-slate-700 dark:text-slate-300 tabular-nums">
+                                            {(() => {
+                                                const totalBotSum = employees.reduce((sum, emp) => sum + getEmployeeTongBot(emp.name, emp.originalName), 0);
+                                                const avgBot = employees.length > 0 ? totalBotSum / employees.length : 0;
+                                                return avgBot > 0 ? avgFormatter.format(avgBot) : '-';
+                                            })()}
+                                        </td>
+                                    </tr>
                                     {/* Grand Total — indigo accent */}
                                     <tr className="bg-indigo-50 dark:bg-indigo-900/30 font-extrabold text-indigo-800 dark:text-indigo-300 border-t-2 border-indigo-200 dark:border-indigo-800">
                                          <td className="sticky left-0 z-10 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-indigo-200 dark:border-indigo-800/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
@@ -348,6 +559,12 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                                  </td>
                                              );
                                          })}
+                                         <td className="px-1.5 py-1 text-center text-[13px] border-r border-indigo-200 dark:border-indigo-800/50 whitespace-nowrap tabular-nums">
+                                             {(() => {
+                                                 const totalBotSum = employees.reduce((sum, emp) => sum + getEmployeeTongBot(emp.name, emp.originalName), 0);
+                                                 return totalBotSum > 0 ? formatter.format(totalBotSum) : '-';
+                                             })()}
+                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
