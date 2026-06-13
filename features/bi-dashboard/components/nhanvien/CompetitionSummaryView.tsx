@@ -1,5 +1,5 @@
 
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, { useMemo, useRef, useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
@@ -8,7 +8,7 @@ import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienType
 import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Switch } from '../dashboard/DashboardWidgets';
-import { exportElementAsImage } from '../../../../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
 import { ConfirmDialog } from '../../../../components/shared/ui/ConfirmDialog';
 
 interface CompetitionSummaryViewProps {
@@ -24,7 +24,11 @@ interface CompetitionSummaryViewProps {
     tableName: string;
 }
 
-const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
+export interface CompetitionSummaryViewHandle {
+    handleExportPNG: (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null) => Promise<'download' | 'share' | 'cancel' | null>;
+}
+
+const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, CompetitionSummaryViewProps>(({
     employees,
     selectedTitles,
     onUpdateTitles,
@@ -35,7 +39,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
     employeeCompetitionTargets,
     supermarketName,
     tableName
-}) => {
+}, ref) => {
     const cardRef = useRef<HTMLDivElement>(null);
     const filterRef = useRef<HTMLDivElement>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -163,6 +167,18 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
         return count;
     };
 
+    // Helper to calculate "NoSale" for an employee (number of categories with actual value = 0)
+    const getEmployeeNoSale = (empName: string) => {
+        let count = 0;
+        visibleHeaders.forEach(header => {
+            const actual = employeeDataMap.get(empName)?.values[header.title] ?? 0;
+            if (actual === 0) {
+                count++;
+            }
+        });
+        return count;
+    };
+
     // Calculate the threshold for TOP 30% of TỔNG BOT (excluding 0 values)
     const tongBotRedCutoff = useMemo(() => {
         const botValues = employees.map(emp => getEmployeeTongBot(emp.name, emp.originalName));
@@ -185,6 +201,10 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                 const botA = getEmployeeTongBot(a.name, a.originalName);
                 const botB = getEmployeeTongBot(b.name, b.originalName);
                 return direction === 'asc' ? botA - botB : botB - botA;
+            } else if (key === 'noSale') {
+                const valA = getEmployeeNoSale(a.name);
+                const valB = getEmployeeNoSale(b.name);
+                return direction === 'asc' ? valA - valB : valB - valA;
             } else {
                 const getVal = (emp: Employee) => {
                     const actual = employeeDataMap.get(emp.name)?.values[key] ?? 0;
@@ -252,19 +272,36 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
         return 'text-slate-700 dark:text-slate-300 font-medium';
     };
 
+    useImperativeHandle(ref, () => ({
+        handleExportPNG
+    }));
+
     const { showExportOptions } = useExportOptionsContext();
 
-    const handleExportPNG = async () => {
-        if (!cardRef.current) return;
+    const handleExportPNG = async (customFilename?: string, autoAction?: 'download' | 'share' | 'cancel' | null): Promise<'download' | 'share' | 'cancel' | null> => {
+        if (!cardRef.current) return null;
         const original = cardRef.current;
         try {
-            const filename = `ThiDua_${tableName.replace(/\s+/g, '_')}_${supermarketName}.png`;
+            const nameToUse = customFilename || tableName || 'BaoCao';
+            const filename = `ThiDua_${nameToUse.replace(/[\s/]/g, '_')}_${supermarketName}.png`;
             const blob = await exportElementAsImage(original, filename, {
                 mode: 'blob-only', elementsToHide: ['.no-print', '.export-button-component']
             });
-            if (blob) showExportOptions(blob, filename);
+            if (blob) {
+                if (autoAction === 'download') {
+                    downloadBlob(blob, filename);
+                    return 'download';
+                } else if (autoAction === 'share') {
+                    await shareBlob(blob, filename);
+                    return 'share';
+                } else {
+                    return await showExportOptions(blob, filename);
+                }
+            }
+            return null;
         } catch (err) {
             console.error('Failed to export image', err);
+            return null;
         }
     };
 
@@ -296,116 +333,22 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
         setDraggedIndex(null);
     };
 
-    // Hàm xử lý xoá bảng với các biện pháp bảo vệ sự kiện
-    const handleConfirmDelete = (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation(); // Ngăn chặn sự kiện lan lên Card
-        setShowDeleteConfirm(true);
-    };
-
     const confirmDelete = () => {
         onDelete();
         setShowDeleteConfirm(false);
     };
 
-
-
-    const headerActions = (
-        <div className="flex items-center gap-1.5 no-print relative z-[30]">
-            {/* Toggle % / Luỹ kế */}
-            <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setShowPercent(!showPercent); }}
-                className={`h-6 w-6 p-1 rounded transition-colors ${showPercent ? 'text-indigo-700 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
-                title={showPercent ? 'Đang hiển thị %HT — Bấm để xem Luỹ kế (SL)' : 'Đang hiển thị Luỹ kế (SL) — Bấm để xem %HT'}
-            >
-                {showPercent ? (
-                    <PercentIcon className="h-4 w-4 pointer-events-none mx-auto" />
-                ) : (
-                    <HashIcon className="h-4 w-4 pointer-events-none mx-auto" />
-                )}
-            </button>
-            
-            <div className="relative" ref={filterRef}>
-                <button 
-                    type="button"
-                    onClick={(e) => { e.stopPropagation(); setIsFilterOpen(!isFilterOpen); }}
-                    className={`relative h-6 w-6 p-1 rounded transition-colors ${isFilterOpen || selectedTitles.length > 0 ? 'text-indigo-700 bg-indigo-50 dark:bg-indigo-900/30' : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'}`}
-                    title="Lọc nhóm thi đua cho bảng này"
-                >
-                    <FilterIcon className="h-4 w-4 pointer-events-none mx-auto" />
-                    {selectedTitles.length > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-indigo-600 text-white text-[8px] font-black px-1 rounded-full">{selectedTitles.length}</span>
-                    )}
-                </button>
-                {isFilterOpen && (
-                    <div className="absolute right-0 mt-2 w-72 max-h-[80vh] bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 z-[100] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-                        <div className="p-3 bg-slate-50 dark:bg-slate-900 border-b dark:border-slate-700">
-                            <input 
-                                type="text" 
-                                value={filterSearch} 
-                                onChange={e => setFilterSearch(e.target.value)}
-                                placeholder="Tìm nhóm thi đua..."
-                                className="w-full px-3 py-1.5 text-xs border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-slate-800 dark:text-slate-100"
-                                autoFocus
-                            />
-                        </div>
-                        <div className="overflow-y-auto p-2 space-y-4">
-                            {(Object.entries(allCompetitionsByCriterion) as [Criterion, { headers: CompetitionHeader[] }][]).map(([criterion, data]) => {
-                                const comps = data.headers.filter(h => h.title.toLowerCase().includes(filterSearch.toLowerCase()));
-                                if (comps.length === 0) return null;
-                                return (
-                                    <div key={criterion}>
-                                        <p className="px-2 mb-1 text-[10px] font-black text-slate-400 uppercase tracking-wider">{criterion}</p>
-                                        {comps.map(comp => (
-                                            <div key={comp.title} className="flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-750/50 cursor-pointer" onClick={() => handleToggleTitle(comp.title)}>
-                                                <span className={`text-xs ${selectedTitles.includes(comp.title) ? 'font-bold text-indigo-600' : 'text-slate-600 dark:text-slate-400'}`}>{shortenName(comp.originalTitle, nameOverrides)}</span>
-                                                <Switch checked={selectedTitles.includes(comp.title)} onChange={() => {}} />
-                                            </div>
-                                        ))}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                )}
-            </div>
-
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-
-            <button 
-                type="button" 
-                onClick={(e) => { e.stopPropagation(); setIsEditingName(true); }} 
-                className="h-6 w-6 p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" 
-                title="Sửa tên bảng"
-            >
-                <PencilIcon className="h-4 w-4 pointer-events-none mx-auto" />
-            </button>
-            <button 
-                type="button" 
-                onClick={handleConfirmDelete} 
-                className="h-6 w-6 p-1 text-slate-400 hover:text-red-600 hover:bg-red-55 rounded transition-colors" 
-                title="Xóa bảng"
-            >
-                <TrashIcon className="h-4 w-4 pointer-events-none mx-auto" />
-            </button>
-
-            <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-
-            <ExportButton onExportPNG={handleExportPNG} />
-        </div>
-    );
-
     const cardTitle = (
-        <div className="flex flex-col items-start leading-none py-1">
+        <div className="flex flex-col items-start leading-none py-1 w-full relative z-30">
             {isEditingName ? (
                 <div className="flex items-center gap-2 no-print">
                     <input 
+                        type="text" 
                         value={tempName} 
-                        onChange={e => setTempName(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
-                        className="bg-slate-50 dark:bg-slate-800 border-b-2 border-indigo-500 outline-none px-2 py-1 text-lg font-black uppercase text-indigo-700 dark:text-indigo-400"
+                        onChange={(e) => setTempName(e.target.value)} 
+                        className="px-2 py-1 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded focus:ring-1 focus:ring-indigo-500 w-48 text-slate-800 dark:text-slate-100"
                         autoFocus
+                        onKeyDown={(e) => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
                     />
                     <button type="button" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="text-green-600"><CheckCircleIcon className="h-6 w-6" /></button>
                     <button type="button" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="text-slate-400"><XIcon className="h-6 w-6" /></button>
@@ -414,6 +357,83 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                 <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">{tableName} - ĐẾN {getYesterdayDateString()}</span>
             )}
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold no-print">Dữ liệu thi đua được tổng hợp theo thời gian thực từ BI.</span>
+        </div>
+    );
+
+    const headerActions = (
+        <div className="flex items-center gap-2 relative z-30">
+            <div className="relative" ref={filterRef}>
+                <button 
+                    onClick={() => setIsFilterOpen(!isFilterOpen)} 
+                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                    title="Chọn cột hiển thị"
+                >
+                    <FilterIcon className="h-5 w-5" />
+                    {selectedTitles.length > 0 && (
+                        <span className="absolute -top-1 -right-1 bg-indigo-600 text-white font-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
+                            {selectedTitles.length}
+                        </span>
+                    )}
+                </button>
+                {isFilterOpen && (
+                    <div className="absolute right-0 top-full mt-1.5 w-64 max-h-80 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-2 space-y-1">
+                        <div className="px-2 py-1.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
+                            <input 
+                                type="text" 
+                                value={filterSearch} 
+                                onChange={(e) => setFilterSearch(e.target.value)} 
+                                placeholder="Tìm tiêu chí..."
+                                className="w-full px-2 py-1 text-xs border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                                autoFocus
+                            />
+                        </div>
+                        {allHeaders
+                            .filter(h => h.originalTitle.toLowerCase().includes(filterSearch.toLowerCase()))
+                            .map(header => {
+                                const isSelected = selectedTitles.includes(header.title);
+                                return (
+                                    <label key={header.title} className="flex items-center gap-2.5 px-2.5 py-1.5 rounded hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer select-none text-xs text-slate-700 dark:text-slate-300">
+                                        <Switch 
+                                            checked={isSelected} 
+                                            onChange={() => handleToggleTitle(header.title)}
+                                        />
+                                        <span className="truncate">{shortenName(header.originalTitle, nameOverrides)}</span>
+                                    </label>
+                                );
+                            })}
+                    </div>
+                )}
+            </div>
+
+            <button 
+                type="button" 
+                onClick={() => setIsEditingName(true)} 
+                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                title="Đổi tên bảng"
+            >
+                <PencilIcon className="h-5 w-5" />
+            </button>
+
+            <button 
+                type="button" 
+                onClick={() => setShowDeleteConfirm(true)} 
+                className="p-2 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
+                title="Xóa bảng"
+            >
+                <TrashIcon className="h-5 w-5" />
+            </button>
+
+            <div className="h-5 w-px bg-slate-200 dark:border-slate-700 mx-1" />
+
+            <button 
+                onClick={() => setShowPercent(!showPercent)}
+                className={`p-1.5 rounded border transition-all ${showPercent ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/40 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'}`}
+                title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
+            >
+                {showPercent ? <HashIcon className="h-4 w-4" /> : <PercentIcon className="h-4 w-4" />}
+            </button>
+
+            <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
         </div>
     );
 
@@ -474,6 +494,15 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                                 <span className="text-[9px] font-bold text-red-600 dark:text-red-400 ml-0.5">{getSortIndicator('tongBot')}</span>
                                             </div>
                                         </th>
+                                        <th 
+                                            onClick={() => handleSort('noSale')}
+                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 min-w-[60px] leading-tight align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-850 transition-all"
+                                        >
+                                            <div className="flex items-center justify-center gap-1">
+                                                <span>NoSale</span>
+                                                <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 ml-0.5">{getSortIndicator('noSale')}</span>
+                                            </div>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
@@ -519,12 +548,20 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                                         </td>
                                                     );
                                                 })()}
+                                                {(() => {
+                                                    const noSale = getEmployeeNoSale(emp.name);
+                                                    return (
+                                                        <td className="px-1.5 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap font-bold text-slate-800 dark:text-slate-200 bg-slate-50/50 dark:bg-slate-900/30 tabular-nums">
+                                                            {noSale > 0 ? noSale : '-'}
+                                                        </td>
+                                                    );
+                                                })()}
                                             </tr>
                                         );
                                     })}
                                     {/* TRUNG BÌNH row */}
-                                    <tr className="bg-slate-50 dark:bg-slate-800/50 font-bold text-slate-700 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700">
-                                        <td className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-slate-200 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
+                                    <tr className="bg-amber-50 dark:bg-amber-950/20 font-bold text-amber-800 dark:text-amber-300 border-t border-slate-200 dark:border-slate-700">
+                                        <td className="sticky left-0 z-10 bg-amber-50 dark:bg-amber-950/20 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-slate-200 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                             TRUNG BÌNH
                                         </td>
                                         {visibleHeaders.map(header => {
@@ -548,6 +585,13 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                                 const totalBotSum = employees.reduce((sum, emp) => sum + getEmployeeTongBot(emp.name, emp.originalName), 0);
                                                 const avgBot = employees.length > 0 ? totalBotSum / employees.length : 0;
                                                 return avgBot > 0 ? avgFormatter.format(avgBot) : '-';
+                                            })()}
+                                        </td>
+                                        <td className="px-1.5 py-1 text-center text-[13px] border-r border-slate-200 dark:border-slate-700/50 whitespace-nowrap font-bold text-slate-700 dark:text-slate-300 tabular-nums">
+                                            {(() => {
+                                                const totalNoSaleSum = employees.reduce((sum, emp) => sum + getEmployeeNoSale(emp.name), 0);
+                                                const avgNoSale = employees.length > 0 ? totalNoSaleSum / employees.length : 0;
+                                                return avgNoSale > 0 ? avgFormatter.format(avgNoSale) : '-';
                                             })()}
                                         </td>
                                     </tr>
@@ -581,6 +625,12 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                                  return totalBotSum > 0 ? formatter.format(totalBotSum) : '-';
                                              })()}
                                          </td>
+                                         <td className="px-1.5 py-1 text-center text-[13px] border-r border-indigo-200 dark:border-indigo-800/50 whitespace-nowrap tabular-nums">
+                                             {(() => {
+                                                 const totalNoSaleSum = employees.reduce((sum, emp) => sum + getEmployeeNoSale(emp.name), 0);
+                                                 return totalNoSaleSum > 0 ? formatter.format(totalNoSaleSum) : '-';
+                                             })()}
+                                         </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -600,6 +650,6 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
             />
         </div>
     );
-};
+});
 
 export default CompetitionSummaryView;

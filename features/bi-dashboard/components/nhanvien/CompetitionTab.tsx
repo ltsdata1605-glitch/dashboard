@@ -101,6 +101,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const [isolatedHighlightEmployee, setIsolatedHighlightEmployee] = useState<string | null>(null);
     const groupViewRef = useRef<HTMLDivElement>(null);
     const individualViewRef = useRef<IndividualCompetitionViewHandle>(null);
+    const summaryViewRefs = useRef<Record<string, any>>({});
     const filterRef = useRef<HTMLDivElement>(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [filterSearch, setFilterSearch] = useState('');
@@ -307,6 +308,42 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             setExportProgress({ current: 0, total: 0 });
         }
     };
+    const handleSummaryBatchExport = async () => {
+        if (!summaryTables || summaryTables.length === 0) {
+            toast.error("Không có bảng tổng hợp nào để xuất.");
+            return;
+        }
+        setIsBatchExporting(true);
+        setExportProgress({ current: 0, total: summaryTables.length });
+
+        let autoAction: 'download' | 'share' | 'cancel' | null = null;
+
+        try {
+            for (let i = 0; i < summaryTables.length; i++) {
+                const tableConfig = summaryTables[i];
+                const viewRef = summaryViewRefs.current[tableConfig.id];
+                if (viewRef) {
+                    toast.loading(`Đang xuất bảng: ${tableConfig.name}...`, { id: 'summary-batch-export' });
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    const safeName = `${tableConfig.name.replace(/[\s/]/g, '_')}`;
+                    const action = await viewRef.handleExportPNG(safeName, autoAction);
+                    if (action === 'cancel') {
+                        toast.dismiss('summary-batch-export');
+                        break;
+                    }
+                    autoAction = action;
+                }
+                setExportProgress(prev => ({ ...prev, current: i + 1 }));
+            }
+            toast.success("Đã xuất thành công toàn bộ các bảng tổng hợp!", { id: 'summary-batch-export' });
+        } catch (err) {
+            console.error("Batch summary export failed", err);
+            toast.error("Có lỗi xảy ra khi xuất hàng loạt.", { id: 'summary-batch-export' });
+        } finally {
+            setIsBatchExporting(false);
+            setExportProgress({ current: 0, total: 0 });
+        }
+    };
 
     const handleSelectAllCompetitions = () => {
         const allRelevantTitles = (Object.values(relevantCompetitions) as { headers?: CompetitionHeader[] }[]).flat().map(c => c?.headers || []).flat().map(h => h.title);
@@ -427,6 +464,13 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 {individualViewRef.current?.isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
                             </button>
                             <button onClick={() => individualViewRef.current?.handleExportPNG()} title="Xuất ảnh" className="p-1 text-slate-400 hover:text-slate-600 transition-all"><CameraIcon className="h-4 w-4" /></button>
+                        </>
+                    )}
+                    {activeCompetitionTab === 'tong' && activeVersionName === null && (
+                        <>
+                            <button onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title="Xuất tất cả bảng tổng hợp" className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">
+                                {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
+                            </button>
                         </>
                     )}
                 </div>
@@ -555,6 +599,13 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 {(Array.isArray(summaryTables) ? summaryTables : []).map((tableConfig) => (
                                     <CompetitionSummaryView 
                                         key={tableConfig.id}
+                                        ref={(el) => {
+                                            if (el) {
+                                                summaryViewRefs.current[tableConfig.id] = el;
+                                            } else {
+                                                delete summaryViewRefs.current[tableConfig.id];
+                                            }
+                                        }}
                                         employees={filteredEmployees as Employee[]}
                                         selectedTitles={tableConfig.selectedTitles}
                                         onUpdateTitles={(titles) => handleUpdateTableTitles(tableConfig.id, titles)}
