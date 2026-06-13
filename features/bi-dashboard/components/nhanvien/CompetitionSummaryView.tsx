@@ -46,7 +46,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
     const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
     // States for sorting
-    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>({ key: 'tongBot', direction: 'asc' });
     const [showPercent, setShowPercent] = useState(false);
 
     const [nameOverrides] = useIndexedDBState<Record<string, string>>('competition-name-overrides', {});
@@ -162,6 +162,14 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
         });
         return count;
     };
+
+    // Calculate the threshold for TOP 30% of TỔNG BOT (excluding 0 values)
+    const tongBotRedCutoff = useMemo(() => {
+        const botValues = employees.map(emp => getEmployeeTongBot(emp.name, emp.originalName));
+        botValues.sort((a, b) => b - a); // descending order
+        const thresholdIndex = Math.max(0, Math.ceil(employees.length * 0.3) - 1);
+        return botValues[thresholdIndex] ?? 0;
+    }, [employees, columnAverages, employeeDataMap, employeeCompetitionTargets, showPercent]);
 
     // Sort employees list based on current sortConfig
     const sortedEmployees = useMemo(() => {
@@ -459,11 +467,11 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                         })()}
                                         <th 
                                             onClick={() => handleSort('tongBot')}
-                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-400 min-w-[100px] leading-tight align-middle cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all"
+                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 min-w-[100px] leading-tight align-middle cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>TỔNG BOT</span>
-                                                <span className="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 ml-0.5">{getSortIndicator('tongBot')}</span>
+                                                <span className="text-[9px] font-bold text-red-600 dark:text-red-400 ml-0.5">{getSortIndicator('tongBot')}</span>
                                             </div>
                                         </th>
                                     </tr>
@@ -500,9 +508,17 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                                         </td>
                                                     );
                                                 })}
-                                                <td className="px-1.5 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap font-bold text-slate-800 dark:text-slate-200 bg-slate-50/50 dark:bg-slate-900/30 tabular-nums">
-                                                    {tongBot > 0 ? tongBot : '-'}
-                                                </td>
+                                                {(() => {
+                                                    const isRed = tongBot > 0 && tongBotRedCutoff > 0 && tongBot >= tongBotRedCutoff;
+                                                    const tongBotColorClass = isRed 
+                                                        ? 'text-rose-600 dark:text-rose-455 font-extrabold bg-rose-50/20 dark:bg-rose-950/10' 
+                                                        : 'text-slate-800 dark:text-slate-200 font-bold bg-slate-50/50 dark:bg-slate-900/30';
+                                                    return (
+                                                        <td className={`px-1.5 py-1 border-r border-slate-100 dark:border-slate-700/50 text-center text-[13px] whitespace-nowrap tabular-nums ${tongBotColorClass}`}>
+                                                            {tongBot > 0 ? tongBot : '-'}
+                                                        </td>
+                                                    );
+                                                })()}
                                             </tr>
                                         );
                                     })}
