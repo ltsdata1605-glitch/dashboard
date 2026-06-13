@@ -560,7 +560,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         );
                                     })}
                                     {/* TRUNG BÌNH row */}
-                                    <tr className="bg-amber-50 dark:bg-amber-950/20 font-bold text-amber-800 dark:text-amber-300 border-t border-slate-200 dark:border-slate-700">
+                                    <tr className="bg-amber-50 dark:bg-amber-950/20 font-bold text-amber-800 dark:text-amber-300 border-t-2 border-slate-300 dark:border-slate-600">
                                         <td className="sticky left-0 z-10 bg-amber-50 dark:bg-amber-950/20 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-slate-200 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                             TRUNG BÌNH
                                         </td>
