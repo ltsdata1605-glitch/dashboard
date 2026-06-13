@@ -7,7 +7,7 @@ import ResultsDisplay from './ResultsDisplay';
 import Scanner from './Scanner';
 import PrintSettingsModal from './PrintSettingsModal';
 import LayoutSelectionModal from './LayoutSelectionModal';
-import ManualInputModal from './ManualInputModal';
+import ManualInputModal, { ManualProductWithId } from './ManualInputModal';
 import ControlPanel from './ControlPanel';
 import PdfPreviewModal from './PdfPreviewModal';
 import InventoryToolbar from './InventoryToolbar';
@@ -46,6 +46,15 @@ export default function App(): React.JSX.Element {
     setIsInitializing,
     handleLoginSuccess
   } = useStickerEventAuth();
+
+  // 1b. Lifted Database & File States
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+  const [manualProducts, setManualProducts] = useState<ManualProductWithId[]>([]);
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [uploadTimestamp, setUploadTimestamp] = useState<Date | null>(null);
+  const [inventoryUploadTimestamp, setInventoryUploadTimestamp] = useState<Date | null>(null);
+  const [fileExportDate, setFileExportDate] = useState<string | null>(null);
 
   // 2. State coordination Hook
   const {
@@ -103,19 +112,13 @@ export default function App(): React.JSX.Element {
   } = useStickerEventState({
     user,
     isInitializing,
-    allProducts: [], // Placeholder during init, synced below
-    inventory: [], // Placeholder during init, synced below
-    manualProducts: [], // Placeholder during init, synced below
+    allProducts,
+    inventory,
+    manualProducts,
   });
 
   // 3. Database operations Hook
   const {
-    allProducts,
-    setAllProducts,
-    inventory,
-    setInventory,
-    manualProducts,
-    setManualProducts,
     loadFirestoreData,
     handleManualSave,
     handleManualDelete,
@@ -131,24 +134,22 @@ export default function App(): React.JSX.Element {
     setIsInitializing,
     setError,
     showAlert,
-    fileName: null, // Placeholder during init, synced below
-    setFileName: () => {}, // Syncs dynamically in initialization
-    fileExportDate: null,
-    setFileExportDate: () => {},
-    setUploadTimestamp: () => {},
-    setInventoryUploadTimestamp: () => {},
+    fileName,
+    setFileName,
+    fileExportDate,
+    setFileExportDate,
+    setUploadTimestamp,
+    setInventoryUploadTimestamp,
+    allProducts,
+    setAllProducts,
+    inventory,
+    setInventory,
+    manualProducts,
+    setManualProducts,
   });
 
   // 4. File operations Hook
   const {
-    fileName,
-    setFileName,
-    uploadTimestamp,
-    setUploadTimestamp,
-    inventoryUploadTimestamp,
-    setInventoryUploadTimestamp,
-    fileExportDate,
-    setFileExportDate,
     handleFileChange,
     handleDownloadSampleInventory,
     handleInventoryFileChange,
@@ -169,6 +170,14 @@ export default function App(): React.JSX.Element {
     setIsLoading,
     setError,
     showAlert,
+    fileName,
+    setFileName,
+    uploadTimestamp,
+    setUploadTimestamp,
+    inventoryUploadTimestamp,
+    setInventoryUploadTimestamp,
+    fileExportDate,
+    setFileExportDate,
   });
 
   // 5. Printing operations Hook

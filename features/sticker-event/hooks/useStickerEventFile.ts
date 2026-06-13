@@ -30,6 +30,14 @@ interface UseStickerEventFileProps {
   setIsLoading: (val: boolean) => void;
   setError: (val: string | null) => void;
   showAlert: (message: string, title?: string) => void;
+  fileName: string | null;
+  setFileName: (val: string | null) => void;
+  uploadTimestamp: Date | null;
+  setUploadTimestamp: (val: Date | null) => void;
+  inventoryUploadTimestamp: Date | null;
+  setInventoryUploadTimestamp: (val: Date | null) => void;
+  fileExportDate: string | null;
+  setFileExportDate: (val: string | null) => void;
 }
 
 export function useStickerEventFile({
@@ -47,11 +55,15 @@ export function useStickerEventFile({
   setIsLoading,
   setError,
   showAlert,
+  fileName,
+  setFileName,
+  uploadTimestamp,
+  setUploadTimestamp,
+  inventoryUploadTimestamp,
+  setInventoryUploadTimestamp,
+  fileExportDate,
+  setFileExportDate,
 }: UseStickerEventFileProps) {
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [uploadTimestamp, setUploadTimestamp] = useState<Date | null>(null);
-  const [inventoryUploadTimestamp, setInventoryUploadTimestamp] = useState<Date | null>(null);
-  const [fileExportDate, setFileExportDate] = useState<string | null>(null);
 
   const handleFileChange = useCallback(async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (userData?.role !== 'admin') {

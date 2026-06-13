@@ -36,6 +36,12 @@ interface UseStickerEventDbProps {
   setFileExportDate: (val: string | null) => void;
   setUploadTimestamp: (val: Date | null) => void;
   setInventoryUploadTimestamp: (val: Date | null) => void;
+  allProducts: Product[];
+  setAllProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  inventory: InventoryItem[];
+  setInventory: React.Dispatch<React.SetStateAction<InventoryItem[]>>;
+  manualProducts: ManualProductWithId[];
+  setManualProducts: React.Dispatch<React.SetStateAction<ManualProductWithId[]>>;
 }
 
 export function useStickerEventDb({
@@ -54,10 +60,13 @@ export function useStickerEventDb({
   setFileExportDate,
   setUploadTimestamp,
   setInventoryUploadTimestamp,
+  allProducts,
+  setAllProducts,
+  inventory,
+  setInventory,
+  manualProducts,
+  setManualProducts,
 }: UseStickerEventDbProps) {
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [inventory, setInventory] = useState<InventoryItem[]>([]);
-  const [manualProducts, setManualProducts] = useState<ManualProductWithId[]>([]);
 
   const loadFirestoreData = useCallback(async (
     storeId: string, 
