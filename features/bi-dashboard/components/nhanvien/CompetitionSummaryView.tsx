@@ -427,12 +427,12 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                 ) : (
                     <div className="w-full overflow-hidden px-4 pb-4">
                         <div className="overflow-x-auto border border-slate-200 dark:border-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
-                            <table className="w-full border-collapse compact-export-table">
+                            <table className="min-w-max w-full table-auto border-collapse compact-export-table">
                                 <thead>
                                     <tr className="text-[11px] font-black uppercase tracking-wider">
                                         <th 
                                             onClick={() => handleSort('employee')}
-                                            className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 px-2 py-1.5 text-left border-r border-b-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[160px] align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                            className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 px-2 py-1.5 text-left border-r border-b-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[120px] align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                         >
                                             <div className="flex items-center justify-between">
                                                 <span>Nhân viên</span>
@@ -453,7 +453,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                                         onDrop={(e) => handleDrop(e, index)}
                                                         onDragEnd={() => setDraggedIndex(null)}
                                                         onClick={() => handleSort(header.title)}
-                                                        className={`px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[100px] leading-tight align-middle cursor-pointer hover:bg-${color}-100 dark:hover:bg-${color}-900/50 transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-indigo-500' : ''}`}
+                                                        className={`px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-${color}-50 dark:bg-${color}-950/30 text-${color}-700 dark:text-${color}-400 min-w-[65px] leading-tight align-middle cursor-pointer hover:bg-${color}-100 dark:hover:bg-${color}-900/50 transition-all select-none ${isDragging ? 'opacity-30 scale-95 border-dashed border-indigo-500' : ''}`}
                                                         title="Kéo thả để sắp xếp cột — Click để sắp xếp dòng"
                                                     >
                                                         <div className="flex items-center justify-center gap-1">
@@ -467,10 +467,10 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                         })()}
                                         <th 
                                             onClick={() => handleSort('tongBot')}
-                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 min-w-[100px] leading-tight align-middle cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
+                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-400 min-w-[55px] leading-tight align-middle cursor-pointer hover:bg-red-100 dark:hover:bg-red-900/50 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
-                                                <span>TỔNG BOT</span>
+                                                <span>BOT</span>
                                                 <span className="text-[9px] font-bold text-red-600 dark:text-red-400 ml-0.5">{getSortIndicator('tongBot')}</span>
                                             </div>
                                         </th>
@@ -484,7 +484,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                         return (
                                             <tr key={emp.originalName} className={`${zebraClass} hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors border-b border-gray-100 dark:border-slate-700`}>
                                                 <td 
-                                                    className={`sticky left-0 z-10 ${zebraClass} px-2 py-1 font-bold border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-[13px] text-left leading-tight`}
+                                                    className={`sticky left-0 z-10 ${zebraClass} px-2 py-1 font-bold border-r border-slate-100 dark:border-slate-700/50 whitespace-nowrap shadow-[2px_0_5px_rgba(0,0,0,0.05)] text-[13px] text-left leading-tight min-w-[120px]`}
                                                     style={{ color: 'var(--color-sky-600)' }}
                                                 >
                                                     {emp.name}
@@ -524,7 +524,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                     })}
                                     {/* TRUNG BÌNH row */}
                                     <tr className="bg-slate-50 dark:bg-slate-800/50 font-bold text-slate-700 dark:text-slate-300 border-t border-slate-200 dark:border-slate-700">
-                                        <td className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-slate-200 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                                        <td className="sticky left-0 z-10 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-slate-200 dark:border-slate-700/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                             TRUNG BÌNH
                                         </td>
                                         {visibleHeaders.map(header => {
@@ -553,7 +553,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
                                     </tr>
                                     {/* Grand Total — indigo accent */}
                                     <tr className="bg-indigo-50 dark:bg-indigo-900/30 font-extrabold text-indigo-800 dark:text-indigo-300 border-t-2 border-indigo-200 dark:border-indigo-800">
-                                         <td className="sticky left-0 z-10 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-indigo-200 dark:border-indigo-800/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)]">
+                                         <td className="sticky left-0 z-10 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-1 text-left uppercase text-[13px] tracking-wider border-r border-indigo-200 dark:border-indigo-800/50 shadow-[2px_0_5px_rgba(0,0,0,0.05)] min-w-[120px]">
                                              TỔNG
                                          </td>
                                          {visibleHeaders.map(header => {
