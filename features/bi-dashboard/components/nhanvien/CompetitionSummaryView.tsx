@@ -496,11 +496,11 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         </th>
                                         <th 
                                             onClick={() => handleSort('noSale')}
-                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-400 min-w-[60px] leading-tight align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-850 transition-all"
+                                            className="px-1.5 py-1.5 text-center border-r border-b-2 border-slate-200 dark:border-slate-700 bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 min-w-[60px] leading-tight align-middle cursor-pointer hover:bg-red-200 dark:hover:bg-red-900/60 transition-all"
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>NoSale</span>
-                                                <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 ml-0.5">{getSortIndicator('noSale')}</span>
+                                                <span className="text-[9px] font-bold text-red-600 dark:text-red-400 ml-0.5">{getSortIndicator('noSale')}</span>
                                             </div>
                                         </th>
                                     </tr>
