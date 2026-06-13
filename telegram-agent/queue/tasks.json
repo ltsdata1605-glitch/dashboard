@@ -178,5 +178,33 @@
     "plan_file": null,
     "executed_at": null,
     "completed_at": null
+  },
+  {
+    "id": "TASK-392678",
+    "description": "chạy localhost",
+    "content": "chạy localhost",
+    "status": "planned",
+    "type": "RUN_LOCALHOST",
+    "run_command": "npm run dev -- --host 127.0.0.1",
+    "port": 5173,
+    "created_at": "2026-06-12T09:26:32.678Z",
+    "plan_file": "/Users/dangkhoa/Downloads/Vide Coding/dashboardycx/tasks/plan-TASK-392678.md",
+    "executed_at": null,
+    "completed_at": null,
+    "package_manager": "npm"
+  },
+  {
+    "id": "TASK-392810",
+    "description": "chạy localhost",
+    "content": "chạy localhost",
+    "status": "completed",
+    "type": "RUN_LOCALHOST",
+    "run_command": "npm run dev -- --host 127.0.0.1",
+    "port": 5173,
+    "created_at": "2026-06-12T09:26:32.810Z",
+    "plan_file": "/Users/dangkhoa/Downloads/Vide Coding/dashboardycx/tasks/plan-TASK-392810.md",
+    "executed_at": null,
+    "completed_at": null,
+    "package_manager": "npm"
   }
 ]

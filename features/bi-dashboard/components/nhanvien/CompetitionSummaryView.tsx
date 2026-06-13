@@ -143,7 +143,7 @@ const CompetitionSummaryView: React.FC<CompetitionSummaryViewProps> = ({
     const [showPercent, setShowPercent] = useState(false);
 
     const headerActions = (
-        <div className="flex items-center gap-1.5 no-print relative z-[10]">
+        <div className="flex items-center gap-1.5 no-print relative z-[30]">
             {/* Toggle % / Luỹ kế */}
             <button
                 type="button"

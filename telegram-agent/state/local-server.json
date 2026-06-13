@@ -1,0 +1,8 @@
+{
+  "pid": 18896,
+  "port": 5174,
+  "url": "http://localhost:5174",
+  "taskId": "TASK-392810",
+  "command": "npm run dev -- --host 127.0.0.1 --port 5174",
+  "startedAt": "2026-06-12T09:26:51.397Z"
+}
