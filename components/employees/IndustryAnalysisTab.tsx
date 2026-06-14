@@ -42,7 +42,7 @@ const IndustryAnalysisTab = React.memo(forwardRef<HTMLDivElement, IndustryAnalys
     const formatNum = (value: number) => value > 0 ? formatQuantityWithFraction(value) : '-';
     const formatC = (value: number) => value > 0 ? formatCurrency(value) : '-';
     const formatCustomColPct = (v: number, col: CustomColumnConfig) => {
-        if (v === 0) return '-';
+        if (v === 0 || v === null || v === undefined || isNaN(v) || !isFinite(v)) return '-';
         const decimals = col.percentageConfig?.decimalPlaces !== undefined ? col.percentageConfig.decimalPlaces : 0;
         const formatAs = col.percentageConfig?.formatAs || 'percentage';
         const formattedVal = Number(v.toFixed(decimals)).toLocaleString('vi-VN', {

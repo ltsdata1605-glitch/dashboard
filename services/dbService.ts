@@ -98,7 +98,7 @@ export function getDb(): Promise<IDBDatabase> {
     return dbPromise;
 }
 
-export async function saveSetting(key: string, value: any): Promise<void> {
+export async function saveSetting(key: string, value: any, source?: string): Promise<void> {
     const tryTransaction = async (db: IDBDatabase) => {
         return new Promise<void>((resolve, reject) => {
             let active = true;
@@ -124,10 +124,10 @@ export async function saveSetting(key: string, value: any): Promise<void> {
                         active = false;
                         clearTimeout(timeoutId);
                         if (typeof window !== 'undefined') {
-                            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key } }));
+                            window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key, source } }));
                             if (key.startsWith('bi_')) {
                                 const originalKey = key.slice(3);
-                                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey } }));
+                                window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: originalKey, source } }));
                             }
                         }
                         resolve();
@@ -914,8 +914,8 @@ export async function getSummaryTableConfig(): Promise<FilterState['summaryTable
 }
 
 // --- Custom Tabs ---
-export async function saveCustomTabs(tabs: CustomContestTab[]): Promise<void> {
-    return saveSetting('customTabs', tabs);
+export async function saveCustomTabs(tabs: CustomContestTab[], source?: string): Promise<void> {
+    return saveSetting('customTabs', tabs, source);
 }
 
 export async function getCustomTabs(): Promise<CustomContestTab[] | null> {
@@ -966,8 +966,8 @@ export async function clearCustomTabs(): Promise<void> {
 }
 
 // --- Industry Analysis Custom Tabs ---
-export async function saveIndustryAnalysisCustomTabs(tabs: CustomContestTab[]): Promise<void> {
-    return saveSetting('industryAnalysisCustomTabs', tabs);
+export async function saveIndustryAnalysisCustomTabs(tabs: CustomContestTab[], source?: string): Promise<void> {
+    return saveSetting('industryAnalysisCustomTabs', tabs, source);
 }
 
 export async function getIndustryAnalysisCustomTabs(): Promise<CustomContestTab[] | null> {

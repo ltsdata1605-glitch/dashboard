@@ -181,7 +181,14 @@ const EmployeeAnalysisContent: React.FC<EmployeeAnalysisContentProps> = React.me
         }
     }, [filteredEmployeeAnalysisData?.fullSellerArray, handleBatchExport]);
 
-    if (!isInitialTabsLoaded || !filteredEmployeeAnalysisData) return null;
+    if (!isInitialTabsLoaded || !filteredEmployeeAnalysisData) {
+        return (
+            <div className="flex flex-col items-center justify-center py-20 w-full">
+                <div className="w-10 h-10 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                <p className="mt-3 text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400">Đang tải dữ liệu phân tích...</p>
+            </div>
+        );
+    }
 
     switch (activeTab) {
         case 'topSellers': 

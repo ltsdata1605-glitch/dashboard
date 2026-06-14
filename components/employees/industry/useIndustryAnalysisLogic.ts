@@ -14,10 +14,12 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
     const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'percentBaoHiem', direction: 'desc' });
     
     useEffect(() => {
+        let isMounted = true;
         Promise.all([
             getIndustryVisibleGroups(),
             getIndustryVisibleGroups() // Temporary fallback for efficiency if missing
         ]).then(([savedDetail]) => {
+            if (!isMounted) return;
             let initialGroups = ['spChinh'];
             if (savedDetail && savedDetail.length > 0) {
                 initialGroups = savedDetail;
@@ -37,6 +39,9 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             
             setInitialGroupsLoaded(true);
         });
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     const visibleGroups = viewMode === 'detail' ? visibleGroupsDetail : visibleGroupsEfficiency;
@@ -189,38 +194,45 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
 
             const checkMatch = (filters: any, industry: string, subgroup: string, manufacturer: string, productCodeStr: string) => {
                 if (!filters) return false;
-                const industryMatch = !filters.selectedIndustries || filters.selectedIndustries.length === 0 || filters.selectedIndustries.includes(industry);
-                const subgroupMatch = !filters.selectedSubgroups || filters.selectedSubgroups.length === 0 || filters.selectedSubgroups.includes(subgroup);
-                const manufacturerMatch = !filters.selectedManufacturers || filters.selectedManufacturers.length === 0 || filters.selectedManufacturers.includes(manufacturer);
-                
-                let productCodeMatch = !filters.productCodes || filters.productCodes.length === 0;
-                if (!productCodeMatch && filters.productCodes) {
+                if (filters.selectedIndustries && filters.selectedIndustries.length > 0 && !filters.selectedIndustries.includes(industry)) {
+                    return false;
+                }
+                if (filters.selectedSubgroups && filters.selectedSubgroups.length > 0 && !filters.selectedSubgroups.includes(subgroup)) {
+                    return false;
+                }
+                if (filters.selectedManufacturers && filters.selectedManufacturers.length > 0 && !filters.selectedManufacturers.includes(manufacturer)) {
+                    return false;
+                }
+                if (filters.productCodes && filters.productCodes.length > 0) {
+                    let productCodeMatch = false;
                     for (const code of filters.productCodes) {
                         if (productCodeStr.includes(code)) {
                             productCodeMatch = true;
                             break;
                         }
                     }
+                    if (!productCodeMatch) return false;
                 }
-                return industryMatch && subgroupMatch && manufacturerMatch && productCodeMatch;
+                return true;
             };
 
-            allTabs.forEach(tab => {
-                const cols = tab.columns || [];
-                if (cols.length === 0) return;
+            validData.forEach(row => {
+                const rawCreator = getRowValue(row, COL.NGUOI_TAO);
+                if (!rawCreator) return;
+                
+                const employeeId = rawCreator.split(' - ')[0].trim();
+                const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
+                const price = Number(getRowValue(row, COL.PRICE)) || 0;
+                
+                const rawGroup = getRowValue(row, COL.MA_NHOM_HANG);
+                const industry = productConfig.childToParentMap[rawGroup] || '';
+                const subgroup = productConfig.childToSubgroupMap[rawGroup] || '';
+                const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
+                const productCodeStr = String(getRowValue(row, COL.PRODUCT) || '');
 
-                validData.forEach(row => {
-                    const rawCreator = getRowValue(row, COL.NGUOI_TAO);
-                    if (!rawCreator) return;
-                    
-                    const employeeId = rawCreator.split(' - ')[0].trim();
-                    const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
-                    const price = Number(getRowValue(row, COL.PRICE)) || 0;
-                    
-                    const industry = productConfig.childToParentMap[getRowValue(row, COL.MA_NHOM_HANG)] || '';
-                    const subgroup = productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)] || '';
-                    const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
-                    const productCodeStr = String(getRowValue(row, COL.PRODUCT) || '');
+                allTabs.forEach(tab => {
+                    const cols = tab.columns || [];
+                    if (cols.length === 0) return;
 
                     cols.forEach(col => {
                         let isMainMatch = false;
@@ -414,14 +426,15 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             const allTabs = [...(customExploitationTabs || []), ...(efficiencyExploitationTabs || [])];
             if (allTabs.length > 0) {
                  allTabs.forEach(tab => {
-                     const cols = tab.columns || [];
-                     cols.forEach(col => {
-                         initialTotals[`raw_mainSl_${tab.id}_${col.id}`] = 0;
-                         initialTotals[`raw_mainDt_${tab.id}_${col.id}`] = 0;
-                         initialTotals[`raw_baseSl_${tab.id}_${col.id}`] = 0;
-                         initialTotals[`raw_baseDt_${tab.id}_${col.id}`] = 0;
-                     });
-                 });
+                      const cols = tab.columns || [];
+                      cols.forEach(col => {
+                          initialTotals[`raw_mainSl_${tab.id}_${col.id}`] = 0;
+                          initialTotals[`raw_mainDt_${tab.id}_${col.id}`] = 0;
+                          initialTotals[`raw_baseSl_${tab.id}_${col.id}`] = 0;
+                          initialTotals[`raw_baseDt_${tab.id}_${col.id}`] = 0;
+                          initialTotals[`val_${tab.id}_${col.id}`] = 0;
+                      });
+                  });
             }
 
             if (items.length === 0) return { ...initialTotals, hieuQuaQD: 0, percentBaoHiem: 0, percentSimKT: 0, percentDongHoKT: 0, percentPhuKienKT: 0, percentGiaDungKT: 0, slSPChinh_Tong: 0 };

@@ -21,18 +21,22 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
 
     // Load tabs from DB on mount
     useEffect(() => {
+        let isMounted = true;
         const loadData = async () => {
             const savedTabs = await getCustomTabs();
+            if (!isMounted) return;
             if (savedTabs) {
                 const migratedTabs = savedTabs.map(tab => ({ ...tab, icon: tab.icon || 'bar-chart-3' }));
                 setCustomTabs(migratedTabs);
             }
             const savedIndustryTabs = await getIndustryAnalysisCustomTabs();
+            if (!isMounted) return;
             if (savedIndustryTabs) {
                 setIndustryAnalysisTabs(savedIndustryTabs);
             }
             const savedExploitationTabs = await getSetting<CustomExploitationTabConfig[]>('customExploitationTabs');
             const savedEfficiencyTabs = await getSetting<CustomExploitationTabConfig[]>('efficiencyExploitationTabs');
+            if (!isMounted) return;
             
             let finalExploitationTabs: CustomExploitationTabConfig[] = [];
             
@@ -71,6 +75,7 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
 
             // Migration logic for V10 preset tabs (Clean up duplicate DONG HO filters)
             const hasMigratedPresetsV10 = await getSetting('presetTabsMigratedV10') === true;
+            if (!isMounted) return;
             if (!hasMigratedPresetsV10) {
                 // Filter out previous default tabs to prevent duplication
                 finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
@@ -91,11 +96,16 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
             
             // Wait for React to apply state updates before marking as loaded and enabling saves
             setTimeout(() => {
-                isHydratedRef.current = true;
-                setIsInitialTabsLoaded(true);
+                if (isMounted) {
+                    isHydratedRef.current = true;
+                    setIsInitialTabsLoaded(true);
+                }
             }, 0);
         };
         loadData();
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
     const isUpdatingFromCloudRef = useRef(false);
@@ -104,7 +114,9 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
     useEffect(() => {
         const handleSettingChanged = async (e: any) => {
             const changedKey = e.detail?.key;
+            const source = e.detail?.source;
             if (!changedKey) return;
+            if (source === 'local-employee-analysis') return; // Bỏ qua sự kiện tự phát để tránh desync chặn lưu
 
             if (changedKey === 'customTabs') {
                 const savedTabs = await getCustomTabs();
@@ -192,10 +204,10 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 isUpdatingFromCloudRef.current = false;
                 return;
             }
-            saveCustomTabs(customTabs);
-            saveIndustryAnalysisCustomTabs(industryAnalysisTabs);
-            saveSetting('customExploitationTabs', customExploitationTabs);
-            saveSetting('efficiencyExploitationTabs', efficiencyExploitationTabs);
+            saveCustomTabs(customTabs, 'local-employee-analysis');
+            saveIndustryAnalysisCustomTabs(industryAnalysisTabs, 'local-employee-analysis');
+            saveSetting('customExploitationTabs', customExploitationTabs, 'local-employee-analysis');
+            saveSetting('efficiencyExploitationTabs', efficiencyExploitationTabs, 'local-employee-analysis');
         }
     }, [customTabs, industryAnalysisTabs, customExploitationTabs, efficiencyExploitationTabs, isInitialTabsLoaded]);
 
@@ -411,7 +423,8 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                     return [...prev, { ...tabConfig, order: prev.length }];
                 }
             } else {
-                return [...prev, { ...tabConfig, id: `custom-${crypto.randomUUID()}`, order: prev.length }];
+                const safeId = typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : 'custom-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+                return [...prev, { ...tabConfig, id: `custom-${safeId}`, order: prev.length }];
             }
         });
         setIsClosingModal(true);
