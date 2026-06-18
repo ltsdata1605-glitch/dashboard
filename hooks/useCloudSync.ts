@@ -150,12 +150,14 @@ export const useCloudSync = () => {
                     const data = docSnap.data();
                     if (!data || data.value === undefined) continue;
                     
-                    const cloudTime = data.updatedAt?.toMillis ? data.updatedAt.toMillis() : 0;
-                    if (!cloudTime) continue;
+                    const cloudTime = data.updatedAt?.toMillis 
+                        ? data.updatedAt.toMillis() 
+                        : (typeof data.updatedAt === 'number' ? data.updatedAt : (data.savedAt || 0));
                     
+                    const localValue = await getSetting<any>(key);
                     const localTime = await getSetting<number>(`lastModified_${key}`) || 0;
                     
-                    if (cloudTime > localTime) {
+                    if (localValue === null || cloudTime > localTime) {
                         console.log(`[Cloud Sync] Real-time: Cloud has newer version for heavy key "${key}" (${cloudTime} > ${localTime}). Writing to local DB...`);
                         
                         let val = data.value;
@@ -167,7 +169,7 @@ export const useCloudSync = () => {
                             val.config.groups = restoredGroups;
                         }
                         
-                        await saveSettingFromCloud(key, val, cloudTime);
+                        await saveSettingFromCloud(key, val, cloudTime || Date.now());
                         
                         if (key === 'checkthuong_data') {
                             try {

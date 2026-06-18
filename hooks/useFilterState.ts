@@ -104,9 +104,7 @@ export const useFilterState = () => {
     }, [filterState, isLoaded]);
 
     const handleFilterChange = useCallback((newFilters: Partial<FilterState>) => {
-        startTransition(() => {
-            setFilterState(prev => ({ ...prev, ...newFilters }));
-        });
+        setFilterState(prev => ({ ...prev, ...newFilters }));
     }, []);
 
     return {

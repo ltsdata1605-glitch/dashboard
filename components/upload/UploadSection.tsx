@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { Icon } from '../common/Icon';
 
 interface UploadSectionProps {
-    onProcessFile: (files: File[]) => void;
+    onProcessFile: (files: File[], isCloudSync?: boolean, isHistorical?: boolean) => void;
     configUrl: string;
     onConfigUrlChange: (url: string) => void;
     isDeduplicationEnabled?: boolean;
@@ -12,6 +12,7 @@ interface UploadSectionProps {
 const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl, onConfigUrlChange, isDeduplicationEnabled = false, onDeduplicationChange }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [uploadType, setUploadType] = useState<'realtime' | 'historical'>('realtime');
 
     const handleDragOver = useCallback((e: React.DragEvent) => {
         e.preventDefault();
@@ -28,15 +29,15 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
         setIsDragging(false);
         const files = Array.from(e.dataTransfer.files);
         if (files.length > 0) {
-            onProcessFile(files);
+            onProcessFile(files, false, uploadType === 'historical');
         }
-    }, [onProcessFile]);
+    }, [onProcessFile, uploadType]);
 
     const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
-            onProcessFile(Array.from(e.target.files));
+            onProcessFile(Array.from(e.target.files), false, uploadType === 'historical');
         }
-    }, [onProcessFile]);
+    }, [onProcessFile, uploadType]);
 
     return (
         <div className="flex flex-col">
@@ -80,22 +81,52 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                     </div>
                 </div>
             ) : (
-                <div className="flex items-center gap-3 mb-4 relative z-10">
-                    <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100/50 dark:border-blue-500/20">
-                        <Icon name="database" size={4.5} />
+                <>
+                    {/* Switch/Segmented Control */}
+                    <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-4 relative z-10">
+                        <button
+                            type="button"
+                            onClick={() => setUploadType('realtime')}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                                uploadType === 'realtime'
+                                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            }`}
+                        >
+                            Tệp Realtime (Xem nhanh)
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setUploadType('historical')}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                                uploadType === 'historical'
+                                    ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                            }`}
+                        >
+                            Lũy kế / Quá khứ
+                        </button>
                     </div>
-                    <div className="text-left flex-1">
-                        <h3 className="font-bold text-slate-900 dark:text-white text-[13px]">Nhập dữ liệu</h3>
-                        <p className="text-[11px] font-medium text-slate-500">Hỗ trợ Excel (.xlsx, .xls)</p>
+
+                    <div className="flex items-center gap-3 mb-4 relative z-10">
+                        <div className="w-9 h-9 rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-100/50 dark:border-blue-500/20">
+                            <Icon name="database" size={4.5} />
+                        </div>
+                        <div className="text-left flex-1">
+                            <h3 className="font-bold text-slate-900 dark:text-white text-[13px]">
+                                {uploadType === 'realtime' ? 'Nhập dữ liệu Realtime' : 'Nhập dữ liệu Lũy kế'}
+                            </h3>
+                            <p className="text-[11px] font-medium text-slate-500">Hỗ trợ Excel (.xlsx, .xls)</p>
+                        </div>
+                        <button 
+                            onClick={() => setIsSettingsOpen(true)}
+                            className="p-1.5 text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
+                            title="Cài đặt cấu hình"
+                        >
+                            <Icon name="share-2" size={4.5} />
+                        </button>
                     </div>
-                    <button 
-                        onClick={() => setIsSettingsOpen(true)}
-                        className="p-1.5 text-slate-300 hover:text-slate-500 dark:text-slate-600 dark:hover:text-slate-400 transition-colors"
-                        title="Cài đặt cấu hình"
-                    >
-                        <Icon name="share-2" size={4.5} />
-                    </button>
-                </div>
+                </>
             )}
 
             {!isSettingsOpen && (
@@ -116,10 +147,17 @@ const UploadSection: React.FC<UploadSectionProps> = ({ onProcessFile, configUrl,
                             <div className={`w-10 h-10 mb-3 rounded-full bg-white dark:bg-slate-800 shadow-sm flex items-center justify-center border border-slate-100 dark:border-slate-700 group-hover/dropzone:scale-110 transition-transform duration-300 group-hover/dropzone:shadow-blue-100 dark:group-hover/dropzone:shadow-none group-hover/dropzone:border-blue-200 dark:group-hover/dropzone:border-blue-500/30 text-slate-400 dark:text-slate-500 group-hover/dropzone:text-blue-500 dark:group-hover/dropzone:text-blue-400`}>
                                 <Icon name="upload" size={5} />
                             </div>
-                            <p className="mb-1.5 text-[13px] font-medium text-slate-600 dark:text-slate-300">
-                                <span className="text-blue-600 dark:text-blue-400 font-semibold">Chọn file</span> hoặc thả các file Excel vào đây
+                            <p className="mb-1.5 text-[13px] font-medium text-slate-600 dark:text-slate-300 text-center">
+                                <span className="text-blue-600 dark:text-blue-400 font-semibold">
+                                    {uploadType === 'realtime' ? 'Chọn file Realtime' : 'Chọn file Lũy kế'}
+                                </span> hoặc thả các file Excel vào đây
                             </p>
-                            <p className="text-[11px] text-slate-400 font-medium">Xử lý an toàn • Không tải lên máy chủ</p>
+                            <p className="text-[11px] text-slate-400 font-medium text-center">
+                                {uploadType === 'realtime' 
+                                    ? 'Phân tích nhanh tức thời, không lưu lưu trữ lâu dài' 
+                                    : 'Lưu kho dữ liệu lũy kế dài hạn và gộp báo cáo'
+                                }
+                            </p>
                         </div>
                         <input
                             id="file-upload"

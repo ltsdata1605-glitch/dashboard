@@ -167,6 +167,9 @@ function AppContent() {
         });
     }, []);
 
+
+
+
     // Hiển thị màn hình Loading nếu Firebase Auth đang kiểm tra phiên làm việc
     if (isLoading) {
          return (

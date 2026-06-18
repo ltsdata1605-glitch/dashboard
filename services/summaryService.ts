@@ -86,11 +86,11 @@ export function processSummaryTable(
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
         const productName = getRowValue(row, COL.PRODUCT);
 
-        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
         const revenueQD = revenue * heso;
 
         // Logic trọng số số lượng dựa trên mã sản phẩm (cột AF) và bảng hệ số từ file cấu hình
-        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
         const qtyMultiplier = productConfig.quantityMultiplierMap?.[productCode];
         const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;
 
@@ -196,14 +196,14 @@ export function calculateWarehouseSummary(
             const productName = getRowValue(row, COL.PRODUCT);
             const customer = getRowValue(row, COL.CUSTOMER_NAME);
 
-            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+            const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
             const rowRevenue = price;
             const rowRevenueQD = rowRevenue * heso;
 
             // Trọng số số lượng dựa trên mã sản phẩm (cột AF) và bảng hệ số từ file cấu hình
             const industry = getParentGroup(maNhomHang, productConfig) || 'Khác';
             const group = getSubgroup(maNhomHang, productConfig) || 'Khác';
-            const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
             const qtyMultiplier = productConfig.quantityMultiplierMap?.[productCode];
             const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;
 

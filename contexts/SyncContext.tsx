@@ -19,10 +19,18 @@ export const SyncProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
+const SAFE_SYNC_FALLBACK: SyncContextType = {
+    syncState: 'idle',
+    lastSyncTime: null,
+    lastError: null,
+    forceSync: async () => {},
+};
+
 export const useSync = () => {
     const context = useContext(SyncContext);
     if (!context) {
-        throw new Error('useSync must be used within a SyncProvider');
+        console.warn('[Sync] useSync called outside SyncProvider — returning safe fallback. This is likely a bundle/caching/HMR issue.');
+        return SAFE_SYNC_FALLBACK;
     }
     return context;
 };

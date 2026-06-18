@@ -46,7 +46,7 @@ export const CrossSellingTable: React.FC<CrossSellingTableProps> = ({ tableConta
                 if (qty > 0) {
                     const price = Number(row['Giá bán_1']) || Number(row['Giá bán']) || 0; 
                     const rowRevenue = price * qty;
-                    const heso = productConfig ? getHeSoQuyDoi(NganhHang, NhomHang, productConfig, SanPham) : 1;
+                    const heso = productConfig ? getHeSoQuyDoi(NganhHang, NhomHang, productConfig, SanPham, MaSP) : 1;
                     doanhThuQD = rowRevenue * heso;
                 }
 

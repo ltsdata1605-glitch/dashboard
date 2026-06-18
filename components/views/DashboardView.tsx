@@ -11,6 +11,9 @@ import { getSetting, saveSetting } from '../../services/dbService';
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
 import LandingPageView from './LandingPageView';
+import FileHistoryModal from '../modals/FileHistoryModal';
+import FileNamingModal from '../modals/FileNamingModal';
+import UploadTypeSelectionModal from '../modals/UploadTypeSelectionModal';
 import StatusDisplay from '../upload/StatusDisplay';
 import FilterSection from '../filters/FilterSection';
 import FilterBar from '../filters/FilterBar';
@@ -69,7 +72,9 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         handleFilterChange,
         baseFilteredData,
         originalData,
-        pendingCloudSync, setPendingCloudSync, handleAcceptCloudSync
+        pendingCloudSync, setPendingCloudSync, handleAcceptCloudSync,
+        hasRealtimeData, handleClearRealtimeData,
+        pendingNaming, setPendingNaming
     } = logic;
     const { userRole } = useAuth();
     const { totalVisits, onlineUsers } = useSystemTraffic();
@@ -77,6 +82,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
     const [visibleComponents, setVisibleComponents] = useState<VisibilityState>(defaultVisibilityState);
     const [isVisibleComponentsLoaded, setIsVisibleComponentsLoaded] = useState(false);
+    const [isFileHistoryModalOpen, setIsFileHistoryModalOpen] = useState(false);
+    const [pendingUploadFiles, setPendingUploadFiles] = useState<File[] | null>(null);
 
     useEffect(() => {
         getSetting<VisibilityState>('dashboard_visibleComponents').then(saved => {
@@ -182,7 +189,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         return <div className="hidden" />;
     }
 
-    const showDashboard = appState === 'dashboard' && processedData;
+    const showDashboard = (appState === 'dashboard' || (appState === 'processing' && processedData)) && processedData;
     const showProcessingOverlay = appState === 'loading' || (appState === 'processing' && !processedData);
     const showLanding = appState === 'upload';
 
@@ -239,7 +246,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
             <div className="w-full mx-auto p-0 sm:p-2.5 lg:p-4 xl:p-8">
                 <DashboardContext.Provider value={logic as any}>
-                    <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleFileProcessing(Array.from(e.target.files))} />
+                    <input type="file" ref={mainFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && setPendingUploadFiles(Array.from(e.target.files))} />
                     <input type="file" ref={shiftFileInputRef} className="hidden" accept=".xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" multiple onClick={(e) => (e.currentTarget.value = '')} onChange={(e) => e.target.files?.length && handleShiftFileProcessing(Array.from(e.target.files))} />
 
                     <Header
@@ -272,6 +279,10 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             onConfigUrlChange={setConfigUrl}
                             isDeduplicationEnabled={isDeduplicationEnabled}
                             onDeduplicationChange={handleDeduplicationChange}
+                            registry={logic.fileRegistry}
+                            onToggleActive={logic.handleToggleFileActive}
+                            onDelete={logic.handleDeleteFile}
+                            onViewReport={logic.handleViewReport}
                         />
                     )}
 
@@ -293,15 +304,18 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     <TableSkeleton rows={4} />
                                 </div>
                             </div>
-                            <ProcessingLoader status={status} processingTime={processingTime} />
                         </div>
+                    )}
+
+                    {(appState === 'loading' || appState === 'processing') && (
+                        <ProcessingLoader status={status} processingTime={processingTime} />
                     )}
 
                     {showDashboard && (
                         <>
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
                                 <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
-                                    <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} />
+                                    <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} onOpenHistory={() => setIsFileHistoryModalOpen(true)} />
 
                                     {/* Data Coverage Indicator */}
                                     <div className="hidden lg:flex items-center justify-between px-1 lg:px-2 mb-1 lg:mb-2">
@@ -315,6 +329,16 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3">
+                                            {logic.hasRealtimeData && (
+                                                <button
+                                                    onClick={() => logic.handleClearRealtimeData()}
+                                                    title="Xóa dữ liệu xem hiện tại (Realtime)"
+                                                    className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold rounded-md border border-rose-200/50 dark:border-rose-800/40 text-[10px] transition-all hover:scale-105 active:scale-95 shadow-sm"
+                                                >
+                                                    <Icon name="trash-2" size={3.5} className="text-rose-500 animate-pulse" />
+                                                    <span>XÓA YCX REALTIME</span>
+                                                </button>
+                                            )}
                                             {logic.fileInfo && (
                                                 <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 px-2 py-1 rounded-md border border-slate-200/50 dark:border-slate-700/50">
                                                     <Icon name="calendar-days" size={3.5} className="opacity-70" />
@@ -495,6 +519,38 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
                     {activeModal === 'unshipped_overdue' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onlyOverdue={true} />}
                     <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />
+                    <FileHistoryModal
+                        isOpen={isFileHistoryModalOpen}
+                        onClose={() => setIsFileHistoryModalOpen(false)}
+                        registry={logic.fileRegistry}
+                        onToggleActive={logic.handleToggleFileActive}
+                        onDelete={logic.handleDeleteFile}
+                        onProcessFile={(files, isCloudSync, isHistorical) => {
+                            setIsFileHistoryModalOpen(false);
+                            handleFileProcessing(files, isCloudSync, isHistorical);
+                        }}
+                        onViewReport={logic.handleViewReport}
+                    />
+                    <FileNamingModal
+                        isOpen={!!pendingNaming}
+                        onConfirm={(name) => {
+                            if (pendingNaming) {
+                                pendingNaming.resolve(name);
+                                setPendingNaming(null);
+                            }
+                        }}
+                    />
+                    <UploadTypeSelectionModal
+                        isOpen={!!pendingUploadFiles}
+                        onClose={() => setPendingUploadFiles(null)}
+                        onSelect={(isHistorical) => {
+                            if (pendingUploadFiles) {
+                                handleFileProcessing(pendingUploadFiles, false, isHistorical);
+                                setPendingUploadFiles(null);
+                            }
+                        }}
+                        fileCount={pendingUploadFiles?.length || 0}
+                    />
                     <DebugPanel
                         isVisible={isDebugPanelVisible}
                         isInspectorActive={isInspectorActive}

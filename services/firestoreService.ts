@@ -221,24 +221,7 @@ export const HEAVY_SYNC_KEYS = new Set([
 
 export const isHeavySyncKey = (key: string): boolean => {
     if (HEAVY_SYNC_KEYS.has(key)) return true;
-    if (key.startsWith('bi_summary-') || 
-        key.startsWith('bi_competition') || // Matches bi_competition- and bi_competition_
-        key.startsWith('bi_last-updates-') ||
-        key.startsWith('bi_bonus-') ||
-        key.startsWith('bi_snapshot-') ||
-        key.startsWith('bi_config-') ||
-        key.startsWith('bi_comptarget-') ||
-        key.startsWith('bi_prev-month-') ||
-        key.startsWith('bi_avatar-') ||
-        key.startsWith('bi_targethero-') ||
-        key.startsWith('bi_ai-assistant-history') ||
-        key.startsWith('bi_previous-') ||
-        key.startsWith('bi_manual-') ||
-        key.startsWith('bi_hidden-') ||
-        key === 'checkthuong_data'
-    ) {
-        return true;
-    }
+    if (key.startsWith('bi_') || key === 'checkthuong_data') return true;
     return false;
 };
 

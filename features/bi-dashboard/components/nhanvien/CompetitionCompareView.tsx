@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Employee, Criterion, CompetitionHeader, RevenueRow } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
-import { FilterIcon, ChevronDownIcon, UsersIcon } from '../Icons';
+import { FilterIcon, ChevronDownIcon, UsersIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
-import { CameraIcon, Images } from 'lucide-react';
 
 interface CompetitionCompareViewProps {
     allEmployees: Employee[];
@@ -351,7 +350,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         <button onClick={() => setDisplayMode('actual')} className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</button>
                     </div>
                     <button onClick={performBatchExport} disabled={isBatchExporting || autoPairs.length === 0} title="Xuất tất cả cặp so sánh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 disabled:opacity-50 transition-colors">
-                        <Images className={`w-4 h-4 ${isBatchExporting ? 'animate-pulse text-indigo-500' : ''}`} />
+                        <ImagesIcon className={`w-4 h-4 ${isBatchExporting ? 'animate-pulse text-indigo-500' : ''}`} />
                     </button>
                     <button onClick={() => handleExportPNG()} title="Xuất ảnh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 transition-colors">
                         <CameraIcon className="w-4 h-4" />

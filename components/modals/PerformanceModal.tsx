@@ -146,7 +146,9 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                 const price = Number(getRowValue(o, COL.PRICE)) || 0;
                 const maNganhHang = getRowValue(o, COL.MA_NGANH_HANG);
                 const maNhomHang = getRowValue(o, COL.MA_NHOM_HANG);
-                const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig);
+                const productName = getRowValue(o, COL.PRODUCT);
+                const productCode = String(getRowValue(o, COL.PRODUCT_CODE) || '').trim();
+                const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
                 acc.totalRevenue += price;
                 acc.totalRevenueQD += price * heso;
                 return acc;

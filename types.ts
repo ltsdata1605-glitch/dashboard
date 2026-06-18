@@ -27,6 +27,16 @@ export interface StoredSalesData {
     fileLastModified?: number;
 }
 
+export interface UploadedFileRegistryItem {
+    id: string;
+    filename: string;
+    rowCount: number;
+    savedAt: number;
+    fileLastModified: number;
+    isActive: boolean;
+    isMissingLocalData?: boolean;
+}
+
 
 export interface KpiData {
     doanhThuQD: number;

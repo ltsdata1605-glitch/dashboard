@@ -6,7 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 // Import specialized hooks
 import { useExportLogic } from './useExportLogic';
 import { useFileUploadLogic } from './useFileUploadLogic';
-import { useFilterState } from './useFilterState';
+import { useFilterState, initialFilterState } from './useFilterState';
 import { useDataManagement } from './useDataManagement';
 import { useWarehouseTargets } from './useWarehouseTargets';
 import * as dbService from '../services/dbService';
@@ -44,8 +44,15 @@ export const useDashboardLogic = () => {
         isInternalProcessing,
         fileInfo, setFileInfo,
         pendingCloudSync, setPendingCloudSync,
-        handleAcceptCloudSync
-    } = useDataManagement({ filterState, configUrl, isDeduplicationEnabled, setStatus, setAppState });
+        handleAcceptCloudSync,
+        handleViewReport,
+        fileRegistry,
+        refreshRegistry,
+        handleToggleFileActive,
+        handleDeleteFile,
+        hasRealtimeData,
+        handleClearRealtimeData
+    } = useDataManagement({ filterState, configUrl, isDeduplicationEnabled, setStatus, setAppState, appState });
 
     // 3. Warehouse Targets Management
     const { handleSaveWarehouseTargets } = useWarehouseTargets(setWarehouseTargets);
@@ -58,7 +65,9 @@ export const useDashboardLogic = () => {
         handleFileProcessing,
         handleShiftFileProcessing,
         handleClearData,
-        handleClearDepartments
+        handleClearDepartments,
+        pendingNaming,
+        setPendingNaming
     } = useFileUploadLogic({
         isDeduplicationEnabled,
         originalData,
@@ -69,7 +78,8 @@ export const useDashboardLogic = () => {
         setAppState,
         setStatus,
         setFilterState,
-        user
+        user,
+        onRegistryChange: refreshRegistry
     });
 
     // 6. Export Logic
@@ -144,13 +154,14 @@ export const useDashboardLogic = () => {
     const isProcessing = isInternalProcessing || isFileProcessing;
 
     return {
-        status, appState, isProcessing, isClearingDepartments, isExporting, fileInfo,
+        status, appState, setAppState, isProcessing, isClearingDepartments, isExporting, fileInfo,
         departmentMap, originalData, baseFilteredData, warehouseFilteredData, calendarSourceData, productConfig, processedData, employeeAnalysisData,
         configUrl, setConfigUrl, uniqueFilterOptions,
         filterState, handleFilterChange,
         pendingCloudSync, setPendingCloudSync, handleAcceptCloudSync,
         activeModal, setActiveModal, modalData,
         handleClearDepartments, handleClearData, handleShiftFileProcessing, handleFileProcessing,
+        pendingNaming, setPendingNaming,
         openPerformanceModal, openUnshippedModal, handleExport,
         handleBatchExport,
         handleBatchKhoExport,
@@ -197,6 +208,63 @@ export const useDashboardLogic = () => {
         updateDepartmentMap: async (map: any) => {
             setDepartmentMap(map);
             await dbService.saveDepartmentMap(map);
+        },
+        fileRegistry,
+        refreshRegistry,
+        handleToggleFileActive: async (id: string) => {
+            await handleToggleFileActive(id);
+        },
+        handleDeleteFile: async (id: string) => {
+            await handleDeleteFile(id);
+            const registry = await dbService.getSalesFilesRegistry();
+            const activeHistoricalCount = registry.filter(f => f.isActive).length;
+            const merged = await dbService.getMergedSalesData();
+            if (merged) {
+                if (activeHistoricalCount > 0) {
+                    const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
+                    setFilterState(prev => ({
+                        ...prev,
+                        kho: [],
+                        xuat: 'all',
+                        trangThai: allTrangThai,
+                        nguoiTao: [],
+                        department: [],
+                        startDate: '',
+                        endDate: '',
+                        dateRange: 'all',
+                        selectedMonths: []
+                    }));
+                } else {
+                    setFilterState(initialFilterState);
+                }
+            }
+        },
+        hasRealtimeData,
+        handleClearRealtimeData,
+        handleViewReport: async () => {
+            await handleViewReport();
+            const registry = await dbService.getSalesFilesRegistry();
+            const activeHistoricalCount = registry.filter(f => f.isActive).length;
+            const merged = await dbService.getMergedSalesData();
+            if (merged) {
+                if (activeHistoricalCount > 0) {
+                    const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
+                    setFilterState(prev => ({
+                        ...prev,
+                        kho: [],
+                        xuat: 'all',
+                        trangThai: allTrangThai,
+                        nguoiTao: [],
+                        department: [],
+                        startDate: '',
+                        endDate: '',
+                        dateRange: 'all',
+                        selectedMonths: []
+                    }));
+                } else {
+                    setFilterState(initialFilterState);
+                }
+            }
         }
     };
 };

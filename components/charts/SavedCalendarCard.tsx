@@ -68,7 +68,8 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
             const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG) || '';
             const productName = getRowValue(row, COL.PRODUCT) || '';
 
-            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+            const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
             
             let valueToAdd = 0;
             let totalRevenue = 0;

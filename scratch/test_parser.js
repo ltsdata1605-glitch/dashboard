@@ -1,20 +1,6 @@
-/**
- * Parser for 4-level employee revenue detail data.
- * Hierarchy: Department > Employee > Ngành hàng (NNH) > Nhóm hàng > Hãng
- */
+import fs from 'fs';
 
-export interface DetailNode {
-    name: string;
-    level: 'total' | 'department' | 'employee' | 'nnh' | 'nhomHang' | 'hang';
-    dtlk: number;
-    dtqd: number;
-    hieuQuaQD: number;
-    soLuong: number;
-    donGia: number;
-    children: DetailNode[];
-}
-
-function parseNum(s: string): number {
+function parseNum(s) {
     if (!s) return 0;
     let cleaned = s.trim();
     // If there is both a dot and a comma:
@@ -45,29 +31,15 @@ function parseNum(s: string): number {
     return isNaN(val) ? 0 : val;
 }
 
-
-/**
- * Detect row level from context:
- * - "Tổng" → total
- * - Starts with "BP " → department
- * - Matches "Name - DIGITS" (employee ID pattern) → employee
- * - Starts with "NNH " → nnh (ngành hàng)
- * - Everything else is nhomHang or hang (determined by children)
- */
-function detectLevel(name: string): 'total' | 'department' | 'employee' | 'nnh' | 'nhomHang' {
+function detectLevel(name) {
     if (name === 'Tổng') return 'total';
     if (name.startsWith('BP ')) return 'department';
-    // Employee: "Name - 12345" or "Name - 123456"
     if (/\s-\s\d{4,}$/.test(name)) return 'employee';
     if (name.startsWith('NNH ')) return 'nnh';
-    return 'nhomHang'; // Will be refined to 'hang' based on tree structure
+    return 'nhomHang'; // Temp
 }
 
-export function parseDetailData(raw: string): DetailNode[] {
-    return parseDetailDataV2(raw);
-}
-
-function isCategoryName(name: string): boolean {
+function isCategoryName(name) {
     const lowercaseName = name.toLowerCase();
     const categoryKeywords = [
         'quạt', 'nồi', 'bếp', 'máy', 'lọc', 'bình', 'xay', 'áp suất', 'lẩu', 'chiên', 'nướng', 
@@ -83,9 +55,9 @@ function isCategoryName(name: string): boolean {
     return categoryKeywords.some(keyword => lowercaseName.includes(keyword));
 }
 
-function rebuildNnhChildren(flatChildren: DetailNode[]): DetailNode[] {
-    const structuredChildren: DetailNode[] = [];
-    let currentNhomHang: DetailNode | null = null;
+function rebuildNnhChildren(flatChildren) {
+    const structuredChildren = [];
+    let currentNhomHang = null;
     let remainingSL = 0;
     let remainingDTQD = 0;
 
@@ -119,8 +91,8 @@ function rebuildNnhChildren(flatChildren: DetailNode[]): DetailNode[] {
     return structuredChildren;
 }
 
-function rebuildAllNnhChildren(roots: DetailNode[]): DetailNode[] {
-    const walk = (node: DetailNode) => {
+function rebuildAllNnhChildren(roots) {
+    const walk = (node) => {
         if (node.level === 'nnh') {
             node.children = rebuildNnhChildren(node.children);
         } else {
@@ -135,14 +107,9 @@ function rebuildAllNnhChildren(roots: DetailNode[]): DetailNode[] {
     return roots;
 }
 
-/**
- * Better parser: re-parse using a cleaner state machine approach and mathematical prefix sums.
- */
-export function parseDetailDataV2(raw: string): DetailNode[] {
+export function parseDetailDataV2(raw) {
     if (!raw) return [];
 
-    // Split into lines, filter out empty lines, but do not trim them immediately
-    // to preserve leading spaces/tabs
     const lines = raw.split('\n').filter(l => l.trim());
     const headerIdx = lines.findIndex(l => l.includes('Nhân viên') && l.includes('DTLK') && l.includes('DTQĐ'));
     if (headerIdx === -1) return [];
@@ -150,36 +117,21 @@ export function parseDetailDataV2(raw: string): DetailNode[] {
     const dataLines = lines.slice(headerIdx + 1);
     if (dataLines.length === 0) return [];
 
-    // Parse all rows with detected levels and indentation
-    interface RawRow {
-        name: string;
-        dtlk: number;
-        dtqd: number;
-        hieuQuaQD: number;
-        soLuong: number;
-        donGia: number;
-        indent: number;
-    }
-
-    const rawRows: RawRow[] = [];
+    const rawRows = [];
     for (const line of dataLines) {
         const parts = line.split('\t');
         
-        // Find the first non-empty cell as the name cell
         let nameIdx = 0;
         while (nameIdx < parts.length && parts[nameIdx].trim() === '') {
             nameIdx++;
         }
-        if (nameIdx >= parts.length) continue; // empty line
+        if (nameIdx >= parts.length) continue;
 
         const rawName = parts[nameIdx];
         const leadingSpaces = rawName.length - rawName.trimStart().length;
         const name = rawName.trim();
         if (!name) continue;
-
-        // Skip known non-data lines
         if (name.includes('Hỗ trợ BI') || name.includes('Logo BI') || name.includes('Trang chủ')) continue;
-        // Skip filter/header lines
         if (name.includes('Doanh thu theo') || name.includes('Ngành hàng chính') || name.includes('Tháng ') || name.includes('Phòng ban') || name.includes('Tất cả ngành hàng') || name.includes('Danh sách')) continue;
         if (name === 'Nhân viên') continue;
 
@@ -196,14 +148,8 @@ export function parseDetailDataV2(raw: string): DetailNode[] {
         });
     }
 
-    // Build tree using stack for total -> department -> employee -> NNH -> nhomHang -> hang
-    const roots: DetailNode[] = [];
-    
-    interface StackElement {
-        node: DetailNode;
-        indent: number;
-    }
-    let stack: StackElement[] = [];
+    const roots = [];
+    let stack = [];
 
     for (const row of rawRows) {
         const level = detectLevel(row.name);
@@ -213,7 +159,7 @@ export function parseDetailDataV2(raw: string): DetailNode[] {
             displayName = displayName.substring(4).trim();
         }
 
-        const node: DetailNode = {
+        const node = {
             name: displayName,
             level,
             dtlk: row.dtlk,
@@ -266,3 +212,27 @@ export function parseDetailDataV2(raw: string): DetailNode[] {
 
     return roots;
 }
+
+// Test case where sibling category groups have different indentation
+const mockTsv = `Nhân viên\tDTLK\tDTQĐ\tHiệu quả QĐ\tSố lượng\tĐơn giá
+Tổng\t10000\t15000\t0.5\t100\t150
+BP All In One - ĐMX\t8623.43\t12803.30\t0.48\t4250\t3.01
+Chế Thị Út - 95970\t488.48\t757.51\t0.55\t310\t2.44
+\tNNH Điện gia dụng\t85.15\t166.70\t0.96\t135\t1.23
+\t\tLọc nước dạng tủ đứng\t26.27\t54.98\t1.09\t4\t13.74
+\t\t\tKangaroo\t16.00\t30.00\t1.00\t2\t15.00
+\t\t\tKarofi\t10.27\t24.98\t1.18\t2\t12.49
+\t\t\tQuạt điều hòa\t19.08\t36.98\t0.94\t7\t5.28
+\t\t\tNồi cơm nắp gài/nắp rời\t9.82\t18.17\t0.85\t14\t1.30
+\t\tBếp gas đôi\t4.95\t9.17\t0.85\t3\t3.06
+\t\tBình đun siêu tốc\t4.67\t8.64\t0.85\t47\t0.18
+\t\tMáy lọc không khí\t2.95\t6.35\t1.15\t1\t6.35
+\t\tQuạt đứng\t2.25\t4.16\t0.85\t4\t1.04
+\t\tXay Sinh tố\t2.20\t4.07\t0.85\t3\t1.36
+Lên Trường Sơn - 21707\t2.40\t8.82\t2.67\t1\t8.82
+\tNNH Phụ kiện\t2.40\t8.82\t2.67\t1\t8.82
+\t\tLoa di động\t2.40\t8.82\t2.67\t1\t8.82
+`;
+
+const res = parseDetailDataV2(mockTsv);
+console.log(JSON.stringify(res, null, 2));

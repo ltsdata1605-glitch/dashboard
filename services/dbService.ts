@@ -2,6 +2,7 @@
 import type {
     DataRow,
     StoredSalesData,
+    UploadedFileRegistryItem,
     ProductConfig,
     ContestTableConfig,
     CustomContestTab,
@@ -32,7 +33,7 @@ export function getDb(): Promise<IDBDatabase> {
     dbPromise = new Promise((resolve, reject) => {
         let active = true;
         
-        // Failsafe timeout: if IndexedDB open takes > 1.5 seconds, reject it to let app fallback
+        // Failsafe timeout: if IndexedDB open takes > 10 seconds, reject it to let app fallback
         const timeoutId = setTimeout(() => {
             if (active) {
                 active = false;
@@ -40,7 +41,7 @@ export function getDb(): Promise<IDBDatabase> {
                 dbPromise = null; // Allow retrying later
                 reject(new Error('IndexedDB connection timeout'));
             }
-        }, 1500);
+        }, 10000);
 
         try {
             const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -108,7 +109,7 @@ export async function saveSetting(key: string, value: any, source?: string): Pro
                     console.warn(`[IDB] saveSetting timeout for key: ${key}`);
                     reject(new Error('Transaction timeout'));
                 }
-            }, 1000);
+            }, 15000);
 
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
@@ -182,7 +183,7 @@ export async function saveSettingFromCloud(key: string, value: any, updatedAt: n
                     console.warn(`[IDB] saveSettingFromCloud timeout for key: ${key}`);
                     reject(new Error('Transaction timeout'));
                 }
-            }, 1000);
+            }, 15000);
 
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
@@ -259,7 +260,7 @@ export async function getAllSettings(): Promise<Record<string, any>> {
                     console.warn('[IDB] getAllSettings timeout');
                     resolve({});
                 }
-            }, 1500);
+            }, 10000);
 
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readonly');
@@ -312,7 +313,7 @@ export async function clearAllSettings(): Promise<void> {
                     console.warn('[IDB] clearAllSettings timeout');
                     resolve();
                 }
-            }, 1000);
+            }, 10000);
 
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
@@ -356,7 +357,7 @@ export async function importAllSettings(settings: Record<string, any>): Promise<
                     console.warn('[IDB] importAllSettings timeout');
                     resolve();
                 }
-            }, 2000);
+            }, 15000);
 
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
@@ -412,7 +413,7 @@ export async function mergeSettings(settings: Record<string, any>): Promise<void
                     console.warn('[IDB] mergeSettings timeout');
                     resolve();
                 }
-            }, 2000);
+            }, 15000);
 
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');
@@ -467,7 +468,7 @@ export async function getSetting<T>(key: string): Promise<T | null> {
                     console.warn(`[IDB] getSetting timeout for key: ${key}`);
                     resolve(null);
                 }
-            }, 1000);
+            }, 10000);
 
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readonly');
@@ -527,11 +528,11 @@ export async function saveSalesData(data: DataRow[], filename: string, fileLastM
                     console.warn('[IDB] saveSalesData timeout');
                     reject(new Error('Transaction timeout'));
                 }
-            }, 3000);
+            }, 30000);
 
             try {
                 const tx = db.transaction(APP_STORE, 'readwrite');
-                tx.objectStore(APP_STORE).put(stored, 'salesData');
+                const store = tx.objectStore(APP_STORE).put(stored, 'salesData');
                 tx.oncomplete = () => {
                     if (active) {
                         active = false;
@@ -582,7 +583,7 @@ export async function getSalesData(): Promise<StoredSalesData | null> {
                     console.warn('[IDB] getSalesData timeout');
                     resolve(null);
                 }
-            }, 3000);
+            }, 30000);
 
             try {
                 const tx = db.transaction(APP_STORE, 'readonly');
@@ -637,7 +638,7 @@ export async function clearSalesData(): Promise<void> {
                     console.warn('[IDB] clearSalesData timeout');
                     resolve();
                 }
-            }, 1500);
+            }, 15000);
 
             try {
                 const tx = db.transaction(APP_STORE, 'readwrite');
@@ -668,6 +669,492 @@ export async function clearSalesData(): Promise<void> {
         console.error('[IDB] clearSalesData failed:', e);
     }
 }
+
+// --- Historical Multi-File Registry & Data management ---
+
+export async function getSalesFilesRegistry(): Promise<UploadedFileRegistryItem[]> {
+    const registry = await getSetting<UploadedFileRegistryItem[]>('salesFilesRegistry');
+    return registry || [];
+}
+
+export async function saveSalesFilesRegistry(registry: UploadedFileRegistryItem[]): Promise<void> {
+    await saveSetting('salesFilesRegistry', registry);
+}
+
+export async function saveSalesFileData(fileId: string, data: DataRow[]): Promise<void> {
+    const tryTransaction = async (db: IDBDatabase) => {
+        return new Promise<void>((resolve, reject) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn(`[IDB] saveSalesFileData timeout for ${fileId}`);
+                    reject(new Error('Transaction timeout'));
+                }
+            }, 30000);
+
+            try {
+                const tx = db.transaction(APP_STORE, 'readwrite');
+                tx.objectStore(APP_STORE).put(data, 'salesData_' + fileId);
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(tx.error || new Error('Save file data transaction failed'));
+                    }
+                };
+            } catch (error) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    reject(error);
+                }
+            }
+        });
+    };
+
+    try {
+        const db = await getDb();
+        await tryTransaction(db);
+    } catch (error) {
+        console.warn(`[IDB] Retry saveSalesFileData for ${fileId} after error:`, (error as Error)?.message);
+        dbPromise = null;
+        try {
+            const db = await getDb();
+            await tryTransaction(db);
+        } catch (retryError) {
+            console.error(`[IDB] Permanent failure saving sales file data for ${fileId}:`, retryError);
+            throw retryError;
+        }
+    }
+}
+
+export async function getSalesFileData(fileId: string): Promise<DataRow[] | null> {
+    try {
+        const db = await getDb();
+        return new Promise((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn(`[IDB] getSalesFileData timeout for ${fileId}`);
+                    resolve(null);
+                }
+            }, 30000);
+
+            try {
+                const tx = db.transaction(APP_STORE, 'readonly');
+                const request = tx.objectStore(APP_STORE).get('salesData_' + fileId);
+                request.onsuccess = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve(request.result || null);
+                    }
+                };
+                request.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        console.error(`[IDB] getSalesFileData error for ${fileId}:`, request.error);
+                        resolve(null);
+                    }
+                };
+            } catch (err) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    resolve(null);
+                }
+            }
+        });
+    } catch (error) {
+        console.error(`[IDB] getSalesFileData failed to get DB for ${fileId}:`, error);
+        return null;
+    }
+}
+
+export async function checkSalesFileDataExists(fileId: string): Promise<boolean> {
+    try {
+        const db = await getDb();
+        return new Promise((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    resolve(false);
+                }
+            }, 5000);
+
+            try {
+                const tx = db.transaction(APP_STORE, 'readonly');
+                const store = tx.objectStore(APP_STORE);
+                const request = store.getKey('salesData_' + fileId);
+                request.onsuccess = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve(request.result !== undefined);
+                    }
+                };
+                request.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve(false);
+                    }
+                };
+            } catch (err) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    resolve(false);
+                }
+            }
+        });
+    } catch (error) {
+        return false;
+    }
+}
+
+export async function deleteSalesFileData(fileId: string): Promise<void> {
+    try {
+        const db = await getDb();
+        return new Promise<void>((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    resolve();
+                }
+            }, 15000);
+
+            try {
+                const tx = db.transaction(APP_STORE, 'readwrite');
+                tx.objectStore(APP_STORE).delete('salesData_' + fileId);
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+            } catch (e) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    resolve();
+                }
+            }
+        });
+    } catch (e) {
+        console.error(`[IDB] deleteSalesFileData failed for ${fileId}:`, e);
+    }
+}
+
+export async function clearAllSalesFiles(): Promise<void> {
+    try {
+        const registry = await getSalesFilesRegistry();
+        for (const file of registry) {
+            await deleteSalesFileData(file.id);
+        }
+        await saveSalesFilesRegistry([]);
+        await clearSalesData();
+        await clearTempRealtimeData();
+    } catch (e) {
+        console.error('[IDB] clearAllSalesFiles failed:', e);
+    }
+}
+
+// --- Temporary Realtime File Data ---
+
+export async function saveTempRealtimeData(data: DataRow[], filename: string, fileLastModified?: number): Promise<void> {
+    const stored: StoredSalesData = { data, filename, savedAt: new Date(), fileLastModified };
+    const tryTransaction = async (db: IDBDatabase) => {
+        return new Promise<void>((resolve, reject) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn('[IDB] saveTempRealtimeData timeout');
+                    reject(new Error('Transaction timeout'));
+                }
+            }, 30000);
+
+            try {
+                const tx = db.transaction(APP_STORE, 'readwrite');
+                tx.objectStore(APP_STORE).put(stored, 'tempRealtimeData');
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        reject(tx.error || new Error('Save temp realtime data transaction failed'));
+                    }
+                };
+            } catch (error) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    reject(error);
+                }
+            }
+        });
+    };
+
+    try {
+        const db = await getDb();
+        await tryTransaction(db);
+    } catch (error) {
+        console.warn('[IDB] Retry saveTempRealtimeData after error:', (error as Error)?.message);
+        dbPromise = null;
+        try {
+            const db = await getDb();
+            await tryTransaction(db);
+        } catch (retryError) {
+            console.error('[IDB] Permanent failure saving temp realtime data:', retryError);
+            throw retryError;
+        }
+    }
+}
+
+export async function getTempRealtimeData(): Promise<StoredSalesData | null> {
+    try {
+        const db = await getDb();
+        return new Promise((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn('[IDB] getTempRealtimeData timeout');
+                    resolve(null);
+                }
+            }, 30000);
+
+            try {
+                const tx = db.transaction(APP_STORE, 'readonly');
+                const store = tx.objectStore(APP_STORE);
+                const request = store.get('tempRealtimeData');
+                request.onsuccess = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve(request.result || null);
+                    }
+                };
+                request.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        console.error('[IDB] getTempRealtimeData request error:', request.error);
+                        resolve(null);
+                    }
+                };
+            } catch (err) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    resolve(null);
+                }
+            }
+        });
+    } catch (error) {
+        console.error('[IDB] getTempRealtimeData failed:', error);
+        return null;
+    }
+}
+
+export async function clearTempRealtimeData(): Promise<void> {
+    try {
+        const db = await getDb();
+        return new Promise<void>((resolve) => {
+            let active = true;
+            const timeoutId = setTimeout(() => {
+                if (active) {
+                    active = false;
+                    console.warn('[IDB] clearTempRealtimeData timeout');
+                    resolve();
+                }
+            }, 15000);
+
+            try {
+                const tx = db.transaction(APP_STORE, 'readwrite');
+                tx.objectStore(APP_STORE).delete('tempRealtimeData');
+                tx.oncomplete = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+                tx.onerror = () => {
+                    if (active) {
+                        active = false;
+                        clearTimeout(timeoutId);
+                        resolve();
+                    }
+                };
+            } catch (e) {
+                if (active) {
+                    active = false;
+                    clearTimeout(timeoutId);
+                    resolve();
+                }
+            }
+        });
+    } catch (e) {
+        console.error('[IDB] clearTempRealtimeData failed:', e);
+    }
+}
+
+export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename: string; savedAt: Date; fileLastModified?: number } | null> {
+    try {
+        const registry = await getSalesFilesRegistry();
+        let activeFiles = registry.filter(f => f.isActive);
+        
+        // MIGRATION: Nếu registry trống, kiểm tra xem có dữ liệu đơn lẻ 'salesData' cũ không
+        if (registry.length === 0) {
+            const legacySales = await getSalesData();
+            if (legacySales && legacySales.data.length > 0) {
+                console.log('[IDB Migration] Chuyển đổi dữ liệu cũ sang cấu trúc đa tệp lịch sử...');
+                const legacyId = 'legacy_file_' + Date.now();
+                const legacyItem: UploadedFileRegistryItem = {
+                    id: legacyId,
+                    filename: legacySales.filename || 'Dữ liệu lịch sử cũ',
+                    rowCount: legacySales.data.length,
+                    savedAt: legacySales.savedAt ? new Date(legacySales.savedAt).getTime() : Date.now(),
+                    fileLastModified: legacySales.fileLastModified || Date.now(),
+                    isActive: true
+                };
+                
+                await saveSalesFilesRegistry([legacyItem]);
+                await saveSalesFileData(legacyId, legacySales.data);
+                await clearSalesData(); // Xóa khóa cũ để tránh nhập nhằng
+                activeFiles = [legacyItem];
+            }
+        }
+        
+        // Load active historical files data
+        const historicalData: DataRow[] = [];
+        let latestHistSavedAt = 0;
+        let maxHistFileLastModified = 0;
+        
+        const fileDataArray = await Promise.all(activeFiles.map(file => getSalesFileData(file.id)));
+        for (let i = 0; i < activeFiles.length; i++) {
+            const file = activeFiles[i];
+            const fileData = fileDataArray[i];
+            if (fileData && fileData.length > 0) {
+                for (let j = 0; j < fileData.length; j++) {
+                    historicalData.push(fileData[j]);
+                }
+            }
+            if (file.savedAt > latestHistSavedAt) {
+                latestHistSavedAt = file.savedAt;
+            }
+            if (file.fileLastModified && file.fileLastModified > maxHistFileLastModified) {
+                maxHistFileLastModified = file.fileLastModified;
+            }
+        }
+
+        // If there are active historical files but no local file data (e.g. new browser sync),
+        // fallback to legacy salesData store which holds the cloud sync data.
+        if (activeFiles.length > 0 && historicalData.length === 0) {
+            const legacySales = await getSalesData();
+            if (legacySales && legacySales.data.length > 0) {
+                for (let j = 0; j < legacySales.data.length; j++) {
+                    historicalData.push(legacySales.data[j]);
+                }
+                latestHistSavedAt = legacySales.savedAt ? new Date(legacySales.savedAt).getTime() : latestHistSavedAt;
+                maxHistFileLastModified = legacySales.fileLastModified || maxHistFileLastModified;
+            }
+        }
+        
+        // Load temporary realtime data
+        const tempRealtime = await getTempRealtimeData();
+        
+        // Merge datasets
+        const combinedData: DataRow[] = [];
+        let finalFilename = '';
+        let finalSavedAt = new Date();
+        let finalFileLastModified = 0;
+        
+        if (tempRealtime && tempRealtime.data.length > 0) {
+            for (let j = 0; j < tempRealtime.data.length; j++) {
+                combinedData.push(tempRealtime.data[j]);
+            }
+            if (historicalData.length > 0) {
+                for (let j = 0; j < historicalData.length; j++) {
+                    combinedData.push(historicalData[j]);
+                }
+                
+                // Filename gộp
+                const baseRealtimeName = tempRealtime.filename.replace(/\.[^/.]+$/, '');
+                finalFilename = `${baseRealtimeName} + Gộp ${activeFiles.length} tệp lịch sử`;
+                if (finalFilename.length > 85) {
+                    finalFilename = `${baseRealtimeName} + Gộp ${activeFiles.length} tệp...`;
+                }
+                
+                // Timestamps
+                const realtimeSavedAt = tempRealtime.savedAt ? new Date(tempRealtime.savedAt).getTime() : Date.now();
+                finalSavedAt = new Date(Math.max(realtimeSavedAt, latestHistSavedAt));
+                finalFileLastModified = Math.max(tempRealtime.fileLastModified || realtimeSavedAt, maxHistFileLastModified);
+            } else {
+                finalFilename = tempRealtime.filename;
+                finalSavedAt = tempRealtime.savedAt ? new Date(tempRealtime.savedAt) : new Date();
+                finalFileLastModified = tempRealtime.fileLastModified || finalSavedAt.getTime();
+            }
+        } else if (historicalData.length > 0) {
+            for (let j = 0; j < historicalData.length; j++) {
+                combinedData.push(historicalData[j]);
+            }
+            
+            if (activeFiles.length === 1) {
+                finalFilename = activeFiles[0].filename;
+            } else {
+                const fileNames = activeFiles.map(f => f.filename.replace(/\.[^/.]+$/, ''));
+                finalFilename = `Gộp ${activeFiles.length} Báo cáo (${fileNames.join(', ')})`;
+                if (finalFilename.length > 85) {
+                    finalFilename = `Gộp ${activeFiles.length} Báo cáo (${fileNames.slice(0, 2).join(', ')}...)`;
+                }
+            }
+            finalSavedAt = new Date(latestHistSavedAt);
+            finalFileLastModified = maxHistFileLastModified || latestHistSavedAt;
+        } else {
+            return null; // Không có tệp nào hoạt động
+        }
+        
+        return {
+            data: combinedData,
+            filename: finalFilename,
+            savedAt: finalSavedAt,
+            fileLastModified: finalFileLastModified
+        };
+    } catch (error) {
+        console.error('[IDB] getMergedSalesData failed:', error);
+        return null;
+    }
+}
+
 
 // --- Department Map ---
 export async function saveDepartmentMap(map: DepartmentMap): Promise<void> {
@@ -932,7 +1419,7 @@ export async function clearCustomTabs(): Promise<void> {
                     active = false;
                     resolve();
                 }
-            }, 1000);
+            }, 10000);
 
             try {
                 const tx = db.transaction(SETTINGS_STORE, 'readwrite');

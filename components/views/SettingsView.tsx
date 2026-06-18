@@ -6,10 +6,9 @@ import { motion, AnimatePresence } from 'motion/react';
 import UserManagementView from './UserManagementView';
 import { SettingsAccountTab } from './settings/SettingsAccountTab';
 import { SettingsDataTab } from './settings/SettingsDataTab';
-import { SettingsAppearanceTab } from './settings/SettingsAppearanceTab';
 import { useAuth } from '../../contexts/AuthContext';
 
-type SettingsTab = 'appearance' | 'data' | 'account' | 'approval_link';
+type SettingsTab = 'data' | 'account' | 'approval_link';
 
 const SettingsView: React.FC = () => {
     const { userRole } = useAuth();
@@ -28,8 +27,7 @@ const SettingsView: React.FC = () => {
     const tabs = [
         { id: 'account', label: 'Tài Khoản', icon: 'user' },
         ...(userRole === 'admin' || userRole === 'manager' ? [{ id: 'approval_link', label: 'Phân Quyền', icon: 'shield-check' }] : []),
-        { id: 'data', label: 'Lọc Dữ Liệu', icon: 'server' },
-        { id: 'appearance', label: 'Giao Diện', icon: 'monitor' } // Ensure appearance is here
+        { id: 'data', label: 'Lọc Dữ Liệu', icon: 'server' }
     ];
 
     return (
@@ -75,17 +73,7 @@ const SettingsView: React.FC = () => {
                                 </motion.div>
                             )}
 
-                            {activeTab === 'appearance' && (
-                                <motion.div 
-                                    key="appearance"
-                                    initial={{ opacity: 0, y: 10 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    exit={{ opacity: 0, y: -10 }}
-                                    className="space-y-8"
-                                >
-                                    <SettingsAppearanceTab />
-                                </motion.div>
-                            )}
+
 
                             {activeTab === 'data' && (
                                 <motion.div 

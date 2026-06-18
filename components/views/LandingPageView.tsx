@@ -1,6 +1,8 @@
 import React from 'react';
 import UploadSection from '../upload/UploadSection';
+import { FileHistoryManager } from '../upload/FileHistoryManager';
 import { Icon } from '../common/Icon';
+import type { UploadedFileRegistryItem } from '../../types';
 
 interface LandingPageViewProps {
     onProcessFile: (files: File[]) => void;
@@ -8,9 +10,23 @@ interface LandingPageViewProps {
     onConfigUrlChange: (url: string) => void;
     isDeduplicationEnabled?: boolean;
     onDeduplicationChange?: (enabled: boolean) => void;
+    registry?: UploadedFileRegistryItem[];
+    onToggleActive?: (id: string) => Promise<void> | void;
+    onDelete?: (id: string) => Promise<void> | void;
+    onViewReport?: () => void;
 }
 
-const LandingPageView: React.FC<LandingPageViewProps> = ({ onProcessFile, configUrl, onConfigUrlChange, isDeduplicationEnabled, onDeduplicationChange }) => {
+const LandingPageView: React.FC<LandingPageViewProps> = ({ 
+    onProcessFile, 
+    configUrl, 
+    onConfigUrlChange, 
+    isDeduplicationEnabled, 
+    onDeduplicationChange,
+    registry = [],
+    onToggleActive = () => {},
+    onDelete = () => {},
+    onViewReport = () => {}
+}) => {
     return (
         <div className="relative min-h-[calc(100vh-120px)] flex flex-col justify-center items-center overflow-hidden font-sans bg-[#F8FAFC] dark:bg-[#0B0F19] selection:bg-indigo-500/20 selection:text-indigo-600 pb-8">
             
@@ -51,6 +67,14 @@ const LandingPageView: React.FC<LandingPageViewProps> = ({ onProcessFile, config
                                     isDeduplicationEnabled={isDeduplicationEnabled}
                                     onDeduplicationChange={onDeduplicationChange}
                                 />
+                                {registry.length > 0 && (
+                                    <FileHistoryManager
+                                        registry={registry}
+                                        onToggleActive={onToggleActive}
+                                        onDelete={onDelete}
+                                        onViewReport={onViewReport}
+                                    />
+                                )}
                             </div>
                         </div>
                     </div>

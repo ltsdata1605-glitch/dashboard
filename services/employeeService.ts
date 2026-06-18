@@ -224,7 +224,8 @@ export function processEmployeeData(
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
         const productName = getRowValue(row, COL.PRODUCT);
         
-        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
         const revenueQD = revenue * heso;
         const customer = getRowValue(row, COL.CUSTOMER_NAME);
         const dateCreated: Date = row.parsedDate;

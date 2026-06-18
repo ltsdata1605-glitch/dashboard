@@ -179,7 +179,9 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                 } else if (col.metricType === 'revenueQD') {
                     const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
                     const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-                    const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig);
+                    const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+                    const productName = String(getRowValue(row, COL.PRODUCT) || '').trim();
+                    const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
                     value = (revenue * heso) / 1000000;
                 }
 

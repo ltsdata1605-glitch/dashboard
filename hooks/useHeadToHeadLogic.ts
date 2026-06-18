@@ -34,15 +34,20 @@ export const useHeadToHeadLogic = ({
         endDate.setHours(23, 59, 59, 999);
         const dateRangeString = `${startDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${endDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
         
+        const cleanAndNormalize = (val: any): string => {
+            if (val === undefined || val === null) return '';
+            return val.toString().trim().toLowerCase().normalize('NFC');
+        };
+
         const isValidSale = (row: DataRow): boolean => {
-            const huy = String(getRowValue(row, COL.TRANG_THAI_HUY) || '').trim();
-            if (huy !== 'Chưa hủy' && huy.toLowerCase() !== 'chưa hủy') return false;
+            const huy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+            if (huy !== 'chưa hủy') return false;
             
-            const tra = String(getRowValue(row, COL.TINH_TRANG_NHAP_TRA) || '').trim();
-            if (tra !== 'Chưa trả' && tra.toLowerCase() !== 'chưa trả') return false;
+            const tra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
+            if (tra !== 'chưa trả') return false;
             
-            const thu = String(getRowValue(row, COL.TRANG_THAI_THU_TIEN) || '').trim();
-            if (thu !== 'Đã thu' && thu.toLowerCase() !== 'đã thu') return false;
+            const thu = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+            if (thu !== 'đã thu') return false;
             
             return true;
         };
@@ -212,7 +217,8 @@ export const useHeadToHeadLogic = ({
                     const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
                     const productName = getRowValue(row, COL.PRODUCT);
                     
-                    const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+                    const productCodeVal = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+                    const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCodeVal);
                     const isVieon = productConfig.childToSubgroupMap[maNhomHang] === 'Vieon' || productConfig.childToParentMap[maNhomHang] === 'Vieon' || String(productName || '').includes('VieON');
                     const wQty = isVieon ? quantity * heso : quantity;
                     

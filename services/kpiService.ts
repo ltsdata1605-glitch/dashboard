@@ -32,7 +32,8 @@ export function processKpis(
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
         const productName = getRowValue(row, COL.PRODUCT);
         
-        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
 
         totalRevenue += rowRevenue;
         doanhThuQD += rowRevenue * heso;
@@ -82,7 +83,8 @@ export function processKpis(
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
         const productName = getRowValue(row, COL.PRODUCT);
         
-        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
         doanhThuThucChoXuat += rowRevenue;
         doanhThuQDChoXuat += rowRevenue * heso;
     }

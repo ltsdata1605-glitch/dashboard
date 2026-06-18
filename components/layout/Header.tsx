@@ -176,10 +176,10 @@ const Header: React.FC<HeaderProps> = ({
                             <button 
                                 onClick={onNewFile}
                                 className="flex items-center gap-2 px-4 py-2 bg-emerald-50/50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-semibold text-sm transition-colors"
-                                title="Tải lên báo cáo YCX mới"
+                                title="Tải lên báo cáo YCX mới (Realtime hoặc Lũy kế)"
                             >
                                 <Icon name="file-up" size={4} />
-                                <span>UpFile YCX</span>
+                                <span>Up tệp YCX</span>
                             </button>
                         </>
                     )}

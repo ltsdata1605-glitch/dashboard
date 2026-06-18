@@ -119,7 +119,8 @@ export const useWarehouseLogic = ({
                     }
 
                     if (heso === null) {
-                        heso = getHeSoQuyDoi(nganhHang, nhomHang, productConfig, productName);
+                        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+                        heso = getHeSoQuyDoi(nganhHang, nhomHang, productConfig, productName, productCode);
                         price = Number(getRowValue(row, COL.PRICE)) || 0;
                         quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
                     }

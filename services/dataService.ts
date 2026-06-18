@@ -1,7 +1,7 @@
 
 import type { DataRow, ProductConfig, Status } from '../types';
 import { getRowValue, parseExcelDate } from '../utils/dataUtils';
-import { COL } from '../constants';
+import { COL, DEFAULT_QUANTITY_MULTIPLIER_MAP } from '../constants';
 
 type StatusUpdater = (status: Status) => void;
 
@@ -67,7 +67,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             subgroups: {},
             childToParentMap: {},
             childToSubgroupMap: {},
-            quantityMultiplierMap: {}
+            quantityMultiplierMap: { ...DEFAULT_QUANTITY_MULTIPLIER_MAP }
         };
 
         const groupIndex = headers.indexOf('NhomCha');
@@ -287,18 +287,23 @@ export async function processSalesFile(file: File, enableDeduplication: boolean,
         const validResults: DataRow[] = [];
         const len = processedList.length;
 
+        const cleanAndNormalize = (val: any): string => {
+            if (val === undefined || val === null) return '';
+            return val.toString().trim().toLowerCase().normalize('NFC');
+        };
+
         for (let i = 0; i < len; i++) {
             const row = processedList[i];
             
             // Inline validation logic
-            const trangThaiHuy = (getRowValue(row, COL.TRANG_THAI_HUY) || '').toString();
-            if (trangThaiHuy.length !== 8 && trangThaiHuy.toLowerCase().trim() !== 'chưa hủy') continue;
+            const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+            if (trangThaiHuy !== 'chưa hủy') continue;
             
-            const nhapTra = (getRowValue(row, COL.TINH_TRANG_NHAP_TRA) || '').toString();
-            if (nhapTra.length !== 8 && nhapTra.toLowerCase().trim() !== 'chưa trả') continue;
+            const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
+            if (nhapTra !== 'chưa trả') continue;
 
-            const thuTien = (getRowValue(row, COL.TRANG_THAI_THU_TIEN) || '').toString();
-            if (thuTien.length !== 6 && thuTien.toLowerCase().trim() !== 'đã thu') continue;
+            const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+            if (thuTien !== 'đã thu') continue;
 
             // Normalize Date
             const parsedDate = parseExcelDate(getRowValue(row, COL.DATE_CREATED));

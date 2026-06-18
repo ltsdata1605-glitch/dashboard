@@ -64,7 +64,7 @@ async function run() {
         const navigateMsg = {
             id: 1,
             method: 'Page.navigate',
-            params: { url: 'http://localhost:5173' }
+            params: { url: 'http://localhost:3000/Bao-Cao-Khai-Thac/' }
         };
         ws.send(JSON.stringify(navigateMsg));
     });
@@ -122,9 +122,9 @@ async function run() {
                     console.log("\nFiltered IndexedDB Database Keys and Values:");
                     result.forEach(item => {
                         const k = item.key;
-                        if (k.includes('comptarget') || k.includes('targethero') || k.includes('thidua') || k.includes('supermarket-list') || k.includes('active-supermarkets')) {
+                        if (k.includes('danhsach') || k.includes('active-supermarkets')) {
                             console.log(`\nKey: ${k}`);
-                            console.log(`Value:`, typeof item.value === 'object' ? JSON.stringify(item.value, null, 2) : String(item.value).slice(0, 1000));
+                            console.log(`Value:`, typeof item.value === 'object' ? JSON.stringify(item.value, null, 2) : String(item.value).slice(0, 5000));
                         }
                     });
                 } else {

@@ -20,7 +20,8 @@ export function processIndustryData(
         const childGroup = productConfig.childToSubgroupMap[maNhomHang];
         const displayParentGroup = getDisplayParentGroup(maNhomHang, productConfig);
         
-        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
         const isVieon = childGroup === 'Vieon' || displayParentGroup === 'Vieon' || (productName || '').includes('VieON');
         const weightedQuantity = isVieon ? (quantity * heso) : quantity;
 

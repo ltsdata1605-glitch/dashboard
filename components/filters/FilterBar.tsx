@@ -10,9 +10,10 @@ import { toLocalISOString } from '../../utils/dataUtils';
 interface FilterBarProps {
     onToggleAdvanced: () => void;
     onNewFile?: () => void;
+    onOpenHistory?: () => void;
 }
 
-const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) => {
+const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOpenHistory }) => {
     const { 
         filterState, 
         handleFilterChange, 
@@ -183,6 +184,16 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                                 className="flex items-center justify-center w-[36px] bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
                             >
                                 <Icon name="file-up" size={4} />
+                            </button>
+                        )}
+                        {onOpenHistory && (
+                            <button
+                                onClick={onOpenHistory}
+                                id="btn-mobile-history"
+                                title="Quản lý tệp đã lưu"
+                                className="flex items-center justify-center w-[36px] bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/30 text-indigo-700 dark:text-indigo-400 rounded-lg transition-all active:scale-95 shrink-0"
+                            >
+                                <Icon name="database" size={4} />
                             </button>
                         )}
                         <a
@@ -418,6 +429,16 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile }) =>
                                 className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-full transition-all active:scale-95 group"
                             >
                                 <Icon name="file-up" size={4.5} />
+                            </button>
+                        )}
+                        {onOpenHistory && (
+                            <button
+                                onClick={onOpenHistory}
+                                id="btn-desktop-history"
+                                title="Quản lý tệp đã lưu"
+                                className="flex items-center justify-center p-2.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-500 rounded-full transition-all active:scale-95 group"
+                            >
+                                <Icon name="database" size={4.5} />
                             </button>
                         )}
                         <a

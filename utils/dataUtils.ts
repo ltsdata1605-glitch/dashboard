@@ -1,11 +1,20 @@
 
 import type { DataRow, SummaryTableNode, ProductConfig } from '../types';
-import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../constants';
+import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, DEFAULT_QUANTITY_MULTIPLIER_MAP, PRODUCT_NAME_COEFFICIENTS } from '../constants';
 
 
 export function getRowValue(row: DataRow, keys: string[]): any {
+    // 1. Direct match (fastest)
     for (const key of keys) {
         if (row[key] !== undefined && row[key] !== null) return row[key];
+    }
+    // 2. NFC/NFD normalized case-insensitive match
+    const normalizedKeys = keys.map(k => k.toLowerCase().normalize('NFC'));
+    for (const rowKey of Object.keys(row)) {
+        const normRowKey = rowKey.toLowerCase().normalize('NFC');
+        if (normalizedKeys.includes(normRowKey)) {
+            if (row[rowKey] !== undefined && row[rowKey] !== null) return row[rowKey];
+        }
     }
     return undefined;
 }
@@ -24,6 +33,21 @@ export function parseExcelDate(excelDate: any): Date | null {
         return new Date(Math.round((excelDate - 25569) * 86400 * 1000));
     }
     if (typeof excelDate === 'string') {
+        // Match dd/MM/yyyy or dd-MM-yyyy with optional time (e.g., dd/MM/yyyy HH:mm:ss)
+        const match = excelDate.trim().match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})(?:\s+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+        if (match) {
+            const day = parseInt(match[1], 10);
+            const month = parseInt(match[2], 10) - 1; // 0-indexed
+            let year = parseInt(match[3], 10);
+            if (year < 100) year += 2000;
+            const hour = match[4] ? parseInt(match[4], 10) : 0;
+            const minute = match[5] ? parseInt(match[5], 10) : 0;
+            const second = match[6] ? parseInt(match[6], 10) : 0;
+            
+            const date = new Date(year, month, day, hour, minute, second);
+            if (!isNaN(date.getTime())) return date;
+        }
+
         const date = new Date(excelDate);
         if (!isNaN(date.getTime())) return date;
     }
@@ -100,9 +124,25 @@ export function formatQuantityWithFraction(value: number | null | undefined): st
 }
 
 
-export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productConfig: ProductConfig | null, productName?: string): number {
-    // 0. Logic đặc thù cho Vieon dựa trên tên sản phẩm (Ưu tiên cao nhất)
+export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productConfig: ProductConfig | null, productName?: string, productCode?: string): number {
+    // 0. Logic đặc thù cho Vieon dựa trên mã sản phẩm hoặc tên sản phẩm (Ưu tiên cao nhất)
+    if (productCode) {
+        const trimmedCode = String(productCode).trim();
+        if (productConfig?.quantityMultiplierMap?.[trimmedCode] !== undefined) {
+            return productConfig.quantityMultiplierMap[trimmedCode];
+        }
+        if (DEFAULT_QUANTITY_MULTIPLIER_MAP[trimmedCode] !== undefined) {
+            return DEFAULT_QUANTITY_MULTIPLIER_MAP[trimmedCode];
+        }
+    }
+
     const name = (productName || '').toString();
+    for (const item of PRODUCT_NAME_COEFFICIENTS) {
+        if (name.includes(item.pattern)) {
+            return item.value;
+        }
+    }
+
     if (name.includes('VieON VIP')) {
         if (name.includes('01 tháng')) return 1;
         if (name.includes('03 tháng')) return 2;
@@ -185,11 +225,6 @@ export function sortSummaryData(data: { [key: string]: SummaryTableNode }, sortK
     const sortedEntries = Object.entries(data).sort(sortFn);
     const sortedData = Object.fromEntries(sortedEntries);
     
-    for (const key in sortedData) {
-        if (Object.keys(sortedData[key].children).length > 0) {
-            sortedData[key].children = sortSummaryData(sortedData[key].children, sortKey, sortDir);
-        }
-    }
     return sortedData;
 }
 
@@ -337,4 +372,38 @@ export function getSubgroup(maNhomHang: string | null | undefined, productConfig
     
     return '';
 }
+
+export function normalizeSalesData(data: DataRow[]): DataRow[] {
+    if (!data) return [];
+    return data
+        .map(row => {
+            let dateObj: Date | null = null;
+            
+            const rawDate = row.parsedDate;
+            if (rawDate) {
+                if (rawDate instanceof Date) {
+                    dateObj = isNaN(rawDate.getTime()) ? null : rawDate;
+                } else if (typeof rawDate === 'object' && ('seconds' in rawDate || '_seconds' in rawDate)) {
+                    const seconds = (rawDate as any).seconds ?? (rawDate as any)._seconds;
+                    if (typeof seconds === 'number') {
+                        dateObj = new Date(seconds * 1000);
+                    }
+                } else if (typeof rawDate === 'string' || typeof rawDate === 'number') {
+                    dateObj = parseExcelDate(rawDate);
+                }
+            }
+            
+            // Fallback to Ngày tạo/Ngày Tạo
+            if (!dateObj || isNaN(dateObj.getTime())) {
+                dateObj = parseExcelDate(getRowValue(row, COL.DATE_CREATED));
+            }
+            
+            if (dateObj && !isNaN(dateObj.getTime())) {
+                return { ...row, parsedDate: dateObj };
+            }
+            return null;
+        })
+        .filter((row): row is (DataRow & { parsedDate: Date }) => row !== null);
+}
+
 
