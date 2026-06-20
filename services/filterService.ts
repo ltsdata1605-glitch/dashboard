@@ -170,25 +170,65 @@ export function applyFiltersAndProcess(
         if (cached) {
             sourceData = cached;
         } else {
-            const uniqueSet = new Set<string>();
             const deduplicated: DataRow[] = [];
-            // Use Object.keys once, cache key list
-            const sampleRow = allData[0];
-            const keysToCheck = sampleRow ? Object.keys(sampleRow).filter(k => k !== 'STT_1' && k !== 'parsedDate') : [];
+            
+            // 1. Order-item-level deduplication:
+            // Group by Order ID (COL.ID) and Product Code/Name, keeping only the one from the newest file
+            const orderGroups = new Map<string, DataRow[]>();
             for (let i = 0; i < allData.length; i++) {
                 const row = allData[i];
+                const orderId = String(getRowValue(row, COL.ID) || '').trim();
+                const prodCode = String(getRowValue(row, COL.PRODUCT_CODE) || getRowValue(row, COL.PRODUCT) || '').trim();
+                
+                if (!orderId || !prodCode) {
+                    deduplicated.push(row);
+                    continue;
+                }
+                
+                const itemKey = `${orderId}§${prodCode}`;
+                if (!orderGroups.has(itemKey)) {
+                    orderGroups.set(itemKey, []);
+                }
+                orderGroups.get(itemKey)!.push(row);
+            }
+            
+            for (const [_, rowsList] of orderGroups.entries()) {
+                if (rowsList.length === 1) {
+                    deduplicated.push(rowsList[0]);
+                } else {
+                    // Sort descending: largest _fileLastModified first, then largest _fileSavedAt first
+                    rowsList.sort((a, b) => {
+                        const timeA = a._fileLastModified || 0;
+                        const timeB = b._fileLastModified || 0;
+                        if (timeB !== timeA) return timeB - timeA;
+                        
+                        const savedA = a._fileSavedAt || 0;
+                        const savedB = b._fileSavedAt || 0;
+                        return savedB - savedA;
+                    });
+                    deduplicated.push(rowsList[0]);
+                }
+            }
+            
+            // 2. Strict exact row signature deduplication (checks for identical rows)
+            const finalDeduplicated: DataRow[] = [];
+            const uniqueSet = new Set<string>();
+            const sampleRow = deduplicated[0];
+            const keysToCheck = sampleRow ? Object.keys(sampleRow).filter(k => k !== 'STT_1' && k !== 'parsedDate' && !k.startsWith('_')) : [];
+            for (let i = 0; i < deduplicated.length; i++) {
+                const row = deduplicated[i];
                 const parts: string[] = [];
                 for (let j = 0; j < keysToCheck.length; j++) {
-                    parts.push(row[keysToCheck[j]] as string);
+                    parts.push(String(row[keysToCheck[j]] || ''));
                 }
                 const sig = parts.join('§');
                 if (!uniqueSet.has(sig)) {
                     uniqueSet.add(sig);
-                    deduplicated.push(row);
+                    finalDeduplicated.push(row);
                 }
             }
-            sourceData = deduplicated;
-            _dedupCache.set(allData, deduplicated);
+            sourceData = finalDeduplicated;
+            _dedupCache.set(allData, finalDeduplicated);
         }
     }
 

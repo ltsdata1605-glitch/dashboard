@@ -67,7 +67,9 @@ export const useDashboardLogic = () => {
         handleClearData,
         handleClearDepartments,
         pendingNaming,
-        setPendingNaming
+        setPendingNaming,
+        pendingConflict,
+        setPendingConflict
     } = useFileUploadLogic({
         isDeduplicationEnabled,
         originalData,
@@ -162,6 +164,7 @@ export const useDashboardLogic = () => {
         activeModal, setActiveModal, modalData,
         handleClearDepartments, handleClearData, handleShiftFileProcessing, handleFileProcessing,
         pendingNaming, setPendingNaming,
+        pendingConflict, setPendingConflict,
         openPerformanceModal, openUnshippedModal, handleExport,
         handleBatchExport,
         handleBatchKhoExport,

@@ -1065,7 +1065,12 @@ export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename:
             const fileData = fileDataArray[i];
             if (fileData && fileData.length > 0) {
                 for (let j = 0; j < fileData.length; j++) {
-                    historicalData.push(fileData[j]);
+                    const row = fileData[j];
+                    row._fileLastModified = file.fileLastModified || file.savedAt;
+                    row._fileSavedAt = file.savedAt;
+                    row._sourceFileId = file.id;
+                    row._sourceFilename = file.filename;
+                    historicalData.push(row);
                 }
             }
             if (file.savedAt > latestHistSavedAt) {
@@ -1082,7 +1087,12 @@ export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename:
             const legacySales = await getSalesData();
             if (legacySales && legacySales.data.length > 0) {
                 for (let j = 0; j < legacySales.data.length; j++) {
-                    historicalData.push(legacySales.data[j]);
+                    const row = legacySales.data[j];
+                    row._fileLastModified = legacySales.fileLastModified || (legacySales.savedAt ? new Date(legacySales.savedAt).getTime() : Date.now());
+                    row._fileSavedAt = legacySales.savedAt ? new Date(legacySales.savedAt).getTime() : Date.now();
+                    row._sourceFileId = 'legacy';
+                    row._sourceFilename = legacySales.filename || 'Dữ liệu lịch sử cũ';
+                    historicalData.push(row);
                 }
                 latestHistSavedAt = legacySales.savedAt ? new Date(legacySales.savedAt).getTime() : latestHistSavedAt;
                 maxHistFileLastModified = legacySales.fileLastModified || maxHistFileLastModified;
@@ -1100,7 +1110,12 @@ export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename:
         
         if (tempRealtime && tempRealtime.data.length > 0) {
             for (let j = 0; j < tempRealtime.data.length; j++) {
-                combinedData.push(tempRealtime.data[j]);
+                const row = tempRealtime.data[j];
+                row._fileLastModified = tempRealtime.fileLastModified || (tempRealtime.savedAt ? new Date(tempRealtime.savedAt).getTime() : Date.now());
+                row._fileSavedAt = tempRealtime.savedAt ? new Date(tempRealtime.savedAt).getTime() : Date.now();
+                row._sourceFileId = 'realtime';
+                row._sourceFilename = tempRealtime.filename;
+                combinedData.push(row);
             }
             if (historicalData.length > 0) {
                 for (let j = 0; j < historicalData.length; j++) {

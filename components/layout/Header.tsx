@@ -179,7 +179,7 @@ const Header: React.FC<HeaderProps> = ({
                                 title="Tải lên báo cáo YCX mới (Realtime hoặc Lũy kế)"
                             >
                                 <Icon name="file-up" size={4} />
-                                <span>Up tệp YCX</span>
+                                <span>File YCX</span>
                             </button>
                         </>
                     )}

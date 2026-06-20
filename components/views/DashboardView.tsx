@@ -13,6 +13,7 @@ import Footer from '../layout/Footer';
 import LandingPageView from './LandingPageView';
 import FileHistoryModal from '../modals/FileHistoryModal';
 import FileNamingModal from '../modals/FileNamingModal';
+import UploadConflictModal from '../modals/UploadConflictModal';
 import UploadTypeSelectionModal from '../modals/UploadTypeSelectionModal';
 import StatusDisplay from '../upload/StatusDisplay';
 import FilterSection from '../filters/FilterSection';
@@ -74,7 +75,8 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         originalData,
         pendingCloudSync, setPendingCloudSync, handleAcceptCloudSync,
         hasRealtimeData, handleClearRealtimeData,
-        pendingNaming, setPendingNaming
+        pendingNaming, setPendingNaming,
+        pendingConflict, setPendingConflict
     } = logic;
     const { userRole } = useAuth();
     const { totalVisits, onlineUsers } = useSystemTraffic();
@@ -537,6 +539,18 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             if (pendingNaming) {
                                 pendingNaming.resolve(name);
                                 setPendingNaming(null);
+                            }
+                        }}
+                    />
+                    <UploadConflictModal
+                        isOpen={!!pendingConflict}
+                        conflicts={pendingConflict?.conflicts || []}
+                        newFilename={pendingConflict?.newFilename || ''}
+                        newDateRangeStr={pendingConflict?.newDateRangeStr || ''}
+                        onResolve={(action) => {
+                            if (pendingConflict) {
+                                pendingConflict.resolve(action);
+                                setPendingConflict(null);
                             }
                         }}
                     />

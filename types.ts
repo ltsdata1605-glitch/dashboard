@@ -35,6 +35,9 @@ export interface UploadedFileRegistryItem {
     fileLastModified: number;
     isActive: boolean;
     isMissingLocalData?: boolean;
+    minDate?: number;
+    maxDate?: number;
+    uniqueDates?: string[];
 }
 
 
