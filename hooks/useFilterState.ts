@@ -2,8 +2,15 @@
 import { useState, useCallback, useEffect, startTransition } from 'react';
 import type { FilterState } from '../types';
 import * as dbService from '../services/dbService';
+import { toLocalISOString } from '../utils/dataUtils';
 
+const getTodayStr = () => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return toLocalISOString(today);
+};
 
+const todayStr = getTodayStr();
 
 export const initialFilterState: FilterState = {
     kho: [],
@@ -12,9 +19,9 @@ export const initialFilterState: FilterState = {
     nguoiTao: [],
     department: [],
     parent: [],
-    startDate: '',
-    endDate: '',
-    dateRange: 'all',
+    startDate: todayStr,
+    endDate: todayStr,
+    dateRange: 'today',
     selectedMonths: [],
     industryGrid: {
         selectedGroups: [],

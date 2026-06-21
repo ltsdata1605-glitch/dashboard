@@ -10,6 +10,13 @@ import { useFilterState, initialFilterState } from './useFilterState';
 import { useDataManagement } from './useDataManagement';
 import { useWarehouseTargets } from './useWarehouseTargets';
 import * as dbService from '../services/dbService';
+import { toLocalISOString } from '../utils/dataUtils';
+
+const getTodayStr = () => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    return toLocalISOString(today);
+};
 
 export const useDashboardLogic = () => {
     const { user } = useAuth();
@@ -225,6 +232,7 @@ export const useDashboardLogic = () => {
             if (merged) {
                 if (activeHistoricalCount > 0) {
                     const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
+                    const todayStr = getTodayStr();
                     setFilterState(prev => ({
                         ...prev,
                         kho: [],
@@ -232,9 +240,9 @@ export const useDashboardLogic = () => {
                         trangThai: allTrangThai,
                         nguoiTao: [],
                         department: [],
-                        startDate: '',
-                        endDate: '',
-                        dateRange: 'all',
+                        startDate: todayStr,
+                        endDate: todayStr,
+                        dateRange: 'today',
                         selectedMonths: []
                     }));
                 } else {
@@ -252,6 +260,7 @@ export const useDashboardLogic = () => {
             if (merged) {
                 if (activeHistoricalCount > 0) {
                     const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
+                    const todayStr = getTodayStr();
                     setFilterState(prev => ({
                         ...prev,
                         kho: [],
@@ -259,9 +268,9 @@ export const useDashboardLogic = () => {
                         trangThai: allTrangThai,
                         nguoiTao: [],
                         department: [],
-                        startDate: '',
-                        endDate: '',
-                        dateRange: 'all',
+                        startDate: todayStr,
+                        endDate: todayStr,
+                        dateRange: 'today',
                         selectedMonths: []
                     }));
                 } else {
