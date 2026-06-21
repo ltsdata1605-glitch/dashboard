@@ -58,6 +58,7 @@ export const WAREHOUSE_HEADER_COLORS: Record<string, { border: string; sub: stri
     'MÙA VỤ': { border: 'border-orange-200 dark:border-orange-800', sub: 'bg-orange-50 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300' },
     'TRAFFIC': { border: 'border-slate-200 dark:border-slate-800', sub: 'bg-slate-50 dark:bg-slate-900/30', text: 'text-slate-600 dark:text-slate-400' },
     'SL PHỤ KIỆN': { border: 'border-purple-200 dark:border-purple-800', sub: 'bg-purple-50 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300' },
+    'DỊCH VỤ': { border: 'border-fuchsia-200 dark:border-fuchsia-800', sub: 'bg-fuchsia-50 dark:bg-fuchsia-900/30', text: 'text-fuchsia-700 dark:text-fuchsia-300' },
     'SL GIA DỤNG': { border: 'border-amber-200 dark:border-amber-800', sub: 'bg-amber-50 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300' },
     'DEFAULT': { border: 'border-slate-200 dark:border-slate-700', sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' },
 };
@@ -92,17 +93,19 @@ export const DEFAULT_WAREHOUSE_COLUMNS: WarehouseColumnConfig[] = [
     // --- SL PHỤ KIỆN ---
     { id: 'pk_cam', order: 23, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Camera', metricType: 'quantity', mainHeader: 'SL PHỤ KIỆN', subHeader: 'CAM' },
     { id: 'pk_sdp', order: 24, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Pin SDP', metricType: 'quantity', mainHeader: 'SL PHỤ KIỆN', subHeader: 'SDP' },
-    { id: 'pk_tnghe', order: 25, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Tai nghe BLT', metricType: 'quantity', mainHeader: 'SL PHỤ KIỆN', subHeader: 'T.Nghe BLT' },
-    { id: 'pk_sim', order: 26, isVisible: true, isCustom: false, categoryType: 'industry', categoryName: 'Sim', metricType: 'quantity', mainHeader: 'SL PHỤ KIỆN', subHeader: 'SIM' },
+    { id: 'pk_tnghe', order: 25, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Tai nghe BLT', metricType: 'quantity', mainHeader: 'SL PHỤ KIỆN', subHeader: 'TN BLT' },
+    { id: 'pk_loa', order: 26, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Loa', metricType: 'quantity', mainHeader: 'SL PHỤ KIỆN', subHeader: 'Loa' },
     { id: 'pk_dh', order: 27, isVisible: true, isCustom: false, categoryType: 'industry', categoryName: 'Đồng hồ', metricType: 'quantity', mainHeader: 'SL PHỤ KIỆN', subHeader: 'Đ.HỒ' },
-    { id: 'pk_vieon', order: 28, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Vieon', metricType: 'quantity', mainHeader: 'SL PHỤ KIỆN', subHeader: 'VIEON' },
-    { id: 'pk_den', order: 29, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Đèn NLMT', metricType: 'quantity', mainHeader: 'SL PHỤ KIỆN', subHeader: 'Đèn' },
+    { id: 'pk_den', order: 28, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Đèn NLMT', metricType: 'quantity', mainHeader: 'SL PHỤ KIỆN', subHeader: 'Đèn' },
+    // --- DỊCH VỤ ---
+    { id: 'pk_sim', order: 29, isVisible: true, isCustom: false, categoryType: 'industry', categoryName: 'Sim', metricType: 'quantity', mainHeader: 'DỊCH VỤ', subHeader: 'SIM' },
+    { id: 'pk_vieon', order: 30, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Vieon', metricType: 'quantity', mainHeader: 'DỊCH VỤ', subHeader: 'VIEON' },
     // --- SL GIA DỤNG (NhomCon) ---
-    { id: 'gd_mln', order: 30, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Máy lọc nước', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'MLN' },
-    { id: 'gd_qdh', order: 31, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Quạt điều hòa', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'QĐH' },
-    { id: 'gd_qdien', order: 32, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Quạt điện', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'Q.Điện' },
-    { id: 'gd_ncom', order: 33, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Nồi cơm', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'N.Cơm' },
-    { id: 'gd_nchien', order: 34, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Nồi chiên', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'N.Chiên' },
+    { id: 'gd_mln', order: 31, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Máy lọc nước', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'MLN' },
+    { id: 'gd_qdh', order: 32, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Quạt điều hòa', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'QĐH' },
+    { id: 'gd_qdien', order: 33, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Quạt điện', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'Q.Điện' },
+    { id: 'gd_ncom', order: 34, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Nồi cơm', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'N.Cơm' },
+    { id: 'gd_nchien', order: 35, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Nồi chiên', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'N.Chiên' },
 ];
 
 export const DEFAULT_INDUSTRY_COLUMNS: any[] = [

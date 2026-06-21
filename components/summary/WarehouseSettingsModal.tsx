@@ -240,13 +240,13 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     };
 
     const groupColorMap: Record<string, { bg: string, text: string, indicator: string, border: string }> = {
-        'Doanh Thu': { bg: 'bg-blue-50/30 dark:bg-blue-900/10', text: 'text-blue-600 dark:text-blue-400', indicator: 'bg-blue-500', border: 'border-blue-200 dark:border-blue-800' },
-        'TRAFFIC & TỶ LỆ TC/DT': { bg: 'bg-cyan-50/30 dark:bg-cyan-900/10', text: 'text-cyan-600 dark:text-cyan-400', indicator: 'bg-cyan-500', border: 'border-cyan-200 dark:border-cyan-800' },
-        'S.PHẨM CHÍNH': { bg: 'bg-emerald-50/30 dark:bg-emerald-900/10', text: 'text-emerald-600 dark:text-emerald-400', indicator: 'bg-emerald-500', border: 'border-emerald-200 dark:border-emerald-800' },
-        'SL BÁN KÈM': { bg: 'bg-violet-50/30 dark:bg-violet-900/10', text: 'text-violet-600 dark:text-violet-400', indicator: 'bg-violet-500', border: 'border-violet-200 dark:border-violet-800' },
-        'DT THỰC NGÀNH HÀNG': { bg: 'bg-purple-50/30 dark:bg-purple-900/10', text: 'text-purple-600 dark:text-purple-400', indicator: 'bg-purple-500', border: 'border-purple-200 dark:border-purple-800' },
-        'Phụ Kiện': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
-        'Gia Dụng': { bg: 'bg-orange-50/30 dark:bg-orange-900/10', text: 'text-orange-600 dark:text-orange-400', indicator: 'bg-orange-500', border: 'border-orange-200 dark:border-orange-800' },
+        'Doanh Thu': { bg: 'bg-sky-50/30 dark:bg-sky-900/10', text: 'text-sky-600 dark:text-sky-400', indicator: 'bg-sky-500', border: 'border-sky-200 dark:border-sky-800' },
+        'SP CHÍNH': { bg: 'bg-emerald-50/30 dark:bg-emerald-900/10', text: 'text-emerald-600 dark:text-emerald-400', indicator: 'bg-emerald-500', border: 'border-emerald-200 dark:border-emerald-800' },
+        'MÙA VỤ': { bg: 'bg-orange-50/30 dark:bg-orange-900/10', text: 'text-orange-600 dark:text-orange-400', indicator: 'bg-orange-500', border: 'border-orange-200 dark:border-orange-800' },
+        'TRAFFIC': { bg: 'bg-slate-50/30 dark:bg-slate-900/10', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-800' },
+        'SL PHỤ KIỆN': { bg: 'bg-purple-50/30 dark:bg-purple-900/10', text: 'text-purple-600 dark:text-purple-400', indicator: 'bg-purple-500', border: 'border-purple-200 dark:border-purple-800' },
+        'DỊCH VỤ': { bg: 'bg-fuchsia-50/30 dark:bg-fuchsia-900/10', text: 'text-fuchsia-600 dark:text-fuchsia-400', indicator: 'bg-fuchsia-500', border: 'border-fuchsia-200 dark:border-fuchsia-800' },
+        'SL GIA DỤNG': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
         'DEFAULT': { bg: 'bg-slate-50/30 dark:bg-slate-800/20', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-700' },
     };
 

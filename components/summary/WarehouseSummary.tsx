@@ -11,6 +11,43 @@ import WarehouseSettingsModal from './WarehouseSettingsModal';
 import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
 import ModalWrapper from '../modals/ModalWrapper';
 import { useAuth } from '../../contexts/AuthContext';
+const migrateColumns = (savedConfig: WarehouseColumnConfig[]): WarehouseColumnConfig[] => {
+    const savedIds = new Set(savedConfig.map(c => c.id));
+    const missingDefaults = DEFAULT_WAREHOUSE_COLUMNS.filter(c => !savedIds.has(c.id));
+
+    let updatedConfig = savedConfig.map(col => {
+        const defaultCol = DEFAULT_WAREHOUSE_COLUMNS.find(d => d.id === col.id);
+        if (defaultCol) {
+            return {
+                ...col,
+                mainHeader: defaultCol.mainHeader,
+                subHeader: defaultCol.subHeader,
+                categoryName: defaultCol.categoryName,
+                categoryType: defaultCol.categoryType,
+                metricType: defaultCol.metricType,
+                metric: defaultCol.metric,
+            };
+        }
+        return col;
+    });
+
+    if (missingDefaults.length > 0) {
+        updatedConfig = [...updatedConfig, ...missingDefaults];
+    }
+
+    const defaultOrderMap = new Map(DEFAULT_WAREHOUSE_COLUMNS.map((d, index) => [d.id, index]));
+    
+    updatedConfig.sort((a, b) => {
+        const orderA = defaultOrderMap.has(a.id) ? defaultOrderMap.get(a.id)! : 1000 + (a.order || 0);
+        const orderB = defaultOrderMap.has(b.id) ? defaultOrderMap.get(b.id)! : 1000 + (b.order || 0);
+        return orderA - orderB;
+    });
+
+    return updatedConfig.map((col, index) => ({
+        ...col,
+        order: index + 1
+    }));
+};
 
 interface WarehouseSummaryProps {
     onBatchExport: () => Promise<void>;
@@ -113,9 +150,24 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         let cancelled = false;
         const loadConfig = async () => {
             let config = await getWarehouseColumnConfig();
+            let needsSave = false;
             if (!config || config.length === 0) {
                 config = [...DEFAULT_WAREHOUSE_COLUMNS];
-                await saveWarehouseColumnConfig(config);
+                needsSave = true;
+            } else {
+                const migrated = migrateColumns(config);
+                const isDiff = JSON.stringify(migrated) !== JSON.stringify(config);
+                if (isDiff) {
+                    config = migrated;
+                    needsSave = true;
+                }
+            }
+            if (needsSave) {
+                try {
+                    await saveWarehouseColumnConfig(config);
+                } catch (err) {
+                    console.error("Failed to save migrated column config:", err);
+                }
             }
             if (!cancelled) {
                 startTransition(() => {
