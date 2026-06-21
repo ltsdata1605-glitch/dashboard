@@ -43,7 +43,7 @@ export const useExportLogic = ({
                 if (!isMobile) {
                     downloadBlob(blob, filename);
                 } else {
-                    setPendingExport({ blob, filename });
+                    await shareBlob(blob, filename);
                 }
             }
         }
