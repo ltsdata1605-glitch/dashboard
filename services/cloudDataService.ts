@@ -98,7 +98,8 @@ export async function uploadProcessedData(
     user: User,
     data: DataRow[],
     filename: string,
-    fileLastModified: number
+    fileLastModified: number,
+    customSavedAt?: number
 ): Promise<void> {
     if (!user || data.length === 0) return;
 
@@ -122,7 +123,7 @@ export async function uploadProcessedData(
     // 3. Upload meta document
     const meta: SalesDataMeta = {
         filename,
-        savedAt: Date.now(),
+        savedAt: customSavedAt || Date.now(),
         fileLastModified,
         totalRows: data.length,
         chunkCount: chunks.length,

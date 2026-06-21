@@ -517,6 +517,36 @@ export const getValue = getSetting;
 export const setValue = saveSetting;
 
 // --- Sales Data ---
+export async function saveSyncCloudData(
+    data: DataRow[],
+    filename: string,
+    savedAt: number,
+    fileLastModified: number
+): Promise<void> {
+    try {
+        // 1. Clear all existing sales files & registry
+        await clearAllSalesFiles();
+
+        // 2. Save this sync file's data
+        const syncId = 'cloud_sync_' + savedAt;
+        await saveSalesFileData(syncId, data);
+
+        // 3. Add to files registry
+        const item: UploadedFileRegistryItem = {
+            id: syncId,
+            filename,
+            rowCount: data.length,
+            savedAt,             // Use the cloud savedAt
+            fileLastModified,    // Use the cloud fileLastModified
+            isActive: true
+        };
+        await saveSalesFilesRegistry([item]);
+    } catch (error) {
+        console.error('[IDB] saveSyncCloudData failed:', error);
+        throw error;
+    }
+}
+
 export async function saveSalesData(data: DataRow[], filename: string, fileLastModified?: number): Promise<void> {
     const stored: StoredSalesData = { data, filename, savedAt: new Date(), fileLastModified };
     const tryTransaction = async (db: IDBDatabase) => {

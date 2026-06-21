@@ -253,6 +253,15 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                             const localSavedAt = savedSalesReq ? savedSalesReq.savedAt.getTime() : 0;
                             const localFileTs = savedSalesReq ? savedSalesReq.fileLastModified : 0;
 
+                            console.log('[CloudData Debug]', {
+                                cloudMeta,
+                                localSavedAt,
+                                localFileTs,
+                                localSavedAtDate: savedSalesReq ? savedSalesReq.savedAt : null,
+                                isSameFile: cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs,
+                                isCloudNewer: cloudMeta.savedAt > localSavedAt + 15000
+                            });
+
                             // Skip if same file
                             if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
                                 console.log('[CloudData] Cloud data is same file as local. Skipping.');
@@ -269,7 +278,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                                         setAppState('loading');
                                         setStatus({ message: `📊 Tự động nạp dữ liệu đám mây (${cloudResult.meta.totalRows.toLocaleString('vi-VN')} dòng)...`, type: 'info', progress: 50 });
                                         
-                                        await dbService.saveSalesData(cloudResult.data, cloudResult.meta.filename, cloudResult.meta.fileLastModified);
+                                        await dbService.saveSyncCloudData(cloudResult.data, cloudResult.meta.filename, cloudResult.meta.savedAt, cloudResult.meta.fileLastModified);
                                         setFileInfo({ filename: cloudResult.meta.filename, savedAt: new Date(cloudResult.meta.savedAt).toLocaleString('vi-VN') });
                                         
                                         const srcData = normalizeSalesData(cloudResult.data);
@@ -405,7 +414,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 // Background Cloud Sync
                 if (user && !isDemoMode) {
                     const { uploadProcessedData } = await import('../services/cloudDataService');
-                    uploadProcessedData(user, srcData, merged.filename, merged.savedAt.getTime()).catch(console.error);
+                    uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime()).catch(console.error);
                 }
             } else {
                 setOriginalData([]);
@@ -447,7 +456,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 
                 if (user && !isDemoMode) {
                     const { uploadProcessedData } = await import('../services/cloudDataService');
-                    uploadProcessedData(user, srcData, merged.filename, merged.savedAt.getTime()).catch(console.error);
+                    uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime()).catch(console.error);
                 }
             } else {
                 setOriginalData([]);
@@ -510,6 +519,12 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 const srcData = normalizeSalesData(merged.data);
                 setOriginalData(srcData);
                 setAppState('processing');
+                
+                // Background Cloud Sync
+                if (user && !isDemoMode) {
+                    const { uploadProcessedData } = await import('../services/cloudDataService');
+                    uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime()).catch(console.error);
+                }
             } else {
                 toast.error('Không có dữ liệu để xem báo cáo!');
                 setAppState('upload');
@@ -521,7 +536,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
         } finally {
             setIsHardProcessing(false);
         }
-    }, [setAppState, setStatus]);
+    }, [setAppState, setStatus, user, isDemoMode]);
 
 
 
@@ -672,7 +687,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
             const cloudMeta = pendingCloudSync.meta;
             
             // Save to local IDB
-            await dbService.saveSalesData(cloudData, cloudMeta.filename, cloudMeta.fileLastModified);
+            await dbService.saveSyncCloudData(cloudData, cloudMeta.filename, cloudMeta.savedAt, cloudMeta.fileLastModified);
             setFileInfo({ filename: cloudMeta.filename, savedAt: new Date(cloudMeta.savedAt).toLocaleString('vi-VN') });
             
             setPendingCloudSync(null);
@@ -681,6 +696,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
             
             setAppState('processing');
             setOriginalData(srcData);
+            await refreshRegistry();
         } catch (e: any) {
             console.error('Lỗi khi nạp dữ liệu từ đám mây:', e);
             setStatus({ message: `⚠️ Lỗi nạp dữ liệu đám mây: ${e.message}. Dữ liệu trên máy không bị ảnh hưởng.`, type: 'error', progress: 0 });
