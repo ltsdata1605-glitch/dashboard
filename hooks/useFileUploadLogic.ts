@@ -150,6 +150,10 @@ export const useFileUploadLogic = ({
             const realtimeRows: DataRow[] = [];
             let maxRealtimeLastModified = 0;
             
+            if (!isHistorical) {
+                await dbService.clearTempRealtimeData();
+            }
+
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 
@@ -240,135 +244,137 @@ export const useFileUploadLogic = ({
                 // Overlap and duplication check
                 const conflicts: UploadConflictInfo[] = [];
 
-                // A. Check against active historical files
-                const activeHistFiles = updatedRegistry.filter(f => f.isActive);
-                for (const histFile of activeHistFiles) {
-                    const isExactDup = histFile.filename === file.name || 
-                                        (file.lastModified && histFile.fileLastModified === file.lastModified);
-                    
-                    let histUniqueDates = histFile.uniqueDates;
-                    // Backfill for older registry entries that don't have uniqueDates cached
-                    if (!histUniqueDates) {
-                        const histData = await dbService.getSalesFileData(histFile.id);
-                        if (histData && histData.length > 0) {
-                            const parsedDates = histData.map(r => {
-                                let dObj = r.parsedDate;
-                                if (dObj && typeof dObj === 'string') dObj = parseExcelDate(dObj);
-                                if (!dObj || !(dObj instanceof Date) || isNaN(dObj.getTime())) {
-                                    dObj = parseExcelDate(getRowValue(r, COL.DATE_CREATED));
-                                }
-                                return dObj;
-                            }).filter(Boolean) as Date[];
-                            
-                            histUniqueDates = Array.from(new Set(parsedDates.map(d => {
-                                const y = d.getFullYear();
-                                const m = String(d.getMonth() + 1).padStart(2, '0');
-                                const day = String(d.getDate()).padStart(2, '0');
-                                return `${y}-${m}-${day}`;
-                            }))).sort();
+                if (isHistorical) {
+                    // A. Check against active historical files
+                    const activeHistFiles = updatedRegistry.filter(f => f.isActive);
+                    for (const histFile of activeHistFiles) {
+                        const isExactDup = histFile.filename === file.name || 
+                                            (file.lastModified && histFile.fileLastModified === file.lastModified);
+                        
+                        let histUniqueDates = histFile.uniqueDates;
+                        // Backfill for older registry entries that don't have uniqueDates cached
+                        if (!histUniqueDates) {
+                            const histData = await dbService.getSalesFileData(histFile.id);
+                            if (histData && histData.length > 0) {
+                                const parsedDates = histData.map(r => {
+                                    let dObj = r.parsedDate;
+                                    if (dObj && typeof dObj === 'string') dObj = parseExcelDate(dObj);
+                                    if (!dObj || !(dObj instanceof Date) || isNaN(dObj.getTime())) {
+                                        dObj = parseExcelDate(getRowValue(r, COL.DATE_CREATED));
+                                    }
+                                    return dObj;
+                                }).filter(Boolean) as Date[];
+                                
+                                histUniqueDates = Array.from(new Set(parsedDates.map(d => {
+                                    const y = d.getFullYear();
+                                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                                    const day = String(d.getDate()).padStart(2, '0');
+                                    return `${y}-${m}-${day}`;
+                                }))).sort();
 
-                            // Update registry in memory and save
-                            const regIdx = updatedRegistry.findIndex(f => f.id === histFile.id);
-                            if (regIdx !== -1) {
-                                updatedRegistry[regIdx].uniqueDates = histUniqueDates;
-                                const tss = parsedDates.map(d => d.getTime());
-                                if (tss.length > 0) {
-                                    updatedRegistry[regIdx].minDate = Math.min(...tss);
-                                    updatedRegistry[regIdx].maxDate = Math.max(...tss);
+                                // Update registry in memory and save
+                                const regIdx = updatedRegistry.findIndex(f => f.id === histFile.id);
+                                if (regIdx !== -1) {
+                                    updatedRegistry[regIdx].uniqueDates = histUniqueDates;
+                                    const tss = parsedDates.map(d => d.getTime());
+                                    if (tss.length > 0) {
+                                        updatedRegistry[regIdx].minDate = Math.min(...tss);
+                                        updatedRegistry[regIdx].maxDate = Math.max(...tss);
+                                    }
+                                    await dbService.saveSalesFilesRegistry(updatedRegistry);
                                 }
-                                await dbService.saveSalesFilesRegistry(updatedRegistry);
                             }
+                        }
+
+                        const existingDates = new Set(histUniqueDates || []);
+                        const overlaps = fileUniqueDates.filter(d => existingDates.has(d));
+
+                        if (isExactDup) {
+                            conflicts.push({
+                                type: 'exact_duplicate',
+                                targetType: 'historical',
+                                conflictingFileId: histFile.id,
+                                conflictingFilename: histFile.filename,
+                                conflictingLastModified: histFile.fileLastModified,
+                                overlappingDates: []
+                            });
+                        } else if (overlaps.length > 0) {
+                            let totalOverlappingOrdersCount = 0;
+                            const histData = await dbService.getSalesFileData(histFile.id);
+                            if (histData && histData.length > 0) {
+                                const histOrders = new Set(histData.map(r => String(getRowValue(r, COL.ID) || '').trim()).filter(Boolean));
+                                parsedData.forEach(r => {
+                                    const orderId = String(getRowValue(r, COL.ID) || '').trim();
+                                    if (orderId && histOrders.has(orderId)) {
+                                        totalOverlappingOrdersCount++;
+                                    }
+                                });
+                            }
+
+                            conflicts.push({
+                                type: 'overlap_dates',
+                                targetType: 'historical',
+                                conflictingFileId: histFile.id,
+                                conflictingFilename: histFile.filename,
+                                conflictingLastModified: histFile.fileLastModified,
+                                overlappingDates: overlaps,
+                                totalOverlappingOrdersCount
+                            });
                         }
                     }
 
-                    const existingDates = new Set(histUniqueDates || []);
-                    const overlaps = fileUniqueDates.filter(d => existingDates.has(d));
+                    // B. Check against active realtime data
+                    const tempRealtime = await dbService.getTempRealtimeData();
+                    if (tempRealtime && tempRealtime.data.length > 0) {
+                        const isExactDup = tempRealtime.filename === file.name || 
+                                            (file.lastModified && tempRealtime.fileLastModified === file.lastModified);
+                        
+                        const rtDatesList = tempRealtime.data.map(r => {
+                            let dObj = r.parsedDate;
+                            if (dObj && typeof dObj === 'string') dObj = parseExcelDate(dObj);
+                            if (!dObj || !(dObj instanceof Date) || isNaN(dObj.getTime())) {
+                                dObj = parseExcelDate(getRowValue(r, COL.DATE_CREATED));
+                            }
+                            return dObj;
+                        }).filter(Boolean) as Date[];
+                        
+                        const rtUniqueDates = Array.from(new Set(rtDatesList.map(d => {
+                            const y = d.getFullYear();
+                            const m = String(d.getMonth() + 1).padStart(2, '0');
+                            const day = String(d.getDate()).padStart(2, '0');
+                            return `${y}-${m}-${day}`;
+                        }))).sort();
 
-                    if (isExactDup) {
-                        conflicts.push({
-                            type: 'exact_duplicate',
-                            targetType: 'historical',
-                            conflictingFileId: histFile.id,
-                            conflictingFilename: histFile.filename,
-                            conflictingLastModified: histFile.fileLastModified,
-                            overlappingDates: []
-                        });
-                    } else if (overlaps.length > 0) {
-                        let totalOverlappingOrdersCount = 0;
-                        const histData = await dbService.getSalesFileData(histFile.id);
-                        if (histData && histData.length > 0) {
-                            const histOrders = new Set(histData.map(r => String(getRowValue(r, COL.ID) || '').trim()).filter(Boolean));
+                        const rtExistingDates = new Set(rtUniqueDates);
+                        const overlaps = fileUniqueDates.filter(d => rtExistingDates.has(d));
+
+                        if (isExactDup) {
+                            conflicts.push({
+                                type: 'exact_duplicate',
+                                targetType: 'realtime',
+                                conflictingFilename: tempRealtime.filename,
+                                conflictingLastModified: tempRealtime.fileLastModified,
+                                overlappingDates: []
+                            });
+                        } else if (overlaps.length > 0) {
+                            let totalOverlappingOrdersCount = 0;
+                            const rtOrders = new Set(tempRealtime.data.map(r => String(getRowValue(r, COL.ID) || '').trim()).filter(Boolean));
                             parsedData.forEach(r => {
                                 const orderId = String(getRowValue(r, COL.ID) || '').trim();
-                                if (orderId && histOrders.has(orderId)) {
+                                if (orderId && rtOrders.has(orderId)) {
                                     totalOverlappingOrdersCount++;
                                 }
                             });
+
+                            conflicts.push({
+                                type: 'overlap_dates',
+                                targetType: 'realtime',
+                                conflictingFilename: tempRealtime.filename,
+                                conflictingLastModified: tempRealtime.fileLastModified,
+                                overlappingDates: overlaps,
+                                totalOverlappingOrdersCount
+                            });
                         }
-
-                        conflicts.push({
-                            type: 'overlap_dates',
-                            targetType: 'historical',
-                            conflictingFileId: histFile.id,
-                            conflictingFilename: histFile.filename,
-                            conflictingLastModified: histFile.fileLastModified,
-                            overlappingDates: overlaps,
-                            totalOverlappingOrdersCount
-                        });
-                    }
-                }
-
-                // B. Check against active realtime data
-                const tempRealtime = await dbService.getTempRealtimeData();
-                if (tempRealtime && tempRealtime.data.length > 0) {
-                    const isExactDup = tempRealtime.filename === file.name || 
-                                        (file.lastModified && tempRealtime.fileLastModified === file.lastModified);
-                    
-                    const rtDatesList = tempRealtime.data.map(r => {
-                        let dObj = r.parsedDate;
-                        if (dObj && typeof dObj === 'string') dObj = parseExcelDate(dObj);
-                        if (!dObj || !(dObj instanceof Date) || isNaN(dObj.getTime())) {
-                            dObj = parseExcelDate(getRowValue(r, COL.DATE_CREATED));
-                        }
-                        return dObj;
-                    }).filter(Boolean) as Date[];
-                    
-                    const rtUniqueDates = Array.from(new Set(rtDatesList.map(d => {
-                        const y = d.getFullYear();
-                        const m = String(d.getMonth() + 1).padStart(2, '0');
-                        const day = String(d.getDate()).padStart(2, '0');
-                        return `${y}-${m}-${day}`;
-                    }))).sort();
-
-                    const rtExistingDates = new Set(rtUniqueDates);
-                    const overlaps = fileUniqueDates.filter(d => rtExistingDates.has(d));
-
-                    if (isExactDup) {
-                        conflicts.push({
-                            type: 'exact_duplicate',
-                            targetType: 'realtime',
-                            conflictingFilename: tempRealtime.filename,
-                            conflictingLastModified: tempRealtime.fileLastModified,
-                            overlappingDates: []
-                        });
-                    } else if (overlaps.length > 0) {
-                        let totalOverlappingOrdersCount = 0;
-                        const rtOrders = new Set(tempRealtime.data.map(r => String(getRowValue(r, COL.ID) || '').trim()).filter(Boolean));
-                        parsedData.forEach(r => {
-                            const orderId = String(getRowValue(r, COL.ID) || '').trim();
-                            if (orderId && rtOrders.has(orderId)) {
-                                totalOverlappingOrdersCount++;
-                            }
-                        });
-
-                        conflicts.push({
-                            type: 'overlap_dates',
-                            targetType: 'realtime',
-                            conflictingFilename: tempRealtime.filename,
-                            conflictingLastModified: tempRealtime.fileLastModified,
-                            overlappingDates: overlaps,
-                            totalOverlappingOrdersCount
-                        });
                     }
                 }
 
