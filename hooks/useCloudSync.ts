@@ -118,6 +118,13 @@ export const useCloudSync = () => {
         const configRef = doc(db, 'users', user.uid, 'setting', 'configuration');
         const unsubscribeConfig = onSnapshot(configRef, async (snapshot) => {
             if (!snapshot.exists()) return;
+            
+            // Skip updating local DB from cloud if the client currently has pending local writes to prevent reversion
+            if (hasUnsavedChanges.current) {
+                console.log('[Cloud Sync] Real-time config: Skip syncing light settings because we have pending local changes.');
+                return;
+            }
+            
             const data = snapshot.data();
             if (!data) return;
 
@@ -149,6 +156,12 @@ export const useCloudSync = () => {
                     const key = docSnap.id;
                     
                     if (!isHeavySyncKey(key)) continue;
+                    
+                    // Skip updating if a local write for this heavy key is debounced/pending
+                    if (heavyTimeoutsRef.current[key]) {
+                        console.log(`[Cloud Sync] Real-time configs: Skip heavy key "${key}" update because a local write is pending.`);
+                        continue;
+                    }
                     
                     const data = docSnap.data();
                     if (!data || data.value === undefined) continue;
