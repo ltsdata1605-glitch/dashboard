@@ -1,7 +1,12 @@
 export type ExportMode = 'download' | 'share' | 'blob-only';
 
 /** Download a blob as a file */
-export function downloadBlob(blob: Blob, filename: string) {
+export function downloadBlob(blob: Blob, filename: string, forceDownload = false) {
+    const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 768;
+    if (isMobile && blob.type.startsWith('image/') && !forceDownload) {
+        shareBlob(blob, filename);
+        return;
+    }
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.download = filename;
@@ -49,7 +54,7 @@ export async function shareBlob(blob: Blob, filename: string): Promise<boolean> 
         } else {
             console.warn('Web Share API không hỗ trợ chia sẻ file trên trình duyệt này.');
             // Fallback: download instead
-            downloadBlob(blob, filename);
+            downloadBlob(blob, filename, true);
             return false;
         }
     } catch (error: any) {
@@ -57,7 +62,7 @@ export async function shareBlob(blob: Blob, filename: string): Promise<boolean> 
         if (error?.name === 'AbortError') return false;
         console.error('Lỗi khi chia sẻ:', error);
         // Fallback: download
-        downloadBlob(blob, filename);
+        downloadBlob(blob, filename, true);
         return false;
     }
 }
