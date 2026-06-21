@@ -168,15 +168,6 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             />
                         </div>
 
-                        <div className="flex-1 min-w-0">
-                            <MultiSelectDropdown
-                                label="Bộ phận"
-                                options={uniqueFilterOptions.department}
-                                selected={filterState.department}
-                                onChange={(sel) => handleFilterChange({ department: sel })}
-                                variant="compact"
-                            />
-                        </div>
                         {onNewFile && (
                             <button
                                 onClick={onNewFile}
@@ -393,17 +384,6 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                     </div>
                     
 
-
-                    {/* Department Filter */}
-                    <div className="w-auto shrink-0">
-                        <MultiSelectDropdown
-                            label="Bộ phận"
-                            options={uniqueFilterOptions.department}
-                            selected={filterState.department}
-                            onChange={(sel) => handleFilterChange({ department: sel })}
-                            variant="compact"
-                        />
-                    </div>
 
                     {/* Active Chips */}
                     <div className="flex-grow flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
