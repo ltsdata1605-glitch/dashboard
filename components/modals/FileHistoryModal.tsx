@@ -50,7 +50,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                         <Icon name="database" size={5} />
                     </div>
                     <div>
-                        <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-800 dark:text-white uppercase">Kho Dữ Liệu Quá Khứ (Lũy kế dài hạn)</h2>
+                        <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-800 dark:text-white uppercase">Danh sách ycx luỹ kế</h2>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400">Tải lên, gộp và đối chiếu các tệp Excel doanh số lũy kế cũ (ví dụ: tháng trước, năm trước)</p>
                     </div>
                 </div>
@@ -85,7 +85,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                         className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
                         <Icon name="file-up" size={3.5} />
-                        <span>Tải Lên File Dữ Liệu Cũ...</span>
+                        <span>Tải YCX luỹ kế</span>
                     </button>
 
                     <input

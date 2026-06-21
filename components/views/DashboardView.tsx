@@ -331,14 +331,14 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            {logic.hasRealtimeData && (
+                                            {(logic.hasRealtimeData || (logic.fileRegistry && logic.fileRegistry.some(f => f.isActive))) && (
                                                 <button
-                                                    onClick={() => logic.handleClearRealtimeData()}
-                                                    title="Xóa dữ liệu xem hiện tại (Realtime)"
+                                                    onClick={() => logic.hasRealtimeData ? logic.handleClearRealtimeData() : logic.handleClearData()}
+                                                    title={logic.hasRealtimeData ? "Xóa dữ liệu xem hiện tại (Realtime)" : "Xóa tất cả dữ liệu báo cáo tích lũy"}
                                                     className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold rounded-md border border-rose-200/50 dark:border-rose-800/40 text-[10px] transition-all hover:scale-105 active:scale-95 shadow-sm"
                                                 >
                                                     <Icon name="trash-2" size={3.5} className="text-rose-500 animate-pulse" />
-                                                    <span>XÓA YCX REALTIME</span>
+                                                    <span>{logic.hasRealtimeData ? "XÓA YCX REALTIME" : "XÓA YCX LŨY KẾ"}</span>
                                                 </button>
                                             )}
                                             {logic.fileInfo && (

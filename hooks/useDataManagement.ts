@@ -171,7 +171,9 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                                 } else if (cloudData.settingsStoreBackup) {
                                     const backup = cloudData.settingsStoreBackup;
                                     Object.entries(backup).forEach(([k, v]) => {
-                                        dbService.saveSettingFromCloud(k, v, cloudLastMod).catch(console.error);
+                                        if (!isHeavySyncKey(k) && k !== 'salesFilesRegistry') {
+                                            dbService.saveSettingFromCloud(k, v, cloudLastMod).catch(console.error);
+                                        }
                                     });
                                     if (backup.warehouseTargets) setWarehouseTargets(backup.warehouseTargets);
                                     if (backup.gtdhTargets) setGtdhTargets(backup.gtdhTargets);
@@ -409,6 +411,13 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 setOriginalData([]);
                 setFileInfo(null);
                 setAppState('upload');
+                
+                // Clear cloud data when local data is completely empty
+                if (user && !isDemoMode) {
+                    import('../services/cloudDataService').then(({ deleteCloudSalesData }) => {
+                        deleteCloudSalesData(user).catch(console.error);
+                    });
+                }
             }
             toast.success('Đã xóa tệp khỏi cơ sở dữ liệu!');
         } catch (error) {
@@ -444,6 +453,13 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 setOriginalData([]);
                 setFileInfo(null);
                 setAppState('upload');
+                
+                // Clear cloud data when local data is completely empty
+                if (user && !isDemoMode) {
+                    import('../services/cloudDataService').then(({ deleteCloudSalesData }) => {
+                        deleteCloudSalesData(user).catch(console.error);
+                    });
+                }
             }
             toast.success('Đã xóa dữ liệu xem hiện tại!');
         } catch (error) {

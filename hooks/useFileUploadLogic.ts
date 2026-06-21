@@ -99,6 +99,10 @@ export const useFileUploadLogic = ({
             if (onRegistryChange) {
                 onRegistryChange();
             }
+            if (user) {
+                const { deleteCloudSalesData } = await import('../services/cloudDataService');
+                await deleteCloudSalesData(user).catch(console.error);
+            }
             setAppState('upload');
         } catch (error) {
             console.error(error);

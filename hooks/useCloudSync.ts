@@ -58,7 +58,8 @@ export const useCloudSync = () => {
                 'competition-luy-ke',
                 'last-updates-list',
                 'stickerPrinterState',
-                'stickerPrintHistory'
+                'stickerPrintHistory',
+                'salesFilesRegistry'
             ]);
             const settingsToSync: Record<string, any> = {};
             for (const key of Object.keys(allSettings)) {
@@ -130,7 +131,9 @@ export const useCloudSync = () => {
                 const backup = data.settingsStoreBackup;
                 if (backup) {
                     for (const [k, v] of Object.entries(backup)) {
-                        await saveSettingFromCloud(k, v, cloudLastMod);
+                        if (!isHeavySyncKey(k) && k !== 'salesFilesRegistry') {
+                            await saveSettingFromCloud(k, v, cloudLastMod);
+                        }
                     }
                 }
             }
@@ -227,7 +230,8 @@ export const useCloudSync = () => {
                 'competition-luy-ke',
                 'last-updates-list',
                 'stickerPrinterState',
-                'stickerPrintHistory'
+                'stickerPrintHistory',
+                'salesFilesRegistry'
             ]);
             if (
                 key && (

@@ -124,6 +124,43 @@ export const parseCompetitionDataBySupermarket = (text: string) => {
     return supermarketData;
 };
 
+export const isLevel0 = (name: string): boolean => {
+    const clean = name.trim().toUpperCase();
+    if (clean.startsWith('NNH ')) return true;
+    const level0Names = new Set([
+        'VAS',
+        'PHỤ KIỆN',
+        'TABLET',
+        'ĐIỆN THOẠI',
+        'LAPTOP',
+        'ĐỒNG HỒ',
+        'ỐP LƯNG',
+        'GIA DỤNG',
+        'ĐIỆN LẠNH',
+        'ĐIỆN TỬ',
+        'XE ĐẠP',
+        'MÁY CŨ',
+        'MẸ VÀ BÉ',
+        'ICT',
+        'BẢO HÀNH',
+        'ĐIỆN THOẠI CŨ',
+        'LAPTOP CŨ',
+        'PHÂN KHU KHÁC',
+        'THIẾT BỊ VĂN PHÒNG',
+        'ĐIỆN THOẠI - TABLET',
+        'ĐIỆN THOẠI & TABLET',
+        'PHỤ KIỆN LAPTOP',
+        'PHỤ KIỆN ĐIỆN THOẠI',
+        'PHỤ KIỆN KHÁC',
+        'MÁY LẠNH',
+        'TỦ LẠNH',
+        'MÁY GIẶT',
+        'TIVI',
+        'GIA DỤNG NHÀ BẾP'
+    ]);
+    return level0Names.has(clean);
+};
+
 export const parseIndustryRealtimeData = (text: string) => {
     const result: {
         headers: string[];
@@ -158,7 +195,7 @@ export const parseIndustryRealtimeData = (text: string) => {
     }
 
     result.allRows = allDataRows;
-    result.rows = allDataRows.filter(r => (r[0] || '').startsWith('NNH ') || r[0] === 'Tổng');
+    result.rows = allDataRows.filter(r => isLevel0(r[0] || '') || r[0] === 'Tổng');
 
     const targetIndex = result.headers.indexOf('Target Ngày (QĐ)');
 
@@ -188,7 +225,7 @@ export const parseIndustryRealtimeData = (text: string) => {
             continue;
         }
 
-        if (name.startsWith('NNH ')) {
+        if (isLevel0(name)) {
             flushNNH();
             currentNNH = { name, values: row, children: [], level: 0 };
             continue;
@@ -263,7 +300,7 @@ export const parseIndustryLuyKeData = (text: string) => {
     }
 
     // Keep backward-compatible flat rows (only NNH + Tổng)
-    result.table.rows = allDataRows.filter(r => (r[0] || '').startsWith('NNH ') || r[0] === 'Tổng');
+    result.table.rows = allDataRows.filter(r => isLevel0(r[0] || '') || r[0] === 'Tổng');
 
     // --- Build 3-level tree: NNH > Nhóm hàng > Hãng ---
     const targetIndex = result.table.headers.indexOf('Target (QĐ)');
@@ -295,7 +332,7 @@ export const parseIndustryLuyKeData = (text: string) => {
             continue;
         }
 
-        if (name.startsWith('NNH ')) {
+        if (isLevel0(name)) {
             flushNNH();
             currentNNH = { name, values: row, children: [], level: 0 };
             continue;

@@ -110,8 +110,17 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
             const mapNode = (node: IndustryTreeNode): IndustryTreeNode => {
                 const nodeName = node.name.trim();
                 let rtRow = realtimeRowsMap.get(nodeName);
-                if (!rtRow && nodeName.startsWith('NNH ')) {
-                     rtRow = realtimeRowsMap.get(nodeName.replace('NNH ', ''));
+                
+                if (!rtRow) {
+                    const cleanNodeName = nodeName.startsWith('NNH ') ? nodeName.substring(4).trim() : nodeName;
+                    
+                    for (const [key, val] of realtimeRowsMap.entries()) {
+                        const cleanKey = key.startsWith('NNH ') ? key.substring(4).trim() : key;
+                        if (cleanNodeName.toUpperCase() === cleanKey.toUpperCase()) {
+                            rtRow = val;
+                            break;
+                        }
+                    }
                 }
                 
                 return {

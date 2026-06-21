@@ -88,7 +88,7 @@ export type BIKey =
 // Thêm prefix để key BI module không xung đột với key của Dashboard chính
 const prefixKey = (key: string): string => `${BI_PREFIX}${key}`;
 
-export const set = async (key: BIKey, value: any): Promise<void> => {
+export const set = async (key: BIKey, value: any, source?: string): Promise<void> => {
   const db = await getDb();
   const prefixed = prefixKey(key);
   return new Promise((resolve, reject) => {
@@ -102,7 +102,7 @@ export const set = async (key: BIKey, value: any): Promise<void> => {
 
     transaction.oncomplete = () => {
       // Bắn event cho hệ thống BI nội bộ (dùng tên key GỐC, không prefix)
-      window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key } }));
+      window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key, source } }));
       // Bắn event cho hệ thống Cloud Sync chính
       window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: prefixed } }));
       resolve();
@@ -115,7 +115,7 @@ export const set = async (key: BIKey, value: any): Promise<void> => {
 };
 
 // Hàm ghi nhiều mục trong 1 transaction duy nhất (Hiệu suất cao)
-export const setMany = async (items: { key: BIKey; value: any }[]): Promise<void> => {
+export const setMany = async (items: { key: BIKey; value: any }[], source?: string): Promise<void> => {
   const db = await getDb();
   return new Promise((resolve, reject) => {
     const transaction = db.transaction([SETTINGS_STORE], 'readwrite');
@@ -132,7 +132,7 @@ export const setMany = async (items: { key: BIKey; value: any }[]): Promise<void
     transaction.oncomplete = () => {
       // Bắn event tổng hợp
       items.forEach(item => {
-        window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: item.key } }));
+        window.dispatchEvent(new CustomEvent('indexeddb-change', { detail: { key: item.key, source } }));
       });
       window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'bi_bulk_update' } }));
       resolve();

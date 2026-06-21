@@ -30,6 +30,8 @@ export function useIndexedDBState<T>(
 
     const writeQueueRef = useRef<(() => Promise<any>)[]>([]);
     const isWritingRef = useRef(false);
+    // Increments on every user-initiated write so stale loadValue() calls can detect they're outdated
+    const writeVersionRef = useRef(0);
 
     const performWrite = useCallback((keyToSave: db.BIKey, valueToWrite: T) => {
         const processQueue = () => {
@@ -45,15 +47,7 @@ export function useIndexedDBState<T>(
             }
         };
 
-        const task = () => db.set(keyToSave, valueToWrite)
-            .then(() => {
-                window.dispatchEvent(new CustomEvent(DB_CHANGE_EVENT, { 
-                    detail: { key: keyToSave, source: 'hook-write' } 
-                }));
-                window.dispatchEvent(new CustomEvent('ycx-setting-changed', { 
-                    detail: { key: keyToSave } 
-                }));
-            })
+        const task = () => db.set(keyToSave, valueToWrite, 'hook-write')
             .catch(err => console.error(`Save error ${keyToSave}`, err));
         
         writeQueueRef.current.push(task);
@@ -80,7 +74,11 @@ export function useIndexedDBState<T>(
         if (!key) return;
 
         const loadValue = () => {
+            // Capture the write version before the async read so we can detect if the
+            // user fired setStoredValue() while we were waiting for IDB — if so, discard.
+            const capturedVersion = writeVersionRef.current;
             db.get(key).then(storedValue => {
+                if (writeVersionRef.current !== capturedVersion) return;
                 const defValue = defaultValueRef.current;
                 let finalValue = defValue;
                 if (storedValue !== undefined && storedValue !== null) {
@@ -120,7 +118,9 @@ export function useIndexedDBState<T>(
 
     const setStoredValue = useCallback((newValue: SetStateAction<T>) => {
         if (!key) return;
-        
+        // Invalidate any in-flight loadValue() calls so they won't overwrite this user action
+        writeVersionRef.current++;
+
         const currentState = configStore.getState();
         const prevValue = currentState.cache[key] !== undefined ? currentState.cache[key] : defaultValueRef.current;
         

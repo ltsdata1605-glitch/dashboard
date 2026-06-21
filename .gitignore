@@ -26,3 +26,11 @@ dist-ssr
 *.sln
 *.sw?
 *.zip
+
+# Debug scripts and backups
+scratch/
+archive/
+*.bak
+*.tar.gz
+build_output.log
+backup_dashboard.zip

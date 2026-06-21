@@ -221,7 +221,25 @@ export const HEAVY_SYNC_KEYS = new Set([
 
 export const isHeavySyncKey = (key: string): boolean => {
     if (HEAVY_SYNC_KEYS.has(key)) return true;
-    if (key.startsWith('bi_') || key === 'checkthuong_data') return true;
+    if (key === 'checkthuong_data') return true;
+    if (key.startsWith('bi_')) {
+        const unprefixed = key.substring(3);
+        if (
+            HEAVY_SYNC_KEYS.has(unprefixed) ||
+            unprefixed.startsWith('summary-') ||
+            unprefixed.startsWith('competition-') ||
+            unprefixed.startsWith('config-') ||
+            unprefixed.startsWith('comptarget-') ||
+            unprefixed.startsWith('bonus-') ||
+            unprefixed.startsWith('snapshot-') ||
+            unprefixed.startsWith('avatar-') ||
+            unprefixed === 'last-updates-list' ||
+            unprefixed === 'nhanvien-summary-tables-v1' ||
+            unprefixed === 'ai-assistant-history'
+        ) {
+            return true;
+        }
+    }
     return false;
 };
 

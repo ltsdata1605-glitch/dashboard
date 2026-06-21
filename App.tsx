@@ -101,9 +101,9 @@ const TabContent = React.memo(() => {
                 </div>
             )}
 
-            {/* Render External Tool view when applicable */}
-            {!['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'tools-tax', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) && (
-                <div style={{ display: !['analysis', 'approval', 'settings', 'help', 'pending-approval', 'check-thuong', 'tools-coupon', 'employees', 'tools-print-sticker', 'tools-phanca'].includes(activeTab) ? 'block' : 'none' }} className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
+            {/* Fallback for any tab not handled above */}
+            {!persistentViews.some(v => v.id === activeTab) && !['tools-coupon', 'tools-tax'].includes(activeTab) && (
+                <div className="flex flex-col items-center justify-center min-h-[50vh] text-slate-400">
                     <p className="text-lg font-medium">Tính năng đang được phát triển</p>
                     <p className="text-sm">Vui lòng quay lại sau</p>
                 </div>
