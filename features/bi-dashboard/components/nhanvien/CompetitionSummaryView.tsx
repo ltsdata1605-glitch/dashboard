@@ -427,10 +427,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
 
             <button 
                 onClick={() => setShowPercent(!showPercent)}
-                className={`p-1.5 rounded border transition-all ${showPercent ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-950/40 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'}`}
+                className={`p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
-                {showPercent ? <HashIcon className="h-4 w-4" /> : <PercentIcon className="h-4 w-4" />}
+                {showPercent ? <HashIcon className="h-5 w-5" /> : <PercentIcon className="h-5 w-5" />}
             </button>
 
             <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
