@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { RevenueRow } from '../types/nhanVienTypes';
+import { RevenueRow, BonusMetrics } from '../types/nhanVienTypes';
 
 interface UseRevenueDataProps {
     rows: RevenueRow[];
@@ -15,6 +15,7 @@ interface UseRevenueDataProps {
     viewMode: 'group' | 'list';
     exportDeptFilter: string | null;
     isActive?: boolean;
+    bonusData?: Record<string, BonusMetrics | null>;
 }
 
 export const useRevenueData = ({
@@ -30,7 +31,8 @@ export const useRevenueData = ({
     employeeInstallmentMap,
     viewMode,
     exportDeptFilter,
-    isActive
+    isActive,
+    bonusData
 }: UseRevenueDataProps) => {
 
     const displayList = useMemo(() => {
@@ -75,6 +77,8 @@ export const useRevenueData = ({
 
             const remaining_total = Math.max(0, empTarget - emp.dtqd);
             const remaining_daily = remaining_total / remainingDays;
+            
+            const bonus_tong = (bonusData && emp.originalName) ? (bonusData[emp.originalName]?.tong || 0) : 0;
 
             return { 
                 ...emp, 
@@ -83,6 +87,7 @@ export const useRevenueData = ({
                 calculatedInstallment: currentInstallment,
                 remaining_total,
                 remaining_daily,
+                bonus_tong,
                 prevCompData
             };
         };
@@ -113,6 +118,7 @@ export const useRevenueData = ({
                 const avgHqqd = sumDtlk > 0 ? (sumDtqd / sumDtlk) - 1 : 0;
                 const avgInstallment = result.reduce((s, e) => s + e.calculatedInstallment, 0) / result.length;
                 const avgBk = result.reduce((s, e) => s + (e.pctBillBk || 0), 0) / result.length;
+                const sumBonusTong = result.reduce((s, e) => s + (e.bonus_tong || 0), 0);
                 
                 const prevDtlk = result.reduce((s, e) => s + (e.prevCompData?.dtlk || 0), 0);
                 const prevDtqd = result.reduce((s, e) => s + (e.prevCompData?.dtqd || 0), 0);
@@ -130,6 +136,7 @@ export const useRevenueData = ({
                     pctBillBk: avgBk,
                     remaining_total: Math.max(0, sumTarget - sumDtqd),
                     remaining_daily: Math.max(0, sumTarget - sumDtqd) / remainingDays,
+                    bonus_tong: sumBonusTong,
                     prevCompData: (prevDtlk || prevDtqd) ? {
                         dtlk: prevDtlk,
                         dtqd: prevDtqd,
@@ -167,6 +174,7 @@ export const useRevenueData = ({
             const avgInstallment = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + e.calculatedInstallment, 0) / deptEmployees.length : 0;
             const avgBk = deptEmployees.length > 0 ? deptEmployees.reduce((s, e) => s + (e.pctBillBk || 0), 0) / deptEmployees.length : 0;
             const avgHqqd = sumDtlk > 0 ? (sumDtqd / sumDtlk) - 1 : 0;
+            const sumBonusTong = deptEmployees.reduce((s, e) => s + (e.bonus_tong || 0), 0);
 
             return {
                 name: deptName,
@@ -177,7 +185,8 @@ export const useRevenueData = ({
                 avgInstallment,
                 avgBk,
                 avgHqqd,
-                sortValue: sortConfig.key === 'dtqd' ? sumDtqd : (sortConfig.key === 'dtlk' ? sumDtlk : (sortConfig.key === 'name' ? deptName : sumDtqd))
+                sumBonusTong,
+                sortValue: sortConfig.key === 'dtqd' ? sumDtqd : (sortConfig.key === 'dtlk' ? sumDtlk : (sortConfig.key === 'name' ? deptName : (sortConfig.key === 'bonus_tong' ? sumBonusTong : sumDtqd)))
             };
         });
 
@@ -205,7 +214,8 @@ export const useRevenueData = ({
                     calculatedInstallment: group.avgInstallment,
                     pctBillBk: group.avgBk,
                     remaining_total: Math.max(0, group.sumTarget - group.sumDtqd),
-                    remaining_daily: Math.max(0, group.sumTarget - group.sumDtqd) / remainingDays
+                    remaining_daily: Math.max(0, group.sumTarget - group.sumDtqd) / remainingDays,
+                    bonus_tong: group.sumBonusTong
                 });
                 finalOutput.push(...group.employees.map((emp, index) => ({ ...emp, rank: index + 1 })));
                 
@@ -223,6 +233,7 @@ export const useRevenueData = ({
         });
 
         if (finalOutput.length > 0 && !exportDeptFilter) {
+            const grandSumBonusTong = finalOutput.filter(r => r.type === 'department').reduce((s, d) => s + (d.bonus_tong || 0), 0);
             finalOutput.push({
                 type: 'total',
                 name: 'TỔNG CỘNG',
@@ -235,6 +246,7 @@ export const useRevenueData = ({
                 pctBillBk: grandTotalEmps > 0 ? grandSumBk / grandTotalEmps : 0,
                 remaining_total: Math.max(0, grandSumTarget - grandSumDtqd),
                 remaining_daily: Math.max(0, grandSumTarget - grandSumDtqd) / remainingDays,
+                bonus_tong: grandSumBonusTong,
                 prevCompData: (grandPrevDtlk || grandPrevDtqd) ? {
                     dtlk: grandPrevDtlk,
                     dtqd: grandPrevDtqd,
@@ -248,7 +260,7 @@ export const useRevenueData = ({
         }
 
         return finalOutput;
-    }, [rows, departmentNames, sortConfig, snapshotId, snapshotRows, prevMonthRows, departmentWeights, deptEmployeeCounts, supermarketTarget, employeeInstallmentMap, viewMode, exportDeptFilter, isActive]);
+    }, [rows, departmentNames, sortConfig, snapshotId, snapshotRows, prevMonthRows, departmentWeights, deptEmployeeCounts, supermarketTarget, employeeInstallmentMap, viewMode, exportDeptFilter, isActive, bonusData]);
 
     return { displayList };
 };

@@ -80,9 +80,12 @@ export const RevenueDesktopRow = React.memo(({
                 <div style={{ color: getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>{roundUp(row.calculatedInstallment)}%</div>
                 <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-black" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
+            <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
                 <div>{roundUp(row.pctBillBk)}%</div>
                 <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
+            </td>
+            <td className="px-3 py-1 text-[13px] text-center font-extrabold text-slate-900 dark:text-white">
+                <div>{row.bonus_tong ? f.format(Math.ceil(row.bonus_tong / 1000)) : '-'}</div>
             </td>
         </tr>
     );

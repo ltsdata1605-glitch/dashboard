@@ -4,7 +4,7 @@ import Card from '../Card';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 import ExportButton from '../ExportButton';
 import { SpinnerIcon, UsersIcon, CogIcon, XIcon, ViewListIcon, ViewGridIcon, CameraIcon, ClockIcon, DownloadAllIcon } from '../Icons';
-import { RevenueRow, Employee, PerformanceChange, SnapshotData, SnapshotMetadata } from '../../types/nhanVienTypes';
+import { RevenueRow, Employee, PerformanceChange, SnapshotData, SnapshotMetadata, BonusMetrics } from '../../types/nhanVienTypes';
 import { roundUp, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import * as db from '../../utils/db';
@@ -41,12 +41,14 @@ const RevenueView: React.FC<{
     deptEmployeeCounts: Record<string, number>;
     employeeInstallmentMap: Map<string, number>;
     isActive?: boolean;
+    bonusData?: Record<string, BonusMetrics | null>;
 }> = ({ 
     rows, supermarketName, departmentNames, onViewTrend, 
     highlightedEmployees, setHighlightedEmployees, snapshotId, setSnapshotId,
     snapshots,
     supermarketTarget, departmentWeights, deptEmployeeCounts, employeeInstallmentMap,
-    isActive
+    isActive,
+    bonusData
 }) => {
     const [isLoading, setIsLoading] = useState(supermarketName && rows.length === 0);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'dtqd', direction: 'desc' });
@@ -134,7 +136,8 @@ const RevenueView: React.FC<{
         employeeInstallmentMap,
         viewMode,
         exportDeptFilter,
-        isActive
+        isActive,
+        bonusData
     });
 
     const handleSort = (key: string) => setSortConfig(p => ({ key, direction: p.key === key && p.direction === 'desc' ? 'asc' : 'desc' }));
@@ -315,7 +318,7 @@ const RevenueView: React.FC<{
                                                     Còn lại {remainingDays} ngày
                                                 </th>
                                             )}
-                                            <th colSpan={4} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border-b border-emerald-100 dark:border-emerald-800/50">
+                                            <th colSpan={5} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border-b border-emerald-100 dark:border-emerald-800/50">
                                                 Hiệu suất
                                             </th>
                                         </tr>
@@ -333,7 +336,8 @@ const RevenueView: React.FC<{
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-r border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('completion')}>%HT</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-r border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-r border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('installment')}>%T.Góp</th>
-                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('bankem')}>%B.Kèm</th>
+                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-r border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('bankem')}>%B.Kèm</th>
+                                            <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white dark:bg-[#1c1c1e] font-black">
@@ -378,9 +382,12 @@ const RevenueView: React.FC<{
                                                         <div>{roundUp(row.calculatedInstallment)}%</div>
                                                         <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
                                                     </td>
-                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
+                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
                                                         <div>{roundUp(row.pctBillBk)}%</div>
                                                         <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
+                                                    </td>
+                                                    <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
+                                                        <div>{row.bonus_tong ? f.format(Math.ceil(row.bonus_tong / 1000)) : '-'}</div>
                                                     </td>
                                                 </tr>
                                             );
