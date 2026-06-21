@@ -38,12 +38,45 @@ export const useRevenueData = ({
     const displayList = useMemo(() => {
         if (isActive === false) return [];
         const isFiltering = !departmentNames.includes('all');
+
+        const assignBonusTiers = (emps: any[]) => {
+            if (emps.length === 0) return;
+            const sorted = [...emps].sort((a, b) => (b.bonus_tong || 0) - (a.bonus_tong || 0));
+            
+            const top3Ids = new Set<string>();
+            sorted.slice(0, 3).forEach(e => {
+                if ((e.bonus_tong || 0) > 0) {
+                    top3Ids.add(e.originalName || '');
+                }
+            });
+
+            // Calculate bottom 30% of employees
+            const botCount = Math.ceil(emps.length * 0.3);
+            const botIds = new Set<string>();
+            if (botCount > 0) {
+                const sortedAsc = [...emps].sort((a, b) => (a.bonus_tong || 0) - (b.bonus_tong || 0));
+                sortedAsc.slice(0, botCount).forEach(e => {
+                    botIds.add(e.originalName || '');
+                });
+            }
+
+            emps.forEach(e => {
+                if (top3Ids.has(e.originalName || '')) {
+                    e.bonus_tier = 'top';
+                } else if (botIds.has(e.originalName || '')) {
+                    e.bonus_tier = 'bot';
+                } else {
+                    e.bonus_tier = 'normal';
+                }
+            });
+        };
         const allDepts = Array.from(new Set(rows.filter(r => r.type === 'employee' && r.department).map(r => r.department as string))).sort();
         
         const now = new Date();
         const currentDay = now.getDate();
         const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
         const remainingDays = Math.max(1, totalDays - currentDay + 1);
+        const daysPassed = Math.max(1, currentDay - 1);
 
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? departmentNames : allDepts);
         
@@ -78,6 +111,9 @@ export const useRevenueData = ({
             const remaining_total = Math.max(0, empTarget - emp.dtqd);
             const remaining_daily = remaining_total / remainingDays;
             
+            const avgDaily = emp.dtqd / daysPassed;
+            const remaining_daily_status = empTarget > 0 ? (avgDaily < remaining_daily ? 'warning' : 'success') : undefined;
+            
             const bonus_tong = (bonusData && emp.originalName) ? (bonusData[emp.originalName]?.tong || 0) : 0;
 
             return { 
@@ -87,6 +123,7 @@ export const useRevenueData = ({
                 calculatedInstallment: currentInstallment,
                 remaining_total,
                 remaining_daily,
+                remaining_daily_status,
                 bonus_tong,
                 prevCompData
             };
@@ -110,6 +147,7 @@ export const useRevenueData = ({
             });
 
             const result = list.map((emp, index) => ({ ...emp, rank: index + 1 }));
+            assignBonusTiers(result);
             
             if (result.length > 0) {
                 const sumDtlk = result.reduce((s, e) => s + e.dtlk, 0);
@@ -231,6 +269,9 @@ export const useRevenueData = ({
                 grandPrevTarget += group.employees.reduce((s, e) => s + (e.prevCompData?.target || 0), 0);
             }
         });
+
+        const employeeRows = finalOutput.filter(r => r.type === 'employee');
+        assignBonusTiers(employeeRows);
 
         if (finalOutput.length > 0 && !exportDeptFilter) {
             const grandSumBonusTong = finalOutput.filter(r => r.type === 'department').reduce((s, d) => s + (d.bonus_tong || 0), 0);

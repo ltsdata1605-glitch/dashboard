@@ -45,7 +45,9 @@ export interface RevenueRow {
     calculatedInstallment?: number;
     remaining_total?: number;
     remaining_daily?: number;
+    remaining_daily_status?: 'warning' | 'success';
     bonus_tong?: number;
+    bonus_tier?: 'top' | 'bot' | 'normal';
 }
 
 export interface CrossSellingRow {

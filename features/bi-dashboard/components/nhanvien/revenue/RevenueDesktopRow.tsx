@@ -63,7 +63,11 @@ export const RevenueDesktopRow = React.memo(({
                     <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 text-orange-700 dark:text-orange-400">
                         <div>{f.format(roundUp(row.remaining_total || 0))}</div>
                     </td>
-                    <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 text-orange-700 dark:text-orange-400">
+                    <td className={`px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 ${
+                        row.type === 'employee' && row.remaining_daily_status === 'warning' ? 'text-rose-600 dark:text-rose-400' :
+                        row.type === 'employee' && row.remaining_daily_status === 'success' ? 'text-emerald-600 dark:text-emerald-400' :
+                        'text-orange-700 dark:text-orange-400'
+                    }`}>
                         <div>{f.format(roundUp(row.remaining_daily || 0))}</div>
                     </td>
                 </>
@@ -84,7 +88,12 @@ export const RevenueDesktopRow = React.memo(({
                 <div>{roundUp(row.pctBillBk)}%</div>
                 <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-extrabold text-slate-900 dark:text-white">
+            <td className={`px-3 py-1 text-center ${
+                !row.bonus_tong ? 'text-slate-400 dark:text-slate-500 font-medium text-[13px]' :
+                row.bonus_tier === 'top' ? 'text-emerald-600 dark:text-emerald-400 text-[14px] font-black' :
+                row.bonus_tier === 'bot' ? 'text-rose-500 dark:text-rose-400 text-[13px] font-bold' :
+                'text-slate-900 dark:text-white text-[13px] font-black'
+            }`}>
                 <div>{row.bonus_tong ? f.format(Math.ceil(row.bonus_tong / 1000)) : '-'}</div>
             </td>
         </tr>
