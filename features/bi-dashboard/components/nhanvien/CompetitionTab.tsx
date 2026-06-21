@@ -112,6 +112,28 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
     const [summaryTables, setSummaryTables] = useIndexedDBState<SummaryTableConfig[]>('nhanvien-summary-tables-v1', [
         { id: 'default', name: 'Bảng tổng hợp thi đua', selectedTitles: [] }
     ]);
+    const [activeSummaryTableId, setActiveSummaryTableId] = useState<string>('default');
+
+    const activeTableId = useMemo(() => {
+        const tables = Array.isArray(summaryTables) ? summaryTables : [];
+        if (tables.length === 0) return '';
+        if (!tables.some(t => t.id === activeSummaryTableId)) {
+            return tables[0].id;
+        }
+        return activeSummaryTableId;
+    }, [summaryTables, activeSummaryTableId]);
+
+    const prevTablesLengthRef = useRef(summaryTables?.length || 0);
+    useEffect(() => {
+        const currentLength = summaryTables?.length || 0;
+        if (currentLength > prevTablesLengthRef.current) {
+            const lastTable = summaryTables[currentLength - 1];
+            if (lastTable) {
+                setActiveSummaryTableId(lastTable.id);
+            }
+        }
+        prevTablesLengthRef.current = currentLength;
+    }, [summaryTables]);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -584,44 +606,77 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             />
                         )}
                         {activeCompetitionTab === 'tong' && (
-                            <div className="space-y-10">
-                                <div className="flex justify-end gap-3 no-print">
-                                    <button 
-                                        type="button"
-                                        onClick={handleAddSummaryTable}
-                                        className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white text-[11px] font-bold uppercase rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-95"
-                                    >
-                                        <PlusIcon className="h-4 w-4" />
-                                        <span>Thêm bảng tổng hợp</span>
-                                    </button>
-                                </div>
+                            <div className="space-y-6">
+                                {Array.isArray(summaryTables) && summaryTables.length > 0 && (
+                                    <div className="flex flex-wrap items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 mb-4 gap-3 no-print">
+                                        {/* Left: Summary Table Tabs */}
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {summaryTables.map((tableConfig) => (
+                                                <button
+                                                    key={tableConfig.id}
+                                                    type="button"
+                                                    onClick={() => setActiveSummaryTableId(tableConfig.id)}
+                                                    className={`px-3.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+                                                        activeTableId === tableConfig.id
+                                                            ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400 shadow-sm'
+                                                            : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                                    }`}
+                                                >
+                                                    {tableConfig.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        
+                                        {/* Right: Add Button */}
+                                        <button 
+                                            type="button"
+                                            onClick={handleAddSummaryTable}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-[11px] font-bold uppercase rounded-lg hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/10 active:scale-95 cursor-pointer"
+                                        >
+                                            <PlusIcon className="h-3.5 w-3.5" />
+                                            <span>Thêm bảng</span>
+                                        </button>
+                                    </div>
+                                )}
 
                                 {(Array.isArray(summaryTables) ? summaryTables : []).map((tableConfig) => (
-                                    <CompetitionSummaryView 
+                                    <div 
                                         key={tableConfig.id}
-                                        ref={(el) => {
-                                            if (el) {
-                                                summaryViewRefs.current[tableConfig.id] = el;
-                                            } else {
-                                                delete summaryViewRefs.current[tableConfig.id];
-                                            }
-                                        }}
-                                        employees={filteredEmployees as Employee[]}
-                                        selectedTitles={tableConfig.selectedTitles}
-                                        onUpdateTitles={(titles) => handleUpdateTableTitles(tableConfig.id, titles)}
-                                        onDelete={() => handleDeleteSummaryTable(tableConfig.id)}
-                                        onRename={(newName) => handleRenameSummaryTable(tableConfig.id, newName)}
-                                        allCompetitionsByCriterion={allCompetitionsByCriterion}
-                                        employeeDataMap={employeeDataMap}
-                                        employeeCompetitionTargets={employeeCompetitionTargets}
-                                        supermarketName={supermarket || 'TongHop'}
-                                        tableName={tableConfig.name}
-                                    />
+                                        className={activeTableId === tableConfig.id ? 'block animate-in fade-in duration-200' : 'hidden'}
+                                    >
+                                        <CompetitionSummaryView 
+                                            ref={(el) => {
+                                                if (el) {
+                                                    summaryViewRefs.current[tableConfig.id] = el;
+                                                } else {
+                                                    delete summaryViewRefs.current[tableConfig.id];
+                                                }
+                                            }}
+                                            employees={filteredEmployees as Employee[]}
+                                            selectedTitles={tableConfig.selectedTitles}
+                                            onUpdateTitles={(titles) => handleUpdateTableTitles(tableConfig.id, titles)}
+                                            onDelete={() => handleDeleteSummaryTable(tableConfig.id)}
+                                            onRename={(newName) => handleRenameSummaryTable(tableConfig.id, newName)}
+                                            allCompetitionsByCriterion={allCompetitionsByCriterion}
+                                            employeeDataMap={employeeDataMap}
+                                            employeeCompetitionTargets={employeeCompetitionTargets}
+                                            supermarketName={supermarket || 'TongHop'}
+                                            tableName={tableConfig.name}
+                                        />
+                                    </div>
                                 ))}
 
                                 {(!Array.isArray(summaryTables) || summaryTables.length === 0) && (
-                                    <div className="py-20 text-center bg-slate-50 dark:bg-slate-900/40 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                                    <div className="py-20 text-center bg-slate-50 dark:bg-slate-900/40 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-4">
                                         <p className="text-slate-500 font-bold">Chưa có bảng tổng hợp nào. Hãy bấm "Thêm bảng tổng hợp" để bắt đầu.</p>
+                                        <button 
+                                            type="button"
+                                            onClick={handleAddSummaryTable}
+                                            className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 text-white text-xs font-bold uppercase rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 cursor-pointer"
+                                        >
+                                            <PlusIcon className="h-4 w-4" />
+                                            <span>Thêm bảng tổng hợp</span>
+                                        </button>
                                     </div>
                                 )}
                             </div>
