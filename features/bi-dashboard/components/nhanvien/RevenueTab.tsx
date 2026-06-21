@@ -100,6 +100,13 @@ const RevenueView: React.FC<{
         return { dayPassed, daysInMonth, percentage };
     }, []);
 
+    const remainingDays = useMemo(() => {
+        const now = new Date();
+        const currentDay = now.getDate();
+        const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        return Math.max(1, totalDays - currentDay + 1);
+    }, []);
+
     const getHtColor = React.useCallback((htValue: number) => {
         const progress = timeProgressData.percentage;
         if (htValue < progress) return '#ef4444'; 
@@ -305,7 +312,7 @@ const RevenueView: React.FC<{
                                             </th>
                                             {isShowRemaining && (
                                                 <th colSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/50 border-b border-r border-orange-100 dark:border-orange-800/50">
-                                                    Còn lại
+                                                    Còn lại {remainingDays} ngày
                                                 </th>
                                             )}
                                             <th colSpan={4} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border-b border-emerald-100 dark:border-emerald-800/50">
