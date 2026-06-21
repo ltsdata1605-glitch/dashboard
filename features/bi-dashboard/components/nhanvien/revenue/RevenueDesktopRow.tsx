@@ -60,7 +60,7 @@ export const RevenueDesktopRow = React.memo(({
             </td>
             {isShowRemaining && (
                 <>
-                    <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 text-orange-700 dark:text-orange-400">
+                    <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 text-slate-500 dark:text-slate-400">
                         <div>{f.format(roundUp(row.remaining_total || 0))}</div>
                     </td>
                     <td className={`px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 ${

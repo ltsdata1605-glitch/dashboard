@@ -362,7 +362,7 @@ const RevenueView: React.FC<{
                                                     </td>
                                                     {isShowRemaining && (
                                                         <>
-                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-orange-50/10 dark:bg-orange-950/5 text-orange-700 dark:text-orange-400 font-bold`}>
+                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-orange-50/10 dark:bg-orange-950/5 text-slate-500 dark:text-slate-400 font-bold`}>
                                                                 <div>{f.format(roundUp(row.remaining_total || 0))}</div>
                                                             </td>
                                                             <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-orange-50/10 dark:bg-orange-950/5 text-orange-700 dark:text-orange-400 font-bold`}>
