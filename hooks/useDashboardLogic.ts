@@ -58,7 +58,11 @@ export const useDashboardLogic = () => {
         handleToggleFileActive,
         handleDeleteFile,
         hasRealtimeData,
-        handleClearRealtimeData
+        handleClearRealtimeData,
+        unconfiguredGroups,
+        ignoredUnconfiguredGroups,
+        handleIgnoreGroup,
+        handleRestoreGroup
     } = useDataManagement({ filterState, configUrl, isDeduplicationEnabled, setStatus, setAppState, appState });
 
     // 3. Warehouse Targets Management
@@ -277,7 +281,11 @@ export const useDashboardLogic = () => {
                     setFilterState(initialFilterState);
                 }
             }
-        }
+        },
+        unconfiguredGroups,
+        ignoredUnconfiguredGroups,
+        handleIgnoreGroup,
+        handleRestoreGroup
     };
 };
 

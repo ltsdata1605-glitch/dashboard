@@ -43,6 +43,8 @@ export interface RevenueRow {
     calculatedCompletion?: number;
     calculatedTarget?: number;
     calculatedInstallment?: number;
+    remaining_total?: number;
+    remaining_daily?: number;
 }
 
 export interface CrossSellingRow {

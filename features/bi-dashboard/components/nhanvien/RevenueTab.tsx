@@ -64,6 +64,7 @@ const RevenueView: React.FC<{
     }), [storedColorSettings]);
 
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('revenue-view-mode', 'group');
+    const [isShowRemaining, setIsShowRemaining] = useIndexedDBState<boolean>('rev-show-remaining', false);
     
     const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-revenue-${supermarketName}`, '');
     const prevMonthRows = useMemo(() => {
@@ -216,7 +217,7 @@ const RevenueView: React.FC<{
                 <div className="flex gap-3 items-center">
                     <button 
                         onClick={() => setIsPrevMonthModalOpen(true)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-750'}`}
                     >
                         <ClockIcon className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">Cùng kỳ</span>
@@ -225,6 +226,18 @@ const RevenueView: React.FC<{
                                 <XIcon className="h-3 w-3" />
                             </button>
                         )}
+                    </button>
+                    <button 
+                        onClick={() => setIsShowRemaining(p => !p)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isShowRemaining ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-750'}`}
+                    >
+                        <input 
+                            type="checkbox" 
+                            checked={isShowRemaining} 
+                            onChange={() => {}} // handled by button click
+                            className="h-3.5 w-3.5 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer pointer-events-none" 
+                        />
+                        <span>Còn lại</span>
                     </button>
                 </div>
                 <div className="flex gap-1.5 items-center">
@@ -290,6 +303,11 @@ const RevenueView: React.FC<{
                                             <th colSpan={3} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/50 border-b border-r border-sky-100 dark:border-sky-800/50">
                                                 Doanh thu
                                             </th>
+                                            {isShowRemaining && (
+                                                <th colSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/50 border-b border-r border-orange-100 dark:border-orange-800/50">
+                                                    Còn lại
+                                                </th>
+                                            )}
                                             <th colSpan={4} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border-b border-emerald-100 dark:border-emerald-800/50">
                                                 Hiệu suất
                                             </th>
@@ -299,6 +317,12 @@ const RevenueView: React.FC<{
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-sky-50 dark:bg-sky-900/40 border-b border-r border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('dtlk')}>Thực</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-sky-50 dark:bg-sky-900/40 border-b border-r border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('dtqd')}>DTQĐ</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-sky-50 dark:bg-sky-900/40 border-b border-r border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors" onClick={() => handleSort('target')}>M.Tiêu</th>
+                                            {isShowRemaining && (
+                                                <>
+                                                    <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-orange-50 dark:bg-orange-900/40 border-b border-r border-orange-100 dark:border-orange-800/50 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/60 transition-colors" onClick={() => handleSort('remaining_total')}>Tổng</th>
+                                                    <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-orange-50 dark:bg-orange-900/40 border-b border-r border-orange-100 dark:border-orange-800/50 cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/60 transition-colors" onClick={() => handleSort('remaining_daily')}>Ngày</th>
+                                                </>
+                                            )}
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-r border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('completion')}>%HT</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-r border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('hqqd')}>HQQĐ</th>
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-r border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('installment')}>%T.Góp</th>
@@ -325,6 +349,16 @@ const RevenueView: React.FC<{
                                                         <div>{f.format(roundUp(row.calculatedTarget))}</div>
                                                         <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
                                                     </td>
+                                                    {isShowRemaining && (
+                                                        <>
+                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-orange-50/10 dark:bg-orange-950/5 text-orange-700 dark:text-orange-400 font-bold`}>
+                                                                <div>{f.format(roundUp(row.remaining_total || 0))}</div>
+                                                            </td>
+                                                            <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 bg-orange-50/10 dark:bg-orange-950/5 text-orange-700 dark:text-orange-400 font-bold`}>
+                                                                <div>{f.format(roundUp(row.remaining_daily || 0))}</div>
+                                                            </td>
+                                                        </>
+                                                    )}
                                                     <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`} style={{ color: isGrandTotal ? undefined : getHtColor(row.calculatedCompletion) }}>
                                                         <div>{roundUp(row.calculatedCompletion)}%</div>
                                                         <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
@@ -357,6 +391,7 @@ const RevenueView: React.FC<{
                                                 colorSettings={colorSettings}
                                                 getHtColor={getHtColor}
                                                 getDynamicColor={getDynamicColor}
+                                                isShowRemaining={isShowRemaining}
                                             />
                                         );
                                     })}

@@ -38,6 +38,11 @@ export const useRevenueData = ({
         const isFiltering = !departmentNames.includes('all');
         const allDepts = Array.from(new Set(rows.filter(r => r.type === 'employee' && r.department).map(r => r.department as string))).sort();
         
+        const now = new Date();
+        const currentDay = now.getDate();
+        const totalDays = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const remainingDays = Math.max(1, totalDays - currentDay + 1);
+
         let deptsToProcess = exportDeptFilter ? [exportDeptFilter] : (isFiltering ? departmentNames : allDepts);
         
         const calculateWithComparison = (emp: any) => {
@@ -68,11 +73,16 @@ export const useRevenueData = ({
                 };
             }
 
+            const remaining_total = Math.max(0, empTarget - emp.dtqd);
+            const remaining_daily = remaining_total / remainingDays;
+
             return { 
                 ...emp, 
                 calculatedTarget: empTarget, 
                 calculatedCompletion: currentCompletion,
                 calculatedInstallment: currentInstallment,
+                remaining_total,
+                remaining_daily,
                 prevCompData
             };
         };
@@ -118,6 +128,8 @@ export const useRevenueData = ({
                     hieuQuaQD: avgHqqd,
                     calculatedInstallment: avgInstallment,
                     pctBillBk: avgBk,
+                    remaining_total: Math.max(0, sumTarget - sumDtqd),
+                    remaining_daily: Math.max(0, sumTarget - sumDtqd) / remainingDays,
                     prevCompData: (prevDtlk || prevDtqd) ? {
                         dtlk: prevDtlk,
                         dtqd: prevDtqd,
@@ -191,7 +203,9 @@ export const useRevenueData = ({
                     calculatedCompletion: group.sumTarget > 0 ? (group.sumDtqd / group.sumTarget) * 100 : 0,
                     hieuQuaQD: group.avgHqqd,
                     calculatedInstallment: group.avgInstallment,
-                    pctBillBk: group.avgBk
+                    pctBillBk: group.avgBk,
+                    remaining_total: Math.max(0, group.sumTarget - group.sumDtqd),
+                    remaining_daily: Math.max(0, group.sumTarget - group.sumDtqd) / remainingDays
                 });
                 finalOutput.push(...group.employees.map((emp, index) => ({ ...emp, rank: index + 1 })));
                 
@@ -219,6 +233,8 @@ export const useRevenueData = ({
                 hieuQuaQD: grandSumDtlk > 0 ? (grandSumDtqd / grandSumDtlk) - 1 : 0,
                 calculatedInstallment: grandTotalEmps > 0 ? grandSumInstallment / grandTotalEmps : 0,
                 pctBillBk: grandTotalEmps > 0 ? grandSumBk / grandTotalEmps : 0,
+                remaining_total: Math.max(0, grandSumTarget - grandSumDtqd),
+                remaining_daily: Math.max(0, grandSumTarget - grandSumDtqd) / remainingDays,
                 prevCompData: (grandPrevDtlk || grandPrevDtqd) ? {
                     dtlk: grandPrevDtlk,
                     dtqd: grandPrevDtqd,

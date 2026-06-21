@@ -25,6 +25,7 @@ import EmployeeAnalysis from '../employees/EmployeeAnalysis';
 import SummaryTable from '../tables/SummaryTable';
 import WarehouseSummary from '../summary/WarehouseSummary';
 import UnshippedOrdersModal from '../modals/UnshippedOrdersModal';
+import UnconfiguredGroupsModal from '../modals/UnconfiguredGroupsModal';
 
 const PerformanceModal = React.lazy(() => import('../modals/PerformanceModal'));
 import ProcessingLoader from '../common/ProcessingLoader';
@@ -76,7 +77,11 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         pendingCloudSync, setPendingCloudSync, handleAcceptCloudSync,
         hasRealtimeData, handleClearRealtimeData,
         pendingNaming, setPendingNaming,
-        pendingConflict, setPendingConflict
+        pendingConflict, setPendingConflict,
+        unconfiguredGroups,
+        ignoredUnconfiguredGroups,
+        handleIgnoreGroup,
+        handleRestoreGroup
     } = logic;
     const { userRole } = useAuth();
     const { totalVisits, onlineUsers } = useSystemTraffic();
@@ -86,6 +91,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const [isVisibleComponentsLoaded, setIsVisibleComponentsLoaded] = useState(false);
     const [isFileHistoryModalOpen, setIsFileHistoryModalOpen] = useState(false);
     const [pendingUploadFiles, setPendingUploadFiles] = useState<File[] | null>(null);
+    const [isUnconfiguredModalOpen, setIsUnconfiguredModalOpen] = useState(false);
 
     useEffect(() => {
         getSetting<VisibilityState>('dashboard_visibleComponents').then(saved => {
@@ -366,6 +372,26 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-2 lg:space-y-8">
                                         <div ref={kpiCardsOnlyRef} className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-slate-800 overflow-hidden relative rounded-none sm:rounded-xl lg:rounded-none">
+                                            {/* Unconfigured Groups Warning Banner */}
+                                            {(userRole === 'admin' || userRole === 'manager') && unconfiguredGroups && unconfiguredGroups.length > 0 && (
+                                                <div
+                                                    onClick={() => setIsUnconfiguredModalOpen(true)}
+                                                    className="relative bg-amber-50 dark:bg-amber-955/20 border-b border-amber-200/60 dark:border-amber-900/60 text-amber-800 dark:text-amber-400 px-4 py-2.5 flex items-center justify-between cursor-pointer hover:bg-amber-100/80 dark:hover:bg-amber-900/50 transition-colors z-[20] animate-pulse"
+                                                >
+                                                    <div className="flex items-center gap-2 font-bold text-xs sm:text-sm">
+                                                        <span className="relative flex h-2.5 w-2.5 mr-1">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                                                        </span>
+                                                        ⚠️ PHÁT HIỆN {unconfiguredGroups.length} NHÓM HÀNG MỚI CHƯA CẤU HÌNH (DỮ LIỆU ĐANG BỊ BỎ QUA)
+                                                    </div>
+                                                    <div className="text-[11px] font-bold underline underline-offset-2 flex items-center gap-0.5">
+                                                        <span>Xem & Cập nhật</span>
+                                                        <Icon name="chevron-right" size={3} />
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* Overdue Export Warning Banner */}
                                             {(() => {
                                                 const now = new Date();
@@ -521,6 +547,14 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
                     {activeModal === 'unshipped_overdue' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onlyOverdue={true} />}
                     <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />
+                    <UnconfiguredGroupsModal
+                        isOpen={isUnconfiguredModalOpen}
+                        onClose={() => setIsUnconfiguredModalOpen(false)}
+                        unconfiguredGroups={unconfiguredGroups}
+                        ignoredUnconfiguredGroups={ignoredUnconfiguredGroups}
+                        onIgnoreGroup={handleIgnoreGroup}
+                        onRestoreGroup={handleRestoreGroup}
+                    />
                     <FileHistoryModal
                         isOpen={isFileHistoryModalOpen}
                         onClose={() => setIsFileHistoryModalOpen(false)}

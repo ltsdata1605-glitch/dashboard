@@ -5,9 +5,9 @@ import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
 import { applyFiltersAndProcess } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
-import { DEFAULT_KPI_CARDS } from '../constants';
+import { DEFAULT_KPI_CARDS, COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 import toast from 'react-hot-toast';
-import { normalizeSalesData } from '../utils/dataUtils';
+import { normalizeSalesData, getParentGroup, getRowValue } from '../utils/dataUtils';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -668,6 +668,64 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
         return { kho: khoOptions, trangThai: trangThaiOptions, nguoiTao: nguoiTaoOptions, department: deptOptions, hangSX: hangSXOptions };
     }, [originalData, departmentMap]);
 
+    const [ignoredGroups, setIgnoredGroups] = useState<string[]>([]);
+
+    useEffect(() => {
+        dbService.getSetting<string[]>('ignoredGroups').then(list => {
+            if (list) setIgnoredGroups(list);
+        }).catch(console.error);
+    }, []);
+
+    const handleIgnoreGroup = useCallback(async (nhomHang: string) => {
+        const updated = Array.from(new Set([...ignoredGroups, nhomHang]));
+        setIgnoredGroups(updated);
+        await dbService.saveSetting('ignoredGroups', updated);
+    }, [ignoredGroups]);
+
+    const handleRestoreGroup = useCallback(async (nhomHang: string) => {
+        const updated = ignoredGroups.filter(g => g !== nhomHang);
+        setIgnoredGroups(updated);
+        await dbService.saveSetting('ignoredGroups', updated);
+    }, [ignoredGroups]);
+
+    const allUnconfiguredGroups = useMemo(() => {
+        if (!originalData || originalData.length === 0 || !productConfig) return [];
+        
+        const missing = new Map<string, string>(); // map: nhomHang -> nganhHang
+        
+        for (let i = 0; i < originalData.length; i++) {
+            const row = originalData[i];
+            
+            // Bỏ qua các dòng thu hộ
+            const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+            if (HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) continue;
+            
+            const nhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+            if (!nhomHang) continue;
+            
+            const parent = getParentGroup(nhomHang, productConfig);
+            if (!parent) {
+                const nganhHang = getRowValue(row, COL.MA_NGANH_HANG) || 'Không xác định';
+                missing.set(String(nhomHang).trim(), String(nganhHang).trim());
+            }
+        }
+        
+        return Array.from(missing.entries()).map(([nhomHang, nganhHang]) => ({
+            nhomHang,
+            nganhHang
+        })).sort((a, b) => a.nganhHang.localeCompare(b.nganhHang) || a.nhomHang.localeCompare(b.nhomHang));
+    }, [originalData, productConfig]);
+
+    const unconfiguredGroups = useMemo(() => {
+        const ignoredSet = new Set(ignoredGroups);
+        return allUnconfiguredGroups.filter(g => !ignoredSet.has(g.nhomHang));
+    }, [allUnconfiguredGroups, ignoredGroups]);
+
+    const ignoredUnconfiguredGroups = useMemo(() => {
+        const ignoredSet = new Set(ignoredGroups);
+        return allUnconfiguredGroups.filter(g => ignoredSet.has(g.nhomHang));
+    }, [allUnconfiguredGroups, ignoredGroups]);
+
     const handleAcceptCloudSync = async () => {
         if (!pendingCloudSync) return;
         try {
@@ -723,6 +781,10 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
         handleToggleFileActive,
         handleDeleteFile,
         hasRealtimeData,
-        handleClearRealtimeData
+        handleClearRealtimeData,
+        unconfiguredGroups,
+        ignoredUnconfiguredGroups,
+        handleIgnoreGroup,
+        handleRestoreGroup
     };
 };

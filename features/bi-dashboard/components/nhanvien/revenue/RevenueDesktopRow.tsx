@@ -15,6 +15,7 @@ interface RevenueDesktopRowProps {
     colorSettings: ColorSettings;
     getHtColor: (val: number) => string;
     getDynamicColor: (val: number, config: CriterionConfig) => string | undefined;
+    isShowRemaining?: boolean;
 }
 
 const f = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
@@ -27,7 +28,8 @@ export const RevenueDesktopRow = React.memo(({
     supermarketName,
     colorSettings,
     getHtColor,
-    getDynamicColor
+    getDynamicColor,
+    isShowRemaining = false
 }: RevenueDesktopRowProps) => {
     const prev = row.prevCompData;
 
@@ -56,6 +58,16 @@ export const RevenueDesktopRow = React.memo(({
                 <div>{f.format(roundUp(row.calculatedTarget || 0))}</div>
                 <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
             </td>
+            {isShowRemaining && (
+                <>
+                    <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 text-orange-700 dark:text-orange-400">
+                        <div>{f.format(roundUp(row.remaining_total || 0))}</div>
+                    </td>
+                    <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 text-orange-700 dark:text-orange-400">
+                        <div>{f.format(roundUp(row.remaining_daily || 0))}</div>
+                    </td>
+                </>
+            )}
             <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60" style={{ color: getHtColor(row.calculatedCompletion) }}>
                 <div>{roundUp(row.calculatedCompletion)}%</div>
                 <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
