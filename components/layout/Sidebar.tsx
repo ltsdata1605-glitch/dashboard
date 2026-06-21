@@ -193,7 +193,7 @@ export default function Sidebar() {
         { id: 'employees', label: 'Report BI', icon: Users, path: '/employees' },
 
         { id: 'inventory', label: 'Kho hàng', icon: Package, path: '/inventory' },
-        { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports', externalUrl: 'https://baocao-ycx-placeholder.netlify.app' },
+        { id: 'reports', label: 'Báo cáo', icon: FileText, path: '/reports', externalUrl: 'https://forms.gle/yBs44xCdCVDN5dPeA' },
         { 
             id: 'tools', 
             label: 'Công cụ', 

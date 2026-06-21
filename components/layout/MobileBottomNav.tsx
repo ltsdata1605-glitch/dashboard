@@ -38,7 +38,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
 
     const moreTabs = [
         { id: 'inventory', label: 'Kho hàng', icon: Package },
-        { id: 'reports', label: 'Báo cáo', icon: FileText, externalUrl: 'https://baocao-ycx-placeholder.netlify.app' },
+        { id: 'reports', label: 'Báo cáo', icon: FileText, externalUrl: 'https://forms.gle/yBs44xCdCVDN5dPeA' },
         { id: 'tools-audit', label: 'Kiểm quỹ', icon: ClipboardCheck, externalUrl: 'https://kiemquy-487587635482.asia-southeast1.run.app' },
         { id: 'tools-print-sticker', label: 'In Sticker', icon: Printer },
         { id: 'tools-phanca', label: 'Phân ca', icon: Calendar },
