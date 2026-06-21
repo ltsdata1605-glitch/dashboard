@@ -253,15 +253,6 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                             const localSavedAt = savedSalesReq ? savedSalesReq.savedAt.getTime() : 0;
                             const localFileTs = savedSalesReq ? savedSalesReq.fileLastModified : 0;
 
-                            console.log('[CloudData Debug]', {
-                                cloudMeta,
-                                localSavedAt,
-                                localFileTs,
-                                localSavedAtDate: savedSalesReq ? savedSalesReq.savedAt : null,
-                                isSameFile: cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs,
-                                isCloudNewer: cloudMeta.savedAt > localSavedAt + 15000
-                            });
-
                             // Skip if same file
                             if (cloudMeta.fileLastModified && localFileTs && cloudMeta.fileLastModified === localFileTs) {
                                 console.log('[CloudData] Cloud data is same file as local. Skipping.');
