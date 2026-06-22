@@ -182,7 +182,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                 onClick={onOpenHistory}
                                 id="btn-mobile-history"
                                 title="Quản lý tệp đã lưu"
-                                className="flex items-center justify-center w-[36px] bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/30 text-indigo-700 dark:text-indigo-400 rounded-lg transition-all active:scale-95 shrink-0"
+                                className="flex items-center justify-center w-[36px] bg-red-100 hover:bg-red-200 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-700 dark:text-red-400 rounded-lg transition-all active:scale-95 shrink-0"
                             >
                                 <Icon name="database" size={4} />
                             </button>
@@ -416,7 +416,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                 onClick={onOpenHistory}
                                 id="btn-desktop-history"
                                 title="Quản lý tệp đã lưu"
-                                className="flex items-center justify-center p-2.5 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-500 rounded-full transition-all active:scale-95 group"
+                                className="flex items-center justify-center p-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/10 dark:hover:bg-red-950/20 text-red-600 dark:text-red-500 rounded-full transition-all active:scale-95 group"
                             >
                                 <Icon name="database" size={4.5} />
                             </button>
