@@ -62,8 +62,15 @@ export const useTrendChartLogic = ({ trendData, view, metric }: UseTrendChartLog
                 const startDate = week.date;
                 const endDate = new Date(startDate);
                 endDate.setDate(startDate.getDate() + 6);
-                const formatDate = (d: Date) => d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }).replace(/\./g, '/');
-                const label = `${formatDate(startDate)}-${formatDate(endDate)}`;
+                
+                const startDay = String(startDate.getDate()).padStart(2, '0');
+                const startMonth = String(startDate.getMonth() + 1).padStart(2, '0');
+                const endDay = String(endDate.getDate()).padStart(2, '0');
+                const endMonth = String(endDate.getMonth() + 1).padStart(2, '0');
+                
+                const label = startMonth === endMonth
+                    ? `${startDay}-${endDay}/${endMonth}`
+                    : `${startDay}/${startMonth}-${endDay}/${endMonth}`;
                 
                 let changePercent: number | undefined = undefined;
                 let isDecrease = false;
