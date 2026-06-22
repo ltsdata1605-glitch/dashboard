@@ -84,6 +84,17 @@ export const useEmployeeAnalysisLogic = (activeTab: string, setActiveTab: (id: s
                 await saveSetting('presetTabsMigratedV10', true);
             }
 
+            // Migration logic for V11 preset tabs (Update Bảo hiểm ĐMX / CE tab configuration)
+            const hasMigratedPresetsV11 = await getSetting('presetTabsMigratedV11') === true;
+            if (!isMounted) return;
+            if (!hasMigratedPresetsV11) {
+                // Filter out previous default tabs to prevent duplication
+                finalExploitationTabs = finalExploitationTabs.filter(tab => !tab.id.startsWith('default_tab_'));
+                // Thêm preset mới vào mảng
+                finalExploitationTabs = [...presetExploitationTabs, ...finalExploitationTabs] as CustomExploitationTabConfig[];
+                await saveSetting('presetTabsMigratedV11', true);
+            }
+
             if (finalExploitationTabs.length > 0) {
                 setCustomExploitationTabs(finalExploitationTabs);
             }
