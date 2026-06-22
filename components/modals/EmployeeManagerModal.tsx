@@ -31,12 +31,52 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
     // Khởi tạo Modal
     useEffect(() => {
         if (isOpen) {
-            const combinedMap = { ...departmentMap };
+            const combinedMap: Record<string, string> = {};
+            if (departmentMap) {
+                for (const [id, val] of Object.entries(departmentMap)) {
+                    const cleanId = id.trim();
+                    const parts = val.split(';;');
+                    const fullName = parts.length > 1 ? parts[1] : cleanId;
+                    
+                    const lowerId = cleanId.toLowerCase();
+                    const lowerName = fullName.toLowerCase();
+                    const isSystem = (
+                        lowerId.startsWith('yêu cầu xuất') ||
+                        lowerId.startsWith('mwg') ||
+                        lowerId.startsWith('bp ') ||
+                        lowerId.startsWith('hỗ trợ bi') ||
+                        lowerId.startsWith('nnh ') ||
+                        lowerId.startsWith('đml_str_str') ||
+                        lowerId.includes('online') ||
+                        lowerName.startsWith('yêu cầu xuất') ||
+                        lowerName.startsWith('mwg') ||
+                        lowerName.startsWith('bp ') ||
+                        lowerName.startsWith('hỗ trợ bi') ||
+                        lowerName.startsWith('nnh ') ||
+                        lowerName.startsWith('đml_str_str') ||
+                        lowerName.includes('online')
+                    );
+                    
+                    if (!isSystem) {
+                        combinedMap[cleanId] = val;
+                    }
+                }
+            }
             if (uniqueFilterOptions && uniqueFilterOptions.nguoiTao) {
                 uniqueFilterOptions.nguoiTao.forEach(empStr => {
                     if (!empStr) return;
-                    if (empStr.trim().startsWith('Yêu cầu xuất')) return;
-                    const parts = empStr.split(' - ');
+                    const cleanEmpStr = empStr.trim();
+                    const lowerEmpStr = cleanEmpStr.toLowerCase();
+                    if (
+                        lowerEmpStr.startsWith('yêu cầu xuất') ||
+                        lowerEmpStr.startsWith('mwg') ||
+                        lowerEmpStr.startsWith('bp ') ||
+                        lowerEmpStr.startsWith('hỗ trợ bi') ||
+                        lowerEmpStr.startsWith('nnh ') ||
+                        lowerEmpStr.startsWith('đml_str_str') ||
+                        lowerEmpStr.includes('online')
+                    ) return;
+                    const parts = cleanEmpStr.split(' - ');
                     const id = parts[0].trim();
                     const name = parts.slice(1).join(' - ').trim() || id;
                     if (!combinedMap[id]) {

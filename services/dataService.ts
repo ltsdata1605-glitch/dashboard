@@ -188,6 +188,30 @@ export async function processShiftFile(file: File): Promise<{ map: DepartmentMap
 
                     if (userId && currentDepartment) {
                         const userIdStr = String(userId).trim();
+                        const userNameStr = userName ? String(userName).trim() : '';
+                        const lowerUserId = userIdStr.toLowerCase();
+                        const lowerUserName = userNameStr.toLowerCase();
+                        
+                        // Exclude system accounts/lines
+                        if (
+                            lowerUserId.startsWith('yêu cầu xuất') ||
+                            lowerUserId.startsWith('mwg') ||
+                            lowerUserId.startsWith('bp ') ||
+                            lowerUserId.startsWith('hỗ trợ bi') ||
+                            lowerUserId.startsWith('nnh ') ||
+                            lowerUserId.startsWith('đml_str_str') ||
+                            lowerUserId.includes('online') ||
+                            lowerUserName.startsWith('yêu cầu xuất') ||
+                            lowerUserName.startsWith('mwg') ||
+                            lowerUserName.startsWith('bp ') ||
+                            lowerUserName.startsWith('hỗ trợ bi') ||
+                            lowerUserName.startsWith('nnh ') ||
+                            lowerUserName.startsWith('đml_str_str') ||
+                            lowerUserName.includes('online')
+                        ) {
+                            continue;
+                        }
+
                         // Handle generic ID extraction to be robust against various separators
                         const idMatch = userIdStr.match(/^(\d+)/);
                         const cleanId = idMatch ? idMatch[1] : userIdStr.split(' - ')[0].trim();

@@ -343,11 +343,36 @@ export function processEmployeeData(
         for (const [empId, rawVal] of Object.entries(departmentMap)) {
             // Trim ID just in case
             const cleanId = empId.trim();
+            const parts = rawVal.split(';;');
+            const dept = parts[0];
+            const fullNameFromShift = parts.length > 1 ? parts[1] : cleanId;
+            const finalDisplayName = fullNameFromShift.includes(' - ') 
+                ? fullNameFromShift 
+                : (fullNameFromShift === cleanId ? cleanId : `${cleanId} - ${fullNameFromShift}`);
+
+            // Exclude system accounts/lines
+            const lowerId = cleanId.toLowerCase();
+            const lowerName = finalDisplayName.toLowerCase();
+            if (
+                lowerId.startsWith('yêu cầu xuất') ||
+                lowerId.startsWith('mwg') ||
+                lowerId.startsWith('bp ') ||
+                lowerId.startsWith('hỗ trợ bi') ||
+                lowerId.startsWith('nnh ') ||
+                lowerId.startsWith('đml_str_str') ||
+                lowerId.includes('online') ||
+                lowerName.startsWith('yêu cầu xuất') ||
+                lowerName.startsWith('mwg') ||
+                lowerName.startsWith('bp ') ||
+                lowerName.startsWith('hỗ trợ bi') ||
+                lowerName.startsWith('nnh ') ||
+                lowerName.startsWith('đml_str_str') ||
+                lowerName.includes('online')
+            ) {
+                continue;
+            }
             
             if (!existingIds.has(cleanId)) {
-                const parts = rawVal.split(';;');
-                const dept = parts[0];
-                
                 // Block 1: Apply global filters for zero-sale employees
                 if (filters && filters.department && filters.department.length > 0) {
                     if (!filters.department.includes(dept)) continue;
@@ -357,13 +382,6 @@ export function processEmployeeData(
                     const idMatch = filters.nguoiTao.some(str => str.startsWith(`${cleanId} -`) || str === cleanId);
                     if (!idMatch) continue;
                 }
-
-                // If FullName exists (from processShiftFile), use it.
-                // Ensure it follows "ID - Name" format if it doesn't already
-                const fullNameFromShift = parts.length > 1 ? parts[1] : cleanId;
-                const finalDisplayName = fullNameFromShift.includes(' - ') 
-                    ? fullNameFromShift 
-                    : (fullNameFromShift === cleanId ? cleanId : `${cleanId} - ${fullNameFromShift}`);
 
                 // This employee is in the shift file but has no sales data
                 // We add them with 0 performance so they show up in the "Outstanding" table
