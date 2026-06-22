@@ -78,6 +78,7 @@ export const parseAllEmployees = (allEmployeesRaw: string, hiddenEmployees: stri
                 namePart.startsWith('Hỗ trợ BI') || 
                 namePart.startsWith('NNH ') || 
                 namePart.startsWith('ĐML_STR_STR') || 
+                namePart.startsWith('Yêu cầu xuất') || 
                 /^\d/.test(namePart)) {
                 return false;
             }
@@ -112,6 +113,7 @@ export const parseDepartments = (allEmployeesRaw: string, hiddenEmployees: strin
                 !namePart.startsWith('Hỗ trợ BI') && 
                 !namePart.startsWith('NNH ') && 
                 !namePart.startsWith('ĐML_STR_STR') && 
+                !namePart.startsWith('Yêu cầu xuất') && 
                 !/^\d/.test(namePart)) {
                 
                 const npParts = namePart.split(' - ');

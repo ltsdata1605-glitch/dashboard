@@ -19,7 +19,7 @@ function _buildFullEmployeeData(
         const row = periodData[i];
         if (HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
             const creator = getRowValue(row, COL.NGUOI_TAO);
-            if (creator) {
+            if (creator && !creator.trim().startsWith('Yêu cầu xuất')) {
                 thuHoCountByCreator.set(creator, (thuHoCountByCreator.get(creator) || 0) + 1);
             }
         }
@@ -28,7 +28,7 @@ function _buildFullEmployeeData(
     const allCreatorsInPeriod = new Set<string>();
     for (let i = 0, len = periodData.length; i < len; i++) {
         const creator = getRowValue(periodData[i], COL.NGUOI_TAO);
-        if (creator) {
+        if (creator && !creator.trim().startsWith('Yêu cầu xuất')) {
             allCreatorsInPeriod.add(creator);
         }
     }
@@ -215,7 +215,7 @@ export function processEmployeeData(
     for (let i = 0, len = salesData.length; i < len; i++) {
         const row = salesData[i];
         const creator = getRowValue(row, COL.NGUOI_TAO);
-        if (!creator) continue;
+        if (!creator || creator.trim().startsWith('Yêu cầu xuất')) continue;
 
         const price = Number(getRowValue(row, COL.PRICE)) || 0;
         const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;

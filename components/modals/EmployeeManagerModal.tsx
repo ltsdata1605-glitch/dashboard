@@ -35,6 +35,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
             if (uniqueFilterOptions && uniqueFilterOptions.nguoiTao) {
                 uniqueFilterOptions.nguoiTao.forEach(empStr => {
                     if (!empStr) return;
+                    if (empStr.trim().startsWith('Yêu cầu xuất')) return;
                     const parts = empStr.split(' - ');
                     const id = parts[0].trim();
                     const name = parts.slice(1).join(' - ').trim() || id;
