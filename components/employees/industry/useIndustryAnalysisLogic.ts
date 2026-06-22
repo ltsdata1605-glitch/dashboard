@@ -137,7 +137,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             }));
 
             baseGroups[tab.id] = {
-                label: tab.name.toUpperCase(),
+                label: (tab.headerLabel || tab.name).toUpperCase(),
                 colSpan: subHeaders.length || 1,
                 bg: color.bg,
                 text: color.text,

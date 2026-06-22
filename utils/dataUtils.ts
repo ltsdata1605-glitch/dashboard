@@ -163,7 +163,8 @@ export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productCo
             case 'Gia dụng': return 1.85;
             case 'Sim': return 5.45;
             case 'Bảo hiểm':
-            case 'Bảo Dưỡng': return 4.18;
+            case 'Bảo Dưỡng':
+            case 'Bảo hiểm ĐMX': return 4.18;
             case 'IT': return 2.0;
             case 'Thẻ cào':
             case 'ICT': // Smartphones are in here

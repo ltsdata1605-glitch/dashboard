@@ -199,6 +199,7 @@ export interface CustomColumnConfig {
 export interface CustomExploitationTabConfig {
     id: string; // unique UUID
     name: string; // Tên hiển thị tab
+    headerLabel?: string; // Tên tiêu đề cột chính
     icon?: string; // Tab icon
     order: number;
     columns: CustomColumnConfig[];
