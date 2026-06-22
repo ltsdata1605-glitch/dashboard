@@ -77,8 +77,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     const [columns, setColumns] = useState<WarehouseColumnConfig[]>([]);
     const [columnsLoaded, setColumnsLoaded] = useState(false);
     
-    // State for editing target — now holds both DTQD and DTThuc values
-    const [editingTargetKho, setEditingTargetKho] = useState<{ id: string, name: string, valueDTQD: string, valueDTThuc: string } | null>(null);
+    const { editingTargetKho, setEditingTargetKho } = useDashboardContext();
     const targetInputRef = useRef<HTMLInputElement>(null);
 
     // Auto-format number with commas while preserving cursor position

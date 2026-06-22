@@ -4,7 +4,6 @@ import { formatCurrency, formatQuantity } from '../../utils/dataUtils';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { saveKpiTargets, getKpiTargets } from '../../services/dbService';
-import ModalWrapper from '../modals/ModalWrapper';
 
 interface KpiCardsProps {
     onUnshippedClick: () => void;
@@ -221,22 +220,21 @@ const KpiTargetEditor: React.FC<{
 type EditableField = 'hieuQua' | 'traGop' | 'gtdh' | 'doanhThuThuc' | null;
 
 const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
-    const { 
-        processedData, 
-        filterState, 
-        warehouseTargets, 
-        kpiTargets, 
-        updateKpiTargets, 
-        kpiCardsConfig, 
-        warehouseFilteredData, 
-        isLuyKe, 
-        handleLuyKeChange, 
-        productConfig, 
-        warehouseDTThucTargets,
-        uniqueFilterOptions,
-        updateWarehouseDTThucTarget
-    } = useDashboardContext();
+    const { processedData, filterState, warehouseTargets, kpiTargets, updateKpiTargets, kpiCardsConfig, warehouseFilteredData, isLuyKe, handleLuyKeChange, productConfig, warehouseDTThucTargets, setEditingTargetKho, uniqueFilterOptions } = useDashboardContext();
     const kpis = processedData?.kpis;
+
+    const getTargetKhoToEdit = () => {
+        if (filterState.kho && filterState.kho.length === 1 && filterState.kho[0] !== 'all') {
+            return filterState.kho[0];
+        }
+        if (processedData?.warehouseSummary && processedData.warehouseSummary.length > 0) {
+            return processedData.warehouseSummary[0].khoName;
+        }
+        if (uniqueFilterOptions?.kho && uniqueFilterOptions.kho.length > 0 && uniqueFilterOptions.kho[0] !== 'all') {
+            return uniqueFilterOptions.kho[0];
+        }
+        return '';
+    };
 
     // targets fallbacks
     const hieuQuaTarget = kpiTargets?.hieuQua ?? 40;
@@ -245,50 +243,6 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     const doanhThuThucTarget = kpiTargets?.doanhThuThuc ?? 0;
 
     const [editingState, setEditingState] = useState<{ field: EditableField, value: string }>({ field: null, value: '' });
-
-    // Target DT Thực editing popup state
-    const [isTargetModalOpen, setIsTargetModalOpen] = useState(false);
-    const [localDTThucTargets, setLocalDTThucTargets] = useState<Record<string, string>>({});
-
-    const formatWithCommas = (value: string): string => {
-        const cleaned = value.replace(/[^0-9.]/g, '');
-        const parts = cleaned.split('.');
-        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        return parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
-    };
-
-    const parseFormattedNumber = (value: string): number => {
-        return parseFloat(value.replace(/,/g, '')) || 0;
-    };
-
-    const handleDTThucCardClick = () => {
-        const initialTargets: Record<string, string> = {};
-        const activeKhoList = filterState.kho && filterState.kho.length > 0 && !filterState.kho.includes('all')
-            ? filterState.kho
-            : (uniqueFilterOptions?.kho || []);
-
-        activeKhoList.forEach(kho => {
-            const currentVal = warehouseDTThucTargets[kho] || 0;
-            const currentDivided = currentVal > 0 ? (currentVal / 1000000) : 0;
-            initialTargets[kho] = currentDivided > 0 ? formatWithCommas(currentDivided.toString()) : '';
-        });
-        setLocalDTThucTargets(initialTargets);
-        setIsTargetModalOpen(true);
-    };
-
-    const handleLocalTargetChange = (kho: string, rawValue: string) => {
-        const formatted = formatWithCommas(rawValue);
-        setLocalDTThucTargets(prev => ({ ...prev, [kho]: formatted }));
-    };
-
-    const handleSaveAllTargets = (e: React.FormEvent) => {
-        e.preventDefault();
-        Object.entries(localDTThucTargets).forEach(([kho, valueStr]) => {
-            const parsed = parseFormattedNumber(valueStr);
-            updateWarehouseDTThucTarget(kho, parsed * 1000000);
-        });
-        setIsTargetModalOpen(false);
-    };
 
     const startEditing = (e: React.MouseEvent, field: NonNullable<EditableField>) => {
         e.preventDefault();
@@ -597,7 +551,27 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     if (isSpecialUnshipped) {
                         onUnshippedClick();
                     } else if (isDTThucCard) {
-                        handleDTThucCardClick();
+                        const targetKho = getTargetKhoToEdit();
+                        if (targetKho) {
+                            const currentDTQD = warehouseTargets[targetKho] || 0;
+                            const currentDTThuc = warehouseDTThucTargets[targetKho] || 0;
+                            const dtqdDivided = currentDTQD > 0 ? (currentDTQD / 1000000) : 0;
+                            const dtThucDivided = currentDTThuc > 0 ? (currentDTThuc / 1000000) : 0;
+
+                            const formatWithCommasLocal = (value: string): string => {
+                                const cleaned = value.replace(/[^0-9.]/g, '');
+                                const parts = cleaned.split('.');
+                                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                                return parts.length > 1 ? parts[0] + '.' + parts[1] : parts[0];
+                            };
+
+                            setEditingTargetKho({
+                                id: targetKho,
+                                name: targetKho,
+                                valueDTQD: dtqdDivided > 0 ? formatWithCommasLocal(dtqdDivided.toString()) : '',
+                                valueDTThuc: dtThucDivided > 0 ? formatWithCommasLocal(dtThucDivided.toString()) : '',
+                            });
+                        }
                     } else if (isDTQDCard) {
                         // Scroll to warehouse summary where users can set per-kho targets
                         const warehouseEl = document.getElementById('warehouse-summary-view');
@@ -634,64 +608,6 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                 );
             })}
         </div>
-
-        {/* Target DT Thực Modal */}
-        <ModalWrapper
-            isOpen={isTargetModalOpen}
-            onClose={() => setIsTargetModalOpen(false)}
-            title="Nhập Target Tháng"
-            subTitle={
-                filterState.kho && filterState.kho.length > 0 && !filterState.kho.includes('all')
-                    ? `Đặt chỉ tiêu doanh thu thực tháng (Tr)`
-                    : "Đặt chỉ tiêu doanh thu thực tháng cho các kho (Tr)"
-            }
-            titleColorClass="text-emerald-600 dark:text-emerald-400"
-            maxWidthClass="max-w-md"
-        >
-            <form onSubmit={handleSaveAllTargets} className="p-4 sm:p-6 space-y-4">
-                <div className="max-h-[50vh] overflow-y-auto pr-1 space-y-3.5 custom-scrollbar">
-                    {(() => {
-                        const activeKhoList = filterState.kho && filterState.kho.length > 0 && !filterState.kho.includes('all')
-                            ? filterState.kho
-                            : (uniqueFilterOptions?.kho || []);
-                        return activeKhoList.map(kho => (
-                            <div key={kho} className="flex items-center gap-3">
-                                <label className="w-20 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider shrink-0">
-                                    Kho {kho}
-                                </label>
-                                <div className="relative flex-1">
-                                    <input
-                                        type="text"
-                                        inputMode="decimal"
-                                        value={localDTThucTargets[kho] ?? ''}
-                                        onChange={(e) => handleLocalTargetChange(kho, e.target.value)}
-                                        className="w-full p-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-sm font-bold text-slate-800 dark:text-slate-100 focus:ring-2 focus:ring-emerald-500 outline-none"
-                                        placeholder="VD: 1,500"
-                                    />
-                                    <span className="absolute right-3 top-2 text-xs font-bold text-slate-400">Tr</span>
-                                </div>
-                            </div>
-                        ));
-                    })()}
-                </div>
-
-                <div className="flex gap-3 justify-end pt-3 border-t border-slate-100 dark:border-slate-800">
-                    <button
-                        type="button"
-                        onClick={() => setIsTargetModalOpen(false)}
-                        className="px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium rounded-xl text-xs sm:text-sm transition-colors"
-                    >
-                        Hủy
-                    </button>
-                    <button
-                        type="submit"
-                        className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs sm:text-sm transition-colors shadow-sm active:scale-[0.98]"
-                    >
-                        Lưu cấu hình
-                    </button>
-                </div>
-            </form>
-        </ModalWrapper>
         </div>
     );
 };

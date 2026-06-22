@@ -27,6 +27,7 @@ export const useDashboardLogic = () => {
     const [isLuyKe, setIsLuyKe] = useState(false);
     const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'changelog' | null>(null);
     const [modalData, setModalData] = useState<any>(null);
+    const [editingTargetKho, setEditingTargetKho] = useState<{ id: string, name: string, valueDTQD: string, valueDTThuc: string } | null>(null);
 
     // 1. Filter State Management
     const { filterState, setFilterState, handleFilterChange, isFilterLoaded } = useFilterState();
@@ -285,7 +286,9 @@ export const useDashboardLogic = () => {
         unconfiguredGroups,
         ignoredUnconfiguredGroups,
         handleIgnoreGroup,
-        handleRestoreGroup
+        handleRestoreGroup,
+        editingTargetKho,
+        setEditingTargetKho
     };
 };
 
