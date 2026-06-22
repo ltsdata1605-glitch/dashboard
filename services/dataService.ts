@@ -45,22 +45,36 @@ function robustCsvParse(text: string): string[][] {
 
 export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater): Promise<ProductConfig> {
     setStatus({ message: 'Đang tải file cấu hình...', type: 'info', progress: 0 });
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Không thể tải file cấu hình. Status: ${response.status}`);
+    
+    // Rewrite URL to request output=xlsx or export?format=xlsx to pull all sheets at once
+    let xlsxUrl = url;
+    if (url.includes('/pub?')) {
+        xlsxUrl = url.replace(/output=[a-zA-Z0-9]+/, 'output=xlsx');
+        if (!xlsxUrl.includes('output=xlsx')) {
+            xlsxUrl += (xlsxUrl.includes('?') ? '&' : '?') + 'output=xlsx';
         }
-        const csvText = await response.text();
-        setStatus({ message: 'Đang xử lý file cấu hình...', type: 'info', progress: 30 });
-        
-        const parsedRows = robustCsvParse(csvText);
+    } else if (url.includes('/d/') && url.includes('/edit')) {
+        xlsxUrl = url.replace(/\/edit.*$/, '/export?format=xlsx');
+    }
 
-        if (parsedRows.length < 2) {
-             throw new Error('File cấu hình không hợp lệ hoặc không có dữ liệu.');
-         }
+    try {
+        const response = await fetch(xlsxUrl);
+        if (!response.ok) {
+            throw new Error(`Không thể tải file cấu hình Excel. Status: ${response.status}`);
+        }
         
-        const headers = parsedRows[0].map(h => h.trim());
-        const data = parsedRows.slice(1);
+        const arrayBuffer = await response.arrayBuffer();
+        const data = new Uint8Array(arrayBuffer);
+        
+        setStatus({ message: 'Đang xử lý file cấu hình...', type: 'info', progress: 30 });
+        const XLSX = await import('xlsx');
+        
+        let workbook;
+        try {
+            workbook = XLSX.read(data, { type: 'array' });
+        } catch (xlsxError) {
+            console.warn('[Config] Không thể đọc dưới dạng XLSX, thử fallback sang parse CSV gốc...', xlsxError);
+        }
 
         const config: ProductConfig = {
             groups: {},
@@ -70,83 +84,188 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             quantityMultiplierMap: { ...DEFAULT_QUANTITY_MULTIPLIER_MAP }
         };
 
-        const groupIndex = headers.indexOf('NhomCha');
-        const subgroupIndex = headers.indexOf('NhomCon');
-        const productCodeIndex = headers.indexOf('NhomHang');
-        
-        if (groupIndex === -1 || subgroupIndex === -1 || productCodeIndex === -1) {
-            console.error('Headers found:', headers);
-            throw new Error('File cấu hình thiếu các cột bắt buộc: NhomCha, NhomCon, NhomHang');
-        }
+        if (workbook) {
+            // 1. Parse the main config sheet ("Ngành hàng" or sheet 0)
+            const mainSheetName = workbook.SheetNames.find(name => name.toLowerCase().includes('ngành hàng')) || workbook.SheetNames[0];
+            const mainSheet = workbook.Sheets[mainSheetName];
+            const parsedRows: any[][] = XLSX.utils.sheet_to_json(mainSheet, { header: 1, defval: '' });
+            
+            if (parsedRows.length < 2) {
+                throw new Error(`Sheet cấu hình '${mainSheetName}' không hợp lệ hoặc không có dữ liệu.`);
+            }
+            
+            const headers = parsedRows[0].map(h => String(h || '').trim());
+            const groupIndex = headers.indexOf('NhomCha');
+            const subgroupIndex = headers.indexOf('NhomCon');
+            const productCodeIndex = headers.indexOf('NhomHang');
+            
+            if (groupIndex === -1 || subgroupIndex === -1 || productCodeIndex === -1) {
+                console.error('Headers found:', headers);
+                throw new Error(`Sheet cấu hình '${mainSheetName}' thiếu các cột bắt buộc: NhomCha, NhomCon, NhomHang`);
+            }
+            
+            const dataRows = parsedRows.slice(1);
+            dataRows.forEach(row => {
+                if (row.length > Math.max(groupIndex, subgroupIndex, productCodeIndex)) {
+                    const parentGroup = String(row[groupIndex] || '').trim();
+                    const childGroup = String(row[subgroupIndex] || '').trim();
+                    const productCode = String(row[productCodeIndex] || '').trim();
 
-        data.forEach(row => {
-            if (row.length > Math.max(groupIndex, subgroupIndex, productCodeIndex)) {
-                const parentGroup = row[groupIndex];
-                const childGroup = row[subgroupIndex];
-                const productCode = row[productCodeIndex];
+                    if (parentGroup && childGroup && productCode) {
+                        if (!config.groups[parentGroup]) {
+                            config.groups[parentGroup] = new Set();
+                        }
+                        config.groups[parentGroup].add(productCode);
 
-                if (parentGroup && childGroup && productCode) {
-                    if (!config.groups[parentGroup]) {
-                        config.groups[parentGroup] = new Set();
-                    }
-                    config.groups[parentGroup].add(productCode);
+                        if (!config.subgroups[parentGroup]) {
+                            config.subgroups[parentGroup] = {};
+                        }
+                        if (!config.subgroups[parentGroup][childGroup]) {
+                            config.subgroups[parentGroup][childGroup] = [];
+                        }
+                        config.subgroups[parentGroup][childGroup].push(productCode);
+                        
+                        config.childToParentMap[productCode] = parentGroup;
+                        config.childToSubgroupMap[productCode] = childGroup;
 
-                    if (!config.subgroups[parentGroup]) {
-                        config.subgroups[parentGroup] = {};
-                    }
-                    if (!config.subgroups[parentGroup][childGroup]) {
-                        config.subgroups[parentGroup][childGroup] = [];
-                    }
-                    config.subgroups[parentGroup][childGroup].push(productCode);
-                    
-                    config.childToParentMap[productCode] = parentGroup;
-                    config.childToSubgroupMap[productCode] = childGroup;
+                        const trimmedLower = productCode.toLowerCase();
+                        config.childToParentMap[trimmedLower] = parentGroup;
+                        config.childToSubgroupMap[trimmedLower] = childGroup;
 
-                    // Also store with normalized keys for robust match fallbacks
-                    const trimmedLower = productCode.trim().toLowerCase();
-                    config.childToParentMap[trimmedLower] = parentGroup;
-                    config.childToSubgroupMap[trimmedLower] = childGroup;
-
-                    const idMatch = productCode.match(/^(\d+)/);
-                    if (idMatch) {
-                        const codeId = idMatch[1];
-                        config.childToParentMap[codeId] = parentGroup;
-                        config.childToSubgroupMap[codeId] = childGroup;
+                        const idMatch = productCode.match(/^(\d+)/);
+                        if (idMatch) {
+                            const codeId = idMatch[1];
+                            config.childToParentMap[codeId] = parentGroup;
+                            config.childToSubgroupMap[codeId] = childGroup;
+                        }
                     }
                 }
+            });
+
+            // 2. Parse multiplier sheets (e.g. VIEON, Bảo hiểm ĐMX, Hệ số QĐ)
+            const multiplierSheetNames = workbook.SheetNames.filter(name => {
+                const lowerName = name.toLowerCase();
+                return lowerName.includes('vieon') || 
+                       lowerName.includes('bảo hiểm đmx') || 
+                       lowerName.includes('hệ số qđ') ||
+                       lowerName.includes('bảo hiểm');
+            });
+
+            multiplierSheetNames.forEach(sheetName => {
+                try {
+                    const sheet = workbook.Sheets[sheetName];
+                    const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                    if (rows.length >= 2) {
+                        const sheetHeaders = rows[0].map(h => String(h || '').trim());
+                        const codeIdx = sheetHeaders.findIndex(h => h.toLowerCase().includes('mã sản phẩm') || h.toLowerCase() === 'mã');
+                        const multiplierIdx = sheetHeaders.findIndex(h => h.toLowerCase().includes('hệ số'));
+                        
+                        if (codeIdx !== -1 && multiplierIdx !== -1) {
+                            let count = 0;
+                            for (let i = 1; i < rows.length; i++) {
+                                const row = rows[i];
+                                if (row.length > Math.max(codeIdx, multiplierIdx)) {
+                                    const code = String(row[codeIdx] || '').trim();
+                                    const multiplier = parseFloat(String(row[multiplierIdx] || ''));
+                                    if (code && !isNaN(multiplier)) {
+                                        config.quantityMultiplierMap[code] = multiplier;
+                                        count++;
+                                    }
+                                }
+                            }
+                            console.log(`[Config] Đã tải ${count} hệ số từ sheet '${sheetName}'.`);
+                        }
+                    }
+                } catch (sheetError) {
+                    console.warn(`[Config] Lỗi khi xử lý sheet '${sheetName}':`, sheetError);
+                }
+            });
+        } else {
+            // Fallback to original CSV parsing for backward compatibility (if file is pure CSV)
+            const csvResponse = await fetch(url);
+            const csvText = await csvResponse.text();
+            const parsedRows = robustCsvParse(csvText);
+
+            if (parsedRows.length < 2) {
+                 throw new Error('File cấu hình CSV không hợp lệ hoặc không có dữ liệu.');
+             }
+            
+            const headers = parsedRows[0].map(h => h.trim());
+            const dataRows = parsedRows.slice(1);
+
+            const groupIndex = headers.indexOf('NhomCha');
+            const subgroupIndex = headers.indexOf('NhomCon');
+            const productCodeIndex = headers.indexOf('NhomHang');
+            
+            if (groupIndex === -1 || subgroupIndex === -1 || productCodeIndex === -1) {
+                console.error('Headers found:', headers);
+                throw new Error('File cấu hình CSV thiếu các cột bắt buộc: NhomCha, NhomCon, NhomHang');
             }
-        });
-        
-        // --- Load quantity multiplier map from VIEON sheet ---
-        setStatus({ message: 'Đang tải bảng hệ số số lượng...', type: 'info', progress: 70 });
-        try {
-            // Derive the VIEON sheet URL from the base config URL
-            const vieonUrl = url.replace(/pub\?.*$/, 'pub?gid=681719985&single=true&output=csv');
-            const vieonResponse = await fetch(vieonUrl);
-            if (vieonResponse.ok) {
-                const vieonCsvText = await vieonResponse.text();
-                const vieonRows = robustCsvParse(vieonCsvText);
-                
-                if (vieonRows.length >= 2) {
-                    const vieonHeaders = vieonRows[0].map(h => h.trim());
-                    const codeIdx = vieonHeaders.indexOf('Mã sản phẩm');
-                    const multiplierIdx = vieonHeaders.indexOf('Hệ Số');
-                    
-                    if (codeIdx !== -1 && multiplierIdx !== -1) {
-                        for (let i = 1; i < vieonRows.length; i++) {
-                            const row = vieonRows[i];
-                            const code = (row[codeIdx] || '').trim();
-                            const multiplier = parseFloat(row[multiplierIdx] || '');
-                            if (code && !isNaN(multiplier)) {
-                                config.quantityMultiplierMap[code] = multiplier;
+
+            dataRows.forEach(row => {
+                if (row.length > Math.max(groupIndex, subgroupIndex, productCodeIndex)) {
+                    const parentGroup = row[groupIndex];
+                    const childGroup = row[subgroupIndex];
+                    const productCode = row[productCodeIndex];
+
+                    if (parentGroup && childGroup && productCode) {
+                        if (!config.groups[parentGroup]) {
+                            config.groups[parentGroup] = new Set();
+                        }
+                        config.groups[parentGroup].add(productCode);
+
+                        if (!config.subgroups[parentGroup]) {
+                            config.subgroups[parentGroup] = {};
+                        }
+                        if (!config.subgroups[parentGroup][childGroup]) {
+                            config.subgroups[parentGroup][childGroup] = [];
+                        }
+                        config.subgroups[parentGroup][childGroup].push(productCode);
+                        
+                        config.childToParentMap[productCode] = parentGroup;
+                        config.childToSubgroupMap[productCode] = childGroup;
+
+                        const trimmedLower = productCode.trim().toLowerCase();
+                        config.childToParentMap[trimmedLower] = parentGroup;
+                        config.childToSubgroupMap[trimmedLower] = childGroup;
+
+                        const idMatch = productCode.match(/^(\d+)/);
+                        if (idMatch) {
+                            const codeId = idMatch[1];
+                            config.childToParentMap[codeId] = parentGroup;
+                            config.childToSubgroupMap[codeId] = childGroup;
+                        }
+                    }
+                }
+            });
+            
+            // Try to load VIEON sheet separately as CSV
+            try {
+                const vieonUrl = url.replace(/pub\?.*$/, 'pub?gid=681719985&single=true&output=csv');
+                const vieonResponse = await fetch(vieonUrl);
+                if (vieonResponse.ok) {
+                    const vieonCsvText = await vieonResponse.text();
+                    const vieonRows = robustCsvParse(vieonCsvText);
+                    if (vieonRows.length >= 2) {
+                        const vieonHeaders = vieonRows[0].map(h => h.trim());
+                        const codeIdx = vieonHeaders.indexOf('Mã sản phẩm');
+                        const multiplierIdx = vieonHeaders.indexOf('Hệ Số');
+                        
+                        if (codeIdx !== -1 && multiplierIdx !== -1) {
+                            for (let i = 1; i < vieonRows.length; i++) {
+                                const row = vieonRows[i];
+                                const code = (row[codeIdx] || '').trim();
+                                const multiplier = parseFloat(row[multiplierIdx] || '');
+                                if (code && !isNaN(multiplier)) {
+                                    config.quantityMultiplierMap[code] = multiplier;
+                                }
                             }
                         }
-                        console.log(`[Config] Đã tải ${Object.keys(config.quantityMultiplierMap).length} mã hệ số số lượng.`);
                     }
                 }
+            } catch (e) {
+                console.warn('[Config] Không thể tải bảng hệ số VIEON qua CSV:', e);
             }
-        } catch (vieonError) {
-            console.warn('[Config] Không thể tải bảng hệ số VIEON, bỏ qua:', vieonError);
         }
 
         setStatus({ message: 'Tải cấu hình thành công.', type: 'success', progress: 100 });
