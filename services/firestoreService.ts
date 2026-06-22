@@ -27,18 +27,13 @@ export const syncToCloud = async (
 
     // Cập nhật timestamp lần sync cuối
     await setDoc(userRef, {
-        email: user.email,
-        displayName: user.displayName,
+        email: user.email ?? null,
+        displayName: user.displayName ?? null,
         lastSync: serverTimestamp()
     }, { merge: true });
 
-    // Lọc bỏ các giá trị undefined vì Firestore không hỗ trợ
-    const cleanPayload: any = {};
-    for (const [key, value] of Object.entries(safePayload)) {
-        if (value !== undefined) {
-            cleanPayload[key] = value;
-        }
-    }
+    // Lọc bỏ các giá trị undefined vì Firestore không hỗ trợ (chuyển đổi đệ quy thành null)
+    const cleanPayload = JSON.parse(JSON.stringify(safePayload, (k, v) => v === undefined ? null : v));
 
     // Cập nhật configuration
     await setDoc(configRef, {
