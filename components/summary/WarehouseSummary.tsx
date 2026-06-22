@@ -3,7 +3,7 @@ import type { WarehouseColumnConfig } from '../../types';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import { getWarehouseColumnConfig, saveWarehouseColumnConfig } from '../../services/dbService';
+import { getWarehouseColumnConfig, saveWarehouseColumnConfig, getSetting, saveSetting } from '../../services/dbService';
 import { COL, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
 import { getRowValue, formatCurrency, formatQuantity, getExportFilenamePrefix } from '../../utils/dataUtils';
 import LoadingOverlay from '../common/LoadingOverlay';
@@ -149,11 +149,16 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     useEffect(() => {
         let cancelled = false;
         const loadConfig = async () => {
+            const CURRENT_VERSION = 'v3'; // Increment version to force clear old columns cache
+            const savedVersion = await getSetting<string>('warehouseColumnConfigVersion');
+            
             let config = await getWarehouseColumnConfig();
             let needsSave = false;
-            if (!config || config.length === 0) {
+            
+            if (!config || config.length === 0 || savedVersion !== CURRENT_VERSION) {
                 config = [...DEFAULT_WAREHOUSE_COLUMNS];
                 needsSave = true;
+                await saveSetting('warehouseColumnConfigVersion', CURRENT_VERSION);
             } else {
                 const migrated = migrateColumns(config);
                 const isDiff = JSON.stringify(migrated) !== JSON.stringify(config);

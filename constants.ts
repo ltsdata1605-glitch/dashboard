@@ -76,7 +76,7 @@ export const DEFAULT_WAREHOUSE_COLUMNS: WarehouseColumnConfig[] = [
     { id: 'spc_ict', order: 8, isVisible: true, isCustom: false, categoryType: 'industry', categoryName: 'ICT', metricType: 'quantity', mainHeader: 'SP CHÍNH', subHeader: 'ICT' },
     // --- MÙA VỤ (NhomCon) ---
     { id: 'mv_mlanh', order: 9, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Máy lạnh', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'M.Lạnh' },
-    { id: 'mv_tivi', order: 10, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Tivi', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'TIVI' },
+    { id: 'mv_tivi', order: 10, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Tivi', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'TIVI' },
     { id: 'mv_mgiat', order: 11, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Máy giặt', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'M.Giặt' },
     { id: 'mv_mnn', order: 12, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Máy nước nóng', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'MNN' },
     { id: 'mv_tl', order: 13, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Tủ lạnh', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'T.Lạnh' },
@@ -84,8 +84,8 @@ export const DEFAULT_WAREHOUSE_COLUMNS: WarehouseColumnConfig[] = [
     { id: 'mv_tmat', order: 15, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Tủ mát', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'T.Mát' },
     { id: 'mv_msay', order: 16, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Máy sấy', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'M.Sấy' },
     { id: 'mv_loakeo', order: 17, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Loa Karaoke', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'Loa Kéo' },
-    { id: 'mv_smp', order: 18, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Smartphone', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'SMP' },
-    { id: 'mv_lap', order: 19, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Laptop', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'LAP' },
+    { id: 'mv_smp', order: 18, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Smartphone', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'SMP' },
+    { id: 'mv_lap', order: 19, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Laptop', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'LAP' },
     { id: 'mv_tab', order: 20, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Tablet', metricType: 'quantity', mainHeader: 'MÙA VỤ', subHeader: 'TAB' },
     // --- TRAFFIC ---
     { id: 'traffic_th', order: 21, isVisible: false, isCustom: false, metric: 'slThuHo', mainHeader: 'TRAFFIC', subHeader: 'T.HỘ' },
