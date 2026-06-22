@@ -421,15 +421,16 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
       >
         <div className="flex flex-wrap items-center gap-2 hide-on-export">
           {displayMode === 'calendar' ? (
-              <div className="flex flex-wrap items-center gap-1">
+              <div className="flex flex-row items-center gap-1.5 flex-nowrap sm:flex-wrap">
                   <Select
-                      className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 py-1.5 px-2 h-auto min-h-0 uppercase tracking-wider"
+                      fullWidth={false}
+                      className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 py-1 px-2 h-8 uppercase tracking-wider w-[85px] sm:w-[95px] pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
                       value={calendarFilters.month}
                       onChange={(e) => setCalendarFilters(prev => ({ ...prev, month: e.target.value }))}
                   >
                       {availableMonths.map(m => <option key={m} value={m}>{m.split('-')[1]}/{m.split('-')[0]}</option>)}
                   </Select>
-                  <div className="w-auto">
+                  <div className="w-[85px] sm:w-[105px] shrink-0">
                       <MultiSelectDropdown
                           label="Ngành"
                           options={uniqueParentGroups}
@@ -438,7 +439,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                           variant="compact"
                       />
                   </div>
-                  <div className="w-auto">
+                  <div className="w-[85px] sm:w-[105px] shrink-0">
                       <MultiSelectDropdown
                           label="Nhóm"
                           options={uniqueChildGroups}
@@ -448,7 +449,8 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                       />
                   </div>
                   <Select
-                      className="text-[10px] font-bold text-rose-600 dark:text-rose-400 py-1.5 px-2 h-auto min-h-0 uppercase tracking-wider"
+                      fullWidth={false}
+                      className="text-[10px] font-bold text-rose-600 dark:text-rose-400 py-1 px-2 h-8 uppercase tracking-wider w-[100px] sm:w-[120px] pr-7 border-slate-200 dark:border-slate-700 rounded-lg shrink-0"
                       value={calendarFilters.metric}
                       onChange={(e) => setCalendarFilters(prev => ({ ...prev, metric: e.target.value }))}
                   >
