@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(git -C /Users/ltson/Documents/dashboardycx ls-files scratch/ archive/ build_output.log backup_dashboard.zip)",
+      "Bash(git -C /Users/ltson/Documents/dashboardycx rm --cached -r scratch/ archive/ build_output.log backup_dashboard.zip)",
+      "Bash(git -C /Users/ltson/Documents/dashboardycx rm --cached -r scratch/ archive/)",
+      "Bash(git -C /Users/ltson/Documents/dashboardycx status --short)",
+      "Skill(run)",
+      "Skill(run:*)"
+    ]
+  }
+}

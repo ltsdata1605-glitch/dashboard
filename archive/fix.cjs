@@ -1,4 +1,4 @@
-const fs = require('fs');
+Khiconst fs = require('fs');
 const path = require('path');
 
 function walkDir(dir, callback) {
