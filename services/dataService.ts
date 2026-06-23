@@ -81,7 +81,8 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             subgroups: {},
             childToParentMap: {},
             childToSubgroupMap: {},
-            quantityMultiplierMap: { ...DEFAULT_QUANTITY_MULTIPLIER_MAP }
+            quantityMultiplierMap: { ...DEFAULT_QUANTITY_MULTIPLIER_MAP },
+            vasNameMultiplierMap: {}
         };
 
         if (workbook) {
@@ -142,13 +143,14 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                 }
             });
 
-            // 2. Parse multiplier sheets (e.g. VIEON, Bảo hiểm ĐMX, Hệ số QĐ)
+            // 2. Parse multiplier sheets (e.g. VIEON, Bảo hiểm ĐMX, Hệ số QĐ, Vas)
             const multiplierSheetNames = workbook.SheetNames.filter(name => {
                 const lowerName = name.toLowerCase();
                 return lowerName.includes('vieon') || 
                        lowerName.includes('bảo hiểm đmx') || 
                        lowerName.includes('hệ số qđ') ||
-                       lowerName.includes('bảo hiểm');
+                       lowerName.includes('bảo hiểm') ||
+                       lowerName.includes('vas');
             });
 
             multiplierSheetNames.forEach(sheetName => {
@@ -158,17 +160,31 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                     if (rows.length >= 2) {
                         const sheetHeaders = rows[0].map(h => String(h || '').trim());
                         const codeIdx = sheetHeaders.findIndex(h => h.toLowerCase().includes('mã sản phẩm') || h.toLowerCase() === 'mã');
-                        const multiplierIdx = sheetHeaders.findIndex(h => h.toLowerCase().includes('hệ số'));
+                        const nameIdx = sheetHeaders.findIndex(h => h.toLowerCase().includes('tên sản phẩm') || h.toLowerCase() === 'tên');
+                        const multiplierIdx = sheetHeaders.findIndex(h => h.toLowerCase().includes('hệ số') || h.toLowerCase().includes('sl quy đổi'));
                         
                         if (codeIdx !== -1 && multiplierIdx !== -1) {
+                            if (!config.vasNameMultiplierMap) {
+                                config.vasNameMultiplierMap = {};
+                            }
                             let count = 0;
                             for (let i = 1; i < rows.length; i++) {
                                 const row = rows[i];
                                 if (row.length > Math.max(codeIdx, multiplierIdx)) {
                                     const code = String(row[codeIdx] || '').trim();
-                                    const multiplier = parseFloat(String(row[multiplierIdx] || ''));
-                                    if (code && !isNaN(multiplier)) {
-                                        config.quantityMultiplierMap[code] = multiplier;
+                                    const nameVal = nameIdx !== -1 ? String(row[nameIdx] || '').trim() : '';
+                                    
+                                    // Handle Vietnamese comma decimal format (e.g. "1,5" -> "1.5")
+                                    const rawVal = String(row[multiplierIdx] || '').replace(',', '.');
+                                    const multiplier = parseFloat(rawVal);
+                                    
+                                    if (!isNaN(multiplier)) {
+                                        if (code) {
+                                            config.quantityMultiplierMap[code] = multiplier;
+                                        }
+                                        if (nameVal) {
+                                            config.vasNameMultiplierMap[nameVal] = multiplier;
+                                        }
                                         count++;
                                     }
                                 }

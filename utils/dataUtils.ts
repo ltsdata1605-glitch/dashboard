@@ -153,7 +153,21 @@ export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productCo
         }
     }
 
-    const name = (productName || '').toString();
+    const name = (productName || '').toString().trim();
+    
+    // Dò tìm hệ số theo Tên sản phẩm từ cấu hình Vas tải từ Google Sheet
+    if (productConfig?.vasNameMultiplierMap) {
+        if (productConfig.vasNameMultiplierMap[name] !== undefined) {
+            return productConfig.vasNameMultiplierMap[name];
+        }
+        for (const [pattern, val] of Object.entries(productConfig.vasNameMultiplierMap)) {
+            if (name.includes(pattern)) {
+                return val;
+            }
+        }
+    }
+
+    // Dò tìm hệ số theo Tên sản phẩm từ cấu hình cứng cũ (Fallback nếu chưa tải được cấu hình từ sheet)
     for (const item of PRODUCT_NAME_COEFFICIENTS) {
         if (name.includes(item.pattern)) {
             return item.value;
