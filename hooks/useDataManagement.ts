@@ -7,7 +7,7 @@ import { applyFiltersAndProcess } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_KPI_CARDS, COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 import toast from 'react-hot-toast';
-import { normalizeSalesData, getParentGroup, getRowValue } from '../utils/dataUtils';
+import { normalizeSalesData, getParentGroup, getRowValue, wrapProductConfigWithProxies } from '../utils/dataUtils';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -27,7 +27,10 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
     const [warehouseFilteredData, setWarehouseFilteredData] = useState<DataRow[]>([]);
     const [calendarSourceData, setCalendarSourceData] = useState<DataRow[]>([]);
     const [departmentMap, setDepartmentMap] = useState<DepartmentMap | null>(null);
-    const [productConfig, setProductConfig] = useState<ProductConfig | null>(null);
+    const [productConfig, _setProductConfig] = useState<ProductConfig | null>(null);
+    const setProductConfig = useCallback((config: ProductConfig | null) => {
+        _setProductConfig(config ? wrapProductConfigWithProxies(config) : null);
+    }, []);
     const [processedData, setProcessedData] = useState<ProcessedData | null>(null);
     const [employeeAnalysisData, setEmployeeAnalysisData] = useState<ProcessedData['employeeData'] | null>(null);
     const [warehouseTargets, setWarehouseTargets] = useState<Record<string, number>>({});

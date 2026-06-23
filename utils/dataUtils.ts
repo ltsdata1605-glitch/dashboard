@@ -438,4 +438,48 @@ export function normalizeSalesData(data: DataRow[]): DataRow[] {
         .filter((row): row is (DataRow & { parsedDate: Date }) => row !== null);
 }
 
+export function wrapProductConfigWithProxies(config: ProductConfig): ProductConfig {
+    if (!config) return config;
+    
+    // Check if already proxied to avoid double nesting
+    if ((config.childToParentMap as any)?.__isProxy) return config;
+
+    const wrapMap = (targetMap: Record<string, string>) => {
+        if (!targetMap) return targetMap;
+        return new Proxy(targetMap, {
+            get(target, prop) {
+                if (prop === '__isProxy') return true;
+                if (typeof prop !== 'string') {
+                    return Reflect.get(target, prop);
+                }
+                
+                // 1. Exact match
+                if (prop in target) {
+                    return target[prop];
+                }
+                
+                // 2. Lowercase match
+                const lowerProp = prop.toLowerCase();
+                if (lowerProp in target) {
+                    return target[lowerProp];
+                }
+                
+                // 3. ID match (extracting e.g. "4383" from "4383 - Camera IT")
+                const idMatch = prop.match(/^(\d+)/);
+                if (idMatch && idMatch[1] in target) {
+                    return target[idMatch[1]];
+                }
+                
+                return undefined;
+            }
+        });
+    };
+
+    return {
+        ...config,
+        childToParentMap: wrapMap(config.childToParentMap || {}),
+        childToSubgroupMap: wrapMap(config.childToSubgroupMap || {})
+    };
+}
+
 
