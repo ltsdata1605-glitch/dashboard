@@ -1,6 +1,8 @@
 #!/bin/bash
 cd "$(dirname "$0")"
 
+export PATH="/Users/ltson/.gemini/antigravity-ide/bin:$PATH"
+
 echo "=================================================="
 echo "  ĐANG TIẾN HÀNH ĐỒNG BỘ VÀ DEPLOY LÊN GITHUB"
 echo "=================================================="
