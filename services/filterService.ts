@@ -214,14 +214,32 @@ export function applyFiltersAndProcess(
             const finalDeduplicated: DataRow[] = [];
             const uniqueSet = new Set<string>();
             const sampleRow = deduplicated[0];
-            const keysToCheck = sampleRow ? Object.keys(sampleRow).filter(k => k !== 'STT_1' && k !== 'parsedDate' && !k.startsWith('_')) : [];
+            
+            // Limit keys to only essential identifying fields to avoid string concatenation overhead
+            // of 30+ columns for every single row.
+            const essentialFields = [COL.ID, COL.DATE_CREATED, COL.PRICE, COL.QUANTITY, COL.NGUOI_TAO, COL.KHO, COL.PRODUCT_CODE];
+            const keysToCheck: string[] = [];
+            if (sampleRow) {
+                for (const fieldArr of essentialFields) {
+                    for (const key of fieldArr) {
+                        if (sampleRow[key] !== undefined) {
+                            keysToCheck.push(key);
+                            break;
+                        }
+                    }
+                }
+                // Fallback to checking basic keys if none found
+                if (keysToCheck.length === 0) {
+                    keysToCheck.push(...Object.keys(sampleRow).filter(k => k !== 'STT_1' && k !== 'parsedDate' && !k.startsWith('_')));
+                }
+            }
+
             for (let i = 0; i < deduplicated.length; i++) {
                 const row = deduplicated[i];
-                const parts: string[] = [];
+                let sig = '';
                 for (let j = 0; j < keysToCheck.length; j++) {
-                    parts.push(String(row[keysToCheck[j]] || ''));
+                    sig += row[keysToCheck[j]] + '§';
                 }
-                const sig = parts.join('§');
                 if (!uniqueSet.has(sig)) {
                     uniqueSet.add(sig);
                     finalDeduplicated.push(row);

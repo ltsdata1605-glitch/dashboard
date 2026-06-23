@@ -587,7 +587,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
             } finally {
                 setIsFilterProcessing(false);
             }
-        }, 50); // Yield UI Thread to ensure loading spinner paints before heavy calculation
+        }, 150); // Yield UI Thread to ensure loading spinner paints before heavy calculation
 
         return () => clearTimeout(timer);
     }, [originalData, productConfig, filterState, departmentMap, isDeduplicationEnabled, setStatus, userRole, departmentId, employeeName, user?.email, isDemoMode, appState, setAppState]);

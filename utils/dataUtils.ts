@@ -3,17 +3,34 @@ import type { DataRow, SummaryTableNode, ProductConfig } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, DEFAULT_QUANTITY_MULTIPLIER_MAP, PRODUCT_NAME_COEFFICIENTS } from '../constants';
 
 
+const columnCache = new Map<string, string>();
+
 export function getRowValue(row: DataRow, keys: string[]): any {
+    if (!row) return undefined;
+    
+    // Check cache
+    const cacheKey = keys[0];
+    const cachedField = columnCache.get(cacheKey);
+    if (cachedField !== undefined && cachedField in row) {
+        return row[cachedField];
+    }
+
     // 1. Direct match (fastest)
     for (const key of keys) {
-        if (row[key] !== undefined && row[key] !== null) return row[key];
+        if (row[key] !== undefined && row[key] !== null) {
+            columnCache.set(cacheKey, key);
+            return row[key];
+        }
     }
     // 2. NFC/NFD normalized case-insensitive match
     const normalizedKeys = keys.map(k => k.toLowerCase().normalize('NFC'));
     for (const rowKey of Object.keys(row)) {
         const normRowKey = rowKey.toLowerCase().normalize('NFC');
         if (normalizedKeys.includes(normRowKey)) {
-            if (row[rowKey] !== undefined && row[rowKey] !== null) return row[rowKey];
+            if (row[rowKey] !== undefined && row[rowKey] !== null) {
+                columnCache.set(cacheKey, rowKey);
+                return row[rowKey];
+            }
         }
     }
     return undefined;
