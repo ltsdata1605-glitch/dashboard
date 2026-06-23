@@ -232,8 +232,8 @@ export const useFileUploadLogic = ({
                 });
 
                 const fileTimestamps = fileDates.map(d => d.getTime());
-                const fileMinTime = fileTimestamps.length > 0 ? Math.min(...fileTimestamps) : Date.now();
-                const fileMaxTime = fileTimestamps.length > 0 ? Math.max(...fileTimestamps) : Date.now();
+                const fileMinTime = fileTimestamps.length > 0 ? fileTimestamps.reduce((min, val) => val < min ? val : min, fileTimestamps[0]) : Date.now();
+                const fileMaxTime = fileTimestamps.length > 0 ? fileTimestamps.reduce((max, val) => val > max ? val : max, fileTimestamps[0]) : Date.now();
                 const fileUniqueDates = Array.from(new Set(fileDates.map(d => {
                     const y = d.getFullYear();
                     const m = String(d.getMonth() + 1).padStart(2, '0');
@@ -278,8 +278,8 @@ export const useFileUploadLogic = ({
                                     updatedRegistry[regIdx].uniqueDates = histUniqueDates;
                                     const tss = parsedDates.map(d => d.getTime());
                                     if (tss.length > 0) {
-                                        updatedRegistry[regIdx].minDate = Math.min(...tss);
-                                        updatedRegistry[regIdx].maxDate = Math.max(...tss);
+                                        updatedRegistry[regIdx].minDate = tss.reduce((min, val) => val < min ? val : min, tss[0]);
+                                        updatedRegistry[regIdx].maxDate = tss.reduce((max, val) => val > max ? val : max, tss[0]);
                                     }
                                     await dbService.saveSalesFilesRegistry(updatedRegistry);
                                 }
