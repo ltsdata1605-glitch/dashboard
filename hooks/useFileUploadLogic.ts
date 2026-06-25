@@ -520,7 +520,7 @@ export const useFileUploadLogic = ({
                         try {
                             toast('☁️ Đang đồng bộ dữ liệu gộp lên đám mây...', { id: 'cloud-sync-start', duration: 2000 });
                             const { uploadProcessedData } = await import('../services/cloudDataService');
-                            await uploadProcessedData(user, merged.data, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime());
+                            await uploadProcessedData(user, merged.data, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime(), merged.isRealtime);
                             toast.success('Đã đồng bộ dữ liệu lên đám mây!', { id: 'cloud-sync-done' });
                         } catch (err) {
                             console.error('Cloud data sync failed:', err);

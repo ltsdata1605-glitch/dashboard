@@ -1,7 +1,7 @@
 
 import type { DataRow, ProductConfig, FilterState, ProcessedData, EmployeeData, IndustryData } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue } from '../utils/dataUtils';
+import { getRowValue, getParentGroup } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
 import { processKpis } from './kpiService';
 import { processTrendData } from './trendService';
@@ -21,6 +21,10 @@ let _lastEndDate: string = '';
 let _lastSelectedMonthsStr: string = '';
 let _lastWarehouseSummary: any[] | null = null;
 let _lastWarehouseGlobalData: DataRow[] | null = null;
+let _lastTrangThaiStr: string = '';
+let _lastNguoiTaoStr: string = '';
+let _lastDepartmentStr: string = '';
+let _lastKhoStr: string = '';
 
 /**
  * PREDICATES (Centralized Filtering Logic)
@@ -122,12 +126,26 @@ function processDataForPeriod(
 ): Omit<ProcessedData, 'lastUpdated' | 'reportSubTitle' | 'warehouseSummary'> {
 
     const isRevenueEligible = (row: DataRow) => {
+        const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+        const parentGroup = getParentGroup(maNhomHang, productConfig);
+        if (parentGroup === 'Không tính doanh thu') return false;
+
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+        if (productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0) {
+            return productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'));
+        }
         return HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat);
     };
 
     const filteredValidSalesData = periodData.filter(row => {
+        const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+        const parentGroup = getParentGroup(maNhomHang, productConfig);
+        if (parentGroup === 'Không tính doanh thu') return false;
+
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+        if (productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0) {
+            return productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'));
+        }
         return !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
     });
 
@@ -262,6 +280,11 @@ export function applyFiltersAndProcess(
 
     // Check cache validity for warehouse summary
     const selectedMonthsStr = JSON.stringify(filters.selectedMonths || []);
+    const trangThaiStr = JSON.stringify(filters.trangThai || []);
+    const nguoiTaoStr = JSON.stringify(filters.nguoiTao || []);
+    const departmentStr = JSON.stringify(filters.department || []);
+    const khoStr = JSON.stringify(filters.kho || []);
+
     const isWarehouseCacheValid = 
         sourceData === _lastAllData &&
         productConfig === _lastProductConfig &&
@@ -269,13 +292,17 @@ export function applyFiltersAndProcess(
         String(filters.startDate) === _lastStartDate &&
         String(filters.endDate) === _lastEndDate &&
         selectedMonthsStr === _lastSelectedMonthsStr &&
+        trangThaiStr === _lastTrangThaiStr &&
+        nguoiTaoStr === _lastNguoiTaoStr &&
+        departmentStr === _lastDepartmentStr &&
+        khoStr === _lastKhoStr &&
         _lastWarehouseGlobalData !== null &&
         _lastWarehouseSummary !== null;
 
     const calendarSourceData: DataRow[] = [];
     const baseFilteredData: DataRow[] = [];
     const mainPeriodData: DataRow[] = [];
-    const warehouseGlobalData: DataRow[] = isWarehouseCacheValid ? _lastWarehouseGlobalData! : [];
+    let warehouseGlobalData: DataRow[] = isWarehouseCacheValid ? _lastWarehouseGlobalData! : [];
 
     for (let i = 0, len = sourceData.length; i < len; i++) {
         const row = sourceData[i];
@@ -283,10 +310,6 @@ export function applyFiltersAndProcess(
         if (!isXuatMatch(row, filters.xuat)) continue;
 
         const mDate = isDateMatch(row, mainStartDate, mainEndDate, filters.selectedMonths);
-
-        if (!isWarehouseCacheValid && mDate) {
-            warehouseGlobalData.push(row);
-        }
 
         if (!isTrangThaiMatch(row, trangThaiFilterSet)) continue;
         if (!isNguoiTaoMatch(row, nguoiTaoFilterSet)) continue;
@@ -307,6 +330,7 @@ export function applyFiltersAndProcess(
     if (isWarehouseCacheValid) {
         warehouseSummary = _lastWarehouseSummary!;
     } else {
+        warehouseGlobalData = mainPeriodData;
         warehouseSummary = calculateWarehouseSummary(warehouseGlobalData, productConfig) || [];
         _lastAllData = sourceData;
         _lastProductConfig = productConfig;
@@ -314,6 +338,10 @@ export function applyFiltersAndProcess(
         _lastStartDate = String(filters.startDate);
         _lastEndDate = String(filters.endDate);
         _lastSelectedMonthsStr = selectedMonthsStr;
+        _lastTrangThaiStr = trangThaiStr;
+        _lastNguoiTaoStr = nguoiTaoStr;
+        _lastDepartmentStr = departmentStr;
+        _lastKhoStr = khoStr;
         _lastWarehouseGlobalData = warehouseGlobalData;
         _lastWarehouseSummary = warehouseSummary;
     }

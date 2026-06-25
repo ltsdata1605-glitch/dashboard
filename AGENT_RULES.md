@@ -25,6 +25,8 @@ NGUYÊN TẮC BẮT BUỘC:
    - tối ưu ảnh
    - lazy load nếu phù hợp
 10. Nếu không chắc, dừng lại và hỏi user qua Telegram.
+11. Khi nâng cấp hoặc thay đổi một tính năng trên menu nào thì chỉ chạy test kiểm tra ở ngay tính năng trên menu đó, không chạy kiểm tra tất cả các menu khác.
+12. Khi user yêu cầu "backup" (hoặc sao lưu), thực hiện mặc định chạy lệnh `node archive/backup.cjs` để đẩy code lên Github và nén file zip lưu trong thư mục `archive` theo định dạng đánh số thứ tự ở đầu.
 
 PHẠM VI:
 - Chỉ làm đúng task được duyệt.

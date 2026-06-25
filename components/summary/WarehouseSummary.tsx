@@ -131,8 +131,21 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
         if (!productConfig) return { allIndustries: [] as string[], allGroups: [] as string[] };
         const industries = new Set<string>();
         const groups = new Set<string>();
-        Object.keys(productConfig.childToParentMap).forEach(childKey => industries.add(productConfig.childToParentMap[childKey]));
-        Object.values(productConfig.subgroups).forEach(parent => Object.keys(parent).forEach(subgroup => groups.add(subgroup)));
+        Object.keys(productConfig.childToParentMap).forEach(childKey => {
+            const parent = productConfig.childToParentMap[childKey];
+            if (parent && parent !== 'Không tính doanh thu') {
+                industries.add(parent);
+            }
+        });
+        Object.entries(productConfig.subgroups).forEach(([parentKey, parent]) => {
+            if (parentKey !== 'Không tính doanh thu') {
+                Object.keys(parent).forEach(subgroup => {
+                    if (subgroup !== 'Không tính doanh thu') {
+                        groups.add(subgroup);
+                    }
+                });
+            }
+        });
         return { 
             allIndustries: Array.from(industries).sort(), 
             allGroups: Array.from(groups).sort(),

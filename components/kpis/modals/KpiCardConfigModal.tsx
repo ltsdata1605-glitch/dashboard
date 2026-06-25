@@ -38,13 +38,23 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
         
         const industries = new Set<string>();
         if (productConfig.childToParentMap) {
-            Object.values(productConfig.childToParentMap).forEach(v => industries.add(v as string));
+            Object.values(productConfig.childToParentMap).forEach(v => {
+                if (v && v !== 'Không tính doanh thu') {
+                    industries.add(v as string);
+                }
+            });
         }
 
         const subgroups = new Set<string>();
         if (productConfig.subgroups) {
-            Object.values(productConfig.subgroups).forEach(parent => {
-                Object.keys(parent).forEach(subgroup => subgroups.add(subgroup));
+            Object.entries(productConfig.subgroups).forEach(([parentKey, parent]) => {
+                if (parentKey !== 'Không tính doanh thu') {
+                    Object.keys(parent).forEach(subgroup => {
+                        if (subgroup !== 'Không tính doanh thu') {
+                            subgroups.add(subgroup);
+                        }
+                    });
+                }
             });
         }
         

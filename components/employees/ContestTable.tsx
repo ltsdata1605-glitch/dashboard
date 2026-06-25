@@ -82,7 +82,12 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
     const { processedRows, totals, averages, sortedAndGroupedColumns, groupedRows, sortedDepartments, departmentTotals } = useMemo(() => {
         const employeeColumnValues = new Map<string, Map<string, number>>(); // Map<employeeName, Map<columnId, value>>
 
-        const validData = baseFilteredData.filter(row => !HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT)));
+        const validData = baseFilteredData.filter(row => {
+            const htx = getRowValue(row, COL.HINH_THUC_XUAT);
+            return productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+                ? productConfig.revenueEligibleHTX.has(String(htx || '').trim().toLowerCase().normalize('NFC'))
+                : !HINH_THUC_XUAT_THU_HO.has(htx);
+        });
 
         // Step 1: Calculate all 'data' columns
         // Build a lookup: raw creator string → display name (from allEmployees)
@@ -166,22 +171,27 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                     employeeColumnValues.set(employee, new Map<string, number>());
                 }
                 const employeeValues = employeeColumnValues.get(employee)!;
-
                 const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
                 const price = Number(getRowValue(row, COL.PRICE)) || 0;
                 const revenue = price; // Doanh thu là giá trị của cột Giá bán_1
 
+                const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
+                const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+                const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+                const productName = String(getRowValue(row, COL.PRODUCT) || '').trim();
+                const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
+
+                const subgroup = productConfig?.childToSubgroupMap?.[maNhomHang] || '';
+                const isVieon = subgroup === 'Vieon' || productName.includes('VieON');
+                const qtyMultiplier = productConfig?.quantityMultiplierMap?.[productCode];
+                const weightedQuantity = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
+
                 let value = 0;
                 if (col.metricType === 'quantity') {
-                    value = quantity;
+                    value = weightedQuantity;
                 } else if (col.metricType === 'revenue') {
                     value = revenue / 1000000;
                 } else if (col.metricType === 'revenueQD') {
-                    const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
-                    const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-                    const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-                    const productName = String(getRowValue(row, COL.PRODUCT) || '').trim();
-                    const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
                     value = (revenue * heso) / 1000000;
                 }
 

@@ -199,12 +199,17 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
         return { data: [], totalRevenue: 0, totalQuantity: 0, levelType: 'end' };
     }, [drilldownPath, industryData, allSalesData, productConfig]);
 
-    // Data preparation for charts
     const allSubgroups = useMemo(() => {
         if (!productConfig) return [];
         const subgroups = new Set<string>();
-        Object.values(productConfig.subgroups).forEach(parent => {
-            Object.keys(parent).forEach(subgroup => subgroups.add(subgroup));
+        Object.entries(productConfig.subgroups).forEach(([parentKey, parent]) => {
+            if (parentKey !== 'Không tính doanh thu') {
+                Object.keys(parent).forEach(subgroup => {
+                    if (subgroup !== 'Không tính doanh thu') {
+                        subgroups.add(subgroup);
+                    }
+                });
+            }
         });
         return Array.from(subgroups).sort();
     }, [productConfig]);

@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import RevenueCalendar from './RevenueCalendar';
 import { Icon } from '../common/Icon';
 import { isKhoMatch } from '../../services/filterService';
-import { getRowValue, getHeSoQuyDoi, getExportFilenamePrefix } from '../../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup } from '../../utils/dataUtils';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { exportElementAsImage } from '../../services/uiService';
 
@@ -53,7 +53,8 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
             if (rowDate.getFullYear() !== targetYear || rowDate.getMonth() !== targetMonth) return;
 
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG) || '';
-            const parentGroup = productConfig.childToParentMap[maNhomHang] || 'Khác';
+            const parentGroup = getParentGroup(maNhomHang, productConfig) || 'Khác';
+            if (parentGroup === 'Không tính doanh thu') return;
             const childGroup = productConfig.childToSubgroupMap[maNhomHang] || 'Khác';
 
             if (parentGroupFilter.length > 0 && !parentGroupFilter.includes(parentGroup)) return;
@@ -61,7 +62,10 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
             if (khoFilter.length > 0 && !isKhoMatch(row, khoFilter)) return;
 
             const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
-            if (HINH_THUC_XUAT_THU_HO?.has(hinhThucXuat) && filter.metric !== 'quantity') return;
+            const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+                ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
+                : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+            if (!isRevenue) return;
 
             const price = Number(getRowValue(row, COL.PRICE)) || 0;
             const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
@@ -77,7 +81,8 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
 
             if (filter.metric === 'revenue' || filter.metric === 'traChamPercent') {
                 totalRevenue = price;
-                if ((hinhThucXuat || '').toLowerCase().includes('trả góp')) {
+                const isTraGop = getHinhThucThanhToan(row, productConfig) === 'tra_gop';
+                if (isTraGop) {
                     traGopRevenue = price;
                 }
                 valueToAdd = filter.metric === 'revenue' ? totalRevenue : 0;
@@ -85,7 +90,8 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                 valueToAdd = price * heso;
             } else if (filter.metric === 'quantity') {
                 const isVieon = childGroup === 'Vieon' || parentGroup === 'Vieon' || (productName || '').toString().includes('VieON');
-                valueToAdd = isVieon ? (quantity * heso) : quantity;
+                const qtyMultiplier = productConfig?.quantityMultiplierMap?.[productCode];
+                valueToAdd = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
             }
 
             if (valueToAdd > 0 || totalRevenue > 0) {

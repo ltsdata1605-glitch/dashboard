@@ -20,12 +20,17 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
 
     const nganhHangOptions = useMemo(() => {
         if (!productConfig?.subgroups) return [];
-        return Object.keys(productConfig.subgroups).sort();
+        return Object.keys(productConfig.subgroups)
+            .filter(name => name !== 'Không tính doanh thu')
+            .sort();
     }, [productConfig]);
 
     const nhomHangOptions = useMemo(() => {
         if (!productConfig?.subgroups || !selectedNganhHang) return [];
-        return Object.keys(productConfig.subgroups[selectedNganhHang] || {}).sort();
+        if (selectedNganhHang === 'Không tính doanh thu') return [];
+        return Object.keys(productConfig.subgroups[selectedNganhHang] || {})
+            .filter(name => name !== 'Không tính doanh thu')
+            .sort();
     }, [productConfig, selectedNganhHang]);
 
     // Update form when Nhóm Hàng changes

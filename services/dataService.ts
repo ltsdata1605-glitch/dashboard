@@ -82,7 +82,10 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             childToParentMap: {},
             childToSubgroupMap: {},
             quantityMultiplierMap: { ...DEFAULT_QUANTITY_MULTIPLIER_MAP },
-            vasNameMultiplierMap: {}
+            vasNameMultiplierMap: {},
+            revenueEligibleHTX: new Set<string>(),
+            nonRevenueEligibleHTX: new Set<string>(),
+            htxClassification: {}
         };
 
         if (workbook) {
@@ -196,6 +199,57 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                     console.warn(`[Config] Lỗi khi xử lý sheet '${sheetName}':`, sheetError);
                 }
             });
+
+            // 3. Parse "Hình thức xuất" sheet
+            const htxSheetName = workbook.SheetNames.find(name => name.toLowerCase().includes('hình thức xuất') || name.toLowerCase().includes('htx'));
+            if (htxSheetName) {
+                try {
+                    const sheet = workbook.Sheets[htxSheetName];
+                    const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                    if (rows.length >= 2) {
+                        const sheetHeaders = rows[0].map(h => String(h || '').trim());
+                        const htxIndex = sheetHeaders.indexOf('Hình thức xuất');
+                        const tinhDTIndex = sheetHeaders.indexOf('Tính doanh thu');
+                        const hinhThucIndex = sheetHeaders.indexOf('Hình thức');
+                        
+                        if (htxIndex !== -1 && tinhDTIndex !== -1 && hinhThucIndex !== -1) {
+                            let count = 0;
+                            for (let i = 1; i < rows.length; i++) {
+                                const row = rows[i];
+                                if (row.length > Math.max(htxIndex, tinhDTIndex, hinhThucIndex)) {
+                                    const htx = String(row[htxIndex] || '').trim();
+                                    const tinhDT = String(row[tinhDTIndex] || '').trim();
+                                    const hinhThuc = String(row[hinhThucIndex] || '').trim();
+                                    
+                                    if (htx) {
+                                        const htxKey = htx.toLowerCase().normalize('NFC');
+                                        if (tinhDT.toLowerCase().normalize('NFC') === 'có') {
+                                            config.revenueEligibleHTX!.add(htxKey);
+                                        } else {
+                                            config.nonRevenueEligibleHTX!.add(htxKey);
+                                        }
+                                        
+                                        const hinhThucLower = hinhThuc.toLowerCase().normalize('NFC');
+                                        if (hinhThucLower.includes('trả góp') || hinhThuc === 'Trả góp') {
+                                            config.htxClassification![htxKey] = 'tra_gop';
+                                        } else if (hinhThucLower.includes('tiền mặt') || hinhThuc === 'Tiền mặt') {
+                                            config.htxClassification![htxKey] = 'tien_mat';
+                                        } else if (hinhThucLower.includes('thu hộ') || hinhThuc === 'Thu hộ') {
+                                            config.htxClassification![htxKey] = 'thu_ho';
+                                        } else {
+                                            config.htxClassification![htxKey] = 'khac';
+                                        }
+                                        count++;
+                                    }
+                                }
+                            }
+                            console.log(`[Config] Đã tải ${count} hình thức xuất từ sheet '${htxSheetName}'.`);
+                        }
+                    }
+                } catch (sheetError) {
+                    console.warn(`[Config] Lỗi khi xử lý sheet '${htxSheetName}':`, sheetError);
+                }
+            }
         } else {
             // Fallback to original CSV parsing for backward compatibility (if file is pure CSV)
             const csvResponse = await fetch(url);

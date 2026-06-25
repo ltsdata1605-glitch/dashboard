@@ -10,14 +10,19 @@ function _buildFullEmployeeData(
     periodData: DataRow[],
     employeeIndustryStats: { [creator: string]: { [industry: string]: number } },
     employeeDailyTrend: { [creator: string]: { [date: string]: number } },
-    departmentMap: DepartmentMap | null
+    departmentMap: DepartmentMap | null,
+    productConfig?: ProductConfig | null
 ): EmployeeData {
 
     // Pre-aggregate ThuHo counts in O(M) instead of O(N×M)
     const thuHoCountByCreator = new Map<string, number>();
     for (let i = 0; i < periodData.length; i++) {
         const row = periodData[i];
-        if (HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
+        const htx = getRowValue(row, COL.HINH_THUC_XUAT);
+        const isThuHo = productConfig && productConfig.htxClassification
+            ? productConfig.htxClassification[String(htx || '').trim().toLowerCase().normalize('NFC')] === 'thu_ho'
+            : HINH_THUC_XUAT_THU_HO.has(htx);
+        if (isThuHo) {
             const creator = getRowValue(row, COL.NGUOI_TAO);
             if (creator && !creator.trim().startsWith('Yêu cầu xuất')) {
                 thuHoCountByCreator.set(creator, (thuHoCountByCreator.get(creator) || 0) + 1);
@@ -253,10 +258,11 @@ export function processEmployeeData(
         if (!employeeDailyTrend[creator]) employeeDailyTrend[creator] = {};
         if (!employeeDailyTrend[creator][dateKey]) employeeDailyTrend[creator][dateKey] = 0;
 
-        // Logic trọng số cho Vieon khi tính số lượng
+        // Logic trọng số số lượng: Vieon dùng hệ số quy đổi, các SP khác dùng quantityMultiplierMap
         const subgroup = productConfig.childToSubgroupMap[maNhomHang];
         const isVieon = subgroup === 'Vieon' || (productName || '').toString().includes('VieON');
-        const weightedQuantity = isVieon ? (quantity * heso) : quantity;
+        const qtyMultiplier = productConfig.quantityMultiplierMap?.[productCode];
+        const weightedQuantity = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
 
         // --- Aggregate general stats ---
         const emp = employeeStats[creator];
@@ -264,7 +270,7 @@ export function processEmployeeData(
         emp.doanhThuQD! += revenueQD;
         emp.totalOrders! += 1;
         if (customer) emp.customerSet.add(customer);
-        if (getHinhThucThanhToan(row) === 'tra_gop') {
+        if (getHinhThucThanhToan(row, productConfig) === 'tra_gop') {
             emp.slTraCham! += weightedQuantity; // Cập nhật số lượng trọng số
             emp.doanhThuTraCham! += revenue;
         }
@@ -273,7 +279,7 @@ export function processEmployeeData(
         if (parentGroupForPerf === 'CE' || parentGroupForPerf === 'ICT') {
             emp.slCE_ICT! += weightedQuantity; // Cập nhật số lượng trọng số
             emp.doanhThu_CE_ICT! += revenue;
-            if (getHinhThucThanhToan(row) === 'tra_gop') {
+            if (getHinhThucThanhToan(row, productConfig) === 'tra_gop') {
                 emp.slTraCham_CE_ICT! += weightedQuantity; // Cập nhật số lượng trọng số
                 emp.doanhThuTraCham_CE_ICT! += revenue;
             }
@@ -417,7 +423,7 @@ export function processEmployeeData(
         }
     }
 
-    const initialEmployeeData = _buildFullEmployeeData(employeeStats, exploitationStats, periodData, employeeIndustryStats, employeeDailyTrend, departmentMap);
+    const initialEmployeeData = _buildFullEmployeeData(employeeStats, exploitationStats, periodData, employeeIndustryStats, employeeDailyTrend, departmentMap, productConfig);
 
     // --- Calculate Weakness Points ---
     const employeesByDept: { [key: string]: Employee[] } = {};

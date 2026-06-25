@@ -42,7 +42,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
     const [isHardProcessing, setIsHardProcessing] = useState(false);    // initial load / file upload
     const [isFilterProcessing, setIsFilterProcessing] = useState(false); // filter-only fast re-calc
     const [fileInfo, setFileInfo] = useState<{ filename: string; savedAt: string } | null>(null);
-    const [pendingCloudSync, setPendingCloudSync] = useState<{ data: DataRow[]; meta: { filename: string; savedAt: number; fileLastModified: number; totalRows: number } } | null>(null);
+    const [pendingCloudSync, setPendingCloudSync] = useState<{ data: DataRow[]; meta: { filename: string; savedAt: number; fileLastModified: number; totalRows: number; isRealtime?: boolean } } | null>(null);
 
 // Initial data loading
     useEffect(() => {
@@ -272,7 +272,11 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                                         setAppState('loading');
                                         setStatus({ message: `📊 Tự động nạp dữ liệu đám mây (${cloudResult.meta.totalRows.toLocaleString('vi-VN')} dòng)...`, type: 'info', progress: 50 });
                                         
-                                        await dbService.saveSyncCloudData(cloudResult.data, cloudResult.meta.filename, cloudResult.meta.savedAt, cloudResult.meta.fileLastModified);
+                                        if (cloudResult.meta.isRealtime) {
+                                            await dbService.saveSyncCloudRealtimeData(cloudResult.data, cloudResult.meta.filename, cloudResult.meta.savedAt, cloudResult.meta.fileLastModified);
+                                        } else {
+                                            await dbService.saveSyncCloudData(cloudResult.data, cloudResult.meta.filename, cloudResult.meta.savedAt, cloudResult.meta.fileLastModified);
+                                        }
                                         setFileInfo({ filename: cloudResult.meta.filename, savedAt: new Date(cloudResult.meta.savedAt).toLocaleString('vi-VN') });
                                         
                                         const srcData = normalizeSalesData(cloudResult.data);
@@ -408,7 +412,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 // Background Cloud Sync
                 if (user && !isDemoMode) {
                     const { uploadProcessedData } = await import('../services/cloudDataService');
-                    uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime()).catch(console.error);
+                    uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime(), merged.isRealtime).catch(console.error);
                 }
             } else {
                 setOriginalData([]);
@@ -450,7 +454,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 
                 if (user && !isDemoMode) {
                     const { uploadProcessedData } = await import('../services/cloudDataService');
-                    uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime()).catch(console.error);
+                    uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime(), merged.isRealtime).catch(console.error);
                 }
             } else {
                 setOriginalData([]);
@@ -517,7 +521,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 // Background Cloud Sync
                 if (user && !isDemoMode) {
                     const { uploadProcessedData } = await import('../services/cloudDataService');
-                    uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime()).catch(console.error);
+                    uploadProcessedData(user, srcData, merged.filename, merged.fileLastModified || merged.savedAt.getTime(), merged.savedAt.getTime(), merged.isRealtime).catch(console.error);
                 }
             } else {
                 toast.error('Không có dữ liệu để xem báo cáo!');
@@ -699,9 +703,33 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
         for (let i = 0; i < originalData.length; i++) {
             const row = originalData[i];
             
-            // Bỏ qua các dòng thu hộ
+            // Bỏ qua các dòng không tính doanh thu theo hình thức xuất
             const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
-            if (HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) continue;
+            const isRevenue = productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+                ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
+                : (!HINH_THUC_XUAT_THU_HO.has(hinhThucXuat) && 
+                   !hinhThucXuat.toLowerCase().normalize('NFC').includes('thu hộ') && 
+                   !hinhThucXuat.toLowerCase().normalize('NFC').includes('khuyến mãi'));
+            
+            if (!isRevenue) continue;
+            
+            // Bỏ qua các dòng không tính doanh thu (giá bán <= 0)
+            const price = Number(getRowValue(row, COL.PRICE)) || 0;
+            if (price <= 0) continue;
+            
+            // Bỏ qua các ngành hàng/nhóm hàng khuyến mãi hoặc thu hộ (không tính doanh thu)
+            const nganhHangRaw = String(getRowValue(row, COL.MA_NGANH_HANG) || '').toLowerCase().normalize('NFC');
+            const nhomHangRaw = String(getRowValue(row, COL.MA_NHOM_HANG) || '').toLowerCase().normalize('NFC');
+            if (
+                nganhHangRaw.includes('khuyến mãi') || 
+                nganhHangRaw.includes('khuyen mai') ||
+                nhomHangRaw.includes('khuyến mãi') || 
+                nhomHangRaw.includes('khuyen mai') ||
+                nganhHangRaw.includes('thu hộ') ||
+                nhomHangRaw.includes('thu hộ')
+            ) {
+                continue;
+            }
             
             const nhomHang = getRowValue(row, COL.MA_NHOM_HANG);
             if (!nhomHang) continue;
@@ -739,7 +767,11 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
             const cloudMeta = pendingCloudSync.meta;
             
             // Save to local IDB
-            await dbService.saveSyncCloudData(cloudData, cloudMeta.filename, cloudMeta.savedAt, cloudMeta.fileLastModified);
+            if (cloudMeta.isRealtime) {
+                await dbService.saveSyncCloudRealtimeData(cloudData, cloudMeta.filename, cloudMeta.savedAt, cloudMeta.fileLastModified);
+            } else {
+                await dbService.saveSyncCloudData(cloudData, cloudMeta.filename, cloudMeta.savedAt, cloudMeta.fileLastModified);
+            }
             setFileInfo({ filename: cloudMeta.filename, savedAt: new Date(cloudMeta.savedAt).toLocaleString('vi-VN') });
             
             setPendingCloudSync(null);

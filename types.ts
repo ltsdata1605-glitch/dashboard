@@ -19,6 +19,9 @@ export interface ProductConfig {
     childToSubgroupMap: { [key: string]: string };
     quantityMultiplierMap: { [productCode: string]: number };
     vasNameMultiplierMap?: { [productName: string]: number };
+    revenueEligibleHTX?: Set<string>;
+    nonRevenueEligibleHTX?: Set<string>;
+    htxClassification?: { [htx: string]: 'tra_gop' | 'tien_mat' | 'thu_ho' | 'khac' };
 }
 
 export interface StoredSalesData {

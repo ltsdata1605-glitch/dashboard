@@ -547,6 +547,36 @@ export async function saveSyncCloudData(
     }
 }
 
+export async function saveSyncCloudRealtimeData(
+    data: DataRow[],
+    filename: string,
+    savedAt: number,
+    fileLastModified: number
+): Promise<void> {
+    try {
+        // 1. Clear all existing sales files & registry
+        await clearAllSalesFiles();
+
+        // 2. Save this sync file's data as temporary realtime data
+        const stored: StoredSalesData = { 
+            data, 
+            filename, 
+            savedAt: new Date(savedAt), 
+            fileLastModified 
+        };
+        const db = await getDb();
+        await new Promise<void>((resolve, reject) => {
+            const tx = db.transaction(APP_STORE, 'readwrite');
+            tx.objectStore(APP_STORE).put(stored, 'tempRealtimeData');
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    } catch (error) {
+        console.error('[IDB] saveSyncCloudRealtimeData failed:', error);
+        throw error;
+    }
+}
+
 export async function saveSalesData(data: DataRow[], filename: string, fileLastModified?: number): Promise<void> {
     const stored: StoredSalesData = { data, filename, savedAt: new Date(), fileLastModified };
     const tryTransaction = async (db: IDBDatabase) => {
@@ -1057,7 +1087,7 @@ export async function clearTempRealtimeData(): Promise<void> {
     }
 }
 
-export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename: string; savedAt: Date; fileLastModified?: number } | null> {
+export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename: string; savedAt: Date; fileLastModified?: number; isRealtime?: boolean } | null> {
     try {
         const registry = await getSalesFilesRegistry();
         let activeFiles = registry.filter(f => f.isActive);
@@ -1137,6 +1167,7 @@ export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename:
         let finalFilename = '';
         let finalSavedAt = new Date();
         let finalFileLastModified = 0;
+        let isRealtime = false;
         
         if (tempRealtime && tempRealtime.data.length > 0) {
             for (let j = 0; j < tempRealtime.data.length; j++) {
@@ -1163,10 +1194,12 @@ export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename:
                 const realtimeSavedAt = tempRealtime.savedAt ? new Date(tempRealtime.savedAt).getTime() : Date.now();
                 finalSavedAt = new Date(Math.max(realtimeSavedAt, latestHistSavedAt));
                 finalFileLastModified = Math.max(tempRealtime.fileLastModified || realtimeSavedAt, maxHistFileLastModified);
+                isRealtime = false;
             } else {
                 finalFilename = tempRealtime.filename;
                 finalSavedAt = tempRealtime.savedAt ? new Date(tempRealtime.savedAt) : new Date();
                 finalFileLastModified = tempRealtime.fileLastModified || finalSavedAt.getTime();
+                isRealtime = true;
             }
         } else if (historicalData.length > 0) {
             for (let j = 0; j < historicalData.length; j++) {
@@ -1184,6 +1217,7 @@ export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename:
             }
             finalSavedAt = new Date(latestHistSavedAt);
             finalFileLastModified = maxHistFileLastModified || latestHistSavedAt;
+            isRealtime = false;
         } else {
             return null; // Không có tệp nào hoạt động
         }
@@ -1192,7 +1226,8 @@ export async function getMergedSalesData(): Promise<{ data: DataRow[]; filename:
             data: combinedData,
             filename: finalFilename,
             savedAt: finalSavedAt,
-            fileLastModified: finalFileLastModified
+            fileLastModified: finalFileLastModified,
+            isRealtime
         };
     } catch (error) {
         console.error('[IDB] getMergedSalesData failed:', error);

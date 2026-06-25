@@ -38,7 +38,7 @@ export function processKpis(
         totalRevenue += rowRevenue;
         doanhThuQD += rowRevenue * heso;
 
-        if (getHinhThucThanhToan(row) === 'tra_gop') {
+        if (getHinhThucThanhToan(row, productConfig) === 'tra_gop') {
             traGopValue += rowRevenue;
             traGopCount++;
         }
@@ -92,7 +92,10 @@ export function processKpis(
     let soLuongThuHo = 0;
     for (let i = 0, len = allPeriodData.length; i < len; i++) {
         const hinhThucXuat = getRowValue(allPeriodData[i], COL.HINH_THUC_XUAT);
-        if (hinhThucXuat && HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) {
+        const isThuHo = productConfig && productConfig.htxClassification
+            ? productConfig.htxClassification[String(hinhThucXuat || '').trim().toLowerCase().normalize('NFC')] === 'thu_ho'
+            : HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+        if (hinhThucXuat && isThuHo) {
             soLuongThuHo++;
         }
     }

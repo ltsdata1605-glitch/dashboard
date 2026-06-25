@@ -32,6 +32,7 @@ export interface SalesDataMeta {
     chunkCount: number;
     version: number;         // for future migration
     uploadedFrom: string;    // 'laptop' | 'mobile'
+    isRealtime?: boolean;
     updatedAt?: any;         // serverTimestamp
 }
 
@@ -99,7 +100,8 @@ export async function uploadProcessedData(
     data: DataRow[],
     filename: string,
     fileLastModified: number,
-    customSavedAt?: number
+    customSavedAt?: number,
+    isRealtime?: boolean
 ): Promise<void> {
     if (!user || data.length === 0) return;
 
@@ -129,6 +131,7 @@ export async function uploadProcessedData(
         chunkCount: chunks.length,
         version: 1,
         uploadedFrom: /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? 'mobile' : 'laptop',
+        isRealtime: !!isRealtime
     };
 
     const metaRef = doc(salesDataRef, 'meta');

@@ -56,7 +56,11 @@ export const useHeadToHeadLogic = ({
         const baseLen = baseFilteredData.length;
         for (let i = 0; i < baseLen; i++) {
             const row = baseFilteredData[i];
-            if (!HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT)) && isValidSale(row)) {
+            const htx = getRowValue(row, COL.HINH_THUC_XUAT);
+            const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+                ? productConfig.revenueEligibleHTX.has(String(htx || '').trim().toLowerCase().normalize('NFC'))
+                : !HINH_THUC_XUAT_THU_HO.has(htx);
+            if (isRevenue && isValidSale(row)) {
                 dataForTab.push(row);
             }
         }

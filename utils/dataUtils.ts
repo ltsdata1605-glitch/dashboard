@@ -7,7 +7,7 @@ const columnCache = new Map<string, string>();
 
 export function getRowValue(row: DataRow, keys: string[]): any {
     if (!row) return undefined;
-    
+
     // Check cache
     const cacheKey = keys[0];
     const cachedField = columnCache.get(cacheKey);
@@ -60,7 +60,7 @@ export function parseExcelDate(excelDate: any): Date | null {
             const hour = match[4] ? parseInt(match[4], 10) : 0;
             const minute = match[5] ? parseInt(match[5], 10) : 0;
             const second = match[6] ? parseInt(match[6], 10) : 0;
-            
+
             const date = new Date(year, month, day, hour, minute, second);
             if (!isNaN(date.getTime())) return date;
         }
@@ -74,7 +74,7 @@ export function parseExcelDate(excelDate: any): Date | null {
 export function abbreviateName(fullName: string | number | null | undefined): string {
     if (!fullName) return '';
     const strName = String(fullName);
-    
+
     // Regex updated to handle:
     // 1. Digits at start (ID)
     // 2. Separator: dash, en-dash, dot, OR just whitespace
@@ -85,17 +85,17 @@ export function abbreviateName(fullName: string | number | null | undefined): st
 
     const id = match[1].trim();
     const name = match[2].trim();
-    
+
     if (!name) return id;
 
     const words = name.split(/\s+/);
     const lastName = words[words.length - 1];
-    
+
     // Logic lấy chữ cái đệm:
     // Tên 3 chữ trở lên (Chế Thị Út) -> Lấy chữ kế cuối (Thị -> T)
     // Tên 2 chữ (Nguyễn Văn) -> Lấy chữ đầu (Nguyễn -> N)
     // Tên 1 chữ -> Giữ nguyên
-    
+
     let initial = '';
     if (words.length > 2) {
         // Lấy chữ cái đầu của từ kế cuối
@@ -108,7 +108,7 @@ export function abbreviateName(fullName: string | number | null | undefined): st
     if (initial) {
         return `${id} - ${initial}.${lastName}`;
     }
-    
+
     return `${id} - ${name}`;
 }
 
@@ -154,7 +154,7 @@ export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productCo
     }
 
     const name = (productName || '').toString().trim();
-    
+
     // Dò tìm hệ số theo Tên sản phẩm từ cấu hình Vas tải từ Google Sheet
     if (productConfig?.vasNameMultiplierMap) {
         if (productConfig.vasNameMultiplierMap[name] !== undefined) {
@@ -187,7 +187,7 @@ export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productCo
     if (parentGroup) {
         switch (parentGroup) {
             case 'Phụ kiện': return 3.37;
-            case 'Wearable': 
+            case 'Wearable':
             case 'Đồng hồ': return 3.0;
             case 'Laptop': return 1.2;
             case 'Tablet': return 1.2;
@@ -210,7 +210,7 @@ export function getHeSoQuyDoi(maNganhHang: string, maNhomHang: string, productCo
     if (maNganhHang && maNganhHang.includes('Thẻ cào')) return 1.0;
     if (maNganhHang === '164 - VAS' && (maNhomHang === '4479 - Dịch Vụ Bảo Hiểm' || maNhomHang === '4499 - Thu Hộ Phí Bảo Hiểm')) return 4.18;
     if (maNganhHang === '304 - Điện tử' && maNhomHang === '880 - Loa Karaoke') return 1.29;
-    
+
     switch (maNganhHang) {
         case '664 - Sim Online': return 5.45;
         case '16 - Phụ kiện tiện ích':
@@ -235,20 +235,20 @@ export function sortSummaryData(data: { [key: string]: SummaryTableNode }, sortK
         const nodeB = b[1];
         let valA, valB;
 
-        switch(sortKey) {
-           case 'aov':
+        switch (sortKey) {
+            case 'aov':
                 valA = nodeA.totalQuantity > 0 ? nodeA.totalRevenue / nodeA.totalQuantity : 0;
                 valB = nodeB.totalQuantity > 0 ? nodeB.totalRevenue / nodeB.totalQuantity : 0;
                 break;
-           case 'traGopPercent':
+            case 'traGopPercent':
                 valA = nodeA.totalRevenue > 0 ? (nodeA.totalTraGop / nodeA.totalRevenue) * 100 : 0;
                 valB = nodeB.totalRevenue > 0 ? (nodeB.totalTraGop / nodeB.totalRevenue) * 100 : 0;
                 break;
-           default:
+            default:
                 valA = nodeA[sortKey as keyof SummaryTableNode] || 0;
                 valB = nodeB[sortKey as keyof SummaryTableNode] || 0;
         }
-        
+
         if (valA === valB) return 0;
         const result = (valA < valB) ? -1 : 1;
         return sortDir === 'asc' ? result : -result;
@@ -256,12 +256,22 @@ export function sortSummaryData(data: { [key: string]: SummaryTableNode }, sortK
 
     const sortedEntries = Object.entries(data).sort(sortFn);
     const sortedData = Object.fromEntries(sortedEntries);
-    
+
     return sortedData;
 }
 
-export function getHinhThucThanhToan(row: DataRow): 'tra_gop' | 'tien_mat' | 'thu_ho' | 'khac' {
+export function getHinhThucThanhToan(row: DataRow, productConfig?: ProductConfig | null): 'tra_gop' | 'tien_mat' | 'thu_ho' | 'khac' {
     const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT);
+    if (!hinhThucXuat) return 'khac';
+    
+    if (productConfig && productConfig.htxClassification) {
+        const key = String(hinhThucXuat).trim().toLowerCase().normalize('NFC');
+        if (productConfig.htxClassification[key] !== undefined) {
+            return productConfig.htxClassification[key];
+        }
+    }
+    
+    // Fallback to static config
     if (HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat)) return 'tra_gop';
     if (HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat)) return 'tien_mat';
     if (HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) return 'thu_ho';
@@ -297,14 +307,14 @@ export const roundUp = (num: number): number => {
 export const parseNumber = (str: any): number => {
     if (str === null || str === undefined || str === '') return 0;
     if (typeof str === 'number') return str;
-    
+
     let cleaned = String(str).replace(/[\s%,\+]/g, '');
-    
+
     // Xử lý dấu phẩy ngàn (chuẩn VN): nếu có chấm phân cách phần ngàn
     if (cleaned.indexOf('.') !== cleaned.lastIndexOf('.') || /\.\d{3}($|\.)/.test(cleaned)) {
         cleaned = cleaned.replace(/\./g, '');
     }
-    
+
     const num = parseFloat(cleaned);
     return isNaN(num) ? 0 : num;
 };
@@ -316,7 +326,7 @@ export const normalizeText = (text: string): string => {
 export const shortenName = (name: string, overrides: Record<string, string> = {}): string => {
     if (!name) return '';
     if (overrides && overrides[name]) return overrides[name];
-    
+
     const rules: { [key: string]: string } = {
         'Thi đua Iphone 17 series': 'IPHONE 17',
         'BÁN HÀNG PANASONIC': 'Panasonic',
@@ -347,7 +357,7 @@ export const shortenName = (name: string, overrides: Record<string, string> = {}
         'Máy lọc nước': 'Máy lọc nước',
         'Camera': 'Camera',
     };
-    
+
     if (rules[name]) return rules[name];
     if (name.toUpperCase().startsWith('BÁN HÀNG ')) {
         return name.replace(/BÁN HÀNG /i, '').split(' ')[0];
@@ -368,40 +378,40 @@ export const shortenSupermarketName = (name: string): string => {
 export function getParentGroup(maNhomHang: string | null | undefined, productConfig: ProductConfig | null): string {
     if (!maNhomHang || !productConfig || !productConfig.childToParentMap) return '';
     const key = String(maNhomHang).trim();
-    
+
     // 1. Exact match
     if (productConfig.childToParentMap[key]) return productConfig.childToParentMap[key];
-    
+
     // 2. Lowercase match
     const lowerKey = key.toLowerCase();
     if (productConfig.childToParentMap[lowerKey]) return productConfig.childToParentMap[lowerKey];
-    
+
     // 3. ID match (e.g. "7161" from "7161 - Dịch vụ...")
     const idMatch = key.match(/^(\d+)/);
     if (idMatch && productConfig.childToParentMap[idMatch[1]]) {
         return productConfig.childToParentMap[idMatch[1]];
     }
-    
+
     return '';
 }
 
 export function getSubgroup(maNhomHang: string | null | undefined, productConfig: ProductConfig | null): string {
     if (!maNhomHang || !productConfig || !productConfig.childToSubgroupMap) return '';
     const key = String(maNhomHang).trim();
-    
+
     // 1. Exact match
     if (productConfig.childToSubgroupMap[key]) return productConfig.childToSubgroupMap[key];
-    
+
     // 2. Lowercase match
     const lowerKey = key.toLowerCase();
     if (productConfig.childToSubgroupMap[lowerKey]) return productConfig.childToSubgroupMap[lowerKey];
-    
+
     // 3. ID match (e.g. "7161" from "7161 - Dịch vụ...")
     const idMatch = key.match(/^(\d+)/);
     if (idMatch && productConfig.childToSubgroupMap[idMatch[1]]) {
         return productConfig.childToSubgroupMap[idMatch[1]];
     }
-    
+
     return '';
 }
 
@@ -410,7 +420,7 @@ export function normalizeSalesData(data: DataRow[]): DataRow[] {
     return data
         .map(row => {
             let dateObj: Date | null = null;
-            
+
             const rawDate = row.parsedDate;
             if (rawDate) {
                 if (rawDate instanceof Date) {
@@ -424,12 +434,12 @@ export function normalizeSalesData(data: DataRow[]): DataRow[] {
                     dateObj = parseExcelDate(rawDate);
                 }
             }
-            
+
             // Fallback to Ngày tạo/Ngày Tạo
             if (!dateObj || isNaN(dateObj.getTime())) {
                 dateObj = parseExcelDate(getRowValue(row, COL.DATE_CREATED));
             }
-            
+
             if (dateObj && !isNaN(dateObj.getTime())) {
                 return { ...row, parsedDate: dateObj };
             }
@@ -440,7 +450,7 @@ export function normalizeSalesData(data: DataRow[]): DataRow[] {
 
 export function wrapProductConfigWithProxies(config: ProductConfig): ProductConfig {
     if (!config) return config;
-    
+
     // Check if already proxied to avoid double nesting
     if ((config.childToParentMap as any)?.__isProxy) return config;
 
@@ -452,24 +462,24 @@ export function wrapProductConfigWithProxies(config: ProductConfig): ProductConf
                 if (typeof prop !== 'string') {
                     return Reflect.get(target, prop);
                 }
-                
+
                 // 1. Exact match
                 if (prop in target) {
                     return target[prop];
                 }
-                
+
                 // 2. Lowercase match
                 const lowerProp = prop.toLowerCase();
                 if (lowerProp in target) {
                     return target[lowerProp];
                 }
-                
+
                 // 3. ID match (extracting e.g. "4383" from "4383 - Camera IT")
                 const idMatch = prop.match(/^(\d+)/);
                 if (idMatch && idMatch[1] in target) {
                     return target[idMatch[1]];
                 }
-                
+
                 return undefined;
             }
         });

@@ -74,16 +74,22 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
 
     const nganhHangOptions = useMemo(() => {
         if (!productConfig?.subgroups) return [];
-        return Object.keys(productConfig.subgroups).filter(Boolean).sort();
+        return Object.keys(productConfig.subgroups)
+            .filter(name => name && name !== 'Không tính doanh thu')
+            .sort();
     }, [productConfig]);
 
     const nhomHangOptions = useMemo(() => {
         if (!productConfig?.subgroups) return [];
         const opts = new Set<string>();
-        Object.values(productConfig.subgroups).forEach(nhomObj => {
-            Object.keys(nhomObj).forEach(nhom => {
-                if (nhom && nhom.trim() !== '') opts.add(nhom);
-            });
+        Object.entries(productConfig.subgroups).forEach(([parentKey, parent]) => {
+            if (parentKey !== 'Không tính doanh thu') {
+                Object.keys(parent).forEach(subgroup => {
+                    if (subgroup && subgroup.trim() !== '' && subgroup !== 'Không tính doanh thu') {
+                        opts.add(subgroup);
+                    }
+                });
+            }
         });
         return Array.from(opts).sort();
     }, [productConfig]);

@@ -133,8 +133,8 @@ function AppContent() {
     const { isDarkMode, toggleDarkMode } = useLayout();
     const { activeTab } = useActiveTab();
     const { user, userRole, isDemoMode, isLoading, departmentId, status } = useAuth();
-    
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
+
 
     const getTabIcon = () => {
         switch (activeTab) {

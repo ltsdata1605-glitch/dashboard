@@ -3,7 +3,7 @@ import type { ExploitationData, CustomExploitationTabConfig } from '../../../typ
 import { getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../../services/dbService';
 import { SortConfig, detailQuickFilters, groupToSortKeyMap, detailHeaderGroups } from './IndustryTableUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../../constants';
-import { getRowValue } from '../../../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi } from '../../../utils/dataUtils';
 
 export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: any[], productConfig?: any, customExploitationTabs?: CustomExploitationTabConfig[], efficiencyExploitationTabs?: CustomExploitationTabConfig[]) => {
     const [viewMode, setViewMode] = useState<'detail' | 'efficiency'>('detail');
@@ -190,7 +190,12 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
         if (!baseFilteredData || !productConfig || allTabs.length === 0) return customData;
 
         try {
-            const validData = baseFilteredData.filter(row => !HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT)));
+            const validData = baseFilteredData.filter(row => {
+                const htx = getRowValue(row, COL.HINH_THUC_XUAT);
+                return productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+                    ? productConfig.revenueEligibleHTX.has(String(htx || '').trim().toLowerCase().normalize('NFC'))
+                    : !HINH_THUC_XUAT_THU_HO.has(htx);
+            });
 
             const checkMatch = (filters: any, industry: string, subgroup: string, manufacturer: string, productCodeStr: string) => {
                 if (!filters) return false;
@@ -229,6 +234,13 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 const subgroup = productConfig.childToSubgroupMap[rawGroup] || '';
                 const manufacturer = getRowValue(row, COL.MANUFACTURER) || '';
                 const productCodeStr = String(getRowValue(row, COL.PRODUCT) || '');
+                const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+                const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG) || '';
+
+                const heso = getHeSoQuyDoi(maNganhHang, rawGroup, productConfig, productCodeStr, productCode);
+                const isVieon = subgroup === 'Vieon' || productCodeStr.includes('VieON');
+                const qtyMultiplier = productConfig.quantityMultiplierMap?.[productCode];
+                const weightedQuantity = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
 
                 allTabs.forEach(tab => {
                     const cols = tab.columns || [];
@@ -259,11 +271,11 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                             
                             const colData = empData[tab.id][col.id];
                             if (isMainMatch) {
-                                colData.mainSl += quantity;
+                                colData.mainSl += weightedQuantity;
                                 colData.mainDt += price;
                             }
                             if (isBaseMatch) {
-                                colData.baseSl += quantity;
+                                colData.baseSl += weightedQuantity;
                                 colData.baseDt += price;
                             }
                         }

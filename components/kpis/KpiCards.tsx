@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { formatCurrency, formatQuantity } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, getRowValue, getParentGroup } from '../../utils/dataUtils';
+import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { saveKpiTargets, getKpiTargets } from '../../services/dbService';
@@ -351,11 +352,19 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
 
                 let val = 0;
                 for (const row of warehouseFilteredData) {
+                    const rawNhom = String(row['Nhóm Hàng'] || row['Nhóm hàng'] || row['Nhom Hang'] || '').trim();
+                    const parentGroup = getParentGroup(rawNhom, productConfig);
+                    if (parentGroup === 'Không tính doanh thu') continue;
+
+                    const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+                    const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+                        ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
+                        : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+                    if (!isRevenue) continue;
+
                     const hsx = String(row['Hãng'] || row['Hãng SX'] || '').trim().toLowerCase();
                     if (filterHsx.length > 0 && !filterHsx.includes(hsx)) continue;
 
-                    const rawNhom = String(row['Nhóm Hàng'] || row['Nhóm hàng'] || row['Nhom Hang'] || '').trim();
-                    
                     const nganhMapValue = String(childToParentMap[rawNhom] || row['Ngành Hàng'] || row['Ngành hàng'] || row['Nganh Hang'] || '').trim().toLowerCase();
                     if (filterNganh.length > 0 && !filterNganh.includes(nganhMapValue)) continue;
 

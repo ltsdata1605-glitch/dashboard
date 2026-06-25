@@ -2,7 +2,7 @@
 import { useMemo, useState, useEffect, useRef, startTransition } from 'react';
 import type { WarehouseColumnConfig, WarehouseSummaryRow, DataRow, ProductConfig, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, getHeSoQuyDoi } from '../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, getParentGroup } from '../utils/dataUtils';
 
 interface UseWarehouseLogicProps {
     data: WarehouseSummaryRow[];
@@ -71,8 +71,18 @@ export const useWarehouseLogic = ({
                 if (!rawKhoName) continue;
                 const khoName = String(rawKhoName);
 
-                const nganhHang = getRowValue(row, COL.MA_NGANH_HANG);
                 const nhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+                const parentGroup = getParentGroup(nhomHang, productConfig);
+                if (parentGroup === 'Không tính doanh thu') continue;
+
+                const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+                const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+                    ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
+                    : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+                if (!isRevenue) continue;
+
+
+                const nganhHang = getRowValue(row, COL.MA_NGANH_HANG);
                 const productName = getRowValue(row, COL.PRODUCT);
                 const group = productConfig.childToSubgroupMap[nhomHang] || 'Khác';
                 const rootIndustry = productConfig.childToParentMap[nhomHang] || 'Khác';

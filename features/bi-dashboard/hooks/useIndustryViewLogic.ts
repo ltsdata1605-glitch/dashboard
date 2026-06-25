@@ -47,7 +47,7 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
         const sourceRows = isRealtime ? realtimeData.rows : luykeData.table.rows;
         return (sourceRows || [])
             .map((row: any) => row[0])
-            .filter((name: string) => name && name !== 'Tổng');
+            .filter((name: string) => name && name !== 'Tổng' && name !== 'Không tính doanh thu');
     }, [realtimeData.rows, luykeData.table.rows, isRealtime]);
 
     const processedTable = useMemo(() => {
@@ -79,7 +79,13 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
         if (!luykeData || !luykeData.tree) return [];
         const subs = new Set<string>();
         luykeData.tree.forEach((node: any) => {
-            node.children.forEach((c: any) => subs.add(c.name));
+            if (node.name !== 'Không tính doanh thu') {
+                node.children.forEach((c: any) => {
+                    if (c.name !== 'Không tính doanh thu') {
+                        subs.add(c.name);
+                    }
+                });
+            }
         });
         return Array.from(subs);
     }, [luykeData]);

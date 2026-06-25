@@ -46,16 +46,22 @@ export const useEmployeeAnalysisData = () => {
             };
         }
 
-        const industries = new Set(Object.values(productConfig.childToParentMap));
-        const subgroups = new Set<string>();
-        const subgroupsArr = Object.values(productConfig.subgroups);
-        for (let i = 0, len = subgroupsArr.length; i < len; i++) {
-            const parent = subgroupsArr[i];
-            const keys = Object.keys(parent);
-            for (let j = 0, kLen = keys.length; j < kLen; j++) {
-                subgroups.add(keys[j]);
+        const industries = new Set<string>();
+        Object.values(productConfig.childToParentMap).forEach(v => {
+            if (v && v !== 'Không tính doanh thu') {
+                industries.add(v);
             }
-        }
+        });
+        const subgroups = new Set<string>();
+        Object.entries(productConfig.subgroups).forEach(([parentKey, parent]) => {
+            if (parentKey !== 'Không tính doanh thu') {
+                Object.keys(parent).forEach(subgroup => {
+                    if (subgroup !== 'Không tính doanh thu') {
+                        subgroups.add(subgroup);
+                    }
+                });
+            }
+        });
 
         const manufacturers = new Set<string>();
         for (let i = 0, len = originalData.length; i < len; i++) {

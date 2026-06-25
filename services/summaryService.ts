@@ -44,9 +44,12 @@ export function processSummaryTable(
 
     for (let i = 0, len = filteredValidSalesData.length; i < len; i++) {
         const row = filteredValidSalesData[i];
-        // Filter out "Thu Hộ" rows to ensure revenue eligibility
+        // Filter out non-revenue rows to ensure revenue eligibility
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT);
-        if (HINH_THUC_XUAT_THU_HO.has(hinhThucXuat)) continue;
+        const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+            ? productConfig.revenueEligibleHTX.has(String(hinhThucXuat || '').trim().toLowerCase().normalize('NFC'))
+            : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+        if (!isRevenue) continue;
 
         // Bỏ qua sản phẩm không xác định nhóm hàng (không có trong cấu hình)
         const maNhomHangCheck = getRowValue(row, COL.MA_NHOM_HANG);
@@ -181,14 +184,24 @@ export function calculateWarehouseSummary(
 
         const summary = summaryByKho[khoName];
 
-        if (HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
+        const htx = getRowValue(row, COL.HINH_THUC_XUAT);
+        const isThuHo = productConfig && productConfig.htxClassification
+            ? productConfig.htxClassification[String(htx || '').trim().toLowerCase().normalize('NFC')] === 'thu_ho'
+            : HINH_THUC_XUAT_THU_HO.has(htx);
+
+        if (isThuHo) {
             summary.slThuHo++;
         }
 
-        if (!HINH_THUC_XUAT_THU_HO.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
+        const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+            ? productConfig.revenueEligibleHTX.has(String(htx || '').trim().toLowerCase().normalize('NFC'))
+            : !HINH_THUC_XUAT_THU_HO.has(htx);
+
+        if (isRevenue) {
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-            // Bỏ qua sản phẩm không xác định nhóm hàng
-            if (!getParentGroup(maNhomHang, productConfig)) continue;
+            const parentGroup = getParentGroup(maNhomHang, productConfig);
+            // Bỏ qua sản phẩm không xác định nhóm hàng hoặc không tính doanh thu
+            if (!parentGroup || parentGroup === 'Không tính doanh thu') continue;
 
             const price = Number(getRowValue(row, COL.PRICE)) || 0;
             const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
@@ -208,7 +221,7 @@ export function calculateWarehouseSummary(
             const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;
 
             if (customer) summary.customers.add(customer);
-            if (HINH_THUC_XUAT_TRA_GOP.has(getRowValue(row, COL.HINH_THUC_XUAT))) {
+            if (getHinhThucThanhToan(row, productConfig) === 'tra_gop') {
                 summary.doanhThuTraCham += rowRevenue;
             }
 

@@ -3,7 +3,7 @@ import type { Employee, DataRow, ProductConfig } from '../../types';
 import ModalWrapper from './ModalWrapper';
 import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity, getHinhThucThanhToan } from '../../utils/dataUtils';
-import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../../constants';
+import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, hideExportOverlay } from '../../services/uiService';
 import { Button } from '../shared/ui/Button';
@@ -77,12 +77,14 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     const employeeSalesData = useMemo(() => {
         return validSalesData.filter(row => {
             const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
-            const isRevenueEligible = HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat);
+            const isRevenueEligible = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+                ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
+                : (HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat));
             return getRowValue(row, COL.NGUOI_TAO) === employeeName 
                 && isRevenueEligible 
                 && (Number(getRowValue(row, COL.PRICE)) || 0) > 0;
         });
-    }, [validSalesData, employeeName]);
+    }, [validSalesData, employeeName, productConfig]);
 
     const attachOrdersMetrics = useMemo(() => {
         const revenueEligibleRows = employeeSalesData.filter(row => (Number(getRowValue(row, COL.PRICE)) || 0) > 0);
@@ -427,7 +429,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
                                                     const orderId = group.id === 'no-id' ? '-' : group.id;
                                                     const isUnshipped = group.status === 'Chưa xuất';
                                                     const price = Number(getRowValue(order, COL.PRICE)) || 0;
-                                                    const isInstallment = getHinhThucThanhToan(order) === 'tra_gop';
+                                                    const isInstallment = getHinhThucThanhToan(order, productConfig) === 'tra_gop';
                                                     
                                                     return (
                                                         <tr key={`${group.id}-${lineIndex}`} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">

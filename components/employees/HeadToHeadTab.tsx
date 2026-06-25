@@ -38,15 +38,21 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
     
     const allSubgroups = useMemo(() => {
         const subgroups = new Set<string>();
-        Object.values(productConfig.subgroups).forEach(parent => {
-            Object.keys(parent).forEach(subgroup => subgroups.add(subgroup));
+        Object.entries(productConfig.subgroups).forEach(([parentKey, parent]) => {
+            if (parentKey !== 'Không tính doanh thu') {
+                Object.keys(parent).forEach(subgroup => {
+                    if (subgroup !== 'Không tính doanh thu') {
+                        subgroups.add(subgroup);
+                    }
+                });
+            }
         });
         return Array.from(subgroups).sort();
     }, [productConfig]);
 
     const allParentGroups = useMemo(() => {
         if (!productConfig) return [];
-        return Array.from(new Set(Object.values(productConfig.childToParentMap))).sort();
+        return Array.from(new Set(Object.values(productConfig.childToParentMap))).filter(v => v !== 'Không tính doanh thu').sort();
     }, [productConfig]);
 
     const allManufacturers = useMemo(() => {
