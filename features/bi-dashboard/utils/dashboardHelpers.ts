@@ -161,7 +161,354 @@ export const isLevel0 = (name: string): boolean => {
     return level0Names.has(clean);
 };
 
-export const parseIndustryRealtimeData = (text: string) => {
+// --- INDUSTRY TREE TYPES ---
+export interface IndustryTreeNode {
+    name: string;
+    values: string[];
+    children: IndustryTreeNode[];
+    level: number; // 0=Ngành hàng (NNH), 1=Nhóm hàng, 2=Hãng
+}
+
+export function aggregateTreeNodes(nodes: IndustryTreeNode[], headers: string[]) {
+    // Column indices
+    const slIdx = headers.findIndex(h => h === 'SL Realtime' || h === 'Số lượng');
+    const dtqdIdx = headers.findIndex(h => h === 'DT Realtime (QĐ)' || h === 'DTQĐ');
+    const targetIdx = headers.findIndex(h => h === 'Target Ngày (QĐ)' || h === 'Target (QĐ)');
+    const htIdx = headers.findIndex(h => h === '% HT Target Ngày (QĐ)' || h === '% HT Target (QĐ)');
+    const dtgIdx = headers.findIndex(h => h === 'DT Trả Gộp' || h === 'DT TRẢ GÓP' || h === 'DT Trả Góp' || h === 'DTTRẢGÓP' || h === 'DT TRẢ CHẬM' || h === 'DT Trả Chậm');
+    const ttgIdx = headers.findIndex(h => h === 'Tỷ Trọng Trả Góp' || h === 'Tỷ Trọng Trả Chậm');
+    const dgIdx = headers.findIndex(h => h === 'Đơn giá' || h === 'ĐƠN GIÁ');
+    const dtckIdx = headers.findIndex(h => h === '+/- DTCK Tháng (QĐ)');
+    const lgIdx = headers.findIndex(h => h === 'Lãi gộp QĐ');
+
+    const computeDerived = (values: string[]) => {
+        if (htIdx >= 0 && dtqdIdx >= 0 && targetIdx >= 0) {
+            const dtqd = parseNumber(values[dtqdIdx]);
+            const target = parseNumber(values[targetIdx]);
+            values[htIdx] = target > 0 ? `${((dtqd / target) * 100).toFixed(1)}%` : '0%';
+        }
+        if (ttgIdx >= 0 && dtgIdx >= 0 && dtqdIdx >= 0) {
+            const dtg = parseNumber(values[dtgIdx]);
+            const dtqd = parseNumber(values[dtqdIdx]);
+            values[ttgIdx] = dtqd > 0 ? `${((dtg / dtqd) * 100).toFixed(1)}%` : '0%';
+        }
+        if (dgIdx >= 0 && dtqdIdx >= 0 && slIdx >= 0) {
+            const dtqd = parseNumber(values[dtqdIdx]);
+            const sl = parseNumber(values[slIdx]);
+            values[dgIdx] = sl > 0 ? (dtqd / sl).toFixed(2) : '0';
+        }
+    };
+
+    const aggregateNode = (node: IndustryTreeNode) => {
+        // Recursively aggregate children first
+        node.children.forEach(aggregateNode);
+
+        if (node.level === 0) {
+            // Level 0: sum from children (Level 1)
+            const values = [...node.values];
+            for (let i = 1; i < headers.length; i++) {
+                if (i === slIdx || i === dtqdIdx || i === targetIdx || i === dtgIdx || i === lgIdx) {
+                    const total = node.children.reduce((sum, child) => sum + parseNumber(child.values[i]), 0);
+                    values[i] = String(total);
+                }
+            }
+
+            // Compute growth rate +/- DTCK for Level 0
+            if (dtckIdx >= 0 && dtqdIdx >= 0) {
+                let sumDTCK = 0;
+                let totalDtqd = 0;
+                node.children.forEach(child => {
+                    const childDtqd = parseNumber(child.values[dtqdIdx]);
+                    const childGrowth = parseNumber(child.values[dtckIdx]);
+                    const childDTCK = childDtqd / (1 + childGrowth / 100);
+                    sumDTCK += childDTCK;
+                    totalDtqd += childDtqd;
+                });
+                values[dtckIdx] = sumDTCK > 0 ? `${(((totalDtqd - sumDTCK) / sumDTCK) * 100).toFixed(1)}%` : '0%';
+            }
+
+            computeDerived(values);
+            node.values = values;
+        } else if (node.level === 1) {
+            const values = [...node.values];
+
+            // For Level 1, we also want to compute +/- DTCK from its children (Level 2 brands)
+            if (dtckIdx >= 0 && dtqdIdx >= 0 && node.children.length > 0) {
+                let sumDTCK = 0;
+                let totalDtqd = 0;
+                node.children.forEach(child => {
+                    const childDtqd = parseNumber(child.values[dtqdIdx]);
+                    const childGrowth = parseNumber(child.values[dtckIdx]);
+                    const childDTCK = childDtqd / (1 + childGrowth / 100);
+                    sumDTCK += childDTCK;
+                    totalDtqd += childDtqd;
+                });
+                values[dtckIdx] = sumDTCK > 0 ? `${(((totalDtqd - sumDTCK) / sumDTCK) * 100).toFixed(1)}%` : '0%';
+            }
+
+            computeDerived(values);
+            node.values = values;
+        } else if (node.level === 2) {
+            const values = [...node.values];
+            computeDerived(values);
+            node.values = values;
+        }
+    };
+
+    nodes.forEach(aggregateNode);
+}
+
+export function buildIndustryTree(
+    allDataRows: string[][],
+    headers: string[],
+    industryBiMap: Record<string, { parent: string; child: string }> | null | undefined
+): { tree: IndustryTreeNode[]; tableRows: string[][]; totalRow: string[] | null } {
+    const tree: IndustryTreeNode[] = [];
+    let totalRow: string[] | null = null;
+    
+    // Find the total row
+    const foundTotal = allDataRows.find(r => (r[0] || '').trim() === 'Tổng');
+    if (foundTotal) {
+        totalRow = foundTotal;
+    }
+
+    const dataRowsWithoutTotal = allDataRows.filter(r => (r[0] || '').trim() !== 'Tổng');
+
+    if (!industryBiMap || Object.keys(industryBiMap).length === 0) {
+        // Fallback to original parsing if industryBiMap is not loaded/available yet
+        const originalTree: IndustryTreeNode[] = [];
+        const targetIndex = headers.indexOf(headers.includes('Target Ngày (QĐ)') ? 'Target Ngày (QĐ)' : 'Target (QĐ)');
+        const laiGopIndex = headers.indexOf('Lãi gộp QĐ');
+        
+        let currentNNH: IndustryTreeNode | null = null;
+        let currentNhomHang: IndustryTreeNode | null = null;
+
+        const flushNhomHang = () => {
+            if (currentNhomHang && currentNNH) {
+                currentNNH.children.push(currentNhomHang);
+                currentNhomHang = null;
+            }
+        };
+
+        const flushNNH = () => {
+            flushNhomHang();
+            if (currentNNH) {
+                originalTree.push(currentNNH);
+                currentNNH = null;
+            }
+        };
+
+        for (const row of dataRowsWithoutTotal) {
+            const name = (row[0] || '').trim();
+            if (isLevel0(name)) {
+                flushNNH();
+                currentNNH = { name, values: row, children: [], level: 0 };
+                continue;
+            }
+            if (!currentNNH) continue;
+
+            const targetVal = targetIndex >= 0 && row[targetIndex] ? parseNumber(row[targetIndex]) : 0;
+            const laiGopVal = laiGopIndex >= 0 && row[laiGopIndex] ? parseNumber(row[laiGopIndex]) : 0;
+
+            if (targetVal > 0.001 || laiGopVal > 0.001) {
+                flushNhomHang();
+                currentNhomHang = { name, values: row, children: [], level: 1 };
+            } else {
+                if (currentNhomHang) {
+                    currentNhomHang.children.push({ name, values: row, children: [], level: 2 });
+                } else {
+                    currentNNH.children.push({ name, values: row, children: [], level: 1 });
+                }
+            }
+        }
+        flushNNH();
+
+        const tableRows = dataRowsWithoutTotal.filter(r => isLevel0(r[0] || ''));
+
+        return { tree: originalTree, tableRows, totalRow };
+    }
+
+    const nnhMap = new Map<string, IndustryTreeNode>(); // Key: NhomCha (lowercase)
+    const nhomConMaps = new Map<string, Map<string, IndustryTreeNode>>(); // Key: NhomCha (lowercase), Value: Map of NhomCon (lowercase) -> Nhóm hàng Node
+    const brandMaps = new Map<string, Map<string, IndustryTreeNode>>(); // Key: childKey, Value: Map of brandName (lowercase) -> Brand Node
+    const nnhOrder: string[] = [];
+
+    // Column indices for summation
+    const slIdx = headers.findIndex(h => h === 'SL Realtime' || h === 'Số lượng');
+    const dtqdIdx = headers.findIndex(h => h === 'DT Realtime (QĐ)' || h === 'DTQĐ');
+    const targetIdx = headers.findIndex(h => h === 'Target Ngày (QĐ)' || h === 'Target (QĐ)');
+    const dtgIdx = headers.findIndex(h => h === 'DT Trả Gộp' || h === 'DT TRẢ GÓP' || h === 'DT Trả Góp' || h === 'DTTRẢGÓP' || h === 'DT TRẢ CHẬM' || h === 'DT Trả Chậm');
+    const lgIdx = headers.findIndex(h => h === 'Lãi gộp QĐ');
+
+    let activeNhomConNode: IndustryTreeNode | null = null;
+    let activeChildKey: string | null = null;
+    let currentNnhHeader = '';
+
+    for (const row of dataRowsWithoutTotal) {
+        const name = (row[0] || '').trim();
+        const lowerName = name.toLowerCase();
+        
+        const isParentRow = name.startsWith('NNH ') || isLevel0(name);
+        if (isParentRow) {
+            currentNnhHeader = name;
+            continue;
+        }
+
+        const compoundKey = `${currentNnhHeader.toLowerCase()}|||${lowerName}`;
+        const mapInfo = industryBiMap[compoundKey] || industryBiMap[lowerName];
+        
+        if (mapInfo) {
+            const parentName = mapInfo.parent.trim(); // Ngành hàng
+            const childName = mapInfo.child.trim();   // Nhóm hàng
+            const parentKey = parentName.toLowerCase();
+            const childKey = childName.toLowerCase();
+
+            let nnhNode = nnhMap.get(parentKey);
+            if (!nnhNode) {
+                nnhNode = {
+                    name: parentName,
+                    values: headers.map((h, i) => i === 0 ? parentName : '0'),
+                    children: [],
+                    level: 0
+                };
+                nnhMap.set(parentKey, nnhNode);
+                nnhOrder.push(parentKey);
+                nhomConMaps.set(parentKey, new Map());
+            }
+
+            const nhomConMap = nhomConMaps.get(parentKey)!;
+            let nhomConNode = nhomConMap.get(childKey);
+            if (!nhomConNode) {
+                nhomConNode = {
+                    name: childName,
+                    values: headers.map((h, i) => i === 0 ? childName : '0'),
+                    children: [],
+                    level: 1
+                };
+                nhomConMap.set(childKey, nhomConNode);
+                nnhNode.children.push(nhomConNode);
+            }
+
+            // Sum the group row's values into nhomConNode
+            for (let i = 1; i < headers.length; i++) {
+                if (i === slIdx || i === dtqdIdx || i === targetIdx || i === dtgIdx || i === lgIdx) {
+                    nhomConNode.values[i] = String(parseNumber(nhomConNode.values[i]) + parseNumber(row[i]));
+                }
+            }
+
+            activeNhomConNode = nhomConNode;
+            activeChildKey = childKey;
+        } else {
+            // This is a brand row!
+            if (activeNhomConNode && activeChildKey) {
+                let brandMap = brandMaps.get(activeChildKey);
+                if (!brandMap) {
+                    brandMap = new Map();
+                    brandMaps.set(activeChildKey, brandMap);
+                }
+
+                let brandNode = brandMap.get(lowerName);
+                if (brandNode) {
+                    // Sum/merge brand values if it appears multiple times under the same NhomCon
+                    for (let i = 1; i < headers.length; i++) {
+                        if (i === slIdx || i === dtqdIdx || i === targetIdx || i === dtgIdx || i === lgIdx) {
+                            brandNode.values[i] = String(parseNumber(brandNode.values[i]) + parseNumber(row[i]));
+                        }
+                    }
+                } else {
+                    brandNode = {
+                        name: name,
+                        values: [...row],
+                        children: [],
+                        level: 2
+                    };
+                    brandMap.set(lowerName, brandNode);
+                    activeNhomConNode.children.push(brandNode);
+                }
+            } else {
+                // Fallback for orphan rows
+                const fallbackParent = 'KHÁC';
+                const fallbackChild = 'KHÁC';
+                const parentKey = fallbackParent.toLowerCase();
+                const childKey = fallbackChild.toLowerCase();
+
+                let nnhNode = nnhMap.get(parentKey);
+                if (!nnhNode) {
+                    nnhNode = {
+                        name: fallbackParent,
+                        values: headers.map((h, i) => i === 0 ? fallbackParent : '0'),
+                        children: [],
+                        level: 0
+                    };
+                    nnhMap.set(parentKey, nnhNode);
+                    nnhOrder.push(parentKey);
+                    nhomConMaps.set(parentKey, new Map());
+                }
+
+                const nhomConMap = nhomConMaps.get(parentKey)!;
+                let nhomConNode = nhomConMap.get(childKey);
+                if (!nhomConNode) {
+                    nhomConNode = {
+                        name: fallbackChild,
+                        values: headers.map((h, i) => i === 0 ? fallbackChild : '0'),
+                        children: [],
+                        level: 1
+                    };
+                    nhomConMap.set(childKey, nhomConNode);
+                    nnhNode.children.push(nhomConNode);
+                }
+
+                let brandMap = brandMaps.get(childKey);
+                if (!brandMap) {
+                    brandMap = new Map();
+                    brandMaps.set(childKey, brandMap);
+                }
+
+                let brandNode = brandMap.get(lowerName);
+                if (brandNode) {
+                    for (let i = 1; i < headers.length; i++) {
+                        if (i === slIdx || i === dtqdIdx || i === targetIdx || i === dtgIdx || i === lgIdx) {
+                            brandNode.values[i] = String(parseNumber(brandNode.values[i]) + parseNumber(row[i]));
+                        }
+                    }
+                } else {
+                    brandNode = {
+                        name: name,
+                        values: [...row],
+                        children: [],
+                        level: 2
+                    };
+                    brandMap.set(lowerName, brandNode);
+                    nhomConNode.children.push(brandNode);
+                }
+            }
+        }
+    }
+
+    const finalTree: IndustryTreeNode[] = [];
+    for (const key of nnhOrder) {
+        const node = nnhMap.get(key);
+        if (node) {
+            finalTree.push(node);
+        }
+    }
+
+    aggregateTreeNodes(finalTree, headers);
+
+    const tableRows = finalTree.map(node => {
+        const displayName = node.name.startsWith('NNH ') ? node.name : `NNH ${node.name.toUpperCase()}`;
+        const rowValues = [...node.values];
+        rowValues[0] = displayName;
+        return rowValues;
+    });
+
+    return { tree: finalTree, tableRows, totalRow };
+}
+
+export const parseIndustryRealtimeData = (
+    text: string,
+    industryBiMap?: Record<string, { parent: string; child: string }> | null
+) => {
     const result: {
         headers: string[];
         rows: string[][];
@@ -195,72 +542,19 @@ export const parseIndustryRealtimeData = (text: string) => {
     }
 
     result.allRows = allDataRows;
-    result.rows = allDataRows.filter(r => isLevel0(r[0] || '') || r[0] === 'Tổng');
 
-    const targetIndex = result.headers.indexOf('Target Ngày (QĐ)');
-
-    let currentNNH: IndustryTreeNode | null = null;
-    let currentNhomHang: IndustryTreeNode | null = null;
-
-    const flushNhomHang = () => {
-        if (currentNhomHang && currentNNH) {
-            currentNNH.children.push(currentNhomHang);
-            currentNhomHang = null;
-        }
-    };
-
-    const flushNNH = () => {
-        flushNhomHang();
-        if (currentNNH) {
-            result.tree.push(currentNNH);
-            currentNNH = null;
-        }
-    };
-
-    for (const row of allDataRows) {
-        const name = (row[0] || '').trim();
-
-        if (name === 'Tổng') {
-            result.totalRow = row;
-            continue;
-        }
-
-        if (isLevel0(name)) {
-            flushNNH();
-            currentNNH = { name, values: row, children: [], level: 0 };
-            continue;
-        }
-
-        if (!currentNNH) continue;
-
-        const targetVal = targetIndex >= 0 && row[targetIndex] ? parseNumber(row[targetIndex]) : 0;
-
-        if (targetVal > 0.001) {
-            flushNhomHang();
-            currentNhomHang = { name, values: row, children: [], level: 1 };
-        } else {
-            if (currentNhomHang) {
-                currentNhomHang.children.push({ name, values: row, children: [], level: 2 });
-            } else {
-                currentNNH.children.push({ name, values: row, children: [], level: 1 });
-            }
-        }
-    }
-
-    flushNNH();
+    const { tree, tableRows, totalRow } = buildIndustryTree(allDataRows, result.headers, industryBiMap);
+    result.tree = tree;
+    result.rows = totalRow ? [...tableRows, totalRow] : tableRows;
+    result.totalRow = totalRow;
 
     return result;
 };
 
-// --- INDUSTRY TREE TYPES ---
-export interface IndustryTreeNode {
-    name: string;
-    values: string[];
-    children: IndustryTreeNode[];
-    level: number; // 0=Ngành hàng (NNH), 1=Nhóm hàng, 2=Hãng
-}
-
-export const parseIndustryLuyKeData = (text: string) => {
+export const parseIndustryLuyKeData = (
+    text: string,
+    industryBiMap?: Record<string, { parent: string; child: string }> | null
+) => {
     const result: {
         kpis: { laiGopQDDuKien: string; chiPhi: string; targetLNTT: string; htTargetDuKienLNTT: string };
         table: { headers: string[]; rows: string[][] };
@@ -287,7 +581,6 @@ export const parseIndustryLuyKeData = (text: string) => {
     if (headerIndex === -1) return result;
     result.table.headers = lines[headerIndex].trim().split('\t');
 
-    // Parse ALL data rows (not just NNH/Tổng)
     const allDataRows: string[][] = [];
     for (let i = headerIndex + 1; i < lines.length; i++) {
         const trimmed = lines[i].trim();
@@ -299,69 +592,10 @@ export const parseIndustryLuyKeData = (text: string) => {
         }
     }
 
-    // Keep backward-compatible flat rows (only NNH + Tổng)
-    result.table.rows = allDataRows.filter(r => isLevel0(r[0] || '') || r[0] === 'Tổng');
-
-    // --- Build 3-level tree: NNH > Nhóm hàng > Hãng ---
-    const targetIndex = result.table.headers.indexOf('Target (QĐ)');
-    const laiGopIndex = result.table.headers.indexOf('Lãi gộp QĐ');
-
-    let currentNNH: IndustryTreeNode | null = null;
-    let currentNhomHang: IndustryTreeNode | null = null;
-
-    const flushNhomHang = () => {
-        if (currentNhomHang && currentNNH) {
-            currentNNH.children.push(currentNhomHang);
-            currentNhomHang = null;
-        }
-    };
-
-    const flushNNH = () => {
-        flushNhomHang();
-        if (currentNNH) {
-            result.tree.push(currentNNH);
-            currentNNH = null;
-        }
-    };
-
-    for (const row of allDataRows) {
-        const name = (row[0] || '').trim();
-
-        if (name === 'Tổng') {
-            result.totalRow = row;
-            continue;
-        }
-
-        if (isLevel0(name)) {
-            flushNNH();
-            currentNNH = { name, values: row, children: [], level: 0 };
-            continue;
-        }
-
-        if (!currentNNH) continue;
-
-        // Determine if this row is Nhóm hàng (Level 1) or Hãng (Level 2)
-        // Nhóm hàng: has Target > 0 OR Lãi gộp > 0
-        // Hãng: Target = 0 AND Lãi gộp = 0
-        const targetVal = targetIndex >= 0 && row[targetIndex] ? parseNumber(row[targetIndex]) : 0;
-        const laiGopVal = laiGopIndex >= 0 && row[laiGopIndex] ? parseNumber(row[laiGopIndex]) : 0;
-
-        if (targetVal > 0.001 || laiGopVal > 0.001) {
-            // Definitely a Nhóm hàng (Level 1)
-            flushNhomHang();
-            currentNhomHang = { name, values: row, children: [], level: 1 };
-        } else {
-            // Target = 0 and Lãi gộp = 0 → Hãng (Level 2) if inside a Nhóm hàng
-            if (currentNhomHang) {
-                currentNhomHang.children.push({ name, values: row, children: [], level: 2 });
-            } else {
-                // No active Nhóm hàng → treat as orphan Nhóm hàng leaf
-                currentNNH.children.push({ name, values: row, children: [], level: 1 });
-            }
-        }
-    }
-
-    flushNNH();
+    const { tree, tableRows, totalRow } = buildIndustryTree(allDataRows, result.table.headers, industryBiMap);
+    result.tree = tree;
+    result.table.rows = totalRow ? [...tableRows, totalRow] : tableRows;
+    result.totalRow = totalRow;
 
     return result;
 };

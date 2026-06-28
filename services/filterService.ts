@@ -115,6 +115,11 @@ export const isDateMatch = (row: DataRow, startDate: Date | null, endDate: Date 
     return (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
 };
 
+const cleanAndNormalize = (val: any): string => {
+    if (val === undefined || val === null) return '';
+    return val.toString().trim().toLowerCase().normalize('NFC');
+};
+
 /**
  * Processes a filtered subset of data for a specific period to generate all dashboard metrics.
  */
@@ -125,7 +130,7 @@ function processDataForPeriod(
     departmentMap: DepartmentMap | null
 ): Omit<ProcessedData, 'lastUpdated' | 'reportSubTitle' | 'warehouseSummary'> {
 
-    const isRevenueEligible = (row: DataRow) => {
+    const isRevenueEligibleBase = (row: DataRow) => {
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
         const parentGroup = getParentGroup(maNhomHang, productConfig);
         if (parentGroup === 'Không tính doanh thu') return false;
@@ -137,7 +142,16 @@ function processDataForPeriod(
         return HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat);
     };
 
+    const isRevenueEligible = (row: DataRow) => {
+        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+        if (thuTien !== 'đã thu') return false;
+        return isRevenueEligibleBase(row);
+    };
+
     const filteredValidSalesData = periodData.filter(row => {
+        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+        if (thuTien !== 'đã thu') return false;
+
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
         const parentGroup = getParentGroup(maNhomHang, productConfig);
         if (parentGroup === 'Không tính doanh thu') return false;
@@ -150,12 +164,32 @@ function processDataForPeriod(
     });
 
     const unshippedOrders = periodData.filter(row => {
-        return getRowValue(row, COL.XUAT) === 'Chưa xuất' && isRevenueEligible(row);
+        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+        return thuTien === 'đã thu' && getRowValue(row, COL.XUAT) === 'Chưa xuất' && isRevenueEligible(row);
     });
 
-    const kpis = processKpis(filteredValidSalesData, unshippedOrders, periodData, productConfig, filters);
+    const uncollectedOrders = periodData.filter(row => {
+        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+        const trangThaiXuat = cleanAndNormalize(getRowValue(row, COL.XUAT));
+        const trangThaiGiao = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_GIAO_HANG));
+        const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+        return (
+            thuTien === 'chưa thu' &&
+            trangThaiXuat === 'chưa xuất' &&
+            trangThaiGiao === 'chưa giao' &&
+            (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') &&
+            isRevenueEligibleBase(row)
+        );
+    });
+
+    const standardPeriodData = periodData.filter(row => {
+        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+        return thuTien === 'đã thu';
+    });
+
+    const kpis = processKpis(filteredValidSalesData, unshippedOrders, standardPeriodData, productConfig, filters);
     const trendData = processTrendData(filteredValidSalesData, productConfig);
-    const employeeData = processEmployeeData(filteredValidSalesData, periodData, productConfig, departmentMap, filters);
+    const employeeData = processEmployeeData(filteredValidSalesData, standardPeriodData, productConfig, departmentMap, filters);
     const industryData = processIndustryData(filteredValidSalesData, productConfig, filters);
     const summaryTable = processSummaryTable(filteredValidSalesData, productConfig, filters);
 
@@ -166,6 +200,7 @@ function processDataForPeriod(
         employeeData,
         summaryTable,
         unshippedOrders,
+        uncollectedOrders,
         filteredValidSalesData,
     };
 }
@@ -173,6 +208,91 @@ function processDataForPeriod(
 /**
  * Applies all filters to the dataset and orchestrates the processing of different data slices.
  */
+export function deduplicateSalesData(allData: DataRow[]): DataRow[] {
+    const cached = _dedupCache.get(allData);
+    if (cached) {
+        return cached;
+    }
+
+    const deduplicated: DataRow[] = [];
+    
+    // 1. Order-item-level deduplication:
+    // Group by Order ID (COL.ID) and Product Code/Name, keeping only the one from the newest file
+    const orderGroups = new Map<string, DataRow[]>();
+    for (let i = 0; i < allData.length; i++) {
+        const row = allData[i];
+        const orderId = String(getRowValue(row, COL.ID) || '').trim();
+        const prodCode = String(getRowValue(row, COL.PRODUCT_CODE) || getRowValue(row, COL.PRODUCT) || '').trim();
+        
+        if (!orderId || !prodCode) {
+            deduplicated.push(row);
+            continue;
+        }
+        
+        const itemKey = `${orderId}§${prodCode}`;
+        if (!orderGroups.has(itemKey)) {
+            orderGroups.set(itemKey, []);
+        }
+        orderGroups.get(itemKey)!.push(row);
+    }
+    
+    for (const [_, rowsList] of orderGroups.entries()) {
+        if (rowsList.length === 1) {
+            deduplicated.push(rowsList[0]);
+        } else {
+            // Sort descending: largest _fileLastModified first, then largest _fileSavedAt first
+            rowsList.sort((a, b) => {
+                const timeA = a._fileLastModified || 0;
+                const timeB = b._fileLastModified || 0;
+                if (timeB !== timeA) return timeB - timeA;
+                
+                const savedA = a._fileSavedAt || 0;
+                const savedB = b._fileSavedAt || 0;
+                return savedB - savedA;
+            });
+            deduplicated.push(rowsList[0]);
+        }
+    }
+    
+    // 2. Strict exact row signature deduplication (checks for identical rows)
+    const finalDeduplicated: DataRow[] = [];
+    const uniqueSet = new Set<string>();
+    const sampleRow = deduplicated[0];
+    
+    // Limit keys to only essential identifying fields to avoid string concatenation overhead
+    // of 30+ columns for every single row.
+    const essentialFields = [COL.ID, COL.DATE_CREATED, COL.PRICE, COL.QUANTITY, COL.NGUOI_TAO, COL.KHO, COL.PRODUCT_CODE];
+    const keysToCheck: string[] = [];
+    if (sampleRow) {
+        for (const fieldArr of essentialFields) {
+            for (const key of fieldArr) {
+                if (sampleRow[key] !== undefined) {
+                    keysToCheck.push(key);
+                    break;
+                }
+            }
+        }
+        // Fallback to checking basic keys if none found
+        if (keysToCheck.length === 0) {
+            keysToCheck.push(...Object.keys(sampleRow).filter(k => k !== 'STT_1' && k !== 'parsedDate' && !k.startsWith('_')));
+        }
+    }
+
+    for (let i = 0; i < deduplicated.length; i++) {
+        const row = deduplicated[i];
+        let sig = '';
+        for (let j = 0; j < keysToCheck.length; j++) {
+            sig += row[keysToCheck[j]] + '§';
+        }
+        if (!uniqueSet.has(sig)) {
+            uniqueSet.add(sig);
+            finalDeduplicated.push(row);
+        }
+    }
+    _dedupCache.set(allData, finalDeduplicated);
+    return finalDeduplicated;
+}
+
 export function applyFiltersAndProcess(
     allData: DataRow[],
     productConfig: ProductConfig,
@@ -184,88 +304,7 @@ export function applyFiltersAndProcess(
     // Runtime deduplication — cached per allData reference to avoid recalculating on filter changes
     let sourceData = allData;
     if (enableDeduplication) {
-        const cached = _dedupCache.get(allData);
-        if (cached) {
-            sourceData = cached;
-        } else {
-            const deduplicated: DataRow[] = [];
-            
-            // 1. Order-item-level deduplication:
-            // Group by Order ID (COL.ID) and Product Code/Name, keeping only the one from the newest file
-            const orderGroups = new Map<string, DataRow[]>();
-            for (let i = 0; i < allData.length; i++) {
-                const row = allData[i];
-                const orderId = String(getRowValue(row, COL.ID) || '').trim();
-                const prodCode = String(getRowValue(row, COL.PRODUCT_CODE) || getRowValue(row, COL.PRODUCT) || '').trim();
-                
-                if (!orderId || !prodCode) {
-                    deduplicated.push(row);
-                    continue;
-                }
-                
-                const itemKey = `${orderId}§${prodCode}`;
-                if (!orderGroups.has(itemKey)) {
-                    orderGroups.set(itemKey, []);
-                }
-                orderGroups.get(itemKey)!.push(row);
-            }
-            
-            for (const [_, rowsList] of orderGroups.entries()) {
-                if (rowsList.length === 1) {
-                    deduplicated.push(rowsList[0]);
-                } else {
-                    // Sort descending: largest _fileLastModified first, then largest _fileSavedAt first
-                    rowsList.sort((a, b) => {
-                        const timeA = a._fileLastModified || 0;
-                        const timeB = b._fileLastModified || 0;
-                        if (timeB !== timeA) return timeB - timeA;
-                        
-                        const savedA = a._fileSavedAt || 0;
-                        const savedB = b._fileSavedAt || 0;
-                        return savedB - savedA;
-                    });
-                    deduplicated.push(rowsList[0]);
-                }
-            }
-            
-            // 2. Strict exact row signature deduplication (checks for identical rows)
-            const finalDeduplicated: DataRow[] = [];
-            const uniqueSet = new Set<string>();
-            const sampleRow = deduplicated[0];
-            
-            // Limit keys to only essential identifying fields to avoid string concatenation overhead
-            // of 30+ columns for every single row.
-            const essentialFields = [COL.ID, COL.DATE_CREATED, COL.PRICE, COL.QUANTITY, COL.NGUOI_TAO, COL.KHO, COL.PRODUCT_CODE];
-            const keysToCheck: string[] = [];
-            if (sampleRow) {
-                for (const fieldArr of essentialFields) {
-                    for (const key of fieldArr) {
-                        if (sampleRow[key] !== undefined) {
-                            keysToCheck.push(key);
-                            break;
-                        }
-                    }
-                }
-                // Fallback to checking basic keys if none found
-                if (keysToCheck.length === 0) {
-                    keysToCheck.push(...Object.keys(sampleRow).filter(k => k !== 'STT_1' && k !== 'parsedDate' && !k.startsWith('_')));
-                }
-            }
-
-            for (let i = 0; i < deduplicated.length; i++) {
-                const row = deduplicated[i];
-                let sig = '';
-                for (let j = 0; j < keysToCheck.length; j++) {
-                    sig += row[keysToCheck[j]] + '§';
-                }
-                if (!uniqueSet.has(sig)) {
-                    uniqueSet.add(sig);
-                    finalDeduplicated.push(row);
-                }
-            }
-            sourceData = finalDeduplicated;
-            _dedupCache.set(allData, finalDeduplicated);
-        }
+        sourceData = deduplicateSalesData(allData);
     }
 
     const mainStartDate = filters.startDate ? new Date(filters.startDate) : null;
@@ -330,7 +369,10 @@ export function applyFiltersAndProcess(
     if (isWarehouseCacheValid) {
         warehouseSummary = _lastWarehouseSummary!;
     } else {
-        warehouseGlobalData = mainPeriodData;
+        warehouseGlobalData = mainPeriodData.filter(row => {
+            const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+            return thuTien === 'đã thu';
+        });
         warehouseSummary = calculateWarehouseSummary(warehouseGlobalData, productConfig) || [];
         _lastAllData = sourceData;
         _lastProductConfig = productConfig;

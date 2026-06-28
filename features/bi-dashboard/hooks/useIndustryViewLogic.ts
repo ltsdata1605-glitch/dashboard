@@ -76,9 +76,10 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
     const [hiddenSubIndustries, setHiddenSubIndustries] = useIndexedDBState<string[]>('global-hidden-sub-industries', []);
 
     const allSubIndustries = useMemo(() => {
-        if (!luykeData || !luykeData.tree) return [];
+        const activeTree = isRealtime ? realtimeData?.tree : luykeData?.tree;
+        if (!activeTree) return [];
         const subs = new Set<string>();
-        luykeData.tree.forEach((node: any) => {
+        activeTree.forEach((node: any) => {
             if (node.name !== 'Không tính doanh thu') {
                 node.children.forEach((c: any) => {
                     if (c.name !== 'Không tính doanh thu') {
@@ -88,55 +89,23 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
             }
         });
         return Array.from(subs);
-    }, [luykeData]);
+    }, [isRealtime, realtimeData, luykeData]);
 
     const treeDisplayRows = useMemo((): FlatDisplayRow[] | null => {
-        if (!luykeData || !luykeData.tree || luykeData.tree.length === 0) {
+        const activeTree = isRealtime ? realtimeData?.tree : luykeData?.tree;
+        if (!activeTree || activeTree.length === 0) {
             return null;
         }
 
         const hiddenSet = new Set(hiddenIndustries);
         const hiddenSubSet = new Set(hiddenSubIndustries);
         
-        let filteredTree = luykeData.tree
+        let filteredTree = activeTree
             .filter((node: any) => !hiddenSet.has(node.name))
             .map((node: any) => ({
                 ...node,
                 children: node.children.filter((child: any) => !hiddenSubSet.has(child.name))
             }));
-
-        if (isRealtime) {
-            const realtimeRowsMap = new Map<string, any>();
-            if (realtimeData && realtimeData.allRows) {
-                realtimeData.allRows.forEach((r: any) => {
-                    if (r[0]) realtimeRowsMap.set(r[0].trim(), r);
-                });
-            }
-
-            const mapNode = (node: IndustryTreeNode): IndustryTreeNode => {
-                const nodeName = node.name.trim();
-                let rtRow = realtimeRowsMap.get(nodeName);
-                
-                if (!rtRow) {
-                    const cleanNodeName = nodeName.startsWith('NNH ') ? nodeName.substring(4).trim() : nodeName;
-                    
-                    for (const [key, val] of realtimeRowsMap.entries()) {
-                        const cleanKey = key.startsWith('NNH ') ? key.substring(4).trim() : key;
-                        if (cleanNodeName.toUpperCase() === cleanKey.toUpperCase()) {
-                            rtRow = val;
-                            break;
-                        }
-                    }
-                }
-                
-                return {
-                    ...node,
-                    values: rtRow || node.values.map((_, i) => i === 0 ? node.name : '0'),
-                    children: node.children.map(mapNode)
-                };
-            };
-            filteredTree = filteredTree.map(mapNode);
-        }
 
         const htTargetIdx = headers.indexOf(isRealtime ? '% HT Target Ngày (QĐ)' : '% HT Target (QĐ)');
         if (htTargetIdx >= 0) {
@@ -173,7 +142,8 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
     }, []);
 
     const expandAll = useCallback(() => {
-        if (!luykeData || !luykeData.tree) return;
+        const activeTree = isRealtime ? realtimeData?.tree : luykeData?.tree;
+        if (!activeTree) return;
         const allKeys = new Set<string>();
         const collectKeys = (nodes: IndustryTreeNode[], parentPath: string = '') => {
             nodes.forEach(n => {
@@ -184,9 +154,9 @@ export function useIndustryViewLogic(realtimeData: any, luykeData: any, isRealti
                 }
             });
         };
-        collectKeys(luykeData.tree);
+        collectKeys(activeTree);
         setExpandedRows(allKeys);
-    }, [luykeData]);
+    }, [isRealtime, realtimeData, luykeData]);
 
     const collapseAll = useCallback(() => setExpandedRows(new Set()), []);
 

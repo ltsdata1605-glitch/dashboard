@@ -40,7 +40,7 @@ export function processSummaryTable(
     // Default hierarchy updated to 5 levels as requested
     const drilldownOrder = (filters.summaryTable.drilldownOrder && filters.summaryTable.drilldownOrder.length > 0)
         ? filters.summaryTable.drilldownOrder
-        : ['parent', 'child', 'creator', 'manufacturer', 'product'];
+        : ['parent', 'child', 'manufacturer', 'creator', 'product'];
 
     for (let i = 0, len = filteredValidSalesData.length; i < len; i++) {
         const row = filteredValidSalesData[i];

@@ -20,6 +20,7 @@ export interface BonusMetrics {
     dKien: number;
     pNong: number;
     updatedAt?: string;
+    dailyData?: Record<string, number>;
 }
 
 export interface CompetitionDataForCriterion {

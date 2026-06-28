@@ -10,12 +10,25 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
     const isInitializedRef = useRef(false);
 
     const [localDrilldownOrder, setLocalDrilldownOrder] = useState<string[]>(() => {
+        let order = ['kho', 'parent', 'child', 'manufacturer', 'creator', 'product'];
         if (summaryTableFilters?.drilldownOrder && summaryTableFilters.drilldownOrder.length > 0) {
-            const saved = summaryTableFilters.drilldownOrder;
-            // Migration: inject 'kho' at position 0 if missing from saved order
-            return saved.includes('kho') ? saved : ['kho', ...saved];
+            order = [...summaryTableFilters.drilldownOrder];
+            if (!order.includes('kho')) {
+                order = ['kho', ...order];
+            }
         }
-        return ['kho', 'parent', 'child', 'creator', 'manufacturer', 'product'];
+        // Migration: Ensure 'manufacturer' comes before 'creator' (e.g. parent > child > manufacturer)
+        const creatorIdx = order.indexOf('creator');
+        const manufacturerIdx = order.indexOf('manufacturer');
+        if (creatorIdx !== -1 && manufacturerIdx !== -1 && creatorIdx < manufacturerIdx) {
+            const childIdx = order.indexOf('child');
+            if (childIdx !== -1) {
+                const prefix = order.slice(0, childIdx + 1);
+                const suffix = order.slice(childIdx + 1).filter(x => x !== 'creator' && x !== 'manufacturer');
+                order = [...prefix, 'manufacturer', 'creator', ...suffix];
+            }
+        }
+        return order;
     });
     const [crossSellingDrilldownOrder, setCrossSellingDrilldownOrder] = useState<string[]>(['parent', 'child']);
     
@@ -47,13 +60,22 @@ export const useSummaryFilters = (filters: any, onFilterChange: any, isCrossSell
         if (summaryTableFilters.product?.length > 0) setLocalProductFilters(summaryTableFilters.product);
         
         if (summaryTableFilters.drilldownOrder && summaryTableFilters.drilldownOrder.length > 0) {
-            // Migration: inject 'kho' at position 0 if missing from saved order
-            const savedOrder = summaryTableFilters.drilldownOrder;
+            let savedOrder = [...summaryTableFilters.drilldownOrder];
             if (!savedOrder.includes('kho')) {
-                setLocalDrilldownOrder(['kho', ...savedOrder]);
-            } else {
-                setLocalDrilldownOrder(savedOrder);
+                savedOrder = ['kho', ...savedOrder];
             }
+            // Migration: Ensure 'manufacturer' comes before 'creator'
+            const creatorIdx = savedOrder.indexOf('creator');
+            const manufacturerIdx = savedOrder.indexOf('manufacturer');
+            if (creatorIdx !== -1 && manufacturerIdx !== -1 && creatorIdx < manufacturerIdx) {
+                const childIdx = savedOrder.indexOf('child');
+                if (childIdx !== -1) {
+                    const prefix = savedOrder.slice(0, childIdx + 1);
+                    const suffix = savedOrder.slice(childIdx + 1).filter(x => x !== 'creator' && x !== 'manufacturer');
+                    savedOrder = [...prefix, 'manufacturer', 'creator', ...suffix];
+                }
+            }
+            setLocalDrilldownOrder(savedOrder);
         }
     }, [summaryTableFilters, globalParentFilters]);
 

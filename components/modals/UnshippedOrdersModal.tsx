@@ -395,6 +395,18 @@ const UnshippedOrdersModal: React.FC<UnshippedOrdersModalProps> = ({ isOpen, onC
                 ] as (string | number)[];
             });
 
+            // Sắp xếp các dòng theo tên cột "Người Tạo" (Index 1)
+            const extractName = (val: string | number) => {
+                const s = String(val);
+                const parts = s.split('-');
+                return parts.length > 1 ? parts.slice(1).join('-').trim() : s.trim();
+            };
+            rows.sort((a, b) => {
+                const nameA = extractName(a[1]);
+                const nameB = extractName(b[1]);
+                return nameA.localeCompare(nameB, 'vi');
+            });
+
             const now = new Date();
             const dateStr = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
             const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });

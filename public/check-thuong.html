@@ -2148,6 +2148,13 @@
                                 const secondaryB = parseInt(b[secondarySortKey], 10) || Infinity;
                                 return secondaryA - secondaryB;
                             });
+
+                            // Chỉ xuất ảnh từ trên xuống đến siêu thị được chọn + 5 siêu thị
+                            const selectedStoreIndex = dataForTable.findIndex(row => row[COLS.SIÊU_THỊ] === currentStoreFullName);
+                            if (selectedStoreIndex !== -1) {
+                                dataForTable = dataForTable.slice(0, selectedStoreIndex + 6);
+                            }
+
                             const titleText = `Bảng Xếp Hạng: ${groupName} - Kênh ${groupChannel}`;
                             tempContainer.innerHTML = getRankingTableHtml(dataForTable, titleText);
                             try {

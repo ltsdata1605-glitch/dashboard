@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom/client';
 import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport } from '../types';
 import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExportOverlay, updateExportOverlay, hideExportOverlay } from '../services/uiService';
 import type { ExportMode } from '../services/uiService';
+import { COL } from '../constants';
+import { getRowValue } from '../utils/dataUtils';
 
 interface ExportLogicProps {
     productConfig: ProductConfig | null;
@@ -170,11 +172,152 @@ export const useExportLogic = ({
         }
     };
 
+    const handleExportUncollectedSheet = async () => {
+        if (!processedData?.uncollectedOrders || processedData.uncollectedOrders.length === 0) {
+            setStatus({ message: 'Không có đơn hàng chưa thu | chưa hủy nào để xuất.', type: 'error', progress: 0 });
+            return;
+        }
+
+        const toastEl = document.createElement('div');
+        toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
+        toastEl.textContent = '📊 Đang tạo Google Sheet...';
+        document.body.appendChild(toastEl);
+
+        try {
+            toastEl.textContent = '🔑 Đang xác thực Google...';
+            sessionStorage.removeItem('googleOAuthToken');
+            const { loginWithGoogleForceConsent } = await import('../services/firebase');
+            await loginWithGoogleForceConsent();
+            let token = sessionStorage.getItem('googleOAuthToken');
+            if (!token) throw new Error('Không thể lấy token xác thực.');
+
+            toastEl.textContent = '📊 Đang tạo Google Sheet...';
+            const { exportToGoogleSheet } = await import('../services/googleSheetsService');
+
+            const headers = [
+                'Kho tạo',
+                'Người tạo',
+                'Mã đơn hàng',
+                'Mã sản phẩm',
+                'Tên sản phẩm',
+                'Số lượng',
+                'Trạng thái thu tiền',
+                'Trạng thái xuất',
+                'Trạng thái giao hàng',
+                'Trạng thái hủy'
+            ];
+
+            const rows = processedData.uncollectedOrders.map(order => [
+                getRowValue(order, COL.KHO_TAO) || '',
+                getRowValue(order, COL.NGUOI_TAO) || '',
+                getRowValue(order, COL.ID) || '',
+                getRowValue(order, COL.PRODUCT_CODE) || '',
+                getRowValue(order, COL.PRODUCT) || '',
+                Number(getRowValue(order, COL.QUANTITY)) || 0,
+                getRowValue(order, COL.TRANG_THAI_THU_TIEN) || '',
+                getRowValue(order, COL.XUAT) || '',
+                getRowValue(order, COL.TRANG_THAI_GIAO_HANG) || '',
+                getRowValue(order, COL.TRANG_THAI_HUY) || ''
+            ]);
+
+            // Sắp xếp các dòng theo tên cột "Người tạo" (Index 1)
+            const extractName = (val: string | number) => {
+                const s = String(val);
+                const parts = s.split('-');
+                return parts.length > 1 ? parts.slice(1).join('-').trim() : s.trim();
+            };
+            rows.sort((a, b) => {
+                const nameA = extractName(a[1]);
+                const nameB = extractName(b[1]);
+                return nameA.localeCompare(nameB, 'vi');
+            });
+
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+            toastEl.textContent = `📊 Đang ghi ${rows.length} đơn hàng...`;
+
+            const url = await exportToGoogleSheet(token, {
+                title: `Đơn Hàng Chưa Thu Chưa Hủy - ${dateStr} ${timeStr}`,
+                headers,
+                rows,
+                sheetName: 'ChuaThuChuaHuy'
+            });
+
+            // Build employee tags and copy clipboard message
+            const uniqueCreators = new Set<string>();
+            processedData.uncollectedOrders.forEach(order => {
+                const creator = getRowValue(order, COL.NGUOI_TAO);
+                if (creator) {
+                    uniqueCreators.add(creator.toString().trim());
+                }
+            });
+            const employeeTags = Array.from(uniqueCreators).map(creatorName => {
+                const match = creatorName.match(/^(\d+)/);
+                return match ? `@${match[1]}` : `@${creatorName}`;
+            });
+
+            const clipboardMessage = `Các bạn hoàn tất xử lý và giải trình đơn CHƯA THU | CHƯA HỦY:
+
+Hoàn tất và giải trình xoá tên:
+${employeeTags.join('\n')}
+
+Link: ${url}`;
+
+            await navigator.clipboard.writeText(clipboardMessage);
+
+            // Show success toast with link button
+            toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:14px 20px;border-radius:12px;font-size:13px;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .2s;display:flex;flex-direction:column;gap:10px;max-width:420px;width:90vw';
+            toastEl.innerHTML = '';
+
+            const msgDiv = document.createElement('div');
+            msgDiv.textContent = '✅ Đã tạo Google Sheet & sao chép tin nhắn!';
+            msgDiv.style.fontWeight = '600';
+            toastEl.appendChild(msgDiv);
+
+            const btnRow = document.createElement('div');
+            btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
+
+            const openBtn = document.createElement('a');
+            openBtn.href = url;
+            openBtn.target = '_blank';
+            openBtn.textContent = '📄 Mở Sheet';
+            openBtn.style.cssText = 'padding:6px 14px;background:#fff;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;cursor:pointer';
+
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Đóng';
+            closeBtn.style.cssText = 'padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer';
+            closeBtn.onclick = () => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); };
+
+            btnRow.appendChild(openBtn);
+            btnRow.appendChild(closeBtn);
+            toastEl.appendChild(btnRow);
+
+            setTimeout(() => {
+                if (toastEl.parentNode) {
+                    toastEl.style.opacity = '0';
+                    setTimeout(() => toastEl.remove(), 200);
+                }
+            }, 10000); // 10s auto close
+
+        } catch (error: any) {
+            console.error("Lỗi khi xuất google sheet:", error);
+            toastEl.style.backgroundColor = '#dc2626';
+            toastEl.textContent = `❌ Lỗi: ${error?.message || 'Không thể xuất file'}`;
+            setTimeout(() => {
+                toastEl.style.opacity = '0';
+                setTimeout(() => toastEl.remove(), 200);
+            }, 4000);
+        }
+    };
+
     return {
         isExporting,
         handleExport,
         handleBatchExport,
         handleBatchKhoExport,
+        handleExportUncollectedSheet,
         pendingExport,
         handlePendingDownload,
         handlePendingShare,

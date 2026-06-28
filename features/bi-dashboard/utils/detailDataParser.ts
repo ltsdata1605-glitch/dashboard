@@ -172,10 +172,230 @@ function rebuildAllNnhChildren(roots: DetailNode[]): DetailNode[] {
     return roots;
 }
 
+function rebuildEmployeeSubtree(
+    rows: { name: string; dtlk: number; dtqd: number; hieuQuaQD: number; soLuong: number; donGia: number }[],
+    industryBiMap: Record<string, { parent: string; child: string }>
+): DetailNode[] {
+    const parentNames = new Set(Object.values(industryBiMap).map(v => v.parent.toLowerCase()));
+    
+    // Construct a tree of Level 3 (nnh) -> Level 4 (nhomHang) -> Level 5 (hang)
+    const nnhMap = new Map<string, DetailNode>(); // Key: NhomCha (lowercase)
+    const nhomHangMaps = new Map<string, Map<string, DetailNode>>(); // Key: NhomCha (lowercase), Value: Map of NhomCon (lowercase) -> nhomHang Node
+    const brandMaps = new Map<string, Map<string, DetailNode>>(); // Key: childKey, Value: Map of brandName (lowercase) -> Brand Node
+    const nnhOrder: string[] = [];
+
+    let activeNhomHangNode: DetailNode | null = null;
+    let activeChildKey: string | null = null;
+    let currentNnhHeader = '';
+
+    for (const row of rows) {
+        const cleanName = row.name.trim();
+        const lowerName = cleanName.toLowerCase();
+        
+        // Check if it is a category summary row (like NNH Điện lạnh)
+        const isCategorySummary = cleanName.startsWith('NNH ') || 
+                                 parentNames.has(lowerName) || 
+                                 parentNames.has(cleanName.replace(/^NNH\s+/i, '').toLowerCase());
+        
+        if (isCategorySummary) {
+            currentNnhHeader = cleanName;
+            continue;
+        }
+
+        const compoundKey = `${currentNnhHeader.toLowerCase()}|||${lowerName}`;
+        const mapInfo = industryBiMap[compoundKey] || industryBiMap[lowerName];
+        if (mapInfo) {
+            const parentName = mapInfo.parent.trim(); // Level 3 (Ngành hàng)
+            const childName = mapInfo.child.trim();   // Level 4 (Nhóm hàng)
+            const parentKey = parentName.toLowerCase();
+            const childKey = childName.toLowerCase();
+            
+            let nnhNode = nnhMap.get(parentKey);
+            if (!nnhNode) {
+                nnhNode = {
+                    name: parentName,
+                    level: 'nnh',
+                    dtlk: 0,
+                    dtqd: 0,
+                    hieuQuaQD: 0,
+                    soLuong: 0,
+                    donGia: 0,
+                    children: []
+                };
+                nnhMap.set(parentKey, nnhNode);
+                nnhOrder.push(parentKey);
+                nhomHangMaps.set(parentKey, new Map());
+            }
+            
+            const nhomHangMap = nhomHangMaps.get(parentKey)!;
+            let nhomHangNode = nhomHangMap.get(childKey);
+            if (!nhomHangNode) {
+                nhomHangNode = {
+                    name: childName,
+                    level: 'nhomHang',
+                    dtlk: 0,
+                    dtqd: 0,
+                    hieuQuaQD: 0,
+                    soLuong: 0,
+                    donGia: 0,
+                    children: []
+                };
+                nhomHangMap.set(childKey, nhomHangNode);
+                nnhNode.children.push(nhomHangNode);
+            }
+
+            // Sum the group row's values into nhomHangNode
+            nhomHangNode.dtlk += row.dtlk;
+            nhomHangNode.dtqd += row.dtqd;
+            nhomHangNode.soLuong += row.soLuong;
+
+            activeNhomHangNode = nhomHangNode;
+            activeChildKey = childKey;
+            
+        } else {
+            // 3. Otherwise, it must be a Level 5 Brand (Hãng)!
+            if (activeNhomHangNode && activeChildKey) {
+                let brandMap = brandMaps.get(activeChildKey);
+                if (!brandMap) {
+                    brandMap = new Map();
+                    brandMaps.set(activeChildKey, brandMap);
+                }
+
+                let brandNode = brandMap.get(lowerName);
+                if (brandNode) {
+                    // Sum/merge brand values if it appears multiple times under the same NhomCon
+                    brandNode.dtlk += row.dtlk;
+                    brandNode.dtqd += row.dtqd;
+                    brandNode.soLuong += row.soLuong;
+                } else {
+                    brandNode = {
+                        name: cleanName,
+                        level: 'hang',
+                        dtlk: row.dtlk,
+                        dtqd: row.dtqd,
+                        hieuQuaQD: row.hieuQuaQD,
+                        soLuong: row.soLuong,
+                        donGia: row.donGia,
+                        children: []
+                    };
+                    brandMap.set(lowerName, brandNode);
+                    activeNhomHangNode.children.push(brandNode);
+                }
+            } else {
+                // Fallback parent and child
+                const fallbackParentName = 'Khác';
+                const fallbackChildName = cleanName;
+                const parentKey = fallbackParentName.toLowerCase();
+                const childKey = fallbackChildName.toLowerCase();
+                
+                let nnhNode = nnhMap.get(parentKey);
+                if (!nnhNode) {
+                    nnhNode = {
+                        name: fallbackParentName,
+                        level: 'nnh',
+                        dtlk: 0,
+                        dtqd: 0,
+                        hieuQuaQD: 0,
+                        soLuong: 0,
+                        donGia: 0,
+                        children: []
+                    };
+                    nnhMap.set(parentKey, nnhNode);
+                    nnhOrder.push(parentKey);
+                    nhomHangMaps.set(parentKey, new Map());
+                }
+                
+                const nhomHangMap = nhomHangMaps.get(parentKey)!;
+                let nhomHangNode = nhomHangMap.get(childKey);
+                if (!nhomHangNode) {
+                    nhomHangNode = {
+                        name: fallbackChildName,
+                        level: 'nhomHang',
+                        dtlk: 0,
+                        dtqd: 0,
+                        hieuQuaQD: 0,
+                        soLuong: 0,
+                        donGia: 0,
+                        children: []
+                    };
+                    nhomHangMap.set(childKey, nhomHangNode);
+                    nnhNode.children.push(nhomHangNode);
+                }
+
+                let brandMap = brandMaps.get(childKey);
+                if (!brandMap) {
+                    brandMap = new Map();
+                    brandMaps.set(childKey, brandMap);
+                }
+
+                let brandNode = brandMap.get(lowerName);
+                if (brandNode) {
+                    brandNode.dtlk += row.dtlk;
+                    brandNode.dtqd += row.dtqd;
+                    brandNode.soLuong += row.soLuong;
+                } else {
+                    brandNode = {
+                        name: cleanName,
+                        level: 'hang',
+                        dtlk: row.dtlk,
+                        dtqd: row.dtqd,
+                        hieuQuaQD: row.hieuQuaQD,
+                        soLuong: row.soLuong,
+                        donGia: row.donGia,
+                        children: []
+                    };
+                    brandMap.set(lowerName, brandNode);
+                    nhomHangNode.children.push(brandNode);
+                }
+            }
+        }
+    }
+    
+    // Aggregate metrics for Level 3 (nnh) nodes
+    const nnhList: DetailNode[] = [];
+    for (const key of nnhOrder) {
+        const nnhNode = nnhMap.get(key);
+        if (nnhNode) {
+            let totalDtlk = 0;
+            let totalDtqd = 0;
+            let totalSoLuong = 0;
+            
+            for (const nhomHang of nnhNode.children) {
+                // First recalculate nhomHang level derived metrics
+                nhomHang.donGia = nhomHang.soLuong > 0 ? (nhomHang.dtqd / nhomHang.soLuong) : 0;
+                nhomHang.hieuQuaQD = nhomHang.dtlk > 0 ? (nhomHang.dtqd - nhomHang.dtlk) / nhomHang.dtlk : 0;
+                
+                // Recalculate brand level donGia and hieuQuaQD if they were merged!
+                for (const hang of nhomHang.children) {
+                    hang.donGia = hang.soLuong > 0 ? (hang.dtqd / hang.soLuong) : 0;
+                    hang.hieuQuaQD = hang.dtlk > 0 ? (hang.dtqd - hang.dtlk) / hang.dtlk : 0;
+                }
+
+                totalDtlk += nhomHang.dtlk;
+                totalDtqd += nhomHang.dtqd;
+                totalSoLuong += nhomHang.soLuong;
+            }
+            
+            nnhNode.dtlk = totalDtlk;
+            nnhNode.dtqd = totalDtqd;
+            nnhNode.soLuong = totalSoLuong;
+            nnhNode.donGia = totalSoLuong > 0 ? (totalDtqd / totalSoLuong) : 0;
+            nnhNode.hieuQuaQD = totalDtlk > 0 ? (totalDtqd - totalDtlk) / totalDtlk : 0;
+            
+            nnhList.push(nnhNode);
+        }
+    }
+    
+    return nnhList;
+}
+
 /**
  * Better parser: re-parse using a cleaner state machine approach and mathematical prefix sums.
  */
-export function parseDetailDataV2(raw: string): DetailNode[] {
+export function parseDetailDataV2(
+    raw: string,
+    industryBiMap?: Record<string, { parent: string; child: string }> | null
+): DetailNode[] {
     if (!raw) return [];
 
     // Split into lines, filter out empty lines, but do not trim them immediately
@@ -233,7 +453,88 @@ export function parseDetailDataV2(raw: string): DetailNode[] {
         });
     }
 
-    // Build tree using stack for total -> department -> employee -> NNH -> nhomHang -> hang
+    if (industryBiMap && Object.keys(industryBiMap).length > 0) {
+        const roots: DetailNode[] = [];
+        let currentTotal: DetailNode | null = null;
+        let currentDept: DetailNode | null = null;
+        let currentEmp: DetailNode | null = null;
+        let currentEmpRows: RawRow[] = [];
+
+        const flushEmpRows = () => {
+            if (currentEmp && currentEmpRows.length > 0) {
+                currentEmp.children = rebuildEmployeeSubtree(currentEmpRows, industryBiMap);
+                currentEmpRows = [];
+            }
+        };
+
+        for (const row of rawRows) {
+            const level = detectLevel(row.name);
+            if (level === 'total') {
+                flushEmpRows();
+                const node: DetailNode = {
+                    name: row.name,
+                    level: 'total',
+                    dtlk: row.dtlk,
+                    dtqd: row.dtqd,
+                    hieuQuaQD: row.hieuQuaQD,
+                    soLuong: row.soLuong,
+                    donGia: row.donGia,
+                    children: []
+                };
+                roots.push(node);
+                currentTotal = node;
+                currentDept = null;
+                currentEmp = null;
+            } else if (level === 'department') {
+                flushEmpRows();
+                const node: DetailNode = {
+                    name: row.name,
+                    level: 'department',
+                    dtlk: row.dtlk,
+                    dtqd: row.dtqd,
+                    hieuQuaQD: row.hieuQuaQD,
+                    soLuong: row.soLuong,
+                    donGia: row.donGia,
+                    children: []
+                };
+                if (currentTotal) {
+                    currentTotal.children.push(node);
+                } else {
+                    roots.push(node);
+                }
+                currentDept = node;
+                currentEmp = null;
+            } else if (level === 'employee') {
+                flushEmpRows();
+                const node: DetailNode = {
+                    name: row.name,
+                    level: 'employee',
+                    dtlk: row.dtlk,
+                    dtqd: row.dtqd,
+                    hieuQuaQD: row.hieuQuaQD,
+                    soLuong: row.soLuong,
+                    donGia: row.donGia,
+                    children: []
+                };
+                if (currentDept) {
+                    currentDept.children.push(node);
+                } else if (currentTotal) {
+                    currentTotal.children.push(node);
+                } else {
+                    roots.push(node);
+                }
+                currentEmp = node;
+            } else {
+                if (currentEmp) {
+                    currentEmpRows.push(row);
+                }
+            }
+        }
+        flushEmpRows();
+        return roots;
+    }
+
+    // Fallback: Build tree using stack for total -> department -> employee -> NNH -> nhomHang -> hang
     const roots: DetailNode[] = [];
     
     interface StackElement {

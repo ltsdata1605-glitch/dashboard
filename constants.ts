@@ -20,7 +20,9 @@ export const COL = {
     MA_NGANH_HANG: ['Ngành Hàng', 'Ngành hàng'],
     MA_NHOM_HANG: ['Nhóm Hàng', 'Nhóm hàng'],
     MANUFACTURER: ['Nhà sản xuất', 'Hãng'],
-    PRODUCT_CODE: ['Mã sản phẩm']
+    PRODUCT_CODE: ['Mã sản phẩm'],
+    KHO_TAO: ['Kho tạo', 'Kho Tạo'],
+    TRANG_THAI_GIAO_HANG: ['Trạng thái giao hàng', 'Trạng thái giao']
 };
 
 export const HINH_THUC_XUAT_THU_HO = new Set(['Xuất dịch vụ thu hộ cước Payoo', 'Xuất dịch vụ thu hộ qua Epay', 'Xuất dịch vụ thu hộ qua SmartNet', 'Xuất dịch vụ thu hộ qua tổng công ty Viettel', 'Xuất dịch vụ thu hộ nạp tiền vào ví', 'Xuất dịch vụ thu hộ cước Bảo Kim']);

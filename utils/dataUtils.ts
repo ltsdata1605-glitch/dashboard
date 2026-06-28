@@ -454,13 +454,22 @@ export function wrapProductConfigWithProxies(config: ProductConfig): ProductConf
     // Check if already proxied to avoid double nesting
     if ((config.childToParentMap as any)?.__isProxy) return config;
 
-    const wrapMap = (targetMap: Record<string, string>) => {
+    const wrapMap = (targetMap: Record<string, string>, isParentMap: boolean) => {
         if (!targetMap) return targetMap;
         return new Proxy(targetMap, {
             get(target, prop) {
                 if (prop === '__isProxy') return true;
                 if (typeof prop !== 'string') {
                     return Reflect.get(target, prop);
+                }
+
+                // 0. Check industryBiMap first if available
+                if (config.industryBiMap) {
+                    const cleanProp = prop.trim();
+                    const mapInfo = config.industryBiMap[cleanProp.toLowerCase()] || config.industryBiMap[cleanProp];
+                    if (mapInfo) {
+                        return isParentMap ? mapInfo.parent : mapInfo.child;
+                    }
                 }
 
                 // 1. Exact match
@@ -481,14 +490,30 @@ export function wrapProductConfigWithProxies(config: ProductConfig): ProductConf
                 }
 
                 return undefined;
+            },
+            ownKeys(target) {
+                const targetKeys = Reflect.ownKeys(target);
+                if (config.industryBiMap) {
+                    const biKeys = Object.keys(config.industryBiMap);
+                    const uniqueKeys = new Set([...targetKeys, ...biKeys]);
+                    return Array.from(uniqueKeys);
+                }
+                return targetKeys;
+            },
+            getOwnPropertyDescriptor(target, prop) {
+                return {
+                    enumerable: true,
+                    configurable: true,
+                    writable: true
+                };
             }
         });
     };
 
     return {
         ...config,
-        childToParentMap: wrapMap(config.childToParentMap || {}),
-        childToSubgroupMap: wrapMap(config.childToSubgroupMap || {})
+        childToParentMap: wrapMap(config.childToParentMap || {}, true),
+        childToSubgroupMap: wrapMap(config.childToSubgroupMap || {}, false)
     };
 }
 

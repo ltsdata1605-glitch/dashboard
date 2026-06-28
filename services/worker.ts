@@ -57,7 +57,7 @@ async function processSingleFileInWorker(file: File, enableDeduplication: boolea
                 'Tên Khách Hàng', 'Tên khách hàng', 'Số Lượng', 'Số lượng', 'Giá bán_1', 'Giá bán',
                 'Mã kho tạo', 'Trạng thái hồ sơ', 'Người tạo', 'Trạng thái xuất', 'Hình thức xuất',
                 'Ngành Hàng', 'Ngành hàng', 'Nhóm Hàng', 'Nhóm hàng', 'Nhà sản xuất', 'Hãng', 'TG Hẹn Giao', 'Thời gian hẹn giao',
-                'Mã sản phẩm'
+                'Mã sản phẩm', 'Kho tạo', 'Kho Tạo', 'Trạng thái giao hàng', 'Trạng thái giao'
             ];
             
             const normalizedReqCols = reqCols.map(c => c.toLowerCase().normalize('NFC'));
@@ -109,13 +109,27 @@ async function processSingleFileInWorker(file: File, enableDeduplication: boolea
             
             // Inline validation for speed
             const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
-            if (trangThaiHuy !== 'chưa hủy') continue;
-            
             const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
-            if (nhapTra !== 'chưa trả') continue;
-
             const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
-            if (thuTien !== 'đã thu') continue;
+            const trangThaiXuat = cleanAndNormalize(getRowValue(row, COL.XUAT));
+            const trangThaiGiao = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_GIAO_HANG));
+
+            // Standard valid sales row
+            const isStandardValid = (
+                (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && 
+                nhapTra === 'chưa trả' && 
+                thuTien === 'đã thu'
+            );
+
+            // Uncollected/uncancelled row
+            const isUncollected = (
+                thuTien === 'chưa thu' && 
+                trangThaiXuat === 'chưa xuất' && 
+                trangThaiGiao === 'chưa giao' && 
+                (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ')
+            );
+
+            if (!isStandardValid && !isUncollected) continue;
 
             // Normalize Date
             const parsedDate = parseExcelDate(getRowValue(row, COL.DATE_CREATED));

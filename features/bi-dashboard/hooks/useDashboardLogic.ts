@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
+import * as dbService from '../../../services/dbService';
 import { 
     MainTab, 
     SubTab, 
@@ -59,15 +60,29 @@ export const useDashboardLogic = (isActive?: boolean) => {
         return parseCompetitionDataBySupermarket(competitionLuyKe);
     }, [competitionLuyKe, isActive]);
     
+    const [industryBiMap, setIndustryBiMap] = useState<Record<string, { parent: string; child: string }> | null>(null);
+
+    useEffect(() => {
+        let isMounted = true;
+        const loadBiMap = async () => {
+            const cachedConfig = await dbService.getProductConfig();
+            if (isMounted && cachedConfig && cachedConfig.config && cachedConfig.config.industryBiMap) {
+                setIndustryBiMap(cachedConfig.config.industryBiMap);
+            }
+        };
+        loadBiMap();
+        return () => { isMounted = false; };
+    }, []);
+
     const industryRealtimeParsed = useMemo(() => {
         if (isActive === false) return { headers: [], rows: [], allRows: [], tree: [], totalRow: [] };
-        return parseIndustryRealtimeData(industryRealtimeData);
-    }, [industryRealtimeData, isActive]);
+        return parseIndustryRealtimeData(industryRealtimeData, industryBiMap);
+    }, [industryRealtimeData, isActive, industryBiMap]);
 
     const industryLuyKeParsed = useMemo(() => {
         if (isActive === false) return { kpis: { laiGopQDDuKien: '', chiPhi: '', targetLNTT: '', htTargetDuKienLNTT: '' }, table: { headers: [], rows: [] }, tree: [], totalRow: [] };
-        return parseIndustryLuyKeData(industryLuyKeData);
-    }, [industryLuyKeData, isActive]);
+        return parseIndustryLuyKeData(industryLuyKeData, industryBiMap);
+    }, [industryLuyKeData, isActive, industryBiMap]);
 
     // --- Targets State ---
     const [supermarketDailyTargets, setSupermarketDailyTargets] = useState<Record<string, number>>({});

@@ -22,6 +22,7 @@ export interface ProductConfig {
     revenueEligibleHTX?: Set<string>;
     nonRevenueEligibleHTX?: Set<string>;
     htxClassification?: { [htx: string]: 'tra_gop' | 'tien_mat' | 'thu_ho' | 'khac' };
+    industryBiMap?: { [nhomHang: string]: { parent: string; child: string } };
 }
 
 export interface StoredSalesData {
@@ -331,6 +332,7 @@ export interface ProcessedData {
         uniqueProducts: string[];
     };
     unshippedOrders: DataRow[];
+    uncollectedOrders?: DataRow[];
     filteredValidSalesData: DataRow[];
     lastUpdated: string;
     reportSubTitle: string;

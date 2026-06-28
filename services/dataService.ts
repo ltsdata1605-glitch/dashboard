@@ -250,6 +250,56 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                     console.warn(`[Config] Lỗi khi xử lý sheet '${htxSheetName}':`, sheetError);
                 }
             }
+
+            // 4. Parse "Ngành hàng BI" sheet
+            const biSheetName = workbook.SheetNames.find(name => {
+                const ln = name.toLowerCase().normalize('NFC');
+                return ln.includes('ngành hàng bi') || ln.includes('nganh hang bi');
+            });
+            if (biSheetName) {
+                try {
+                    const sheet = workbook.Sheets[biSheetName];
+                    const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+                    if (rows.length >= 2) {
+                        const sheetHeaders = rows[0].map(h => String(h || '').trim());
+                        const nganhHangIdx = sheetHeaders.findIndex(h => h.toLowerCase().normalize('NFC') === 'ngành hàng' || h.toLowerCase() === 'nganhhang' || h.toLowerCase() === 'ngành hàng');
+                        const nhomHangIdx = sheetHeaders.findIndex(h => h.toLowerCase().normalize('NFC') === 'nhóm hàng' || h.toLowerCase() === 'nhomhang' || h.toLowerCase() === 'nhóm hàng');
+                        const nhomChaIdx = sheetHeaders.findIndex(h => h.toLowerCase().normalize('NFC') === 'nhomcha' || h.toLowerCase() === 'nhomcha');
+                        const nhomConIdx = sheetHeaders.findIndex(h => h.toLowerCase().normalize('NFC') === 'nhomcon' || h.toLowerCase() === 'nhomcon');
+                        
+                        if (nhomHangIdx !== -1 && nhomChaIdx !== -1 && nhomConIdx !== -1) {
+                            config.industryBiMap = {};
+                            let count = 0;
+                            for (let i = 1; i < rows.length; i++) {
+                                const row = rows[i];
+                                if (row.length > Math.max(nhomHangIdx, nhomChaIdx, nhomConIdx)) {
+                                    const nganhHang = nganhHangIdx !== -1 ? String(row[nganhHangIdx] || '').trim() : '';
+                                    const nhomHang = String(row[nhomHangIdx] || '').trim();
+                                    const nhomCha = String(row[nhomChaIdx] || '').trim();
+                                    const nhomCon = String(row[nhomConIdx] || '').trim();
+                                    if (nhomHang && nhomCha && nhomCon) {
+                                        config.industryBiMap[nhomHang.toLowerCase()] = {
+                                            parent: nhomCha,
+                                            child: nhomCon
+                                        };
+                                        if (nganhHang) {
+                                            const compoundKey = `${nganhHang.toLowerCase()}|||${nhomHang.toLowerCase()}`;
+                                            config.industryBiMap[compoundKey] = {
+                                                parent: nhomCha,
+                                                child: nhomCon
+                                            };
+                                        }
+                                        count++;
+                                    }
+                                }
+                            }
+                            console.log(`[Config] Đã tải ${count} phân cấp Ngành hàng BI từ sheet '${biSheetName}'.`);
+                        }
+                    }
+                } catch (sheetError) {
+                    console.warn(`[Config] Lỗi khi xử lý sheet '${biSheetName}':`, sheetError);
+                }
+            }
         } else {
             // Fallback to original CSV parsing for backward compatibility (if file is pure CSV)
             const csvResponse = await fetch(url);
@@ -510,13 +560,27 @@ export async function processSalesFile(file: File, enableDeduplication: boolean,
             
             // Inline validation logic
             const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
-            if (trangThaiHuy !== 'chưa hủy') continue;
-            
             const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
-            if (nhapTra !== 'chưa trả') continue;
-
             const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
-            if (thuTien !== 'đã thu') continue;
+            const trangThaiXuat = cleanAndNormalize(getRowValue(row, COL.XUAT));
+            const trangThaiGiao = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_GIAO_HANG));
+
+            // Standard valid sales row
+            const isStandardValid = (
+                (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && 
+                nhapTra === 'chưa trả' && 
+                thuTien === 'đã thu'
+            );
+
+            // Uncollected/uncancelled row
+            const isUncollected = (
+                thuTien === 'chưa thu' && 
+                trangThaiXuat === 'chưa xuất' && 
+                trangThaiGiao === 'chưa giao' && 
+                (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ')
+            );
+
+            if (!isStandardValid && !isUncollected) continue;
 
             // Normalize Date
             const parsedDate = parseExcelDate(getRowValue(row, COL.DATE_CREATED));

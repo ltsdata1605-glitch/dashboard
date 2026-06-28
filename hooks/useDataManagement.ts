@@ -3,7 +3,7 @@ import type { DataRow, FilterState, ProductConfig, ProcessedData, Status, AppSta
 import type { DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
 import { loadConfigFromSheet } from '../services/dataService';
-import { applyFiltersAndProcess } from '../services/filterService';
+import { applyFiltersAndProcess, deduplicateSalesData } from '../services/filterService';
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_KPI_CARDS, COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 import toast from 'react-hot-toast';
@@ -78,11 +78,14 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                 let config: ProductConfig | null = cachedConfigReq ? cachedConfigReq.config : null;
                 const cachedUrl = cachedConfigReq ? cachedConfigReq.url : '';
                 
-                // If core config is missing, URL has changed, or the new product groups (7161/7139) are missing, force load from sheet
+                // If core config is missing, URL has changed, or the new product groups (7161/7139) are missing, or industryBiMap is missing, or does not have compound keys, force load from sheet
+                const hasCompoundKeys = config && config.industryBiMap && Object.keys(config.industryBiMap).some(k => k.includes('|||'));
                 const isConfigOutOfDate = !config || !config.groups || Object.keys(config.groups).length === 0 || 
                                           cachedUrl !== configUrl || 
                                           !config.childToParentMap['7161 - Dịch vụ bảo hành 1 đổi 1 Thợ Điện Máy Xanh'] ||
-                                          !config.childToParentMap['7139 - Dịch vụ Bảo hành mở rộng Thợ Điện Máy Xanh'];
+                                          !config.childToParentMap['7139 - Dịch vụ Bảo hành mở rộng Thợ Điện Máy Xanh'] ||
+                                          !config.industryBiMap ||
+                                          !hasCompoundKeys;
 
                 if (isConfigOutOfDate) {
                     try {
@@ -538,6 +541,11 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
 
 
 
+    const deduplicatedData = useMemo(() => {
+        if (!isDeduplicationEnabled) return originalData;
+        return deduplicateSalesData(originalData);
+    }, [originalData, isDeduplicationEnabled]);
+
     // Central Data Processing
     useEffect(() => {
         if (appState === 'loading') return;
@@ -560,10 +568,10 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                     throw new Error("Cấu hình sản phẩm chưa được tải. Vui lòng đợi trong giây lát.");
                 }
 
-                let rbacData = originalData;
+                let rbacData = deduplicatedData;
                 if (!isDemoMode && (userRole === 'employee' || userRole === 'manager') && user?.email !== 'nguyendangkhoafit2@gmail.com') {
                     const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
-                    rbacData = originalData.filter(row => {
+                    rbacData = deduplicatedData.filter(row => {
                         const kho = String(row['Mã kho tạo'] || '').trim();
                         // 1. Manager & Employee both need Kho matching
                         if (!allowedKhos.includes(kho)) return false;
@@ -578,7 +586,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                     });
                 }
 
-                const { processedData: result, baseFilteredData: newBaseData, warehouseFilteredData: newWarehouseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(rbacData, productConfig, filterState, departmentMap, isDeduplicationEnabled);
+                const { processedData: result, baseFilteredData: newBaseData, warehouseFilteredData: newWarehouseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(rbacData, productConfig, filterState, departmentMap, false);
                 
                 setAppState('dashboard');
                 setProcessedData(result);
@@ -597,7 +605,7 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
         }, 150); // Yield UI Thread to ensure loading spinner paints before heavy calculation
 
         return () => clearTimeout(timer);
-    }, [originalData, productConfig, filterState, departmentMap, isDeduplicationEnabled, setStatus, userRole, departmentId, employeeName, user?.email, isDemoMode, appState, setAppState]);
+    }, [deduplicatedData, productConfig, filterState, departmentMap, setStatus, userRole, departmentId, employeeName, user?.email, isDemoMode, appState, setAppState]);
 
     // Unique filter options
     const uniqueFilterOptions = useMemo(() => {

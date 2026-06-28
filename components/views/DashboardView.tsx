@@ -66,7 +66,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
         configUrl, setConfigUrl, uniqueFilterOptions,
         activeModal, setActiveModal, modalData,
         handleClearDepartments, handleClearData, handleShiftFileProcessing, handleFileProcessing,
-        openUnshippedModal, handleExport, handleBatchKhoExport,
+        openUnshippedModal, handleExport, handleBatchKhoExport, handleExportUncollectedSheet,
         filterState,
         isDeduplicationEnabled,
         handleDeduplicationChange,
@@ -449,6 +449,25 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 }
                                                 return null;
                                             })()}
+
+                                            {/* Uncollected Warning Banner */}
+                                            {processedData.uncollectedOrders && processedData.uncollectedOrders.length > 0 && (
+                                                <div
+                                                    onClick={() => handleExportUncollectedSheet()}
+                                                    className="relative bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors z-[20]"
+                                                >
+                                                    <div className="flex items-center gap-2 font-bold text-sm">
+                                                        <span className="relative flex h-3 w-3 mr-1">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
+                                                        </span>
+                                                        ĐƠN HÀNG CHƯA THU | CHƯA HỦY ({processedData.uncollectedOrders.length})
+                                                    </div>
+                                                    <div className="text-xs font-semibold underline underline-offset-2">
+                                                        Xuất Google Sheet
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             <div className="relative z-10 pt-1 lg:pt-8">
                                                 <SectionHeader

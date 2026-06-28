@@ -269,24 +269,27 @@ export default function StickerPrinterView() {
         
         // Read initial sub tab from URL
         const urlParams = new URLSearchParams(window.location.search);
-        const sub = urlParams.get('sub');
-        if (sub) {
-            if (sub === 'gia-soc') {
-                setStickerMode('sticker');
-                setStickerType('gia_soc');
-                setHeaderTextContent('QUẠT ĐIỀU HOÀ');
-                setBgImage('/frame/X24_NEW.png');
-                setHeaderTextSize(8);
-            } else if (sub === 'gio-vang') {
-                setStickerMode('sticker');
-                setStickerType('gio_vang');
-                setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
-                setBgImage('/frame/GVO2-scaled.png');
-                setHeaderTextSize(8);
-            } else if (sub === 'event') {
-                setStickerMode('event');
-                setEventEverOpened(true);
-            }
+        let sub = urlParams.get('sub');
+        if (!sub) {
+            sub = 'event';
+            updateSubQueryParam('event');
+        }
+        
+        if (sub === 'gia-soc') {
+            setStickerMode('sticker');
+            setStickerType('gia_soc');
+            setHeaderTextContent('QUẠT ĐIỀU HOÀ');
+            setBgImage('/frame/X24_NEW.png');
+            setHeaderTextSize(8);
+        } else if (sub === 'gio-vang') {
+            setStickerMode('sticker');
+            setStickerType('gio_vang');
+            setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
+            setBgImage('/frame/GVO2-scaled.png');
+            setHeaderTextSize(8);
+        } else if (sub === 'event') {
+            setStickerMode('event');
+            setEventEverOpened(true);
         }
         
         // Preload StickerEventApp in background to avoid lag on click
@@ -307,8 +310,24 @@ export default function StickerPrinterView() {
                 const savedState = await getSetting<any>(STICKER_DB_KEY);
                 
                 if (savedState && active) {
-                    if (savedState.stickerMode) setStickerMode(savedState.stickerMode);
-                    if (savedState.stickerType) setStickerType(savedState.stickerType);
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const currentSub = urlParams.get('sub');
+                    
+                    if (!currentSub) {
+                        if (savedState.stickerMode) setStickerMode(savedState.stickerMode);
+                        if (savedState.stickerType) setStickerType(savedState.stickerType);
+                    } else {
+                        if (currentSub === 'gia-soc') {
+                            setStickerMode('sticker');
+                            setStickerType('gia_soc');
+                        } else if (currentSub === 'gio-vang') {
+                            setStickerMode('sticker');
+                            setStickerType('gio_vang');
+                        } else if (currentSub === 'event') {
+                            setStickerMode('event');
+                            setEventEverOpened(true);
+                        }
+                    }
                     if (savedState.bgImage) setBgImage(savedState.bgImage);
                     if (savedState.headerTextContent) setHeaderTextContent(savedState.headerTextContent);
                     if (savedState.subHeaderTextContent) setSubHeaderTextContent(savedState.subHeaderTextContent);
