@@ -389,6 +389,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
     const filteredTree = useMemo(() => {
         if (isActive === false) return [];
         const q = debouncedSearchQuery.toLowerCase().trim();
+        const isFiltering = filterEmployee !== 'all' || filterNnh !== 'all' || filterNhomHang !== 'all' || filterHang !== 'all' || q !== '';
         
         const filterNodes = (nodes: DetailNode[]): DetailNode[] => {
             return nodes.reduce<DetailNode[]>((acc, node) => {
@@ -411,12 +412,27 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                 if (cloned.level === 'hang' && filterHang !== 'all' && cloned.name !== filterHang) keep = false;
                 
                 // If a structural node loses all its children due to active filtering, drop it
-                const isFiltering = filterEmployee !== 'all' || filterNnh !== 'all' || filterNhomHang !== 'all' || filterHang !== 'all' || q !== '';
                 if (isFiltering && ['department', 'employee', 'nnh', 'nhomHang'].includes(cloned.level) && cloned.children.length === 0) {
                     keep = false;
                 }
                 
                 if (keep) {
+                    // Update structural parent totals based on remaining filtered children
+                    if (isFiltering && cloned.children && cloned.children.length > 0 && ['department', 'employee', 'nnh', 'nhomHang'].includes(cloned.level)) {
+                        let totalDtlk = 0;
+                        let totalDtqd = 0;
+                        let totalSoLuong = 0;
+                        for (const c of cloned.children) {
+                            totalDtlk += c.dtlk;
+                            totalDtqd += c.dtqd;
+                            totalSoLuong += c.soLuong;
+                        }
+                        cloned.dtlk = totalDtlk;
+                        cloned.dtqd = totalDtqd;
+                        cloned.soLuong = totalSoLuong;
+                        cloned.donGia = totalSoLuong > 0 ? (totalDtqd / totalSoLuong) : 0;
+                        cloned.hieuQuaQD = totalDtlk > 0 ? (totalDtqd - totalDtlk) / totalDtlk : 0;
+                    }
                     acc.push(cloned);
                 }
                 return acc;

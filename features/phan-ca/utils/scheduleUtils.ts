@@ -23,7 +23,7 @@ export const calculateSpecialHours = (staff: StaffMember, includeTn: boolean = t
             for (const char of cleanStr) {
                 if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
             }
-            if (info.addedWeekendShifts && (info.role.includes('(Kho)') || info.role.includes('(TN)'))) {
+            if (info.addedWeekendShifts) {
                 for (const char of info.addedWeekendShifts) {
                     if (HOURS_CONFIG[char]) total -= HOURS_CONFIG[char];
                 }
@@ -43,7 +43,7 @@ export const calculateNormalHours = (staff: StaffMember): number => {
                     if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
                 }
             } else {
-                if (info.addedWeekendShifts && (info.role.includes('(Kho)') || info.role.includes('(TN)'))) {
+                if (info.addedWeekendShifts) {
                     for (const char of info.addedWeekendShifts) {
                         if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
                     }
@@ -126,6 +126,11 @@ const isWeekend = (year: number, month: number, startDay: number, dayIndex: numb
     return day === 0 || day === 6; // 0 is Sunday, 6 is Saturday
 };
 
+const isFriday = (year: number, month: number, startDay: number, dayIndex: number) => {
+    const date = new Date(year, month - 1, startDay + dayIndex - 1);
+    return date.getDay() === 5; // Friday
+};
+
 /**
  * Thuật toán Cân bằng SBH Đa tầng (Refined version)
  * Cập nhật mới: Ưu tiên cân bằng công bằng vào cuối tuần (Sales Protection)
@@ -158,6 +163,9 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
     // Helper: Kiểm tra xem nếu đặt một ca Special vào ngày dayIdx thì có an toàn không (có vi phạm khoảng cách không)
     // ignoreDayIdx: Bỏ qua ngày này khi kiểm tra (dùng khi chúng ta đang định di chuyển ca từ ignoreDayIdx sang dayIdx)
     const isSafeForSpecial = (staff: StaffMember, dayIdx: number, ignoreDayIdx?: number) => {
+        // Ràng buộc tuyệt đối: Ngày hôm trước đã làm ca GH thì hôm nay không làm ca đặc biệt
+        if (dayIdx - 1 >= 1 && dayIdx - 1 !== ignoreDayIdx && staff.schedule[dayIdx - 1]?.role.includes('(GH)')) return false;
+
         for (let k = 1; k <= MIN_GAP; k++) {
             const prev = staff.schedule[dayIdx - k];
             const next = staff.schedule[dayIdx + k];
@@ -180,6 +188,9 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
 
     // Helper: Kiểm tra xem nếu đặt một ca KHO vào ngày dayIdx thì có an toàn không
     const isSafeForKho = (staff: StaffMember, dayIdx: number, ignoreDayIdx?: number) => {
+        // Ràng buộc tuyệt đối: Ngày hôm trước đã làm ca GH thì hôm nay không làm ca đặc biệt
+        if (dayIdx - 1 >= 1 && dayIdx - 1 !== ignoreDayIdx && staff.schedule[dayIdx - 1]?.role.includes('(GH)')) return false;
+
         // Ràng buộc tuyệt đối: Nam có ca GH cuối tuần thì không được làm Kho cuối tuần
         const date = new Date(year, month - 1, startDay + dayIdx - 1);
         const day = date.getDay();
@@ -901,6 +912,74 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
     // 2. Số ngày làm kho của nữ với nữ tương đương với nhau
     balanceSpecificRole('Kho', 'Nu');
 
+    // APPLY NEXT-DAY 56/456 RULE FOR GIAO HÀNG (GH) SHIFTS
+    refinedList.forEach((staff: StaffMember) => {
+        for (let d = 1; d < duration; d++) {
+            const currentDay = staff.schedule[d];
+            if (currentDay && currentDay.role.includes('(GH)')) {
+                const nextDay = staff.schedule[d + 1];
+                if (nextDay && nextDay.role !== 'OFF' && !nextDay.role.includes('(')) {
+                    const hasMorning = /[123]/.test(nextDay.shift);
+                    const forcedShift = hasMorning ? '56' : '456';
+                    staff.schedule[d + 1] = {
+                        shift: forcedShift,
+                        role: forcedShift
+                    };
+                }
+            }
+        }
+    });
+
+    // APPLY AUTOMATIC WEEKEND OVERTIME SHIFTS
+    refinedList.forEach((staff: StaffMember) => {
+        for (let d = 1; d <= duration; d++) {
+            const info = staff.schedule[d];
+            if (info && info.role !== 'OFF') {
+                let added = "";
+                let newShift = info.shift;
+
+                const isFriSatSun = isWeekend(year, month, startDay, d) || isFriday(year, month, startDay, d);
+
+                // 1. Overtime Ca 2,5 on Fri, Sat, Sun (T6-CN)
+                if (config.autoAddWeekendShifts && isFriSatSun) {
+                    if (!newShift.includes('2')) {
+                        newShift += '2';
+                        added += '2';
+                    }
+                    if (!newShift.includes('5')) {
+                        newShift += '5';
+                        added += '5';
+                    }
+                }
+
+                // 2. Overtime Ca 1 on Fri, Sat, Sun (T6-CN)
+                if (config.autoAddWeekendShift1 && isFriSatSun) {
+                    if (!newShift.includes('1')) {
+                        newShift += '1';
+                        added += '1';
+                    }
+                }
+
+                if (added) {
+                    newShift = newShift.split('').sort().join('');
+                    let newRole = newShift;
+                    const match = info.role.match(/\(([^)]+)\)/);
+                    if (match) {
+                        newRole = `${newShift} (${match[1]})`;
+                    }
+                    
+                    staff.schedule[d] = {
+                        ...info,
+                        shift: newShift,
+                        role: newRole,
+                        addedWeekendShifts: (info.addedWeekendShifts || "") + added,
+                        isManual: true
+                    };
+                }
+            }
+        }
+    });
+
     refreshAllStats();
     return refinedList;
 };
@@ -950,6 +1029,11 @@ export const calculateSpecialHoursForWeek = (staff: StaffMember, startDay: numbe
         if (info && (info.role.includes('(GH)') || info.role.includes('(Kho)') || (includeTn && info.role.includes('(TN)')))) {
             const cleanStr = info.shift.replace(/[^0-9]/g, '');
             for (const char of cleanStr) { if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char]; }
+            if (info.addedWeekendShifts) {
+                for (const char of info.addedWeekendShifts) {
+                    if (HOURS_CONFIG[char]) total -= HOURS_CONFIG[char];
+                }
+            }
         }
     }
     return total;
@@ -960,9 +1044,17 @@ export const calculateNormalHoursForWeek = (staff: StaffMember, startDay: number
     for (let d = startDay; d <= endDay; d++) {
         if (d >= staff.schedule.length) continue;
         const info = staff.schedule[d];
-        if (info && info.role !== 'OFF' && !info.role.includes('(')) {
-            const cleanStr = info.shift.replace(/[^0-9]/g, '');
-            for (const char of cleanStr) { if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char]; }
+        if (info && info.role !== 'OFF') {
+            if (!info.role.includes('(')) {
+                const cleanStr = info.shift.replace(/[^0-9]/g, '');
+                for (const char of cleanStr) { if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char]; }
+            } else {
+                if (info.addedWeekendShifts) {
+                    for (const char of info.addedWeekendShifts) {
+                        if (HOURS_CONFIG[char]) total += HOURS_CONFIG[char];
+                    }
+                }
+            }
         }
     }
     return total;

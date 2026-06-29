@@ -73,6 +73,8 @@ export interface ScheduleConfig {
     duration: number;
     includeTn?: boolean;
     shiftDefinitions?: ShiftDefinitions;
+    autoAddWeekendShifts?: boolean;
+    autoAddWeekendShift1?: boolean;
 }
 
 export interface ScheduleTargets {

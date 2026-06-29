@@ -129,6 +129,7 @@ function generateSchedule(
                 if (!sched || sched.role === 'OFF' || sched.role.includes('(')) return false;
                 if (targetGender === 'Nam' && s.gender !== 'Nam') return false;
                 if (targetGender === 'Nu' && s.gender !== 'Nu') return false;
+                if (d - 1 >= 1 && s.schedule[d - 1]?.role.includes('(GH)')) return false;
                 return true;
             });
 
@@ -224,6 +225,10 @@ function generateSchedule(
                     
                     // Ràng buộc tuyệt đối: Nam có GH cuối tuần thì không được làm Kho cuối tuần
                     if (roleType === 'kho' && isWeekendDay(d) && s.gender === 'Nam' && staffWithWeekendGh.has(s.id)) {
+                        return false;
+                    }
+
+                    if (d - 1 >= 1 && s.schedule[d - 1]?.role.includes('(GH)')) {
                         return false;
                     }
 

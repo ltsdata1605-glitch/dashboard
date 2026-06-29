@@ -9,9 +9,21 @@ interface LegendProps {
     onboardingStep: number;
     autoAddWeekendShifts?: boolean;
     onAutoAddWeekendShiftsChange?: (checked: boolean) => void;
+    autoAddWeekendShift1?: boolean;
+    onAutoAddWeekendShift1Change?: (checked: boolean) => void;
 }
 
-const Legend: React.FC<LegendProps> = ({ targets, onEditRule, includeTnInSbh, onIncludeTnInSbhChange, onboardingStep, autoAddWeekendShifts = false, onAutoAddWeekendShiftsChange }) => {
+const Legend: React.FC<LegendProps> = ({ 
+    targets, 
+    onEditRule, 
+    includeTnInSbh, 
+    onIncludeTnInSbhChange, 
+    onboardingStep, 
+    autoAddWeekendShifts = false, 
+    onAutoAddWeekendShiftsChange,
+    autoAddWeekendShift1 = false,
+    onAutoAddWeekendShift1Change
+}) => {
     return (
         <div className="mt-4">
             {targets && (
@@ -99,7 +111,18 @@ const Legend: React.FC<LegendProps> = ({ targets, onEditRule, includeTnInSbh, on
                                         onChange={(e) => onAutoAddWeekendShiftsChange(e.target.checked)}
                                         className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
                                     />
-                                    <span className="font-semibold text-slate-600 group-hover:text-indigo-600 text-xs transition-colors">Tăng ca 2,5 T7-CN</span>
+                                    <span className="font-semibold text-slate-600 group-hover:text-indigo-600 text-xs transition-colors">Tăng ca 2,5 T6-CN</span>
+                                </label>
+                            )}
+                            {onAutoAddWeekendShift1Change && (
+                                <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-indigo-200 bg-white transition-colors group gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={autoAddWeekendShift1}
+                                        onChange={(e) => onAutoAddWeekendShift1Change(e.target.checked)}
+                                        className="h-4 w-4 border-slate-300 text-indigo-600 focus:ring-indigo-500 accent-indigo-600"
+                                    />
+                                    <span className="font-semibold text-slate-600 group-hover:text-indigo-600 text-xs transition-colors">Tăng ca 1 T6-CN</span>
                                 </label>
                             )}
                             <label className="inline-flex items-center cursor-pointer select-none h-9 px-4 border border-slate-200 hover:border-indigo-200 bg-white transition-colors group gap-2">

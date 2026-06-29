@@ -103,8 +103,9 @@ const App: React.FC = () => {
   const [dailyRequirements, setDailyRequirements] = useState<DailyRequirements>(ZERO_REQUIREMENTS);
   const [busySchedule, setBusySchedule] = useState<BusySchedule>({});
   const [departmentFilter, setDepartmentFilter] = useState('');
-  const [includeTnInSbh, setIncludeTnInSbh] = useState<boolean>(true);
+  const [includeTnInSbh, setIncludeTnInSbh] = useState<boolean>(false);
   const [autoAddWeekendShifts, setAutoAddWeekendShifts] = useState<boolean>(false);
+  const [autoAddWeekendShift1, setAutoAddWeekendShift1] = useState<boolean>(false);
   const [isEditRulesModalOpen, setEditRulesModalOpen] = useState(false);
   const [isEditShiftModalOpen, setEditShiftModalOpen] = useState(false);
   const [isImportModalOpen, setImportModalOpen] = useState(false);
@@ -238,8 +239,9 @@ const App: React.FC = () => {
         setMonthYear(savedUiState.monthYear || getDefaultMonthYear());
         setStartDay(savedUiState.startDay || 1);
         setDuration(savedUiState.duration || 30);
-        setIncludeTnInSbh(savedUiState.includeTnInSbh !== undefined ? savedUiState.includeTnInSbh : true);
+        setIncludeTnInSbh(savedUiState.includeTnInSbh !== undefined ? savedUiState.includeTnInSbh : false);
         setAutoAddWeekendShifts(savedUiState.autoAddWeekendShifts !== undefined ? savedUiState.autoAddWeekendShifts : false);
+        setAutoAddWeekendShift1(savedUiState.autoAddWeekendShift1 !== undefined ? savedUiState.autoAddWeekendShift1 : false);
       }
       setIsDbLoaded(true);
     };
@@ -362,9 +364,9 @@ const App: React.FC = () => {
     idb.saveData(busyScheduleKey, busySchedule);
     const unresolvedKey = getKey(`unresolved-${monthYear}`);
     idb.saveData(unresolvedKey, unresolvedConflicts);
-    const uiState = { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, lastSupermarket: currentSupermarket };
+    const uiState = { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, lastSupermarket: currentSupermarket };
     idb.saveData('uiState', uiState);
-  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, currentSupermarket, getKey, unresolvedConflicts]);
+  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, currentSupermarket, getKey, unresolvedConflicts]);
 
   // Hiệu ứng tự động đồng bộ đám mây (debounced 3s)
   useEffect(() => {
@@ -383,7 +385,7 @@ const App: React.FC = () => {
       };
 
       await syncIfChanged('meta_supermarkets', supermarkets);
-      await syncIfChanged('uiState', { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, lastSupermarket: currentSupermarket });
+      await syncIfChanged('uiState', { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, lastSupermarket: currentSupermarket });
       await syncIfChanged(getKey('nams'), nams);
       await syncIfChanged(getKey('nus'), nus);
       await syncIfChanged(getKey('rules'), rules);
@@ -397,7 +399,7 @@ const App: React.FC = () => {
     }, 3000);
 
     return () => clearTimeout(timer);
-  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, currentSupermarket, getKey, unresolvedConflicts, user, supermarkets]);
+  }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, currentSupermarket, getKey, unresolvedConflicts, user, supermarkets]);
 
   const logHistory = useCallback((description: string) => {
     const newEntry: ScheduleHistoryEntry = {
@@ -538,8 +540,10 @@ const App: React.FC = () => {
     rulesOverride?: SchedulingRules;
     namsOverride?: StaffInitialData[];
     nusOverride?: StaffInitialData[];
+    autoAddWeekendShiftsOverride?: boolean;
+    autoAddWeekendShift1Override?: boolean;
   } = {}) => {
-      const { forDepartment, busyScheduleOverride, patternsOverride, rulesOverride, namsOverride, nusOverride } = options;
+      const { forDepartment, busyScheduleOverride, patternsOverride, rulesOverride, namsOverride, nusOverride, autoAddWeekendShiftsOverride, autoAddWeekendShift1Override } = options;
       const currentNams = namsOverride || nams;
       const currentNus = nusOverride || nus;
       if (!monthYear || isNaN(startDay) || isNaN(duration) || !(rulesOverride || rules) || (currentNams.length === 0 && currentNus.length === 0)) return;
@@ -549,7 +553,15 @@ const App: React.FC = () => {
         const prevMonthYear = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const prevStatsKey = getKey(`monthly_stats-${prevMonthYear}`);
         const previousMonthStats = await idb.loadData<MonthlyStats>(prevStatsKey) || {};
-        const config: ScheduleConfig = { year: yearVal, month: monthVal, startDay, duration, includeTn: includeTnInSbh };
+        const config: ScheduleConfig = { 
+            year: yearVal, 
+            month: monthVal, 
+            startDay, 
+            duration, 
+            includeTn: includeTnInSbh,
+            autoAddWeekendShifts: autoAddWeekendShiftsOverride !== undefined ? autoAddWeekendShiftsOverride : autoAddWeekendShifts,
+            autoAddWeekendShift1: autoAddWeekendShift1Override !== undefined ? autoAddWeekendShift1Override : autoAddWeekendShift1
+        };
         const targetDepartment = forDepartment || departmentFilter;
         const effectiveRules = rulesOverride || rules;
         const effectivePatterns = patternsOverride || departmentPatterns;
@@ -580,7 +592,7 @@ const App: React.FC = () => {
         await idb.saveData(currentStatsKey, currentStatsToSave);
         setBalancingFeedback(generateBalancingFeedback(currentStatsToSave, previousMonthStats));
       })();
-  }, [monthYear, startDay, duration, nams, nus, rules, departmentPatterns, busySchedule, includeTnInSbh, staffList, departmentFilter, getKey]);
+  }, [monthYear, startDay, duration, nams, nus, rules, departmentPatterns, busySchedule, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, staffList, departmentFilter, getKey]);
   
   useEffect(() => {
     if (durationDebounceTimer.current) clearTimeout(durationDebounceTimer.current);
@@ -634,87 +646,15 @@ const App: React.FC = () => {
 
   const handleAutoAddWeekendShiftsChange = useCallback((checked: boolean) => {
     setAutoAddWeekendShifts(checked);
-    
-    if (staffList.length === 0 || !monthYear) return;
-    const [yearVal, monthVal] = monthYear.split('-').map(Number);
-    
-    const isWeekend = (year: number, month: number, startDay: number, dayIndex: number) => {
-        const date = new Date(year, month - 1, startDay + dayIndex - 1);
-        const day = date.getDay();
-        return day === 0 || day === 6; // Sunday or Saturday
-    };
-    
-    const updatedStaffList = staffList.map(staff => {
-        const newStaff = { ...staff, schedule: [...staff.schedule] };
-        let hasChanges = false;
-        
-        for (let d = 1; d <= duration; d++) {
-            if (isWeekend(yearVal, monthVal, startDay, d)) {
-                const info = newStaff.schedule[d];
-                if (info && info.role !== 'OFF') {
-                    if (checked) {
-                        let added = "";
-                        let newShift = info.shift;
-                        if (!newShift.includes('2')) {
-                            newShift += '2';
-                            added += '2';
-                        }
-                        if (!newShift.includes('5')) {
-                            newShift += '5';
-                            added += '5';
-                        }
-                        if (added) {
-                            newShift = newShift.split('').sort().join('');
-                            let newRole = newShift;
-                            const match = info.role.match(/\(([^)]+)\)/);
-                            if (match) {
-                                newRole = `${newShift} (${match[1]})`;
-                            }
-                            
-                            newStaff.schedule[d] = {
-                                ...info,
-                                shift: newShift,
-                                role: newRole,
-                                addedWeekendShifts: (info.addedWeekendShifts || "") + added,
-                                isManual: true
-                            };
-                            hasChanges = true;
-                        }
-                    } else {
-                        if (info.addedWeekendShifts) {
-                            let newShift = info.shift;
-                            for (const char of info.addedWeekendShifts) {
-                                newShift = newShift.replace(char, '');
-                            }
-                            
-                            let newRole = newShift;
-                            const match = info.role.match(/\(([^)]+)\)/);
-                            if (match) {
-                                newRole = `${newShift} (${match[1]})`;
-                            }
-                            
-                            newStaff.schedule[d] = {
-                                ...info,
-                                shift: newShift,
-                                role: newRole,
-                                addedWeekendShifts: undefined
-                            };
-                            hasChanges = true;
-                        }
-                    }
-                }
-            }
-        }
-        
-        if (hasChanges) {
-            newStaff.stats = recalculateStatsForStaff(newStaff);
-        }
-        return newStaff;
-    });
-    
-    setStaffList(updatedStaffList);
-    logHistory(checked ? "Tự động tăng ca 2,5 T7-CN" : "Gỡ tự động tăng ca 2,5 T7-CN");
-  }, [staffList, monthYear, duration, startDay]);
+    logHistory(checked ? "Tự động tăng ca 2,5 T6-CN" : "Gỡ tự động tăng ca 2,5 T6-CN");
+    generateNewSchedule({ autoAddWeekendShiftsOverride: checked });
+  }, [generateNewSchedule, logHistory]);
+
+  const handleAutoAddWeekendShift1Change = useCallback((checked: boolean) => {
+    setAutoAddWeekendShift1(checked);
+    logHistory(checked ? "Tự động tăng ca 1 T6-CN" : "Gỡ tự động tăng ca 1 T6-CN");
+    generateNewSchedule({ autoAddWeekendShift1Override: checked });
+  }, [generateNewSchedule, logHistory]);
 
   // --- XUẤT ẢNH ---
 
@@ -1547,6 +1487,8 @@ const App: React.FC = () => {
                  onboardingStep={onboardingStep} 
                  autoAddWeekendShifts={autoAddWeekendShifts}
                  onAutoAddWeekendShiftsChange={handleAutoAddWeekendShiftsChange}
+                 autoAddWeekendShift1={autoAddWeekendShift1}
+                 onAutoAddWeekendShift1Change={handleAutoAddWeekendShift1Change}
                />
             </div>
           </div>

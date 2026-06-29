@@ -199,6 +199,31 @@ function rebuildEmployeeSubtree(
         
         if (isCategorySummary) {
             currentNnhHeader = cleanName;
+            const parentName = cleanName.replace(/^NNH\s+/i, '').trim();
+            const parentKey = parentName.toLowerCase();
+            
+            let nnhNode = nnhMap.get(parentKey);
+            if (!nnhNode) {
+                nnhNode = {
+                    name: parentName,
+                    level: 'nnh',
+                    dtlk: row.dtlk,
+                    dtqd: row.dtqd,
+                    hieuQuaQD: row.hieuQuaQD,
+                    soLuong: row.soLuong,
+                    donGia: row.donGia,
+                    children: []
+                };
+                nnhMap.set(parentKey, nnhNode);
+                nnhOrder.push(parentKey);
+                nhomHangMaps.set(parentKey, new Map());
+            } else {
+                nnhNode.dtlk += row.dtlk;
+                nnhNode.dtqd += row.dtqd;
+                nnhNode.soLuong += row.soLuong;
+            }
+            activeNhomHangNode = null;
+            activeChildKey = null;
             continue;
         }
 
@@ -283,7 +308,7 @@ function rebuildEmployeeSubtree(
                 }
             } else {
                 // Fallback parent and child
-                const fallbackParentName = 'Khác';
+                const fallbackParentName = currentNnhHeader ? currentNnhHeader.replace(/^NNH\s+/i, '').trim() : 'Khác';
                 const fallbackChildName = cleanName;
                 const parentKey = fallbackParentName.toLowerCase();
                 const childKey = fallbackChildName.toLowerCase();
@@ -293,16 +318,20 @@ function rebuildEmployeeSubtree(
                     nnhNode = {
                         name: fallbackParentName,
                         level: 'nnh',
-                        dtlk: 0,
-                        dtqd: 0,
-                        hieuQuaQD: 0,
-                        soLuong: 0,
-                        donGia: 0,
+                        dtlk: row.dtlk,
+                        dtqd: row.dtqd,
+                        hieuQuaQD: row.hieuQuaQD,
+                        soLuong: row.soLuong,
+                        donGia: row.donGia,
                         children: []
                     };
                     nnhMap.set(parentKey, nnhNode);
                     nnhOrder.push(parentKey);
                     nhomHangMaps.set(parentKey, new Map());
+                } else {
+                    nnhNode.dtlk += row.dtlk;
+                    nnhNode.dtqd += row.dtqd;
+                    nnhNode.soLuong += row.soLuong;
                 }
                 
                 const nhomHangMap = nhomHangMaps.get(parentKey)!;
@@ -356,31 +385,33 @@ function rebuildEmployeeSubtree(
     for (const key of nnhOrder) {
         const nnhNode = nnhMap.get(key);
         if (nnhNode) {
-            let totalDtlk = 0;
-            let totalDtqd = 0;
-            let totalSoLuong = 0;
-            
-            for (const nhomHang of nnhNode.children) {
-                // First recalculate nhomHang level derived metrics
-                nhomHang.donGia = nhomHang.soLuong > 0 ? (nhomHang.dtqd / nhomHang.soLuong) : 0;
-                nhomHang.hieuQuaQD = nhomHang.dtlk > 0 ? (nhomHang.dtqd - nhomHang.dtlk) / nhomHang.dtlk : 0;
+            if (nnhNode.children.length > 0) {
+                let totalDtlk = 0;
+                let totalDtqd = 0;
+                let totalSoLuong = 0;
                 
-                // Recalculate brand level donGia and hieuQuaQD if they were merged!
-                for (const hang of nhomHang.children) {
-                    hang.donGia = hang.soLuong > 0 ? (hang.dtqd / hang.soLuong) : 0;
-                    hang.hieuQuaQD = hang.dtlk > 0 ? (hang.dtqd - hang.dtlk) / hang.dtlk : 0;
-                }
+                for (const nhomHang of nnhNode.children) {
+                    // First recalculate nhomHang level derived metrics
+                    nhomHang.donGia = nhomHang.soLuong > 0 ? (nhomHang.dtqd / nhomHang.soLuong) : 0;
+                    nhomHang.hieuQuaQD = nhomHang.dtlk > 0 ? (nhomHang.dtqd - nhomHang.dtlk) / nhomHang.dtlk : 0;
+                    
+                    // Recalculate brand level donGia and hieuQuaQD if they were merged!
+                    for (const hang of nhomHang.children) {
+                        hang.donGia = hang.soLuong > 0 ? (hang.dtqd / hang.soLuong) : 0;
+                        hang.hieuQuaQD = hang.dtlk > 0 ? (hang.dtqd - hang.dtlk) / hang.dtlk : 0;
+                    }
 
-                totalDtlk += nhomHang.dtlk;
-                totalDtqd += nhomHang.dtqd;
-                totalSoLuong += nhomHang.soLuong;
+                    totalDtlk += nhomHang.dtlk;
+                    totalDtqd += nhomHang.dtqd;
+                    totalSoLuong += nhomHang.soLuong;
+                }
+                
+                nnhNode.dtlk = totalDtlk;
+                nnhNode.dtqd = totalDtqd;
+                nnhNode.soLuong = totalSoLuong;
+                nnhNode.donGia = totalSoLuong > 0 ? (totalDtqd / totalSoLuong) : 0;
+                nnhNode.hieuQuaQD = totalDtlk > 0 ? (totalDtqd - totalDtlk) / totalDtlk : 0;
             }
-            
-            nnhNode.dtlk = totalDtlk;
-            nnhNode.dtqd = totalDtqd;
-            nnhNode.soLuong = totalSoLuong;
-            nnhNode.donGia = totalSoLuong > 0 ? (totalDtqd / totalSoLuong) : 0;
-            nnhNode.hieuQuaQD = totalDtlk > 0 ? (totalDtqd - totalDtlk) / totalDtlk : 0;
             
             nnhList.push(nnhNode);
         }
