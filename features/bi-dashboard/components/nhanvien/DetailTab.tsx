@@ -123,7 +123,7 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
                         >
                             {isExpanded
                                 ? <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400" />
-                               : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
+                                : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
                             }
                         </button>
                     ) : (
@@ -151,11 +151,10 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
             </td>
             {/* Hiệu quả QĐ */}
             <td className={`px-2 py-1.5 text-center ${style.size} tabular-nums border-r border-slate-100 dark:border-slate-800/60`}>
-                <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                    node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
-                    : node.hieuQuaQD > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                    : 'text-slate-400'
-                }`}>
+                <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${node.hieuQuaQD >= 0.3 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        : node.hieuQuaQD > 0 ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                            : 'text-slate-400'
+                    }`}>
                     {Math.round(node.hieuQuaQD * 100)}%
                 </span>
             </td>
@@ -300,7 +299,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         }
         // Filter by active departments
         if (activeDepartments.length > 0) {
-            departments = departments.filter(d => 
+            departments = departments.filter(d =>
                 d.level !== 'department' || activeDepartments.some(ad => d.name === ad)
             );
         }
@@ -366,7 +365,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         const nnhs = new Set<string>();
         const nhomHangs = new Set<string>();
         const hangs = new Set<string>();
-        
+
         const walk = (nodes: DetailNode[]) => {
             for (const node of nodes) {
                 if (node.level === 'employee') employees.add(node.name);
@@ -390,18 +389,18 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
         if (isActive === false) return [];
         const q = debouncedSearchQuery.toLowerCase().trim();
         const isFiltering = filterEmployee !== 'all' || filterNnh !== 'all' || filterNhomHang !== 'all' || filterHang !== 'all' || q !== '';
-        
+
         const filterNodes = (nodes: DetailNode[]): DetailNode[] => {
             return nodes.reduce<DetailNode[]>((acc, node) => {
                 const cloned = { ...node };
-                
+
                 // Recursively filter children first
                 if (cloned.children && cloned.children.length > 0) {
                     cloned.children = filterNodes(cloned.children);
                 }
-                
+
                 let keep = true;
-                
+
                 // Apply Dropdown Filters
                 if (cloned.level === 'employee') {
                     if (filterEmployee !== 'all' && cloned.name !== filterEmployee) keep = false;
@@ -410,12 +409,12 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                 if (cloned.level === 'nnh' && filterNnh !== 'all' && cloned.name !== filterNnh) keep = false;
                 if (cloned.level === 'nhomHang' && filterNhomHang !== 'all' && cloned.name !== filterNhomHang) keep = false;
                 if (cloned.level === 'hang' && filterHang !== 'all' && cloned.name !== filterHang) keep = false;
-                
+
                 // If a structural node loses all its children due to active filtering, drop it
                 if (isFiltering && ['department', 'employee', 'nnh', 'nhomHang'].includes(cloned.level) && cloned.children.length === 0) {
                     keep = false;
                 }
-                
+
                 if (keep) {
                     // Update structural parent totals based on remaining filtered children
                     if (isFiltering && cloned.children && cloned.children.length > 0 && ['department', 'employee', 'nnh', 'nhomHang'].includes(cloned.level)) {
