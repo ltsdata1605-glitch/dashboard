@@ -1,4 +1,5 @@
 import { useState, useRef, startTransition, useEffect } from 'react';
+// @ts-ignore: Vite virtual module alias for Web Workers
 import SalesWorker from '../services/worker?worker';
 import type { DataRow, Status, AppState, ProductConfig } from '../types';
 import type { User } from 'firebase/auth';

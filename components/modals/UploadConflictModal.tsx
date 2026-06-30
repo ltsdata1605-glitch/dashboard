@@ -20,7 +20,7 @@ interface UploadConflictModalProps {
     onResolve: (action: 'overwrite_deactivate' | 'merge_deduplicate' | 'merge_all' | 'cancel') => void;
 }
 
-const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
+export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
     isOpen,
     conflicts,
     newFilename,

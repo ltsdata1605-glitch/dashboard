@@ -13,7 +13,7 @@ interface EmployeeManagerModalProps {
     onClose: () => void;
 }
 
-const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOpen, onClose }) => {
+export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOpen, onClose }) => {
     const { departmentMap, updateDepartmentMap, uniqueFilterOptions } = useDashboardContext();
     const [searchTerm, setSearchTerm] = useState('');
     const deferredSearchTerm = React.useDeferredValue(searchTerm);

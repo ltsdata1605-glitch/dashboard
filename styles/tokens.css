@@ -1,0 +1,382 @@
+/* ═══════════════════════════════════════════════════════════
+   YCX DASHBOARD — DESIGN TOKEN SYSTEM
+   Architecture: Primitive → Semantic → Component
+   Grid: 8pt base | Palette: Sky/Slate | Dark: class-based
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  /* ─── PRIMITIVE TOKENS ─── */
+
+  /* Color Primitives — Sky palette (brand) */
+  --p-sky-50:  #f0f9ff;
+  --p-sky-100: #e0f2fe;
+  --p-sky-200: #bae6fd;
+  --p-sky-300: #7dd3fc;
+  --p-sky-400: #38bdf8;
+  --p-sky-500: #0ea5e9;
+  --p-sky-600: #0284c7;
+  --p-sky-700: #0369a1;
+  --p-sky-800: #075985;
+  --p-sky-900: #0c4a6e;
+  --p-sky-950: #082f49;
+
+  /* Color Primitives — Slate palette (neutral) */
+  --p-slate-50:  #f8fafc;
+  --p-slate-100: #f1f5f9;
+  --p-slate-200: #e2e8f0;
+  --p-slate-300: #cbd5e1;
+  --p-slate-400: #94a3b8;
+  --p-slate-500: #64748b;
+  --p-slate-600: #475569;
+  --p-slate-700: #334155;
+  --p-slate-800: #1e293b;
+  --p-slate-900: #0f172a;
+  --p-slate-950: #020617;
+
+  /* Color Primitives — Semantic Status */
+  --p-emerald-50:  #ecfdf5;
+  --p-emerald-100: #d1fae5;
+  --p-emerald-500: #10b981;
+  --p-emerald-600: #059669;
+  --p-emerald-700: #047857;
+  --p-emerald-900: #064e3b;
+
+  --p-amber-50:  #fffbeb;
+  --p-amber-100: #fef3c7;
+  --p-amber-500: #f59e0b;
+  --p-amber-600: #d97706;
+  --p-amber-700: #b45309;
+  --p-amber-900: #78350f;
+
+  --p-rose-50:  #fff1f2;
+  --p-rose-100: #ffe4e6;
+  --p-rose-500: #f43f5e;
+  --p-rose-600: #e11d48;
+  --p-rose-700: #be123c;
+  --p-rose-900: #881337;
+
+  --p-violet-50:  #f5f3ff;
+  --p-violet-100: #ede9fe;
+  --p-violet-500: #8b5cf6;
+  --p-violet-600: #7c3aed;
+  --p-violet-700: #6d28d9;
+
+  /* Spacing Primitives — 4px base (8pt grid compatible) */
+  --p-space-0:   0px;
+  --p-space-0-5: 2px;
+  --p-space-1:   4px;
+  --p-space-1-5: 6px;
+  --p-space-2:   8px;
+  --p-space-3:   12px;
+  --p-space-4:   16px;
+  --p-space-5:   20px;
+  --p-space-6:   24px;
+  --p-space-8:   32px;
+  --p-space-10:  40px;
+  --p-space-12:  48px;
+  --p-space-16:  64px;
+  --p-space-20:  80px;
+  --p-space-24:  96px;
+
+  /* Radius Primitives */
+  --p-radius-none: 0px;
+  --p-radius-sm:   4px;
+  --p-radius-md:   6px;
+  --p-radius-lg:   8px;
+  --p-radius-xl:   12px;
+  --p-radius-2xl:  16px;
+  --p-radius-3xl:  24px;
+  --p-radius-full: 9999px;
+
+  /* Shadow Primitives */
+  --p-shadow-xs:  0 1px 2px 0 rgba(0, 0, 0, 0.03);
+  --p-shadow-sm:  0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+  --p-shadow-md:  0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  --p-shadow-lg:  0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  --p-shadow-xl:  0 20px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+  --p-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.20);
+  --p-shadow-ring: 0 0 0 3px;
+
+  /* Typography Primitives */
+  --p-font-sans:  'UTM Avo', 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --p-font-mono:  'Fira Code', ui-monospace, monospace;
+  --p-font-display: 'UTM Avo', 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif;
+
+  --p-text-2xs:  10px;
+  --p-text-xs:   12px;
+  --p-text-sm:   14px;
+  --p-text-base: 16px;
+  --p-text-lg:   18px;
+  --p-text-xl:   20px;
+  --p-text-2xl:  24px;
+  --p-text-3xl:  30px;
+  --p-text-4xl:  36px;
+
+  --p-leading-none:    1;
+  --p-leading-tight:   1.25;
+  --p-leading-snug:    1.375;
+  --p-leading-normal:  1.5;
+  --p-leading-relaxed: 1.625;
+
+  --p-weight-light:    300;
+  --p-weight-normal:   400;
+  --p-weight-medium:   500;
+  --p-weight-semibold: 600;
+  --p-weight-bold:     700;
+  --p-weight-black:    900;
+
+  /* Tracking Primitives */
+  --p-tracking-tight:  -0.02em;
+  --p-tracking-normal: -0.01em;
+  --p-tracking-wide:   0.025em;
+  --p-tracking-wider:  0.05em;
+
+  /* Animation Primitives */
+  --p-duration-fast:     100ms;
+  --p-duration-normal:   200ms;
+  --p-duration-slow:     300ms;
+  --p-duration-slower:   500ms;
+  --p-ease-default:      cubic-bezier(0.4, 0, 0.2, 1);
+  --p-ease-in:           cubic-bezier(0.4, 0, 1, 1);
+  --p-ease-out:          cubic-bezier(0, 0, 0.2, 1);
+  --p-ease-spring:       cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* Z-Index Scale */
+  --p-z-base:      0;
+  --p-z-dropdown:  50;
+  --p-z-sticky:    100;
+  --p-z-overlay:   200;
+  --p-z-modal:     300;
+  --p-z-popover:   400;
+  --p-z-toast:     500;
+  --p-z-tooltip:   600;
+  --p-z-max:       999;
+
+
+  /* ─── SEMANTIC TOKENS (Light Mode) ─── */
+
+  /* Brand */
+  --brand: var(--p-sky-500);
+  --brand-hover: var(--p-sky-600);
+  --brand-active: var(--p-sky-700);
+  --brand-subtle: var(--p-sky-50);
+  --brand-muted: var(--p-sky-100);
+  --brand-on: #ffffff;
+
+  /* Surfaces */
+  --surface-ground: var(--p-slate-100);
+  --surface-primary: #ffffff;
+  --surface-secondary: var(--p-slate-50);
+  --surface-elevated: #ffffff;
+  --surface-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Text */
+  --text-primary: var(--p-slate-900);
+  --text-secondary: var(--p-slate-600);
+  --text-tertiary: var(--p-slate-400);
+  --text-inverse: #ffffff;
+  --text-brand: var(--p-sky-600);
+  --text-success: var(--p-emerald-700);
+  --text-warning: var(--p-amber-700);
+  --text-danger: var(--p-rose-700);
+
+  /* Borders */
+  --border-default: var(--p-slate-200);
+  --border-subtle: var(--p-slate-100);
+  --border-strong: var(--p-slate-300);
+  --border-brand: var(--p-sky-500);
+  --border-focus: var(--p-sky-500);
+
+  /* Status */
+  --status-success: var(--p-emerald-500);
+  --status-success-subtle: var(--p-emerald-50);
+  --status-success-text: var(--p-emerald-700);
+
+  --status-warning: var(--p-amber-500);
+  --status-warning-subtle: var(--p-amber-50);
+  --status-warning-text: var(--p-amber-700);
+
+  --status-danger: var(--p-rose-500);
+  --status-danger-subtle: var(--p-rose-50);
+  --status-danger-text: var(--p-rose-700);
+
+  --status-info: var(--p-sky-500);
+  --status-info-subtle: var(--p-sky-50);
+  --status-info-text: var(--p-sky-700);
+
+  /* Shadows — Semantic */
+  --shadow-card: var(--p-shadow-sm);
+  --shadow-card-hover: var(--p-shadow-md);
+  --shadow-dropdown: var(--p-shadow-lg);
+  --shadow-modal: var(--p-shadow-xl);
+  --shadow-focus: var(--p-shadow-ring) rgba(14, 165, 233, 0.2);
+
+
+  /* ─── COMPONENT TOKENS ─── */
+
+  /* Card */
+  --card-bg: var(--surface-primary);
+  --card-border: var(--border-subtle);
+  --card-radius: var(--p-radius-xl);
+  --card-padding: var(--p-space-6);
+  --card-shadow: var(--shadow-card);
+  --card-shadow-hover: var(--shadow-card-hover);
+
+  /* Button */
+  --btn-radius: var(--p-radius-lg);
+  --btn-font-weight: var(--p-weight-semibold);
+  --btn-transition: all var(--p-duration-normal) var(--p-ease-default);
+  --btn-height-sm: 32px;
+  --btn-height-md: 40px;
+  --btn-height-lg: 48px;
+  --btn-px-sm: var(--p-space-3);
+  --btn-px-md: var(--p-space-4);
+  --btn-px-lg: var(--p-space-6);
+
+  /* Input */
+  --input-bg: var(--surface-primary);
+  --input-border: var(--border-default);
+  --input-border-focus: var(--border-focus);
+  --input-radius: var(--p-radius-lg);
+  --input-height: 40px;
+  --input-px: var(--p-space-3);
+  --input-text: var(--text-primary);
+  --input-placeholder: var(--text-tertiary);
+  --input-shadow-focus: var(--shadow-focus);
+
+  /* Modal */
+  --modal-bg: var(--surface-primary);
+  --modal-radius: var(--p-radius-2xl);
+  --modal-padding: var(--p-space-8);
+  --modal-shadow: var(--shadow-modal);
+  --modal-overlay: var(--surface-overlay);
+
+  /* Badge */
+  --badge-radius: var(--p-radius-full);
+  --badge-px: var(--p-space-2);
+  --badge-py: var(--p-space-0-5);
+  --badge-text-size: var(--p-text-xs);
+  --badge-font-weight: var(--p-weight-medium);
+
+  /* Table */
+  --table-header-bg: var(--p-slate-50);
+  --table-header-text: var(--p-slate-500);
+  --table-header-size: 11px;
+  --table-header-weight: var(--p-weight-bold);
+  --table-header-tracking: var(--p-tracking-wide);
+  --table-row-hover: var(--p-slate-50);
+  --table-border: var(--border-default);
+  --table-cell-px: var(--p-space-3);
+  --table-cell-py: var(--p-space-2);
+
+  /* Sidebar */
+  --sidebar-width-collapsed: 80px;
+  --sidebar-width-expanded: 260px;
+  --sidebar-bg: var(--p-slate-900);
+  --sidebar-text: var(--p-slate-300);
+  --sidebar-text-active: #ffffff;
+  --sidebar-active-bg: rgba(14, 165, 233, 0.15);
+  --sidebar-active-indicator: var(--brand);
+
+  /* Topbar */
+  --topbar-height: 64px;
+  --topbar-height-mobile: 52px;
+  --topbar-bg: rgba(255, 255, 255, 0.9);
+  --topbar-border: var(--border-subtle);
+
+  /* Stat Card */
+  --stat-label-size: var(--p-text-xs);
+  --stat-label-color: var(--text-secondary);
+  --stat-value-size: var(--p-text-2xl);
+  --stat-value-weight: var(--p-weight-bold);
+
+  /* Progress Bar */
+  --progress-height: 6px;
+  --progress-radius: var(--p-radius-full);
+  --progress-bg: var(--p-slate-200);
+  --progress-fill: var(--brand);
+
+  /* Tooltip */
+  --tooltip-bg: var(--p-slate-900);
+  --tooltip-text: #ffffff;
+  --tooltip-radius: var(--p-radius-md);
+  --tooltip-px: var(--p-space-2);
+  --tooltip-py: var(--p-space-1);
+  --tooltip-text-size: var(--p-text-xs);
+
+  /* Skeleton */
+  --skeleton-bg: var(--p-slate-200);
+  --skeleton-shine: var(--p-slate-100);
+  --skeleton-radius: var(--p-radius-md);
+
+  /* Transition presets */
+  --transition-fast: var(--p-duration-fast) var(--p-ease-default);
+  --transition-normal: var(--p-duration-normal) var(--p-ease-default);
+  --transition-slow: var(--p-duration-slow) var(--p-ease-default);
+  --transition-spring: var(--p-duration-slow) var(--p-ease-spring);
+}
+
+
+/* ─── DARK MODE — Semantic Token Overrides ─── */
+
+.dark {
+  /* Surfaces */
+  --surface-ground: var(--p-slate-950);
+  --surface-primary: var(--p-slate-900);
+  --surface-secondary: var(--p-slate-800);
+  --surface-elevated: var(--p-slate-800);
+  --surface-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Text */
+  --text-primary: var(--p-slate-50);
+  --text-secondary: var(--p-slate-400);
+  --text-tertiary: var(--p-slate-500);
+  --text-brand: var(--p-sky-400);
+  --text-success: var(--p-emerald-500);
+  --text-warning: var(--p-amber-500);
+  --text-danger: var(--p-rose-500);
+
+  /* Borders */
+  --border-default: var(--p-slate-700);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-strong: var(--p-slate-600);
+
+  /* Status */
+  --status-success-subtle: rgba(16, 185, 129, 0.12);
+  --status-success-text: var(--p-emerald-500);
+  --status-warning-subtle: rgba(245, 158, 11, 0.12);
+  --status-warning-text: var(--p-amber-500);
+  --status-danger-subtle: rgba(244, 63, 94, 0.12);
+  --status-danger-text: var(--p-rose-500);
+  --status-info-subtle: rgba(14, 165, 233, 0.12);
+  --status-info-text: var(--p-sky-400);
+
+  /* Shadows — Darker in dark mode */
+  --shadow-card: 0 1px 3px 0 rgba(0, 0, 0, 0.2), 0 1px 2px -1px rgba(0, 0, 0, 0.2);
+  --shadow-card-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-dropdown: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+  --shadow-modal: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  --shadow-focus: var(--p-shadow-ring) rgba(14, 165, 233, 0.3);
+
+  /* Card */
+  --card-bg: var(--surface-primary);
+  --card-border: var(--border-subtle);
+
+  /* Table */
+  --table-header-bg: var(--p-slate-800);
+  --table-header-text: var(--p-slate-400);
+  --table-row-hover: var(--p-slate-800);
+
+  /* Sidebar */
+  --sidebar-bg: var(--p-slate-950);
+
+  /* Topbar */
+  --topbar-bg: rgba(15, 23, 42, 0.9);
+
+  /* Skeleton */
+  --skeleton-bg: var(--p-slate-800);
+  --skeleton-shine: var(--p-slate-700);
+
+  /* Tooltip */
+  --tooltip-bg: var(--p-slate-700);
+}

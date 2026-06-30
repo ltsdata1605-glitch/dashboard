@@ -5,6 +5,13 @@ import { abbreviateVietnameseName } from './stringUtils';
 
 import { exportElementAsImage } from '../../../services/uiService';
 
+export const exportToExcel = async (tableRef: RefObject<HTMLTableElement>) => {
+    if (tableRef.current) {
+        const XLSX = await import('xlsx');
+        const wb = XLSX.utils.table_to_book(tableRef.current, { sheet: "LichLamViec" });
+        XLSX.writeFile(wb, 'Lich_Phan_Ca.xlsx');
+    }
+};
 
 export const exportToImage = async (exportRef: RefObject<HTMLElement>, filename: string = 'Lich_Phan_Ca.png'): Promise<void> => {
     if (!exportRef.current) {

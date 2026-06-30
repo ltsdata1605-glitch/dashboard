@@ -70,7 +70,7 @@ export const getSafeDateInPrevMonth = (date: Date) => {
     return new Date(prevMonthDate.getFullYear(), prevMonthDate.getMonth(), safeDay);
 };
 
-interface HeaderConfig {
+export interface HeaderConfig {
     label: string;
     group: string;
     key: string;
