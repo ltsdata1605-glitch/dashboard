@@ -3,7 +3,7 @@ import { AlertCircle, Trash2, Info, CheckCircle2 } from 'lucide-react';
 import { Modal } from './Modal';
 import { Button } from './Button';
 
-export type ConfirmVariant = 'danger' | 'warning' | 'info' | 'success';
+type ConfirmVariant = 'danger' | 'warning' | 'info' | 'success';
 
 export interface ConfirmDialogProps {
   isOpen: boolean;

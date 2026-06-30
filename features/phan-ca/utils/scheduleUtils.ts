@@ -1075,14 +1075,7 @@ export const recalculateStatsForWeek = (staff: StaffMember, startDay: number, en
   return weeklyStats;
 };
 
-export const isContiguous = (shiftCode: string): boolean => {
-    if (!shiftCode || !/^\d+$/.test(shiftCode)) return true;
-    const digits = shiftCode.split('').map(Number).sort((a, b) => a - b);
-    for (let i = 0; i < digits.length - 1; i++) {
-        if (digits[i + 1] !== digits[i] + 1) return false;
-    }
-    return true;
-};
+
 
 export const findAutomaticReplacement = (shiftToCover: string, dayIndex: number, allStaff: StaffMember[], excludeId: string, busySchedule: BusySchedule, includeTn: boolean = true): SolutionAction[] | null => {
     const vacantDigits = new Set(shiftToCover.split('').filter(d => /\d/.test(d)));

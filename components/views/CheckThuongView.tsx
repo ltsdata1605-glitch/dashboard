@@ -5,7 +5,7 @@ import { Icon } from '../common/Icon';
 import { getGlobalFont, saveSetting } from '../../services/dbService';
 
 
-export const CheckThuongView: React.FC = () => {
+const CheckThuongView: React.FC = () => {
     const { activeTab } = useActiveTab();
     const [mounted, setMounted] = useState(false);
     const iframeRef = useRef<HTMLIFrameElement>(null);

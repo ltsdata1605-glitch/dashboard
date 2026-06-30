@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { cn } from './utils';
 
-export interface ModalProps {
+interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: React.ReactNode;

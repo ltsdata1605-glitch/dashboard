@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react';
 import { cn } from './utils';
 import { Icon } from '../../common/Icon';
 
-export interface SelectOption {
+interface SelectOption {
   value: string;
   label: string;
 }

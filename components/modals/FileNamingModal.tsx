@@ -7,7 +7,7 @@ interface FileNamingModalProps {
     onConfirm: (name: string) => void;
 }
 
-export const FileNamingModal: React.FC<FileNamingModalProps> = ({
+const FileNamingModal: React.FC<FileNamingModalProps> = ({
     isOpen,
     onConfirm,
 }) => {

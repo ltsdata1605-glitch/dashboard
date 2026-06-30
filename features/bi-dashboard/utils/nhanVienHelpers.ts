@@ -30,10 +30,6 @@ export const getYesterdayDateString = () => {
     return `${yesterday.getDate()}/${yesterday.getMonth() + 1}`;
 };
 
-export const isIgnoredDept = (name: string) => {
-    const lower = name.toLowerCase();
-    return lower.includes('quản lý siêu thị') || lower.includes('trưởng ca');
-};
 
 export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
     if (!danhSachData) return [];
