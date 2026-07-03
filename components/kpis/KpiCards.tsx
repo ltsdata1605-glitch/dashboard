@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { formatCurrency, formatQuantity, getRowValue, getParentGroup } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, getHeSoQuyDoi, getRowValue, getParentGroup, getSubgroup, cleanAndNormalize } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
@@ -358,7 +357,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
 
                     const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
                     const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-                        ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
+                        ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
                         : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
                     if (!isRevenue) continue;
 

@@ -3,7 +3,8 @@ import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboa
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
 import { RevenueRow, BonusMetrics, ManualDeptMapping } from '../types/nhanVienTypes';
-import { parseRevenueData, parseInstallmentData, parseCrossSellingData, formatEmployeeName } from '../utils/nhanVienHelpers';
+import { formatEmployeeName } from '../utils/nhanVienHelpers';
+import { useWorker } from './useWorker';
 
 export function useNhanVienData(isActive?: boolean) {
     const [summaryLuyKe] = useIndexedDBState<string>('summary-luy-ke', '');
@@ -120,25 +121,32 @@ export function useNhanVienData(isActive?: boolean) {
     }, []);
 
     const hiddenEmployeesSet = useMemo(() => new Set(hiddenEmployees), [hiddenEmployees]);
+    const { runWorkerTask } = useWorker();
 
-    const parsedRevenueBase = useMemo(() => {
-        if (isActive === false) return [];
-        const base = parseRevenueData(aggregatedData.danhSach);
-        return base.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName));
+    const [parsedRevenueBase, setParsedRevenueBase] = useState<RevenueRow[]>([]);
+    useEffect(() => {
+        if (!aggregatedData.danhSach || isActive === false) return;
+        let isMounted = true;
+        runWorkerTask('PARSE_REVENUE', aggregatedData.danhSach).then((base: RevenueRow[]) => {
+            if (isMounted) {
+                setParsedRevenueBase(base.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName)));
+            }
+        });
+        return () => { isMounted = false; };
     }, [aggregatedData.danhSach, hiddenEmployeesSet, isActive]);
 
     const employeeDepartmentMap = useMemo(() => {
-        if (isActive === false) return new Map();
-        const map = new Map<string, string>();
+        if (isActive === false) return {} as Record<string, string>;
+        const map: Record<string, string> = {};
         parsedRevenueBase.filter(r => r.type === 'employee' && r.originalName && r.department).forEach(r => {
-            map.set(r.originalName!, r.department!);
+            map[r.originalName!] = r.department!;
         });
 
         Object.entries(aggregatedData.manualMapping).forEach(([deptName, employees]) => {
             if (Array.isArray(employees)) {
                 employees.forEach(empName => {
                     if (!hiddenEmployeesSet.has(empName)) {
-                        map.set(empName, deptName);
+                        map[empName] = deptName;
                     }
                 });
             }
@@ -146,20 +154,32 @@ export function useNhanVienData(isActive?: boolean) {
         return map;
     }, [parsedRevenueBase, aggregatedData.manualMapping, hiddenEmployeesSet, isActive]);
 
-    const installmentRows = useMemo(() => {
-        if (isActive === false) return [];
-        const rows = parseInstallmentData(aggregatedData.traGop, employeeDepartmentMap);
-        return rows.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName));
+    const [installmentRows, setInstallmentRows] = useState<any[]>([]);
+    useEffect(() => {
+        if (!aggregatedData.traGop || isActive === false) return;
+        let isMounted = true;
+        runWorkerTask('PARSE_INSTALLMENT', { text: aggregatedData.traGop, employeeDepartmentMap }).then(rows => {
+            if (isMounted && rows) {
+                setInstallmentRows(rows.filter((r: any) => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName)));
+            }
+        });
+        return () => { isMounted = false; };
     }, [aggregatedData.traGop, employeeDepartmentMap, hiddenEmployeesSet, isActive]);
 
-    const banKemRows = useMemo(() => {
-        if (isActive === false) return [];
-        const rows = parseCrossSellingData(aggregatedData.banKem, employeeDepartmentMap);
-        return rows.filter(r => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName));
+    const [banKemRows, setBanKemRows] = useState<any[]>([]);
+    useEffect(() => {
+        if (!aggregatedData.banKem || isActive === false) return;
+        let isMounted = true;
+        runWorkerTask('PARSE_CROSS_SELLING', { text: aggregatedData.banKem, employeeDepartmentMap }).then(rows => {
+            if (isMounted && rows) {
+                setBanKemRows(rows.filter((r: any) => r.type !== 'employee' || !r.originalName || !hiddenEmployeesSet.has(r.originalName)));
+            }
+        });
+        return () => { isMounted = false; };
     }, [aggregatedData.banKem, employeeDepartmentMap, hiddenEmployeesSet, isActive]);
 
     const banKemMap = useMemo(() => {
-        if (isActive === false) return new Map();
+        if (isActive === false) return new Map<string, number>();
         const map = new Map<string, number>();
         banKemRows.forEach(row => { if (row.originalName) map.set(row.originalName, row.pctBillBk); });
         return map;
@@ -173,7 +193,7 @@ export function useNhanVienData(isActive?: boolean) {
                 const pctBillBk = banKemMap.get(row.originalName) || 0;
                 return { 
                     ...row, 
-                    department: employeeDepartmentMap.get(row.originalName) || 'BP Khác',
+                    department: employeeDepartmentMap[row.originalName] || 'BP Khác',
                     pctBillBk: pctBillBk
                 };
             }
@@ -181,7 +201,7 @@ export function useNhanVienData(isActive?: boolean) {
         });
 
         const finalRows: RevenueRow[] = [];
-        const currentDeptsInMap = Array.from(new Set(employeeDepartmentMap.values())).sort();
+        const currentDeptsInMap = Array.from(new Set(Object.values(employeeDepartmentMap))).sort();
         currentDeptsInMap.forEach((deptName: string) => {
             const deptEmps = mappedRows.filter(r => r.type === 'employee' && r.department === deptName);
             if (deptEmps.length > 0) {
@@ -202,10 +222,10 @@ export function useNhanVienData(isActive?: boolean) {
 
     const departmentOptions = useMemo(() => {
         if (isActive === false) return [];
-        const uniqueDepartments = Array.from(new Set(employeeDepartmentMap.values()));
+        const uniqueDepartments = Array.from(new Set(Object.values(employeeDepartmentMap as Record<string, string>)));
         const excludedKeywords = ['quản lý', 'trưởng ca', 'kế toán', 'tiếp đón khách hàng'];
         return uniqueDepartments
-            .filter(d => !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)))
+            .filter(d => typeof d === "string" && !excludedKeywords.some(keyword => d.toLowerCase().includes(keyword)))
             .sort();
     }, [employeeDepartmentMap, isActive]);
     
@@ -249,7 +269,7 @@ export function useNhanVienData(isActive?: boolean) {
 
     const allEmployees = useMemo(() => {
         if (isActive === false) return [];
-        return Array.from(employeeDepartmentMap.entries()).map(([originalName, department]) => ({
+        return Array.from(Object.entries(employeeDepartmentMap as Record<string, string>)).map(([originalName, department]) => ({
             name: formatEmployeeName(originalName),
             originalName,
             department
@@ -278,15 +298,15 @@ export function useNhanVienData(isActive?: boolean) {
         if (Object.keys(aggregatedWeights).length > 0) return aggregatedWeights;
         
         const weights: Record<string, number> = {};
-        const hasAllInOne = departmentOptions.some(d => d.toUpperCase().includes('ALL IN ONE'));
+        const hasAllInOne = departmentOptions.some(d => typeof d === "string" && d.toUpperCase().includes("ALL IN ONE"));
         
         if (hasAllInOne) {
             departmentOptions.forEach(d => {
-                weights[d] = d.toUpperCase().includes('ALL IN ONE') ? 100 : 0;
+                if (typeof d === "string") weights[d] = d.toUpperCase().includes("ALL IN ONE") ? 100 : 0;
             });
         } else {
             const share = 100 / (departmentOptions.length || 1);
-            departmentOptions.forEach(d => { weights[d] = share; });
+            departmentOptions.forEach(d => { if (typeof d === "string") weights[d] = share; });
         }
         return weights;
     }, [aggregatedWeights, departmentOptions, isActive]);

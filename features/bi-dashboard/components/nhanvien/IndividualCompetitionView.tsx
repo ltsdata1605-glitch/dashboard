@@ -300,7 +300,7 @@ const EmployeeProfileCard: React.FC<{
 };
 
 const PlaceholderContent: React.FC<{ title: string; message: string }> = ({ title, message }) => (
-    <div>
+    <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-4 sm:p-6 mb-8">
         <div className="mt-4 text-center py-12"><p className="mt-4 text-slate-600 max-w-md mx-auto">{message}</p></div>
     </div>
 );
@@ -484,7 +484,7 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
     };
 
     return (
-        <div>
+        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-4 sm:p-6 mb-8">
                 <div className="mb-4 flex flex-wrap items-center justify-end gap-2 px-1 no-print js-individual-view-toolbar relative z-50">
                     <div className="flex items-center gap-2 flex-wrap">
                         <div className="relative" ref={filterRef}>

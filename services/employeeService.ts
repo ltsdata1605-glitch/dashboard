@@ -1,6 +1,6 @@
 import type { DataRow, ProductConfig, Employee, EmployeeData, ExploitationData, FilterState } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
-import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan } from '../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan, cleanAndNormalize } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
 import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
@@ -20,7 +20,7 @@ function _buildFullEmployeeData(
         const row = periodData[i];
         const htx = getRowValue(row, COL.HINH_THUC_XUAT);
         const isThuHo = productConfig && productConfig.htxClassification
-            ? productConfig.htxClassification[String(htx || '').trim().toLowerCase().normalize('NFC')] === 'thu_ho'
+            ? productConfig.htxClassification[cleanAndNormalize(htx)] === 'thu_ho'
             : HINH_THUC_XUAT_THU_HO.has(htx);
         if (isThuHo) {
             const creator = getRowValue(row, COL.NGUOI_TAO);

@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import type { DataRow, Employee, ProductConfig, ContestTableConfig, ColumnConfig } from '../../types';
-import { getRowValue, getHeSoQuyDoi, abbreviateName, formatQuantity, formatCurrency } from '../../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, abbreviateName, formatQuantity, formatCurrency, cleanAndNormalize } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { Icon } from '../common/Icon';
 import { exportElementAsImage } from '../../services/uiService';
@@ -85,7 +85,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
         const validData = baseFilteredData.filter(row => {
             const htx = getRowValue(row, COL.HINH_THUC_XUAT);
             return productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-                ? productConfig.revenueEligibleHTX.has(String(htx || '').trim().toLowerCase().normalize('NFC'))
+                ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx || ''))
                 : !HINH_THUC_XUAT_THU_HO.has(htx);
         });
 

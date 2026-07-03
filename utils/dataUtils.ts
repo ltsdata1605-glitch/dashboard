@@ -4,6 +4,18 @@ import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA
 
 
 const columnCache = new Map<string, string>();
+const normalizeCache = new Map<string, string>();
+
+export const cleanAndNormalize = (val: any): string => {
+    if (val === undefined || val === null) return '';
+    const raw = val.toString().trim();
+    let cached = normalizeCache.get(raw);
+    if (!cached) {
+        cached = raw.toLowerCase().normalize('NFC');
+        normalizeCache.set(raw, cached);
+    }
+    return cached;
+};
 
 export function getRowValue(row: DataRow, keys: string[]): any {
     if (!row) return undefined;
@@ -265,7 +277,7 @@ export function getHinhThucThanhToan(row: DataRow, productConfig?: ProductConfig
     if (!hinhThucXuat) return 'khac';
     
     if (productConfig && productConfig.htxClassification) {
-        const key = String(hinhThucXuat).trim().toLowerCase().normalize('NFC');
+        const key = cleanAndNormalize(hinhThucXuat);
         if (productConfig.htxClassification[key] !== undefined) {
             return productConfig.htxClassification[key];
         }
@@ -459,6 +471,7 @@ export function wrapProductConfigWithProxies(config: ProductConfig): ProductConf
         return new Proxy(targetMap, {
             get(target, prop) {
                 if (prop === '__isProxy') return true;
+                if (prop === '__target') return target;
                 if (typeof prop !== 'string') {
                     return Reflect.get(target, prop);
                 }
@@ -518,3 +531,14 @@ export function wrapProductConfigWithProxies(config: ProductConfig): ProductConf
 }
 
 
+
+export function unwrapProductConfigProxies(config: ProductConfig): ProductConfig {
+    if (!config) return config;
+    if (!(config.childToParentMap as any)?.__isProxy) return config;
+
+    return {
+        ...config,
+        childToParentMap: (config.childToParentMap as any).__target || config.childToParentMap,
+        childToSubgroupMap: (config.childToSubgroupMap as any).__target || config.childToSubgroupMap
+    };
+}

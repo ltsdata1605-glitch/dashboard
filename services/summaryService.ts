@@ -1,7 +1,7 @@
 
 import type { DataRow, ProductConfig, FilterState, SummaryTableNode, GrandTotal, WarehouseSummaryRow, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, getHeSoQuyDoi, sortSummaryData, getHinhThucThanhToan, getDisplayParentGroup, abbreviateName, getParentGroup, getSubgroup } from '../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, sortSummaryData, getHinhThucThanhToan, getDisplayParentGroup, abbreviateName, getParentGroup, getSubgroup, cleanAndNormalize } from '../utils/dataUtils';
 import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
 export function processSummaryTable(
@@ -47,7 +47,7 @@ export function processSummaryTable(
         // Filter out non-revenue rows to ensure revenue eligibility
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT);
         const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-            ? productConfig.revenueEligibleHTX.has(String(hinhThucXuat || '').trim().toLowerCase().normalize('NFC'))
+            ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
             : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
         if (!isRevenue) continue;
 
@@ -186,7 +186,7 @@ export function calculateWarehouseSummary(
 
         const htx = getRowValue(row, COL.HINH_THUC_XUAT);
         const isThuHo = productConfig && productConfig.htxClassification
-            ? productConfig.htxClassification[String(htx || '').trim().toLowerCase().normalize('NFC')] === 'thu_ho'
+            ? productConfig.htxClassification[cleanAndNormalize(htx)] === 'thu_ho'
             : HINH_THUC_XUAT_THU_HO.has(htx);
 
         if (isThuHo) {
@@ -194,7 +194,7 @@ export function calculateWarehouseSummary(
         }
 
         const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-            ? productConfig.revenueEligibleHTX.has(String(htx || '').trim().toLowerCase().normalize('NFC'))
+            ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
             : !HINH_THUC_XUAT_THU_HO.has(htx);
 
         if (isRevenue) {

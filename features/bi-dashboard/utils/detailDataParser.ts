@@ -1,3 +1,4 @@
+import { parseNumber } from "../../../utils/dataUtils";
 /**
  * Parser for 4-level employee revenue detail data.
  * Hierarchy: Department > Employee > Ngành hàng (NNH) > Nhóm hàng > Hãng
@@ -14,36 +15,7 @@ export interface DetailNode {
     children: DetailNode[];
 }
 
-function parseNum(s: string): number {
-    if (!s) return 0;
-    let cleaned = s.trim();
-    // If there is both a dot and a comma:
-    if (cleaned.includes('.') && cleaned.includes(',')) {
-        if (cleaned.lastIndexOf(',') > cleaned.lastIndexOf('.')) {
-            // Vietnamese: 8.623,43 -> remove dots, replace comma with dot
-            cleaned = cleaned.replace(/\./g, '').replace(',', '.');
-        } else {
-            // English: 8,623.43 -> remove commas
-            cleaned = cleaned.replace(/,/g, '');
-        }
-    } else if (cleaned.includes(',')) {
-        // Only comma: 166,70 (decimal) or 4,250 (thousand)
-        const parts = cleaned.split(',');
-        if (parts[parts.length - 1].length === 3) {
-            cleaned = cleaned.replace(/,/g, '');
-        } else {
-            cleaned = cleaned.replace(',', '.');
-        }
-    } else if (cleaned.includes('.')) {
-        // Only dot: 4.250 (thousand) or 8623.43 (decimal)
-        const parts = cleaned.split('.');
-        if (parts[parts.length - 1].length === 3) {
-            cleaned = cleaned.replace(/\./g, '');
-        }
-    }
-    const val = parseFloat(cleaned);
-    return isNaN(val) ? 0 : val;
-}
+
 
 
 const isLevel0 = (name: string): boolean => {
@@ -476,11 +448,11 @@ export function parseDetailDataV2(
         rawRows.push({
             name,
             indent,
-            dtlk: parseNum(parts[nameIdx + 1]),
-            dtqd: parseNum(parts[nameIdx + 2]),
-            hieuQuaQD: parseNum(parts[nameIdx + 3]),
-            soLuong: parseNum(parts[nameIdx + 4]),
-            donGia: parseNum(parts[nameIdx + 5]),
+            dtlk: parseNumber(parts[nameIdx + 1]),
+            dtqd: parseNumber(parts[nameIdx + 2]),
+            hieuQuaQD: parseNumber(parts[nameIdx + 3]),
+            soLuong: parseNumber(parts[nameIdx + 4]),
+            donGia: parseNumber(parts[nameIdx + 5]),
         });
     }
 

@@ -1,8 +1,7 @@
-
 import { useMemo, useState, useEffect, useRef, startTransition } from 'react';
 import type { WarehouseColumnConfig, WarehouseSummaryRow, DataRow, ProductConfig, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, getHeSoQuyDoi, getParentGroup } from '../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, getParentGroup, cleanAndNormalize } from '../utils/dataUtils';
 
 interface UseWarehouseLogicProps {
     data: WarehouseSummaryRow[];
@@ -77,7 +76,7 @@ export const useWarehouseLogic = ({
 
                 const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
                 const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-                    ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
+                    ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
                     : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
                 if (!isRevenue) continue;
 

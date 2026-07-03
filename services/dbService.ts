@@ -567,7 +567,7 @@ export async function saveSyncCloudRealtimeData(
         const db = await getDb();
         await new Promise<void>((resolve, reject) => {
             const tx = db.transaction(APP_STORE, 'readwrite');
-            tx.objectStore(APP_STORE).put(stored, 'tempRealtimeData');
+            tx.objectStore(APP_STORE).put(JSON.stringify(stored), 'tempRealtimeData');
             tx.oncomplete = () => resolve();
             tx.onerror = () => reject(tx.error);
         });
@@ -592,7 +592,7 @@ export async function saveSalesData(data: DataRow[], filename: string, fileLastM
 
             try {
                 const tx = db.transaction(APP_STORE, 'readwrite');
-                const store = tx.objectStore(APP_STORE).put(stored, 'salesData');
+                const store = tx.objectStore(APP_STORE).put(JSON.stringify(stored), 'salesData');
                 tx.oncomplete = () => {
                     if (active) {
                         active = false;
@@ -653,7 +653,11 @@ export async function getSalesData(): Promise<StoredSalesData | null> {
                     if (active) {
                         active = false;
                         clearTimeout(timeoutId);
-                        resolve(request.result || null);
+                        let res = request.result;
+                        if (typeof res === 'string') {
+                            try { res = JSON.parse(res); } catch(e) { console.error('Failed to parse salesData', e); }
+                        }
+                        resolve(res || null);
                     }
                 };
                 request.onerror = () => {
@@ -755,7 +759,8 @@ export async function saveSalesFileData(fileId: string, data: DataRow[]): Promis
 
             try {
                 const tx = db.transaction(APP_STORE, 'readwrite');
-                tx.objectStore(APP_STORE).put(data, 'salesData_' + fileId);
+                const dataToSave = typeof data === 'string' ? data : JSON.stringify(data);
+                tx.objectStore(APP_STORE).put(dataToSave, 'salesData_' + fileId);
                 tx.oncomplete = () => {
                     if (active) {
                         active = false;
@@ -816,7 +821,11 @@ export async function getSalesFileData(fileId: string): Promise<DataRow[] | null
                     if (active) {
                         active = false;
                         clearTimeout(timeoutId);
-                        resolve(request.result || null);
+                        let res = request.result;
+                        if (typeof res === 'string') {
+                            try { res = JSON.parse(res); } catch(e) { console.error('Failed to parse file data', e); }
+                        }
+                        resolve(res || null);
                     }
                 };
                 request.onerror = () => {
@@ -957,7 +966,7 @@ export async function saveTempRealtimeData(data: DataRow[], filename: string, fi
 
             try {
                 const tx = db.transaction(APP_STORE, 'readwrite');
-                tx.objectStore(APP_STORE).put(stored, 'tempRealtimeData');
+                tx.objectStore(APP_STORE).put(JSON.stringify(stored), 'tempRealtimeData');
                 tx.oncomplete = () => {
                     if (active) {
                         active = false;
@@ -1019,7 +1028,11 @@ export async function getTempRealtimeData(): Promise<StoredSalesData | null> {
                     if (active) {
                         active = false;
                         clearTimeout(timeoutId);
-                        resolve(request.result || null);
+                        let res = request.result;
+                        if (typeof res === 'string') {
+                            try { res = JSON.parse(res); } catch(e) { console.error('Failed to parse tempRealtimeData', e); }
+                        }
+                        resolve(res || null);
                     }
                 };
                 request.onerror = () => {

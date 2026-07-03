@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { DataRow, ProductConfig, Employee, HeadToHeadTableConfig } from '../types';
-import { getRowValue, toLocalISOString, getHeSoQuyDoi } from '../utils/dataUtils';
+import { getRowValue, toLocalISOString, getHeSoQuyDoi, cleanAndNormalize } from '../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 
 interface UseHeadToHeadLogicProps {
@@ -34,10 +34,6 @@ export const useHeadToHeadLogic = ({
         endDate.setHours(23, 59, 59, 999);
         const dateRangeString = `${startDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })} - ${endDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`;
         
-        const cleanAndNormalize = (val: any): string => {
-            if (val === undefined || val === null) return '';
-            return val.toString().trim().toLowerCase().normalize('NFC');
-        };
 
         const isValidSale = (row: DataRow): boolean => {
             const huy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
@@ -58,7 +54,7 @@ export const useHeadToHeadLogic = ({
             const row = baseFilteredData[i];
             const htx = getRowValue(row, COL.HINH_THUC_XUAT);
             const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-                ? productConfig.revenueEligibleHTX.has(String(htx || '').trim().toLowerCase().normalize('NFC'))
+                ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
                 : !HINH_THUC_XUAT_THU_HO.has(htx);
             if (isRevenue && isValidSale(row)) {
                 dataForTab.push(row);

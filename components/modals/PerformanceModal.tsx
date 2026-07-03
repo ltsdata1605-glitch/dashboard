@@ -2,7 +2,7 @@ import React, { useMemo, useRef, useState } from 'react';
 import type { Employee, DataRow, ProductConfig } from '../../types';
 import ModalWrapper from './ModalWrapper';
 import { Icon } from '../common/Icon';
-import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity, getHinhThucThanhToan } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity, getHinhThucThanhToan, cleanAndNormalize } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, HINH_THUC_XUAT_THU_HO } from '../../constants';
 import { DashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, hideExportOverlay } from '../../services/uiService';
@@ -78,7 +78,7 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
         return validSalesData.filter(row => {
             const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
             const isRevenueEligible = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-                ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
+                ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
                 : (HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat));
             return getRowValue(row, COL.NGUOI_TAO) === employeeName 
                 && isRevenueEligible 

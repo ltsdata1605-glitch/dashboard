@@ -158,7 +158,7 @@ export const useFileUploadLogic = ({
                 const file = files[i];
                 
                 // Spin up worker for this specific file
-                const parsedData = await new Promise<DataRow[]>((resolve, reject) => {
+                const workerResult = await new Promise<any>((resolve, reject) => {
                     let worker: Worker;
                     let timeoutId: any;
 
@@ -209,6 +209,9 @@ export const useFileUploadLogic = ({
                     
                     worker.postMessage({ file, enableDeduplication: isDeduplicationEnabled });
                 });
+                
+                // Parse if it is a stringified JSON (from worker optimization)
+                const parsedData: DataRow[] = typeof workerResult === 'string' ? JSON.parse(workerResult) : workerResult;
                 
                 // Calculate file dates and unique dates
                 const fileDates: Date[] = [];

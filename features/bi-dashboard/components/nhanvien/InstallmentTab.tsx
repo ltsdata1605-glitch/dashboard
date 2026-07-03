@@ -128,8 +128,8 @@ const InstallmentTab: React.FC<{
             if (isActive === false) return [];
             if (!prevMonthRaw) return [];
             if (prevMonthRaw.startsWith('[')) return JSON.parse(prevMonthRaw);
-            const map = new Map<string, string>();
-            rows.forEach(r => { if(r.originalName) map.set(r.originalName, r.department || ''); });
+            const map: Record<string, string> = {};
+            rows.forEach(r => { if(r.originalName) map[r.originalName] = r.department || ''; });
             return parseInstallmentData(prevMonthRaw, map);
         } catch { return []; }
     }, [prevMonthRaw, rows, isActive]);

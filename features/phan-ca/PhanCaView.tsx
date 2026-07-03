@@ -26,7 +26,6 @@ import AiSuggestPatternModal from './components/AiSuggestPatternModal';
 import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
 import { useAuth } from '../../contexts/AuthContext';
 import { syncScheduleToCloud, fetchScheduleFromCloud } from '../../services/firestoreService';
-
 import { 
   StaffMember, 
   ScheduleInfo, 
@@ -45,12 +44,9 @@ import {
   MonthlyStats,
   ScheduleConfig
 } from './types';
-
 import { createFullSchedule } from './services/scheduleService';
-
 import { abbreviateVietnameseName } from './utils/stringUtils';
 import { DEFAULT_PATTERNS_HUNG_VUONG_910_99, DEFAULT_SHIFT_DEFINITIONS } from './constants';
-
 const rotateArray = <T,>(arr: T[], count: number): T[] => {
     const len = arr.length;
     if (len === 0) return [];
@@ -58,7 +54,6 @@ const rotateArray = <T,>(arr: T[], count: number): T[] => {
     if (shift === 0) return [...arr];
     return [...arr.slice(shift), ...arr.slice(0, shift)];
 };
-
 const getDefaultMonthYear = () => {
     const d = new Date();
     d.setMonth(d.getMonth() + 1);
@@ -66,7 +61,6 @@ const getDefaultMonthYear = () => {
     const month = (d.getMonth() + 1).toString().padStart(2, '0');
     return `${year}-${month}`;
 }
-
 const DEFAULT_RULES: SchedulingRules = {
   gh: { '2345': 1 },
   kho: { '123': 2, '456': 2 },
@@ -75,18 +69,15 @@ const DEFAULT_RULES: SchedulingRules = {
   khoGender: 'All',
   tnGender: 'All',
 };
-
 const ZERO_REQUIREMENTS: DailyRequirements = {
     '1': 0, '2': 0, '3': 0, '4': 0, '5': 0, '6': 0
 };
-
 const App: React.FC = () => {
   const { activeTab } = useActiveTab();
   const { user } = useAuth();
   const lastSyncedRef = useRef<{ [key: string]: string }>({});
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
-
   const [monthYear, setMonthYear] = useState<string>(getDefaultMonthYear());
   const [startDay, setStartDay] = useState<number>(1);
   const [duration, setDuration] = useState<number>(30);
@@ -112,9 +103,7 @@ const App: React.FC = () => {
   const [isEditPatternModalOpen, setEditPatternModalOpen] = useState(false);
   const [isHistoryModalOpen, setHistoryModalOpen] = useState(false);
   const [isConflictModalOpen, setConflictModalOpen] = useState(false);
-
   const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-  
   // Confirm Dialog State
   const [confirmDialog, setConfirmDialog] = useState<{
       isOpen: boolean;
@@ -124,12 +113,10 @@ const App: React.FC = () => {
       variant?: 'danger' | 'warning' | 'info' | 'success';
       confirmText?: string;
   }>({ isOpen: false, title: '', message: '', onConfirm: () => {} });
-
   const showConfirm = (options: { title: string; message: string; onConfirm: () => void; variant?: 'danger' | 'warning' | 'info' | 'success'; confirmText?: string; }) => {
       setConfirmDialog({ ...options, isOpen: true });
   };
   const closeConfirm = () => setConfirmDialog(prev => ({ ...prev, isOpen: false }));
-
   const [shiftDefinitions, setShiftDefinitions] = useState<ShiftDefinitions>(DEFAULT_SHIFT_DEFINITIONS);
   const [balancingFeedback, setBalancingFeedback] = useState<BalancingFeedback | null>(null);
   const [editingRuleKey, setEditingRuleKey] = useState<'kho' | 'tn' | 'gh' | null>(null);
@@ -138,7 +125,6 @@ const App: React.FC = () => {
   const [importedStaff, setImportedStaff] = useState<ImportedStaff[]>([]);
   const [unresolvedConflicts, setUnresolvedConflicts] = useState<UnresolvedConflict[]>([]);
   const [statsDay, setStatsDay] = useState<number>(1);
-  const [hoveredDay, setHoveredDay] = useState<number | null>(null);
   const [isDbLoaded, setIsDbLoaded] = useState(false);
   const [isDataLoadedForSupermarket, setIsDataLoadedForSupermarket] = useState(false);
   const [isExportingImage, setIsExportingImage] = useState(false);
@@ -147,7 +133,6 @@ const App: React.FC = () => {
   const [batchExportProgress, setBatchExportProgress] = useState<{ current: number, total: number, name: string } | null>(null);
   const [currentHighlightedId, setCurrentHighlightedId] = useState<string | null>(null);
   const [exportTitle, setExportTitle] = useState<string>('');
-  
   const tableRef = useRef<HTMLTableElement>(null);
   const exportContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -155,16 +140,13 @@ const App: React.FC = () => {
   const staffListRef = useRef<StaffMember[]>([]);
   const durationDebounceTimer = useRef<number | null>(null);
   const isImportingRef = useRef<boolean>(false);
-
   const [year, month] = useMemo(() => {
     if (!monthYear) return [new Date().getFullYear(), new Date().getMonth() + 1];
     return monthYear.split('-').map(Number);
   }, [monthYear]);
-
   const uniqueDepartments = useMemo(() => {
     return [...new Set([...nams, ...nus].map(s => s.department))];
   }, [nams, nus]);
-
   const staffCountByDept = useMemo(() => {
     const counts: { [key: string]: number } = {};
     [...nams, ...nus].forEach(s => {
@@ -172,29 +154,23 @@ const App: React.FC = () => {
     });
     return counts;
   }, [nams, nus]);
-
   const getKey = useCallback((key: string) => {
     return currentSupermarket ? `${currentSupermarket}::${key}` : key;
   }, [currentSupermarket]);
-
   useEffect(() => {
     staffListRef.current = staffList;
   }, [staffList]);
-
   const syncAndLoadKey = useCallback(async <T,>(key: string, defaultValue: T): Promise<T> => {
       const localData = await idb.loadData<T>(key);
       const localTime = await idb.loadData<number>(`lastModified_${key}`) || 0;
-      
       if (!user) {
           return localData !== undefined ? localData : defaultValue;
       }
-      
       try {
           const cloudResult = await fetchScheduleFromCloud(user, key);
           if (cloudResult) {
               const cloudTime = cloudResult.updatedAt || 0;
               const cloudData = cloudResult.data as T;
-              
               if (cloudTime > localTime || localData === undefined) {
                   console.log(`[Cloud Sync PhanCa] Cloud is newer for ${key} (${cloudTime} > ${localTime}). Loading cloud...`);
                   await idb.saveData(key, cloudData, cloudTime);
@@ -212,21 +188,17 @@ const App: React.FC = () => {
       } catch (e) {
           console.error(`[Cloud Sync PhanCa] Error syncing key ${key}:`, e);
       }
-      
       return localData !== undefined ? localData : defaultValue;
   }, [user]);
-
   useEffect(() => {
     const initApp = async () => {
       await idb.initDB();
       const savedSupermarkets = await syncAndLoadKey<string[]>('meta_supermarkets', []);
       const savedUiState = await syncAndLoadKey<any>('uiState', null);
-      
       lastSyncedRef.current['meta_supermarkets'] = JSON.stringify(savedSupermarkets);
       if (savedUiState) {
           lastSyncedRef.current['uiState'] = JSON.stringify(savedUiState);
       }
-      
       if (savedSupermarkets.length > 0) {
         setSupermarkets(savedSupermarkets);
         const lastSupermarket = savedUiState?.lastSupermarket;
@@ -247,7 +219,6 @@ const App: React.FC = () => {
     };
     initApp();
   }, [user, syncAndLoadKey]);
-
   const handleSupermarketChange = (supermarket: string) => {
     setIsDataLoadedForSupermarket(false);
     setStaffList([]);
@@ -257,7 +228,6 @@ const App: React.FC = () => {
     setDepartmentFilter('');
     setCurrentSupermarket(supermarket);
   };
-  
   useEffect(() => {
     if (!isDbLoaded || !currentSupermarket || isImportingRef.current) {
       if(isDbLoaded && supermarkets.length === 0) setIsDataLoadedForSupermarket(true);
@@ -270,17 +240,14 @@ const App: React.FC = () => {
       const savedPatterns = await syncAndLoadKey<{ [key: string]: string[] }>(getKey('departmentPatterns'), {});
       const savedReqs = await syncAndLoadKey<DailyRequirements>(getKey('dailyRequirements'), ZERO_REQUIREMENTS);
       const savedShiftDefs = await syncAndLoadKey<ShiftDefinitions>(getKey('shiftDefinitions'), DEFAULT_SHIFT_DEFINITIONS);
-      
       const scheduleKey = getKey(`schedule-${monthYear}`);
       const historyKey = getKey(`history-${monthYear}`);
       const unresolvedKey = getKey(`unresolved-${monthYear}`);
       const busyScheduleKey = getKey(`busySchedule-${monthYear}`);
-      
       const savedSchedule = await syncAndLoadKey<StaffMember[]>(scheduleKey, []);
       const savedHistory = await syncAndLoadKey<ScheduleHistoryEntry[]>(historyKey, []);
       const savedUnresolved = await syncAndLoadKey<UnresolvedConflict[]>(unresolvedKey, []);
       const savedBusySchedule = await syncAndLoadKey<BusySchedule>(busyScheduleKey, {});
-      
       // Populate lastSyncedRef to prevent immediate write-back of fetched data
       lastSyncedRef.current[getKey('nams')] = JSON.stringify(savedNams);
       lastSyncedRef.current[getKey('nus')] = JSON.stringify(savedNus);
@@ -292,7 +259,6 @@ const App: React.FC = () => {
       lastSyncedRef.current[historyKey] = JSON.stringify(savedHistory);
       lastSyncedRef.current[unresolvedKey] = JSON.stringify(savedUnresolved);
       lastSyncedRef.current[busyScheduleKey] = JSON.stringify(savedBusySchedule);
-
       setNams(savedNams);
       setNus(savedNus);
       const allDepts = [...new Set([...savedNams, ...savedNus].map(s => s.department))].sort();
@@ -310,7 +276,6 @@ const App: React.FC = () => {
     };
     loadSupermarketData();
   }, [isDbLoaded, currentSupermarket, getKey, monthYear, supermarkets.length, user, syncAndLoadKey]);
-
   useEffect(() => {
      if (isDataLoadedForSupermarket && (nams.length > 0 || nus.length > 0)) {
           const allStaffWithPatterns = [...nams, ...nus].filter(s => departmentPatterns[s.department]?.length > 0);
@@ -319,7 +284,6 @@ const App: React.FC = () => {
           const totalKhoShifts = Object.keys(rules.kho).reduce((acc, key) => acc + rules.kho[key], 0) * duration;
           const totalTnShifts = Object.keys(rules.tn).reduce((acc, key) => acc + rules.tn[key], 0) * duration;
           const totalNamInTargets = nams.filter(s => departmentPatterns[s.department]?.length > 0).length;
-          
           let sbhDiff = 0;
           if (staffList.length > 0) {
               const allInOneStaff = staffList.filter((s) => 
@@ -333,7 +297,6 @@ const App: React.FC = () => {
                   sbhDiff = Math.max(...hours) - Math.min(...hours);
               }
           }
-
           const newTargets: ScheduleTargets = {
               kho: totalStaffForTargets > 0 ? Math.ceil(totalKhoShifts / totalStaffForTargets) : 1,
               tn: totalStaffForTargets > 0 ? Math.ceil(totalTnShifts / totalStaffForTargets) : 1,
@@ -345,7 +308,6 @@ const App: React.FC = () => {
           setTargets(null);
      }
   }, [isDataLoadedForSupermarket, nams, nus, rules, duration, departmentPatterns, staffList, includeTnInSbh]);
-
   useEffect(() => {
     if (!isDbLoaded || !isDataLoadedForSupermarket || !currentSupermarket || isImportingRef.current) return;
     idb.saveData(getKey('nams'), nams);
@@ -354,10 +316,8 @@ const App: React.FC = () => {
     idb.saveData(getKey('departmentPatterns'), departmentPatterns);
     idb.saveData(getKey('dailyRequirements'), dailyRequirements);
     idb.saveData(getKey('shiftDefinitions'), shiftDefinitions);
-    
     const scheduleKey = getKey(`schedule-${monthYear}`);
     idb.saveData(scheduleKey, staffList);
-    
     const historyKey = getKey(`history-${monthYear}`);
     idb.saveData(historyKey, scheduleHistory);
     const busyScheduleKey = getKey(`busySchedule-${monthYear}`);
@@ -367,11 +327,9 @@ const App: React.FC = () => {
     const uiState = { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, lastSupermarket: currentSupermarket };
     idb.saveData('uiState', uiState);
   }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, currentSupermarket, getKey, unresolvedConflicts]);
-
   // Hiệu ứng tự động đồng bộ đám mây (debounced 3s)
   useEffect(() => {
     if (!user || !isDbLoaded || !isDataLoadedForSupermarket || !currentSupermarket || isImportingRef.current) return;
-
     const timer = setTimeout(async () => {
       const syncIfChanged = async (key: string, data: any) => {
         const serialized = JSON.stringify(data);
@@ -383,7 +341,6 @@ const App: React.FC = () => {
           console.error(`Lỗi khi đồng bộ ${key}:`, err);
         }
       };
-
       await syncIfChanged('meta_supermarkets', supermarkets);
       await syncIfChanged('uiState', { monthYear, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, lastSupermarket: currentSupermarket });
       await syncIfChanged(getKey('nams'), nams);
@@ -397,10 +354,8 @@ const App: React.FC = () => {
       await syncIfChanged(getKey(`busySchedule-${monthYear}`), busySchedule);
       await syncIfChanged(getKey(`unresolved-${monthYear}`), unresolvedConflicts);
     }, 3000);
-
     return () => clearTimeout(timer);
   }, [nams, nus, rules, departmentPatterns, dailyRequirements, staffList, busySchedule, scheduleHistory, monthYear, isDbLoaded, isDataLoadedForSupermarket, startDay, duration, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, currentSupermarket, getKey, unresolvedConflicts, user, supermarkets]);
-
   const logHistory = useCallback((description: string) => {
     const newEntry: ScheduleHistoryEntry = {
         timestamp: Date.now(),
@@ -409,7 +364,6 @@ const App: React.FC = () => {
     };
     setScheduleHistory(prev => [newEntry, ...prev]);
   }, []);
-
   useEffect(() => {
     if (monthYear) {
         const [y, m] = monthYear.split('-').map(Number);
@@ -417,7 +371,6 @@ const App: React.FC = () => {
         setDuration(daysInMonth);
     }
   }, [monthYear]);
-
   const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
     if (type === 'error') {
       toast.error(message, { duration: 3000 });
@@ -427,14 +380,11 @@ const App: React.FC = () => {
       toast.success(message, { duration: 3000 });
     }
   };
-
   const handleDeleteStaffList = () => {
       setIsDeleteConfirmOpen(true);
   };
-
   const confirmDeleteStaffList = async () => {
       setIsDeleteConfirmOpen(false);
-      
       // Clear state
       setNams([]);
       setNus([]);
@@ -447,7 +397,6 @@ const App: React.FC = () => {
       setDailyRequirements(ZERO_REQUIREMENTS);
       setDepartmentFilter('');
       setShiftDefinitions(DEFAULT_SHIFT_DEFINITIONS);
-      
       // Clear DB explicitly to be safe
       await idb.saveData(getKey('nams'), []);
       await idb.saveData(getKey('nus'), []);
@@ -459,23 +408,18 @@ const App: React.FC = () => {
       await idb.saveData(getKey(`history-${monthYear}`), []);
       await idb.saveData(getKey(`unresolved-${monthYear}`), []);
       await idb.saveData(getKey(`monthly_stats-${monthYear}`), {});
-
       // Remove current supermarket from the global list
       const updatedSupermarkets = supermarkets.filter(sm => sm !== currentSupermarket);
       setSupermarkets(updatedSupermarkets);
       await idb.saveData('meta_supermarkets', updatedSupermarkets);
-      
       if (updatedSupermarkets.length > 0) {
           setCurrentSupermarket(updatedSupermarkets[0]);
       } else {
           setCurrentSupermarket('');
       }
-
       showToast("Đã xóa siêu thị và toàn bộ dữ liệu.", "success");
   };
-
   const handleImportClick = () => fileInputRef.current?.click();
-
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -491,7 +435,6 @@ const App: React.FC = () => {
             let currentDepartment = "";
             json.slice(2).forEach(row => {
                 let departmentRaw = row[0]?.toString().trim();
-                
                 // Tăng cường nhận diện dòng tiêu đề bộ phận trong Excel (chống lỗi gộp ô sai cột)
                 if (!departmentRaw || departmentRaw === "") {
                     // Nếu cột A trống, tìm ở các cột khác xem có chữ "BP " hoặc "Bộ phận"
@@ -510,7 +453,6 @@ const App: React.FC = () => {
                         }
                     }
                 }
-
                 // Chỉ cập nhật currentDepartment nếu nó không phải là 1 số (tránh lấy nhầm mã nhân viên)
                 if (departmentRaw && isNaN(Number(departmentRaw))) {
                     currentDepartment = departmentRaw;
@@ -532,7 +474,6 @@ const App: React.FC = () => {
     };
     reader.readAsArrayBuffer(file);
   };
-
   const generateNewSchedule = useCallback((options: {
     forDepartment?: string;
     busyScheduleOverride?: BusySchedule;
@@ -574,7 +515,6 @@ const App: React.FC = () => {
         if (namsToSchedule.length === 0 && nusToSchedule.length === 0) return;
         const { staffList: newStaffListForDept, targets: newTargets } = createFullSchedule({ config, nams: namsToSchedule, nus: nusToSchedule, rules: effectiveRules, departmentPatterns: effectivePatterns, busySchedule: effectiveBusySchedule, previousMonthStats });
         const refinedStaffListForDept = autoRefineSchedule(newStaffListForDept, config, newTargets);
-        
         let finalStaffList;
         if (targetDepartment && staffList.length > 0) {
             const otherDeptsStaff = staffList.filter(s => s.department !== targetDepartment);
@@ -582,7 +522,6 @@ const App: React.FC = () => {
         } else {
             finalStaffList = refinedStaffListForDept;
         }
-
         setStaffList(finalStaffList); setTargets(newTargets); setStatsDay(1);
         if (!targetDepartment) { setScheduleHistory([]); setUnresolvedConflicts([]); }
         setOnboardingStep(0);
@@ -593,7 +532,6 @@ const App: React.FC = () => {
         setBalancingFeedback(generateBalancingFeedback(currentStatsToSave, previousMonthStats));
       })();
   }, [monthYear, startDay, duration, nams, nus, rules, departmentPatterns, busySchedule, includeTnInSbh, autoAddWeekendShifts, autoAddWeekendShift1, staffList, departmentFilter, getKey]);
-  
   useEffect(() => {
     if (durationDebounceTimer.current) clearTimeout(durationDebounceTimer.current);
     if (isDbLoaded && (nams.length > 0 || nus.length > 0)) { 
@@ -601,11 +539,9 @@ const App: React.FC = () => {
     }
     return () => { if (durationDebounceTimer.current) clearTimeout(durationDebounceTimer.current); };
   }, [duration, isDbLoaded, nams, nus]);
-
   const getSortedStaffForExport = (): StaffMember[] => {
     const staffListCopy = JSON.parse(JSON.stringify(staffList)) as StaffMember[];
     const hasImportIndex = staffListCopy.some(s => s.importIndex !== undefined);
-    
     let depts: string[];
     if (hasImportIndex) {
         const getDeptMinIndex = (dept: string) => {
@@ -618,7 +554,6 @@ const App: React.FC = () => {
     } else {
         depts = [...new Set(staffListCopy.map(s => s.department))].sort();
     }
-    
     let result: StaffMember[] = [];
     depts.forEach(dept => {
         const deptStaff = staffListCopy.filter(s => s.department === dept);
@@ -633,7 +568,6 @@ const App: React.FC = () => {
         } else {
             const namsInDept = deptStaff.filter(s => s.gender === 'Nam').sort((a: StaffMember, b: StaffMember) => a.name.localeCompare(b.name));
             const nusInDept = deptStaff.filter(s => s.gender === 'Nu').sort((a: StaffMember, b: StaffMember) => a.name.localeCompare(b.name));
-            
             let i = 0, j = 0;
             while (i < namsInDept.length || j < nusInDept.length) {
                 if (i < namsInDept.length) result.push(namsInDept[i++]);
@@ -643,21 +577,17 @@ const App: React.FC = () => {
     });
     return result;
   };
-
   const handleAutoAddWeekendShiftsChange = useCallback((checked: boolean) => {
     setAutoAddWeekendShifts(checked);
     logHistory(checked ? "Tự động tăng ca 2,5 T6-CN" : "Gỡ tự động tăng ca 2,5 T6-CN");
     generateNewSchedule({ autoAddWeekendShiftsOverride: checked });
   }, [generateNewSchedule, logHistory]);
-
   const handleAutoAddWeekendShift1Change = useCallback((checked: boolean) => {
     setAutoAddWeekendShift1(checked);
     logHistory(checked ? "Tự động tăng ca 1 T6-CN" : "Gỡ tự động tăng ca 1 T6-CN");
     generateNewSchedule({ autoAddWeekendShift1Override: checked });
   }, [generateNewSchedule, logHistory]);
-
   // --- XUẤT ẢNH ---
-
   const handleExportAll = async () => {
     setIsExportingImage(true);
     setStaffListForExport(getSortedStaffForExport());
@@ -665,7 +595,6 @@ const App: React.FC = () => {
     setWeeklyExportConfig(null);
     const [yearVal, monthVal] = monthYear.split('-').map(Number);
     const filename = `Lich_Toan_Bo_Thang_${monthVal}_${yearVal}.png`;
-    
     setTimeout(() => {
         exportToImage(exportContainerRef, filename).finally(() => {
             setIsExportingImage(false);
@@ -674,16 +603,13 @@ const App: React.FC = () => {
         });
     }, 400);
   };
-
   const handleExportWeekly = async () => {
     const list = getSortedStaffForExport();
     if (list.length === 0) return showToast("Chưa có lịch để xuất.", 'error');
     setIsExportingImage(true);
     setStaffListForExport(list);
-    
     const [yearVal, monthVal] = monthYear.split('-').map(Number);
     const weeks: { start: number, end: number }[] = [];
-    
     let day = 1;
     while (day <= duration) {
         const date = new Date(yearVal, monthVal - 1, startDay + day - 1);
@@ -692,16 +618,13 @@ const App: React.FC = () => {
         weeks.push({ start: day, end: day + len - 1 });
         day += len;
     }
-
     setBatchExportProgress({ current: 0, total: weeks.length, name: "Đang chuẩn bị xuất theo tuần..." });
-
     try {
         for (let i = 0; i < weeks.length; i++) {
             const week = weeks[i];
             setWeeklyExportConfig(week);
             setExportTitle(`Lịch Tuần ${i + 1} - ${currentSupermarket}`);
             setBatchExportProgress({ current: i + 1, total: weeks.length, name: `Đang xử lý Tuần ${i + 1}` });
-            
             await new Promise(resolve => setTimeout(resolve, 800));
             await exportToImage(exportContainerRef, `Lich_Tuan_${i + 1}_Thang_${monthVal}_${yearVal}.png`);
             await new Promise(resolve => setTimeout(resolve, 300));
@@ -716,11 +639,9 @@ const App: React.FC = () => {
         setExportTitle('');
     }
   };
-
   const handleExportIndividual = () => {
     const list = getSortedStaffForExport();
     if (list.length === 0) return showToast("Chưa có lịch để xuất.", 'error');
-    
     showConfirm({
         title: 'Xuất Lịch Cá Nhân',
         message: 'Hệ thống sẽ tiến hành xuất file cho từng nhân viên. Bạn có đồng ý?',
@@ -731,22 +652,16 @@ const App: React.FC = () => {
             setIsExportingImage(true);
             setWeeklyExportConfig(null);
             setBatchExportProgress({ current: 0, total: list.length, name: "Khởi động xuất lịch cá nhân..." });
-
             const [yearVal, monthVal] = monthYear.split('-').map(Number);
-            
             try {
                 for (let i = 0; i < list.length; i++) {
                     const staff = list[i];
                     setBatchExportProgress({ current: i + 1, total: list.length, name: `Đang xuất NV: ${staff.name.split(' - ')[1] || staff.name}` });
-                    
                     setStaffListForExport([staff]);
                     setExportTitle(staff.name);
-                    
                     await new Promise(resolve => setTimeout(resolve, 1000));
-                    
                     const sanitizedStaffName = staff.name.replace(/[^a-zA-Z0-9\s._-]/g, '').replace(/\s+/g, '_');
                     await exportToImage(exportContainerRef, `Lich_Ca_Nhan_${sanitizedStaffName}_Thang_${monthVal}_${yearVal}.png`);
-                    
                     await new Promise(resolve => setTimeout(resolve, 400));
                 }
             } catch (err) {
@@ -761,7 +676,6 @@ const App: React.FC = () => {
         }
     });
   };
-
   const handleExportExcel = async () => {
     if (!nams.length && !nus.length) return showToast("Chưa có dữ liệu.", 'error');
     const XLSX = await import('xlsx');
@@ -777,15 +691,12 @@ const App: React.FC = () => {
     const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "Lich");
     XLSX.writeFile(wb, `Lich_${monthVal}_${yearVal}.xlsx`);
   };
-
   const handleExportGoogleSheet = async () => {
     if (!nams.length && !nus.length) return showToast("Chưa có dữ liệu.", 'error');
-    
     const toastEl = document.createElement('div');
     toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 20px;border-radius:8px;font-size:13px;z-index:999999;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:opacity .2s';
     toastEl.textContent = '📊 Đang tạo Google Sheet...';
     document.body.appendChild(toastEl);
-
     const attemptExport = async (retryCount = 0): Promise<void> => {
         toastEl.textContent = '🔑 Đang xác thực Google...';
         sessionStorage.removeItem('googleOAuthToken');
@@ -793,16 +704,12 @@ const App: React.FC = () => {
         await loginWithGoogleForceConsent();
         let token = sessionStorage.getItem('googleOAuthToken');
         if (!token) throw new Error('Không thể lấy token xác thực.');
-
         toastEl.textContent = '📊 Đang tạo Google Sheet...';
         const { exportToGoogleSheet } = await import('../../services/googleSheetsService');
-
         const sortedList = getSortedStaffForExport();
         const [yearVal, monthVal] = monthYear.split('-').map(Number);
-        
         // --- Build Rows ---
         const rows: any[][] = [];
-        
         // Row 0: Top Headers
         const row0 = ['STT', 'HỌ VÀ TÊN', 'GIỜ CÔNG', '', '', 'SỐ NGÀY SBH', '', '', 'SỐ LẦN', ''];
         for (let w = 0; w < Math.ceil(duration / 7); w++) {
@@ -811,7 +718,6 @@ const App: React.FC = () => {
         }
         row0.length = 10 + duration; // Cut off to exact duration
         rows.push(row0);
-        
         // Row 1: Sub Headers
         const row1 = ['', '', 'SBH', 'TV', 'TỔNG', 'GH', 'KH', 'TN', 'ĐỔI', 'OFF'];
         for (let d = 1; d <= duration; d++) {
@@ -820,14 +726,12 @@ const App: React.FC = () => {
              row1.push(`${date.getDate()}\n${dowStr}`);
         }
         rows.push(row1);
-        
         // Rows: Staff Data
         sortedList.forEach((staff, i) => {
             const specialHours = calculateSpecialHours(staff, includeTnInSbh);
             const normalHours = calculateNormalHours(staff);
             const totalHours = calculateTotalHours(staff);
             const stats = staff.stats;
-            
             const rowData: any[] = [
                 i + 1,
                 staff.name,
@@ -840,7 +744,6 @@ const App: React.FC = () => {
                 stats.swapCount || '-',
                 stats.offDays || '-'
             ];
-            
             for (let d = 1; d <= duration; d++) {
                  const info = staff.schedule[d];
                  if (!info || info.role === '') {
@@ -859,11 +762,9 @@ const App: React.FC = () => {
             }
             rows.push(rowData);
         });
-        
         // --- Build Formatting Requests ---
         const formattingRequests = (sheetId: number) => {
             const reqs: any[] = [];
-            
             // Fix: Freeze 2 rows and 2 cols FIRST, before merging!
             reqs.push({
                 updateSheetProperties: {
@@ -871,7 +772,6 @@ const App: React.FC = () => {
                     fields: 'gridProperties(frozenRowCount,frozenColumnCount)'
                 }
             });
-            
             // Merges
             const merges = [
                 { startRowIndex: 0, endRowIndex: 2, startColumnIndex: 0, endColumnIndex: 1 }, // STT
@@ -885,13 +785,11 @@ const App: React.FC = () => {
                 const e = Math.min(s + 7, 10 + duration);
                 if (e > s) merges.push({ startRowIndex: 0, endRowIndex: 1, startColumnIndex: s, endColumnIndex: e });
             }
-            
             merges.forEach(m => {
                 reqs.push({
                     mergeCells: { range: { sheetId, ...m }, mergeType: "MERGE_ALL" }
                 });
             });
-            
             // Base Header formatting
             reqs.push({
                 repeatCell: {
@@ -907,7 +805,6 @@ const App: React.FC = () => {
                     fields: 'userEnteredFormat(textFormat,horizontalAlignment,verticalAlignment,backgroundColorStyle)'
                 }
             });
-            
             // Header block group colors
             const headerBlockFormats = [
                 { sCol: 2, eCol: 5, bg: { red: 240/255, green: 249/255, blue: 255/255 }, fg: { red: 7/255, green: 89/255, blue: 133/255 } }, // Gio cong (sky)
@@ -915,7 +812,6 @@ const App: React.FC = () => {
                 { sCol: 8, eCol: 10, bg: { red: 255/255, green: 247/255, blue: 237/255 }, fg: { red: 154/255, green: 52/255, blue: 18/255 } }, // So lan (orange)
                 { sCol: 10, eCol: 10 + duration, bg: { red: 240/255, green: 253/255, blue: 250/255 }, fg: { red: 17/255, green: 94/255, blue: 89/255 } }, // Tuan (teal)
             ];
-            
             headerBlockFormats.forEach(h => {
                 reqs.push({
                     repeatCell: {
@@ -933,7 +829,6 @@ const App: React.FC = () => {
                 });
             });
             // (Frozen properties moved to the top)
-            
             // Column widths
             const colWidths = [
                 { startIndex: 0, endIndex: 1, width: 40 }, // STT
@@ -950,7 +845,6 @@ const App: React.FC = () => {
                     }
                 });
             });
-            
             // Data Rows Alignment
             reqs.push({
                 repeatCell: {
@@ -965,7 +859,6 @@ const App: React.FC = () => {
                     fields: 'userEnteredFormat(horizontalAlignment,verticalAlignment,textFormat)'
                 }
             });
-            
             // Base Name column alignment (Left)
             reqs.push({
                 repeatCell: {
@@ -979,7 +872,6 @@ const App: React.FC = () => {
                     fields: 'userEnteredFormat(horizontalAlignment,verticalAlignment)'
                 }
             });
-            
             // Name column colors based on gender
             sortedList.forEach((staff, index) => {
                 const isNam = staff.gender === 'Nam';
@@ -1001,7 +893,6 @@ const App: React.FC = () => {
                     }
                 });
             });
-            
             // Conditional Formats for Tags
             const addCondRule = (text: string, bg: any, fg: any) => {
                 reqs.push({
@@ -1017,7 +908,6 @@ const App: React.FC = () => {
                     }
                 });
             };
-            
             // GH: amber #fef3c7 (254, 243, 199) -> fg #92400e (146, 64, 14)
             addCondRule("GH", { red: 254/255, green: 243/255, blue: 199/255 }, { red: 146/255, green: 64/255, blue: 14/255 });
             // KH: emerald #d1fae5 (209, 250, 229) -> fg #065f46 (6, 95, 70)
@@ -1026,7 +916,6 @@ const App: React.FC = () => {
             addCondRule("TN", { red: 243/255, green: 232/255, blue: 255/255 }, { red: 107/255, green: 33/255, blue: 168/255 });
             // OFF: rose #ffe4e6 (255, 228, 230) -> fg #9f1239 (159, 18, 57)
             addCondRule("OFF", { red: 255/255, green: 228/255, blue: 230/255 }, { red: 159/255, green: 18/255, blue: 57/255 });
-            
             // Sunday header text color
             for (let d = 1; d <= duration; d++) {
                  const date = new Date(yearVal, monthVal - 1, startDay + d - 1);
@@ -1040,12 +929,9 @@ const App: React.FC = () => {
                      });
                  }
             }
-
             return reqs;
         };
-
         toastEl.textContent = `📊 Đang ghi ${sortedList.length} nhân viên...`;
-
         try {
             const url = await exportToGoogleSheet(token, {
                 title: `Lịch Phân Ca - Tháng ${monthVal}/${yearVal}`,
@@ -1053,33 +939,26 @@ const App: React.FC = () => {
                 sheetName: 'LichPhanCa',
                 formattingRequests
             });
-
             toastEl.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#16a34a;color:#fff;padding:14px 20px;border-radius:12px;font-size:13px;z-index:999999;box-shadow:0 8px 24px rgba(0,0,0,.2);transition:opacity .2s;display:flex;flex-direction:column;gap:10px;max-width:420px;width:90vw';
             toastEl.innerHTML = '';
-
             const msgDiv = document.createElement('div');
             msgDiv.textContent = '✅ Đã tạo Google Sheet thành công!';
             msgDiv.style.fontWeight = '600';
             toastEl.appendChild(msgDiv);
-
             const btnRow = document.createElement('div');
             btnRow.style.cssText = 'display:flex;gap:8px;justify-content:flex-end';
-
             const openBtn = document.createElement('a');
             openBtn.href = url;
             openBtn.target = '_blank';
             openBtn.textContent = '📄 Mở Sheet';
             openBtn.style.cssText = 'padding:6px 14px;background:#fff;color:#16a34a;border-radius:8px;font-weight:700;font-size:12px;text-decoration:none;cursor:pointer';
-
             const closeBtn = document.createElement('button');
             closeBtn.textContent = 'Đóng';
             closeBtn.style.cssText = 'padding:6px 14px;background:rgba(255,255,255,0.2);color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer';
             closeBtn.onclick = () => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); };
-
             btnRow.appendChild(openBtn);
             btnRow.appendChild(closeBtn);
             toastEl.appendChild(btnRow);
-
             setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 15000);
         } catch (apiErr: any) {
             if (apiErr?.message === 'AUTH_EXPIRED' && retryCount < 1) {
@@ -1089,7 +968,6 @@ const App: React.FC = () => {
             throw apiErr;
         }
     };
-
     try {
         await attemptExport();
     } catch (err: any) {
@@ -1108,7 +986,6 @@ const App: React.FC = () => {
         setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);
     }
   };
-
   const handleSaveShift = (newShiftData: ScheduleInfo) => {
     if (!editingCellInfo) return;
     const { employeeId, dayIndex } = editingCellInfo;
@@ -1129,27 +1006,22 @@ const App: React.FC = () => {
     setUnresolvedConflicts(prev => prev.filter(c => !(c.employeeId === employeeId && c.dayIndex === dayIndex)));
     setEditShiftModalOpen(false); setEditingCellInfo(null);
   };
-
   const addChangeHistory = (staff: StaffMember, dayIndex: number, fromRole: string, toRole: string) => {
       const [yearVal, monthVal] = monthYear.split('-').map(Number);
       const dateString = `${new Date(yearVal, monthVal - 1, startDay + dayIndex - 1).getDate()}/${monthVal}`;
       staff.changeHistory.push({ dayIndex, date: dateString, from: fromRole, to: toRole });
   };
-
   const handleDeleteEmployee = useCallback((id: string) => {
       setEmployeeToDelete(id);
   }, []);
-
   const handleEditShift = useCallback((id: string, d: number) => {
       setStaffList(currentList => {
           const staff = currentList.find(s => s.id === id);
           if (!staff) return currentList;
-          
           const [yearVal, monthVal] = monthYear.split('-').map(Number);
           const dateString = `${new Date(yearVal, monthVal - 1, startDay + d - 1).getDate()}/${monthVal}`;
           const currentShift = staff.schedule[d] || { shift: 'Trống', role: 'Trống' };
           const isSpecialShift = (currentShift.role || '').includes('(');
-
           setEditingCellInfo({
               employeeId: id,
               dayIndex: d,
@@ -1166,60 +1038,39 @@ const App: React.FC = () => {
           return currentList;
       });
   }, [monthYear, startDay]);
-
-  const handleDayHover = useCallback((d: number | null) => {
-      setHoveredDay(prev => {
-          if (prev === d) return prev;
-          if (d !== null) {
-              setStatsDay(d);
-          }
-          return d;
-      });
-  }, []);
-
   const scheduleConfig = useMemo(() => ({
     year,
     month,
     startDay,
     duration
   }), [year, month, startDay, duration]);
-
   const handleEditRule = useCallback((k: 'kho' | 'tn' | 'gh') => {
     setEditingRuleKey(k);
     setEditRulesModalOpen(true);
   }, []);
-
   const handleShowConflicts = useCallback(() => {
     setConflictModalOpen(true);
   }, []);
-
   const handleGenerateClick = useCallback(() => {
     generateNewSchedule();
   }, [generateNewSchedule]);
-
   const handleDateControlClick = useCallback(() => {
     if (onboardingStep === 3) setOnboardingStep(4);
   }, [onboardingStep]);
-
   const handleSwapShifts = useCallback((id1: string, id2: string, dayIndex: number) => {
       setStaffList(prev => {
           const idx1 = prev.findIndex(s => s.id === id1);
           const idx2 = prev.findIndex(s => s.id === id2);
-          
           if (idx1 === -1 || idx2 === -1) return prev;
-
           const newList = [...prev];
           // Clone deep targets
           const s1 = { ...newList[idx1], schedule: [...newList[idx1].schedule], stats: { ...newList[idx1].stats }, changeHistory: [...(newList[idx1].changeHistory || [])] };
           const s2 = { ...newList[idx2], schedule: [...newList[idx2].schedule], stats: { ...newList[idx2].stats }, changeHistory: [...(newList[idx2].changeHistory || [])] };
-
           const raw1 = s1.schedule[dayIndex];
           const raw2 = s2.schedule[dayIndex];
-          
           // Handle empty shifts with empty string for cleanliness
           const shift1 = raw1 ? { ...raw1 } : { shift: '', role: '', isManual: false };
           const shift2 = raw2 ? { ...raw2 } : { shift: '', role: '', isManual: false };
-
           // Swap
           s1.schedule[dayIndex] = { 
               ...shift2, 
@@ -1239,17 +1090,14 @@ const App: React.FC = () => {
                   partnerId: id1 
               } 
           };
-
           // Update stats
           s1.stats = recalculateStatsForStaff(s1);
           s2.stats = recalculateStatsForStaff(s2);
           s1.stats.swapCount = (s1.stats.swapCount || 0) + 1;
           s2.stats.swapCount = (s2.stats.swapCount || 0) + 1;
-          
           // History
           const [y, m] = monthYear.split('-').map(Number);
           const dateStr = `${new Date(y, m - 1, startDay + dayIndex - 1).getDate()}/${m}`;
-          
           if (!s1.changeHistory) s1.changeHistory = [];
           s1.changeHistory.push({ 
               dayIndex, 
@@ -1258,7 +1106,6 @@ const App: React.FC = () => {
               to: shift2.role || 'Trống',
               description: `Đổi ca với ${s2.name}`
           });
-
           if (!s2.changeHistory) s2.changeHistory = [];
           s2.changeHistory.push({ 
               dayIndex, 
@@ -1267,23 +1114,17 @@ const App: React.FC = () => {
               to: shift1.role || 'Trống',
               description: `Đổi ca với ${s1.name}`
           });
-
           newList[idx1] = s1;
           newList[idx2] = s2;
-          
           return newList;
       });
-      
       setUnresolvedConflicts(prev => prev.filter(c => !((c.employeeId === id1 || c.employeeId === id2) && c.dayIndex === dayIndex)));
   }, [monthYear, startDay]);
-
   const handleConfirmImport = async (staffWithGenders: StaffWithGender[], supermarketName: string) => {
     isImportingRef.current = true; 
-    
     try {
         const newNams = staffWithGenders.filter(s => s.gender === 'Nam').map(s => ({ name: s.name, department: s.department, importIndex: s.importIndex }));
         const newNus = staffWithGenders.filter(s => s.gender === 'Nu').map(s => ({ name: s.name, department: s.department, importIndex: s.importIndex }));
-        
         const depts = [...new Set(staffWithGenders.map(s => s.department))];
         const patternsToSet: { [key: string]: string[] } = {};
         depts.forEach(dept => {
@@ -1291,18 +1132,15 @@ const App: React.FC = () => {
             else if (dept.includes("Tiếp Đón") || dept.includes("Thu Ngân")) patternsToSet[dept] = DEFAULT_PATTERNS_HUNG_VUONG_910_99['BP Tiếp Đón Khách Hàng'];
             else patternsToSet[dept] = DEFAULT_PATTERNS_HUNG_VUONG_910_99['BP All In One'];
         });
-
         const keyPrefix = `${supermarketName}::`;
         await idb.saveData(keyPrefix + 'nams', newNams);
         await idb.saveData(keyPrefix + 'nus', newNus);
         await idb.saveData(keyPrefix + 'departmentPatterns', patternsToSet);
-        
         if (!supermarkets.includes(supermarketName)) {
             const updatedSupermarkets = [...supermarkets, supermarketName].sort();
             setSupermarkets(updatedSupermarkets); 
             await idb.saveData('meta_supermarkets', updatedSupermarkets);
         }
-
         setNams(newNams); 
         setNus(newNus); 
         setDepartmentPatterns(patternsToSet);
@@ -1314,7 +1152,6 @@ const App: React.FC = () => {
         }
         setIsDataLoadedForSupermarket(true);
         setImportModalOpen(false); 
-
         setTimeout(() => {
             generateNewSchedule({ 
                 forDepartment: depts.length > 0 ? depts[0] : '',
@@ -1330,33 +1167,26 @@ const App: React.FC = () => {
         isImportingRef.current = false;
     }
   };
-
   const hasStaff = nams.length > 0 || nus.length > 0;
-  
   // LUÔN ĐẢM BẢO listForTable ĐƯỢC GOM NHÓM THEO BỘ PHẬN VÀ XEN KẼ GIỚI TÍNH
   const listForTable = useMemo(() => {
     if (staffListForExport) return staffListForExport;
     const baseList = staffList.filter(s => !departmentFilter || s.department === departmentFilter);
     const depts = [...new Set(baseList.map(s => s.department))].sort();
     let result: StaffMember[] = [];
-    
     depts.forEach(dept => {
         const deptStaff = baseList.filter(s => s.department === dept);
         const namsInDept = deptStaff.filter(s => s.gender === 'Nam').sort((a: StaffMember, b: StaffMember) => a.name.localeCompare(b.name));
         const nusInDept = deptStaff.filter(s => s.gender === 'Nu').sort((a: StaffMember, b: StaffMember) => a.name.localeCompare(b.name));
-        
         let i = 0, j = 0;
         while (i < namsInDept.length || j < nusInDept.length) {
             if (i < namsInDept.length) result.push(namsInDept[i++]);
             if (j < nusInDept.length) result.push(nusInDept[j++]);
         }
     });
-    
     return result;
   }, [staffListForExport, staffList, departmentFilter]);
-
   const isIndividualExport = isExportingImage && staffListForExport && staffListForExport.length === 1 && !weeklyExportConfig;
-
   return (
     <div className="phan-ca-layout min-h-screen bg-[#f0f2f5] pb-20">
       {/* EXPORT OVERLAY */}
@@ -1375,7 +1205,6 @@ const App: React.FC = () => {
               </div>
           </div>
       )}
-
       {/* GLOBAL HEADER ACTIONS PORTAL */}
       {mounted && activeTab === 'tools-phanca' && document.getElementById('global-header-actions') && createPortal(
           <div className="flex items-center gap-2 bg-white/60 dark:bg-slate-900/60 p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm">
@@ -1396,7 +1225,6 @@ const App: React.FC = () => {
                   <span>Ca Xoay</span>
               </button>
             </div>
-
             {/* Export group */}
             <div className="flex items-center rounded-full overflow-hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)]">
               <button onClick={handleExportAll} className="px-4 py-2 text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors" disabled={!hasStaff}>
@@ -1418,7 +1246,6 @@ const App: React.FC = () => {
           </div>,
           document.getElementById('global-header-actions')!
       )}
-
       {/* Mobile action bar — lg:hidden */}
       <div className="lg:hidden sticky top-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/60 px-3 py-2 flex items-center gap-2 overflow-x-auto no-scrollbar">
           <button onClick={handleImportClick} className="h-8 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors flex items-center gap-1.5 shrink-0">
@@ -1453,7 +1280,6 @@ const App: React.FC = () => {
               Sheet
           </button>
       </div>
-
       <main className="max-w-[1600px] mx-auto px-6 mt-6">
         <div className={`bg-white p-5 border border-slate-200 mb-6 ${isExportingImage ? 'export-hidden' : ''}`}>
           <Controls 
@@ -1463,7 +1289,6 @@ const App: React.FC = () => {
             hasStaff={hasStaff} hasPatternsForCurrentDept={!!departmentPatterns[departmentFilter]} onDateControlClick={handleDateControlClick}
           />
         </div>
-
         <div ref={exportContainerRef} className={`bg-white overflow-hidden border border-slate-200 shadow-sm ${isIndividualExport ? 'max-w-5xl mx-auto' : ''}`}>
           <div className={`px-8 pt-8 pb-6 border-b border-slate-100 ${isIndividualExport ? 'hidden' : ''}`}>
             <div className="flex justify-between items-start mb-6">
@@ -1492,14 +1317,12 @@ const App: React.FC = () => {
                />
             </div>
           </div>
-
           <div className={`px-5 pb-0 ${isExportingImage ? 'export-hidden' : ''}`}>
              <DailyStatsTable 
                 staffList={staffList} config={scheduleConfig} requirements={dailyRequirements} setRequirements={setDailyRequirements}
                 selectedDay={statsDay} setSelectedDay={setStatsDay} departmentFilter={departmentFilter} unresolvedConflicts={unresolvedConflicts} onShowUnresolvedConflicts={handleShowConflicts}
              />
           </div>
-
           <div className="px-5 py-6">
             {hasStaff && targets ? (
               isIndividualExport ? (
@@ -1518,8 +1341,7 @@ const App: React.FC = () => {
                     includeTnInSbh={includeTnInSbh}
                     onDeleteEmployee={handleDeleteEmployee} 
                     onEditShift={handleEditShift}
-                    onDayHover={handleDayHover} 
-                    hoveredDay={hoveredDay} 
+                    onDayClick={setStatsDay}
                     weekRange={weeklyExportConfig} 
                     highlightId={currentHighlightedId}
                     onSwapShift={handleSwapShifts}
@@ -1537,7 +1359,6 @@ const App: React.FC = () => {
               </div>
             )}
           </div>
-          
           {/* Footer signature for official exports */}
           {!isIndividualExport && isExportingImage && (
               <div className="px-8 py-8 flex justify-end">
@@ -1549,7 +1370,6 @@ const App: React.FC = () => {
           )}
         </div>
       </main>
-
       {/* Modals & Inputs */}
       <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".xlsx, .xls" />
       {isEditRulesModalOpen && <EditRulesModal ruleKey={editingRuleKey!} currentRules={rules} availableShifts={[]} onClose={() => setEditRulesModalOpen(false)} onSave={(r) => { setRules(r); setEditRulesModalOpen(false); generateNewSchedule({rulesOverride: r}); }} />}
@@ -1595,7 +1415,6 @@ const App: React.FC = () => {
         onConfirm={confirmDeleteStaffList} 
         onCancel={() => setIsDeleteConfirmOpen(false)} 
       />}
-
       <ConfirmDialog 
           isOpen={confirmDialog.isOpen}
           onClose={closeConfirm}
@@ -1605,9 +1424,7 @@ const App: React.FC = () => {
           variant={confirmDialog.variant}
           confirmText={confirmDialog.confirmText}
       />
-
     </div>
   );
 };
-
 export default App;

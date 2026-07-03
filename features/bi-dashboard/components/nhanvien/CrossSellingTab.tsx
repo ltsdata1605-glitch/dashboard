@@ -21,7 +21,7 @@ const ImportPrevMonthModal: React.FC<{
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 bg-slate-900/30 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl p-6 w-full max-w-xl animate-in zoom-in-95 duration-200">
+            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-3xl p-6 w-full max-w-xl animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-white uppercase">Nhập dữ liệu Bán kèm cùng kỳ</h3>
                     <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-full"><XIcon className="h-5 w-5" /></button>
@@ -215,8 +215,8 @@ const CrossSellingTab: React.FC<{
                 return Array.isArray(parsed) ? parsed : [];
             }
             // Fallback cho dữ liệu dán văn bản từ HRM
-            const map = new Map<string, string>();
-            rows.forEach(r => { if (r.originalName) map.set(r.originalName, r.department || ''); });
+            const map: Record<string, string> = {};
+            rows.forEach(r => { if (r.originalName) map[r.originalName] = r.department || ''; });
             return parseCrossSellingData(prevMonthRaw, map);
         } catch (e) {
             console.error("Error parsing cross selling prev data", e);

@@ -125,7 +125,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 tempHeaders.splice(dtqdIndex + 1, 0, '%HQQĐ');
                 tempRows = tempRows.map(row => {
                     const newRow = [...row], dVal = parseNumber(newRow[dtlkIndex]), qVal = parseNumber(newRow[dtqdIndex]);
-                    newRow.splice(dtqdIndex + 1, 0, (dVal > 0 ? roundUp(((qVal / dVal) - 1) * 100) : 0) + '%');
+                    newRow.splice(dtqdIndex + 1, 0, (dVal > 0 ? roundUp(((qVal - dVal) / dVal) * 100) : 0) + '%');
                     return newRow;
                 });
             }

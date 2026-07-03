@@ -15,6 +15,7 @@ import {
     shortenSupermarketName,
     extractSupermarketList
 } from '../utils/dashboardHelpers';
+import { useWorker } from './useWorker';
 
 export const useDashboardLogic = (isActive?: boolean) => {
     // --- State Management ---
@@ -40,26 +41,50 @@ export const useDashboardLogic = (isActive?: boolean) => {
     const [industryRealtimeData] = useIndexedDBState(activeSupermarket && activeSupermarket !== 'Tổng' && isActive !== false ? `config-${shortenSupermarketName(activeSupermarket)}-industry-realtime` : null, '');
     const [industryLuyKeData] = useIndexedDBState(activeSupermarket && activeSupermarket !== 'Tổng' && isActive !== false ? `config-${shortenSupermarketName(activeSupermarket)}-industry-luyke` : null, '');
     
-    const summaryRealtimeParsed = useMemo(() => {
-        if (isActive === false) return { kpis: {}, table: { headers: [], rows: [] } };
-        return parseSummaryData(summaryRealtime);
+    const { runWorkerTask } = useWorker();
+
+    const [summaryRealtimeParsed, setSummaryRealtimeParsed] = useState<{ kpis: Record<string, string>, table: { headers: string[], rows: any[] } }>({ kpis: {}, table: { headers: [], rows: [] } });
+    useEffect(() => {
+        if (!summaryRealtime || isActive === false) return;
+        let isMounted = true;
+        runWorkerTask('PARSE_SUMMARY', summaryRealtime).then(res => {
+            if (isMounted && res) setSummaryRealtimeParsed(res);
+        });
+        return () => { isMounted = false; };
     }, [summaryRealtime, isActive]);
 
-    const summaryLuyKeParsed = useMemo(() => {
-        if (isActive === false) return { kpis: {}, table: { headers: [], rows: [] } };
-        return parseSummaryData(summaryLuyKe);
+    const [summaryLuyKeParsed, setSummaryLuyKeParsed] = useState<{ kpis: Record<string, string>, table: { headers: string[], rows: any[] } }>({ kpis: {}, table: { headers: [], rows: [] } });
+    useEffect(() => {
+        if (!summaryLuyKe || isActive === false) return;
+        let isMounted = true;
+        runWorkerTask('PARSE_SUMMARY', summaryLuyKe).then(res => {
+            if (isMounted && res) setSummaryLuyKeParsed(res);
+        });
+        return () => { isMounted = false; };
     }, [summaryLuyKe, isActive]);
 
-    const competitionRealtimeBySupermarket = useMemo(() => {
-        if (isActive === false) return {};
-        return parseCompetitionDataBySupermarket(competitionRealtime);
+    const [competitionRealtimeBySupermarket, setCompetitionRealtimeBySupermarket] = useState<Record<string, SupermarketCompetitionData>>({});
+    useEffect(() => {
+        if (!competitionRealtime || isActive === false) return;
+        let isMounted = true;
+        runWorkerTask('PARSE_COMPETITION_BY_SUPERMARKET', competitionRealtime).then(res => {
+            if (isMounted && res) setCompetitionRealtimeBySupermarket(res);
+        });
+        return () => { isMounted = false; };
     }, [competitionRealtime, isActive]);
 
-    const competitionLuyKeBySupermarket = useMemo(() => {
-        if (isActive === false) return {};
-        return parseCompetitionDataBySupermarket(competitionLuyKe);
+    const [competitionLuyKeBySupermarket, setCompetitionLuyKeBySupermarket] = useState<Record<string, SupermarketCompetitionData>>({});
+    useEffect(() => {
+        if (!competitionLuyKe || isActive === false) return;
+        let isMounted = true;
+        runWorkerTask('PARSE_COMPETITION_BY_SUPERMARKET', competitionLuyKe).then(res => {
+            if (isMounted && res) setCompetitionLuyKeBySupermarket(res);
+        });
+        return () => { isMounted = false; };
     }, [competitionLuyKe, isActive]);
-    
+
+    const [industryRealtimeParsed, setIndustryRealtimeParsed] = useState<any>(null);
+    const [industryLuyKeParsed, setIndustryLuyKeParsed] = useState<any>(null);
     const [industryBiMap, setIndustryBiMap] = useState<Record<string, { parent: string; child: string }> | null>(null);
 
     useEffect(() => {
@@ -74,14 +99,28 @@ export const useDashboardLogic = (isActive?: boolean) => {
         return () => { isMounted = false; };
     }, []);
 
-    const industryRealtimeParsed = useMemo(() => {
-        if (isActive === false) return { headers: [], rows: [], allRows: [], tree: [], totalRow: [] };
-        return parseIndustryRealtimeData(industryRealtimeData, industryBiMap);
+    useEffect(() => {
+        if (isActive === false || !industryRealtimeData) {
+            setIndustryRealtimeParsed({ headers: [], rows: [], allRows: [], tree: [], totalRow: [] });
+            return;
+        }
+        let isMounted = true;
+        runWorkerTask('PARSE_INDUSTRY_REALTIME', { text: industryRealtimeData, industryBiMap }).then(res => {
+            if (isMounted && res) setIndustryRealtimeParsed(res);
+        });
+        return () => { isMounted = false; };
     }, [industryRealtimeData, isActive, industryBiMap]);
 
-    const industryLuyKeParsed = useMemo(() => {
-        if (isActive === false) return { kpis: { laiGopQDDuKien: '', chiPhi: '', targetLNTT: '', htTargetDuKienLNTT: '' }, table: { headers: [], rows: [] }, tree: [], totalRow: [] };
-        return parseIndustryLuyKeData(industryLuyKeData, industryBiMap);
+    useEffect(() => {
+        if (isActive === false || !industryLuyKeData) {
+            setIndustryLuyKeParsed({ kpis: { laiGopQDDuKien: '', chiPhi: '', targetLNTT: '', htTargetDuKienLNTT: '' }, table: { headers: [], rows: [] }, tree: [], totalRow: [] });
+            return;
+        }
+        let isMounted = true;
+        runWorkerTask('PARSE_INDUSTRY_LUYKE', { text: industryLuyKeData, industryBiMap }).then(res => {
+            if (isMounted && res) setIndustryLuyKeParsed(res);
+        });
+        return () => { isMounted = false; };
     }, [industryLuyKeData, isActive, industryBiMap]);
 
     // --- Targets State ---

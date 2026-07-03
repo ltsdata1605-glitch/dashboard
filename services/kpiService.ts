@@ -1,7 +1,6 @@
-
 import type { DataRow, KpiData, ProductConfig, FilterState } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
-import { getRowValue, getHeSoQuyDoi, getHinhThucThanhToan } from '../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, getHinhThucThanhToan, cleanAndNormalize } from '../utils/dataUtils';
 import { calculateHieuQuaQDFraction, calculatePercentage, calculateRunRate } from './metricService';
 
 /**
@@ -93,7 +92,7 @@ export function processKpis(
     for (let i = 0, len = allPeriodData.length; i < len; i++) {
         const hinhThucXuat = getRowValue(allPeriodData[i], COL.HINH_THUC_XUAT);
         const isThuHo = productConfig && productConfig.htxClassification
-            ? productConfig.htxClassification[String(hinhThucXuat || '').trim().toLowerCase().normalize('NFC')] === 'thu_ho'
+            ? productConfig.htxClassification[cleanAndNormalize(hinhThucXuat)] === 'thu_ho'
             : HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
         if (hinhThucXuat && isThuHo) {
             soLuongThuHo++;

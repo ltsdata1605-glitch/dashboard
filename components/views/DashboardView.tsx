@@ -25,10 +25,12 @@ import EmployeeAnalysis from '../employees/EmployeeAnalysis';
 import SummaryTable from '../tables/SummaryTable';
 import WarehouseSummary from '../summary/WarehouseSummary';
 import UnshippedOrdersModal from '../modals/UnshippedOrdersModal';
+import UncollectedOrdersModal from '../modals/UncollectedOrdersModal';
 import UnconfiguredGroupsModal from '../modals/UnconfiguredGroupsModal';
 
 const PerformanceModal = React.lazy(() => import('../modals/PerformanceModal'));
 import ProcessingLoader from '../common/ProcessingLoader';
+import FilterProcessingOverlay from '../common/FilterProcessingOverlay';
 import ExportLoader from '../common/ExportLoader';
 import ChangelogModal from '../modals/ChangelogModal';
 import { SectionHeader } from '../common/SectionHeader';
@@ -61,7 +63,7 @@ const debugInitialData = {
 const DashboardView = React.memo(function DashboardView({ isActive }: { isActive?: boolean }) {
     const logic = useDashboardLogic();
     const {
-        status, appState, isProcessing, isClearingDepartments, isExporting, fileInfo,
+        status, appState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
         departmentMap, processedData,
         configUrl, setConfigUrl, uniqueFilterOptions,
         activeModal, setActiveModal, modalData,
@@ -321,6 +323,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
                     {showDashboard && (
                         <>
+                            <FilterProcessingOverlay isVisible={isFilterProcessing} />
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
                                 <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
                                     <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} onOpenHistory={() => setIsFileHistoryModalOpen(true)} />
@@ -453,7 +456,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             {/* Uncollected Warning Banner */}
                                             {processedData.uncollectedOrders && processedData.uncollectedOrders.length > 0 && (
                                                 <div
-                                                    onClick={() => handleExportUncollectedSheet()}
+                                                    onClick={() => setActiveModal('uncollected')}
                                                     className="relative bg-amber-50 dark:bg-amber-950/30 border-b border-amber-200 dark:border-amber-900 text-amber-800 dark:text-amber-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-colors z-[20]"
                                                 >
                                                     <div className="flex items-center gap-2 font-bold text-sm">
@@ -464,7 +467,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                         ĐƠN HÀNG CHƯA THU | CHƯA HỦY ({processedData.uncollectedOrders.length})
                                                     </div>
                                                     <div className="text-xs font-semibold underline underline-offset-2">
-                                                        Xuất Google Sheet
+                                                        Xem danh sách
                                                     </div>
                                                 </div>
                                             )}
@@ -565,6 +568,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     )}
                     {activeModal === 'unshipped' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} />}
                     {activeModal === 'unshipped_overdue' && processedData && <UnshippedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onlyOverdue={true} />}
+                    {activeModal === 'uncollected' && processedData && <UncollectedOrdersModal isOpen={true} onClose={() => setActiveModal(null)} onExport={handleExport} onExportSheet={handleExportUncollectedSheet} />}
                     <ChangelogModal isOpen={activeModal === 'changelog'} onClose={() => setActiveModal(null)} />
                     <UnconfiguredGroupsModal
                         isOpen={isUnconfiguredModalOpen}

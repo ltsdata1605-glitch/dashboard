@@ -3,7 +3,7 @@ import type { ExploitationData, CustomExploitationTabConfig } from '../../../typ
 import { getIndustryVisibleGroups, saveIndustryVisibleGroups } from '../../../services/dbService';
 import { SortConfig, detailQuickFilters, groupToSortKeyMap, detailHeaderGroups } from './IndustryTableUtils';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../../../constants';
-import { getRowValue, getHeSoQuyDoi } from '../../../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, cleanAndNormalize } from '../../../utils/dataUtils';
 
 export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredData?: any[], productConfig?: any, customExploitationTabs?: CustomExploitationTabConfig[], efficiencyExploitationTabs?: CustomExploitationTabConfig[]) => {
     const [viewMode, setViewMode] = useState<'detail' | 'efficiency'>('detail');
@@ -193,7 +193,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             const validData = baseFilteredData.filter(row => {
                 const htx = getRowValue(row, COL.HINH_THUC_XUAT);
                 return productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-                    ? productConfig.revenueEligibleHTX.has(String(htx || '').trim().toLowerCase().normalize('NFC'))
+                    ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
                     : !HINH_THUC_XUAT_THU_HO.has(htx);
             });
 

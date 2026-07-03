@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Cell, LabelList } from 'recharts';
-import { formatCurrency, formatQuantity, getHeSoQuyDoi, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup } from '../../utils/dataUtils';
+import { formatCurrency, formatQuantity, getHeSoQuyDoi, getRowValue, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { Icon } from '../common/Icon';
 import { SectionHeader } from '../common/SectionHeader';
@@ -166,7 +166,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
               const childVal = productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định';
               const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
               const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-                  ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
+                  ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
                   : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
               if (!isRevenue) return;
 
@@ -207,7 +207,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
 
           const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
           const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
-              ? productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'))
+              ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(hinhThucXuat))
               : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
           if (!isRevenue) return;
 

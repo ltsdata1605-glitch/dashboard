@@ -100,22 +100,22 @@ export const parseRevenueData = (danhSachData: string): RevenueRow[] => {
     return rows;
 };
 
-export const parseCrossSellingData = (data: string, employeeDepartmentMap: Map<string, string>): CrossSellingRow[] => {
+export const parseCrossSellingData = (data: string, employeeDepartmentMap: Record<string, string>): CrossSellingRow[] => {
     if (!data) return [];
     const lines = String(data).split('\n');
 
-    const normalizedEmployeeMap = new Map<string, string>();
-    for (const fullName of employeeDepartmentMap.keys()) {
+    const normalizedEmployeeMap: Record<string, string> = {};
+    for (const fullName of Object.keys(employeeDepartmentMap)) {
         const norm = normalizeText(fullName);
-        normalizedEmployeeMap.set(norm, fullName);
+        if (norm) normalizedEmployeeMap[norm] = fullName;
     }
 
     const findFullName = (shortName: string) => {
         const normalizedShort = normalizeText(shortName);
         if (!normalizedShort) return null;
-        const exactMatch = normalizedEmployeeMap.get(normalizedShort);
+        const exactMatch = normalizedShort ? normalizedEmployeeMap[normalizedShort] : undefined;
         if (exactMatch) return exactMatch;
-        for (const [normFull, fullName] of normalizedEmployeeMap.entries()) {
+        for (const [normFull, fullName] of Object.entries(normalizedEmployeeMap)) {
             if (normFull.startsWith(normalizedShort + " - ")) return fullName;
         }
         return null;
@@ -146,7 +146,7 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Map<s
         else if (isDept) originalName = rawName;
         else {
             originalName = findFullName(rawName);
-            if (originalName) department = employeeDepartmentMap.get(originalName);
+            if (originalName) department = employeeDepartmentMap[originalName];
         }
 
         if (!originalName) continue;
@@ -213,7 +213,7 @@ export const parseCrossSellingData = (data: string, employeeDepartmentMap: Map<s
     return rows;
 };
 
-export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: Map<string, string>): InstallmentRow[] => {
+export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: Record<string, string>): InstallmentRow[] => {
     if (!traGopData) return [];
     const lines = String(traGopData).split('\n').map(l => l.trim()).filter(l => l);
 
@@ -253,18 +253,18 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         return { name: fullName, short };
     });
 
-    const normalizedEmployeeMap = new Map<string, string>();
-    for (const fullName of employeeDepartmentMap.keys()) {
+    const normalizedEmployeeMap: Record<string, string> = {};
+    for (const fullName of Object.keys(employeeDepartmentMap)) {
         const norm = normalizeText(fullName);
-        normalizedEmployeeMap.set(norm, fullName);
+        if (norm) normalizedEmployeeMap[norm] = fullName;
     }
 
     const findFullName = (shortName: string) => {
         const normalizedShort = normalizeText(shortName);
         if (!normalizedShort) return null;
-        const exactMatch = normalizedEmployeeMap.get(normalizedShort);
+        const exactMatch = normalizedShort ? normalizedEmployeeMap[normalizedShort] : undefined;
         if (exactMatch) return exactMatch;
-        for (const [normFull, fullName] of normalizedEmployeeMap.entries()) {
+        for (const [normFull, fullName] of Object.entries(normalizedEmployeeMap)) {
             if (normFull.startsWith(normalizedShort + " - ")) return fullName;
         }
         return null;
@@ -288,7 +288,7 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         let originalName = isTotal ? 'Tổng' : (isDept ? rawName : findFullName(rawName));
         if (!originalName) continue;
 
-        const resolvedDept = isDept ? rawName : employeeDepartmentMap.get(originalName);
+        const resolvedDept = isDept ? rawName : employeeDepartmentMap[originalName];
         if (resolvedDept && isIgnoredDept(resolvedDept)) continue;
         if (isDept && isIgnoredDept(rawName)) continue;
 
@@ -359,7 +359,7 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
     return rows;
 };
 
-export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: Map<string, string>): Record<Criterion, { headers: CompetitionHeader[], employees: any[] }> => {
+export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: Record<string, string>): Record<Criterion, { headers: CompetitionHeader[], employees: any[] }> => {
     const emptyResult: Record<Criterion, { headers: CompetitionHeader[], employees: any[] }> = { DTLK: { headers: [], employees: [] }, DTQĐ: { headers: [], employees: [] }, SLLK: { headers: [], employees: [] } };
     if (!thiDuaData) return emptyResult;
     const lines = thiDuaData.split('\n').filter(line => line.trim() !== '');
@@ -394,7 +394,7 @@ export const parseCompetitionData = (thiDuaData: string, employeeDepartmentMap: 
 
         // O(1) Cache cho bảng thi đua
     const fastDeptMap = new Map<string, {orig: string, dept: string}>();
-    for (const [fullName, dept] of employeeDepartmentMap.entries()) {
+    for (const [fullName, dept] of Object.entries(employeeDepartmentMap)) {
         fastDeptMap.set(normalizeText(fullName), {orig: fullName, dept});
     }
 

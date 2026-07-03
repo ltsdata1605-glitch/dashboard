@@ -135,6 +135,22 @@ function AppContent() {
     const { user, userRole, isDemoMode, isLoading, departmentId, status } = useAuth();
     const titleData = TAB_TITLES[activeTab] || { main: 'Hub', highlight: '2.0' };
 
+    React.useEffect(() => {
+        // Preload heavy views in background to eliminate first-load lag when switching tabs
+        const timer = setTimeout(() => {
+            const preloadTarget = () => {
+                import('./components/views/DashboardView');
+                import('./components/views/CheckThuongView');
+                import('./features/bi-dashboard/components/BiWrapper');
+            };
+            if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+                window.requestIdleCallback(preloadTarget);
+            } else {
+                preloadTarget();
+            }
+        }, 1500);
+        return () => clearTimeout(timer);
+    }, []);
 
     const getTabIcon = () => {
         switch (activeTab) {

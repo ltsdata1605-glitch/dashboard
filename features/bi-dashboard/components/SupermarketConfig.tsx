@@ -48,7 +48,7 @@ const BulkRenameModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl flex flex-col h-[85vh] border border-slate-200/50 dark:border-slate-700 animate-in zoom-in-95 overflow-hidden">
+            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-3xl w-full max-w-3xl flex flex-col h-[85vh] border border-slate-200/50 dark:border-slate-700 animate-in zoom-in-95 overflow-hidden">
                 <div className="p-4 border-b border-sky-100/50 dark:border-slate-700 bg-sky-50/50 dark:bg-slate-800/50 flex justify-between items-center shrink-0 gap-4">
                     <div className="flex-1">
                         <h3 className="font-black text-lg text-sky-800 dark:text-sky-400 uppercase tracking-tight">Sửa cấu hình nhóm thi đua</h3>
@@ -333,7 +333,7 @@ const CompetitionTarget: React.FC<{
                 });
 
                 return (
-                    <div className="space-y-6">
+                    <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-6">
                         {Object.entries(groupedCompetitions).map(([criteria, comps]) => (
                             <div key={criteria} className="space-y-3">
                                 <h3 className="text-[14px] font-black text-slate-500 uppercase tracking-widest px-1 flex items-center gap-2">
@@ -464,7 +464,13 @@ interface SupermarketConfigProps {
 const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, addUpdate, removeUpdate, competitionLuyKeData, summaryLuyKeData, onThiDuaDataChange }) => {
     const [activeTab, setActiveTab] = useState<ConfigTab>('data');
 
+    const bookmarkletRef = useRef<HTMLAnchorElement>(null);
 
+    useEffect(() => {
+        if (bookmarkletRef.current) {
+            bookmarkletRef.current.href = `javascript:(async function () {  const DELAY = 100;  const COPY_AFTER_DONE = true;  let totalButtons = 0;  let currentProgress = 0;  let startTime = Date.now();  let elapsedSeconds = 0;  function sleep(ms) {    return new Promise(resolve => setTimeout(resolve, ms));  }  function nextFrame() {    return new Promise(resolve => requestAnimationFrame(resolve));  }  function getElapsedSeconds() {    return ((Date.now() - startTime) / 1000).toFixed(1);  }  function ensureLoadingBox() {    let box = document.getElementById('auto-click-loading-box');    if (!box) {      box = document.createElement('div');      box.id = 'auto-click-loading-box';      box.style.position = 'fixed';      box.style.top = '20px';      box.style.right = '20px';      box.style.zIndex = '2147483647';      box.style.background = 'linear-gradient(135deg, #0ea5e9, #2563eb)';      box.style.color = '#fff';      box.style.padding = '14px 18px';      box.style.borderRadius = '12px';      box.style.boxShadow = '0 8px 25px rgba(0,0,0,0.25)';      box.style.fontFamily = 'Arial, sans-serif';      box.style.fontSize = '14px';      box.style.minWidth = '290px';      box.style.pointerEvents = 'none';      box.innerHTML = %60        <div style="font-weight:bold;font-size:15px;margin-bottom:8px;">          Đang mở rộng dữ liệu...        </div>        <div id="auto-click-progress-text">0 / 0</div>        <div id="auto-click-time-text" style="margin-top:4px;font-size:13px;opacity:.95;">          Thời gian: 0.0 giây        </div>        <div style="margin-top:10px;background:rgba(255,255,255,0.25);height:8px;border-radius:99px;overflow:hidden;">          <div id="auto-click-progress-bar" style="width:0%;height:100%;background:#fff;border-radius:99px;transition:width .08s;"></div>        </div>      %60;      document.documentElement.appendChild(box);    }    return box;  }  function updateLoading(current, total) {    currentProgress = current;    totalButtons = total;    elapsedSeconds = getElapsedSeconds();    ensureLoadingBox();    const text = document.getElementById('auto-click-progress-text');    const timeText = document.getElementById('auto-click-time-text');    const bar = document.getElementById('auto-click-progress-bar');    if (text) text.innerText = current + ' / ' + total;    if (timeText) timeText.innerText = 'Thời gian: ' + elapsedSeconds + ' giây';    if (bar) bar.style.width = total > 0 ? ((current / total) * 100) + '%' : '100%';  }  function showSuccess(message) {    const finalTime = getElapsedSeconds();    const box = ensureLoadingBox();    box.style.background = 'linear-gradient(135deg, #16a34a, #22c55e)';    box.innerHTML = %60      <div style="font-weight:bold;font-size:15px;margin-bottom:6px;">        ✅ Hoàn tất      </div>      <div>\${message}</div>      <div style="margin-top:6px;font-size:13px;opacity:.95;">        Tổng thời gian: \${finalTime} giây      </div>    %60;    setTimeout(() => {      const oldBox = document.getElementById('auto-click-loading-box');      if (oldBox) oldBox.remove();    }, 4000);  }  function isVisible(el) {    return !!(el && el.offsetParent !== null);  }  function isStillPlus(el) {    return el &&      el.classList &&      el.classList.contains('fa-plus') &&      !el.classList.contains('fa-minus');  }  function isAlreadyOpened(el) {    const clickable = el.closest('button, a, [role="button"], .cursor-pointer, td, div');    if (!clickable) return false;    if (clickable.getAttribute('aria-expanded') === 'true') return true;    if (clickable.getAttribute('data-state') === 'open') return true;    if (clickable.querySelector('.fa-minus')) return true;    return false;  }  async function selectAllAndCopy() {    try {      const range = document.createRange();      range.selectNodeContents(document.body);      const selection = window.getSelection();      selection.removeAllRanges();      selection.addRange(range);      await sleep(150);      return document.execCommand('copy');    } catch (error) {      console.error('Lỗi copy:', error);      return false;    }  }  startTime = Date.now();  const keepLoadingAlive = setInterval(() => {    updateLoading(currentProgress, totalButtons);  }, 200);  let buttons = Array.from(document.querySelectorAll('.fa-solid.fa-plus.text-gray-700'))    .filter(btn => isVisible(btn))    .filter(btn => isStillPlus(btn))    .filter(btn => btn.dataset.clickPlusDone !== '1')    .filter(btn => !isAlreadyOpened(btn));  buttons = Array.from(new Set(buttons));  totalButtons = buttons.length;  currentProgress = 0;  ensureLoadingBox();  updateLoading(0, totalButtons);  await nextFrame();  let clickedCount = 0;  for (let i = 0; i < buttons.length; i++) {    const btn = buttons[i];    try {      if (!isVisible(btn) || !isStillPlus(btn) || isAlreadyOpened(btn)) {        updateLoading(i + 1, buttons.length);        await nextFrame();        continue;      }      btn.dataset.clickPlusDone = '1';      btn.click();      clickedCount++;      updateLoading(i + 1, buttons.length);      if (i % 3 === 0) {        await nextFrame();      }      await sleep(DELAY);    } catch (error) {      console.error('Lỗi tại nút:', i + 1, error);    }  }  await sleep(500);  let copied = false;  if (COPY_AFTER_DONE) {    copied = await selectAllAndCopy();  }  clearInterval(keepLoadingAlive);  if (copied) {    showSuccess('Đã mở rộng ' + clickedCount + ' mục và đã copy toàn bộ nội dung.');  } else {    showSuccess('Đã mở rộng ' + clickedCount + ' mục. Nếu chưa copy được, anh nhấn Ctrl + C.');  }})()`;
+        }
+    }, []);
 
     const ids = useMemo(() => {
         if (!supermarketName) return { ds: null, td: null, rt: null, lk: null, tg: null, bk: null };
@@ -529,8 +535,8 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     };
 
     return (
-        <div className="space-y-6">
-            <div className="flex items-center border-b border-slate-200 dark:border-slate-800 mb-4 overflow-x-auto scrollbar-hide">
+        <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-6">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 mb-4 overflow-x-auto scrollbar-hide">
                 <nav className="flex space-x-6 min-w-max" aria-label="Tabs">
                     {[
                         { id: 'data', label: 'Dữ liệu' },
@@ -546,6 +552,20 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         </button>
                     ))}
                 </nav>
+                <div className="shrink-0 pb-1 flex items-center pr-2">
+                    <a
+                        ref={bookmarkletRef}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 text-emerald-700 dark:text-emerald-400 font-bold text-[11px] uppercase rounded-full border border-emerald-200 dark:border-emerald-800/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 hover:border-emerald-300 dark:hover:border-emerald-700 hover:shadow-md hover:-translate-y-0.5 transition-all shadow-sm cursor-grab active:cursor-grabbing"
+                        title="Kéo thả nút này lên thanh Dấu trang (Bookmarks bar) của trình duyệt"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            toast.success('Hãy kéo nút này và thả lên thanh Dấu trang (Bookmarks) của trình duyệt để cài đặt!', { icon: '🖱️', duration: 4000 });
+                        }}
+                    >
+                        <SparklesIcon className="w-3.5 h-3.5 text-emerald-500" />
+                        <span>Auto Click+</span>
+                    </a>
+                </div>
             </div>
             
             <div className="animate-in fade-in duration-200">

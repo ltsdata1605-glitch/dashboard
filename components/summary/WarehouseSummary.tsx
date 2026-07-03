@@ -401,6 +401,50 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
                 {/* === TABLE VIEW (all screen sizes) === */}
                 <div className="overflow-hidden">
+
+                {/* Skeleton while columns load from IndexedDB */}
+                {!columnsLoaded && (
+                    <div className="p-1.5 sm:p-2 lg:p-6">
+                        <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+                            {/* Skeleton header */}
+                            <div className="flex">
+                                <div className="w-16 sm:w-20 shrink-0 h-10 bg-rose-50 dark:bg-rose-900/30 border-r border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                                    <div className="h-2.5 w-10 bg-rose-200/60 dark:bg-rose-700/40 rounded animate-pulse" />
+                                </div>
+                                {[...Array(12)].map((_, i) => (
+                                    <div key={i} className="flex-1 min-w-[52px] h-10 border-r border-slate-200 dark:border-slate-700 flex items-center justify-center" style={{ background: `hsl(${(i * 30) % 360}, 70%, 97%)` }}>
+                                        <div className="h-2 w-8 rounded animate-pulse" style={{ background: `hsl(${(i * 30) % 360}, 50%, 85%)`, animationDelay: `${i * 60}ms` }} />
+                                    </div>
+                                ))}
+                            </div>
+                            {/* Skeleton rows */}
+                            {[...Array(data.length || 2)].map((_, rowIdx) => (
+                                <div key={rowIdx} className={`flex border-t border-slate-100 dark:border-slate-800 ${rowIdx === (data.length || 2) - 1 ? 'bg-slate-50 dark:bg-slate-800/50' : ''}`}>
+                                    <div className="w-16 sm:w-20 shrink-0 h-9 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-700 flex items-center justify-center">
+                                        <div className="h-3 w-8 bg-slate-200 dark:bg-slate-700 rounded animate-pulse" style={{ animationDelay: `${rowIdx * 100}ms` }} />
+                                    </div>
+                                    {[...Array(12)].map((_, colIdx) => (
+                                        <div key={colIdx} className="flex-1 min-w-[52px] h-9 border-r border-slate-100 dark:border-slate-800 flex items-center justify-center">
+                                            <div
+                                                className="h-2.5 rounded bg-slate-100 dark:bg-slate-800 animate-pulse"
+                                                style={{
+                                                    width: `${20 + ((rowIdx * 13 + colIdx * 7) % 25)}px`,
+                                                    animationDelay: `${(rowIdx * 12 + colIdx) * 40}ms`
+                                                }}
+                                            />
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex items-center justify-center gap-2 mt-3 text-[10px] text-slate-400 dark:text-slate-500 font-medium">
+                            <svg className="w-3.5 h-3.5 animate-spin text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><circle cx="12" cy="12" r="10" strokeOpacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10" strokeLinecap="round"/></svg>
+                            Đang tải cấu hình cột...
+                        </div>
+                    </div>
+                )}
+
+                {columnsLoaded && (
                 <section className="overflow-x-auto custom-scrollbar p-1.5 sm:p-2 lg:p-6 touch-auto -webkit-overflow-scrolling-touch relative">
                     <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap">
                         <thead>
@@ -642,6 +686,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         </tfoot>
                     </table>
                 </section>
+                )}
                 </div>
                 {/* Pagination Controls */}
                 {totalPages > 1 && (

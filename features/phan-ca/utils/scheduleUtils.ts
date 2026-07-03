@@ -986,8 +986,9 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
 
 export const findBestSolution = (dayIndex: number, roleType: 'gh' | 'kho' | 'tn' | null, allStaff: StaffMember[], excludeEmployeeId: string, includeTn: boolean = true): Solution => {
   let replacementCandidates = allStaff.filter(s => {
-    // Chỉ tìm người thay thế trong bộ phận All In One
-    if (!s.department.toLowerCase().includes('all in one') || s.id === excludeEmployeeId) return false;
+    // Không tìm người thay thế trong bộ phận Quản lý hoặc Tiếp đón
+    const isManagerOrReception = s.department.toLowerCase().includes('quản lý') || s.department.toLowerCase().includes('tiếp đón');
+    if (isManagerOrReception || s.id === excludeEmployeeId) return false;
     const schedule = s.schedule[dayIndex];
     return schedule && schedule.role !== 'OFF' && !schedule.role.includes('(') && !schedule.isManual;
   });
@@ -1089,7 +1090,8 @@ export const findAutomaticReplacement = (shiftToCover: string, dayIndex: number,
     if (vacantDigits.size === 0) return null;
 
     const potentialPartners = allStaff.filter(s => {
-        if (s.id === excludeId) return false;
+        const isManagerOrReception = s.department.toLowerCase().includes('quản lý') || s.department.toLowerCase().includes('tiếp đón');
+        if (s.id === excludeId || isManagerOrReception) return false;
         const busyStatus = busySchedule[s.id]?.[dayIndex];
         if (busyStatus === 'off') return false;
         const sched = s.schedule[dayIndex];

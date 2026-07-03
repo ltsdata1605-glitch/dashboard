@@ -59,7 +59,7 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
             <div
                 ref={modalContentRef}
                 onClick={(e) => e.stopPropagation()}
-                className={`modal-content relative bg-slate-50 dark:bg-slate-900 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] w-full ${maxWidthClass} flex flex-col border border-white/40 dark:border-slate-700/50 transition-all duration-300 ${isBottom ? `mb-2 sm:mb-0 transform animate-in slide-in-from-bottom-8 sm:zoom-in-95 ${noRounded ? '' : 'rounded-[32px] sm:rounded-2xl'}` : `max-h-[90vh] opacity-100 scale-100 ${noRounded ? 'rounded-none' : 'rounded-2xl'}`}`}
+                className={`modal-content relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] w-full ${maxWidthClass} flex flex-col border border-white/20 dark:border-white/10 shadow-2xl transition-all duration-300 ${isBottom ? `mb-2 sm:mb-0 transform animate-in slide-in-from-bottom-8 sm:zoom-in-95 ${noRounded ? '' : 'rounded-[32px] sm:rounded-2xl'}` : `max-h-[90vh] opacity-100 scale-100 ${noRounded ? 'rounded-none' : 'rounded-2xl'}`}`}
             >
                 {!hideHeader && (
                     <div className={`flex justify-between items-center p-2 sm:p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl flex-shrink-0 z-10 relative ${noRounded ? '' : 'rounded-t-[32px] sm:rounded-t-2xl'}`}>

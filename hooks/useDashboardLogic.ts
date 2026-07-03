@@ -25,7 +25,7 @@ export const useDashboardLogic = () => {
     const [configUrl, setConfigUrl] = useState('https://docs.google.com/spreadsheets/d/e/2PACX-1vRhes_lcas8n2_xYHKylsjyD3PIVbdchCiL2XDKJ4OYfgUZlVjAT7ZGWDHrYRzQVrK2w50W86Da3l48/pub?output=xlsx');
     const [isDeduplicationEnabled, setIsDeduplicationEnabled] = useState(false);
     const [isLuyKe, setIsLuyKe] = useState(false);
-    const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'changelog' | null>(null);
+    const [activeModal, setActiveModal] = useState<'performance' | 'unshipped' | 'unshipped_overdue' | 'uncollected' | 'changelog' | null>(null);
     const [modalData, setModalData] = useState<any>(null);
     const [editingTargetKho, setEditingTargetKho] = useState<{ id: string, name: string, valueDTQD: string, valueDTThuc: string } | null>(null);
 
@@ -50,6 +50,7 @@ export const useDashboardLogic = () => {
         kpiCardsConfig, setKpiCardsConfig,
         kpiTargets, updateKpiTargets,
         isInternalProcessing,
+        isFilterProcessing,
         fileInfo, setFileInfo,
         pendingCloudSync, setPendingCloudSync,
         handleAcceptCloudSync,
@@ -169,7 +170,7 @@ export const useDashboardLogic = () => {
     const isProcessing = isInternalProcessing || isFileProcessing;
 
     return {
-        status, appState, setAppState, isProcessing, isClearingDepartments, isExporting, fileInfo,
+        status, appState, setAppState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
         departmentMap, originalData, baseFilteredData, warehouseFilteredData, calendarSourceData, productConfig, processedData, employeeAnalysisData,
         configUrl, setConfigUrl, uniqueFilterOptions,
         filterState, handleFilterChange,

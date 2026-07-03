@@ -1,4 +1,3 @@
-
 import type { DataRow, ProductConfig, FilterState, ProcessedData, EmployeeData, IndustryData } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP } from '../constants';
 import { getRowValue, getParentGroup } from '../utils/dataUtils';
@@ -8,6 +7,7 @@ import { processTrendData } from './trendService';
 import { processEmployeeData } from './employeeService';
 import { processSummaryTable, calculateWarehouseSummary } from './summaryService';
 import { processIndustryData } from './industryService';
+import { cleanAndNormalize } from '../utils/dataUtils';
 
 /** WeakMap cache for deduplication — keyed by allData array reference, auto-GC'd when data changes */
 const _dedupCache = new WeakMap<DataRow[], DataRow[]>();
@@ -115,10 +115,6 @@ export const isDateMatch = (row: DataRow, startDate: Date | null, endDate: Date 
     return (!startDate || rowDate >= startDate) && (!endDate || rowDate <= endDate);
 };
 
-const cleanAndNormalize = (val: any): string => {
-    if (val === undefined || val === null) return '';
-    return val.toString().trim().toLowerCase().normalize('NFC');
-};
 
 /**
  * Processes a filtered subset of data for a specific period to generate all dashboard metrics.
@@ -130,62 +126,66 @@ function processDataForPeriod(
     departmentMap: DepartmentMap | null
 ): Omit<ProcessedData, 'lastUpdated' | 'reportSubTitle' | 'warehouseSummary'> {
 
-    const isRevenueEligibleBase = (row: DataRow) => {
-        const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-        const parentGroup = getParentGroup(maNhomHang, productConfig);
-        if (parentGroup === 'Không tính doanh thu') return false;
+    // === Single-pass classification (was 4 separate .filter() calls) ===
+    // This is the hot path: with "ALL" filter, periodData can be 50k+ rows.
+    // Doing one loop instead of 4 avoids ~150k redundant getRowValue+cleanAndNormalize calls.
+    const filteredValidSalesData: DataRow[] = [];
+    const unshippedOrders: DataRow[] = [];
+    const uncollectedOrders: DataRow[] = [];
+    const standardPeriodData: DataRow[] = [];
 
-        const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
-        if (productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0) {
-            return productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'));
+    const hasHTXConfig = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0;
+
+    for (let i = 0, len = periodData.length; i < len; i++) {
+        const row = periodData[i];
+        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
+
+        if (thuTien === 'đã thu') {
+            standardPeriodData.push(row);
+
+            // Check revenue eligibility for "đã thu" rows
+            const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+            const parentGroup = getParentGroup(maNhomHang, productConfig);
+            if (parentGroup !== 'Không tính doanh thu') {
+                const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+                const isRevenueOk = hasHTXConfig
+                    ? productConfig.revenueEligibleHTX!.has(cleanAndNormalize(hinhThucXuat))
+                    : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
+
+                if (isRevenueOk) {
+                    filteredValidSalesData.push(row);
+
+                    // Check unshipped
+                    if (getRowValue(row, COL.XUAT) === 'Chưa xuất') {
+                        unshippedOrders.push(row);
+                    }
+                }
+            }
+        } else if (thuTien === 'chưa thu') {
+            // Check uncollected orders
+            const trangThaiXuat = cleanAndNormalize(getRowValue(row, COL.XUAT));
+            const trangThaiGiao = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_GIAO_HANG));
+            const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+            if (
+                trangThaiXuat === 'chưa xuất' &&
+                trangThaiGiao === 'chưa giao' &&
+                (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ')
+            ) {
+                // Check base revenue eligibility (no thuTien check)
+                const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+                const parentGroup = getParentGroup(maNhomHang, productConfig);
+                if (parentGroup !== 'Không tính doanh thu') {
+                    const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
+                    const isRevenueBase = hasHTXConfig
+                        ? productConfig.revenueEligibleHTX!.has(cleanAndNormalize(hinhThucXuat))
+                        : (HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat));
+                    if (isRevenueBase) {
+                        uncollectedOrders.push(row);
+                    }
+                }
+            }
         }
-        return HINH_THUC_XUAT_TIEN_MAT.has(hinhThucXuat) || HINH_THUC_XUAT_TRA_GOP.has(hinhThucXuat);
-    };
-
-    const isRevenueEligible = (row: DataRow) => {
-        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
-        if (thuTien !== 'đã thu') return false;
-        return isRevenueEligibleBase(row);
-    };
-
-    const filteredValidSalesData = periodData.filter(row => {
-        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
-        if (thuTien !== 'đã thu') return false;
-
-        const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-        const parentGroup = getParentGroup(maNhomHang, productConfig);
-        if (parentGroup === 'Không tính doanh thu') return false;
-
-        const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
-        if (productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0) {
-            return productConfig.revenueEligibleHTX.has(hinhThucXuat.trim().toLowerCase().normalize('NFC'));
-        }
-        return !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
-    });
-
-    const unshippedOrders = periodData.filter(row => {
-        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
-        return thuTien === 'đã thu' && getRowValue(row, COL.XUAT) === 'Chưa xuất' && isRevenueEligible(row);
-    });
-
-    const uncollectedOrders = periodData.filter(row => {
-        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
-        const trangThaiXuat = cleanAndNormalize(getRowValue(row, COL.XUAT));
-        const trangThaiGiao = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_GIAO_HANG));
-        const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
-        return (
-            thuTien === 'chưa thu' &&
-            trangThaiXuat === 'chưa xuất' &&
-            trangThaiGiao === 'chưa giao' &&
-            (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') &&
-            isRevenueEligibleBase(row)
-        );
-    });
-
-    const standardPeriodData = periodData.filter(row => {
-        const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
-        return thuTien === 'đã thu';
-    });
+    }
 
     const kpis = processKpis(filteredValidSalesData, unshippedOrders, standardPeriodData, productConfig, filters);
     const trendData = processTrendData(filteredValidSalesData, productConfig);

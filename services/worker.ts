@@ -1,7 +1,6 @@
-
 import * as XLSX from 'xlsx';
 import type { DataRow, Status } from '../types';
-import { getRowValue, parseExcelDate } from '../utils/dataUtils';
+import { getRowValue, parseExcelDate, toLocalISOString, cleanAndNormalize } from '../utils/dataUtils';
 import { COL } from '../constants';
 
 interface WorkerMessage {
@@ -60,10 +59,10 @@ async function processSingleFileInWorker(file: File, enableDeduplication: boolea
                 'Mã sản phẩm', 'Kho tạo', 'Kho Tạo', 'Trạng thái giao hàng', 'Trạng thái giao'
             ];
             
-            const normalizedReqCols = reqCols.map(c => c.toLowerCase().normalize('NFC'));
+            const normalizedReqCols = reqCols.map(c => cleanAndNormalize(c));
             const reqIndices: Record<number, string> = {};
             for (let j = 0; j < headers.length; j++) {
-                const normHeader = headers[j].toLowerCase().normalize('NFC');
+                const normHeader = cleanAndNormalize(headers[j]);
                 const matchedIdx = normalizedReqCols.indexOf(normHeader);
                 if (matchedIdx !== -1) {
                     reqIndices[j] = reqCols[matchedIdx];
@@ -99,14 +98,17 @@ async function processSingleFileInWorker(file: File, enableDeduplication: boolea
         const validResults: DataRow[] = [];
         const len = combinedJson.length;
 
-        const cleanAndNormalize = (val: any): string => {
-            if (val === undefined || val === null) return '';
-            return val.toString().trim().toLowerCase().normalize('NFC');
-        };
-
         for (let i = 0; i < len; i++) {
+            // Chuẩn hóa và làm sạch object
             const row = combinedJson[i];
             
+            // Xóa rác, null, rỗng (Ép cân dữ liệu RAM)
+            for (const key in row) {
+                if (row[key] === null || row[key] === undefined || row[key] === '') {
+                    delete row[key];
+                }
+            }
+
             // Inline validation for speed
             const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
             const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
@@ -147,7 +149,7 @@ async function processSingleFileInWorker(file: File, enableDeduplication: boolea
         postStatus({ message: 'Hoàn tất xử lý (đang chuyển dữ liệu)...', type: 'info', progress: 95 });
 
         // Post the final result back to the main thread
-        self.postMessage({ type: 'result', payload: validResults });
+        self.postMessage({ type: 'result', payload: JSON.stringify(validResults) });
 
     } catch (error) {
         console.error("Lỗi khi xử lý file trong worker:", error);

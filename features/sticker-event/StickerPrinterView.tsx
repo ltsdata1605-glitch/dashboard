@@ -83,9 +83,10 @@ const generatePageHtml = (
     page: StickerPage, 
     priceSource: 'sale' | 'service', 
     stickerType: 'gia_soc' | 'gio_vang',
-    bgImage: string
+    bgImage: string,
+    discountDisplayMode: 'percent' | 'amount' = 'percent'
 ) => {
-    const { newPrice, percent } = resolvePagePrices(page, priceSource);
+    let { newPrice, percent } = resolvePagePrices(page, priceSource);
     
     // Fallback parsing for header, subHeader, and footer from page.html
     let header = page.header;
@@ -122,6 +123,20 @@ const generatePageHtml = (
         ? `<div class="sub-header">${subHeader || ''}</div>` : '';
     
     const priceHtml = `<div class="extra2">${newPrice}</div>`;
+
+    if (discountDisplayMode === 'amount') {
+        const oldVal = Number(String(page.oldPrice).replace(/\D/g, ''));
+        let newVal = Number(String(newPrice).replace(/\D/g, ''));
+        if (oldVal > 0 && newVal > 0) {
+            if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
+                newVal = newVal * 1000;
+            }
+            const diff = oldVal - newVal;
+            if (diff > 0) {
+                percent = `-${(diff/1000).toLocaleString('vi-VN')}K`;
+            }
+        }
+    }
 
     return `<div class="sticker-container" data-type="${stickerType}" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:197/285;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;">
         ${barcodeHtml}
@@ -1196,9 +1211,6 @@ export default function StickerPrinterView() {
     };
 
     const handlePrint = () => {
-        const printSection = document.getElementById('print-section');
-        if (!printSection) return;
-
         const previewPageCount = batchItems.length > 0 ? batchItems.filter(i => i.selected).length : (manualPages.length === 0 ? 1 : 0);
         const selectedManualPages = manualPages.filter(p => p.selected !== false);
         const totalPages = previewPageCount + selectedManualPages.length;
@@ -1211,38 +1223,52 @@ export default function StickerPrinterView() {
         const printHost = document.createElement('div');
         printHost.id = 'print-host';
         
-        if (batchItems.length > 0 || manualPages.length === 0) {
-            printHost.innerHTML = printSection.innerHTML;
-        } else {
-            printHost.innerHTML = '';
+        // Define style for print host based on current font sizes
+        printHost.innerHTML = `
+            <style>
+                #print-host .header-text { font-size: ${headerTextSize}cqi !important; }
+                #print-host .sub-header { font-size: ${subHeaderTextSize}cqi !important; }
+                #print-host .extra1 { font-size: ${percentTextSize}cqi !important; }
+                #print-host .old { font-size: ${oldPriceTextSize}cqi !important; }
+                #print-host .name { font-size: ${nameTextSize}cqi !important; }
+                #print-host .extra2 { font-size: ${newPriceTextSize}cqi !important; }
+                #print-host .footer-text { font-size: ${footerTextSize}cqi !important; }
+                #print-host .sticker-container {
+                    outline: 1.5px dashed #6366f1;
+                    outline-offset: 1px;
+                }
+            </style>
+        `;
+
+        if (batchItems.length > 0) {
+            const selectedBatchItems = batchItems.filter(i => i.selected);
+            selectedBatchItems.forEach(item => {
+                const tempPage: StickerPage = {
+                    id: item.id,
+                    html: '',
+                    label: item.name,
+                    oldPrice: item.oldPrice,
+                    newPrice: item.newPrice,
+                    percent: item.percent,
+                    timestamp: Date.now(),
+                    code: showBarcode ? item.imei : undefined,
+                    header: headerTextContent,
+                    subHeader: subHeaderTextContent,
+                    footer: footerTextContent,
+                };
+                printHost.innerHTML += generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode);
+            });
+        } else if (manualPages.length === 0) {
+            // If both are empty, this handles the default preview template
+            const printSection = document.getElementById('print-section');
+            if (printSection) {
+                printHost.innerHTML += printSection.innerHTML;
+            }
         }
 
         // Then append queued manual pages
         selectedManualPages.forEach(page => {
-            printHost.innerHTML += generatePageHtml(page, priceSource, stickerType, bgImage);
-        });
-
-        // Loop through all stickers inside printHost and force percentage discount!
-        const stickers = printHost.querySelectorAll('.sticker-container');
-        stickers.forEach(sticker => {
-            const oldEl = sticker.querySelector('.old') as HTMLElement;
-            const newEl = sticker.querySelector('.extra2') as HTMLElement;
-            const pctEl = sticker.querySelector('.extra1') as HTMLElement;
-            if (oldEl && newEl && pctEl) {
-                const oldVal = Number(oldEl.innerText.replace(/\D/g, ''));
-                let newVal = Number(newEl.innerText.replace(/\D/g, ''));
-                if (oldVal > 0 && newVal > 0) {
-                    if (newVal * 1000 <= oldVal * 1.5 && newVal < oldVal) {
-                        newVal = newVal * 1000;
-                    }
-                    const ratio = Math.round((newVal / oldVal - 1) * 100);
-                    if (ratio < 0) {
-                        pctEl.innerText = `${ratio}%`;
-                    } else {
-                        pctEl.innerText = '';
-                    }
-                }
-            }
+            printHost.innerHTML += generatePageHtml(page, priceSource, stickerType, bgImage, discountDisplayMode);
         });
 
         document.body.appendChild(printHost);

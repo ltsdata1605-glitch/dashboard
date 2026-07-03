@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, startTransition, useCallback } from 'react';
+import { useState, useEffect, useMemo, startTransition, useCallback, useRef } from 'react';
 import type { DataRow, FilterState, ProductConfig, ProcessedData, Status, AppState, UploadedFileRegistryItem } from '../types';
 import type { DepartmentMap } from '../services/dataService';
 import * as dbService from '../services/dbService';
@@ -7,7 +7,7 @@ import { applyFiltersAndProcess, deduplicateSalesData } from '../services/filter
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_KPI_CARDS, COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 import toast from 'react-hot-toast';
-import { normalizeSalesData, getParentGroup, getRowValue, wrapProductConfigWithProxies } from '../utils/dataUtils';
+import { normalizeSalesData, getParentGroup, getRowValue, wrapProductConfigWithProxies, cleanAndNormalize, unwrapProductConfigProxies } from '../utils/dataUtils';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -204,9 +204,9 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                                 const cloudItem = heavyCloudData[key];
                                 const cloudTime = cloudItem?.updatedAt || 0;
 
-                                if (localValue === null || cloudTime > localTime) {
+                                if (cloudItem && (localValue === null || cloudTime > localTime)) {
                                     console.log(`[Cloud Sync] Cloud có bản cập nhật mới cho khóa nặng "${key}" (${cloudTime} > ${localTime}). Đang tải xuống...`);
-                                    await dbService.saveSettingFromCloud(key, cloudItem.value, cloudTime || Date.now());
+                                    if (cloudItem && cloudItem.value !== undefined) await dbService.saveSettingFromCloud(key, cloudItem.value, cloudTime || Date.now());
                                     
                                     // Ghi đè vào IndexedDB của iframe check-thuong nếu là checkthuong_data
                                     if (key === 'checkthuong_data') {
@@ -301,20 +301,24 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                     });
                 }
 
-                // 3. Background Sheet Check (Always run to keep config updated)
+                
+                // 3. Background Sheet Check (Auto-update config once gracefully)
                 if (config) {
                     setTimeout(async () => {
                         try {
                             const latestConfig = await loadConfigFromSheet(configUrl, () => {});
-                            if (JSON.stringify(config) !== JSON.stringify(latestConfig)) {
-                                console.log("Phát hiện cấu hình ProductConfig mới tĩnh, đang tự động nạp ngầm...");
+                            const serializeConfig = (c: any) => JSON.stringify(c, (key, value) => (value instanceof Set ? Array.from(value).sort() : value));
+                            if (serializeConfig(config) !== serializeConfig(latestConfig)) {
+                                console.log("Phát hiện cấu hình ProductConfig mới từ Google Sheet, tự động nạp ngầm & lưu lên mây...");
                                 dbService.saveProductConfig(latestConfig, configUrl).catch(console.error);
                                 setProductConfig(latestConfig);
+                            } else {
+                                console.log("[Background Check] Cấu hình ProductConfig trên Sheet không thay đổi.");
                             }
                         } catch (updateError) {
-                            console.warn("Không thể kiểm tra Sheet tĩnh:", updateError);
+                            console.warn("Không thể kiểm tra Sheet tĩnh ngầm:", updateError);
                         }
-                    }, 2000);
+                    }, 5000); // Wait 5s to ensure app is fully interactive before doing heavy fetch
                 }
 
                 // Load registry
@@ -546,6 +550,47 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
         return deduplicateSalesData(originalData);
     }, [originalData, isDeduplicationEnabled]);
 
+    const rbacData = useMemo(() => {
+        let data = deduplicatedData;
+        if (!isDemoMode && (userRole === 'employee' || userRole === 'manager') && user?.email !== 'nguyendangkhoafit2@gmail.com') {
+            const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
+            data = deduplicatedData.filter(row => {
+                const kho = String(row['Mã kho tạo'] || '').trim();
+                if (!allowedKhos.includes(kho)) return false;
+                
+                if (userRole === 'employee') {
+                    const emp = String(row['Người tạo'] || '').trim().toLowerCase();
+                    if (emp !== employeeName?.trim().toLowerCase()) return false;
+                }
+                
+                return true;
+            });
+        }
+        return data;
+    }, [deduplicatedData, userRole, departmentId, employeeName, user?.email, isDemoMode]);
+
+    
+    // Analytics Worker setup
+    const workerRef = useRef<Worker | null>(null);
+    const [workerReady, setWorkerReady] = useState(false);
+
+    useEffect(() => {
+        // @ts-ignore
+        import('../services/analytics.worker?worker').then((WorkerModule) => {
+            workerRef.current = new WorkerModule.default();
+            setWorkerReady(true);
+        });
+        return () => {
+            if (workerRef.current) workerRef.current.terminate();
+        };
+    }, []);
+
+    useEffect(() => {
+        if (workerRef.current && rbacData.length > 0 && workerReady) {
+            workerRef.current.postMessage({ type: 'SET_DATA', payload: rbacData });
+        }
+    }, [rbacData, workerReady]);
+    
     // Central Data Processing
     useEffect(() => {
         if (appState === 'loading') return;
@@ -562,50 +607,40 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
 
         // For filter changes, we DON'T set isHardProcessing to avoid layout shift.
         // isFilterProcessing is a soft signal (optional, kept for future use).
-        const timer = setTimeout(() => {
-            try {
-                if (!productConfig) {
-                    throw new Error("Cấu hình sản phẩm chưa được tải. Vui lòng đợi trong giây lát.");
-                }
+        setIsFilterProcessing(true);
 
-                let rbacData = deduplicatedData;
-                if (!isDemoMode && (userRole === 'employee' || userRole === 'manager') && user?.email !== 'nguyendangkhoafit2@gmail.com') {
-                    const allowedKhos = (departmentId || '').split(',').map(k => k.trim()).filter(Boolean);
-                    rbacData = deduplicatedData.filter(row => {
-                        const kho = String(row['Mã kho tạo'] || '').trim();
-                        // 1. Manager & Employee both need Kho matching
-                        if (!allowedKhos.includes(kho)) return false;
-                        
-                        // 2. Employee additional check for exact name match
-                        if (userRole === 'employee') {
-                            const emp = String(row['Người tạo'] || '').trim().toLowerCase();
-                            if (emp !== employeeName?.trim().toLowerCase()) return false;
-                        }
-                        
-                        return true;
-                    });
-                }
-
-                const { processedData: result, baseFilteredData: newBaseData, warehouseFilteredData: newWarehouseData, calendarSourceData: newCalendarSourceData } = applyFiltersAndProcess(rbacData, productConfig, filterState, departmentMap, false);
-                
+        const handleWorkerMessage = (e: MessageEvent) => {
+            const { type, payload } = e.data;
+            if (type === 'PROCESS_SUCCESS') {
+                const { result, newBaseData, newWarehouseData, newCalendarSourceData } = payload;
                 setAppState('dashboard');
                 setProcessedData(result);
                 setBaseFilteredData(newBaseData);
                 setWarehouseFilteredData(newWarehouseData);
                 setCalendarSourceData(newCalendarSourceData);
                 setEmployeeAnalysisData(result.employeeData);
-            } catch (error) {
-                console.error("Lỗi khi xử lý lại dữ liệu:", error);
-                const errorMsg = error instanceof Error ? error.message : "Đã xảy ra lỗi trong quá trình xử lý dữ liệu.";
-                setStatus({ message: errorMsg, type: 'error', progress: 0 });
+                setIsFilterProcessing(false);
+            } else if (type === 'PROCESS_ERROR') {
+                console.error("Lỗi khi xử lý lại dữ liệu:", payload);
+                setStatus({ message: payload, type: 'error', progress: 0 });
                 setAppState('upload');
-            } finally {
                 setIsFilterProcessing(false);
             }
-        }, 150); // Yield UI Thread to ensure loading spinner paints before heavy calculation
+        };
 
-        return () => clearTimeout(timer);
-    }, [deduplicatedData, productConfig, filterState, departmentMap, setStatus, userRole, departmentId, employeeName, user?.email, isDemoMode, appState, setAppState]);
+        if (workerRef.current) {
+            workerRef.current.onmessage = handleWorkerMessage;
+            workerRef.current.postMessage({ 
+                type: 'PROCESS', 
+                payload: { 
+                    productConfig: productConfig ? unwrapProductConfigProxies(productConfig) : null, 
+                    filterState, 
+                    departmentMap, 
+                    isDeduplicationEnabled: false 
+                } 
+            });
+        }
+    }, [productConfig, filterState, departmentMap, setStatus, appState, setAppState]);
 
     // Unique filter options
     const uniqueFilterOptions = useMemo(() => {

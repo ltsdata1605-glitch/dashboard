@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { useWorker } from "../hooks/useWorker";import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { LineChartIcon, ArchiveBoxIcon, BuildingStorefrontIcon, ChevronDownIcon, FilterIcon, CreditCardIcon, SparklesIcon } from './Icons';
 import { Tab, Employee, Criterion, Version } from '../types/nhanVienTypes';
 import RevenueView from './nhanvien/RevenueTab';
@@ -124,19 +124,28 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
         }
     }, [allEmployees]);
 
-    const competitionData = useMemo(() => {
-        const parsed = parseCompetitionData(aggregatedData.thiDua, employeeDepartmentMap);
-        const hiddenSet = new Set(hiddenEmployees || []);
-        const filteredResult = { ...parsed };
-        Object.keys(filteredResult).forEach(key => {
-            const criterion = key as Criterion;
-            filteredResult[criterion] = {
-                headers: parsed[criterion].headers,
-                employees: parsed[criterion].employees.filter(emp => !hiddenSet.has(emp.originalName || ''))
-            };
+    const { runWorkerTask } = useWorker();
+    const [competitionData, setCompetitionData] = useState<Record<Criterion, { headers: any[], employees: any[] }>>({} as any);
+
+    useEffect(() => {
+        if (!aggregatedData.thiDua || !isActive) return;
+        let isMounted = true;
+        runWorkerTask('PARSE_COMPETITION', { text: aggregatedData.thiDua, employeeDepartmentMap }).then(parsed => {
+            if (!isMounted || !parsed) return;
+            const hiddenSet = new Set(hiddenEmployees || []);
+            const filteredResult = { ...parsed };
+            Object.keys(filteredResult).forEach(key => {
+                const criterion = key as Criterion;
+                filteredResult[criterion] = {
+                    headers: parsed[criterion].headers,
+                    employees: parsed[criterion].employees.filter((emp: any) => !hiddenSet.has(emp.originalName || ''))
+                };
+            });
+            setCompetitionData(filteredResult);
         });
-        return filteredResult;
-    }, [aggregatedData.thiDua, employeeDepartmentMap, hiddenEmployees]);
+        return () => { isMounted = false; };
+    }, [aggregatedData.thiDua, employeeDepartmentMap, hiddenEmployees, isActive]);
+
     // Fix: Updated type to include 'tong'
     const [activeCompetitionTab, setActiveCompetitionTab] = useIndexedDBState<Criterion | 'nhom' | 'canhan' | 'tong' | 'sosanh'>('nhanvien-active-competition-tab', 'nhom');
     const [highlightedEmpArray, setHighlightedEmpArray] = useIndexedDBState<string[]>('highlight-employees-multi', []);

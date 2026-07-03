@@ -1,6 +1,5 @@
-
 import type { DataRow, ProductConfig, Status } from '../types';
-import { getRowValue, parseExcelDate } from '../utils/dataUtils';
+import { getRowValue, parseExcelDate, toLocalISOString, cleanAndNormalize } from '../utils/dataUtils';
 import { COL, DEFAULT_QUANTITY_MULTIPLIER_MAP } from '../constants';
 
 type StatusUpdater = (status: Status) => void;
@@ -222,14 +221,14 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                                     const hinhThuc = String(row[hinhThucIndex] || '').trim();
                                     
                                     if (htx) {
-                                        const htxKey = htx.toLowerCase().normalize('NFC');
-                                        if (tinhDT.toLowerCase().normalize('NFC') === 'có') {
+                                        const htxKey = cleanAndNormalize(htx);
+                                        if (cleanAndNormalize(tinhDT) === 'có') {
                                             config.revenueEligibleHTX!.add(htxKey);
                                         } else {
                                             config.nonRevenueEligibleHTX!.add(htxKey);
                                         }
                                         
-                                        const hinhThucLower = hinhThuc.toLowerCase().normalize('NFC');
+                                        const hinhThucLower = cleanAndNormalize(hinhThuc);
                                         if (hinhThucLower.includes('trả góp') || hinhThuc === 'Trả góp') {
                                             config.htxClassification![htxKey] = 'tra_gop';
                                         } else if (hinhThucLower.includes('tiền mặt') || hinhThuc === 'Tiền mặt') {
@@ -253,7 +252,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
 
             // 4. Parse "Ngành hàng BI" sheet
             const biSheetName = workbook.SheetNames.find(name => {
-                const ln = name.toLowerCase().normalize('NFC');
+                const ln = cleanAndNormalize(name);
                 return ln.includes('ngành hàng bi') || ln.includes('nganh hang bi');
             });
             if (biSheetName) {
@@ -262,10 +261,10 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                     const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
                     if (rows.length >= 2) {
                         const sheetHeaders = rows[0].map(h => String(h || '').trim());
-                        const nganhHangIdx = sheetHeaders.findIndex(h => h.toLowerCase().normalize('NFC') === 'ngành hàng' || h.toLowerCase() === 'nganhhang' || h.toLowerCase() === 'ngành hàng');
-                        const nhomHangIdx = sheetHeaders.findIndex(h => h.toLowerCase().normalize('NFC') === 'nhóm hàng' || h.toLowerCase() === 'nhomhang' || h.toLowerCase() === 'nhóm hàng');
-                        const nhomChaIdx = sheetHeaders.findIndex(h => h.toLowerCase().normalize('NFC') === 'nhomcha' || h.toLowerCase() === 'nhomcha');
-                        const nhomConIdx = sheetHeaders.findIndex(h => h.toLowerCase().normalize('NFC') === 'nhomcon' || h.toLowerCase() === 'nhomcon');
+                        const nganhHangIdx = sheetHeaders.findIndex(h => cleanAndNormalize(h) === 'ngành hàng' || h.toLowerCase() === 'nganhhang' || h.toLowerCase() === 'ngành hàng');
+                        const nhomHangIdx = sheetHeaders.findIndex(h => cleanAndNormalize(h) === 'nhóm hàng' || h.toLowerCase() === 'nhomhang' || h.toLowerCase() === 'nhóm hàng');
+                        const nhomChaIdx = sheetHeaders.findIndex(h => cleanAndNormalize(h) === 'nhomcha' || h.toLowerCase() === 'nhomcha');
+                        const nhomConIdx = sheetHeaders.findIndex(h => cleanAndNormalize(h) === 'nhomcon' || h.toLowerCase() === 'nhomcon');
                         
                         if (nhomHangIdx !== -1 && nhomChaIdx !== -1 && nhomConIdx !== -1) {
                             config.industryBiMap = {};
@@ -549,11 +548,6 @@ export async function processSalesFile(file: File, enableDeduplication: boolean,
         
         const validResults: DataRow[] = [];
         const len = processedList.length;
-
-        const cleanAndNormalize = (val: any): string => {
-            if (val === undefined || val === null) return '';
-            return val.toString().trim().toLowerCase().normalize('NFC');
-        };
 
         for (let i = 0; i < len; i++) {
             const row = processedList[i];

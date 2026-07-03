@@ -14,8 +14,7 @@ interface ScheduleTableProps {
   tableRef: React.RefObject<HTMLTableElement>;
   onDeleteEmployee: (id: string) => void;
   onEditShift: (employeeId: string, dayIndex: number) => void;
-  onDayHover: (day: number | null) => void;
-  hoveredDay: number | null;
+  onDayClick?: (day: number) => void;
   weekRange?: { start: number; end: number } | null;
   highlightId?: string | null;
   onSwapShift: (employeeId1: string, employeeId2: string, dayIndex: number) => void;
@@ -37,7 +36,7 @@ const StatCell: React.FC<{ value: number; target: number; className?: string }> 
 
 const ScheduleTable: React.FC<ScheduleTableProps> = ({ 
     staffList, config, targets, tableRef, 
-    onDeleteEmployee, onEditShift, onDayHover, hoveredDay, 
+    onDeleteEmployee, onEditShift, onDayClick,
     weekRange, highlightId, onSwapShift, includeTnInSbh = true
 }) => {
   const { year, month, startDay, duration } = config;
@@ -199,7 +198,6 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                     }
 
                     const manualClass = info.isManual ? `cell-manual cell-${info.manualChangeInfo?.type || 'direct-edit'}` : '';
-                    const hoverClass = dayIndex === hoveredDay ? 'brightness-95 scale-[0.98]' : '';
                     const warningClass = info.needsManualIntervention ? 'cell-needs-intervention' : '';
                     
                     const isDragging = dragSource?.employeeId === staff.id && dragSource?.dayIndex === dayIndex;
@@ -207,13 +205,13 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                     const dragClass = isDragging ? 'opacity-50 scale-90 ring-2 ring-indigo-400 z-50' : isDragOver ? 'bg-indigo-100 ring-2 ring-indigo-500 scale-105 z-50 shadow-lg' : '';
 
                     return (
-                        <td key={dayIndex} className={`editable-cell ${className} ${manualClass} ${hoverClass} ${warningClass} ${dragClass} font-black transition-all duration-200`} 
+                        <td key={dayIndex} className={`editable-cell ${className} ${manualClass} ${warningClass} ${dragClass} font-black transition-all duration-200`} 
                             draggable={true}
                             onDragStart={(e) => handleDragStart(e, staff.id, dayIndex)}
                             onDragOver={(e) => handleDragOver(e, staff.id, dayIndex)}
                             onDrop={(e) => handleDrop(e, staff.id, dayIndex)}
                             onDragEnd={handleDragEnd}
-                            onMouseEnter={() => onDayHover(dayIndex)} onClick={() => onEditShift(staff.id, dayIndex)}>
+                            onClick={() => onEditShift(staff.id, dayIndex)}>
                             <div className="flex flex-col items-center justify-center pointer-events-none">
                                 <span className="leading-tight">{info.role === "OFF" ? "OFF" : info.shift}</span>
                                 {rolePill}
@@ -292,7 +290,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
   }, [duration, year, month, startDay, dayToWeekMap, weekRange]);
 
   return (
-    <div className={`overflow-x-auto custom-scroll rounded-none bg-white border border-slate-200 shadow-xl ${isIndividualExport ? 'flex justify-center' : ''}`} onMouseLeave={() => onDayHover(null)}>
+    <div className={`overflow-x-auto custom-scroll rounded-none bg-white border border-slate-200 shadow-xl ${isIndividualExport ? 'flex justify-center' : ''}`}>
       <table id="scheduleTable" ref={tableRef} className="w-full border-collapse">
         <thead className="bg-slate-50">
           <tr>
@@ -327,12 +325,15 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                 const weekNum = dayToWeekMap[day] || 1;
                 const theme = weekThemes[(weekNum - 1) % weekThemes.length];
                 
-                // We use inline styles for background and text color to match the week, except for Sunday which can still be distinct (or not). Let's use week theme bg for consistency, or keep white. "Chi tiết kho" uses groupColorMap styles.
-                
                 return (
-                    <th key={i} className={`px-1 min-w-[50px] border-r border-slate-300 border-b-[3px] !border-b-slate-400 ${isWeekendDay ? 'bg-rose-50 text-rose-700' : ''}`} style={!isWeekendDay ? { backgroundColor: theme.bg, color: theme.text } : {}}>
-                        <div className="font-black text-[15px]">{date.getDate()}</div>
-                        <div className="opacity-90 text-[13px] tracking-widest">{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()]}</div>
+                    <th key={i} 
+                        className={`px-1 min-w-[50px] border-r border-slate-300 border-b-[3px] !border-b-slate-400 ${isWeekendDay ? 'bg-rose-50 text-rose-700' : ''} cursor-pointer hover:opacity-80`} 
+                        style={!isWeekendDay ? { backgroundColor: theme.bg, color: theme.text } : {}}
+                        onClick={() => onDayClick?.(i + 1)}
+                        title="Click để xem thống kê ngày này"
+                    >
+                        <div className="text-[10px] font-medium opacity-80 leading-none mb-1">{["CN", "T2", "T3", "T4", "T5", "T6", "T7"][date.getDay()]}</div>
+                        <div className="text-lg leading-none">{String(date.getDate()).padStart(2, '0')}</div>
                     </th>
                 );
             })}
