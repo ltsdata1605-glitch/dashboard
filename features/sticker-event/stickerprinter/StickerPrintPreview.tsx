@@ -1054,8 +1054,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      align-items: flex-start;
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1077,8 +1077,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      align-items: flex-start;
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
@@ -1099,8 +1099,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      align-items: flex-start;
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1122,8 +1122,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      align-items: flex-start;
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1237,8 +1237,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      align-items: flex-start;
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
@@ -1256,8 +1256,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      align-items: flex-start;
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
@@ -1275,8 +1275,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      align-items: flex-start;
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1295,8 +1295,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      align-items: flex-start;
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
