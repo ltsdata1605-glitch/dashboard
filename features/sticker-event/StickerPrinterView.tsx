@@ -150,6 +150,51 @@ const generatePageHtml = (
     </div>`;
 };
 
+const isHistoryDuplicate = (a: PrintHistoryEntry, b: PrintHistoryEntry): boolean => {
+    if (a.stickerType !== b.stickerType) return false;
+    if (a.headerTextContent !== b.headerTextContent) return false;
+    if (a.subHeaderTextContent !== b.subHeaderTextContent) return false;
+    if (a.footerTextContent !== b.footerTextContent) return false;
+    if (a.showBarcode !== b.showBarcode) return false;
+    if (a.discountDisplayMode !== b.discountDisplayMode) return false;
+    if (a.pageCount !== b.pageCount) return false;
+
+    // Compare batchItems (exact content fields)
+    if (a.batchItems.length !== b.batchItems.length) return false;
+    for (let i = 0; i < a.batchItems.length; i++) {
+        const itemA = a.batchItems[i];
+        const itemB = b.batchItems[i];
+        if (itemA.name !== itemB.name ||
+            itemA.oldPrice !== itemB.oldPrice ||
+            itemA.newPrice !== itemB.newPrice ||
+            itemA.percent !== itemB.percent ||
+            itemA.imei !== itemB.imei ||
+            itemA.selected !== itemB.selected) {
+            return false;
+        }
+    }
+
+    // Compare manualPages (exact content fields)
+    if (a.manualPages.length !== b.manualPages.length) return false;
+    for (let i = 0; i < a.manualPages.length; i++) {
+        const pA = a.manualPages[i];
+        const pB = b.manualPages[i];
+        if (pA.label !== pB.label ||
+            pA.oldPrice !== pB.oldPrice ||
+            pA.newPrice !== pB.newPrice ||
+            pA.percent !== pB.percent ||
+            pA.code !== pB.code ||
+            pA.header !== pB.header ||
+            pA.subHeader !== pB.subHeader ||
+            pA.footer !== pB.footer ||
+            pA.selected !== pB.selected) {
+            return false;
+        }
+    }
+
+    return true;
+};
+
 export default function StickerPrinterView() {
     const { activeTab } = useActiveTab();
     const { user } = useAuth();
@@ -1370,9 +1415,19 @@ export default function StickerPrinterView() {
             discountDisplayMode,
         };
         setPrintHistory(prev => {
-            const next = [historyEntry, ...prev].slice(0, 20);
-            saveSetting(STICKER_HISTORY_KEY, next).catch(() => {});
-            return next;
+            const dupIdx = prev.findIndex(entry => isHistoryDuplicate(entry, historyEntry));
+            let next;
+            if (dupIdx !== -1) {
+                // If a duplicate print job exists, move it to the top and refresh timestamp
+                const matched = { ...prev[dupIdx], timestamp: Date.now() };
+                const filtered = prev.filter((_, idx) => idx !== dupIdx);
+                next = [matched, ...filtered];
+            } else {
+                next = [historyEntry, ...prev];
+            }
+            const sliced = next.slice(0, 20);
+            saveSetting(STICKER_HISTORY_KEY, sliced).catch(() => {});
+            return sliced;
         });
 
         // Use setTimeout to allow the browser to paint and decode images (including base64 barcodes) before opening print dialog
