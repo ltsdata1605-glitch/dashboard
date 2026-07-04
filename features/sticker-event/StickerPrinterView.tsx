@@ -350,20 +350,63 @@ export default function StickerPrinterView() {
                     if (savedState.showBarcode != null) setShowBarcode(savedState.showBarcode);
                     if (savedState.previewName) setPreviewName(savedState.previewName);
                     if (savedState.previewOldPrice) setPreviewOldPrice(savedState.previewOldPrice);
-                    if (savedState.previewNewPrice) setPreviewNewPrice(savedState.previewNewPrice);
+                    
+                    // Normalize previewNewPrice to thousands if >= 100,000
+                    if (savedState.previewNewPrice) {
+                        const digits = String(savedState.previewNewPrice).replace(/\D/g, '');
+                        if (digits) {
+                            let val = Number(digits);
+                            if (val >= 100000) {
+                                val = Math.floor(val / 1000);
+                            }
+                            setPreviewNewPrice(val.toLocaleString('vi-VN'));
+                        } else {
+                            setPreviewNewPrice(savedState.previewNewPrice);
+                        }
+                    }
+                    
                     if (savedState.discountDisplayMode) setDiscountDisplayMode(savedState.discountDisplayMode);
                     if (savedState.barcodeImei) setBarcodeImei(savedState.barcodeImei);
                     if (savedState.discountThreshold != null) setDiscountThreshold(savedState.discountThreshold);
                     if (savedState.searchTerm != null) setSearchTerm(savedState.searchTerm);
-                    const loadedPages = savedState.manualPages || [];
-                    const loadedItems = savedState.batchItems || [];
+                    
+                    // Normalize manualPages prices to thousands if >= 100,000
+                    const loadedPages = (savedState.manualPages || []).map((page: any) => {
+                        if (page.newPrice) {
+                            const digits = String(page.newPrice).replace(/\D/g, '');
+                            if (digits) {
+                                let val = Number(digits);
+                                if (val >= 100000) {
+                                    val = Math.floor(val / 1000);
+                                    return { ...page, newPrice: val.toLocaleString('vi-VN') };
+                                }
+                            }
+                        }
+                        return page;
+                    });
+                    
+                    // Normalize batchItems prices to thousands if >= 100,000
+                    const loadedItems = (savedState.batchItems || []).map((item: any) => {
+                        if (item.newPrice) {
+                            const digits = String(item.newPrice).replace(/\D/g, '');
+                            if (digits) {
+                                let val = Number(digits);
+                                if (val >= 100000) {
+                                    val = Math.floor(val / 1000);
+                                    return { ...item, newPrice: val.toLocaleString('vi-VN') };
+                                }
+                            }
+                        }
+                        return item;
+                    });
+                    
                     if (loadedPages.length === 0 && loadedItems.length === 0) {
                         setActiveSubTab('data');
                     } else if (savedState.activeSubTab) {
                         setActiveSubTab(savedState.activeSubTab === 'help' ? 'data' : savedState.activeSubTab);
                     }
-                    if (savedState.manualPages) setManualPages(savedState.manualPages);
-                    if (savedState.batchItems) setBatchItems(savedState.batchItems);
+                    setManualPages(loadedPages);
+                    setBatchItems(loadedItems);
                     if (savedState.priceSource) setPriceSource(savedState.priceSource);
                     
                     // Font sizes

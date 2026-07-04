@@ -187,7 +187,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         const numericStr = rawText.replace(/\D/g, '');
         if (!numericStr) return;
         
-        const formattedText = parseInt(numericStr, 10).toLocaleString('vi-VN');
+        let val = parseInt(numericStr, 10);
+        const isNewPrice = el.classList.contains('extra2');
+        
+        // Auto truncate to thousands for new price if the typed value is >= 100,000
+        if (isNewPrice && val >= 100000) {
+            val = Math.floor(val / 1000);
+        }
+        
+        const formattedText = val.toLocaleString('vi-VN');
         
         if (rawText !== formattedText) {
             el.innerText = formattedText;
