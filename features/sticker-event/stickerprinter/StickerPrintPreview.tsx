@@ -74,13 +74,13 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
         onChange({ contentBottomRight: text });
     }, [onChange]);
 
-    const titleEditable = useContentEditable(ticket.title, handleTitleChange);
-    const codeEditable = useContentEditable(ticket.code, handleCodeChange);
-    const footerEditable = useContentEditable(ticket.footer, handleFooterChange);
-    const contentTopEditable = useContentEditable(ticket.contentTop || '', handleContentTopChange);
-    const contentTopRightEditable = useContentEditable(ticket.contentTopRight || '', handleContentTopRightChange);
-    const contentBottomEditable = useContentEditable(ticket.contentBottom || '', handleContentBottomChange);
-    const contentBottomRightEditable = useContentEditable(ticket.contentBottomRight || '', handleContentBottomRightChange);
+    const titleEditable = useContentEditable(ticket.title, handleTitleChange, true);
+    const codeEditable = useContentEditable(ticket.code, handleCodeChange, true);
+    const footerEditable = useContentEditable(ticket.footer, handleFooterChange, true);
+    const contentTopEditable = useContentEditable(ticket.contentTop || '', handleContentTopChange, true);
+    const contentTopRightEditable = useContentEditable(ticket.contentTopRight || '', handleContentTopRightChange, true);
+    const contentBottomEditable = useContentEditable(ticket.contentBottom || '', handleContentBottomChange, true);
+    const contentBottomRightEditable = useContentEditable(ticket.contentBottomRight || '', handleContentBottomRightChange, true);
 
     return (
         <div className="draw-ticket-block" data-index={index}>
@@ -172,6 +172,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
 function useContentEditable<T extends HTMLElement = HTMLDivElement>(
     externalValue: string,
     onChange?: (text: string) => void,
+    useHTML: boolean = false,
 ) {
     const ref = useRef<T>(null);
     const lastElementRef = useRef<T | null>(null);
@@ -180,8 +181,13 @@ function useContentEditable<T extends HTMLElement = HTMLDivElement>(
     useEffect(() => {
         if (ref.current && ref.current !== lastElementRef.current) {
             lastElementRef.current = ref.current;
-            if (ref.current.innerText !== externalValue) {
-                ref.current.innerText = externalValue;
+            const currentVal = useHTML ? ref.current.innerHTML : ref.current.innerText;
+            if (currentVal !== externalValue) {
+                if (useHTML) {
+                    ref.current.innerHTML = externalValue;
+                } else {
+                    ref.current.innerText = externalValue;
+                }
             }
         }
     });
@@ -189,15 +195,20 @@ function useContentEditable<T extends HTMLElement = HTMLDivElement>(
     // Sync from external state → DOM, but ONLY when element is NOT focused
     useEffect(() => {
         if (ref.current && document.activeElement !== ref.current) {
-            if (ref.current.innerText !== externalValue) {
-                ref.current.innerText = externalValue;
+            const currentVal = useHTML ? ref.current.innerHTML : ref.current.innerText;
+            if (currentVal !== externalValue) {
+                if (useHTML) {
+                    ref.current.innerHTML = externalValue;
+                } else {
+                    ref.current.innerText = externalValue;
+                }
             }
         }
-    }, [externalValue]);
+    }, [externalValue, useHTML]);
 
     const handleInput = useCallback((e: React.FormEvent<T>) => {
-        onChange?.(e.currentTarget.innerText);
-    }, [onChange]);
+        onChange?.(useHTML ? e.currentTarget.innerHTML : e.currentTarget.innerText);
+    }, [onChange, useHTML]);
 
     return { ref, handleInput };
 }

@@ -245,6 +245,47 @@ export default function StickerPrinterView() {
         }
     };
 
+    const applyFontSizeToSelection = (sizeVal: number) => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return false;
+
+        const range = selection.getRangeAt(0);
+        let parent = range.commonAncestorContainer;
+        if (parent.nodeType === 3) { // TEXT_NODE
+            parent = parent.parentNode || parent;
+        }
+
+        let current: Node | null = parent;
+        let editableContainer: HTMLElement | null = null;
+        while (current) {
+            if (current.nodeType === 1) { // ELEMENT_NODE
+                const el = current as HTMLElement;
+                if (el.getAttribute('contenteditable') === 'true') {
+                    editableContainer = el;
+                    break;
+                }
+            }
+            current = current.parentNode;
+        }
+
+        if (editableContainer) {
+            const span = document.createElement('span');
+            span.style.fontSize = `${sizeVal.toFixed(1)}cqw`;
+            
+            try {
+                span.appendChild(range.extractContents());
+                range.insertNode(span);
+                
+                const event = new Event('input', { bubbles: true });
+                editableContainer.dispatchEvent(event);
+                return true;
+            } catch (e) {
+                console.error('Error applying font size to selection:', e);
+            }
+        }
+        return false;
+    };
+
     const getActiveFontSize = (): number => {
         switch (activeField) {
             case 'header': return headerTextSize;
@@ -1539,9 +1580,12 @@ export default function StickerPrinterView() {
                             </span>
                             <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[22px] lg:h-[26px]">
                                 <button 
+                                    onMouseDown={(e) => e.preventDefault()}
                                     onClick={() => {
                                         if (stickerType === 'draw') {
-                                            setDrawContentTopSize(s => Math.max(1, s - 0.2));
+                                            const newSize = Math.max(1, drawContentTopSize - 0.2);
+                                            setDrawContentTopSize(newSize);
+                                            applyFontSizeToSelection(newSize);
                                         } else {
                                             setActiveFontSize(s => Math.max(1, s - 0.2));
                                         }
@@ -1555,9 +1599,12 @@ export default function StickerPrinterView() {
                                     {stickerType === 'draw' ? drawContentTopSize.toFixed(1) : getActiveFontSize()}
                                 </span>
                                 <button 
+                                    onMouseDown={(e) => e.preventDefault()}
                                     onClick={() => {
                                         if (stickerType === 'draw') {
-                                            setDrawContentTopSize(s => s + 0.2);
+                                            const newSize = drawContentTopSize + 0.2;
+                                            setDrawContentTopSize(newSize);
+                                            applyFontSizeToSelection(newSize);
                                         } else {
                                             setActiveFontSize(s => s + 0.2);
                                         }
