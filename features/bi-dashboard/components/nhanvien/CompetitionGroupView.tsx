@@ -255,7 +255,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
             {/* Title bar — flat, professional */}
             <div className="py-2 px-3 flex flex-col gap-1.5 border-b border-slate-200 dark:border-slate-700">
                 <div className="flex justify-center items-center relative">
-                    <h4 className="text-[14px] font-black uppercase text-indigo-700 dark:text-indigo-400 text-center whitespace-normal px-8 leading-snug tracking-wide" title={header.originalTitle}>
+                    <h4 className="text-[14px] font-bold uppercase text-indigo-700 dark:text-indigo-400 text-center whitespace-normal px-8 leading-snug tracking-wide" title={header.originalTitle}>
                         {displayTitle}
                     </h4>
                     <div className="absolute right-0 top-1/2 -translate-y-1/2">
@@ -273,10 +273,10 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                 <div className="flex flex-col gap-0.5">
                     <div className="flex justify-between items-end">
                         <div className="flex items-center gap-1.5">
-                            <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">Quỹ thời gian</span>
-                            <span className="text-[9px] font-bold text-slate-400 italic">({timeProgress.dayPassed} / {timeProgress.daysInMonth} ngày)</span>
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none">Quỹ thời gian</span>
+                            <span className="text-[10px] font-bold text-slate-400 italic">({timeProgress.dayPassed} / {timeProgress.daysInMonth} ngày)</span>
                         </div>
-                        <span className="text-[10px] font-black text-sky-600 tabular-nums leading-none">{Math.round(timeProgress.percentage)}%</span>
+                        <span className="text-[10px] font-bold text-sky-600 tabular-nums leading-none">{Math.round(timeProgress.percentage)}%</span>
                     </div>
                     <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-1 relative overflow-hidden">
                         <div 
@@ -297,7 +297,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                         <col className="w-[21%]" />
                     </colgroup>
                     <thead>
-                        <tr className="text-[11px] font-black uppercase tracking-wider">
+                        <tr className="text-[11px] font-bold uppercase tracking-wider">
                             <th className="text-center px-2 py-1.5 border-b-2 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
                                 <button onClick={() => handleCardSort('name')} className="flex items-center justify-center w-full group">NHÂN VIÊN{getSortIcon('name')}</button>
                             </th>
@@ -334,7 +334,7 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                                 return (
                                     <React.Fragment key={deptName}>
                                         <tr className="bg-slate-50/80 dark:bg-slate-800/40">
-                                            <td colSpan={5} className="px-2 py-1.5 font-black text-slate-500 dark:text-slate-400 text-left uppercase text-[10px] tracking-wider border-b border-slate-100 dark:border-slate-800">
+                                            <td colSpan={5} className="px-2 py-1.5 font-bold text-slate-500 dark:text-slate-400 text-left uppercase text-[10px] tracking-wider border-b border-slate-100 dark:border-slate-800">
                                                 {deptName}
                                             </td>
                                         </tr>

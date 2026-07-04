@@ -58,7 +58,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
     const isAdmin = props.userRole === 'admin';
     
     return (
-        <aside className={`w-full lg:w-80 lg:flex-shrink-0 bg-white p-4 rounded-xl shadow-sm border border-slate-200 lg:sticky lg:top-2 lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:scrollbar-thin lg:scrollbar-thumb-slate-200 lg:scrollbar-track-transparent self-start space-y-4 ${props.isMobile && props.activeTab === 'home' ? 'contents' : 'flex flex-col'}`}>
+        <aside className={`w-full lg:w-80 lg:flex-shrink-0 bg-white p-4 rounded-lg shadow-sm border border-slate-200 lg:sticky lg:top-2 lg:max-h-[calc(100vh-1rem)] lg:overflow-y-auto lg:scrollbar-thin lg:scrollbar-thumb-slate-200 lg:scrollbar-track-transparent self-start space-y-4 ${props.isMobile && props.activeTab === 'home' ? 'contents' : 'flex flex-col'}`}>
             <div className={`flex flex-col gap-4 ${props.isMobile && props.activeTab === 'home' ? 'hidden' : ''}`}>
 
                 {/* ───────── Thông tin người in ───────── */}
@@ -142,7 +142,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     <div className="min-w-0">
                                         <span className="text-[11px] font-semibold block leading-tight">Tồn Kho</span>
                                         {props.inventoryUploadTimestamp && (
-                                            <span className="text-[9px] opacity-60 block leading-tight">
+                                            <span className="text-[10px] opacity-60 block leading-tight">
                                                 {props.inventoryUploadTimestamp.toLocaleTimeString('vi-VN')}
                                             </span>
                                         )}
@@ -159,7 +159,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                     <div className="min-w-0">
                                         <span className="text-[11px] font-semibold block leading-tight">Bảng Giá</span>
                                         {props.uploadTimestamp && (
-                                            <span className="text-[9px] opacity-60 block leading-tight">
+                                            <span className="text-[10px] opacity-60 block leading-tight">
                                                 {props.uploadTimestamp.toLocaleTimeString('vi-VN')}
                                             </span>
                                         )}
@@ -173,7 +173,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
 
                 {/* Manager instructions */}
                 {isAdmin && props.showManagerInstructions && (
-                    <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 relative">
+                    <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 relative">
                         <button onClick={props.onCloseInstructions} className="absolute top-2.5 right-2.5 text-indigo-400 hover:text-indigo-700">
                             <TrashIcon className="h-4 w-4" />
                         </button>
@@ -239,7 +239,7 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                  <div className={`space-y-4 ${props.isMobile && props.activeTab === 'home' ? 'hidden' : ''}`}>
 
                     <div className="pt-3 border-t border-slate-100">
-                         <button onClick={props.onOpenManualInput} title="Nhập sản phẩm thủ công để in" className="w-full inline-flex items-center gap-2 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 h-10 px-3 transition-colors">
+                         <button onClick={props.onOpenManualInput} title="Nhập sản phẩm thủ công để in" className="w-full inline-flex items-center gap-2 justify-center rounded-lg text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 h-10 px-3 transition-colors">
                             <PenSquareIcon className="h-4 w-4 text-blue-600" /> Nhập sản phẩm thủ công
                          </button>
                     </div>
@@ -258,34 +258,34 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                             </button>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                            <button onClick={props.onSaveList} disabled={props.displayedProducts.length === 0} title="Lưu danh sách" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 disabled:opacity-50 transition-colors">
+                            <button onClick={props.onSaveList} disabled={props.displayedProducts.length === 0} title="Lưu danh sách" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-lg text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 disabled:opacity-50 transition-colors">
                                 Lưu DS
                             </button>
-                            <button onClick={props.onViewSavedLists} title="Xem DS đã lưu" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 transition-colors">
+                            <button onClick={props.onViewSavedLists} title="Xem DS đã lưu" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-lg text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 transition-colors">
                                 DS đã lưu
                             </button>
                         </div>
                         <div className="flex items-center gap-2 mb-3">
-                            <button onClick={props.onTriggerImport} title="Nhập file .json" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 transition-colors">
+                            <button onClick={props.onTriggerImport} title="Nhập file .json" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-lg text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 transition-colors">
                                 <ImportIcon className="h-4 w-4 text-slate-500" /> Nhập
                             </button>
-                            <button onClick={props.onExport} disabled={props.displayedProducts.length === 0} title="Xuất file .json" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 disabled:opacity-50 transition-colors">
+                            <button onClick={props.onExport} disabled={props.displayedProducts.length === 0} title="Xuất file .json" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-lg text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 disabled:opacity-50 transition-colors">
                                 <ExportIcon className="h-4 w-4 text-slate-500" /> Xuất
                             </button>
-                            <button onClick={props.onReset} disabled={props.displayedProducts.length === 0} title="Xóa danh sách" className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-600 h-9 w-9 p-0 disabled:opacity-50 transition-colors">
+                            <button onClick={props.onReset} disabled={props.displayedProducts.length === 0} title="Xóa danh sách" className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-600 h-9 w-9 p-0 disabled:opacity-50 transition-colors">
                                 <TrashIcon className="h-4 w-4" />
                             </button>
-                             <button onClick={props.onOpenPrintSettings} title="Cài đặt in" className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 h-9 w-9 p-0 transition-colors">
+                             <button onClick={props.onOpenPrintSettings} title="Cài đặt in" className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 h-9 w-9 p-0 transition-colors">
                                 <SettingsIcon className="h-4 w-4" />
                             </button>
                         </div>
 
                         {/* Print buttons — full width stacked */}
                         <div className="flex flex-col gap-2">
-                            <button onClick={props.onPrintSelected} disabled={selectedCount === 0} className="w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-200/40">
+                            <button onClick={props.onPrintSelected} disabled={selectedCount === 0} className="w-full inline-flex items-center gap-2 justify-center rounded-lg text-sm font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-200/40">
                                 <PrintIcon className="h-4 w-4" /> In đã chọn ({selectedCount})
                             </button>
-                            <button onClick={props.onPrintAll} disabled={props.displayedProducts.length === 0} className="w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold border-2 border-indigo-500 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            <button onClick={props.onPrintAll} disabled={props.displayedProducts.length === 0} className="w-full inline-flex items-center gap-2 justify-center rounded-lg text-sm font-bold border-2 border-indigo-500 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                                 In tất cả ({props.displayedProducts.length})
                             </button>
                         </div>

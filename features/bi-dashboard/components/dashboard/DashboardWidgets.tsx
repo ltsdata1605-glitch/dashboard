@@ -86,7 +86,7 @@ export const GaugeChart: React.FC<{ value: number; label: string; target: number
                     <span className={`text-2xl font-semibold tracking-tighter ${colorClass}`}>
                         {Math.ceil(value)}<span className="text-[10px] font-medium opacity-70">%</span>
                     </span>
-                    <span className="text-[8px] font-medium text-slate-400 mt-0.5">
+                    <span className="text-[10px] font-medium text-slate-400 mt-0.5">
                         TGT: {target}%
                     </span>
                 </div>
@@ -94,7 +94,7 @@ export const GaugeChart: React.FC<{ value: number; label: string; target: number
             
             <div className="mt-2 text-center">
                 <p className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest leading-tight">{label}</p>
-                <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-tighter inline-block mt-1 ${
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-tighter inline-block mt-1 ${
                     isAchieved 
                     ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
                     : 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
@@ -110,7 +110,7 @@ export const KpiCard: React.FC<{ title: string; value: React.ReactNode; color: s
     <div className={`py-3 px-4 rounded-none border flex items-center gap-3 transition-all hover:scale-[1.01] duration-300 ${color} shadow-sm`}>
         <div className="flex-shrink-0">{children}</div>
         <div className="flex-1 min-w-0">
-            <p className="text-[9px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate mb-0.5">{title}</p>
+            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest truncate mb-0.5">{title}</p>
             <div className="text-lg font-semibold text-slate-900 dark:text-white leading-none flex items-baseline gap-1.5">{value}</div>
         </div>
     </div>
@@ -120,7 +120,7 @@ export const MainTabButton: React.FC<{ icon: React.ReactNode; label: string; isA
     <button
         onClick={onClick}
         className={`
-            flex items-center gap-2 px-6 py-2 text-sm font-semibold rounded-xl transition-all duration-300
+            flex items-center gap-2 px-6 py-2 text-sm font-semibold rounded-lg transition-all duration-300
             ${isActive
                 ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-lg shadow-black/5 ring-1 ring-slate-200 dark:ring-slate-600'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-white/40 dark:hover:bg-slate-700/40'}
@@ -181,7 +181,7 @@ export const SupermarketNavBar: React.FC<{
                         key={sm}
                         onClick={() => setActiveSupermarket(sm)}
                         className={`
-                            shrink-0 px-3 py-1.5 sm:px-5 sm:py-2 text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 border
+                            shrink-0 px-3 py-1.5 sm:px-5 sm:py-2 text-[10px] sm:text-[10px] font-semibold uppercase tracking-widest rounded-lg transition-all duration-300 border
                             ${activeSupermarket === sm
                                 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-800 shadow-sm'
                                 : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/80 hover:text-slate-700 border-slate-200 dark:border-slate-700'}
@@ -194,7 +194,7 @@ export const SupermarketNavBar: React.FC<{
             <button
                 onClick={onBatchExport}
                 disabled={isBatchExporting}
-                className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 transition-all duration-300 px-3 py-1.5 sm:px-5 sm:py-2 rounded-xl disabled:opacity-50 disabled:cursor-wait ml-auto sm:ml-0 shadow-sm active:scale-95"
+                className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-[10px] font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 transition-all duration-300 px-3 py-1.5 sm:px-5 sm:py-2 rounded-lg disabled:opacity-50 disabled:cursor-wait ml-auto sm:ml-0 shadow-sm active:scale-95"
                 title="Xuất hàng loạt ảnh cho tất cả siêu thị"
             >
                 {isBatchExporting ? <SpinnerIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <CameraIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}

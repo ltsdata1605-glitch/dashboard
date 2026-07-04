@@ -28,7 +28,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         }`}
       >
         <Home className="w-5 h-5" />
-        <span className="text-[9px] font-medium">Trang chủ</span>
+        <span className="text-[10px] font-medium">Trang chủ</span>
       </button>
       
       <button
@@ -38,7 +38,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         }`}
       >
         <Wrench className="w-5 h-5" />
-        <span className="text-[9px] font-medium">Công cụ</span>
+        <span className="text-[10px] font-medium">Công cụ</span>
       </button>
 
       <button
@@ -48,7 +48,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         <div className="absolute -top-4 bg-indigo-600 text-white p-2.5 rounded-full shadow-md border-4 border-white">
           <ScanLine className="w-5 h-5" />
         </div>
-        <span className="text-[9px] font-medium mt-6">Quét mã</span>
+        <span className="text-[10px] font-medium mt-6">Quét mã</span>
       </button>
 
       <button
@@ -56,7 +56,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         className="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-slate-500 hover:text-slate-900"
       >
         <Save className="w-5 h-5" />
-        <span className="text-[9px] font-medium">Lưu DS</span>
+        <span className="text-[10px] font-medium">Lưu DS</span>
       </button>
 
       <button
@@ -64,7 +64,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
         className="flex flex-col items-center justify-center w-full h-full space-y-0.5 text-slate-500 hover:text-slate-900"
       >
         <Filter className="w-5 h-5" />
-        <span className="text-[9px] font-medium">Lọc</span>
+        <span className="text-[10px] font-medium">Lọc</span>
       </button>
     </div>
   );

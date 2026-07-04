@@ -97,7 +97,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                 </span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{supermarkets.length}</span>
+                                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{supermarkets.length}</span>
                                 <ChevronDownIcon className="h-4 w-4 text-slate-400" />
                             </div>
                         </div>
@@ -120,7 +120,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                     className={`
                                         flex-1 sm:flex-none px-5 py-2.5 text-[12px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap border-b-2
                                         ${isActive
-                                            ? 'font-black text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
+                                            ? 'font-bold text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
                                             : 'font-bold text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'
                                         }
                                     `}
@@ -205,7 +205,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 {/* Content Title + Quote + TimeProgressBar — like NhanVien's RevenueTab */}
                 <div className="px-4 sm:px-5 py-3 sm:py-4">
                     <div className="flex items-start justify-between gap-2">
-                        <h2 className="js-report-title text-lg sm:text-2xl font-black uppercase text-slate-800 dark:text-white leading-tight">
+                        <h2 className="js-report-title text-lg sm:text-2xl font-bold uppercase text-slate-800 dark:text-white leading-tight">
                             {contentTitle}
                         </h2>
                         {/* Portal target for inline filter/settings buttons from SummaryTableView */}

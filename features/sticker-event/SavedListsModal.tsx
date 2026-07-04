@@ -65,7 +65,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
     return (
         <div className="fixed inset-0 z-50 bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md" onClick={onClose}>
             <div 
-                className="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 space-y-6 max-h-[90vh] flex flex-col" 
+                className="relative bg-white w-full max-w-2xl rounded-lg shadow-2xl p-6 space-y-6 max-h-[90vh] flex flex-col" 
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex justify-between items-center">
@@ -97,7 +97,7 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                     ) : (
                         <div className="space-y-3">
                             {lists.map(list => (
-                                <div key={list.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-indigo-300 transition-colors">
+                                <div key={list.id} className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 hover:border-indigo-300 transition-colors">
                                     <div className="flex-1 min-w-0">
                                         <h3 className="text-base font-semibold text-slate-800 truncate">{list.name}</h3>
                                         <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">

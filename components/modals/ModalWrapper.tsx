@@ -59,18 +59,21 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
             <div
                 ref={modalContentRef}
                 onClick={(e) => e.stopPropagation()}
+                role="dialog"
+                aria-modal="true"
+                aria-label={title || 'Modal'}
                 className={`modal-content relative bg-white dark:bg-slate-900 shadow-lg border border-slate-200 dark:border-slate-700 w-full ${maxWidthClass} flex flex-col transition-all duration-300 ${isBottom ? `mb-2 sm:mb-0 transform animate-in slide-in-from-bottom-8 sm:zoom-in-95 ${noRounded ? '' : 'rounded-md'}` : `max-h-[90vh] opacity-100 scale-100 ${noRounded ? 'rounded-none' : 'rounded-md'}`}`}
             >
                 {!hideHeader && (
                     <div className={`flex justify-between items-center p-3 sm:p-4 bg-white dark:bg-slate-900 flex-shrink-0 z-10 relative ${noRounded ? '' : 'rounded-t-md'}`}>
                         <div>
-                            {subTitle && <p className="text-[9px] sm:text-xs font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>}
+                            {subTitle && <p className="text-[10px] sm:text-xs font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>}
                             {title && <h3 className={`text-sm sm:text-lg font-semibold tracking-tight ${titleColorClass}`}>{title}</h3>}
                         </div>
                         <div className="flex items-center gap-1 sm:gap-3">
                             {controls}
                             {!hideCloseButton && (
-                                <button onClick={onClose} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full p-1.5 sm:p-2 transition-all">
+                                <button onClick={onClose} aria-label="Đóng" className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full p-1.5 sm:p-2 transition-all">
                                    <Icon name="x" size={4} className="sm:hidden" />
                                    <Icon name="x" size={5} className="hidden sm:block" />
                                 </button>

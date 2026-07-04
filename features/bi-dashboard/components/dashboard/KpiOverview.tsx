@@ -83,7 +83,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                         <div className={`p-1 sm:p-1.5 rounded-md sm:rounded-lg shrink-0 flex items-center justify-center ${props.iconBg}`}>
                             {props.icon}
                         </div>
-                        <span className={`text-[8px] sm:text-[10px] font-bold uppercase tracking-wider truncate ${props.titleColor}`}>
+                        <span className={`text-[10px] sm:text-[10px] font-bold uppercase tracking-wider truncate ${props.titleColor}`}>
                             {props.title}
                         </span>
                     </div>
@@ -91,11 +91,11 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 </div>
 
                 <div className="flex justify-between items-end mb-1 sm:mb-2 gap-1 overflow-hidden">
-                    <span className={`text-sm sm:text-2xl font-black tracking-tight leading-none truncate ${props.valueColor}`} title={props.value}>
+                    <span className={`text-sm sm:text-2xl font-bold tracking-tight leading-none truncate ${props.valueColor}`} title={props.value}>
                         {props.value}
                     </span>
                     {props.progressPct !== undefined && (
-                        <span className={`text-[9px] sm:text-sm font-bold tabular-nums shrink-0 leading-none ${props.valueColor}`}>
+                        <span className={`text-[10px] sm:text-sm font-bold tabular-nums shrink-0 leading-none ${props.valueColor}`}>
                             {props.progressPct}%
                         </span>
                     )}
@@ -108,7 +108,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 )}
 
                 {props.targetLabel && (
-                    <div className="flex justify-between items-center text-[8px] sm:text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-auto gap-1">
+                    <div className="flex justify-between items-center text-[10px] sm:text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-auto gap-1">
                         <span className="truncate">{props.targetLabel}</span>
                         {props.targetStr && <span className="text-slate-600 dark:text-slate-300 font-bold shrink-0 truncate">{props.targetStr}</span>}
                     </div>
@@ -125,7 +125,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 {/* Card 1: DT THỰC */}
                 {renderCard({
                     title: 'DT THỰC',
-                    icon: <span className="text-[10px] sm:text-[12px] font-black w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">$</span>,
+                    icon: <span className="text-[10px] sm:text-[12px] font-bold w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">$</span>,
                     iconBg: 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400',
                     titleColor: 'text-slate-500 dark:text-slate-400',
                     value: `${roundUp(dtlk).toLocaleString('vi-VN')} Tr`,
@@ -140,7 +140,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 {/* Card 2: DOANH THU Q.ĐỔI */}
                 {renderCard({
                     title: 'DTQĐ',
-                    icon: <span className="text-[10px] sm:text-[12px] font-black w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">~</span>,
+                    icon: <span className="text-[10px] sm:text-[12px] font-bold w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">~</span>,
                     iconBg: 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
                     titleColor: 'text-slate-500 dark:text-slate-400',
                     value: `${roundUp(dtqd).toLocaleString('vi-VN')} Tr`,
@@ -156,7 +156,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 {/* Card 3: HIỆU QUẢ Q.ĐỔI */}
                 {renderCard({
                     title: 'HQQĐ',
-                    icon: <span className="text-[10px] sm:text-[12px] font-black w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">⚡</span>,
+                    icon: <span className="text-[10px] sm:text-[12px] font-bold w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">⚡</span>,
                     iconBg: 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
                     titleColor: 'text-slate-500 dark:text-slate-400',
                     value: `${Math.ceil(hqqd)}%`,
@@ -170,7 +170,7 @@ const KpiOverview: React.FC<KpiOverviewProps> = ({ isRealtime, kpiData, targets,
                 {/* Card 4: TỶ LỆ TRẢ GÓP */}
                 {renderCard({
                     title: 'TRẢ CHẬM',
-                    icon: <span className="text-[10px] sm:text-[12px] font-black w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">%</span>,
+                    icon: <span className="text-[10px] sm:text-[12px] font-bold w-3 h-3 sm:w-4 sm:h-4 flex items-center justify-center">%</span>,
                     iconBg: 'bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
                     titleColor: 'text-slate-500 dark:text-slate-400',
                     value: `${Math.ceil(parseNumber(kpiData.tyTrongTraGop))}%`,

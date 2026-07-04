@@ -34,14 +34,14 @@ export const BonusMobileCard = React.memo(({
                 <div className="flex items-center gap-2.5 min-w-0">
                     <MedalBadge rank={item.rank} />
                     <AvatarDisplay employeeName={item.originalName} supermarketName={supermarketName} onClick={() => onEmployeeClick(item as Employee)} />
-                    <span className={`font-black uppercase tracking-tight truncate text-xs ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : (isStale ? 'text-slate-400 dark:text-slate-500' : 'text-indigo-600 dark:text-indigo-400')}`}>
+                    <span className={`font-bold uppercase tracking-tight truncate text-xs ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : (isStale ? 'text-slate-400 dark:text-slate-500' : 'text-indigo-600 dark:text-indigo-400')}`}>
                         {item.name}
                     </span>
                 </div>
                 <div className="flex flex-col items-end shrink-0 pl-2">
-                    <span className="text-[9px] font-bold text-slate-400 uppercase mb-0.5">Dự Kiến</span>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Dự Kiến</span>
                     <div className="flex items-baseline gap-0.5">
-                        <span className={`text-lg font-black tabular-nums leading-none tracking-tight ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
+                        <span className={`text-lg font-bold tabular-nums leading-none tracking-tight ${isHighlighted ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-400'}`}>
                             {bonus ? f.format(Math.ceil(dkienVal / 1000)) : '-'}
                         </span>
                     </div>
@@ -49,25 +49,25 @@ export const BonusMobileCard = React.memo(({
             </div>
             
             <div className="grid grid-cols-5 gap-1.5 mt-2">
-                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">DTQĐ</p>
-                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</p>
+                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase leading-tight mb-0.5">DTQĐ</p>
+                    <p className={`text-[11px] font-bold tabular-nums leading-none ${getCellColor(dtqdVal, 'dtqd')}`}>{rev ? f.format(dtqdVal) : '-'}</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">HQQĐ</p>
-                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</p>
+                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase leading-tight mb-0.5">HQQĐ</p>
+                    <p className={`text-[11px] font-bold tabular-nums leading-none ${getCellColor(hqqdVal, 'hqqd')}`}>{rev ? hqqdVal.toFixed(0) + '%' : '-'}</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">ERP</p>
-                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(erpVal, 'erp')}`}>{bonus ? f.format(Math.ceil(erpVal / 1000)) : '-'}</p>
+                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase leading-tight mb-0.5">ERP</p>
+                    <p className={`text-[11px] font-bold tabular-nums leading-none ${getCellColor(erpVal, 'erp')}`}>{bonus ? f.format(Math.ceil(erpVal / 1000)) : '-'}</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">T.Nóng</p>
-                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(tnongVal, 'tnong')}`}>{bonus ? f.format(Math.ceil(tnongVal / 1000)) : '-'}</p>
+                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase leading-tight mb-0.5">T.Nóng</p>
+                    <p className={`text-[11px] font-bold tabular-nums leading-none ${getCellColor(tnongVal, 'tnong')}`}>{bonus ? f.format(Math.ceil(tnongVal / 1000)) : '-'}</p>
                 </div>
-                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                    <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5">Tổng</p>
-                    <p className={`text-[11px] font-black tabular-nums leading-none ${getCellColor(tongVal, 'tong')}`}>{bonus ? f.format(Math.ceil(tongVal / 1000)) : '-'}</p>
+                <div className="bg-white dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase leading-tight mb-0.5">Tổng</p>
+                    <p className={`text-[11px] font-bold tabular-nums leading-none ${getCellColor(tongVal, 'tong')}`}>{bonus ? f.format(Math.ceil(tongVal / 1000)) : '-'}</p>
                 </div>
             </div>
         </div>

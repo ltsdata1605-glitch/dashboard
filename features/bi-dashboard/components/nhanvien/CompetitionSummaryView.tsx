@@ -354,7 +354,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                     <button type="button" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="text-slate-400"><XIcon className="h-6 w-6" /></button>
                 </div>
             ) : (
-                <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">{tableName} - ĐẾN {getYesterdayDateString()}</span>
+                <span className="js-report-title text-2xl font-bold uppercase text-slate-800 dark:text-white mt-1">{tableName} - ĐẾN {getYesterdayDateString()}</span>
             )}
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold no-print">Dữ liệu thi đua được tổng hợp theo thời gian thực từ BI.</span>
         </div>
@@ -370,13 +370,13 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 >
                     <FilterIcon className="h-5 w-5" />
                     {selectedTitles.length > 0 && (
-                        <span className="absolute -top-1 -right-1 bg-indigo-600 text-white font-black text-[9px] rounded-full w-4 h-4 flex items-center justify-center">
+                        <span className="absolute -top-1 -right-1 bg-indigo-600 text-white font-bold text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
                             {selectedTitles.length}
                         </span>
                     )}
                 </button>
                 {isFilterOpen && (
-                    <div className="absolute right-0 top-full mt-1.5 w-64 max-h-80 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-2 space-y-1">
+                    <div className="absolute right-0 top-full mt-1.5 w-64 max-h-80 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 p-2 space-y-1">
                         <div className="px-2 py-1.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
                             <input 
                                 type="text" 
@@ -427,7 +427,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
 
             <button 
                 onClick={() => setShowPercent(!showPercent)}
-                className={`p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
+                className={`p-2 rounded-lg transition-all cursor-pointer ${showPercent ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
                 {showPercent ? <HashIcon className="h-5 w-5" /> : <PercentIcon className="h-5 w-5" />}
@@ -449,7 +449,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         <div className="overflow-x-auto border border-slate-200 dark:border-slate-700" style={{ WebkitOverflowScrolling: 'touch' }}>
                             <table className="min-w-max w-full table-auto border-collapse compact-export-table">
                                 <thead>
-                                    <tr className="text-[11px] font-black uppercase tracking-wider">
+                                    <tr className="text-[11px] font-bold uppercase tracking-wider">
                                         <th 
                                             onClick={() => handleSort('employee')}
                                             className="sticky left-0 z-20 bg-slate-50 dark:bg-slate-800 px-2 py-1.5 text-left border-r border-b-2 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 min-w-[120px] align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
@@ -479,7 +479,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                                         <div className="flex items-center justify-center gap-1">
                                                             <span className="text-[10px] text-slate-400 dark:text-slate-500 font-normal no-print mr-0.5">⋮⋮</span>
                                                             <span>{shortenName(header.originalTitle, nameOverrides)}</span>
-                                                            <span className="text-[9px] font-bold text-slate-500 dark:text-slate-400 ml-0.5">{getSortIndicator(header.title)}</span>
+                                                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 ml-0.5">{getSortIndicator(header.title)}</span>
                                                         </div>
                                                     </th>
                                                 );
@@ -491,7 +491,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>BOT</span>
-                                                <span className="text-[9px] font-bold text-red-600 dark:text-red-400 ml-0.5">{getSortIndicator('tongBot')}</span>
+                                                <span className="text-[10px] font-bold text-red-600 dark:text-red-400 ml-0.5">{getSortIndicator('tongBot')}</span>
                                             </div>
                                         </th>
                                         <th 
@@ -500,7 +500,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                                         >
                                             <div className="flex items-center justify-center gap-1">
                                                 <span>NoSale</span>
-                                                <span className="text-[9px] font-bold text-red-600 dark:text-red-400 ml-0.5">{getSortIndicator('noSale')}</span>
+                                                <span className="text-[10px] font-bold text-red-600 dark:text-red-400 ml-0.5">{getSortIndicator('noSale')}</span>
                                             </div>
                                         </th>
                                     </tr>

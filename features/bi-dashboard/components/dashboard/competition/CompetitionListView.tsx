@@ -64,8 +64,8 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
 
                         return (
                             <div key={criterion}>
-                                <div className={`${theme.main} text-white px-4 py-2 text-[11px] font-black uppercase tracking-widest flex items-center gap-2`}>
-                                    <span className="bg-white/20 px-1.5 py-0.5 rounded text-[8px]">TIÊU CHÍ</span>
+                                <div className={`${theme.main} text-white px-4 py-2 text-[11px] font-bold uppercase tracking-widest flex items-center gap-2`}>
+                                    <span className="bg-white/20 px-1.5 py-0.5 rounded text-[10px]">TIÊU CHÍ</span>
                                     {criterion}
                                 </div>
                                 <div className="divide-y divide-slate-50 dark:divide-slate-800/50">
@@ -78,10 +78,10 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                 <div className="flex justify-between items-start">
                                                     <div className="flex flex-col">
                                                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">#{ (index + 1).toString().padStart(2, '0') }</span>
-                                                        <span className="font-black text-slate-900 dark:text-white uppercase tracking-tight leading-tight">{shortenName(program.name, nameOverrides)}</span>
+                                                        <span className="font-bold text-slate-900 dark:text-white uppercase tracking-tight leading-tight">{shortenName(program.name, nameOverrides)}</span>
                                                     </div>
                                                     <div className="flex flex-col items-end">
-                                                        <span className={`text-xs font-black px-2 py-0.5 rounded-full ${htValue >= 100 ? 'bg-emerald-50 text-emerald-600' : (htValue >= 85 ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600')}`}>
+                                                        <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${htValue >= 100 ? 'bg-emerald-50 text-emerald-600' : (htValue >= 85 ? 'bg-amber-50 text-amber-600' : 'bg-rose-50 text-rose-600')}`}>
                                                             {roundUp(htValue)}% HT
                                                         </span>
                                                     </div>
@@ -93,18 +93,18 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                         const cell = program.data[hIdx];
                                                         const val = parseNumber(cell);
                                                         return (
-                                                            <div key={header} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                                <p className="text-[9px] font-bold text-slate-400 uppercase mb-1" dangerouslySetInnerHTML={{ __html: getFormattedHeader(header).replace(/<br\/>/g, ' ') }}></p>
-                                                                <p className="text-xs font-black tabular-nums text-slate-700 dark:text-slate-200">
+                                                            <div key={header} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                                <p className="text-[10px] font-bold text-slate-400 uppercase mb-1" dangerouslySetInnerHTML={{ __html: getFormattedHeader(header).replace(/<br\/>/g, ' ') }}></p>
+                                                                <p className="text-xs font-bold tabular-nums text-slate-700 dark:text-slate-200">
                                                                     {new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(Math.ceil(val))}
                                                                 </p>
                                                             </div>
                                                         );
                                                     })}
                                                     {!hiddenColumns.includes('Còn Lại') && (
-                                                        <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
-                                                            <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">CÒN LẠI</p>
-                                                            <p className={`text-xs font-black tabular-nums ${conLai >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                        <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
+                                                            <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">CÒN LẠI</p>
+                                                            <p className={`text-xs font-bold tabular-nums ${conLai >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                                                 {conLai !== null ? new Intl.NumberFormat('vi-VN').format(Math.ceil(conLai)) : '-'}
                                                             </p>
                                                         </div>
@@ -125,7 +125,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                 <div className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900">
                     <table className="w-full border-collapse compact-export-table">
                             <thead>
-                                <tr className="text-[13px] font-black uppercase tracking-wider">
+                                <tr className="text-[13px] font-bold uppercase tracking-wider">
                                     <th className="text-center px-2 py-2 border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 w-10">#</th>
                                     <th 
                                         className="text-left px-2 py-2 cursor-pointer border-r border-slate-300 dark:border-slate-600 border-b-[3px] border-b-slate-400 align-middle bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 whitespace-nowrap hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" 
@@ -219,7 +219,7 @@ const CompetitionListView: React.FC<CompetitionListViewProps> = ({ groupedAndSor
                                                             if (headerKey === '%HTDK' || headerKey === '%HTDK V.Trội') {
                                                                 const pVal = parseNumber(cell);
                                                                 const color = pVal >= 100 ? 'text-emerald-600 dark:text-emerald-400' : (pVal >= 85 ? 'text-amber-600 dark:text-amber-400' : 'text-rose-600 dark:text-rose-400');
-                                                                return <span className={`font-black ${color}`}>{cellDisplayValue}</span>;
+                                                                return <span className={`font-bold ${color}`}>{cellDisplayValue}</span>;
                                                             }
 
                                                             return <span className="text-slate-600 dark:text-slate-400 font-bold">{cellDisplayValue}</span>;

@@ -79,10 +79,22 @@ const resolvePagePrices = (page: StickerPage, priceSource: 'sale' | 'service') =
     return { newPrice, percent };
 };
 
+const incrementCode = (codeStr: string, increment: number): string => {
+    if (!codeStr) return '';
+    const match = codeStr.match(/\d+$/);
+    if (!match) return codeStr;
+    const numStr = match[0];
+    const num = parseInt(numStr, 10);
+    const prefix = codeStr.substring(0, codeStr.length - numStr.length);
+    const incrementedNum = num + increment;
+    const paddedNum = incrementedNum.toString().padStart(numStr.length, '0');
+    return `${prefix}${paddedNum}`;
+};
+
 const generatePageHtml = (
     page: StickerPage, 
     priceSource: 'sale' | 'service', 
-    stickerType: 'gia_soc' | 'gio_vang',
+    stickerType: 'gia_soc' | 'gio_vang' | 'rut_tham',
     bgImage: string,
     discountDisplayMode: 'percent' | 'amount' = 'percent'
 ) => {
@@ -138,6 +150,56 @@ const generatePageHtml = (
         }
     }
 
+    if (stickerType === 'rut_tham') {
+        const baseCode = page.code || '1';
+        return `<div class="sticker-container" data-type="${stickerType}" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:197/285;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;">
+            <div class="slot slot-1">
+                <div class="header-text">${header || ''}</div>
+                <div class="sub-header">${subHeader || ''}</div>
+                <div class="old">${page.oldPrice || ''}</div>
+                <div class="left-code">${baseCode}</div>
+                <div class="name">${page.label || ''}</div>
+                <div class="right-code">${baseCode}</div>
+                <div class="extra2">${newPrice || ''}</div>
+                <div class="footer-text">${footer || ''}</div>
+                <div class="extra1">${percent || ''}</div>
+            </div>
+            <div class="slot slot-2">
+                <div class="header-text">${header || ''}</div>
+                <div class="sub-header">${subHeader || ''}</div>
+                <div class="old">${page.oldPrice || ''}</div>
+                <div class="left-code">${incrementCode(baseCode, 1)}</div>
+                <div class="name">${page.label || ''}</div>
+                <div class="right-code">${incrementCode(baseCode, 1)}</div>
+                <div class="extra2">${newPrice || ''}</div>
+                <div class="footer-text">${footer || ''}</div>
+                <div class="extra1">${percent || ''}</div>
+            </div>
+            <div class="slot slot-3">
+                <div class="header-text">${header || ''}</div>
+                <div class="sub-header">${subHeader || ''}</div>
+                <div class="old">${page.oldPrice || ''}</div>
+                <div class="left-code">${incrementCode(baseCode, 2)}</div>
+                <div class="name">${page.label || ''}</div>
+                <div class="right-code">${incrementCode(baseCode, 2)}</div>
+                <div class="extra2">${newPrice || ''}</div>
+                <div class="footer-text">${footer || ''}</div>
+                <div class="extra1">${percent || ''}</div>
+            </div>
+            <div class="slot slot-4">
+                <div class="header-text">${header || ''}</div>
+                <div class="sub-header">${subHeader || ''}</div>
+                <div class="old">${page.oldPrice || ''}</div>
+                <div class="left-code">${incrementCode(baseCode, 3)}</div>
+                <div class="name">${page.label || ''}</div>
+                <div class="right-code">${incrementCode(baseCode, 3)}</div>
+                <div class="extra2">${newPrice || ''}</div>
+                <div class="footer-text">${footer || ''}</div>
+                <div class="extra1">${percent || ''}</div>
+            </div>
+        </div>`;
+    }
+
     return `<div class="sticker-container" data-type="${stickerType}" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:197/285;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;">
         ${barcodeHtml}
         <div class="header-text">${header || ''}</div>
@@ -156,12 +218,12 @@ export default function StickerPrinterView() {
     const [mounted, setMounted] = useState(false);
     const [stickerMode, setStickerMode] = useState<'sticker' | 'event'>('sticker');
     const [eventEverOpened, setEventEverOpened] = useState(false);
-    const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang'>('gia_soc');
+    const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang' | 'rut_tham'>('gia_soc');
     const [bgImage, setBgImage] = useState('/frame/X24_NEW.png');
     const [priceSource, setPriceSource] = useState<'sale' | 'service'>('sale');
     
     // Dynamic Font Sizes and Active Field Trackers
-    const [activeField, setActiveField] = useState<'header' | 'subHeader' | 'percent' | 'oldPrice' | 'name' | 'newPrice' | 'footer'>('header');
+    const [activeField, setActiveField] = useState<'header' | 'subHeader' | 'percent' | 'oldPrice' | 'name' | 'newPrice' | 'footer' | 'code'>('header');
     const [headerTextSize, setHeaderTextSize] = useState(8);
     const [subHeaderTextSize, setSubHeaderTextSize] = useState(13);
     const [percentTextSize, setPercentTextSize] = useState(36.9);
@@ -178,11 +240,12 @@ export default function StickerPrinterView() {
         switch (activeField) {
             case 'header': return 'Tiêu đề';
             case 'subHeader': return 'Tiêu đề phụ';
-            case 'percent': return '% Giảm';
-            case 'oldPrice': return 'Giá cũ';
-            case 'name': return 'Tên SP';
-            case 'newPrice': return 'Giá mới';
-            case 'footer': return 'Khuyến mãi';
+            case 'percent': return stickerType === 'rut_tham' ? 'Tên Siêu Thị' : 'Tỷ lệ Giảm';
+            case 'oldPrice': return stickerType === 'rut_tham' ? 'Chi tiết Trúng Left' : 'Giá gốc';
+            case 'name': return stickerType === 'rut_tham' ? 'Tiêu đề Trúng Right' : 'Tên sản phẩm';
+            case 'newPrice': return stickerType === 'rut_tham' ? 'Quà Tặng Right' : 'Giá sốc/Giờ vàng';
+            case 'footer': return stickerType === 'rut_tham' ? 'Điều kiện áp dụng' : 'Khuyến mãi / Footer';
+            case 'code': return 'Mã số phiếu';
             default: return 'Cỡ chữ';
         }
     };
@@ -234,6 +297,7 @@ export default function StickerPrinterView() {
     const [previewName, setPreviewName] = useState('Quạt điều hoà Daikiosan DMI03');
     const [previewOldPrice, setPreviewOldPrice] = useState('5.490.000');
     const [previewNewPrice, setPreviewNewPrice] = useState('3.490');
+    const [branchName, setBranchName] = useState('HÙNG VƯƠNG');
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -302,6 +366,25 @@ export default function StickerPrinterView() {
             setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
             setBgImage('/frame/GVO2-scaled.png');
             setHeaderTextSize(8);
+        } else if (sub === 'rut-tham') {
+            setStickerMode('sticker');
+            setStickerType('rut_tham');
+            setHeaderTextContent('RÚT THĂM MỖI NGÀY TỪ 5-14/5. PHIẾU CHƯA TRÚNG ĐƯỢC BẢO LƯU');
+            setSubHeaderTextContent('Rút thăm 18h');
+            setPreviewOldPrice('mỗi ngày từ 5-14/6\nTrúng 1 Nồi cơm + 1 Quạt');
+            setPreviewName('TRÚNG MIỄN PHÍ');
+            setPreviewNewPrice('1 SMART TIVI');
+            setFooterTextContent('Áp dụng 6 và 13/6');
+            setBarcodeImei('1');
+            setBranchName('HÙNG VƯƠNG');
+            setBgImage('/bg_phieu.png');
+            setHeaderTextSize(3.5);
+            setSubHeaderTextSize(5.0);
+            setOldPriceTextSize(4.0);
+            setNameTextSize(5.0);
+            setNewPriceTextSize(8.0);
+            setFooterTextSize(4.0);
+            setPercentTextSize(3.5);
         } else if (sub === 'event') {
             setStickerMode('event');
             setEventEverOpened(true);
@@ -338,6 +421,9 @@ export default function StickerPrinterView() {
                         } else if (currentSub === 'gio-vang') {
                             setStickerMode('sticker');
                             setStickerType('gio_vang');
+                        } else if (currentSub === 'rut-tham') {
+                            setStickerMode('sticker');
+                            setStickerType('rut_tham');
                         } else if (currentSub === 'event') {
                             setStickerMode('event');
                             setEventEverOpened(true);
@@ -1237,6 +1323,151 @@ export default function StickerPrinterView() {
                     outline: 1.5px dashed #6366f1;
                     outline-offset: 1px;
                 }
+
+                /* Raffle Ticket Print Styles */
+                #print-host .sticker-container[data-type="rut_tham"] .slot {
+                    position: absolute;
+                    left: 0;
+                    width: 100%;
+                    height: 25%;
+                    overflow: hidden;
+                }
+                #print-host .sticker-container[data-type="rut_tham"] .slot-1 { top: 0%; }
+                #print-host .sticker-container[data-type="rut_tham"] .slot-2 { top: 25%; }
+                #print-host .sticker-container[data-type="rut_tham"] .slot-3 { top: 50%; }
+                #print-host .sticker-container[data-type="rut_tham"] .slot-4 { top: 75%; }
+
+                #print-host .sticker-container[data-type="rut_tham"] .slot > div {
+                    position: absolute;
+                    background: white;
+                    color: black;
+                    display: flex;
+                    align-items: center;
+                    outline: none;
+                    box-sizing: border-box;
+                }
+
+                #print-host .sticker-container[data-type="rut_tham"] .header-text {
+                    font-size: ${headerTextSize}cqi !important;
+                    font-weight: bold;
+                    top: 6%;
+                    height: 19%;
+                    width: 91%;
+                    left: 4.5%;
+                    justify-content: center;
+                    text-align: center;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    text-transform: uppercase;
+                }
+
+                #print-host .sticker-container[data-type="rut_tham"] .sub-header {
+                    font-size: ${subHeaderTextSize}cqi !important;
+                    font-weight: bold;
+                    top: 31%;
+                    left: 4.5%;
+                    width: 32%;
+                    height: 20%;
+                    justify-content: flex-start;
+                    text-align: left;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    padding-left: 2px;
+                }
+
+                #print-host .sticker-container[data-type="rut_tham"] .old {
+                    white-space: pre-line !important;
+                    font-size: ${oldPriceTextSize}cqi !important;
+                    font-weight: bold;
+                    top: 52%;
+                    left: 4.5%;
+                    width: 32%;
+                    height: 36%;
+                    justify-content: flex-start;
+                    text-align: left;
+                    text-decoration: none !important;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    line-height: 1.1;
+                    padding-left: 2px;
+                    align-items: flex-start;
+                }
+
+                #print-host .sticker-container[data-type="rut_tham"] .left-code {
+                    font-size: 8cqi !important;
+                    font-weight: bold;
+                    top: 37%;
+                    left: 37.5%;
+                    width: 9%;
+                    height: 22%;
+                    justify-content: center;
+                    text-align: center;
+                    font-family: 'UTM Avo', sans-serif !important;
+                }
+
+                #print-host .sticker-container[data-type="rut_tham"] .name {
+                    font-size: ${nameTextSize}cqi !important;
+                    font-weight: bold;
+                    top: 31%;
+                    left: 51%;
+                    width: 32%;
+                    height: 20%;
+                    justify-content: flex-start;
+                    text-align: left;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    padding-left: 2px;
+                }
+
+                #print-host .sticker-container[data-type="rut_tham"] .right-code {
+                    font-size: 8cqi !important;
+                    font-weight: bold;
+                    top: 37%;
+                    left: 84.5%;
+                    width: 9%;
+                    height: 22%;
+                    justify-content: center;
+                    text-align: center;
+                    font-family: 'UTM Avo', sans-serif !important;
+                }
+
+                #print-host .sticker-container[data-type="rut_tham"] .extra2 {
+                    font-size: ${newPriceTextSize}cqi !important;
+                    font-weight: 900 !important;
+                    top: 52%;
+                    left: 51%;
+                    width: 44.5%;
+                    height: 26%;
+                    justify-content: flex-start;
+                    text-align: left;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    padding-left: 2px;
+                }
+
+                #print-host .sticker-container[data-type="rut_tham"] .footer-text {
+                    font-size: ${footerTextSize}cqi !important;
+                    font-weight: bold;
+                    top: 79%;
+                    left: 51%;
+                    width: 44.5%;
+                    height: 11.5%;
+                    justify-content: flex-start;
+                    text-align: left;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    padding-left: 2px;
+                }
+
+                #print-host .sticker-container[data-type="rut_tham"] .extra1 {
+                    font-size: ${percentTextSize}cqi !important;
+                    font-weight: bold;
+                    top: 89.5%;
+                    left: 20.2%;
+                    width: 28%;
+                    height: 7.5%;
+                    background-color: #0d0d0d !important;
+                    color: white !important;
+                    justify-content: flex-start;
+                    text-align: left;
+                    text-transform: uppercase;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    padding-left: 2px;
+                }
             </style>
         `;
 
@@ -1368,15 +1599,46 @@ export default function StickerPrinterView() {
                             <span className="lg:hidden">Event</span>
                             <span className="hidden lg:inline">{stickerMode === 'event' && <CheckCircle2 size={14} className="inline mr-1 text-emerald-600 dark:text-emerald-400" />}<Package size={14} className="inline mr-1" />Event - Tồn kho</span>
                         </button>
+                        <button
+                            onClick={() => {
+                                setStickerMode('sticker');
+                                setStickerType('rut_tham');
+                                setHeaderTextContent('RÚT THĂM MỖI NGÀY TỪ 5-14/5. PHIẾU CHƯA TRÚNG ĐƯỢC BẢO LƯU');
+                                setSubHeaderTextContent('Rút thăm 18h');
+                                setPreviewOldPrice('mỗi ngày từ 5-14/6\nTrúng 1 Nồi cơm + 1 Quạt');
+                                setPreviewName('TRÚNG MIỄN PHÍ');
+                                setPreviewNewPrice('1 SMART TIVI');
+                                setFooterTextContent('Áp dụng 6 và 13/6');
+                                setBarcodeImei('1');
+                                setBranchName('HÙNG VƯƠNG');
+                                setBgImage('/bg_phieu.png');
+                                setHeaderTextSize(3.5);
+                                setSubHeaderTextSize(5.0);
+                                setOldPriceTextSize(4.0);
+                                setNameTextSize(5.0);
+                                setNewPriceTextSize(8.0);
+                                setFooterTextSize(4.0);
+                                setPercentTextSize(3.5);
+                                updateSubQueryParam('rut-tham');
+                            }}
+                            className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
+                                stickerMode === 'sticker' && stickerType === 'rut_tham' 
+                                    ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 shadow-sm' 
+                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                            }`}
+                        >
+                            <span className="lg:hidden">Rút Thăm</span>
+                            <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'rut_tham' && <CheckCircle2 size={14} className="inline mr-1 text-rose-600 dark:text-rose-400" />}Phiếu rút thăm</span>
+                        </button>
                     </div>
                     
                     {stickerMode === 'sticker' && (
                         <div className="flex items-center gap-1 ml-0.5 lg:ml-1 pl-1.5 lg:pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
                             <span className="text-[10px] lg:text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400">{getActiveFieldLabel()}:</span>
                             <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[22px] lg:h-[26px]">
-                                <button onClick={() => setActiveFontSize(s => Math.max(1, s - 0.2))} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Giảm size">-</button>
+                                <button onClick={() => setActiveFontSize(s => Math.max(1, s - 0.2))} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-bold transition-colors" title="Giảm size">-</button>
                                 <span className="px-0 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 w-6 lg:w-8 text-center">{getActiveFontSize()}</span>
-                                <button onClick={() => setActiveFontSize(s => s + 0.2)} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Tăng size">+</button>
+                                <button onClick={() => setActiveFontSize(s => s + 0.2)} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-bold transition-colors" title="Tăng size">+</button>
                             </div>
                         </div>
                     )}
@@ -1433,6 +1695,8 @@ export default function StickerPrinterView() {
                         setBarcodeImei={setBarcodeImei}
                         setPreviewName={setPreviewName}
                         updateBatchItem={updateBatchItem}
+                        branchName={branchName}
+                        setBranchName={setBranchName}
                     />
                 </div>
                 <StickerPrintControls

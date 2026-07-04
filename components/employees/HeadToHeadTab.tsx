@@ -256,15 +256,15 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
             <div className="mb-3 sm:mb-4">
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400">
+                        <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 bg-teal-100 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400">
                             <Icon name={activeTable?.icon || "calendar-days"} size={3.5} className="sm:hidden" />
                             <Icon name={activeTable?.icon || "calendar-days"} size={5} className="hidden sm:block" />
                         </div>
                         <div className="min-w-0">
-                            <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
+                            <h3 className="text-[11px] sm:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">
                                 {activeTable ? activeTable.tableName : '7 Ngày'}
                             </h3>
-                            <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">7 ngày gần nhất</p>
+                            <p className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">7 ngày gần nhất</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
@@ -328,7 +328,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                                 <button
                                     key={`tab-${t.id}`}
                                     onClick={() => setActiveTableId(t.id)}
-                                    className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
+                                    className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[10px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
                                         isActive
                                         ? theme.activeTab || 'bg-slate-50 text-slate-800 dark:bg-slate-800 dark:text-white border-b-[2.5px] border-slate-800 dark:border-white'
                                         : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'

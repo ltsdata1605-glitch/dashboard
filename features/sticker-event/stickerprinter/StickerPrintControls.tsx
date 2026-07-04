@@ -105,7 +105,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
             <div className="flex gap-2 mb-3 shrink-0">
                 <button 
                     onClick={handlePrint}
-                    className="flex-1 bg-[#fbbc04] hover:bg-[#f0b400] text-black font-black text-sm py-2 rounded-lg flex items-center justify-center gap-1.5 transition-transform active:scale-95 shadow-md shadow-yellow-500/10"
+                    className="flex-1 bg-[#fbbc04] hover:bg-[#f0b400] text-black font-bold text-sm py-2 rounded-lg flex items-center justify-center gap-1.5 transition-transform active:scale-95 shadow-md shadow-yellow-500/10"
                 >
                     <Printer size={16} />
                     BẤM ĐỂ IN ({batchItems.length > 0 ? selectedCount + selectedManualPagesCount : (manualPages.length > 0 ? selectedManualPagesCount : 1)})
@@ -159,7 +159,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 {activeSubTab === 'data' && (
                     <div className="space-y-2.5 animate-in fade-in duration-200 pb-2">
                         {/* File upload actions */}
-                        <div className="flex gap-2 bg-slate-50 dark:bg-slate-900/30 p-2 rounded-xl border border-slate-100 dark:border-slate-700/30">
+                        <div className="flex gap-2 bg-slate-50 dark:bg-slate-900/30 p-2 rounded-lg border border-slate-100 dark:border-slate-700/30">
                             <label className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold cursor-pointer transition-colors shadow-sm text-[11px] lg:text-xs">
                                 <Upload size={14} />
                                 File giá ĐSD - TBBM
@@ -174,7 +174,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                         </div>
 
                         {/* Import from template */}
-                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
+                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/10 rounded-lg border border-emerald-100 dark:border-emerald-800/30">
                             <p className="text-[10px] lg:text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1">
                                 <FileSpreadsheet size={12} />
                                 Nhập từ File Mẫu
@@ -196,7 +196,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                         </div>
 
                         {/* Import price file from ERP */}
-                        <div className="p-2 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-800/30">
+                        <div className="p-2 bg-amber-50 dark:bg-amber-900/10 rounded-lg border border-amber-100 dark:border-amber-800/30">
                             <p className="text-[10px] lg:text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-1.5 flex items-center gap-1">
                                 <Package size={12} />
                                 Nhập file in giá từ ERP
@@ -265,7 +265,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 <span className="text-[11px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">H.Dẫn in & Sử dụng</span>
                             </div>
                             
-                            <div className="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-xl border border-slate-100 dark:border-slate-800/60 space-y-3">
+                            <div className="p-3 bg-slate-50 dark:bg-slate-900/20 rounded-lg border border-slate-100 dark:border-slate-800/60 space-y-3">
                                 <div className="space-y-1.5">
                                     <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400">CẤU HÌNH IN CHROME (CTRL + P):</p>
                                     <ul className="space-y-1 text-[11px] text-slate-600 dark:text-slate-300">
@@ -336,20 +336,20 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                             <span>•</span>
                                             <span>{entry.pageCount} trang</span>
                                             <span>•</span>
-                                            <span>{entry.stickerType === 'gia_soc' ? 'Giá Sốc' : 'Giờ Vàng'}</span>
+                                            <span>{entry.stickerType === 'gia_soc' ? 'Giá Sốc' : entry.stickerType === 'rut_tham' ? 'Phiếu rút thăm' : 'Giờ Vàng'}</span>
                                         </div>
                                     </div>
                                     <div className="flex gap-1 shrink-0 ml-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                         <button 
                                             onClick={() => restoreHistory(entry)}
-                                            className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
+                                            className="p-1.5 bg-sky-100 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 rounded-md hover:bg-sky-200 dark:hover:bg-sky-900/50 transition-colors"
                                             title="Khôi phục"
                                         >
                                             <RotateCcw size={13} />
                                         </button>
                                         <button 
                                             onClick={() => deleteHistory(entry.id)}
-                                            className="p-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                                            className="p-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400 rounded-md hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
                                             title="Xóa"
                                         >
                                             <Trash2 size={13} />

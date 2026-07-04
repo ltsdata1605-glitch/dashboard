@@ -49,16 +49,16 @@ const LoginView: React.FC = () => {
         <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center p-4">
             <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-3xl shadow-2xl p-8 border border-slate-100 dark:border-slate-700">
                 <div className="flex justify-center mb-8">
-                    <div className="w-16 h-16 rounded-2xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
                         <Icon name="layout-dashboard" className="w-8 h-8 text-indigo-600 dark:text-indigo-400" />
                     </div>
                 </div>
                 
-                <h1 className="text-2xl font-black text-center text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Phân Tích Yêu Cầu Xuất</h1>
+                <h1 className="text-2xl font-bold text-center text-slate-800 dark:text-white mb-2 uppercase tracking-tight">Phân Tích Yêu Cầu Xuất</h1>
                 <p className="text-center text-slate-500 dark:text-slate-400 mb-8 text-sm">Đăng nhập để đồng bộ dữ liệu và cài đặt giữa các thiết bị một cách an toàn.</p>
 
                 {isInAppWebView && (
-                    <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 rounded-2xl text-xs border border-amber-200 dark:border-amber-900/50 flex flex-col gap-2">
+                    <div className="mb-6 p-4 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-300 rounded-lg text-xs border border-amber-200 dark:border-amber-900/50 flex flex-col gap-2">
                         <div className="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200">
                             <span className="text-base">⚠️</span> Lưu ý Đăng Nhập:
                         </div>
@@ -72,7 +72,7 @@ const LoginView: React.FC = () => {
                 )}
                 
                 {error && (
-                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-medium border border-red-100 dark:border-red-800 whitespace-pre-line">
+                    <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium border border-red-100 dark:border-red-800 whitespace-pre-line">
                         {error}
                         <div className="mt-2 text-xs opacity-80 font-normal">(Anh/Chị cần chắc chắn đã cấu hình mã Firebase đúng trong thư mục services/firebase.ts nhé!)</div>
                     </div>
@@ -82,7 +82,7 @@ const LoginView: React.FC = () => {
                     <button 
                         onClick={handleLogin}
                         disabled={isLoggingIn}
-                        className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl py-3 px-4 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors focus:ring-4 focus:ring-slate-100 dark:focus:ring-slate-800 font-bold text-slate-700 dark:text-white disabled:opacity-50"
+                        className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-lg py-3 px-4 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors focus:ring-4 focus:ring-slate-100 dark:focus:ring-slate-800 font-bold text-slate-700 dark:text-white disabled:opacity-50"
                     >
                         {isLoggingIn ? (
                             <div className="w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
@@ -105,7 +105,7 @@ const LoginView: React.FC = () => {
                     
                     <button 
                         onClick={() => setDemoMode(true)}
-                        className="w-full flex items-center justify-center gap-2 bg-transparent border border-dashed border-slate-300 dark:border-slate-600 rounded-xl py-3 px-4 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium text-slate-500 dark:text-slate-400"
+                        className="w-full flex items-center justify-center gap-2 bg-transparent border border-dashed border-slate-300 dark:border-slate-600 rounded-lg py-3 px-4 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium text-slate-500 dark:text-slate-400"
                     >
                         <Icon name="glasses" size={5} />
                         Kích hoạt Chế độ Dùng Thử

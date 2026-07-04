@@ -147,7 +147,7 @@ export function DataTable<T>({
 
   return (
     <div
-      className={cn('w-full overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700/50', className)}
+      className={cn('w-full overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700/50', className)}
       style={maxHeight ? { maxHeight, overflowY: 'auto' } : undefined}
     >
       <div className="overflow-x-auto custom-scrollbar">

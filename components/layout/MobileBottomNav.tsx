@@ -87,7 +87,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 <h3 className="text-base font-bold text-slate-800 dark:text-white">Thêm</h3>
                                 <button 
                                     onClick={() => setIsMoreOpen(false)}
-                                    className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
                                 >
                                     <X size={20} />
                                 </button>
@@ -104,9 +104,9 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                 href={(tab as any).externalUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                                className="flex flex-col items-center gap-1.5 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                             >
-                                                <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                                                <div className="w-11 h-11 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
                                                     <tab.icon size={20} className="text-indigo-600 dark:text-indigo-400" />
                                                 </div>
                                                 <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
@@ -115,9 +115,9 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                             <button
                                                 key={tab.id}
                                                 onClick={() => handleTabClick(tab.id)}
-                                                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                                className="flex flex-col items-center gap-1.5 py-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                             >
-                                                <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
+                                                <div className="w-11 h-11 rounded-lg bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
                                                     <tab.icon size={20} className="text-indigo-600 dark:text-indigo-400" />
                                                 </div>
                                                 <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
@@ -140,7 +140,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                     href={(tab as any).externalUrl}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
+                                                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                                                     onClick={() => setIsMoreOpen(false)}
                                                 >
                                                     <tab.icon size={20} />
@@ -153,7 +153,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                             <button
                                                 key={tab.id}
                                                 onClick={() => handleTabClick(tab.id)}
-                                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                                                     isActive 
                                                         ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 
                                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'

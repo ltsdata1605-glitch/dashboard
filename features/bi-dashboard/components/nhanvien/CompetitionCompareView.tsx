@@ -39,7 +39,7 @@ const TugOfWar: React.FC<{
     const pctA = total > 0 ? (valA / total) * 100 : 50;
     return (
         <div className="flex flex-col gap-1 w-full my-3 px-4">
-            <div className="flex justify-between text-[14px] font-black items-end">
+            <div className="flex justify-between text-[14px] font-bold items-end">
                 <span className={textA}>{formatter(valA)}</span>
                 <span className="text-slate-400 dark:text-slate-500 uppercase tracking-wider text-[10px] font-bold pb-0.5">{label}</span>
                 <span className={textB}>{formatter(valB)}</span>
@@ -60,8 +60,8 @@ const DeltaBadge: React.FC<{ a: number, b: number, mode?: 'pct' | 'actual' }> = 
     const diff = a - b;
     const formatDiff = (v: number) => mode === 'pct' ? `${v.toFixed(0)}%` : fMoney.format(v);
 
-    if (diff > 0) return <span className="text-[11px] font-black text-sky-600 bg-sky-100 dark:bg-sky-900/30 px-2 py-0.5 rounded shadow-sm">◀ +{formatDiff(diff)}</span>;
-    if (diff < 0) return <span className="text-[11px] font-black text-rose-600 bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded shadow-sm">+{formatDiff(Math.abs(diff))} ▶</span>;
+    if (diff > 0) return <span className="text-[11px] font-bold text-sky-600 bg-sky-100 dark:bg-sky-900/30 px-2 py-0.5 rounded shadow-sm">◀ +{formatDiff(diff)}</span>;
+    if (diff < 0) return <span className="text-[11px] font-bold text-rose-600 bg-rose-100 dark:bg-rose-900/30 px-2 py-0.5 rounded shadow-sm">+{formatDiff(Math.abs(diff))} ▶</span>;
     return <span className="text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">Hòa</span>;
 };
 
@@ -72,7 +72,7 @@ const ProfileAvatar: React.FC<{ emp: Employee, colorClass: string }> = ({ emp, c
             {avatarSrc ? (
                 <img src={avatarSrc} alt={emp.name} className="w-full h-full object-cover rounded-full" />
             ) : (
-                <span className="text-xl font-black text-slate-400">{emp.name.charAt(emp.name.lastIndexOf(' ') + 1) || '?'}</span>
+                <span className="text-xl font-bold text-slate-400">{emp.name.charAt(emp.name.lastIndexOf(' ') + 1) || '?'}</span>
             )}
         </div>
     );
@@ -310,7 +310,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
     };
 
     return (
-        <div className="space-y-4 pb-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-4 sm:p-6 mt-4">
+        <div className="space-y-4 pb-10 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-lg p-4 sm:p-6 mt-4">
             {/* Auto Pairing Quick Select */}
             {autoPairs.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 px-2 no-print justify-center sm:justify-start">
@@ -339,7 +339,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <div className="flex-1 flex justify-end">
                         <EmployeeSelector allEmployees={allEmployees} selectedEmployee={empA} onSelect={setEmpA} placeholder="Chọn đối thủ 1" />
                     </div>
-                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white font-black italic flex items-center justify-center shrink-0 shadow-lg border-2 border-slate-700 text-sm">VS</div>
+                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white font-bold italic flex items-center justify-center shrink-0 shadow-lg border-2 border-slate-700 text-sm">VS</div>
                     <div className="flex-1 flex justify-start">
                         <EmployeeSelector allEmployees={allEmployees} selectedEmployee={empB} onSelect={setEmpB} placeholder="Chọn đối thủ 2" alignRight />
                     </div>
@@ -359,11 +359,11 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
             </div>
 
             {(!empA || !empB) ? (
-                <div className="py-20 text-center text-slate-500 font-bold bg-slate-50 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+                <div className="py-20 text-center text-slate-500 font-bold bg-slate-50 dark:bg-slate-900/50 rounded-lg border-2 border-dashed border-slate-200 dark:border-slate-800">
                     Vui lòng chọn 2 nhân viên để bắt đầu so sánh.
                 </div>
             ) : (
-                <div ref={cardRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+                <div ref={cardRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm">
                     {/* Header Banner */}
                     <div className="bg-gradient-to-b from-slate-800 to-slate-900 p-6 sm:p-8 flex items-center justify-between relative overflow-hidden">
                         <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
@@ -371,29 +371,29 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                         {/* NV A */}
                         <div className="flex-1 flex flex-col items-center relative z-10">
                             <ProfileAvatar emp={empA} colorClass="border-sky-500" />
-                            <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empA.name}</h3>
+                            <h3 className="text-lg sm:text-xl font-bold text-white mt-3 text-center uppercase tracking-tight leading-tight">{empA.name}</h3>
                             <p className="text-[11px] text-sky-300 font-bold uppercase tracking-wider">{empA.department}</p>
                             <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
-                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[10px] font-black">{statsA.compStats.dkhtDat} Đạt 100%</div>
-                                {statsA.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[10px] font-black">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
-                                {statsA.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[10px] font-black">{statsA.compStats.noSale} No Sale</div>}
+                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[10px] font-bold">{statsA.compStats.dkhtDat} Đạt 100%</div>
+                                {statsA.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[10px] font-bold">{statsA.compStats.dkhtNotDat} &lt;100%</div>}
+                                {statsA.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[10px] font-bold">{statsA.compStats.noSale} No Sale</div>}
                             </div>
                         </div>
 
                         {/* VS Center */}
                         <div className="flex flex-col items-center justify-center shrink-0 px-2 sm:px-6 relative z-10">
-                            <div className="text-4xl sm:text-6xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-slate-200 to-slate-600 drop-shadow-xl" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}>VS</div>
+                            <div className="text-4xl sm:text-6xl font-bold italic text-transparent bg-clip-text bg-gradient-to-b from-slate-200 to-slate-600 drop-shadow-xl" style={{ WebkitTextStroke: '1px rgba(255,255,255,0.1)' }}>VS</div>
                         </div>
 
                         {/* NV B */}
                         <div className="flex-1 flex flex-col items-center relative z-10">
                             <ProfileAvatar emp={empB} colorClass="border-rose-500" />
-                            <h3 className="text-lg sm:text-xl font-black text-white mt-3 text-center uppercase tracking-tight leading-tight">{empB.name}</h3>
+                            <h3 className="text-lg sm:text-xl font-bold text-white mt-3 text-center uppercase tracking-tight leading-tight">{empB.name}</h3>
                             <p className="text-[11px] text-rose-300 font-bold uppercase tracking-wider">{empB.department}</p>
                             <div className="flex items-center gap-1 mt-3 flex-wrap justify-center">
-                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[10px] font-black">{statsB.compStats.dkhtDat} Đạt 100%</div>
-                                {statsB.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[10px] font-black">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
-                                {statsB.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[10px] font-black">{statsB.compStats.noSale} No Sale</div>}
+                                <div className="px-1.5 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-emerald-400 text-[10px] font-bold">{statsB.compStats.dkhtDat} Đạt 100%</div>
+                                {statsB.compStats.dkhtNotDat > 0 && <div className="px-1.5 py-0.5 bg-amber-500/20 border border-amber-500/30 rounded text-amber-400 text-[10px] font-bold">{statsB.compStats.dkhtNotDat} &lt;100%</div>}
+                                {statsB.compStats.noSale > 0 && <div className="px-1.5 py-0.5 bg-rose-500/20 border border-rose-500/30 rounded text-rose-400 text-[10px] font-bold">{statsB.compStats.noSale} No Sale</div>}
                             </div>
                         </div>
                     </div>
@@ -409,16 +409,16 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     {/* Ranks Strip */}
                     <div className="grid grid-cols-2 divide-x divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
                         <div className="py-3 px-2 sm:px-4 flex justify-around items-center">
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-sky-600">#{statsA.dtRank}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-indigo-600">{statsA.compStats.dkhtDat}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-cyan-600">{statsA.compStats.dkhtNotDat}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-emerald-600">{statsA.compStats.total > 0 ? Math.round((statsA.compStats.dkhtDat / statsA.compStats.total) * 100) : 0}%</span></div>
+                            <div className="text-center"><p className="text-[10px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-bold text-sky-600">#{statsA.dtRank}</span></div>
+                            <div className="text-center"><p className="text-[10px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-bold text-indigo-600">{statsA.compStats.dkhtDat}</span></div>
+                            <div className="text-center"><p className="text-[10px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-bold text-cyan-600">{statsA.compStats.dkhtNotDat}</span></div>
+                            <div className="text-center"><p className="text-[10px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-bold text-emerald-600">{statsA.compStats.total > 0 ? Math.round((statsA.compStats.dkhtDat / statsA.compStats.total) * 100) : 0}%</span></div>
                         </div>
                         <div className="py-3 px-2 sm:px-4 flex justify-around items-center">
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-black text-rose-600">#{statsB.dtRank}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-black text-fuchsia-600">{statsB.compStats.dkhtDat}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-black text-pink-600">{statsB.compStats.dkhtNotDat}</span></div>
-                            <div className="text-center"><p className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-black text-amber-600">{statsB.compStats.total > 0 ? Math.round((statsB.compStats.dkhtDat / statsB.compStats.total) * 100) : 0}%</span></div>
+                            <div className="text-center"><p className="text-[10px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">Rank DT</p><span className="text-base sm:text-lg font-bold text-rose-600">#{statsB.dtRank}</span></div>
+                            <div className="text-center"><p className="text-[10px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">≥100%</p><span className="text-base sm:text-lg font-bold text-fuchsia-600">{statsB.compStats.dkhtDat}</span></div>
+                            <div className="text-center"><p className="text-[10px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">&lt;100%</p><span className="text-base sm:text-lg font-bold text-pink-600">{statsB.compStats.dkhtNotDat}</span></div>
+                            <div className="text-center"><p className="text-[10px] sm:text-[10px] text-slate-400 font-bold uppercase mb-0.5">% NH Đạt</p><span className="text-base sm:text-lg font-bold text-amber-600">{statsB.compStats.total > 0 ? Math.round((statsB.compStats.dkhtDat / statsB.compStats.total) * 100) : 0}%</span></div>
                         </div>
                     </div>
 
@@ -426,7 +426,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-100 dark:bg-slate-800 text-[10px] font-black uppercase text-slate-500 tracking-wider">
+                                <tr className="bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase text-slate-500 tracking-wider">
                                     <th className="px-4 py-3 border-b-2 border-slate-200 dark:border-slate-700 w-10 text-center">#</th>
                                     <th className="px-4 py-3 border-b-2 border-slate-200 dark:border-slate-700">Chương trình thi đua</th>
                                     <th className="px-2 py-3 border-b-2 border-sky-400 text-center text-sky-700 dark:text-sky-300 w-24">{empA.name.split(' ').pop()}</th>
@@ -443,7 +443,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                                         return (
                                             <React.Fragment key={crit}>
                                                 <tr className={`${cStyle.bg}`}>
-                                                    <td colSpan={5} className={`px-4 py-1 text-[11px] font-black uppercase ${cStyle.text} tracking-wider border-y ${cStyle.border}`}>
+                                                    <td colSpan={5} className={`px-4 py-1 text-[11px] font-bold uppercase ${cStyle.text} tracking-wider border-y ${cStyle.border}`}>
                                                         <span className={`px-2 py-0.5 rounded mr-2 ${cStyle.badge}`}>Tiêu chí</span> {crit}
                                                     </td>
                                                 </tr>
@@ -455,7 +455,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                                                                 <span className="text-[12px] font-bold text-slate-800 dark:text-slate-200">{row.name}</span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-2 py-1 text-center text-[13px] font-black text-sky-600 dark:text-sky-400 bg-sky-50/30 dark:bg-sky-900/10">
+                                                        <td className="px-2 py-1 text-center text-[13px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50/30 dark:bg-sky-900/10">
                                                             {displayMode === 'pct' ? `${row.pctA.toFixed(0)}%` : fMoney.format(row.actualA)}
                                                         </td>
                                                         <td className="px-2 py-1 text-center">
@@ -463,7 +463,7 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                                                                 <DeltaBadge a={displayMode === 'pct' ? row.pctA : row.actualA} b={displayMode === 'pct' ? row.pctB : row.actualB} mode={displayMode} />
                                                             </div>
                                                         </td>
-                                                        <td className="px-2 py-1 text-center text-[13px] font-black text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-900/10">
+                                                        <td className="px-2 py-1 text-center text-[13px] font-bold text-rose-600 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-900/10">
                                                             {displayMode === 'pct' ? `${row.pctB.toFixed(0)}%` : fMoney.format(row.actualB)}
                                                         </td>
                                                     </tr>

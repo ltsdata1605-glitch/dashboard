@@ -31,9 +31,9 @@ export const getHieuQuaBadge = (pct: number, target: number = 35) => {
 };
 
 export const RankBadge: React.FC<{ rank: number }> = ({ rank }) => {
-    if (rank === 0) return <span className="text-[11px] sm:text-[14px] font-black text-amber-500">#1</span>;
-    if (rank === 1) return <span className="text-[11px] sm:text-[14px] font-black text-slate-400">#2</span>;
-    if (rank === 2) return <span className="text-[11px] sm:text-[14px] font-black text-amber-700">#3</span>;
+    if (rank === 0) return <span className="text-[11px] sm:text-[14px] font-bold text-amber-500">#1</span>;
+    if (rank === 1) return <span className="text-[11px] sm:text-[14px] font-bold text-slate-400">#2</span>;
+    if (rank === 2) return <span className="text-[11px] sm:text-[14px] font-bold text-amber-700">#3</span>;
     return (
         <span className="text-[10px] sm:text-[13px] font-bold text-slate-400 dark:text-slate-500">
             #{rank + 1}

@@ -74,7 +74,7 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
       <div className="bg-white p-6 shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col border border-slate-200">
         <div className="flex justify-between items-center mb-4">
             <div>
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">Cấu Hình Nhập Nhân Viên</h2>
+                <h2 className="text-xl font-bold text-slate-900 tracking-tight">Cấu Hình Nhập Nhân Viên</h2>
                 <p className="text-slate-500 font-medium text-xs mt-1">Xác nhận thông tin siêu thị và giới tính nhân viên để hệ thống phân ca chính xác.</p>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-slate-100 transition-colors">
@@ -83,7 +83,7 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
         </div>
         
         <div className="mb-4 p-4 bg-indigo-50/50 border border-indigo-100">
-            <label className="block text-[10px] font-black text-indigo-600 mb-1.5 uppercase tracking-widest">Tên Siêu Thị <span className="text-rose-500">*</span></label>
+            <label className="block text-[10px] font-bold text-indigo-600 mb-1.5 uppercase tracking-widest">Tên Siêu Thị <span className="text-rose-500">*</span></label>
             <div className="relative">
                 <input 
                     type="text" 
@@ -115,14 +115,14 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
 
         <div className="flex-grow overflow-hidden flex flex-col bg-slate-50 border border-slate-200">
             <div className="p-3 bg-white border-b border-slate-200 flex justify-between items-center">
-                <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Danh sách nhân viên ({staffList.length})</span>
-                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-1 font-black uppercase">Vui lòng kiểm tra lại giới tính</span>
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Danh sách nhân viên ({staffList.length})</span>
+                <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-1 font-bold uppercase">Vui lòng kiểm tra lại giới tính</span>
             </div>
             
             <div className="overflow-y-auto flex-grow">
               <table className="w-full text-sm border-collapse">
                 <thead className="sticky top-0 bg-slate-100 z-10 border-b border-slate-200">
-                  <tr className="text-slate-500 font-black text-[10px] uppercase tracking-widest">
+                  <tr className="text-slate-500 font-bold text-[10px] uppercase tracking-widest">
                     <th className="px-4 py-2 text-left">Họ tên nhân viên</th>
                     <th className="px-4 py-2 text-left">Bộ phận</th>
                     <th className="px-4 py-2 text-center w-32">Giới tính</th>
@@ -137,13 +137,13 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
                         <div className="flex justify-center items-center gap-1">
                           <button 
                             onClick={() => handleGenderChange(staff.id, 'Nam')}
-                            className={`flex-1 py-1 px-2 text-[10px] font-black transition-all border ${genderAssignments[staff.id] === 'Nam' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                            className={`flex-1 py-1 px-2 text-[10px] font-bold transition-all border ${genderAssignments[staff.id] === 'Nam' ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}`}
                           >
                             NAM
                           </button>
                           <button 
                             onClick={() => handleGenderChange(staff.id, 'Nu')}
-                            className={`flex-1 py-1 px-2 text-[10px] font-black transition-all border ${genderAssignments[staff.id] === 'Nu' ? 'bg-rose-500 text-white border-rose-500' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}`}
+                            className={`flex-1 py-1 px-2 text-[10px] font-bold transition-all border ${genderAssignments[staff.id] === 'Nu' ? 'bg-rose-500 text-white border-rose-500' : 'bg-slate-50 text-slate-500 border-slate-200 hover:bg-slate-100'}`}
                           >
                             NỮ
                           </button>

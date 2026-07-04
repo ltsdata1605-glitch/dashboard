@@ -522,7 +522,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                                 <td colSpan={2 + columnsWithHeader.length + columnsWithoutHeader.length} className={`px-2 py-1 ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].strip} border-y border-slate-200 dark:border-slate-700`}>
                                                     <div className="flex items-center gap-1.5 sm:gap-2">
                                                         <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].badge} flex-shrink-0`} />
-                                                        <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].text}`}>{department} — {rows.length} người</span>
+                                                        <span className={`text-[10px] sm:text-[10px] font-bold uppercase tracking-widest ${DEPT_COLORS[deptIndex % DEPT_COLORS.length].text}`}>{department} — {rows.length} người</span>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -552,7 +552,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
                                         })}
                                         {sortedDepartments.length > 1 && deptTotals && (
                                             <tr className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-200 dark:border-slate-700 font-bold">
-                                                <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[11px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10">Tổng {department}</td>
+                                                <td colSpan={2} className="px-2 py-1 text-center text-[10px] sm:text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-r border-slate-200 dark:border-slate-700 sticky left-0 bg-slate-50 dark:bg-slate-800 z-10">Tổng {department}</td>
                                                 {[...columnsWithHeader, ...columnsWithoutHeader].map(col => (
                                                     <td key={col.id} className="px-2 py-1 text-center text-[11px] sm:text-[13px] font-extrabold text-slate-700 dark:text-slate-300 border-r border-slate-200 dark:border-slate-700">
                                                         {formatValue(deptTotals.get(col.id), col)}

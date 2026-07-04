@@ -64,7 +64,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
             {/* Header */}
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-955/20 rounded-t-2xl">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-200/50 dark:border-amber-500/20">
+                    <div className="w-10 h-10 rounded-lg bg-amber-100 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-200/50 dark:border-amber-500/20">
                         <Icon name="alert-triangle" size={5} className="animate-bounce" />
                     </div>
                     <div>
@@ -76,21 +76,21 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         </p>
                     </div>
                 </div>
-                <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <Icon name="x" size={4} />
                 </button>
             </div>
 
             {/* Content */}
             <div className="p-5 overflow-y-auto custom-scrollbar flex-1 bg-white dark:bg-slate-900 space-y-4">
-                <div className="p-3.5 bg-amber-50/50 dark:bg-amber-955/10 rounded-xl border border-amber-100/60 dark:border-amber-900/30 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
+                <div className="p-3.5 bg-amber-50/50 dark:bg-amber-955/10 rounded-lg border border-amber-100/60 dark:border-amber-900/30 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
                     <p className="font-semibold mb-1">💡 Ảnh hưởng đến báo cáo:</p>
                     <p>Các dòng doanh thu thuộc nhóm hàng này sẽ bị <strong>bỏ qua hoàn toàn</strong> trong tất cả các thẻ KPI, bảng tổng hợp và biểu đồ xu hướng để tránh tính toán sai lệch nhóm.</p>
                 </div>
 
                 {/* Table list */}
                 {unconfiguredGroups.length > 0 ? (
-                    <div className="border border-slate-100 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                    <div className="border border-slate-100 dark:border-slate-800 rounded-lg overflow-hidden shadow-sm">
                         <div className="max-h-[250px] overflow-y-auto custom-scrollbar">
                             <table className="w-full text-left border-collapse text-xs">
                                 <thead className="bg-slate-50 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 sticky top-0 font-bold border-b border-slate-100 dark:border-slate-800">
@@ -140,7 +140,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         </div>
                     </div>
                 ) : (
-                    <div className="p-6 text-center border border-dashed border-slate-200 dark:border-slate-850 rounded-xl text-slate-500 dark:text-slate-400">
+                    <div className="p-6 text-center border border-dashed border-slate-200 dark:border-slate-850 rounded-lg text-slate-500 dark:text-slate-400">
                         <Icon name="check-circle-2" className="mx-auto text-emerald-500 mb-2" size={8} />
                         <p className="font-semibold text-xs text-slate-700 dark:text-slate-300">Không có nhóm hàng mới cần cấu hình</p>
                         <p className="text-[10px] mt-0.5">Tất cả các nhóm hàng trong dữ liệu đều đã được cấu hình hoặc đã được loại bỏ.</p>
@@ -153,7 +153,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         <h4 className="font-bold text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest">
                             Danh sách nhóm đã loại bỏ ({ignoredUnconfiguredGroups.length})
                         </h4>
-                        <div className="border border-slate-100 dark:border-slate-850 rounded-xl overflow-hidden bg-slate-50/30 dark:bg-slate-900/10">
+                        <div className="border border-slate-100 dark:border-slate-850 rounded-lg overflow-hidden bg-slate-50/30 dark:bg-slate-900/10">
                             <div className="max-h-[150px] overflow-y-auto custom-scrollbar">
                                 <table className="w-full text-left border-collapse text-xs">
                                     <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
@@ -163,7 +163,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                                                 <td className="px-4 py-2 text-slate-400 dark:text-slate-500">
                                                     <div className="flex flex-col">
                                                         <span className="font-medium line-clamp-1">{group.nganhHang}</span>
-                                                        <span className="text-[9px] font-mono opacity-80">{group.nhomHang}</span>
+                                                        <span className="text-[10px] font-mono opacity-80">{group.nhomHang}</span>
                                                     </div>
                                                 </td>
                                                 <td className="px-4 py-2 text-right pr-4">
@@ -205,7 +205,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                     <button
                         onClick={handleCopyAllRows}
                         disabled={unconfiguredGroups.length === 0}
-                        className={`px-4 py-2.5 text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5 ${unconfiguredGroups.length === 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-300/30 dark:shadow-none active:scale-95'}`}
+                        className={`px-4 py-2.5 text-xs font-bold rounded-lg shadow-md transition-all flex items-center gap-1.5 ${unconfiguredGroups.length === 0 ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed shadow-none' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-indigo-300/30 dark:shadow-none active:scale-95'}`}
                     >
                         <Icon name="copy" size={3.5} />
                         <span>Sao chép toàn bộ dòng mới</span>
@@ -215,7 +215,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                         href={EDITABLE_CONFIG_URL}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
+                        className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-lg shadow-md shadow-emerald-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
                         <Icon name="external-link" size={3.5} />
                         <span>Mở file Google Sheets cấu hình</span>

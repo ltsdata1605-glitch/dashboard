@@ -22,7 +22,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
             hideHeader={true}
             maxWidthClass="max-w-md"
         >
-            <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl">
+            <div className="p-6 bg-white dark:bg-slate-900 rounded-lg">
                 <div className="flex flex-col items-center text-center mb-6">
                     <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3">
                         <Icon name="file-up" size={6} />
@@ -38,7 +38,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                 <div className="space-y-3">
                     <button
                         onClick={() => onSelect(false)}
-                        className="w-full text-left p-4 rounded-xl border border-slate-100 hover:border-emerald-500/30 dark:border-slate-800 dark:hover:border-emerald-500/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/10 transition-all flex items-start gap-3.5 group"
+                        className="w-full text-left p-4 rounded-lg border border-slate-100 hover:border-emerald-500/30 dark:border-slate-800 dark:hover:border-emerald-500/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/10 transition-all flex items-start gap-3.5 group"
                     >
                         <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100/50 dark:border-emerald-500/20 group-hover:scale-105 transition-transform">
                             <Icon name="zap" size={4} />
@@ -55,7 +55,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
 
                     <button
                         onClick={() => onSelect(true)}
-                        className="w-full text-left p-4 rounded-xl border border-slate-100 hover:border-indigo-500/30 dark:border-slate-800 dark:hover:border-indigo-500/30 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/10 transition-all flex items-start gap-3.5 group"
+                        className="w-full text-left p-4 rounded-lg border border-slate-100 hover:border-indigo-500/30 dark:border-slate-800 dark:hover:border-indigo-500/30 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/10 transition-all flex items-start gap-3.5 group"
                     >
                         <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100/50 dark:border-indigo-500/20 group-hover:scale-105 transition-transform">
                             <Icon name="database" size={4} />
@@ -74,7 +74,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                 <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-semibold rounded-xl text-xs transition-all"
+                        className="px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-semibold rounded-lg text-xs transition-all"
                     >
                         Hủy bỏ
                     </button>

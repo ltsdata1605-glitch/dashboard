@@ -278,13 +278,13 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             onClose={onClose}
             title={editingColumn ? "Chỉnh Sửa Cột" : "Tạo Cột Mới"}
             subTitle="Cấu hình số liệu hiển thị trong bảng"
-            titleColorClass="text-indigo-600 dark:text-indigo-400"
+            titleColorClass="text-sky-600 dark:text-sky-400"
             maxWidthClass="max-w-4xl"
         >
             <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 bg-white dark:bg-slate-900">
                 <div ref={scrollContainerRef} className="flex-grow p-4 sm:p-6 space-y-8 overflow-y-auto custom-scrollbar min-h-0">
                     {feedback && (
-                        <div className={`p-2.5 sm:p-3 border rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
+                        <div className={`p-2.5 sm:p-3 border rounded-md text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
                             feedback.type === 'error' 
                             ? 'bg-rose-50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300'
                             : 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'

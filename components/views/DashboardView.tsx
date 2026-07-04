@@ -206,7 +206,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     return (
         <div className="w-full">
             {pendingCloudSync && (
-                <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[360px] sm:max-w-sm z-[250] bg-white dark:bg-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-indigo-50/50 dark:border-indigo-500/20 rounded-2xl p-4 flex flex-col gap-2.5 animate-in slide-in-from-bottom-5 fade-in duration-300">
+                <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:bottom-6 sm:w-[360px] sm:max-w-sm z-[250] bg-white dark:bg-slate-800 shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-indigo-50/50 dark:border-indigo-500/20 rounded-lg p-4 flex flex-col gap-2.5 animate-in slide-in-from-bottom-5 fade-in duration-300">
                     <div className="flex items-start justify-between gap-3 w-full min-w-0">
                         <div className="flex items-start gap-2.5 flex-1 min-w-0">
                             <div className="p-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg shrink-0 mt-0.5">
@@ -217,7 +217,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     <h4 className="font-bold text-slate-800 dark:text-white text-xs sm:text-sm truncate">
                                         Dữ liệu đám mây mới
                                     </h4>
-                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 shrink-0">
+                                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300 shrink-0">
                                         📊 {pendingCloudSync.meta.totalRows.toLocaleString('vi-VN')} dòng
                                     </span>
                                 </div>
@@ -239,13 +239,13 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                     <div className="flex gap-2 mt-0.5">
                         <button
                             onClick={() => setPendingCloudSync(null)}
-                            className="flex-1 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium rounded-xl text-[11px] transition-colors"
+                            className="flex-1 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium rounded-lg text-[11px] transition-colors"
                         >
                             Bỏ qua
                         </button>
                         <button
                             onClick={() => handleAcceptCloudSync()}
-                            className="flex-[2] py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors shadow-sm active:scale-[0.98]"
+                            className="flex-[2] py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 rounded-lg text-[11px] transition-colors shadow-sm active:scale-[0.98]"
                         >
                             <Icon name="refresh-cw" size={3.5} />
                             Nạp dữ liệu đám mây
@@ -336,7 +336,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 <div className="w-2 h-2 rounded-full bg-emerald-500/40" />
                                             </div>
                                             <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest flex items-center gap-1.5 line-clamp-1">
-                                                <Icon name="users" size={3} className="text-indigo-400" /> Tổng: <span className="text-slate-600 dark:text-slate-300">{totalVisits.toLocaleString()}</span> lượt • <span className="font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> {onlineUsers} đang online</span>
+                                                <Icon name="users" size={3} className="text-indigo-400" /> Tổng: <span className="text-slate-600 dark:text-slate-300">{totalVisits.toLocaleString()}</span> lượt • <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"><span className="relative flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span></span> {onlineUsers} đang online</span>
                                             </span>
                                         </div>
                                         <div className="flex items-center gap-3">
@@ -354,7 +354,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                 <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 px-2 py-1 rounded-md border border-slate-200/50 dark:border-slate-700/50">
                                                     <Icon name="calendar-days" size={3.5} className="opacity-70" />
                                                     <span className="text-[10px] font-bold uppercase tracking-widest">
-                                                        Cập nhật: <span className="text-slate-800 dark:text-slate-200 font-black">{logic.fileInfo.savedAt}</span>
+                                                        Cập nhật: <span className="text-slate-800 dark:text-slate-200 font-bold">{logic.fileInfo.savedAt}</span>
                                                     </span>
                                                 </div>
                                             )}
@@ -374,7 +374,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                     )}
 
                                     <div ref={businessOverviewRef} id="business-overview" className="space-y-2 lg:space-y-8">
-                                        <div ref={kpiCardsOnlyRef} className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-slate-800 overflow-hidden relative rounded-none sm:rounded-xl lg:rounded-none">
+                                        <div ref={kpiCardsOnlyRef} className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-slate-800 overflow-hidden relative rounded-none sm:rounded-lg lg:rounded-none">
                                             {/* Unconfigured Groups Warning Banner */}
                                             {(userRole === 'admin' || userRole === 'manager') && unconfiguredGroups && unconfiguredGroups.length > 0 && (
                                                 <div

@@ -56,7 +56,7 @@ export const SharedModal: React.FC<SharedModalProps> = ({
             <div 
                 ref={modalRef}
                 className={clsx(
-                    "relative flex flex-col w-full max-h-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-2 duration-300",
+                    "relative flex flex-col w-full max-h-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-lg overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-2 duration-300",
                     sizeClasses[size],
                     className
                 )}

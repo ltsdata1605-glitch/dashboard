@@ -332,7 +332,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
             <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0 bg-white dark:bg-slate-900">
                 <div className="flex-grow p-4 sm:p-6 space-y-8 overflow-y-auto custom-scrollbar min-h-0">
                     {feedback && (
-                        <div className={`p-2.5 sm:p-3 border rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
+                        <div className={`p-2.5 sm:p-3 border rounded-lg sm:rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
                             feedback.type === 'error' 
                             ? 'bg-rose-50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300'
                             : 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'

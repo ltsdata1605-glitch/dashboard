@@ -134,7 +134,7 @@ const PrintSettingsModal: React.FC<PrintSettingsModalProps> = ({ settings, onSet
     return (
         <div className="fixed inset-0 z-50 bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md" onClick={onClose}>
             <div 
-                className="relative bg-white w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto" 
+                className="relative bg-white w-full max-w-md rounded-lg shadow-2xl p-6 space-y-6 max-h-[90vh] overflow-y-auto" 
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex justify-between items-center">

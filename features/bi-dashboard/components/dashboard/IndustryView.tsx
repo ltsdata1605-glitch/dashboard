@@ -221,7 +221,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 </button>
                 {isIndustryFilterOpen && (
                     <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Ngành hàng</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Ngành hàng</p>
                         <input
                             type="text"
                             value={industryFilterSearch}
@@ -263,12 +263,12 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     >
                         <div className="relative">
                             <FilterIcon className="h-4 w-4" />
-                            <span className="absolute -bottom-1 -right-1 text-[8px] font-black text-slate-400">N</span>
+                            <span className="absolute -bottom-1 -right-1 text-[10px] font-bold text-slate-400">N</span>
                         </div>
                     </button>
                     {isSubIndustryFilterOpen && (
                         <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
-                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Nhóm hàng</p>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Nhóm hàng</p>
                             <input
                                 type="text"
                                 value={subIndustryFilterSearch}
@@ -311,8 +311,8 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     <CogIcon className="h-4 w-4" />
                 </button>
                 {isColumnSelectorOpen && (
-                    <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
+                    <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
                         <div className="grid gap-0.5">
                             {orderedHeaders.filter(h => h !== 'Nhóm ngành hàng').map((h) => (
                                 <div key={h} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
@@ -405,7 +405,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         )}
                         <span className={
                             isTotalRow ? 'font-extrabold' 
-                            : isNNH ? 'font-black' 
+                            : isNNH ? 'font-bold' 
                             : isNhomHang ? 'font-semibold' 
                             : 'font-normal'
                         }>
@@ -453,14 +453,14 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                         {(isReportMode && headerName === '% HT Target Ngày (QĐ)' && parseNumber(reportTargets[isTotalRow ? 'TỔNG CỘNG' : String(fullRow[0]).replace('NNH ', '').trim()] || '') <= 0) ? (
                             <span className="text-slate-400">-</span>
                         ) : (
-                            <span className={`px-2 py-0.5 rounded text-[10px] font-black inline-block min-w-[45px] text-center ${computedValue >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : computedValue >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold inline-block min-w-[45px] text-center ${computedValue >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : computedValue >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
                                 {roundUp(computedValue)}%
                             </span>
                         )}
                     </div>
                 );
             }
-            if (isDtqdCol) return <span className="text-indigo-700 dark:text-indigo-400 font-black text-[12px]">{new Intl.NumberFormat('vi-VN').format(roundUp(numericValue))}</span>;
+            if (isDtqdCol) return <span className="text-indigo-700 dark:text-indigo-400 font-bold text-[12px]">{new Intl.NumberFormat('vi-VN').format(roundUp(numericValue))}</span>;
             if (isGTDHCol && isNumericCol) return fmtGTDH.format(numericValue);
             if (isPercentCol && isNumericCol && numericValue === 0) return '-';
             if (isPercentCol) return `${roundUp(numericValue)}%`;
@@ -507,7 +507,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
     return (
         <div className="js-industry-view-container relative z-10">
-            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-xl font-black uppercase text-primary-700 dark:text-primary-400 leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} rounded={false} noPadding>
+            <Card ref={ref} title={<div className="flex flex-col items-start w-full"><span className="text-xl font-bold uppercase text-primary-700 dark:text-primary-400 leading-none tracking-tight">{title}</span></div>} actionButton={actionButton} rounded={false} noPadding>
                 <div className="overflow-hidden">
                     <div className="overflow-x-auto scrollbar-hide -webkit-overflow-scrolling-touch">
                         {isMobile ? (
@@ -524,15 +524,15 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                     if (isTotalRow) {
                                         return (
                                             <div key={rIdx} className="bg-slate-100 dark:bg-slate-800/80 px-4 py-3 flex items-center justify-between border-t-2 border-slate-300 dark:border-slate-600">
-                                                <span className="text-xs font-black text-slate-700 dark:text-white uppercase tracking-wider">TỔNG CỘNG</span>
+                                                <span className="text-xs font-bold text-slate-700 dark:text-white uppercase tracking-wider">TỔNG CỘNG</span>
                                                 <div className="flex items-center gap-3">
                                                     <div className="text-right">
                                                         <p className="text-[10px] font-bold text-slate-400 uppercase">DTQĐ</p>
-                                                        <p className="text-sm font-black text-primary-600 dark:text-primary-400 tabular-nums">
+                                                        <p className="text-sm font-bold text-primary-600 dark:text-primary-400 tabular-nums">
                                                             {new Intl.NumberFormat('vi-VN').format(dtqdVal)}
                                                         </p>
                                                     </div>
-                                                    <span className={`text-xs font-black px-2.5 py-1 rounded-full ${htColors.badge}`}>
+                                                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${htColors.badge}`}>
                                                         {htPct}%
                                                     </span>
                                                 </div>
@@ -544,7 +544,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                         <div key={rIdx} className="px-4 py-3 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors">
                                             {/* Header row: tên + % HT badge */}
                                             <div className="flex items-center justify-between mb-2">
-                                                <span className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight">
+                                                <span className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-tight">
                                                     {String(row[0]).replace('NNH ', '').toUpperCase()}
                                                 </span>
                                                 <div className="flex items-center gap-1.5">
@@ -554,7 +554,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             style={{ width: `${Math.min(htPct, 100)}%` }}
                                                         />
                                                     </div>
-                                                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${htColors.badge}`}>
+                                                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${htColors.badge}`}>
                                                         {htPct}%
                                                     </span>
                                                 </div>
@@ -562,7 +562,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                             
                                             {/* Hero: DTQĐ */}
                                             <div className="flex items-baseline gap-2 mb-2.5">
-                                                <span className="text-[1.6rem] font-black text-primary-600 dark:text-primary-400 tabular-nums leading-none">
+                                                <span className="text-[1.6rem] font-bold text-primary-600 dark:text-primary-400 tabular-nums leading-none">
                                                     {new Intl.NumberFormat('vi-VN').format(dtqdVal)}
                                                 </span>
                                                 <span className="text-[10px] font-bold text-slate-400">triệu QĐ</span>
@@ -581,9 +581,9 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                     const htC = isHtCol ? getHtColor(val) : null;
                                                     
                                                     return (
-                                                        <div key={h} className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/60">
-                                                            <p className="text-[8px] font-bold text-slate-400 uppercase leading-tight mb-0.5" dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}></p>
-                                                            <p className={`text-[11px] font-black tabular-nums leading-none ${
+                                                        <div key={h} className="bg-white dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-700/60">
+                                                            <p className="text-[10px] font-bold text-slate-400 uppercase leading-tight mb-0.5" dangerouslySetInnerHTML={{ __html: headerMapping[h]?.replace(/<br\/>/g, ' ') || h }}></p>
+                                                            <p className={`text-[11px] font-bold tabular-nums leading-none ${
                                                                 htC ? htC.badge.split(' ').filter((c: string) => c.startsWith('text-')).join(' ') : ''
                                                             }`}>
                                                                 {val === 0 ? '-' : (isPercent ? roundUp(val) + '%' : new Intl.NumberFormat('vi-VN').format(roundUp(val)))}
@@ -603,13 +603,13 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                 <table className="w-full border-collapse compact-export-table">
                                     <thead>
                                         {/* TIER 1: GROUP HEADERS */}
-                                        <tr className="text-[11px] font-black uppercase tracking-wider">
+                                        <tr className="text-[11px] font-bold uppercase tracking-wider">
                                             {/* Sticky 'NGÀNH HÀNG' merged header (rowSpan=2) */}
                                             {visibleColumns.has('Nhóm ngành hàng') && (
                                                 <th
                                                     rowSpan={2}
                                                     className={`
-                                                        px-3 py-1 text-left text-[11px] font-black
+                                                        px-3 py-1 text-left text-[11px] font-bold
                                                         text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800
                                                         border-b-2 border-b-slate-100 dark:border-b-slate-700
                                                         border-r border-slate-200 dark:border-slate-700
@@ -629,7 +629,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                             key={`group-${idx}`}
                                                             rowSpan={2}
                                                             className={`
-                                                                py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center
+                                                                py-1 px-1.5 text-[11px] font-bold uppercase tracking-wider text-center
                                                                 align-middle whitespace-nowrap cursor-pointer
                                                                 border-b-2 border-r border-slate-200 dark:border-slate-700
                                                                 hover:opacity-80 transition-opacity select-none
@@ -649,7 +649,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                                                         key={`group-${idx}`}
                                                         colSpan={g.colspan}
                                                         className={`
-                                                            py-1 px-1.5 text-[11px] font-black uppercase tracking-wider text-center 
+                                                            py-1 px-1.5 text-[11px] font-bold uppercase tracking-wider text-center 
                                                             border-b border-r border-slate-200 dark:border-slate-700
                                                             ${g.bg} ${g.text}
                                                         `}

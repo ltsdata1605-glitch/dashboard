@@ -21,7 +21,7 @@ const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ url, onClose, fileNam
     return (
         <div className="fixed inset-0 z-50 bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md" onClick={onClose}>
             <div 
-                className="relative bg-white w-full max-w-4xl h-[90vh] rounded-2xl shadow-2xl p-4 flex flex-col"
+                className="relative bg-white w-full max-w-4xl h-[90vh] rounded-lg shadow-2xl p-4 flex flex-col"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex justify-between items-center pb-3 border-b border-slate-200 flex-shrink-0">

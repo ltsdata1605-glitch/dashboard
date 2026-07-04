@@ -206,7 +206,7 @@ const RevenueView: React.FC<{
     
     const cardTitle = (
         <div className="flex flex-col items-start leading-none py-1 w-full">
-            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">DOANH THU ĐẾN NGÀY {getYesterdayDateString()}</span>
+            <span className="js-report-title text-2xl font-bold uppercase text-slate-800 dark:text-white mt-1">DOANH THU ĐẾN NGÀY {getYesterdayDateString()}</span>
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Tôi không chạy theo doanh thu — doanh thu phản ánh đẳng cấp mà Tôi tạo ra.</span>
             <TimeProgressBar className="mt-2.5" />
         </div>
@@ -275,7 +275,7 @@ const RevenueView: React.FC<{
                                     if (row.type === 'department' || row.type === 'total') {
                                         const isGrandTotal = row.type === 'total';
                                         return (
-                                            <div key={`${row.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/30 font-black text-emerald-800 dark:text-emerald-300' : 'bg-slate-50 dark:bg-slate-900/90 font-bold'} flex justify-between items-center`}>
+                                            <div key={`${row.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/30 font-bold text-emerald-800 dark:text-emerald-300' : 'bg-slate-50 dark:bg-slate-900/90 font-bold'} flex justify-between items-center`}>
                                                 <span className="uppercase tracking-wider text-xs">{row.name}</span>
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-sky-600 dark:text-sky-400">{f.format(roundUp(row.dtqd))} Tr</span>
@@ -307,18 +307,18 @@ const RevenueView: React.FC<{
                                     <thead className="sticky top-0 z-10">
                                         {/* Tier 1: Group Headers */}
                                         <tr>
-                                            <th rowSpan={2} className="px-2 py-1 text-center align-middle text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('name')}>
+                                            <th rowSpan={2} className="px-2 py-1 text-center align-middle text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-b border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 transition-colors" onClick={() => handleSort('name')}>
                                                 Nhân viên
                                             </th>
-                                            <th colSpan={3} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/50 border-b border-r border-sky-100 dark:border-sky-800/50">
+                                            <th colSpan={3} className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/50 border-b border-r border-sky-100 dark:border-sky-800/50">
                                                 Doanh thu
                                             </th>
                                             {isShowRemaining && (
-                                                <th colSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/50 border-b border-r border-orange-100 dark:border-orange-800/50">
+                                                <th colSpan={2} className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-900/50 border-b border-r border-orange-100 dark:border-orange-800/50">
                                                     Còn lại {remainingDays} ngày
                                                 </th>
                                             )}
-                                            <th colSpan={5} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border-b border-emerald-100 dark:border-emerald-800/50">
+                                            <th colSpan={5} className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/50 border-b border-emerald-100 dark:border-emerald-800/50">
                                                 Hiệu suất
                                             </th>
                                         </tr>
@@ -340,14 +340,14 @@ const RevenueView: React.FC<{
                                             <th className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-emerald-50 dark:bg-emerald-900/40 border-b border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" onClick={() => handleSort('bonus_tong')}>Thưởng</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="bg-white dark:bg-[#1c1c1e] font-black">
+                                    <tbody className="bg-white dark:bg-[#1c1c1e] font-bold">
                                     {displayList.map((row, idx) => {
                                         if (row.type === 'department' || row.type === 'total') {
                                             const isGrandTotal = row.type === 'total';
                                             const prev = row.prevCompData;
                                             return (
                                                 <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-t border-slate-200 dark:border-slate-700`}>
-                                                    <td className={`px-2 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center font-black' : 'border-slate-200 dark:border-slate-700 font-extrabold'}`}>{row.name}</td>
+                                                    <td className={`px-2 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center font-bold' : 'border-slate-200 dark:border-slate-700 font-extrabold'}`}>{row.name}</td>
                                                     <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700 font-bold`}>
                                                         <div>{f.format(roundUp(row.dtlk))}</div>
                                                         <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />

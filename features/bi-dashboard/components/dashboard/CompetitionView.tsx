@@ -161,7 +161,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
             />
             {/* Title bar — outside overflow container so dropdowns aren't clipped */}
             <div className="py-3 px-4 mx-4 mt-4 flex justify-center items-center bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 shadow-lg relative z-50">
-                <h3 className="text-lg sm:text-2xl font-black uppercase text-white leading-normal drop-shadow-sm tracking-tight text-center">
+                <h3 className="text-lg sm:text-2xl font-bold uppercase text-white leading-normal drop-shadow-sm tracking-tight text-center">
                     {activeSupermarket === 'Tổng' ? 'TỔNG CỤM' : activeSupermarket.toUpperCase()}
                 </h3>
                 {/* Filter + Column settings — in title bar */}
@@ -178,11 +178,11 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                 const currentProgramNames = processedSupermarketData?.programs?.map((p: any) => p.name) || [];
                                 const validSelected = selectedPrograms.filter(p => currentProgramNames.includes(p));
                                 const isFiltered = validSelected.length > 0 && validSelected.length < allProgramNames.length;
-                                return isFiltered ? <span className="absolute -top-0.5 -right-0.5 bg-amber-400 text-slate-900 text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">{validSelected.length}</span> : null;
+                                return isFiltered ? <span className="absolute -top-0.5 -right-0.5 bg-amber-400 text-slate-900 text-[10px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">{validSelected.length}</span> : null;
                             })()}
                         </button>
                         {isProgramFilterOpen && (
-                            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-[100] p-3 flex flex-col max-h-96 text-left">
+                            <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-[100] p-3 flex flex-col max-h-96 text-left">
                                 <div className="mb-2">
                                     <input
                                         type="text"
@@ -222,8 +222,8 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                             <CogIcon className="h-4 w-4" />
                         </button>
                         {isColumnSelectorOpen && (
-                            <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto text-left">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Cột hiển thị</p>
+                            <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto text-left">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Cột hiển thị</p>
                                 <div className="grid gap-0.5">
                                     {(processedSupermarketData?.headers || []).map(header => (
                                         <div key={header} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">

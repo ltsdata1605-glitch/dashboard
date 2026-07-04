@@ -4,7 +4,7 @@ import { BatchItem } from './types';
 
 interface StickerPrintPreviewProps {
     batchItems: BatchItem[];
-    stickerType: 'gia_soc' | 'gio_vang';
+    stickerType: 'gia_soc' | 'gio_vang' | 'rut_tham';
     showBarcode: boolean;
     discountDisplayMode: 'percent' | 'amount';
     headerTextContent: string;
@@ -33,6 +33,9 @@ interface StickerPrintPreviewProps {
     setPreviewOldPrice: (val: string) => void;
     setPreviewNewPrice: (val: string) => void;
     updateBatchItem?: (id: string, updates: Partial<BatchItem>) => void;
+
+    branchName: string;
+    setBranchName: (val: string) => void;
 }
 
 /**
@@ -152,12 +155,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     setPreviewOldPrice,
     setPreviewNewPrice,
     updateBatchItem,
+    branchName,
+    setBranchName,
 }) => {
     const percentRef = useRef<HTMLDivElement>(null);
 
     // --- contentEditable hooks for each editable field (preview mode only) ---
     const oldPriceEditable = useContentEditable(previewOldPrice, setPreviewOldPrice);
     const newPriceEditable = useContentEditable<HTMLElement>(previewNewPrice, setPreviewNewPrice);
+    const branchEditable = useContentEditable(branchName, setBranchName);
 
     const onOldPriceInput = (e: React.FormEvent<HTMLDivElement>) => {
         handlePriceInput(e);
@@ -179,6 +185,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     const footerEditable = useContentEditable(footerTextContent, setFooterTextContent);
 
     const handlePriceInput = (e: React.FormEvent<any>) => {
+        if (stickerType === 'rut_tham') return;
         const el = e.currentTarget;
         const rawText = el.innerText;
         
@@ -481,6 +488,152 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="gio_vang"] .footer-text {
                     display: none !important;
                 }
+
+                /* Raffle / Lucky Draw Ticket Styles */
+                .sticker-container[data-type="rut_tham"] .slot {
+                    position: absolute;
+                    left: 0;
+                    width: 100%;
+                    height: 25%;
+                    overflow: hidden;
+                }
+                .sticker-container[data-type="rut_tham"] .slot-1 { top: 0%; }
+                .sticker-container[data-type="rut_tham"] .slot-2 { top: 25%; }
+                .sticker-container[data-type="rut_tham"] .slot-3 { top: 50%; }
+                .sticker-container[data-type="rut_tham"] .slot-4 { top: 75%; }
+
+                .sticker-container[data-type="rut_tham"] .slot > div {
+                    position: absolute;
+                    background: white;
+                    color: black;
+                    display: flex;
+                    align-items: center;
+                    outline: none;
+                    box-sizing: border-box;
+                }
+
+                .sticker-container[data-type="rut_tham"] .header-text {
+                    font-size: ${headerTextSize}cqw;
+                    font-weight: bold;
+                    top: 6%;
+                    height: 19%;
+                    width: 91%;
+                    left: 4.5%;
+                    justify-content: center;
+                    text-align: center;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    text-transform: uppercase;
+                }
+
+                .sticker-container[data-type="rut_tham"] .sub-header {
+                    font-size: ${subHeaderTextSize}cqw;
+                    font-weight: bold;
+                    top: 31%;
+                    left: 4.5%;
+                    width: 32%;
+                    height: 20%;
+                    justify-content: flex-start;
+                    text-align: left;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    padding-left: 2px;
+                }
+
+                .sticker-container[data-type="rut_tham"] .old {
+                    white-space: pre-line !important;
+                    font-size: ${oldPriceTextSize}cqw;
+                    font-weight: bold;
+                    top: 52%;
+                    left: 4.5%;
+                    width: 32%;
+                    height: 36%;
+                    justify-content: flex-start;
+                    text-align: left;
+                    text-decoration: none !important;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    line-height: 1.1;
+                    padding-left: 2px;
+                    align-items: flex-start;
+                }
+
+                .sticker-container[data-type="rut_tham"] .left-code {
+                    font-size: 8cqw;
+                    font-weight: bold;
+                    top: 37%;
+                    left: 37.5%;
+                    width: 9%;
+                    height: 22%;
+                    justify-content: center;
+                    text-align: center;
+                    font-family: 'UTM Avo', sans-serif !important;
+                }
+
+                .sticker-container[data-type="rut_tham"] .name {
+                    font-size: ${nameTextSize}cqw;
+                    font-weight: bold;
+                    top: 31%;
+                    left: 51%;
+                    width: 32%;
+                    height: 20%;
+                    justify-content: flex-start;
+                    text-align: left;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    padding-left: 2px;
+                }
+
+                .sticker-container[data-type="rut_tham"] .right-code {
+                    font-size: 8cqw;
+                    font-weight: bold;
+                    top: 37%;
+                    left: 84.5%;
+                    width: 9%;
+                    height: 22%;
+                    justify-content: center;
+                    text-align: center;
+                    font-family: 'UTM Avo', sans-serif !important;
+                }
+
+                .sticker-container[data-type="rut_tham"] .extra2 {
+                    font-size: ${newPriceTextSize}cqw;
+                    font-weight: 900 !important;
+                    top: 52%;
+                    left: 51%;
+                    width: 44.5%;
+                    height: 26%;
+                    justify-content: flex-start;
+                    text-align: left;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    padding-left: 2px;
+                }
+
+                .sticker-container[data-type="rut_tham"] .footer-text {
+                    font-size: ${footerTextSize}cqw;
+                    font-weight: bold;
+                    top: 79%;
+                    left: 51%;
+                    width: 44.5%;
+                    height: 11.5%;
+                    justify-content: flex-start;
+                    text-align: left;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    padding-left: 2px;
+                }
+
+                .sticker-container[data-type="rut_tham"] .extra1 {
+                    font-size: ${percentTextSize}cqw;
+                    font-weight: bold;
+                    top: 89.5%;
+                    left: 20.2%;
+                    width: 28%;
+                    height: 7.5%;
+                    background-color: #0d0d0d !important;
+                    color: white !important;
+                    justify-content: flex-start;
+                    text-align: left;
+                    text-transform: uppercase;
+                    font-family: 'UTM Avo', sans-serif !important;
+                    padding-left: 2px;
+                }
+
                 .sticker-container .active-field {
                     outline: 1.5px dashed #6366f1;
                     outline-offset: 1px;
@@ -489,87 +642,192 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
             </style>
             <div id="print-section" className="w-full">
                 {batchItems.length > 0 ? (
-                    <>
-                        {batchItems.filter(it => it.selected).slice(0, 20).map((item, index, arr) => (
-                            <div key={item.id} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto', backgroundImage: `url(${bgImage})` }}>
-                                {showBarcode && item.imei && (
-                                <div className="barcode">
-                                    <BarcodeCanvas value={item.imei} />
+                    stickerType === 'rut_tham' ? (
+                        <>
+                            {chunkArray(batchItems.filter(it => it.selected), 4).slice(0, 20).map((group, groupIdx, groupArr) => (
+                                <div key={groupIdx} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: groupIdx < groupArr.length - 1 ? 'always' : 'auto', backgroundImage: `url(${bgImage})` }}>
+                                    {group.map((item, idx) => {
+                                        const slotNum = idx + 1;
+                                        return (
+                                            <div key={item.id} className={`slot slot-${slotNum}`}>
+                                                <div className="header-text">{headerTextContent}</div>
+                                                <div className="sub-header">{subHeaderTextContent}</div>
+                                                <div className="old">{item.oldPrice}</div>
+                                                <div className="left-code">{item.imei}</div>
+                                                <div className="name">{item.name}</div>
+                                                <div className="right-code">{item.imei}</div>
+                                                <div className="extra2">{item.newPrice}</div>
+                                                <div className="footer-text">{footerTextContent}</div>
+                                                <div className="extra1">{item.percent || branchName}</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                            {batchItems.filter(it => it.selected).length > 20 && (
+                                <div className="w-full py-4 text-center text-sm font-medium text-slate-500 bg-white/50 rounded-lg border border-slate-200 mt-4 shadow-sm">
+                                    <span className="text-indigo-600 font-bold">Chế độ xem trước:</span> Đang hiển thị 20 trang đầu tiên (trong tổng số {Math.ceil(batchItems.filter(it => it.selected).length / 4)} trang).<br/>
+                                    <i>Tất cả sticker sẽ được in đầy đủ khi bấm nút IN.</i>
                                 </div>
                             )}
-                            <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} style={stickerType === 'gia_soc' ? { color: 'white', backgroundColor: 'transparent' } : { color: 'black', backgroundColor: 'transparent' }} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} onBlur={(e) => setHeaderTextContent(e.currentTarget.innerText)}>{headerTextContent}</div>
-                            {stickerType === 'gio_vang' && (
-                                <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} onBlur={(e) => setSubHeaderTextContent(e.currentTarget.innerText)}>{subHeaderTextContent}</div>
+                        </>
+                    ) : (
+                        <>
+                            {batchItems.filter(it => it.selected).slice(0, 20).map((item, index, arr) => (
+                                <div key={item.id} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto', backgroundImage: `url(${bgImage})` }}>
+                                    {showBarcode && item.imei && (
+                                    <div className="barcode">
+                                        <BarcodeCanvas value={item.imei} />
+                                    </div>
+                                )}
+                                <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} style={stickerType === 'gia_soc' ? { color: 'white', backgroundColor: 'transparent' } : { color: 'black', backgroundColor: 'transparent' }} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} onBlur={(e) => setHeaderTextContent(e.currentTarget.innerText)}>{headerTextContent}</div>
+                                {stickerType === 'gio_vang' && (
+                                    <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} onBlur={(e) => setSubHeaderTextContent(e.currentTarget.innerText)}>{subHeaderTextContent}</div>
+                                )}
+                                <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')} onBlur={(e) => updateBatchItem?.(item.id, { percent: e.currentTarget.innerText })}>
+                                    {discountDisplayMode === 'amount'
+                                        ? renderAmountDiscount(item.oldPrice, item.newPrice) || item.percent
+                                        : item.percent}
+                                </div>
+                                <div 
+                                    className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} 
+                                    onInput={handlePriceInput} 
+                                    contentEditable 
+                                    suppressContentEditableWarning 
+                                    onClick={() => setActiveField('oldPrice')}
+                                    onBlur={(e) => {
+                                        const val = e.currentTarget.innerText;
+                                        const newPercent = renderPercentDiscount(val, item.newPrice) || '';
+                                        updateBatchItem?.(item.id, { oldPrice: val, percent: newPercent });
+                                    }}
+                                >
+                                    {item.oldPrice}
+                                </div>
+                                <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} onBlur={(e) => updateBatchItem?.(item.id, { name: e.currentTarget.innerText })}>{item.name}</div>
+                                <div 
+                                    className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} 
+                                    onInput={handlePriceInput} 
+                                    contentEditable 
+                                    suppressContentEditableWarning 
+                                    onClick={() => setActiveField('newPrice')}
+                                    onBlur={(e) => {
+                                        const val = e.currentTarget.innerText;
+                                        const newPercent = renderPercentDiscount(item.oldPrice, val) || '';
+                                        updateBatchItem?.(item.id, { newPrice: val, percent: newPercent });
+                                    }}
+                                >
+                                    {item.newPrice}
+                                </div>
+                                <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} onBlur={(e) => setFooterTextContent(e.currentTarget.innerText)}>{footerTextContent}</div>
+                            </div>
+                            ))}
+                            {batchItems.filter(it => it.selected).length > 20 && (
+                                <div className="w-full py-4 text-center text-sm font-medium text-slate-500 bg-white/50 rounded-lg border border-slate-200 mt-4 shadow-sm">
+                                    <span className="text-indigo-600 font-bold">Chế độ xem trước:</span> Đang hiển thị 20 sticker đầu tiên (trong tổng số {batchItems.filter(it => it.selected).length} sticker).<br/>
+                                    <i>Tất cả sticker sẽ được in đầy đủ khi bấm nút IN.</i>
+                                </div>
                             )}
-                            <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')} onBlur={(e) => updateBatchItem?.(item.id, { percent: e.currentTarget.innerText })}>
-                                {discountDisplayMode === 'amount'
-                                    ? renderAmountDiscount(item.oldPrice, item.newPrice) || item.percent
-                                    : item.percent}
-                            </div>
-                            <div 
-                                className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} 
-                                onInput={handlePriceInput} 
-                                contentEditable 
-                                suppressContentEditableWarning 
-                                onClick={() => setActiveField('oldPrice')}
-                                onBlur={(e) => {
-                                    const val = e.currentTarget.innerText;
-                                    const newPercent = renderPercentDiscount(val, item.newPrice) || '';
-                                    updateBatchItem?.(item.id, { oldPrice: val, percent: newPercent });
-                                }}
-                            >
-                                {item.oldPrice}
-                            </div>
-                            <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} onBlur={(e) => updateBatchItem?.(item.id, { name: e.currentTarget.innerText })}>{item.name}</div>
-                            <div 
-                                className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} 
-                                onInput={handlePriceInput} 
-                                contentEditable 
-                                suppressContentEditableWarning 
-                                onClick={() => setActiveField('newPrice')}
-                                onBlur={(e) => {
-                                    const val = e.currentTarget.innerText;
-                                    const newPercent = renderPercentDiscount(item.oldPrice, val) || '';
-                                    updateBatchItem?.(item.id, { newPrice: val, percent: newPercent });
-                                }}
-                            >
-                                {item.newPrice}
-                            </div>
-                            <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} onBlur={(e) => setFooterTextContent(e.currentTarget.innerText)}>{footerTextContent}</div>
-                        </div>
-                        ))}
-                        {batchItems.filter(it => it.selected).length > 20 && (
-                            <div className="w-full py-4 text-center text-sm font-medium text-slate-500 bg-white/50 rounded-lg border border-slate-200 mt-4 shadow-sm">
-                                <span className="text-indigo-600 font-bold">Chế độ xem trước:</span> Đang hiển thị 20 sticker đầu tiên (trong tổng số {batchItems.filter(it => it.selected).length} sticker).<br/>
-                                <i>Tất cả sticker sẽ được in đầy đủ khi bấm nút IN.</i>
-                            </div>
-                        )}
-                    </>
+                        </>
+                    )
                 ) : (
-                    <div className="sticker-container" data-type={stickerType} style={{ backgroundImage: `url(${bgImage})` }}>
-                        {showBarcode && barcodeImei && (
-                            <div className="barcode">
-                                <BarcodeCanvas value={barcodeImei} />
+                    stickerType === 'rut_tham' ? (
+                        <div className="sticker-container" data-type={stickerType} style={{ backgroundImage: `url(${bgImage})` }}>
+                            {/* Slot 1: Active & Editable */}
+                            <div className="slot slot-1">
+                                <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} />
+                                <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} />
+                                <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceEditable.ref} onInput={onOldPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')} />
+                                <div className="left-code" contentEditable suppressContentEditableWarning onBlur={(e) => setBarcodeImei(e.currentTarget.innerText)} onClick={() => setActiveField('code')}>{barcodeImei}</div>
+                                <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} />
+                                <div className="right-code">{barcodeImei}</div>
+                                <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceEditable.ref as React.RefObject<HTMLDivElement>} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')} />
+                                <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} />
+                                <div className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={branchEditable.ref} onInput={branchEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')} />
                             </div>
-                        )}
-                        {/* Render without React children to prevent React reconciliation from resetting the caret during typing */}
-                        <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} style={stickerType === 'gia_soc' ? { color: 'white', backgroundColor: 'transparent' } : { color: 'black', backgroundColor: 'transparent' }} ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} />
-                        {stickerType === 'gio_vang' && (
-                            <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} />
-                        )}
-                        <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={percentRef} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>
-                            {discountDisplayMode === 'amount'
-                                ? renderAmountDiscount(previewOldPrice, previewNewPrice)
-                                : renderPercentDiscount(previewOldPrice, previewNewPrice)}
+                            {/* Slot 2: Mirrored */}
+                            <div className="slot slot-2">
+                                <div className="header-text">{headerTextContent}</div>
+                                <div className="sub-header">{subHeaderTextContent}</div>
+                                <div className="old">{previewOldPrice}</div>
+                                <div className="left-code">{incrementCode(barcodeImei, 1)}</div>
+                                <div className="name">{previewName}</div>
+                                <div className="right-code">{incrementCode(barcodeImei, 1)}</div>
+                                <div className="extra2">{previewNewPrice}</div>
+                                <div className="footer-text">{footerTextContent}</div>
+                                <div className="extra1">{branchName}</div>
+                            </div>
+                            {/* Slot 3: Mirrored */}
+                            <div className="slot slot-3">
+                                <div className="header-text">{headerTextContent}</div>
+                                <div className="sub-header">{subHeaderTextContent}</div>
+                                <div className="old">{previewOldPrice}</div>
+                                <div className="left-code">{incrementCode(barcodeImei, 2)}</div>
+                                <div className="name">{previewName}</div>
+                                <div className="right-code">{incrementCode(barcodeImei, 2)}</div>
+                                <div className="extra2">{previewNewPrice}</div>
+                                <div className="footer-text">{footerTextContent}</div>
+                                <div className="extra1">{branchName}</div>
+                            </div>
+                            {/* Slot 4: Mirrored */}
+                            <div className="slot slot-4">
+                                <div className="header-text">{headerTextContent}</div>
+                                <div className="sub-header">{subHeaderTextContent}</div>
+                                <div className="old">{previewOldPrice}</div>
+                                <div className="left-code">{incrementCode(barcodeImei, 3)}</div>
+                                <div className="name">{previewName}</div>
+                                <div className="right-code">{incrementCode(barcodeImei, 3)}</div>
+                                <div className="extra2">{previewNewPrice}</div>
+                                <div className="footer-text">{footerTextContent}</div>
+                                <div className="extra1">{branchName}</div>
+                            </div>
                         </div>
-                        <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceEditable.ref} onInput={onOldPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')} />
-                        <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} />
-                        <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceEditable.ref as React.RefObject<HTMLDivElement>} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')} />
-                        <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} />
-                    </div>
+                    ) : (
+                        <div className="sticker-container" data-type={stickerType} style={{ backgroundImage: `url(${bgImage})` }}>
+                            {showBarcode && barcodeImei && (
+                                <div className="barcode">
+                                    <BarcodeCanvas value={barcodeImei} />
+                                </div>
+                            )}
+                            {/* Render without React children to prevent React reconciliation from resetting the caret during typing */}
+                            <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} style={stickerType === 'gia_soc' ? { color: 'white', backgroundColor: 'transparent' } : { color: 'black', backgroundColor: 'transparent' }} ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} />
+                            {stickerType === 'gio_vang' && (
+                                <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} />
+                            )}
+                            <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={percentRef} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>
+                                {discountDisplayMode === 'amount'
+                                    ? renderAmountDiscount(previewOldPrice, previewNewPrice)
+                                    : renderPercentDiscount(previewOldPrice, previewNewPrice)}
+                            </div>
+                            <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceEditable.ref} onInput={onOldPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')} />
+                            <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} />
+                            <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceEditable.ref as React.RefObject<HTMLDivElement>} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')} />
+                            <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} />
+                        </div>
+                    )
                 )}
             </div>
         </div>
     );
 };
 
+// Helper to chunk arrays for 4-in-1 page layouts
+const chunkArray = <T,>(arr: T[], size: number): T[][] => {
+    const chunks: T[][] = [];
+    for (let i = 0; i < arr.length; i += size) {
+        chunks.push(arr.slice(i, i + size));
+    }
+    return chunks;
+};
+
+// Helper to auto-increment code text or numeric suffixes (e.g. "A001" -> "A002")
+const incrementCode = (codeStr: string, increment: number): string => {
+    if (!codeStr) return '';
+    const match = codeStr.match(/\d+$/);
+    if (!match) return codeStr;
+    const numStr = match[0];
+    const num = parseInt(numStr, 10);
+    const prefix = codeStr.substring(0, codeStr.length - numStr.length);
+    const incrementedNum = num + increment;
+    const paddedNum = incrementedNum.toString().padStart(numStr.length, '0');
+    return `${prefix}${paddedNum}`;
+};

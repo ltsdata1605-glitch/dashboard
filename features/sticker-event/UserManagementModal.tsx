@@ -128,7 +128,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
 
     return (
         <div className="fixed inset-0 z-[70] bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md">
-            <div className="bg-white rounded-2xl shadow-2xl flex flex-col max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            <div className="bg-white rounded-lg shadow-2xl flex flex-col max-w-2xl w-full max-h-[80vh] overflow-hidden">
                 <div className="flex justify-between items-center p-4 border-b border-slate-200">
                     <div className="flex items-center gap-2">
                         <UserIcon className="h-6 w-6 text-indigo-600" />
@@ -152,7 +152,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
                     ) : (
                         <div className="space-y-3">
                             {users.map((user) => (
-                                <div key={user.uid} className="flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:bg-slate-50 transition-colors">
+                                <div key={user.uid} className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
                                     <div className="flex items-center gap-3">
                                         <div className={`p-2 rounded-full ${user.role === 'admin' ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-600'}`}>
                                             {user.role === 'admin' ? <ShieldAlertIcon className="h-5 w-5" /> : <ShieldIcon className="h-5 w-5" />}
@@ -208,7 +208,7 @@ const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen, onClo
             {/* Confirmation Modal */}
             {confirmAction && (
                 <div className="fixed inset-0 z-[80] bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md">
-                    <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+                    <div className="bg-white rounded-lg shadow-2xl p-6 max-w-sm w-full">
                         <div className="flex items-center gap-3 mb-4">
                             {confirmAction.type === 'error' ? (
                                 <ShieldAlertIcon className="h-6 w-6 text-red-600" />

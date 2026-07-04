@@ -130,7 +130,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                 </div>
                 <div className="flex items-center gap-1.5 ml-2">
                     {selected.length > 0 && !(variant === 'compact' && selected.length === allUniqueOptions.length) && (
-                        <div className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-black animate-in fade-in zoom-in duration-200">
+                        <div className="w-4 h-4 rounded-full bg-indigo-600 text-white text-[10px] flex items-center justify-center font-semibold animate-in fade-in zoom-in duration-200">
                             {selected.length}
                         </div>
                     )}
@@ -171,7 +171,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                         }
                                     }
                                 }}
-                                className="w-full text-[11px] sm:text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all"
+                                className="w-full text-xs bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-md pl-7 sm:pl-8 pr-2 sm:pr-3 py-1.5 sm:py-2 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 outline-none transition-all"
                                 autoFocus
                             />
                         </div>
@@ -193,7 +193,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                             </div>
                             <span className="text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 group-hover:text-sky-600 transition-colors">Tất cả {label}</span>
                         </label>
-                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-400">{filteredOptions.length} / {allUniqueOptions.length}</span>
+                        <span className="text-[10px] font-medium text-slate-500">{filteredOptions.length} / {allUniqueOptions.length}</span>
                     </div>
 
                     {/* Options List */}
@@ -207,7 +207,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                             type="button"
                                             key={option}
                                             onClick={() => handleToggleOption(option)}
-                                            className={`flex items-center gap-1.5 sm:gap-2.5 w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg transition-all ${
+                                            className={`flex items-center gap-1.5 sm:gap-2.5 w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-md transition-all ${
                                                 isSelected 
                                                 ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' 
                                                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
@@ -218,7 +218,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                             }`}>
                                                 {isSelected && <><Icon name="check" size={2.5} className="text-white sm:hidden" /><Icon name="check" size={3} className="text-white hidden sm:block" /></>}
                                             </div>
-                                            <span className={`text-[11px] sm:text-[12px] truncate ${isSelected ? 'font-black' : 'font-medium'}`}>{option}</span>
+                                            <span className={`text-xs truncate ${isSelected ? 'font-semibold' : 'font-normal'}`}>{option}</span>
                                         </button>
                                     );
                                 })}

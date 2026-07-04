@@ -483,8 +483,8 @@ Link: ${url}`;
             <div className="p-4 sm:p-8 overflow-y-auto bg-white dark:bg-slate-900" ref={modalBodyRef}>
                 {creatorData.length > 0 ? (
                     <div className="space-y-4">
-                        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-5">
-                            <h4 className="font-black text-base sm:text-2xl text-blue-800 dark:text-blue-400 mb-3 sm:mb-5 text-center tracking-tight">TỶ TRỌNG NGÀNH HÀNG CHƯA XUẤT</h4>
+                        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-lg shadow p-3 sm:p-5">
+                            <h4 className="font-bold text-base sm:text-2xl text-blue-800 dark:text-blue-400 mb-3 sm:mb-5 text-center tracking-tight">TỶ TRỌNG NGÀNH HÀNG CHƯA XUẤT</h4>
                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
                                 {industryDataForDisplay.map(item => {
                                     const percentage = totalUncollectedRevenue > 0 ? (item.revenue / totalUncollectedRevenue * 100) : 0;
@@ -502,7 +502,7 @@ Link: ${url}`;
                                             <div className="flex-1 min-w-0">
                                                 <p className="font-bold text-xs sm:text-sm text-slate-700 dark:text-slate-200 truncate leading-tight mb-0.5" title={item.name}>{item.name}</p>
                                                 <div className="flex items-baseline gap-1.5 flex-wrap">
-                                                    <p className={`font-black text-sm sm:text-base text-${color}-600 dark:text-${color}-400 leading-none`}>{formatCurrency(item.revenue)}</p>
+                                                    <p className={`font-bold text-sm sm:text-base text-${color}-600 dark:text-${color}-400 leading-none`}>{formatCurrency(item.revenue)}</p>
                                                     <p className="text-[10px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400 leading-none">({percentage.toFixed(1)}%)</p>
                                                 </div>
                                             </div>

@@ -77,7 +77,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
           className={cn(
             'absolute top-full mt-1.5 z-[var(--p-z-dropdown)]',
             'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
-            'rounded-xl shadow-lg overflow-hidden',
+            'rounded-lg shadow-lg overflow-hidden',
             'animate-fade-in',
             align === 'right' ? 'right-0' : 'left-0',
             width === 'auto' ? 'min-w-[180px]' : width === 'trigger' ? 'w-full' : ''

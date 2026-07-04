@@ -1,7 +1,5 @@
-
 import React from 'react';
 import { Icon } from '../common/Icon';
-import EmployeeAnalysisFilters from './EmployeeAnalysisFilters';
 
 interface Tab {
     id: string;
@@ -21,77 +19,71 @@ interface EmployeeAnalysisTabsProps {
     allAvailableTabs: any[];
 }
 
-const getTabColorClasses = (color: string, isActive: boolean) => {
-    if (!isActive) return 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800';
-    switch (color) {
-        case 'emerald': return 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400';
-        case 'amber': return 'bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400';
-        case 'rose': return 'bg-rose-50 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400';
-        case 'purple': return 'bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400';
-        case 'sky': return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
-        case 'cyan': return 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400';
-        default: return 'bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400';
-    }
-};
-
 const EmployeeAnalysisTabs: React.FC<EmployeeAnalysisTabsProps> = ({
     renderedDefaultTabs,
     renderedCustomTabs,
     activeTab,
     setActiveTab,
-    setModalState,
-    visibleTabs,
-    handleToggleTabVisibility,
-    allAvailableTabs
+    setModalState
 }) => {
     return (
-        <div className="flex justify-between items-end gap-y-2 border-b-2 border-slate-100 dark:border-slate-800 px-2 sm:px-6 z-50 relative pb-0">
+        <div className="flex justify-between items-end gap-y-2 border-b border-slate-200 dark:border-slate-800 px-2 sm:px-6 z-50 relative">
             <div className="relative flex-1 min-w-0">
-                <div className="flex items-end gap-0.5 sm:gap-1 overflow-x-auto flex-1 min-w-0 pb-1.5 sm:pb-2 pt-1.5 sm:pt-2 hide-scrollbar">
-                    {renderedDefaultTabs.map(tab => (
-                        <button 
-                            key={tab.id} 
-                            onClick={() => setActiveTab(tab.id)} 
-                            className={`flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses((tab as any).color || 'sky', activeTab === tab.id)}`}
-                        >
-                            <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
-                                <Icon name={tab.icon} size={3.5} className="sm:hidden"/>
-                                <Icon name={tab.icon} size={4} className="hidden sm:block"/>
-                            </div>
-                            {tab.label}
-                        </button>
-                    ))}
+                <nav className="-mb-px flex items-center gap-2 sm:space-x-4 overflow-x-auto no-scrollbar pb-0 pt-2">
+                    {renderedDefaultTabs.map(tab => {
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button 
+                                key={tab.id} 
+                                onClick={() => setActiveTab(tab.id)} 
+                                className={`whitespace-nowrap pb-3 px-1 border-b-2 font-semibold text-[11px] sm:text-sm flex items-center gap-1.5 sm:gap-2 transition-colors cursor-pointer ${
+                                    isActive 
+                                    ? 'border-sky-500 text-sky-600 dark:text-sky-400' 
+                                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200'
+                                }`}
+                            >
+                                <div className={isActive ? 'text-sky-500 dark:text-sky-400' : 'text-slate-400'}>
+                                    <Icon name={tab.icon} size={3.5} className="sm:hidden"/>
+                                    <Icon name={tab.icon} size={4} className="hidden sm:block"/>
+                                </div>
+                                <span>{tab.label}</span>
+                            </button>
+                        );
+                    })}
                     
                     {renderedCustomTabs.length > 0 && (
-                        <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2"></div>
+                        <div className="w-px h-6 bg-slate-200 dark:bg-slate-700 mx-2 self-center"></div>
                     )}
                     
                     {renderedCustomTabs.map(tab => {
-                        const colors = ['cyan', 'purple', 'rose', 'amber', 'emerald'];
-                        const customColor = colors[tab.id.length % colors.length];
+                        const isActive = activeTab === tab.id;
                         return (
                             <button 
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)} 
-                                className={`flex items-center gap-1 sm:gap-1.5 py-1 sm:py-1.5 px-1.5 sm:px-3.5 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-[13px] transition-all whitespace-nowrap ${getTabColorClasses(customColor, activeTab === tab.id)}`}
+                                className={`whitespace-nowrap pb-3 px-1 border-b-2 font-semibold text-[11px] sm:text-sm flex items-center gap-1.5 sm:gap-2 transition-colors cursor-pointer ${
+                                    isActive 
+                                    ? 'border-sky-500 text-sky-600 dark:text-sky-400' 
+                                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200'
+                                }`}
                             >
-                                <div className={`${activeTab === tab.id ? 'text-current' : 'text-slate-400'}`}>
+                                <div className={isActive ? 'text-sky-500 dark:text-sky-400' : 'text-slate-400'}>
                                     <Icon name={tab.icon} size={3.5} className="sm:hidden"/>
                                     <Icon name={tab.icon} size={4} className="hidden sm:block"/>
                                 </div>
-                                {tab.name}
+                                <span>{tab.name}</span>
                             </button>
-                        )
+                        );
                     })}
                     <button 
                         onClick={() => setModalState({type: 'CREATE_TAB'})} 
                         title="Tạo tab thi đua mới" 
-                        className="ml-2 p-1.5 text-slate-400 hover:text-sky-600 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors flex items-center justify-center shrink-0"
+                        className="ml-2 pb-3 px-1 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition-colors flex items-center justify-center shrink-0 cursor-pointer"
                     >
                         <Icon name="plus-circle" size={4} className="sm:hidden" />
                         <Icon name="plus-circle" size={5} className="hidden sm:block" />
                     </button>
-                </div>
+                </nav>
                 {/* Scroll fade indicator */}
                 <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white dark:from-slate-900 to-transparent pointer-events-none lg:hidden" />
             </div>

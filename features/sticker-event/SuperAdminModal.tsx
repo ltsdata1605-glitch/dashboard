@@ -89,7 +89,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
 
   return (
     <div className="fixed inset-0 z-[100] bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md">
-      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-full max-w-2xl rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-red-50">
           <div className="flex items-center gap-2 text-red-700">
             <ShieldAlert className="w-5 h-5" />
@@ -133,7 +133,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
           <div className="space-y-3">
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Danh sách người dùng ({users.length})</h3>
             {users.length > 0 ? (
-              <div className="divide-y divide-slate-100 border border-slate-100 rounded-xl overflow-hidden">
+              <div className="divide-y divide-slate-100 border border-slate-100 rounded-lg overflow-hidden">
                 {users.map((u) => (
                   <div key={u.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
                     <div className="flex items-center gap-3">
@@ -161,7 +161,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 text-slate-400 border-2 border-dashed border-slate-100 rounded-xl">
+              <div className="text-center py-12 text-slate-400 border-2 border-dashed border-slate-100 rounded-lg">
                 Chưa có dữ liệu tìm kiếm
               </div>
             )}

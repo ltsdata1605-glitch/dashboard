@@ -20,13 +20,13 @@ const TimeProgressBar: React.FC<TimeProgressBarProps> = ({ className = '' }) => 
                         <svg className="w-3 h-3 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quỹ thời gian</span>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Quỹ thời gian</span>
                     </div>
                     <span className="text-[10px] font-bold text-slate-400 tabular-nums">
                         {dayPassed} / {daysInMonth} ngày
                     </span>
                 </div>
-                <span className="text-[11px] font-black text-sky-600 dark:text-sky-400 tabular-nums">
+                <span className="text-[11px] font-bold text-sky-600 dark:text-sky-400 tabular-nums">
                     {Math.round(percentage)}%
                 </span>
             </div>

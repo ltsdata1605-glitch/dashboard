@@ -226,13 +226,13 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
           animation: scan-laser 2s infinite ease-in-out;
         }
       ` }} />
-      <div className="relative w-full max-w-md bg-slate-900 rounded-2xl overflow-hidden shadow-2xl">
+      <div className="relative w-full max-w-md bg-slate-900 rounded-lg overflow-hidden shadow-2xl">
         <div id={readerId} className="w-full aspect-square"></div>
         
         {/* Overlay for scanning frame */}
         {!scanResult && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-              <div className="w-[85%] h-[50%] border-4 border-dashed border-white/70 rounded-2xl relative flex flex-col justify-between">
+              <div className="w-[85%] h-[50%] border-4 border-dashed border-white/70 rounded-lg relative flex flex-col justify-between">
                   {/* Glowing laser line to indicate scanning */}
                   <div className="absolute left-1 right-1 h-0.5 bg-red-500 shadow-[0_0_8px_#ef4444] animate-laser"></div>
               </div>
@@ -278,7 +278,7 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         {/* Prominent mobile close/stop button */}
         <button
           onClick={onClose}
-          className="w-full mt-4 py-3.5 px-6 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-lg shadow-rose-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 text-base cursor-pointer"
+          className="w-full mt-4 py-3.5 px-6 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-lg shadow-rose-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 text-base cursor-pointer"
         >
           <XIcon className="h-5 w-5" />
           Đóng / Dừng quét

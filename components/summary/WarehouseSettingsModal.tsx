@@ -303,7 +303,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             {/* Header Group */}
                             <div className={`px-3 py-2 flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pointer-events-none`}>
                                 <div className="flex flex-col">
-                                    <h4 className={`text-[9px] sm:text-xs font-bold uppercase tracking-wider ${styles.text} flex items-center gap-1 sm:gap-2`}>
+                                    <h4 className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider ${styles.text} flex items-center gap-1 sm:gap-2`}>
                                         <Icon name="layers" size={3} className="opacity-70 sm:hidden" /><Icon name="layers" size={3.5} className="opacity-70 hidden sm:block" />
                                         {mainHeader}
                                     </h4>
@@ -450,7 +450,7 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                         <button onClick={handleRestoreDefaults} className="py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">
                             <Icon name="rotate-ccw" size={3.5} className="sm:hidden" /><Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục mặc định
                         </button>
-                        <button onClick={handleSaveAndClose} className="py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[10px] sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-1 sm:gap-2">
+                        <button onClick={handleSaveAndClose} className="py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-lg shadow-md text-[10px] sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-1 sm:gap-2">
                             Hoàn tất <Icon name="check" size={3.5} className="ml-0.5 sm:hidden"/><Icon name="check" size={4} className="ml-1 hidden sm:block"/>
                         </button>
                     </div>

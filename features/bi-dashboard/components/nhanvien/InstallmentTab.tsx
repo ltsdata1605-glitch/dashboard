@@ -71,7 +71,7 @@ const InstallmentMobileRow = React.memo<InstallmentMobileRowProps>(({
                     <div className="flex justify-between items-start">
                         <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
                         <div className="flex flex-col items-end">
-                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.totalPercent >= 45 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'}`}>{f.format(Math.ceil(row.totalPercent))}% TG</span>
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${row.totalPercent >= 45 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'}`}>{f.format(Math.ceil(row.totalPercent))}% TG</span>
                             <DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} />
                         </div>
                     </div>
@@ -83,10 +83,10 @@ const InstallmentMobileRow = React.memo<InstallmentMobileRowProps>(({
                     const oldP = oldRow?.providers[pIdx];
                     if (p.dt === 0) return null;
                     return (
-                        <div key={pIdx} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700 flex justify-between items-center">
+                        <div key={pIdx} className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700 flex justify-between items-center">
                             <div>
-                                <p className="text-[9px] font-bold text-slate-400 uppercase">{p.shortName}</p>
-                                <p className="text-xs font-black tabular-nums">{f.format(Math.ceil(p.dt))} Tr</p>
+                                <p className="text-[10px] font-bold text-slate-400 uppercase">{p.shortName}</p>
+                                <p className="text-xs font-bold tabular-nums">{f.format(Math.ceil(p.dt))} Tr</p>
                             </div>
                             <div className="text-right">
                                 <p className={`text-xs font-bold tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-500'}`}>{f.format(Math.ceil(p.percent))}%</p>
@@ -343,7 +343,7 @@ const InstallmentTab: React.FC<{
 
     const cardTitle = (
         <div className="flex flex-col items-start leading-none py-1 w-full">
-            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">TRẢ GÓP NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
+            <span className="js-report-title text-2xl font-bold uppercase text-slate-800 dark:text-white mt-1">TRẢ GÓP NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Khi lợi ích được đặt đúng chỗ, quyết định mua trở nên tự nhiên.</span>
             <TimeProgressBar className="mt-2.5" />
         </div>
@@ -359,7 +359,7 @@ const InstallmentTab: React.FC<{
                     <div role="button" onClick={() => importFileRef.current?.click()} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all cursor-pointer ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}><ClockIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Cùng kỳ</span>{prevMonthRaw && <button onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800"><XIcon className="h-3 w-3" /></button>}</div>
                 </div>
                 <div className="flex gap-1.5 items-center">
-                    <button onClick={() => setHidePercent(v => !v)} title={hidePercent ? 'Hiện cột %' : 'Ẩn cột %'} className={`p-1 transition-all text-[11px] font-black leading-none ${hidePercent ? 'text-rose-500' : 'text-slate-400 hover:text-slate-600'}`}><span className={hidePercent ? 'line-through' : ''}>%</span></button>
+                    <button onClick={() => setHidePercent(v => !v)} title={hidePercent ? 'Hiện cột %' : 'Ẩn cột %'} className={`p-1 transition-all text-[11px] font-bold leading-none ${hidePercent ? 'text-rose-500' : 'text-slate-400 hover:text-slate-600'}`}><span className={hidePercent ? 'line-through' : ''}>%</span></button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <button onClick={() => setViewMode('group')} title="Bộ phận" className={`p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></button>
                     <button onClick={() => setViewMode('list')} title="Danh sách" className={`p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></button>
@@ -378,7 +378,7 @@ const InstallmentTab: React.FC<{
                                     if (row.type === 'department' || row.type === 'total') {
                                         const isGrandTotal = row.type === 'total';
                                         return (
-                                            <div key={`${row.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-sky-50 dark:bg-sky-900/50 font-black' : 'bg-slate-50 dark:bg-slate-900/90 font-bold'} flex justify-between items-center`}>
+                                            <div key={`${row.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-sky-50 dark:bg-sky-900/50 font-bold' : 'bg-slate-50 dark:bg-slate-900/90 font-bold'} flex justify-between items-center`}>
                                                 <span className="uppercase tracking-wider text-xs">{row.name}</span>
                                                 <div className="flex flex-col items-end">
                                                     <span className="text-primary-600 dark:text-primary-400">{f.format(Math.ceil(row.totalPercent))}% TG</span>
@@ -408,10 +408,10 @@ const InstallmentTab: React.FC<{
                                 <thead className="sticky top-0 z-10">
                                     {/* Tier 1: Group Headers */}
                                     <tr>
-                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('name')} className="px-3 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 min-w-[200px] align-middle">Nhân viên</th>
-                                        {providers.map(p => <th key={p.name} rowSpan={hidePercent ? 1 : undefined} colSpan={hidePercent ? 1 : 2} className={`px-1 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r ${hidePercent ? 'border-b-2' : 'border-b'} border-sky-100 dark:border-sky-800/50 leading-tight align-middle`}>{p.shortName}</th>)}
-                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalDtSieuThi')} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-r border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/40 leading-tight align-middle"><div>D.THU</div><div>THỰC</div></th>
-                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalPercent')} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-b-2 border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/40 leading-tight align-middle">%T.Chậm</th>
+                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('name')} className="px-3 py-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b-2 border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 min-w-[200px] align-middle">Nhân viên</th>
+                                        {providers.map(p => <th key={p.name} rowSpan={hidePercent ? 1 : undefined} colSpan={hidePercent ? 1 : 2} className={`px-1 py-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r ${hidePercent ? 'border-b-2' : 'border-b'} border-sky-100 dark:border-sky-800/50 leading-tight align-middle`}>{p.shortName}</th>)}
+                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalDtSieuThi')} className="px-2 py-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-r border-b-2 border-emerald-100 dark:border-emerald-800/50 cursor-pointer hover:bg-emerald-100 dark:hover:bg-emerald-900/40 leading-tight align-middle"><div>D.THU</div><div>THỰC</div></th>
+                                        <th rowSpan={hidePercent ? 1 : 2} onClick={() => handleSort('totalPercent')} className="px-2 py-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-b-2 border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/40 leading-tight align-middle">%T.Chậm</th>
                                     </tr>
                                     {/* Tier 2: Column Headers - only shown when % columns visible */}
                                     {!hidePercent && <tr className="bg-slate-50 dark:bg-slate-800/80">

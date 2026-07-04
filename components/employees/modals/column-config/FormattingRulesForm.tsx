@@ -56,7 +56,7 @@ export const FormattingRulesForm: React.FC<FormattingRulesFormProps> = ({
                         return (
                         <div key={rule.id} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_auto] sm:grid-cols-[minmax(0,3fr)_minmax(0,5fr)_auto] gap-1.5 sm:gap-3 items-end p-2 sm:p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md">
                             <div>
-                                <label className="text-[9px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase truncate block mb-1 sm:mb-1.5">Luật kiểm tra</label>
+                                <label className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase truncate block mb-1 sm:mb-1.5">Luật kiểm tra</label>
                                 <Select value={rule.condition} onChange={e => updateFormattingRule(rule.id, 'condition', e.target.value)} className="h-8 sm:h-10 text-[10px] sm:text-sm">
                                     <option value=">">&gt; Lớn hơn</option>
                                     <option value="<">&lt; Nhỏ hơn</option>
@@ -69,19 +69,19 @@ export const FormattingRulesForm: React.FC<FormattingRulesFormProps> = ({
                             {valueInputsNeeded ? (
                                 <div className={rule.condition === 'between' ? 'grid grid-cols-2 gap-1.5 sm:gap-2' : ''}>
                                     <div>
-                                        <label className="text-[9px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase text-transparent select-none mb-1 sm:mb-1.5 block">-</label>
+                                        <label className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase text-transparent select-none mb-1 sm:mb-1.5 block">-</label>
                                         <Input type="number" value={rule.value1} onChange={e => updateFormattingRule(rule.id, 'value1', e.target.value)} placeholder="Nhập số" className="h-8 sm:h-10 text-[10px] sm:text-sm"/>
                                     </div>
                                     {rule.condition === 'between' && (
                                         <div>
-                                            <label className="text-[9px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase truncate block mb-1 sm:mb-1.5">&amp; dưới</label>
+                                            <label className="text-[10px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase truncate block mb-1 sm:mb-1.5">&amp; dưới</label>
                                             <Input type="number" value={rule.value2} onChange={e => updateFormattingRule(rule.id, 'value2', e.target.value)} placeholder="Nhập số..." className="h-8 sm:h-10 text-[10px] sm:text-sm"/>
                                         </div>
                                     )}
                                 </div>
                             ) : (
                                 <div className="flex items-center h-8 sm:h-10 mt-0.5 sm:mt-1">
-                                    <div className="text-[9px] sm:text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-slate-900/50 px-1 sm:px-3 py-1 sm:py-1.5 rounded w-full text-center border-dashed border-slate-200 border flex items-center justify-center h-full">
+                                    <div className="text-[10px] sm:text-xs font-semibold text-slate-400 bg-slate-100 dark:bg-slate-900/50 px-1 sm:px-3 py-1 sm:py-1.5 rounded w-full text-center border-dashed border-slate-200 border flex items-center justify-center h-full">
                                         <span className="sm:hidden">So sánh T.Bình</span>
                                         <span className="hidden sm:inline">Tự động so sánh với trung bình cột</span>
                                     </div>

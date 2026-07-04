@@ -88,7 +88,7 @@ const fInt = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 });
 
 // Visual config per level
 const LEVEL_STYLES: Record<string, { indent: number; bg: string; text: string; font: string; border?: string; size: string }> = {
-    total: { indent: 0, bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-800 dark:text-emerald-200', font: 'font-black uppercase', size: 'text-[13px]' },
+    total: { indent: 0, bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-800 dark:text-emerald-200', font: 'font-bold uppercase', size: 'text-[13px]' },
     department: { indent: 0, bg: 'bg-rose-50/60 dark:bg-rose-900/15', text: 'text-rose-800 dark:text-rose-200', font: 'font-extrabold uppercase', border: 'border-t-2 border-rose-200 dark:border-rose-800', size: 'text-[12px]' },
     employee: { indent: 0, bg: 'bg-sky-50/40 dark:bg-sky-900/10', text: 'text-sky-800 dark:text-sky-200', font: 'font-bold', size: 'text-[13px]' },
     nnh: { indent: 20, bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-700 dark:text-amber-300', font: 'font-semibold', size: 'text-[12px]' },
@@ -131,7 +131,7 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
                     )}
                     <span className="truncate">{node.name}</span>
                     {hasChildren && (
-                        <span className="ml-1.5 text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                        <span className="ml-1.5 text-[10px] font-bold text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full flex-shrink-0">
                             {node.children.length}
                         </span>
                     )}
@@ -585,7 +585,7 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
             <div ref={cardRef}>
                 <Card noPadding rounded={false} title={
                     <div className="flex flex-col">
-                        <span className="text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">Chi tiết Doanh Thu theo Ngành Hàng</span>
+                        <span className="text-2xl font-bold uppercase text-slate-800 dark:text-white mt-1">Chi tiết Doanh Thu theo Ngành Hàng</span>
                         <span className="text-[11px] text-slate-400 font-bold uppercase tracking-wide mt-1">Bộ phận › Nhân viên › Ngành hàng › Nhóm hàng › Hãng</span>
                     </div>
                 }>

@@ -190,7 +190,7 @@ function AppContent() {
     if (isLoading) {
          return (
              <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex items-center justify-center">
-                 <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                 <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
              </div>
          );
     }
@@ -219,7 +219,7 @@ function AppContent() {
                 {/* Mobile Top Bar - Hidden in Desktop View */}
                 <div className="lg:hidden sticky top-0 z-[100] bg-white dark:bg-slate-900 flex items-center justify-between px-3 py-2 shadow-sm pt-[env(safe-area-inset-top,6px)]">
                     <div className="flex items-center gap-2.5">
-                        <div className="w-8 h-8 bg-gradient-to-br from-indigo-500 via-indigo-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-md shadow-indigo-300/30 dark:shadow-indigo-900/30">
+                        <div className="w-8 h-8 bg-sky-600 rounded-md flex items-center justify-center shadow-sm">
                             {getTabIcon()}
                         </div>
                         <div className="flex flex-col">
@@ -241,9 +241,9 @@ function AppContent() {
                     <div className="hidden lg:block lg:sticky lg:top-0 z-40 bg-slate-50/90 dark:bg-slate-950/90 backdrop-blur-md px-3 sm:px-6 lg:px-8 pt-1 lg:pt-6 pb-1 lg:pb-2 lg:border-b border-slate-200/60 dark:border-slate-700/60">
                         <div className="flex items-center justify-end lg:justify-between gap-4 w-full flex-wrap">
                             <div className="hidden lg:flex items-center gap-4 shrink-0">
-                                <div className="h-10 w-1.5 bg-indigo-600 rounded-full shadow-[0_0_15px_rgba(79,70,229,0.4)]" />
-                                <h1 className="text-4xl font-black tracking-tight text-slate-900 dark:text-white uppercase leading-none">
-                                    {titleData.main} <span className="text-indigo-600 dark:text-indigo-400">{titleData.highlight}</span>
+                                <div className="h-10 w-1.5 bg-sky-500 rounded-md" />
+                                <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white uppercase leading-none">
+                                    {titleData.main} <span className="text-sky-600 dark:text-sky-400">{titleData.highlight}</span>
                                 </h1>
                             </div>
                             <div id="global-header-actions" className="flex items-center z-50 overflow-visible flex-1 justify-end pb-1 lg:pb-0"></div>
@@ -257,7 +257,7 @@ function AppContent() {
                             <Suspense fallback={
                                 <div className="flex items-center justify-center min-h-[50vh]">
                                     <div className="flex flex-col items-center gap-4">
-                                        <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                                        <div className="w-12 h-12 border-4 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
                                         <p className="text-sm font-medium text-slate-500 animate-pulse">Đang tải biểu mẫu phân tích...</p>
                                     </div>
                                 </div>

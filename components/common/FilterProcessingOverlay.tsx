@@ -36,7 +36,7 @@ const FilterProcessingOverlay: React.FC<{ isVisible: boolean }> = ({ isVisible }
             <div className="absolute inset-0 bg-white/60 dark:bg-slate-900/70 backdrop-blur-sm" />
 
             {/* Indicator */}
-            <div className="relative flex flex-col items-center gap-3 px-6 py-5 bg-white/90 dark:bg-slate-800/90 rounded-2xl shadow-xl shadow-indigo-200/20 dark:shadow-black/30 border border-slate-200/60 dark:border-slate-700/50">
+            <div className="relative flex flex-col items-center gap-3 px-6 py-5 bg-white/90 dark:bg-slate-800/90 rounded-lg shadow-xl shadow-indigo-200/20 dark:shadow-black/30 border border-slate-200/60 dark:border-slate-700/50">
                 {/* Spinner */}
                 <div className="relative w-10 h-10">
                     <div className="absolute inset-0 rounded-full border-[3px] border-slate-200 dark:border-slate-700" />

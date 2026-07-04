@@ -12,7 +12,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-      <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
+      <div className="bg-white w-full max-w-2xl max-h-[90vh] rounded-lg shadow-2xl flex flex-col overflow-hidden animate-in fade-in zoom-in duration-200">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white sticky top-0 z-10">
           <div className="flex items-center gap-3">
@@ -40,7 +40,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
               <RefreshCw className="h-5 w-5 text-indigo-500" />
               <h3 className="text-base font-bold text-slate-800">1. Nguyên lý hoạt động</h3>
             </div>
-            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+            <div className="bg-slate-50 rounded-lg p-4 border border-slate-100">
               <p className="text-sm text-slate-600 leading-relaxed">
                 Hệ thống hoạt động dựa trên dữ liệu bảng giá và tồn kho được tải lên bởi Quản lý. 
                 Dữ liệu được lưu trữ tập trung trên Cloud (Firebase), cho phép tất cả nhân viên trong cùng một kho 
@@ -79,7 +79,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
               <h3 className="text-base font-bold text-slate-800">3. Chức năng dành cho Quản lý</h3>
             </div>
             <div className="space-y-3">
-              <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl">
+              <div className="p-4 bg-amber-50 border border-amber-100 rounded-lg">
                 <p className="text-sm text-amber-800 font-medium mb-2 italic">* Bao gồm tất cả chức năng của nhân viên và thêm:</p>
                 <ul className="space-y-2">
                   {[
@@ -149,7 +149,7 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
+            className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
           >
             Đã hiểu
           </button>

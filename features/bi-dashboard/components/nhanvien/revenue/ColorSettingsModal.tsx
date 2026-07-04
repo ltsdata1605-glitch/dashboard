@@ -80,7 +80,7 @@ export const ColorSettingsModal: React.FC<{
         
         return (
             <div className="py-3 border-b border-slate-100 dark:border-slate-700 last:border-0">
-                <p className="text-[11px] font-black text-primary-600 uppercase mb-2 tracking-wider">{label} {isCurrency ? '(Tr)' : '(%)'}</p>
+                <p className="text-[11px] font-bold text-primary-600 uppercase mb-2 tracking-wider">{label} {isCurrency ? '(Tr)' : '(%)'}</p>
                 <div className="space-y-3">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center gap-2 min-w-[100px]">
@@ -145,8 +145,8 @@ export const ColorSettingsModal: React.FC<{
                     {renderRow("Doanh thu thực", "dtthuc", true)}
                 </div>
                 <div className="flex gap-3 flex-shrink-0 p-5 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 rounded-b-2xl">
-                    <button onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="px-5 py-2 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-white transition-colors">Mặc định</button>
-                    <button onClick={() => { onSave(temp); onClose(); }} className="flex-1 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-xl hover:bg-primary-700 active:scale-95 transition-all shadow-md shadow-primary-500/20">Lưu cấu hình</button>
+                    <button onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="px-5 py-2 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-white transition-colors">Mặc định</button>
+                    <button onClick={() => { onSave(temp); onClose(); }} className="flex-1 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-lg hover:bg-primary-700 active:scale-95 transition-all shadow-md shadow-primary-500/20">Lưu cấu hình</button>
                 </div>
             </div>
         </ModalWrapper>
