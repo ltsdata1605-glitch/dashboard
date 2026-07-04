@@ -1357,15 +1357,25 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             {activeMenu === 'font' && (
                                 <div 
                                     onMouseDown={(e) => e.preventDefault()}
-                                    className={`absolute left-0 mb-2 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl py-1 flex flex-col min-w-[120px] z-[10000] overflow-hidden ${
+                                    className={`absolute left-0 mb-2 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl py-1 flex flex-col min-w-[150px] max-h-[200px] overflow-y-auto z-[10000] scrollbar-thin overflow-x-hidden ${
                                         showDropdownBelow ? 'top-full mt-2' : 'bottom-full mb-2'
                                     }`}
                                 >
                                     {[
                                         { name: 'UTM Avo', val: "'UTM Avo', sans-serif" },
-                                        { name: 'Colossalis', val: "'UTM Colossalis', sans-serif" },
-                                        { name: 'Alata', val: "'Alata Regular', sans-serif" },
-                                        { name: 'Inter', val: "'Inter', sans-serif" }
+                                        { name: 'Plus Jakarta Sans', val: "'Plus Jakarta Sans', sans-serif" },
+                                        { name: 'Inter', val: "'Inter', sans-serif" },
+                                        { name: 'Oswald', val: "'Oswald', sans-serif" },
+                                        { name: 'Roboto Condensed', val: "'Roboto Condensed', sans-serif" },
+                                        { name: 'Fjalla One', val: "'Fjalla One', sans-serif" },
+                                        { name: 'Jost', val: "'Jost', sans-serif" },
+                                        { name: 'Josefin Sans', val: "'Josefin Sans', sans-serif" },
+                                        { name: 'Alata Regular', val: "'Alata Regular', sans-serif" },
+                                        { name: 'Shopee Text', val: "'Shopee Text', sans-serif" },
+                                        { name: 'SF Pro Display', val: "'SF Pro Display', sans-serif" },
+                                        { name: 'Samsung Sharp Sans', val: "'Samsung Sharp Sans', sans-serif" },
+                                        { name: 'Shopee Display', val: "'Shopee Display', sans-serif" },
+                                        { name: 'UTM Colossalis', val: "'UTM Colossalis', sans-serif" }
                                     ].map(font => (
                                         <button
                                             key={font.val}
@@ -1375,6 +1385,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                                 setActiveMenu(null);
                                             }}
                                             className="px-3 py-1.5 text-left text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
+                                            style={{ fontFamily: font.val }}
                                         >
                                             {font.name}
                                         </button>
