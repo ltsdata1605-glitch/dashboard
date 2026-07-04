@@ -657,7 +657,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                   .draw-ticket-block .input-footer-left {
                       position: absolute;
                       left: 19.3%;
-                      top: 86.8%;
+                      top: 85.8%;
                       width: 28%;
                       height: 10%;
                       display: flex;
