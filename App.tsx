@@ -176,7 +176,7 @@ function AppContent() {
             if (font && font !== 'Plus Jakarta Sans') {
                 document.body.style.fontFamily = `'${font}', sans-serif`;
             } else {
-                document.body.style.fontFamily = ''; // Reset to default (Plus Jakarta Sans)
+                document.body.style.fontFamily = `'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif`;
             }
         }).catch(error => {
             console.warn("Failed to get global font, ignoring:", error);

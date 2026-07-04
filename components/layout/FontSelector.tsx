@@ -45,6 +45,9 @@ const FontSelector: React.FC = () => {
                 if (font !== 'Plus Jakarta Sans') {
                     document.documentElement.style.setProperty('--font-sans', `'${font}', sans-serif`);
                     styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${font}', sans-serif !important; }`;
+                } else {
+                    document.documentElement.style.setProperty('--font-sans', `'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif`);
+                    styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }`;
                 }
             }
         });
