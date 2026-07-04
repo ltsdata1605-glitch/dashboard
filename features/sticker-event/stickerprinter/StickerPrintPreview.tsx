@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import BarcodeCanvas from '../../../components/views/BarcodeCanvas';
 import { BatchItem, TicketDrawData } from './types';
+import { Bold, Italic, Underline } from 'lucide-react';
 
 interface StickerPrintPreviewProps {
     batchItems: BatchItem[];
@@ -401,6 +402,108 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     drawFooterSize,
 }) => {
     const percentRef = useRef<HTMLDivElement>(null);
+
+    // Selection listener for floating text formatting toolbar
+    const [toolbarPos, setToolbarPos] = React.useState<{ top: number; left: number } | null>(null);
+
+    React.useEffect(() => {
+        const handleSelectionChange = () => {
+            const selection = window.getSelection();
+            if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+                setToolbarPos(null);
+                return;
+            }
+
+            const range = selection.getRangeAt(0);
+            
+            // Check if selection is inside an editable element of this preview container
+            let parent = range.commonAncestorContainer;
+            if (parent.nodeType === 3) parent = parent.parentNode || parent;
+            let current: Node | null = parent;
+            let isInsideEditable = false;
+            while (current) {
+                if (current.nodeType === 1 && (current as HTMLElement).getAttribute('contenteditable') === 'true') {
+                    isInsideEditable = true;
+                    break;
+                }
+                current = current.parentNode;
+            }
+
+            if (!isInsideEditable) {
+                setToolbarPos(null);
+                return;
+            }
+
+            const rects = range.getClientRects();
+            if (rects.length > 0) {
+                const rect = rects[0];
+                setToolbarPos({
+                    top: rect.top + window.scrollY - 50,
+                    left: rect.left + window.scrollX + rect.width / 2,
+                });
+            } else {
+                setToolbarPos(null);
+            }
+        };
+
+        document.addEventListener('selectionchange', handleSelectionChange);
+        return () => {
+            document.removeEventListener('selectionchange', handleSelectionChange);
+        };
+    }, []);
+
+    const applyStyleToSelection = (styleName: string, styleValue: string) => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+
+        const range = selection.getRangeAt(0);
+        let parent = range.commonAncestorContainer;
+        if (parent.nodeType === 3) parent = parent.parentNode || parent;
+        let current: Node | null = parent;
+        let editableContainer: HTMLElement | null = null;
+        while (current) {
+            if (current.nodeType === 1 && (current as HTMLElement).getAttribute('contenteditable') === 'true') {
+                editableContainer = current as HTMLElement;
+                break;
+            }
+            current = current.parentNode;
+        }
+
+        if (!editableContainer) return;
+
+        const span = document.createElement('span');
+        span.style[styleName as any] = styleValue;
+        
+        try {
+            span.appendChild(range.extractContents());
+            range.insertNode(span);
+            
+            // Trigger React input change
+            const event = new Event('input', { bubbles: true });
+            editableContainer.dispatchEvent(event);
+        } catch (e) {
+            console.error('Error applying custom style to selection:', e);
+        }
+    };
+
+    const handleFormat = (command: string) => {
+        document.execCommand(command, false);
+        
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+        const range = selection.getRangeAt(0);
+        let parent = range.commonAncestorContainer;
+        if (parent.nodeType === 3) parent = parent.parentNode || parent;
+        let current: Node | null = parent;
+        while (current) {
+            if (current.nodeType === 1 && (current as HTMLElement).getAttribute('contenteditable') === 'true') {
+                const event = new Event('input', { bubbles: true });
+                (current as HTMLElement).dispatchEvent(event);
+                break;
+            }
+            current = current.parentNode;
+        }
+    };
 
     // --- contentEditable hooks for each editable field (preview mode only) ---
     const oldPriceEditable = useContentEditable(previewOldPrice, setPreviewOldPrice);
@@ -1188,6 +1291,89 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} />
                     </div>
                 )}
+            {toolbarPos && (
+                <div 
+                    className="fixed z-[9999] -translate-x-1/2 flex items-center gap-1.5 bg-slate-900/95 dark:bg-slate-950/95 border border-slate-700/60 p-1.5 rounded-lg shadow-xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 print:hidden"
+                    style={{ 
+                        top: `${toolbarPos.top}px`, 
+                        left: `${toolbarPos.left}px` 
+                    }}
+                    onMouseDown={(e) => {
+                        // Prevent toolbar from taking focus away from selection
+                        e.preventDefault();
+                    }}
+                >
+                    {/* Font Dropdown */}
+                    <select 
+                        className="bg-transparent text-white text-[11px] font-semibold px-2 py-0.5 border-r border-slate-700/80 outline-none cursor-pointer text-slate-100 hover:bg-slate-800 rounded transition-colors"
+                        onChange={(e) => {
+                            applyStyleToSelection('fontFamily', e.target.value);
+                        }}
+                        defaultValue=""
+                    >
+                        <option value="" disabled className="bg-slate-900 text-white">Font</option>
+                        <option value="'UTM Avo', sans-serif" className="bg-slate-900 text-white">UTM Avo</option>
+                        <option value="'UTM Colossalis', sans-serif" className="bg-slate-900 text-white">Colossalis</option>
+                        <option value="'Alata Regular', sans-serif" className="bg-slate-900 text-white">Alata</option>
+                        <option value="'Inter', sans-serif" className="bg-slate-900 text-white">Inter</option>
+                    </select>
+
+                    {/* Size Dropdown */}
+                    <select 
+                        className="bg-transparent text-white text-[11px] font-semibold px-1 py-0.5 border-r border-slate-700/80 outline-none cursor-pointer text-slate-100 hover:bg-slate-800 rounded transition-colors w-16"
+                        onChange={(e) => {
+                            applyStyleToSelection('fontSize', `${e.target.value}cqw`);
+                        }}
+                        defaultValue=""
+                    >
+                        <option value="" disabled className="bg-slate-900 text-white">Size</option>
+                        <option value="1.0" className="bg-slate-900 text-white">1.0 cqw</option>
+                        <option value="1.5" className="bg-slate-900 text-white">1.5 cqw</option>
+                        <option value="2.0" className="bg-slate-900 text-white">2.0 cqw</option>
+                        <option value="2.5" className="bg-slate-900 text-white">2.5 cqw</option>
+                        <option value="3.0" className="bg-slate-900 text-white">3.0 cqw</option>
+                        <option value="3.5" className="bg-slate-900 text-white">3.5 cqw</option>
+                        <option value="4.0" className="bg-slate-900 text-white">4.0 cqw</option>
+                        <option value="4.5" className="bg-slate-900 text-white">4.5 cqw</option>
+                        <option value="5.0" className="bg-slate-900 text-white">5.0 cqw</option>
+                        <option value="6.0" className="bg-slate-900 text-white">6.0 cqw</option>
+                        <option value="7.0" className="bg-slate-900 text-white">7.0 cqw</option>
+                        <option value="8.0" className="bg-slate-900 text-white">8.0 cqw</option>
+                        <option value="9.0" className="bg-slate-900 text-white">9.0 cqw</option>
+                        <option value="10.0" className="bg-slate-900 text-white">10.0 cqw</option>
+                    </select>
+
+                    {/* Bold button */}
+                    <button
+                        onClick={() => handleFormat('bold')}
+                        className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                        title="In đậm (Bold)"
+                    >
+                        <Bold size={13} className="stroke-[2.5]" />
+                    </button>
+
+                    {/* Italic button */}
+                    <button
+                        onClick={() => handleFormat('italic')}
+                        className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                        title="In nghiêng (Italic)"
+                    >
+                        <Italic size={13} className="stroke-[2.5]" />
+                    </button>
+
+                    {/* Underline button */}
+                    <button
+                        onClick={() => handleFormat('underline')}
+                        className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                        title="Gạch chân (Underline)"
+                    >
+                        <Underline size={13} className="stroke-[2.5]" />
+                    </button>
+
+                    {/* Tooltip arrow */}
+                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-slate-900/95" />
+                </div>
+            )}
             </div>
         </div>
     );
