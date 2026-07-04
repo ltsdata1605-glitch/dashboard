@@ -402,7 +402,7 @@ const ContestTable: React.FC<ContestTableProps> = React.memo(({ config, allEmplo
     };
 
     return (
-        <div ref={exportRef} className="rounded-none border border-slate-200 dark:border-slate-700 overflow-hidden">
+        <div ref={exportRef} className="rounded-none sm:rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm">
             <div className="overflow-hidden">
                 <div
                     className="px-2 py-1 flex justify-between items-center bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 gap-2"
