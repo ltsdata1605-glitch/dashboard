@@ -1009,7 +1009,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 2.2%;
                       top: 2.0%;
                       width: 45.4%;
-                      height: 16%;
+                      height: auto; min-height: 16%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1030,7 +1030,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 52.4%;
                       top: 2.0%;
                       width: 45.4%;
-                      height: 16%;
+                      height: auto; min-height: 16%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1050,7 +1050,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 2.2%;
                       top: 21.0%;
                       width: 35.0%;
-                      height: 30.0%;
+                      height: auto; min-height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -1073,7 +1073,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 52.4%;
                       top: 21.0%;
                       width: 35.0%;
-                      height: 30.0%;
+                      height: auto; min-height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -1095,7 +1095,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 2.2%;
                       top: 53.0%;
                       width: 45.4%;
-                      height: 30.0%;
+                      height: auto; min-height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -1118,7 +1118,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 52.4%;
                       top: 53.0%;
                       width: 45.4%;
-                      height: 30.0%;
+                      height: auto; min-height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -1141,7 +1141,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 39.4%;
                       top: 33.0%;
                       width: 6.2%;
-                      height: 11%;
+                      height: auto; min-height: 11%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1160,7 +1160,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                        left: 39.4%;
                        top: 33.0%;
                        width: 6.2%;
-                       height: 11%;
+                       height: auto; min-height: 11%;
                        display: flex;
                        align-items: center;
                        justify-content: center;
@@ -1178,7 +1178,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 89.6%;
                       top: 33.0%;
                       width: 6.2%;
-                      height: 11%;
+                      height: auto; min-height: 11%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1196,7 +1196,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 19.3%;
                       top: 85.8%;
                       width: 28%;
-                      height: 10%;
+                      height: auto; min-height: 10%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1215,7 +1215,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 2.2%;
                       top: 2.0%;
                       width: 45.4%;
-                      height: 16%;
+                      height: auto; min-height: 16%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1233,7 +1233,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 2.2%;
                       top: 21.0%;
                       width: 35.0%;
-                      height: 30.0%;
+                      height: auto; min-height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -1252,7 +1252,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 52.4%;
                       top: 21.0%;
                       width: 35.0%;
-                      height: 30.0%;
+                      height: auto; min-height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -1271,7 +1271,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 2.2%;
                       top: 53.0%;
                       width: 45.4%;
-                      height: 30.0%;
+                      height: auto; min-height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -1291,7 +1291,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 52.4%;
                       top: 53.0%;
                       width: 45.4%;
-                      height: 30.0%;
+                      height: auto; min-height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
@@ -1311,7 +1311,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 19.3%;
                       top: 85.8%;
                       width: 28%;
-                      height: 10%;
+                      height: auto; min-height: 10%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1328,7 +1328,13 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       user-select: none;
                   }
 
-                 .draw-ticket-block [contenteditable="true"]:hover,
+                 
+                  .draw-ticket-block [contenteditable="true"] > *,
+                  .draw-ticket-block [class^="display-"] > * {
+                      margin: 0 !important;
+                      padding: 0 !important;
+                  }
+                  .draw-ticket-block [contenteditable="true"]:hover,
                  .draw-ticket-block [contenteditable="true"]:focus {
                      outline: 1.5px dashed #ef4444 !important;
                      outline-offset: 1px;
