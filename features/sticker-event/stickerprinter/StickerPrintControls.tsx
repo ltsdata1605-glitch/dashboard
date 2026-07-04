@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { StickerPage, BatchItem, PrintHistoryEntry, SavedStickerList } from './types';
 import { StickerManualQueue } from './StickerManualQueue';
+import { Button, Input } from '../../../components/shared/ui';
 
 interface StickerPrintControlsProps {
     manualPages: StickerPage[];
@@ -103,21 +104,21 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
         <div className="w-full max-w-sm aspect-[197/285] bg-white dark:bg-slate-800 rounded-none shadow-xl border border-slate-200 dark:border-slate-700 p-5 lg:p-6 no-print flex flex-col overflow-hidden">
             {/* Primary Action Buttons */}
             <div className="flex gap-2 mb-3 shrink-0">
-                <button 
+                <Button 
                     onClick={handlePrint}
-                    className="flex-1 bg-[#fbbc04] hover:bg-[#f0b400] text-black font-black text-sm py-2 rounded-lg flex items-center justify-center gap-1.5 transition-transform active:scale-95 shadow-md shadow-yellow-500/10"
+                    className="flex-1 !bg-[#fbbc04] hover:!bg-[#f0b400] !text-black font-black text-sm py-2 rounded-lg flex items-center justify-center gap-1.5 active:scale-95 transition-transform shadow-md shadow-yellow-500/10 border-transparent"
+                    leftIcon={<Printer size={16} />}
                 >
-                    <Printer size={16} />
                     BẤM ĐỂ IN ({batchItems.length > 0 ? selectedCount + selectedManualPagesCount : (manualPages.length > 0 ? selectedManualPagesCount : 1)})
-                </button>
-                <button 
+                </Button>
+                <Button 
                     onClick={addCurrentPage}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1 transition-transform active:scale-95 shadow-md shadow-indigo-500/10"
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-2 px-3 rounded-lg flex items-center justify-center gap-1 active:scale-95 transition-transform shadow-md shadow-indigo-500/10 border-transparent"
                     title="Thêm trang hiện tại vào hàng đợi in"
+                    leftIcon={<Plus size={16} />}
                 >
-                    <Plus size={16} />
                     Thêm
-                </button>
+                </Button>
             </div>
 
             {/* Tab Navigation */}
@@ -165,12 +166,13 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                 File giá ĐSD - TBBM
                                 <input type="file" accept=".xlsx, .xls, .csv" onChange={handleExcelUpload} className="hidden" />
                             </label>
-                            <button 
+                            <Button 
                                 onClick={handleReset}
-                                className="px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-bold transition-colors shadow-sm text-[11px] lg:text-xs"
+                                variant="secondary"
+                                className="px-3 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 rounded-lg font-bold transition-colors shadow-sm text-[11px] lg:text-xs h-auto py-1.5 border-slate-200 dark:border-slate-600"
                             >
                                 Reset
-                            </button>
+                            </Button>
                         </div>
 
                         {/* Import from template */}
@@ -228,12 +230,12 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         <button onClick={clearBatchItems} className="text-[10px] text-red-500 hover:text-red-600 font-bold uppercase">Xóa</button>
                                     </div>
                                 </div>
-                                <input 
+                                <Input 
                                     type="text" 
                                     placeholder="Tìm tên sản phẩm hoặc IMEI..." 
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full px-3 py-2 mb-3 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500/50"
+                                    className="mb-3 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700"
                                 />
                                 <div className="space-y-2">
                                     {filteredItems.map(item => (

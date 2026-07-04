@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Clock, Save, Trash2, X, Image as ImageIcon, ChevronUp, ChevronDown, RotateCcw, Percent, Coins, Barcode } from 'lucide-react';
 import { StickerPage, SavedStickerList } from './types';
+import { Button, Input } from '../../../components/shared/ui';
 
 const cleanDisplayLabel = (label: string) => {
     if (!label) return '';
@@ -146,22 +147,24 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                     <div className="flex items-center gap-1.5">
                         {/* Discount Display Mode Toggle */}
                         <div className="relative flex items-center">
-                            <button 
+                            <Button 
                                 onClick={() => {
                                     setDiscountDisplayMode(discountDisplayMode === 'percent' ? 'amount' : 'percent');
                                     if (showOnboarding) dismissOnboarding();
                                 }} 
-                                className={`h-8 w-8 flex items-center justify-center rounded-lg border transition-all ${
+                                size="icon"
+                                variant="secondary"
+                                className={`h-8 w-8 transition-all ${
                                     showOnboarding 
                                         ? 'discount-toggle-glow text-indigo-600 border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20' 
                                         : discountDisplayMode === 'amount'
-                                            ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/30'
+                                            ? '!bg-amber-50 dark:!bg-amber-950/20 !text-amber-600 dark:!text-amber-400 !border-amber-200 dark:!border-amber-900/30'
                                             : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                                 }`}
                                 title={discountDisplayMode === 'percent' ? "Hiển thị: % Giảm (Click đổi sang Số tiền)" : "Hiển thị: Số tiền (Click đổi sang % Giảm)"}
                             >
                                 {discountDisplayMode === 'percent' ? <Percent size={14} /> : <Coins size={14} />}
-                            </button>
+                            </Button>
                             
                             {showOnboarding && (
                                 <div className="absolute right-0 top-9 z-50 w-56 bg-indigo-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-indigo-500 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -177,17 +180,19 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                         </div>
 
                         {/* Barcode Toggle Button */}
-                        <button 
+                        <Button 
                             onClick={() => setShowBarcode(!showBarcode)} 
-                            className={`h-8 w-8 flex items-center justify-center rounded-lg border transition-colors ${
+                            size="icon"
+                            variant="secondary"
+                            className={`h-8 w-8 transition-colors ${
                                 showBarcode 
-                                    ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold border-indigo-200 dark:border-indigo-800' 
+                                    ? '!bg-indigo-50 dark:!bg-indigo-950/50 !text-indigo-600 dark:!text-indigo-400 font-bold !border-indigo-200 dark:!border-indigo-800' 
                                     : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                             }`}
                             title={showBarcode ? "Mã Vạch: Đang bật (Click để tắt)" : "Mã Vạch: Đang tắt (Click để bật)"}
                         >
                             <Barcode size={14} />
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}
@@ -211,33 +216,36 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                         {/* Config and Action Controls on the right */}
                         <div className="flex items-center gap-1.5 shrink-0">
                             {/* % Giảm filter input */}
-                            <input 
+                            <Input 
                                 type="text"
                                 placeholder="% Giảm"
                                 value={discountThreshold}
                                 onChange={(e) => handleDiscountThresholdChange(e.target.value)}
-                                className="w-12 h-7 text-center px-1 text-[10px] border border-slate-200 dark:border-slate-700 rounded-lg font-bold focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
+                                className="!w-12 !h-7 text-center px-1 text-[10px] rounded-lg font-bold border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-white"
                                 title="Nhập % giảm tối thiểu"
+                                fullWidth={false}
                             />
 
                             {/* Discount Display Mode Toggle */}
                             <div className="relative flex items-center">
-                                <button 
+                                <Button 
                                     onClick={() => {
                                         setDiscountDisplayMode(discountDisplayMode === 'percent' ? 'amount' : 'percent');
                                         if (showOnboarding) dismissOnboarding();
                                     }} 
-                                    className={`h-7 w-7 flex items-center justify-center rounded-lg border transition-all ${
+                                    size="icon"
+                                    variant="secondary"
+                                    className={`h-7 w-7 transition-all ${
                                         showOnboarding 
                                             ? 'discount-toggle-glow text-indigo-600 border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/20' 
                                             : discountDisplayMode === 'amount'
-                                                ? 'bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-900/30'
+                                                ? '!bg-amber-50 dark:!bg-amber-950/20 !text-amber-600 dark:!text-amber-400 !border-amber-200 dark:!border-amber-900/30'
                                                 : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                                     }`}
                                     title={discountDisplayMode === 'percent' ? "Hiển thị: % Giảm (Click đổi sang Số tiền)" : "Hiển thị: Số tiền (Click đổi sang % Giảm)"}
                                 >
                                     {discountDisplayMode === 'percent' ? <Percent size={13} /> : <Coins size={13} />}
-                                </button>
+                                </Button>
                                 
                                 {showOnboarding && (
                                     <div className="absolute right-0 top-8 z-50 w-56 bg-indigo-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-indigo-500 animate-in fade-in slide-in-from-top-2 duration-300">
@@ -253,38 +261,44 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                             </div>
 
                             {/* Barcode Toggle Button */}
-                            <button 
+                            <Button 
                                 onClick={() => setShowBarcode(!showBarcode)} 
-                                className={`h-7 w-7 flex items-center justify-center rounded-lg border transition-colors ${
+                                size="icon"
+                                variant="secondary"
+                                className={`h-7 w-7 transition-colors ${
                                     showBarcode 
-                                        ? 'bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 font-bold border-indigo-200 dark:border-indigo-800' 
+                                        ? '!bg-indigo-50 dark:!bg-indigo-950/50 !text-indigo-600 dark:!text-indigo-400 font-bold !border-indigo-200 dark:!border-indigo-800' 
                                         : 'text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900'
                                 }`}
                                 title={showBarcode ? "Mã Vạch: Đang bật (Click để tắt)" : "Mã Vạch: Đang tắt (Click để bật)"}
                             >
                                 <Barcode size={13} />
-                            </button>
+                            </Button>
 
                             {/* Divider line */}
                             <div className="h-5 w-[1px] bg-slate-200 dark:bg-slate-700 mx-1 shrink-0" />
 
                             {/* Save list button */}
-                            <button 
+                            <Button 
                                 onClick={saveCurrentList} 
-                                className="h-7 w-7 flex items-center justify-center text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
+                                size="icon"
+                                variant="secondary"
+                                className="h-7 w-7 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
                                 title="Lưu danh sách"
                             >
                                 <Save size={13} />
-                            </button>
+                            </Button>
 
                             {/* Clear list button */}
-                            <button 
+                            <Button 
                                 onClick={clearManualPages} 
-                                className="h-7 w-7 flex items-center justify-center text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
+                                size="icon"
+                                variant="secondary"
+                                className="h-7 w-7 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 transition-colors" 
                                 title="Xóa tất cả"
                             >
                                 <Trash2 size={13} />
-                            </button>
+                            </Button>
                         </div>
                     </div>
 
@@ -316,21 +330,16 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
 
                     {/* Search Input (Full width on Row 2) */}
                     <div className="relative shrink-0 mb-1">
-                        <input
+                        <Input
                             type="text"
                             placeholder="Tìm theo tên hoặc mã sản phẩm..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full h-8 text-xs pl-2.5 pr-7 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-300 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-colors"
+                            className="h-8 text-xs bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 placeholder-slate-400 text-slate-750 dark:text-slate-350"
+                            fullWidth={true}
+                            rightIcon={searchQuery ? "x" : undefined}
+                            onRightIconClick={searchQuery ? () => setSearchQuery('') : undefined}
                         />
-                        {searchQuery && (
-                            <button 
-                                onClick={() => setSearchQuery('')}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                            >
-                                <X size={12} />
-                            </button>
-                        )}
                     </div>
 
                     <div className="space-y-2 flex-1 overflow-y-auto pr-1">
