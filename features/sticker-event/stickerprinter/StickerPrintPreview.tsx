@@ -1330,118 +1330,125 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} />
                     </div>
                 )}
-            {toolbarPos && (
-                <div 
-                    className="fixed z-[9999] -translate-x-1/2 flex items-center gap-1 bg-slate-900/95 dark:bg-slate-950/95 border border-slate-700/60 p-1.5 rounded-lg shadow-xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 print:hidden"
-                    style={{ 
-                        top: `${toolbarPos.top}px`, 
-                        left: `${toolbarPos.left}px` 
-                    }}
-                    onMouseDown={(e) => {
-                        // Prevent toolbar from taking focus away from selection
-                        e.preventDefault();
-                    }}
-                >
-                    {/* Font Custom Dropdown */}
-                    <div className="relative">
-                        <button 
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => setActiveMenu(activeMenu === 'font' ? null : 'font')}
-                            className="bg-transparent text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-0.5"
-                        >
-                            Font <span className="text-[7px] opacity-75">▼</span>
-                        </button>
-                        
-                        {activeMenu === 'font' && (
-                            <div 
+            {(() => {
+                const showDropdownBelow = toolbarPos ? (toolbarPos.top - window.scrollY < 180) : false;
+                return toolbarPos && (
+                    <div 
+                        className="fixed z-[9999] -translate-x-1/2 flex items-center gap-1 bg-slate-900/95 dark:bg-slate-950/95 border border-slate-700/60 p-1.5 rounded-lg shadow-xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 print:hidden"
+                        style={{ 
+                            top: `${toolbarPos.top}px`, 
+                            left: `${toolbarPos.left}px` 
+                        }}
+                        onMouseDown={(e) => {
+                            // Prevent toolbar from taking focus away from selection
+                            e.preventDefault();
+                        }}
+                    >
+                        {/* Font Custom Dropdown */}
+                        <div className="relative">
+                            <button 
                                 onMouseDown={(e) => e.preventDefault()}
-                                className="absolute bottom-full left-0 mb-2 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl py-1 flex flex-col min-w-[120px] z-[10000] overflow-hidden"
+                                onClick={() => setActiveMenu(activeMenu === 'font' ? null : 'font')}
+                                className="bg-transparent text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-0.5"
                             >
-                                {[
-                                    { name: 'UTM Avo', val: "'UTM Avo', sans-serif" },
-                                    { name: 'Colossalis', val: "'UTM Colossalis', sans-serif" },
-                                    { name: 'Alata', val: "'Alata Regular', sans-serif" },
-                                    { name: 'Inter', val: "'Inter', sans-serif" }
-                                ].map(font => (
-                                    <button
-                                        key={font.val}
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onClick={() => {
-                                            applyStyleToSelection('fontFamily', font.val);
-                                            setActiveMenu(null);
-                                        }}
-                                        className="px-3 py-1.5 text-left text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
-                                    >
-                                        {font.name}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                    </div>
+                                Font <span className="text-[7px] opacity-75">▼</span>
+                            </button>
+                            
+                            {activeMenu === 'font' && (
+                                <div 
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    className={`absolute left-0 mb-2 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl py-1 flex flex-col min-w-[120px] z-[10000] overflow-hidden ${
+                                        showDropdownBelow ? 'top-full mt-2' : 'bottom-full mb-2'
+                                    }`}
+                                >
+                                    {[
+                                        { name: 'UTM Avo', val: "'UTM Avo', sans-serif" },
+                                        { name: 'Colossalis', val: "'UTM Colossalis', sans-serif" },
+                                        { name: 'Alata', val: "'Alata Regular', sans-serif" },
+                                        { name: 'Inter', val: "'Inter', sans-serif" }
+                                    ].map(font => (
+                                        <button
+                                            key={font.val}
+                                            onMouseDown={(e) => e.preventDefault()}
+                                            onClick={() => {
+                                                applyStyleToSelection('fontFamily', font.val);
+                                                setActiveMenu(null);
+                                            }}
+                                            className="px-3 py-1.5 text-left text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
+                                        >
+                                            {font.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
 
-                    {/* Size Custom Dropdown */}
-                    <div className="relative">
-                        <button 
-                            onMouseDown={(e) => e.preventDefault()}
-                            onClick={() => setActiveMenu(activeMenu === 'size' ? null : 'size')}
-                            className="bg-transparent text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-1"
-                        >
-                            Size <span className="text-[7px] opacity-75">▼</span>
-                        </button>
-                        
-                        {activeMenu === 'size' && (
-                            <div 
+                        {/* Size Custom Dropdown */}
+                        <div className="relative">
+                            <button 
                                 onMouseDown={(e) => e.preventDefault()}
-                                className="absolute bottom-full left-0 mb-2 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl py-1 flex flex-col min-w-[80px] max-h-[160px] overflow-y-auto z-[10000] scrollbar-thin overflow-x-hidden"
+                                onClick={() => setActiveMenu(activeMenu === 'size' ? null : 'size')}
+                                className="bg-transparent text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-1"
                             >
-                                {['1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0', '6.0', '7.0', '8.0', '9.0', '10.0'].map(sz => (
-                                    <button
-                                        key={sz}
-                                        onMouseDown={(e) => e.preventDefault()}
-                                        onClick={() => {
-                                            applyStyleToSelection('fontSize', `${sz}cqw`);
-                                            setActiveMenu(null);
-                                        }}
-                                        className="px-3 py-1.5 text-center text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
-                                    >
-                                        {sz} cqw
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+                                Size <span className="text-[7px] opacity-75">▼</span>
+                            </button>
+                            
+                            {activeMenu === 'size' && (
+                                <div 
+                                    onMouseDown={(e) => e.preventDefault()}
+                                    className={`absolute left-0 mb-2 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl py-1 flex flex-col min-w-[80px] max-h-[160px] overflow-y-auto z-[10000] scrollbar-thin overflow-x-hidden ${
+                                        showDropdownBelow ? 'top-full mt-2' : 'bottom-full mb-2'
+                                    }`}
+                                >
+                                    {['1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0', '6.0', '7.0', '8.0', '9.0', '10.0'].map(sz => (
+                                        <button
+                                            key={sz}
+                                            onMouseDown={(e) => e.preventDefault()}
+                                            onClick={() => {
+                                                applyStyleToSelection('fontSize', `${sz}cqw`);
+                                                setActiveMenu(null);
+                                            }}
+                                            className="px-3 py-1.5 text-center text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
+                                        >
+                                            {sz} cqw
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Bold button */}
+                        <button
+                            onClick={() => handleFormat('bold')}
+                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            title="In đậm (Bold)"
+                        >
+                            <Bold size={13} className="stroke-[2.5]" />
+                        </button>
+
+                        {/* Italic button */}
+                        <button
+                            onClick={() => handleFormat('italic')}
+                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            title="In nghiêng (Italic)"
+                        >
+                            <Italic size={13} className="stroke-[2.5]" />
+                        </button>
+
+                        {/* Underline button */}
+                        <button
+                            onClick={() => handleFormat('underline')}
+                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            title="Gạch chân (Underline)"
+                        >
+                            <Underline size={13} className="stroke-[2.5]" />
+                        </button>
+
+                        {/* Tooltip arrow */}
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-slate-900/95" />
                     </div>
-
-                    {/* Bold button */}
-                    <button
-                        onClick={() => handleFormat('bold')}
-                        className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
-                        title="In đậm (Bold)"
-                    >
-                        <Bold size={13} className="stroke-[2.5]" />
-                    </button>
-
-                    {/* Italic button */}
-                    <button
-                        onClick={() => handleFormat('italic')}
-                        className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
-                        title="In nghiêng (Italic)"
-                    >
-                        <Italic size={13} className="stroke-[2.5]" />
-                    </button>
-
-                    {/* Underline button */}
-                    <button
-                        onClick={() => handleFormat('underline')}
-                        className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
-                        title="Gạch chân (Underline)"
-                    >
-                        <Underline size={13} className="stroke-[2.5]" />
-                    </button>
-
-                    {/* Tooltip arrow */}
-                    <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-slate-900/95" />
-                </div>
-            )}
+                );
+            })()}
             </div>
         </div>
     );
