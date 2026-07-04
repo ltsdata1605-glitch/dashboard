@@ -703,7 +703,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       padding: 0.5cqw 1cqw;
                   }
  
-                  .draw-ticket-block .display-content-top-right {
+                  .draw-ticket-block .input-content-top-right {
                       position: absolute;
                       left: 52.4%;
                       top: 21.0%;
@@ -717,8 +717,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
-                      pointer-events: none;
-                      user-select: none;
+                      background: transparent;
+                      outline: none;
+                      cursor: text;
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
