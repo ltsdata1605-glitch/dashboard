@@ -52,10 +52,11 @@ export const CheckThuongView: React.FC = () => {
             iframeDoc.head.appendChild(styleEl);
         }
 
-        if (fontValue && fontValue !== 'Plus Jakarta Sans') {
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${fontValue}', sans-serif !important; }`;
+        const activeFont = fontValue || 'UTM Avo';
+        if (activeFont && activeFont !== 'UTM Avo') {
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${activeFont}', sans-serif !important; }`;
         } else {
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }`;
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'UTM Avo', sans-serif !important; }`;
         }
     }, []);
 
@@ -77,7 +78,7 @@ export const CheckThuongView: React.FC = () => {
 
             // 2. Read saved font and inject into iframe
             getGlobalFont().then(font => {
-                if (font) injectFontIntoIframe(font);
+                injectFontIntoIframe(font || 'UTM Avo');
             });
         };
         iframe.addEventListener('load', onLoad);

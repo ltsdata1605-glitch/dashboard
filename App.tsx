@@ -173,10 +173,11 @@ function AppContent() {
 
     React.useEffect(() => {
         getGlobalFont().then(font => {
-            if (font && font !== 'Plus Jakarta Sans') {
-                document.body.style.fontFamily = `'${font}', sans-serif`;
+            const activeFont = font || 'UTM Avo';
+            if (activeFont && activeFont !== 'UTM Avo') {
+                document.body.style.fontFamily = `'${activeFont}', sans-serif`;
             } else {
-                document.body.style.fontFamily = `'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif`;
+                document.body.style.fontFamily = `'UTM Avo', sans-serif`;
             }
         }).catch(error => {
             console.warn("Failed to get global font, ignoring:", error);

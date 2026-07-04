@@ -3,8 +3,16 @@ import { Icon } from '../common/Icon';
 import { saveGlobalFont, getGlobalFont } from '../../services/dbService';
 import { createPortal } from 'react-dom';
 
-const FONTS = [
-    { label: 'Mặc định (Plus Jakarta Sans)', value: 'Plus Jakarta Sans', className: 'font-sans' },
+interface FontOption {
+    label: string;
+    value: string;
+    style?: React.CSSProperties;
+    className?: string;
+}
+
+const FONTS: FontOption[] = [
+    { label: 'Mặc định (UTM Avo)', value: 'UTM Avo', style: { fontFamily: "'UTM Avo', sans-serif" } },
+    { label: 'Plus Jakarta Sans', value: 'Plus Jakarta Sans', style: { fontFamily: "'Plus Jakarta Sans', sans-serif" } },
     { label: 'Inter', value: 'Inter', style: { fontFamily: "'Inter', sans-serif" } },
     { label: 'Oswald', value: 'Oswald', style: { fontFamily: "'Oswald', sans-serif" } },
     { label: 'Roboto Condensed', value: 'Roboto Condensed', style: { fontFamily: "'Roboto Condensed', sans-serif" } },
@@ -18,37 +26,34 @@ const FONTS = [
     { label: 'Samsung Sharp Sans', value: 'Samsung Sharp Sans', style: { fontFamily: "'Samsung Sharp Sans', sans-serif" } },
     { label: 'Shopee Display', value: 'Shopee Display', style: { fontFamily: "'Shopee Display', sans-serif" } },
 
-    { label: 'UTM Avo', value: 'UTM Avo', style: { fontFamily: "'UTM Avo', sans-serif" } },
-
     { label: 'UTM Colossalis', value: 'UTM Colossalis', style: { fontFamily: "'UTM Colossalis', sans-serif" } }
 ];
 
 const FontSelector: React.FC = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const [currentFont, setCurrentFont] = useState<string>('Plus Jakarta Sans');
+    const [currentFont, setCurrentFont] = useState<string>('UTM Avo');
     const buttonRef = useRef<HTMLButtonElement>(null);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const [dropdownStyles, setDropdownStyles] = useState<React.CSSProperties>({});
 
     useEffect(() => {
         getGlobalFont().then(font => {
-            if (font) {
-                setCurrentFont(font);
+            const activeFont = font || 'UTM Avo';
+            setCurrentFont(activeFont);
 
-                // Apply on mount
-                let styleEl = document.getElementById('dynamic-font-style');
-                if (!styleEl) {
-                    styleEl = document.createElement('style');
-                    styleEl.id = 'dynamic-font-style';
-                    document.head.appendChild(styleEl);
-                }
-                if (font !== 'Plus Jakarta Sans') {
-                    document.documentElement.style.setProperty('--font-sans', `'${font}', sans-serif`);
-                    styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${font}', sans-serif !important; }`;
-                } else {
-                    document.documentElement.style.setProperty('--font-sans', `'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif`);
-                    styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }`;
-                }
+            // Apply on mount
+            let styleEl = document.getElementById('dynamic-font-style');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamic-font-style';
+                document.head.appendChild(styleEl);
+            }
+            if (activeFont !== 'UTM Avo') {
+                document.documentElement.style.setProperty('--font-sans', `'${activeFont}', sans-serif`);
+                styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${activeFont}', sans-serif !important; }`;
+            } else {
+                document.documentElement.style.setProperty('--font-sans', `'UTM Avo', sans-serif`);
+                styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'UTM Avo', sans-serif !important; }`;
             }
         });
     }, []);
@@ -106,8 +111,9 @@ const FontSelector: React.FC = () => {
     }, []);
 
     const handleSelectFont = async (fontValue: string) => {
-        setCurrentFont(fontValue);
-        await saveGlobalFont(fontValue);
+        const activeFont = fontValue || 'UTM Avo';
+        setCurrentFont(activeFont);
+        await saveGlobalFont(activeFont);
 
         let styleEl = document.getElementById('dynamic-font-style');
         if (!styleEl) {
@@ -117,12 +123,12 @@ const FontSelector: React.FC = () => {
         }
 
         // Apply instantly using a style block with !important to override tailwind utilities
-        if (fontValue && fontValue !== 'Plus Jakarta Sans') {
-            document.documentElement.style.setProperty('--font-sans', `'${fontValue}', sans-serif`);
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${fontValue}', sans-serif !important; }`;
+        if (activeFont && activeFont !== 'UTM Avo') {
+            document.documentElement.style.setProperty('--font-sans', `'${activeFont}', sans-serif`);
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: '${activeFont}', sans-serif !important; }`;
         } else {
-            document.documentElement.style.setProperty('--font-sans', `'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif`);
-            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif !important; }`;
+            document.documentElement.style.setProperty('--font-sans', `'UTM Avo', sans-serif`);
+            styleEl.innerHTML = `body, div, span, p, a, h1, h2, h3, h4, h5, h6, table, th, td, button, input, label, select, textarea, strong, em, b, i { font-family: 'UTM Avo', sans-serif !important; }`;
         }
 
         setIsOpen(false);
