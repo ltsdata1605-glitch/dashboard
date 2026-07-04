@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import BarcodeCanvas from '../../../components/views/BarcodeCanvas';
-import { BatchItem } from './types';
+import { BatchItem, TicketDrawData } from './types';
 
 interface StickerPrintPreviewProps {
     batchItems: BatchItem[];
@@ -33,7 +33,75 @@ interface StickerPrintPreviewProps {
     setPreviewOldPrice: (val: string) => void;
     setPreviewNewPrice: (val: string) => void;
     updateBatchItem?: (id: string, updates: Partial<BatchItem>) => void;
+    drawTickets?: TicketDrawData[];
+    setDrawTickets?: React.Dispatch<React.SetStateAction<TicketDrawData[]>>;
 }
+
+interface DrawTicketBlockProps {
+    ticket: TicketDrawData;
+    onChange: (updates: Partial<TicketDrawData>) => void;
+    index: number;
+}
+
+const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, index }) => {
+    const handleTitleChange = useCallback((text: string) => {
+        onChange({ title: text });
+    }, [onChange]);
+
+    const handleCodeChange = useCallback((text: string) => {
+        onChange({ code: text });
+    }, [onChange]);
+
+    const handleFooterChange = useCallback((text: string) => {
+        onChange({ footer: text });
+    }, [onChange]);
+
+    const titleEditable = useContentEditable(ticket.title, handleTitleChange);
+    const codeEditable = useContentEditable(ticket.code, handleCodeChange);
+    const footerEditable = useContentEditable(ticket.footer, handleFooterChange);
+
+    return (
+        <div className="draw-ticket-block" data-index={index}>
+            {/* Title Left */}
+            <div 
+                ref={titleEditable.ref}
+                onInput={titleEditable.handleInput}
+                contentEditable 
+                suppressContentEditableWarning
+                className="input-title-left animate-pulse-once"
+                data-placeholder="Nhập chương trình..."
+            />
+            {/* Title Right (Syncs automatically) */}
+            <div className="display-title-right">
+                {ticket.title}
+            </div>
+
+            {/* Code Left */}
+            <div 
+                ref={codeEditable.ref}
+                onInput={codeEditable.handleInput}
+                contentEditable 
+                suppressContentEditableWarning
+                className="input-code-left"
+                data-placeholder="Số"
+            />
+            {/* Code Right (Syncs automatically) */}
+            <div className="display-code-right">
+                {ticket.code}
+            </div>
+
+            {/* Footer Left */}
+            <div 
+                ref={footerEditable.ref}
+                onInput={footerEditable.handleInput}
+                contentEditable 
+                suppressContentEditableWarning
+                className="input-footer-left"
+                data-placeholder="Nhập quà tặng..."
+            />
+        </div>
+    );
+};
 
 /**
  * Hook to manage a contentEditable div without cursor-jumping.
@@ -152,6 +220,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     setPreviewOldPrice,
     setPreviewNewPrice,
     updateBatchItem,
+    drawTickets = [],
+    setDrawTickets,
 }) => {
     const percentRef = useRef<HTMLDivElement>(null);
 
@@ -484,21 +554,162 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     font-size: 40%;
                     letter-spacing: normal;
                     font-weight: 400 !important;
-                }
                 .sticker-container[data-type="gio_vang"] .extra1,
                 .sticker-container[data-type="gio_vang"] .footer-text {
                     display: none !important;
                 }
-                .sticker-container .active-field {
-                    outline: 1.5px dashed #6366f1;
-                    outline-offset: 1px;
-                }
-                `}
+                 .sticker-container .active-field {
+                     outline: 1.5px dashed #6366f1;
+                     outline-offset: 1px;
+                 }
+
+                 /* Draw Ticket Styles */
+                 .draw-ticket-block {
+                     position: absolute;
+                     width: 100%;
+                     height: 25%;
+                     left: 0;
+                 }
+                 .draw-ticket-block[data-index="0"] { top: 0%; }
+                 .draw-ticket-block[data-index="1"] { top: 25%; }
+                 .draw-ticket-block[data-index="2"] { top: 50%; }
+                 .draw-ticket-block[data-index="3"] { top: 75%; }
+
+                 .draw-ticket-block .input-title-left {
+                     position: absolute;
+                     left: 2.2%;
+                     top: 7%;
+                     width: 45.4%;
+                     height: 14%;
+                     display: flex;
+                     align-items: center;
+                     justify-content: center;
+                     font-family: 'UTM Avo', sans-serif;
+                     font-weight: bold;
+                     font-size: 2.3cqw;
+                     color: #000;
+                     background: transparent;
+                     outline: none;
+                     cursor: text;
+                     text-align: center;
+                     white-space: normal;
+                     line-height: 1.2;
+                 }
+
+                 .draw-ticket-block .display-title-right {
+                     position: absolute;
+                     left: 52.4%;
+                     top: 7%;
+                     width: 45.4%;
+                     height: 14%;
+                     display: flex;
+                     align-items: center;
+                     justify-content: center;
+                     font-family: 'UTM Avo', sans-serif;
+                     font-weight: bold;
+                     font-size: 2.3cqw;
+                     color: #000;
+                     text-align: center;
+                     pointer-events: none;
+                     user-select: none;
+                     white-space: normal;
+                     line-height: 1.2;
+                 }
+
+                 .draw-ticket-block .input-code-left {
+                     position: absolute;
+                     left: 39.4%;
+                     top: 57.5%;
+                     width: 6.2%;
+                     height: 15%;
+                     display: flex;
+                     align-items: center;
+                     justify-content: center;
+                     font-family: 'UTM Avo', sans-serif;
+                     font-weight: bold;
+                     font-size: 2cqw;
+                     color: #ef4444;
+                     background: transparent;
+                     outline: none;
+                     cursor: text;
+                     text-align: center;
+                 }
+
+                 .draw-ticket-block .display-code-right {
+                     position: absolute;
+                     left: 89.6%;
+                     top: 57.5%;
+                     width: 6.2%;
+                     height: 15%;
+                     display: flex;
+                     align-items: center;
+                     justify-content: center;
+                     font-family: 'UTM Avo', sans-serif;
+                     font-weight: bold;
+                     font-size: 2cqw;
+                     color: #ef4444;
+                     text-align: center;
+                     pointer-events: none;
+                     user-select: none;
+                 }
+
+                 .draw-ticket-block .input-footer-left {
+                     position: absolute;
+                     left: 19.3%;
+                     top: 86.8%;
+                     width: 28%;
+                     height: 10%;
+                     display: flex;
+                     align-items: center;
+                     justify-content: center;
+                     font-family: 'UTM Avo', sans-serif;
+                     font-weight: bold;
+                     font-size: 1.7cqw;
+                     color: #fbbc04;
+                     background: transparent;
+                     outline: none;
+                     cursor: text;
+                     text-align: center;
+                 }
+
+                 .draw-ticket-block [contenteditable="true"]:hover,
+                 .draw-ticket-block [contenteditable="true"]:focus {
+                     outline: 1.5px dashed #ef4444 !important;
+                     outline-offset: 1px;
+                 }
+
+                 .draw-ticket-block [contenteditable="true"]:empty::before {
+                     content: attr(data-placeholder);
+                     color: #94a3b8;
+                     font-style: italic;
+                     font-weight: normal;
+                 }
+
+                 @media print {
+                     .draw-ticket-block [contenteditable="true"] {
+                         outline: none !important;
+                     }
+                     .draw-ticket-block [contenteditable="true"]:empty::before {
+                         content: "" !important;
+                     }
+                 }
+                 `}
             </style>
             <div id="print-section" className="w-full">
                 {stickerType === 'draw' ? (
                     <div className="sticker-container" data-type="draw" style={{ backgroundImage: `url(${bgImage})` }}>
-                        {/* Input zones will go here in the next steps */}
+                        {drawTickets.map((ticket, index) => (
+                            <DrawTicketBlock 
+                                key={ticket.id || index} 
+                                index={index} 
+                                ticket={ticket} 
+                                onChange={(updates) => {
+                                    if (setDrawTickets) {
+                                        setDrawTickets(prev => prev.map((t, idx) => idx === index ? { ...t, ...updates } : t));
+                                    }
+                                }} 
+                            />
+                        ))}
                     </div>
                 ) : batchItems.length > 0 ? (
                     <>

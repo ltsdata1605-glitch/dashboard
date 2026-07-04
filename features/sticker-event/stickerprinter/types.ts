@@ -58,3 +58,11 @@ export interface BatchItem {
     selected: boolean;
 }
 
+export interface TicketDrawData {
+    id: string;
+    title: string;
+    code: string;
+    footer: string;
+}
+
+

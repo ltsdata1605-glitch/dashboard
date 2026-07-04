@@ -5,7 +5,7 @@ import { useActiveTab } from '../../contexts/LayoutContext';
 import { saveSetting, getSetting } from '../../services/dbService';
 import toast from 'react-hot-toast';
 
-import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem } from './stickerprinter/types';
+import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem, TicketDrawData } from './stickerprinter/types';
 import { StickerPrintPreview } from './stickerprinter/StickerPrintPreview';
 import { StickerManualQueue } from './stickerprinter/StickerManualQueue';
 import { StickerPrintControls } from './stickerprinter/StickerPrintControls';
@@ -208,6 +208,14 @@ export default function StickerPrinterView() {
     const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang' | 'draw'>('gia_soc');
     const [bgImage, setBgImage] = useState('/frame/X24_NEW.png');
     const [priceSource, setPriceSource] = useState<'sale' | 'service'>('sale');
+    
+    // Ticket draw state
+    const [drawTickets, setDrawTickets] = useState<TicketDrawData[]>([
+        { id: '1', title: '', code: '', footer: '' },
+        { id: '2', title: '', code: '', footer: '' },
+        { id: '3', title: '', code: '', footer: '' },
+        { id: '4', title: '', code: '', footer: '' },
+    ]);
     
     // Dynamic Font Sizes and Active Field Trackers
     const [activeField, setActiveField] = useState<'header' | 'subHeader' | 'percent' | 'oldPrice' | 'name' | 'newPrice' | 'footer'>('header');
@@ -1586,6 +1594,8 @@ export default function StickerPrinterView() {
                         setBarcodeImei={setBarcodeImei}
                         setPreviewName={setPreviewName}
                         updateBatchItem={updateBatchItem}
+                        drawTickets={drawTickets}
+                        setDrawTickets={setDrawTickets}
                     />
                 </div>
                 <StickerPrintControls
