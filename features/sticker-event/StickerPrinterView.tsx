@@ -86,6 +86,10 @@ const generatePageHtml = (
     bgImage: string,
     discountDisplayMode: 'percent' | 'amount' = 'percent'
 ) => {
+    if (stickerType === 'draw') {
+        return `<div class="sticker-container" data-type="${stickerType}" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:2482/3512;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;"></div>`;
+    }
+
     let { newPrice, percent } = resolvePagePrices(page, priceSource);
     
     // Fallback parsing for header, subHeader, and footer from page.html
@@ -204,19 +208,6 @@ export default function StickerPrinterView() {
     const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang' | 'draw'>('gia_soc');
     const [bgImage, setBgImage] = useState('/frame/X24_NEW.png');
     const [priceSource, setPriceSource] = useState<'sale' | 'service'>('sale');
-    
-    // Lucky draw state
-    const [drawTitle, setDrawTitle] = useState<string>('CHƯƠNG TRÌNH KHUYẾN MÃI MÙA HÈ');
-    const [drawInfo, setDrawInfo] = useState<string>('Họ và tên: ..............................................................\nSĐT: .....................................................................');
-    const [drawCode, setDrawCode] = useState<string>('0001');
-    const [drawDetails, setDrawDetails] = useState<string>('Thể lệ: Mỗi hóa đơn mua hàng từ 500k được nhận 1 phiếu rút thăm.\nCơ cấu giải thưởng: 1 Giải Nhất (Tivi 65 inch), 2 Giải Nhì...');
-    const [drawFooter, setDrawFooter] = useState<string>('Hạn áp dụng: 31/07/2026');
-
-    // Auto-increment ticket variables
-    const [drawPrefix, setDrawPrefix] = useState<string>('MB');
-    const [drawStart, setDrawStart] = useState<number>(1);
-    const [drawCount, setDrawCount] = useState<number>(4);
-    const [drawPadding, setDrawPadding] = useState<number>(4);
     
     // Dynamic Font Sizes and Active Field Trackers
     const [activeField, setActiveField] = useState<'header' | 'subHeader' | 'percent' | 'oldPrice' | 'name' | 'newPrice' | 'footer'>('header');
@@ -360,13 +351,13 @@ export default function StickerPrinterView() {
             setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
             setBgImage('/frame/GVO2-scaled.png');
             setHeaderTextSize(8);
-        } else if (sub === 'event') {
-            setStickerMode('event');
-            setEventEverOpened(true);
         } else if (sub === 'draw') {
             setStickerMode('sticker');
             setStickerType('draw');
             setBgImage('/frame/bg_phieu.png');
+        } else if (sub === 'event') {
+            setStickerMode('event');
+            setEventEverOpened(true);
         }
         
         // Preload StickerEventApp in background to avoid lag on click
@@ -400,6 +391,9 @@ export default function StickerPrinterView() {
                         } else if (currentSub === 'gio-vang') {
                             setStickerMode('sticker');
                             setStickerType('gio_vang');
+                        } else if (currentSub === 'draw') {
+                            setStickerMode('sticker');
+                            setStickerType('draw');
                         } else if (currentSub === 'event') {
                             setStickerMode('event');
                             setEventEverOpened(true);
@@ -1316,10 +1310,9 @@ export default function StickerPrinterView() {
     };
 
     const handlePrint = () => {
-        const isLuckyDraw = stickerType === 'draw';
-        const previewPageCount = isLuckyDraw ? drawCount : (batchItems.length > 0 ? batchItems.filter(i => i.selected).length : (manualPages.length === 0 ? 1 : 0));
-        const selectedManualPages = isLuckyDraw ? [] : manualPages.filter(p => p.selected !== false);
-        const totalPages = isLuckyDraw ? drawCount : (previewPageCount + selectedManualPages.length);
+        const previewPageCount = batchItems.length > 0 ? batchItems.filter(i => i.selected).length : (manualPages.length === 0 ? 1 : 0);
+        const selectedManualPages = manualPages.filter(p => p.selected !== false);
+        const totalPages = previewPageCount + selectedManualPages.length;
 
         if (totalPages === 0) {
             toast.error("Không có trang nào để in!");
@@ -1346,168 +1339,64 @@ export default function StickerPrinterView() {
             </style>
         `;
 
-        if (isLuckyDraw) {
-            printHost.innerHTML += `
-                <style>
-                    #print-host .a4-page {
-                        width: 210mm !important;
-                        height: 297mm !important;
-                        margin: 0 !important;
-                        padding: 0 !important;
-                        box-sizing: border-box !important;
-                        background-size: 100% 100% !important;
-                        background-repeat: no-repeat !important;
-                        page-break-after: always !important;
-                        page-break-inside: avoid !important;
-                        position: relative !important;
-                        overflow: hidden !important;
-                        background-color: white !important;
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-                    #print-host .a4-page:last-child {
-                        page-break-after: auto !important;
-                    }
-                    #print-host .ticket-row {
-                        position: absolute !important;
-                        left: 0 !important;
-                        width: 100% !important;
-                        height: 25% !important;
-                        box-sizing: border-box !important;
-                    }
-                    #print-host .ticket-text {
-                        position: absolute !important;
-                        display: flex !important;
-                        align-items: center !important;
-                        justify-content: center !important;
-                        text-align: center !important;
-                        overflow: hidden !important;
-                        font-family: 'UTM Avo', sans-serif !important;
-                        color: black !important;
-                        line-height: 1.25 !important;
-                        box-sizing: border-box !important;
-                        word-break: break-word !important;
-                    }
-                </style>
-            `;
-
-            const pages: StickerPage[] = [];
-            for (let i = 0; i < drawCount; i++) {
-                const currentNum = drawStart + i;
-                const formattedNum = String(currentNum).padStart(drawPadding, '0');
-                const fullCode = `${drawPrefix}${formattedNum}`;
-                pages.push({
-                    id: `draw_${i}`,
-                    html: '',
-                    label: '',
-                    oldPrice: '',
-                    newPrice: '',
-                    percent: '',
-                    timestamp: Date.now(),
-                    drawTitle,
-                    drawInfo,
-                    drawCode: fullCode,
-                    drawDetails,
-                    drawFooter
-                });
-            }
-
-            let pagesHtml = '';
-            for (let i = 0; i < pages.length; i += 4) {
-                const chunk = pages.slice(i, i + 4);
-                let rowsHtml = '';
-                chunk.forEach((p, idx) => {
-                    rowsHtml += `
-                    <div class="ticket-row" style="top: ${idx * 25}%;">
-                        <!-- Khung 1: Tiêu đề -->
-                        <div class="ticket-text font-bold" style="left: 1.8%; width: 46.2%; top: 4.5%; height: 15%; font-size: 13px; font-weight: 900;">${p.drawTitle || ''}</div>
-                        <div class="ticket-text font-bold" style="left: 53.0%; width: 45%; top: 4.5%; height: 15%; font-size: 13px; font-weight: 900;">${p.drawTitle || ''}</div>
-
-                        <!-- Khung 2: Thông tin KH -->
-                        <div class="ticket-text" style="left: 0.8%; width: 34.7%; top: 27%; height: 21.5%; font-size: 10px; text-align: left; align-items: flex-start; justify-content: flex-start; padding-top: 2px; white-space: pre-line; line-height: 1.3;">${p.drawInfo || ''}</div>
-                        <div class="ticket-text" style="left: 52.0%; width: 33.3%; top: 27%; height: 21.5%; font-size: 10px; text-align: left; align-items: flex-start; justify-content: flex-start; padding-top: 2px; white-space: pre-line; line-height: 1.3;">${p.drawInfo || ''}</div>
-
-                        <!-- Khung 3: Mã số -->
-                        <div class="ticket-text font-bold" style="left: 39.8%; width: 6%; top: 37.5%; height: 8%; font-size: 11px; font-weight: 900; color: #dc2626;">${p.drawCode || ''}</div>
-                        <div class="ticket-text font-bold" style="left: 90.5%; width: 6%; top: 37.5%; height: 8%; font-size: 11px; font-weight: 900; color: #dc2626;">${p.drawCode || ''}</div>
-
-                        <!-- Khung 4: Thể lệ/Giải -->
-                        <div class="ticket-text" style="left: 1.2%; width: 48.1%; top: 52.5%; height: 30%; font-size: 8px; text-align: left; align-items: flex-start; justify-content: flex-start; white-space: pre-line; line-height: 1.2;">${p.drawDetails || ''}</div>
-                        <div class="ticket-text" style="left: 52.5%; width: 45.8%; top: 52.5%; height: 30%; font-size: 8px; text-align: left; align-items: flex-start; justify-content: flex-start; white-space: pre-line; line-height: 1.2;">${p.drawDetails || ''}</div>
-
-                        <!-- Khung 5: Footer đen -->
-                        <div class="ticket-text font-bold" style="left: 19.3%; width: 27.8%; top: 87.5%; height: 10%; color: #fbbf24; font-size: 10px; font-weight: 900;">${p.drawFooter || ''}</div>
-                    </div>
-                    `;
-                });
-
-                pagesHtml += `
-                <div class="a4-page" style="background-image: url('${bgImage}');">
-                    ${rowsHtml}
-                </div>
-                `;
-            }
-            printHost.innerHTML += pagesHtml;
-        } else {
-            if (batchItems.length > 0) {
-                const selectedBatchItems = batchItems.filter(i => i.selected);
-                selectedBatchItems.forEach(item => {
-                    const tempPage: StickerPage = {
-                        id: item.id,
-                        html: '',
-                        label: item.name,
-                        oldPrice: item.oldPrice,
-                        newPrice: item.newPrice,
-                        percent: item.percent,
-                        timestamp: Date.now(),
-                        code: showBarcode ? item.imei : undefined,
-                        header: headerTextContent,
-                        subHeader: subHeaderTextContent,
-                        footer: footerTextContent,
-                    };
-                    printHost.innerHTML += generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode);
-                });
-            } else if (manualPages.length === 0) {
-                // If both are empty, this handles the default preview template
-                const printSection = document.getElementById('print-section');
-                if (printSection) {
-                    printHost.innerHTML += printSection.innerHTML;
-                }
-            }
-
-            // Then append queued manual pages
-            selectedManualPages.forEach(page => {
-                let finalHeader = page.header || '';
-                let finalSubHeader = page.subHeader || '';
-                let finalFooter = page.footer || '';
-
-                if (stickerType === 'gio_vang') {
-                    // If printing Giờ Vàng, override header if it's a Giá Sốc header or empty
-                    const isGiaSocHeader = !finalHeader || finalHeader === 'SẢN PHẨM GIÁ SỐC' || finalHeader === 'QUẠT ĐIỀU HOÀ' || !finalHeader.toUpperCase().startsWith('TỪ');
-                    if (isGiaSocHeader) {
-                        finalHeader = headerTextContent;
-                    }
-                    // Override subHeader if empty or invalid for Giờ Vàng
-                    if (!finalSubHeader || !finalSubHeader.toUpperCase().includes('SUẤT')) {
-                        finalSubHeader = subHeaderTextContent;
-                    }
-                } else if (stickerType === 'gia_soc') {
-                    // If printing Giá Sốc, override header if it contains Giờ Vàng time range
-                    const isGioVangHeader = finalHeader && (finalHeader.toUpperCase().startsWith('TỪ') || finalHeader.includes('/'));
-                    if (isGioVangHeader) {
-                        finalHeader = headerTextContent;
-                    }
-                }
-
+        if (batchItems.length > 0) {
+            const selectedBatchItems = batchItems.filter(i => i.selected);
+            selectedBatchItems.forEach(item => {
                 const tempPage: StickerPage = {
-                    ...page,
-                    header: finalHeader,
-                    subHeader: finalSubHeader,
-                    footer: finalFooter || footerTextContent
+                    id: item.id,
+                    html: '',
+                    label: item.name,
+                    oldPrice: item.oldPrice,
+                    newPrice: item.newPrice,
+                    percent: item.percent,
+                    timestamp: Date.now(),
+                    code: showBarcode ? item.imei : undefined,
+                    header: headerTextContent,
+                    subHeader: subHeaderTextContent,
+                    footer: footerTextContent,
                 };
                 printHost.innerHTML += generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode);
             });
+        } else if (manualPages.length === 0) {
+            // If both are empty, this handles the default preview template
+            const printSection = document.getElementById('print-section');
+            if (printSection) {
+                printHost.innerHTML += printSection.innerHTML;
+            }
         }
+
+        // Then append queued manual pages
+        selectedManualPages.forEach(page => {
+            let finalHeader = page.header || '';
+            let finalSubHeader = page.subHeader || '';
+            let finalFooter = page.footer || '';
+
+            if (stickerType === 'gio_vang') {
+                // If printing Giờ Vàng, override header if it's a Giá Sốc header or empty
+                const isGiaSocHeader = !finalHeader || finalHeader === 'SẢN PHẨM GIÁ SỐC' || finalHeader === 'QUẠT ĐIỀU HOÀ' || !finalHeader.toUpperCase().startsWith('TỪ');
+                if (isGiaSocHeader) {
+                    finalHeader = headerTextContent;
+                }
+                // Override subHeader if empty or invalid for Giờ Vàng
+                if (!finalSubHeader || !finalSubHeader.toUpperCase().includes('SUẤT')) {
+                    finalSubHeader = subHeaderTextContent;
+                }
+            } else if (stickerType === 'gia_soc') {
+                // If printing Giá Sốc, override header if it contains Giờ Vàng time range
+                const isGioVangHeader = finalHeader && (finalHeader.toUpperCase().startsWith('TỪ') || finalHeader.includes('/'));
+                if (isGioVangHeader) {
+                    finalHeader = headerTextContent;
+                }
+            }
+
+            const tempPage: StickerPage = {
+                ...page,
+                header: finalHeader,
+                subHeader: finalSubHeader,
+                footer: finalFooter || footerTextContent
+            };
+            printHost.innerHTML += generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode);
+        });
 
         document.body.appendChild(printHost);
 
@@ -1587,6 +1476,7 @@ export default function StickerPrinterView() {
                             onClick={() => {
                                 setStickerMode('sticker');
                                 setStickerType('gio_vang');
+                                setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
                                 setBgImage('/frame/GVO2-scaled.png');
                                 setHeaderTextSize(8);
                                 updateSubQueryParam('gio-vang');
@@ -1609,12 +1499,12 @@ export default function StickerPrinterView() {
                             }}
                             className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
                                 stickerMode === 'sticker' && stickerType === 'draw' 
-                                    ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400 shadow-sm' 
+                                    ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 shadow-sm' 
                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                             }`}
                         >
                             <span className="lg:hidden">Rút Thăm</span>
-                            <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'draw' && <CheckCircle2 size={14} className="inline mr-1 text-red-600 dark:text-red-400" />}Phiếu Rút Thăm</span>
+                            <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'draw' && <CheckCircle2 size={14} className="inline mr-1 text-rose-600 dark:text-rose-400" />}Phiếu Rút Thăm</span>
                         </button>
                         <button
                             onClick={() => { 
@@ -1696,16 +1586,6 @@ export default function StickerPrinterView() {
                         setBarcodeImei={setBarcodeImei}
                         setPreviewName={setPreviewName}
                         updateBatchItem={updateBatchItem}
-                        drawTitle={drawTitle}
-                        setDrawTitle={setDrawTitle}
-                        drawInfo={drawInfo}
-                        setDrawInfo={setDrawInfo}
-                        drawCode={drawCode}
-                        setDrawCode={setDrawCode}
-                        drawDetails={drawDetails}
-                        setDrawDetails={setDrawDetails}
-                        drawFooter={drawFooter}
-                        setDrawFooter={setDrawFooter}
                     />
                 </div>
                 <StickerPrintControls
@@ -1751,15 +1631,6 @@ export default function StickerPrinterView() {
                     priceSource={priceSource}
                     setPriceSource={setPriceSource}
                     handleErpPriceUpload={handleErpPriceUpload}
-                    stickerType={stickerType}
-                    drawPrefix={drawPrefix}
-                    setDrawPrefix={setDrawPrefix}
-                    drawStart={drawStart}
-                    setDrawStart={setDrawStart}
-                    drawCount={drawCount}
-                    setDrawCount={setDrawCount}
-                    drawPadding={drawPadding}
-                    setDrawPadding={setDrawPadding}
                 />
             </div>
 

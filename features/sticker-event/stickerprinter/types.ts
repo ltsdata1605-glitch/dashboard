@@ -14,12 +14,6 @@ export interface StickerPage {
     footer?: string;
     code?: string;
     selected?: boolean;
-    // Lucky draw fields
-    drawTitle?: string;
-    drawInfo?: string;
-    drawCode?: string;
-    drawDetails?: string;
-    drawFooter?: string;
 }
 
 export interface SavedStickerList {
