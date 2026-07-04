@@ -998,27 +998,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
                  /* Draw Ticket Styles */
 
-                  /* Vertical alignment resets and constraints for draw tickets */
-                  .draw-ticket-block .input-title-left *,
-                  .draw-ticket-block .display-title-left *,
-                  .draw-ticket-block .display-title-right * {
-                      margin: 0 !important;
-                      padding: 0 !important;
-                      line-height: 1.1 !important;
-                      display: inline-block !important;
-                      vertical-align: middle !important;
-                  }
-
-                  .draw-ticket-block .input-content-top-left *,
-                  .draw-ticket-block .display-content-top-left *,
-                  .draw-ticket-block .display-content-top-right *,
-                  .draw-ticket-block .input-content-bottom-left *,
-                  .draw-ticket-block .display-content-bottom-left *,
-                  .draw-ticket-block .display-content-bottom-right * {
-                      margin: 0 !important;
-                      padding: 0 !important;
-                      line-height: 1.2 !important;
-                  }
+                  
 
                  .draw-ticket-block {
                      position: absolute;
@@ -1037,9 +1017,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 2.0%;
                       width: 45.4%;
                       height: 16%;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
+                      display: block;
+                      
+                      
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 3.6cqw;
@@ -1047,7 +1027,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       background: transparent;
                       outline: none;
                       cursor: text;
-                      text-align: center;
+                      text-align: left;
                       white-space: normal;
                       line-height: 1.2;
                       overflow: hidden;
@@ -1059,14 +1039,14 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 2.0%;
                       width: 45.4%;
                       height: 16%;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
+                      display: block;
+                      
+                      
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 3.6cqw;
                       color: #000;
-                      text-align: center;
+                      text-align: left;
                       pointer-events: none;
                       user-select: none;
                       white-space: normal;
@@ -1080,11 +1060,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 21.0%;
                       width: 35.0%;
                       height: 30.0%;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      display: block;
+                      
+                      
+                      
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1127,11 +1107,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 53.0%;
                       width: 45.4%;
                       height: 30.0%;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      display: block;
+                      
+                      
+                      
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1233,9 +1213,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 85.8%;
                       width: 28%;
                       height: 10%;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
+                      display: block;
+                      
+                      
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 3.8cqw;
@@ -1243,7 +1223,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       background: transparent;
                       outline: none;
                       cursor: text;
-                      text-align: center;
+                      text-align: left;
                       overflow: hidden;
 }
 
@@ -1253,14 +1233,14 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 2.0%;
                       width: 45.4%;
                       height: 16%;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
+                      display: block;
+                      
+                      
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 3.6cqw;
                       color: #000;
-                      text-align: center;
+                      text-align: left;
                       white-space: normal;
                       line-height: 1.2;
                       overflow: hidden;
@@ -1272,11 +1252,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 21.0%;
                       width: 35.0%;
                       height: 30.0%;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      display: block;
+                      
+                      
+                      
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
@@ -1292,11 +1272,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 21.0%;
                       width: 35.0%;
                       height: 30.0%;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      display: block;
+                      
+                      
+                      
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
@@ -1312,11 +1292,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 53.0%;
                       width: 45.4%;
                       height: 30.0%;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      display: block;
+                      
+                      
+                      
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1333,11 +1313,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 53.0%;
                       width: 45.4%;
                       height: 30.0%;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;
-                      text-align: center;
+                      display: block;
+                      
+                      
+                      
+                      text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1354,14 +1334,14 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       top: 85.8%;
                       width: 28%;
                       height: 10%;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
+                      display: block;
+                      
+                      
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 3.8cqw;
                       color: #ffffff;
-                      text-align: center;
+                      text-align: left;
                       overflow: hidden;
 }
 
