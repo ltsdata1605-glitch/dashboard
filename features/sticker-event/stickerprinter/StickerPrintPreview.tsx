@@ -40,12 +40,13 @@ interface StickerPrintPreviewProps {
 
 interface DrawTicketBlockProps {
     ticket: TicketDrawData;
+    firstTicket?: TicketDrawData;
     onChange: (updates: Partial<TicketDrawData>) => void;
     index: number;
     drawContentTopSize?: number;
 }
 
-const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, index, drawContentTopSize }) => {
+const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, firstTicket, onChange, index, drawContentTopSize }) => {
     const handleTitleChange = useCallback((text: string) => {
         onChange({ title: text });
     }, [onChange]);
@@ -82,42 +83,66 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
     const contentBottomEditable = useContentEditable(ticket.contentBottom || '', handleContentBottomChange, true);
     const contentBottomRightEditable = useContentEditable(ticket.contentBottomRight || '', handleContentBottomRightChange, true);
 
+    const isFirst = index === 0;
+    const activeFirstTicket = firstTicket || ticket;
+
     return (
         <div className="draw-ticket-block" data-index={index}>
             {/* Title Left */}
-            <div 
-                ref={titleEditable.ref}
-                onInput={titleEditable.handleInput}
-                contentEditable 
-                suppressContentEditableWarning
-                className="input-title-left animate-pulse-once"
-                data-placeholder="Nhập tiêu đề..."
-            />
+            {isFirst ? (
+                <div 
+                    ref={titleEditable.ref}
+                    onInput={titleEditable.handleInput}
+                    contentEditable 
+                    suppressContentEditableWarning
+                    className="input-title-left animate-pulse-once"
+                    data-placeholder="Nhập tiêu đề..."
+                />
+            ) : (
+                <div 
+                    className="display-title-left"
+                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.title }}
+                />
+            )}
             {/* Title Right (Syncs automatically) */}
-            <div className="display-title-right">
-                {ticket.title}
-            </div>
+            <div className="display-title-right" dangerouslySetInnerHTML={{ __html: activeFirstTicket.title }} />
 
             {/* Content Top Left */}
-            <div 
-                ref={contentTopEditable.ref}
-                onInput={contentTopEditable.handleInput}
-                contentEditable 
-                suppressContentEditableWarning
-                className="input-content-top-left"
-                style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
-                data-placeholder="Nhập thông tin 1 (Họ tên, SĐT...)"
-            />
-            {/* Content Top Right (Editable & independent) */}
-            <div 
-                ref={contentTopRightEditable.ref}
-                onInput={contentTopRightEditable.handleInput}
-                contentEditable 
-                suppressContentEditableWarning
-                className="input-content-top-right"
-                style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
-                data-placeholder="Nhập thông tin 3 (Tự gõ...)"
-            />
+            {isFirst ? (
+                <div 
+                    ref={contentTopEditable.ref}
+                    onInput={contentTopEditable.handleInput}
+                    contentEditable 
+                    suppressContentEditableWarning
+                    className="input-content-top-left"
+                    style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
+                    data-placeholder="Nhập thông tin 1 (Họ tên, SĐT...)"
+                />
+            ) : (
+                <div 
+                    className="display-content-top-left"
+                    style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
+                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentTop || '' }}
+                />
+            )}
+            {/* Content Top Right */}
+            {isFirst ? (
+                <div 
+                    ref={contentTopRightEditable.ref}
+                    onInput={contentTopRightEditable.handleInput}
+                    contentEditable 
+                    suppressContentEditableWarning
+                    className="input-content-top-right"
+                    style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
+                    data-placeholder="Nhập thông tin 3 (Tự gõ...)"
+                />
+            ) : (
+                <div 
+                    className="display-content-top-right"
+                    style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
+                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentTopRight || '' }}
+                />
+            )}
 
             {/* Code Left */}
             <div 
@@ -134,33 +159,54 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
             </div>
 
             {/* Content Bottom Left */}
-            <div 
-                ref={contentBottomEditable.ref}
-                onInput={contentBottomEditable.handleInput}
-                contentEditable 
-                suppressContentEditableWarning
-                className="input-content-bottom-left"
-                data-placeholder="Nhập thông tin 2 (Địa chỉ...)"
-            />
-            {/* Content Bottom Right (Editable & independent) */}
-            <div 
-                ref={contentBottomRightEditable.ref}
-                onInput={contentBottomRightEditable.handleInput}
-                contentEditable 
-                suppressContentEditableWarning
-                className="input-content-bottom-right"
-                data-placeholder="Nhập thông tin 4 (Tự gõ...)"
-            />
+            {isFirst ? (
+                <div 
+                    ref={contentBottomEditable.ref}
+                    onInput={contentBottomEditable.handleInput}
+                    contentEditable 
+                    suppressContentEditableWarning
+                    className="input-content-bottom-left"
+                    data-placeholder="Nhập thông tin 2 (Địa chỉ...)"
+                />
+            ) : (
+                <div 
+                    className="display-content-bottom-left"
+                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentBottom || '' }}
+                />
+            )}
+            {/* Content Bottom Right */}
+            {isFirst ? (
+                <div 
+                    ref={contentBottomRightEditable.ref}
+                    onInput={contentBottomRightEditable.handleInput}
+                    contentEditable 
+                    suppressContentEditableWarning
+                    className="input-content-bottom-right"
+                    data-placeholder="Nhập thông tin 4 (Tự gõ...)"
+                />
+            ) : (
+                <div 
+                    className="display-content-bottom-right"
+                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentBottomRight || '' }}
+                />
+            )}
 
             {/* Footer Left */}
-            <div 
-                ref={footerEditable.ref}
-                onInput={footerEditable.handleInput}
-                contentEditable 
-                suppressContentEditableWarning
-                className="input-footer-left"
-                data-placeholder="Nhập tên siêu thị..."
-            />
+            {isFirst ? (
+                <div 
+                    ref={footerEditable.ref}
+                    onInput={footerEditable.handleInput}
+                    contentEditable 
+                    suppressContentEditableWarning
+                    className="input-footer-left"
+                    data-placeholder="Nhập tên siêu thị..."
+                />
+            ) : (
+                <div 
+                    className="display-footer-left"
+                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.footer }}
+                />
+            )}
         </div>
     );
 };
@@ -838,6 +884,124 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       text-align: center;
                   }
 
+                  .draw-ticket-block .display-title-left {
+                      position: absolute;
+                      left: 2.2%;
+                      top: 2.0%;
+                      width: 45.4%;
+                      height: 16%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 3.6cqw;
+                      color: #000;
+                      text-align: center;
+                      white-space: normal;
+                      line-height: 1.2;
+                  }
+
+                  .draw-ticket-block .display-content-top-left {
+                      position: absolute;
+                      left: 2.2%;
+                      top: 21.0%;
+                      width: 35.0%;
+                      height: 30.0%;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: flex-start;
+                      align-items: flex-start;
+                      text-align: left;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      color: #000;
+                      white-space: pre-wrap;
+                      word-break: break-word;
+                      padding: 0.5cqw 1cqw;
+                  }
+
+                  .draw-ticket-block .display-content-top-right {
+                      position: absolute;
+                      left: 52.4%;
+                      top: 21.0%;
+                      width: 35.0%;
+                      height: 30.0%;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: flex-start;
+                      align-items: flex-start;
+                      text-align: left;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      color: #000;
+                      white-space: pre-wrap;
+                      word-break: break-word;
+                      padding: 0.5cqw 1cqw;
+                  }
+
+                  .draw-ticket-block .display-content-bottom-left {
+                      position: absolute;
+                      left: 2.2%;
+                      top: 53.0%;
+                      width: 45.4%;
+                      height: 30.0%;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: flex-start;
+                      align-items: flex-start;
+                      text-align: left;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 2.2cqw;
+                      color: #000;
+                      white-space: pre-wrap;
+                      word-break: break-word;
+                      padding: 0.5cqw 1cqw;
+                  }
+
+                  .draw-ticket-block .display-content-bottom-right {
+                      position: absolute;
+                      left: 52.4%;
+                      top: 53.0%;
+                      width: 45.4%;
+                      height: 30.0%;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: flex-start;
+                      align-items: flex-start;
+                      text-align: left;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 2.2cqw;
+                      color: #000;
+                      white-space: pre-wrap;
+                      word-break: break-word;
+                      padding: 0.5cqw 1cqw;
+                  }
+
+                  .draw-ticket-block .display-footer-left {
+                      position: absolute;
+                      left: 19.3%;
+                      top: 85.8%;
+                      width: 28%;
+                      height: 10%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 3.8cqw;
+                      color: #fbbc04;
+                      text-align: center;
+                  }
+
+                  .draw-ticket-block [class^="display-"],
+                  .draw-ticket-block [class*=" display-"] {
+                      pointer-events: none;
+                      user-select: none;
+                  }
+
                  .draw-ticket-block [contenteditable="true"]:hover,
                  .draw-ticket-block [contenteditable="true"]:focus {
                      outline: 1.5px dashed #ef4444 !important;
@@ -869,6 +1033,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 key={ticket.id || index} 
                                 index={index} 
                                 ticket={ticket} 
+                                firstTicket={drawTickets[0]}
                                 drawContentTopSize={drawContentTopSize}
                                 onChange={(updates) => {
                                     if (setDrawTickets) {
