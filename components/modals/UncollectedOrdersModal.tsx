@@ -446,6 +446,62 @@ Link: ${url}`;
         }
     };
 
+    const handleExportLocalExcel = async () => {
+        setIsExporting(true);
+        try {
+            const XLSX = await import('xlsx');
+            
+            const exportData = salesData.map(order => {
+                return {
+                    'Kho tạo': getRowValue(order, COL.KHO_TAO) || '',
+                    'Người tạo': getRowValue(order, COL.NGUOI_TAO) || '',
+                    'Mã đơn hàng': getRowValue(order, COL.ID) || '',
+                    'Mã sản phẩm': getRowValue(order, COL.PRODUCT_CODE) || '',
+                    'Tên sản phẩm': getRowValue(order, COL.PRODUCT) || '',
+                    'Số lượng': Number(getRowValue(order, COL.QUANTITY)) || 0,
+                    'Trạng thái thu tiền': getRowValue(order, COL.TRANG_THAI_THU_TIEN) || '',
+                    'Trạng thái xuất': getRowValue(order, COL.XUAT) || '',
+                    'Trạng thái giao hàng': getRowValue(order, COL.TRANG_THAI_GIAO_HANG) || '',
+                    'Trạng thái hủy': getRowValue(order, COL.TRANG_THAI_HUY) || ''
+                };
+            });
+
+            // Sắp xếp theo tên người tạo
+            const extractName = (val: string | number) => {
+                const s = String(val);
+                const parts = s.split('-');
+                return parts.length > 1 ? parts.slice(1).join('-').trim() : s.trim();
+            };
+            exportData.sort((a, b) => {
+                const nameA = extractName(a['Người tạo']);
+                const nameB = extractName(b['Người tạo']);
+                return nameA.localeCompare(nameB, 'vi');
+            });
+
+            const ws = XLSX.utils.json_to_sheet(exportData);
+            
+            // Set dynamic column widths
+            const wscols = [
+                {wch: 15}, {wch: 25}, {wch: 15}, {wch: 15}, {wch: 40}, 
+                {wch: 10}, {wch: 18}, {wch: 15}, {wch: 20}, {wch: 15}
+            ];
+            ws['!cols'] = wscols;
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "ChuaThuChuaHuy");
+            
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' }).replace(/\//g, '-');
+            const filename = `DonHangChuaThuChuaHuy_${dateStr}.xlsx`;
+            
+            XLSX.writeFile(wb, filename);
+        } catch (err) {
+            console.error('Lỗi khi xuất file Excel:', err);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     const controls = (
         <div className="flex items-center gap-1 lg:gap-2 hide-on-export">
             <Button onClick={handleCopyOverdueEmployees} variant="ghost" size="icon" title="Copy danh sách NV có đơn quá hạn xuất" className="border border-amber-300 dark:border-amber-600 text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 hover:bg-amber-100 dark:hover:bg-amber-900/50 shadow-sm">
@@ -460,7 +516,7 @@ Link: ${url}`;
             <Button onClick={handleExportAll} disabled={isExporting} variant="secondary" size="icon" title="Xuất ảnh toàn bộ danh sách">
                  <Icon name="camera" size={4} />
             </Button>
-            <Button onClick={onExportSheet} disabled={isExporting} variant="ghost" title="Xuất File Excel" leftIcon={<Icon name="file-spreadsheet" size={4} />} className="border border-green-300 dark:border-green-600 text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 shadow-sm font-bold text-xs lg:text-sm">
+            <Button onClick={handleExportLocalExcel} disabled={isExporting} variant="ghost" title="Xuất File Excel" leftIcon={<Icon name="file-spreadsheet" size={4} />} className="border border-green-300 dark:border-green-600 text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/30 hover:bg-green-100 dark:hover:bg-green-900/50 shadow-sm font-bold text-xs lg:text-sm">
                  Excel
             </Button>
             <Button onClick={handleExportGoogleSheet} disabled={isExporting} variant="ghost" title="Xuất lên Google Sheet" leftIcon={<Icon name="sheet" size={4} />} className="border border-blue-300 dark:border-blue-600 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 shadow-sm font-bold text-xs lg:text-sm">
