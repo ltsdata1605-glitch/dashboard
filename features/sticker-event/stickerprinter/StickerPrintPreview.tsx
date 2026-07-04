@@ -436,6 +436,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         const handleSelectionChange = () => {
             const selection = window.getSelection();
             if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+                if (document.activeElement && document.activeElement.closest('.fixed.z-\\[9999\\]')) {
+                    return;
+                }
                 setToolbarPos(null);
                 setActiveMenu(null);
                 return;
@@ -457,6 +460,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
             }
 
             if (!isInsideEditable) {
+                if (document.activeElement && document.activeElement.closest('.fixed.z-\\[9999\\]')) {
+                    return;
+                }
                 setToolbarPos(null);
                 setActiveMenu(null);
                 return;
@@ -669,6 +675,33 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         }
     };
 
+    const getMaxFontSizeForSelection = (): number => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return 10.0;
+        const range = selection.getRangeAt(0);
+        let parent: HTMLElement | null = range.commonAncestorContainer as HTMLElement;
+        if (parent.nodeType === Node.TEXT_NODE) {
+            parent = parent.parentElement;
+        }
+        
+        if (!parent) return 10.0;
+        
+        if (parent.closest('.input-title-left, .display-title-left, .display-title-right')) {
+            return 10.0; // Tiêu đề
+        }
+        if (parent.closest('.input-content-top-left, .display-content-top-left, .display-content-top-right')) {
+            return 6.0; // Nội dung trên
+        }
+        if (parent.closest('.input-content-bottom-left, .display-content-bottom-left, .display-content-bottom-right')) {
+            return 6.0; // Nội dung dưới
+        }
+        if (parent.closest('.input-footer-left, .display-footer-left, .display-footer-right')) {
+            return 8.0; // Chân trang
+        }
+        
+        return 10.0;
+    };
+
     const getSelectedFontSize = (): number => {
         const selection = window.getSelection();
         if (!selection || selection.rangeCount === 0) return 3.5;
@@ -689,7 +722,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
     const adjustFontSize = (amount: number) => {
         const current = getSelectedFontSize();
-        const newVal = Math.max(0.5, Math.min(20, parseFloat((current + amount).toFixed(1))));
+        const maxLimit = getMaxFontSizeForSelection();
+        const newVal = Math.max(0.5, Math.min(maxLimit, parseFloat((current + amount).toFixed(1))));
         applyStyleToSelection('fontSize', `${newVal}cqw`);
         
         if (savedRangeRef.current) {
@@ -703,8 +737,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
     const handleFontSizeInputChange = (valStr: string) => {
         const val = parseFloat(valStr);
+        const maxLimit = getMaxFontSizeForSelection();
         if (!isNaN(val) && val > 0) {
-            applyStyleToSelection('fontSize', `${val}cqw`);
+            const finalVal = Math.min(maxLimit, val);
+            applyStyleToSelection('fontSize', `${finalVal}cqw`);
         }
     };
 
