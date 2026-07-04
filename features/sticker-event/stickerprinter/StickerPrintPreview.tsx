@@ -66,11 +66,21 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
         onChange({ contentBottom: text });
     }, [onChange]);
 
+    const handleContentTopRightChange = useCallback((text: string) => {
+        onChange({ contentTopRight: text });
+    }, [onChange]);
+
+    const handleContentBottomRightChange = useCallback((text: string) => {
+        onChange({ contentBottomRight: text });
+    }, [onChange]);
+
     const titleEditable = useContentEditable(ticket.title, handleTitleChange);
     const codeEditable = useContentEditable(ticket.code, handleCodeChange);
     const footerEditable = useContentEditable(ticket.footer, handleFooterChange);
     const contentTopEditable = useContentEditable(ticket.contentTop || '', handleContentTopChange);
+    const contentTopRightEditable = useContentEditable(ticket.contentTopRight || '', handleContentTopRightChange);
     const contentBottomEditable = useContentEditable(ticket.contentBottom || '', handleContentBottomChange);
+    const contentBottomRightEditable = useContentEditable(ticket.contentBottomRight || '', handleContentBottomRightChange);
 
     return (
         <div className="draw-ticket-block" data-index={index}>
@@ -98,13 +108,16 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
                 style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
                 data-placeholder="Nhập thông tin 1 (Họ tên, SĐT...)"
             />
-            {/* Content Top Right (Syncs automatically) */}
+            {/* Content Top Right (Editable & independent) */}
             <div 
-                className="display-content-top-right"
+                ref={contentTopRightEditable.ref}
+                onInput={contentTopRightEditable.handleInput}
+                contentEditable 
+                suppressContentEditableWarning
+                className="input-content-top-right"
                 style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
-            >
-                {ticket.contentTop}
-            </div>
+                data-placeholder="Nhập thông tin 3 (Tự gõ...)"
+            />
 
             {/* Code Left */}
             <div 
@@ -129,10 +142,15 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
                 className="input-content-bottom-left"
                 data-placeholder="Nhập thông tin 2 (Địa chỉ...)"
             />
-            {/* Content Bottom Right (Syncs automatically) */}
-            <div className="display-content-bottom-right">
-                {ticket.contentBottom}
-            </div>
+            {/* Content Bottom Right (Editable & independent) */}
+            <div 
+                ref={contentBottomRightEditable.ref}
+                onInput={contentBottomRightEditable.handleInput}
+                contentEditable 
+                suppressContentEditableWarning
+                className="input-content-bottom-right"
+                data-placeholder="Nhập thông tin 4 (Tự gõ...)"
+            />
 
             {/* Footer Left */}
             <div 
@@ -729,7 +747,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       padding: 0.5cqw 1cqw;
                   }
  
-                  .draw-ticket-block .display-content-bottom-right {
+                  .draw-ticket-block .input-content-bottom-right {
                       position: absolute;
                       left: 52.4%;
                       top: 53.0%;
@@ -744,8 +762,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-weight: bold;
                       font-size: 2.2cqw;
                       color: #000;
-                      pointer-events: none;
-                      user-select: none;
+                      background: transparent;
+                      outline: none;
+                      cursor: text;
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;

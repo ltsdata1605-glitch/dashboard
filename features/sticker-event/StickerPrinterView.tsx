@@ -211,10 +211,10 @@ export default function StickerPrinterView() {
     
     // Ticket draw state
     const [drawTickets, setDrawTickets] = useState<TicketDrawData[]>([
-        { id: '1', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '' },
-        { id: '2', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '' },
-        { id: '3', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '' },
-        { id: '4', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '' },
+        { id: '1', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
+        { id: '2', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
+        { id: '3', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
+        { id: '4', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
     ]);
     const [drawContentTopSize, setDrawContentTopSize] = useState(3.5);
     

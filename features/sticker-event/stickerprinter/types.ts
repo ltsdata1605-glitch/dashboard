@@ -67,6 +67,7 @@ export interface TicketDrawData {
     contentTop?: string;
     contentTopRight?: string;
     contentBottom?: string;
+    contentBottomRight?: string;
 }
 
 
