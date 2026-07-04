@@ -577,101 +577,101 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                  .draw-ticket-block[data-index="3"] { top: 75%; }
 
                  .draw-ticket-block .input-title-left {
-                     position: absolute;
-                     left: 2.2%;
-                     top: 7%;
-                     width: 45.4%;
-                     height: 14%;
-                     display: flex;
-                     align-items: center;
-                     justify-content: center;
-                     font-family: 'UTM Avo', sans-serif;
-                     font-weight: bold;
-                     font-size: 2.3cqw;
-                     color: #000;
-                     background: transparent;
-                     outline: none;
-                     cursor: text;
-                     text-align: center;
-                     white-space: normal;
-                     line-height: 1.2;
-                 }
-
-                 .draw-ticket-block .display-title-right {
-                     position: absolute;
-                     left: 52.4%;
-                     top: 7%;
-                     width: 45.4%;
-                     height: 14%;
-                     display: flex;
-                     align-items: center;
-                     justify-content: center;
-                     font-family: 'UTM Avo', sans-serif;
-                     font-weight: bold;
-                     font-size: 2.3cqw;
-                     color: #000;
-                     text-align: center;
-                     pointer-events: none;
-                     user-select: none;
-                     white-space: normal;
-                     line-height: 1.2;
-                 }
-
-                 .draw-ticket-block .input-code-left {
-                     position: absolute;
-                     left: 39.4%;
-                     top: 57.5%;
-                     width: 6.2%;
-                     height: 15%;
-                     display: flex;
-                     align-items: center;
-                     justify-content: center;
-                     font-family: 'UTM Avo', sans-serif;
-                     font-weight: bold;
-                     font-size: 2cqw;
-                     color: #ef4444;
-                     background: transparent;
-                     outline: none;
-                     cursor: text;
-                     text-align: center;
-                 }
-
-                 .draw-ticket-block .display-code-right {
-                     position: absolute;
-                     left: 89.6%;
-                     top: 57.5%;
-                     width: 6.2%;
-                     height: 15%;
-                     display: flex;
-                     align-items: center;
-                     justify-content: center;
-                     font-family: 'UTM Avo', sans-serif;
-                     font-weight: bold;
-                     font-size: 2cqw;
-                     color: #ef4444;
-                     text-align: center;
-                     pointer-events: none;
-                     user-select: none;
-                 }
-
-                 .draw-ticket-block .input-footer-left {
-                     position: absolute;
-                     left: 19.3%;
-                     top: 86.8%;
-                     width: 28%;
-                     height: 10%;
-                     display: flex;
-                     align-items: center;
-                     justify-content: center;
-                     font-family: 'UTM Avo', sans-serif;
-                     font-weight: bold;
-                     font-size: 1.7cqw;
-                     color: #fbbc04;
-                     background: transparent;
-                     outline: none;
-                     cursor: text;
-                     text-align: center;
-                 }
+                      position: absolute;
+                      left: 2.2%;
+                      top: 2.0%;
+                      width: 45.4%;
+                      height: 16%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 3.6cqw;
+                      color: #000;
+                      background: transparent;
+                      outline: none;
+                      cursor: text;
+                      text-align: center;
+                      white-space: normal;
+                      line-height: 1.2;
+                  }
+ 
+                  .draw-ticket-block .display-title-right {
+                      position: absolute;
+                      left: 52.4%;
+                      top: 2.0%;
+                      width: 45.4%;
+                      height: 16%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 3.6cqw;
+                      color: #000;
+                      text-align: center;
+                      pointer-events: none;
+                      user-select: none;
+                      white-space: normal;
+                      line-height: 1.2;
+                  }
+ 
+                  .draw-ticket-block .input-code-left {
+                      position: absolute;
+                      left: 39.4%;
+                      top: 37.0%;
+                      width: 6.2%;
+                      height: 13%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 2.8cqw;
+                      color: #ef4444;
+                      background: transparent;
+                      outline: none;
+                      cursor: text;
+                      text-align: center;
+                  }
+ 
+                  .draw-ticket-block .display-code-right {
+                      position: absolute;
+                      left: 89.6%;
+                      top: 37.0%;
+                      width: 6.2%;
+                      height: 13%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 2.8cqw;
+                      color: #ef4444;
+                      text-align: center;
+                      pointer-events: none;
+                      user-select: none;
+                  }
+ 
+                  .draw-ticket-block .input-footer-left {
+                      position: absolute;
+                      left: 19.3%;
+                      top: 86.8%;
+                      width: 28%;
+                      height: 10%;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 2.8cqw;
+                      color: #fbbc04;
+                      background: transparent;
+                      outline: none;
+                      cursor: text;
+                      text-align: center;
+                  }
 
                  .draw-ticket-block [contenteditable="true"]:hover,
                  .draw-ticket-block [contenteditable="true"]:focus {
