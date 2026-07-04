@@ -66,15 +66,10 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
         onChange({ contentBottom: text });
     }, [onChange]);
 
-    const handleContentTopRightChange = useCallback((text: string) => {
-        onChange({ contentTopRight: text });
-    }, [onChange]);
-
     const titleEditable = useContentEditable(ticket.title, handleTitleChange);
     const codeEditable = useContentEditable(ticket.code, handleCodeChange);
     const footerEditable = useContentEditable(ticket.footer, handleFooterChange);
     const contentTopEditable = useContentEditable(ticket.contentTop || '', handleContentTopChange);
-    const contentTopRightEditable = useContentEditable(ticket.contentTopRight || '', handleContentTopRightChange);
     const contentBottomEditable = useContentEditable(ticket.contentBottom || '', handleContentBottomChange);
 
     return (
@@ -103,16 +98,13 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
                 style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
                 data-placeholder="Nhập thông tin 1 (Họ tên, SĐT...)"
             />
-            {/* Content Top Right (Editable & independent) */}
+            {/* Content Top Right (Syncs automatically) */}
             <div 
-                ref={contentTopRightEditable.ref}
-                onInput={contentTopRightEditable.handleInput}
-                contentEditable 
-                suppressContentEditableWarning
-                className="input-content-top-right"
+                className="display-content-top-right"
                 style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
-                data-placeholder="Nhập thông tin bên phải..."
-            />
+            >
+                {ticket.contentTop}
+            </div>
 
             {/* Code Left */}
             <div 
@@ -693,7 +685,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       padding: 0.5cqw 1cqw;
                   }
  
-                  .draw-ticket-block .input-content-top-right {
+                  .draw-ticket-block .display-content-top-right {
                       position: absolute;
                       left: 52.4%;
                       top: 21.0%;
@@ -707,9 +699,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
-                      background: transparent;
-                      outline: none;
-                      cursor: text;
+                      pointer-events: none;
+                      user-select: none;
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
