@@ -669,6 +669,45 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         }
     };
 
+    const getSelectedFontSize = (): number => {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return 3.5;
+        const range = selection.getRangeAt(0);
+        let parent: HTMLElement | null = range.commonAncestorContainer as HTMLElement;
+        if (parent.nodeType === Node.TEXT_NODE) {
+            parent = parent.parentElement;
+        }
+        
+        const span = parent?.closest('span[style*="font-size"]');
+        if (span) {
+            const fs = (span as HTMLElement).style.fontSize;
+            const match = fs.match(/([\d.]+)/);
+            if (match) return parseFloat(match[1]);
+        }
+        return 3.5;
+    };
+
+    const adjustFontSize = (amount: number) => {
+        const current = getSelectedFontSize();
+        const newVal = Math.max(0.5, Math.min(20, parseFloat((current + amount).toFixed(1))));
+        applyStyleToSelection('fontSize', `${newVal}cqw`);
+        
+        if (savedRangeRef.current) {
+            const selection = window.getSelection();
+            if (selection) {
+                selection.removeAllRanges();
+                selection.addRange(savedRangeRef.current);
+            }
+        }
+    };
+
+    const handleFontSizeInputChange = (valStr: string) => {
+        const val = parseFloat(valStr);
+        if (!isNaN(val) && val > 0) {
+            applyStyleToSelection('fontSize', `${val}cqw`);
+        }
+    };
+
     return (
         <div className="bg-white p-0 shadow-xl border border-slate-200 shrink-0 w-full max-w-sm mx-auto overflow-hidden no-print-bg">
             <style>
@@ -1472,38 +1511,33 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             )}
                         </div>
 
-                        {/* Size Custom Dropdown */}
-                        <div className="relative">
-                            <button 
+                        {/* Size adjust controls: - [input] + */}
+                        <div className="flex items-center gap-1 bg-slate-800/80 rounded px-1.5 py-0.5 border border-slate-700/50 mr-1 no-print">
+                            <button
                                 onMouseDown={(e) => e.preventDefault()}
-                                onClick={() => setActiveMenu(activeMenu === 'size' ? null : 'size')}
-                                className="bg-transparent text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-1"
+                                onClick={() => adjustFontSize(-0.2)}
+                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                                title="Giảm size chữ"
                             >
-                                Size <span className="text-[7px] opacity-75">▼</span>
+                                -
                             </button>
-                            
-                            {activeMenu === 'size' && (
-                                <div 
-                                    onMouseDown={(e) => e.preventDefault()}
-                                    className={`absolute left-0 mb-2 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl py-1 flex flex-col min-w-[80px] max-h-[160px] overflow-y-auto z-[10000] scrollbar-thin overflow-x-hidden ${
-                                        showDropdownBelow ? 'top-full mt-2' : 'bottom-full mb-2'
-                                    }`}
-                                >
-                                    {['1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0', '6.0', '7.0', '8.0', '9.0', '10.0'].map(sz => (
-                                        <button
-                                            key={sz}
-                                            onMouseDown={(e) => e.preventDefault()}
-                                            onClick={() => {
-                                                applyStyleToSelection('fontSize', `${sz}cqw`);
-                                                setActiveMenu(null);
-                                            }}
-                                            className="px-3 py-1.5 text-center text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
-                                        >
-                                            {sz} cqw
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
+                            <input 
+                                type="text"
+                                onMouseDown={(e) => e.stopPropagation()} 
+                                onClick={(e) => e.stopPropagation()}
+                                value={getSelectedFontSize().toFixed(1)}
+                                onChange={(e) => handleFontSizeInputChange(e.target.value)}
+                                className="w-9 h-5 bg-slate-900 border border-slate-700 text-white text-[10px] font-bold rounded text-center focus:outline-none focus:border-rose-500"
+                                title="Kích thước cqw"
+                            />
+                            <button
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => adjustFontSize(0.2)}
+                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                                title="Tăng size chữ"
+                            >
+                                +
+                            </button>
                         </div>
 
                         {/* Bold button */}
