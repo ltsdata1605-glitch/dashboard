@@ -251,32 +251,32 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     };
 
     const itemPastelColors = [
-        { bg: 'bg-blue-50/80 dark:bg-blue-900/20', border: 'border-blue-300 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300', dot: 'bg-blue-400' },
-        { bg: 'bg-emerald-50/80 dark:bg-emerald-900/20', border: 'border-emerald-300 dark:border-emerald-800', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-400' },
-        { bg: 'bg-violet-50/80 dark:bg-violet-900/20', border: 'border-violet-300 dark:border-violet-800', text: 'text-violet-700 dark:text-violet-300', dot: 'bg-violet-400' },
-        { bg: 'bg-amber-50/80 dark:bg-amber-900/20', border: 'border-amber-300 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-400' },
-        { bg: 'bg-pink-50/80 dark:bg-pink-900/20', border: 'border-pink-300 dark:border-pink-800', text: 'text-pink-700 dark:text-pink-300', dot: 'bg-pink-400' },
-        { bg: 'bg-cyan-50/80 dark:bg-cyan-900/20', border: 'border-cyan-300 dark:border-cyan-800', text: 'text-cyan-700 dark:text-cyan-300', dot: 'bg-cyan-400' },
-        { bg: 'bg-rose-50/80 dark:bg-rose-900/20', border: 'border-rose-300 dark:border-rose-800', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-400' },
-        { bg: 'bg-orange-50/80 dark:bg-orange-900/20', border: 'border-orange-300 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', dot: 'bg-orange-400' }
+        { bg: 'bg-blue-50/50 dark:bg-blue-900/10', border: 'border-blue-200 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-300', dot: 'bg-blue-400' },
+        { bg: 'bg-emerald-50/50 dark:bg-emerald-900/10', border: 'border-emerald-200 dark:border-emerald-800', text: 'text-emerald-700 dark:text-emerald-300', dot: 'bg-emerald-400' },
+        { bg: 'bg-violet-50/50 dark:bg-violet-900/10', border: 'border-violet-200 dark:border-violet-800', text: 'text-violet-700 dark:text-violet-300', dot: 'bg-violet-400' },
+        { bg: 'bg-amber-50/50 dark:bg-amber-900/10', border: 'border-amber-200 dark:border-amber-800', text: 'text-amber-700 dark:text-amber-300', dot: 'bg-amber-400' },
+        { bg: 'bg-pink-50/50 dark:bg-pink-900/10', border: 'border-pink-200 dark:border-pink-800', text: 'text-pink-700 dark:text-pink-300', dot: 'bg-pink-400' },
+        { bg: 'bg-cyan-50/50 dark:bg-cyan-900/10', border: 'border-cyan-200 dark:border-cyan-800', text: 'text-cyan-700 dark:text-cyan-300', dot: 'bg-cyan-400' },
+        { bg: 'bg-rose-50/50 dark:bg-rose-900/10', border: 'border-rose-200 dark:border-rose-800', text: 'text-rose-700 dark:text-rose-300', dot: 'bg-rose-400' },
+        { bg: 'bg-orange-50/50 dark:bg-orange-900/10', border: 'border-orange-200 dark:border-orange-800', text: 'text-orange-700 dark:text-orange-300', dot: 'bg-orange-400' }
     ];
 
     const renderPickerView = () => (
         <>
-            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-3 sm:mb-6 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 p-2 sm:p-4 shadow-sm z-20">
-                <div className="flex items-center gap-1.5 sm:gap-3">
-                    <span className="text-[10px] sm:text-sm font-semibold text-slate-700 dark:text-slate-300">Thao tác nhanh:</span>
-                    <div className="flex items-center gap-0.5 sm:gap-1 bg-slate-100 dark:bg-slate-900/50 p-0.5 sm:p-1 rounded-md sm:rounded-lg">
-                        <button onClick={() => handleSelectAll(true)} className="px-1.5 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-white dark:hover:bg-slate-800 rounded-md transition-all shadow-sm flex items-center gap-1">
-                            <Icon name="check-square" size={3} className="sm:hidden" /><Icon name="check-square" size={3.5} className="hidden sm:block" /> Bật tất cả
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-4 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 pb-4 z-20">
+                <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Thao tác nhanh:</span>
+                    <div className="flex items-center gap-1 bg-slate-100/50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-1 rounded-md">
+                        <button onClick={() => handleSelectAll(true)} className="px-3 py-1.5 text-xs font-medium text-emerald-600 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm rounded transition-all flex items-center gap-1">
+                            <Icon name="check-square" size={3.5} /> Bật tất cả
                         </button>
-                        <button onClick={() => handleSelectAll(false)} className="px-1.5 sm:px-3 py-1 sm:py-1.5 text-[9px] sm:text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-white dark:hover:bg-slate-800 rounded-md transition-all flex items-center gap-1">
-                            <Icon name="square" size={3} className="sm:hidden" /><Icon name="square" size={3.5} className="hidden sm:block" /> Tắt tất cả
+                        <button onClick={() => handleSelectAll(false)} className="px-3 py-1.5 text-xs font-medium text-slate-500 hover:text-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm rounded transition-all flex items-center gap-1">
+                            <Icon name="square" size={3.5} /> Tắt tất cả
                         </button>
                     </div>
                 </div>
-                 <button onClick={() => { resetForm(false); setView('form'); }} className="flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl shadow-md text-[10px] sm:text-sm font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30">
-                    <Icon name="plus" size={3} className="sm:hidden" /><Icon name="plus" size={4} className="hidden sm:block" /> Tạo Cột Mới
+                 <button onClick={() => { resetForm(false); setView('form'); }} className="flex items-center justify-center gap-2 px-4 py-2 rounded-md shadow-none border border-sky-600 text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 transition-all">
+                    <Icon name="plus" size={4} /> Tạo Cột Mới
                 </button>
             </div>
             
@@ -298,10 +298,10 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             onDragEnter={handleDragEnter}
                             onDragLeave={handleDragLeave}
                             onDrop={(e) => handleDrop(e, mainHeader)}
-                            className={`group relative flex flex-col h-full bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border ${styles.border} shadow-sm hover:shadow-md transition-all duration-300 cursor-grab active:cursor-grabbing overflow-hidden`}
+                            className={`group relative flex flex-col h-full bg-white dark:bg-slate-900 rounded-md border border-slate-200 dark:border-slate-800 hover:border-sky-300 transition-all duration-300 cursor-grab active:cursor-grabbing overflow-hidden`}
                         >
                             {/* Header Group */}
-                            <div className={`px-3 py-2 flex justify-between items-center border-b ${styles.border} ${styles.bg} pointer-events-none`}>
+                            <div className={`px-3 py-2 flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pointer-events-none`}>
                                 <div className="flex flex-col">
                                     <h4 className={`text-[9px] sm:text-xs font-bold uppercase tracking-wider ${styles.text} flex items-center gap-1 sm:gap-2`}>
                                         <Icon name="layers" size={3} className="opacity-70 sm:hidden" /><Icon name="layers" size={3.5} className="opacity-70 hidden sm:block" />
@@ -323,16 +323,16 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                             </div>
                             
                             {/* Columns List */}
-                            <div className="p-1.5 sm:p-2.5 flex flex-wrap content-start gap-1 sm:gap-1.5 flex-grow bg-slate-50/30 dark:bg-slate-900/20">
+                            <div className="p-2 flex flex-wrap content-start gap-1.5 flex-grow">
                                 {cols.map((col, colIndex) => {
                                     const itemStyle = itemPastelColors[colIndex % itemPastelColors.length];
                                     return (
                                     <div 
                                         key={col.id} 
-                                        className={`relative group/item inline-flex items-center gap-1 sm:gap-1.5 pl-1.5 sm:pl-2 pr-1 sm:pr-1.5 py-0.5 sm:py-1 rounded-md text-[8px] sm:text-[10px] font-bold transition-all cursor-pointer select-none border shadow-sm hover:scale-[1.02]
+                                        className={`relative group/item inline-flex items-center gap-1.5 pl-2 pr-1.5 py-1 rounded-sm text-[10px] font-semibold transition-all cursor-pointer select-none border
                                             ${col.isVisible 
-                                                ? `${itemStyle.bg} ${itemStyle.border} ${itemStyle.text}` 
-                                                : 'bg-white text-slate-400 border-dashed border-slate-300 dark:bg-slate-800 dark:text-slate-500 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50'
+                                                ? `${itemStyle.bg} border-transparent ${itemStyle.text}` 
+                                                : 'bg-white text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                                             }`}
                                         onClick={() => handleToggleVisibility(col.id)}
                                     >
@@ -375,9 +375,9 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
             titleColorClass="text-slate-800 dark:text-white" 
             maxWidthClass="max-w-4xl"
         >
-            <div className="flex flex-col h-[85vh] sm:h-auto min-h-0 bg-slate-50 dark:bg-slate-900/50">
+            <div className="flex flex-col h-[85vh] sm:h-auto min-h-0 bg-white dark:bg-slate-900">
                 {view === 'picker' && (
-                    <div className="flex-grow overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-6 sm:space-y-8 min-h-0">
+                    <div className="flex-grow overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-6 min-h-0">
                         {renderPickerView()}
                     </div>
                 )}
@@ -446,8 +446,8 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                 )}
                 
                 {view === 'picker' && (
-                    <div className="p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
-                        <button onClick={handleRestoreDefaults} className="py-1.5 sm:py-2.5 px-2 sm:px-4 rounded-lg sm:rounded-xl text-[10px] sm:text-sm font-bold text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 transition-colors flex items-center gap-1 sm:gap-2">
+                    <div className="p-4 sm:px-6 sm:py-4 flex items-center justify-between bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-20 rounded-b-md">
+                        <button onClick={handleRestoreDefaults} className="py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">
                             <Icon name="rotate-ccw" size={3.5} className="sm:hidden" /><Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục mặc định
                         </button>
                         <button onClick={handleSaveAndClose} className="py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[10px] sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-1 sm:gap-2">

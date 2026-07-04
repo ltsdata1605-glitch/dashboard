@@ -719,4 +719,4 @@ const TrendChart: React.FC = React.memo(() => {
 
 TrendChart.displayName = 'TrendChart';
 
-export default TrendChart;
+export default React.memo(TrendChart);

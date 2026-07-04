@@ -44,17 +44,17 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
             maxWidthClass="max-w-2xl"
         >
             {/* Header */}
-            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
+            <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 rounded-t-md">
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-100/50 dark:border-indigo-500/20">
+                    <div className="w-10 h-10 rounded-md bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-slate-200 dark:border-slate-700">
                         <Icon name="database" size={5} />
                     </div>
                     <div>
-                        <h2 className="text-base sm:text-lg font-bold tracking-tight text-slate-800 dark:text-white uppercase">Danh sách ycx luỹ kế</h2>
+                        <h2 className="text-base sm:text-lg font-semibold tracking-tight text-slate-800 dark:text-white uppercase">Danh sách ycx luỹ kế</h2>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400">Tải lên, gộp và đối chiếu các tệp Excel doanh số lũy kế cũ (ví dụ: tháng trước, năm trước)</p>
                     </div>
                 </div>
-                <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
+                <button onClick={onClose} className="p-2 text-slate-400 hover:text-red-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-md transition-colors">
                     <Icon name="x" size={4} />
                 </button>
             </div>
@@ -82,7 +82,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                     <button
                         onClick={handleImportClick}
                         id="btn-modal-import-files"
-                        className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 bg-sky-600 hover:bg-sky-700 active:scale-95 text-white text-xs font-semibold rounded-md shadow-none transition-all flex items-center gap-1.5"
                     >
                         <Icon name="file-up" size={3.5} />
                         <span>Tải YCX luỹ kế</span>
@@ -103,7 +103,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                             if (onViewReport) onViewReport();
                             onClose();
                         }}
-                        className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition-all shadow-md shadow-indigo-300/30 dark:shadow-none active:scale-95"
+                        className="px-5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-md text-xs transition-all shadow-none active:scale-95"
                     >
                         Xem Báo Cáo
                     </button>

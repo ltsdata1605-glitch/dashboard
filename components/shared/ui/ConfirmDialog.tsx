@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertCircle, Trash2, Info, CheckCircle2 } from 'lucide-react';
-import { Modal } from './Modal';
+import ModalWrapper from '../../modals/ModalWrapper';
 import { Button } from './Button';
 
 export type ConfirmVariant = 'danger' | 'warning' | 'info' | 'success';
@@ -59,14 +59,13 @@ export function ConfirmDialog({
   const selected = variants[variant];
 
   return (
-    <Modal
+    <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
-      maxWidth="sm"
-      hideCloseButton
-      zIndex={zIndex}
+      maxWidthClass="max-w-sm"
+      hideHeader
     >
-      <div className="flex flex-col items-center text-center pt-4 pb-2">
+      <div className="flex flex-col items-center text-center p-6 pb-2">
         <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${selected.bg}`}>
           {selected.icon}
         </div>
@@ -98,6 +97,6 @@ export function ConfirmDialog({
           </Button>
         </div>
       </div>
-    </Modal>
+    </ModalWrapper>
   );
 }

@@ -46,6 +46,21 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
     const theme = TAB_THEMES[groupType];
     const dataToRender = groupType === 'vuotTroi' ? outstandingData : groupedData;
 
+    const [renderLimit, setRenderLimit] = useState(20);
+
+    // Optimize lag by lazy rendering
+    React.useEffect(() => {
+        if (isExporting) {
+            setRenderLimit(99999);
+            return;
+        }
+        setRenderLimit(20);
+        const timer = setTimeout(() => {
+            setRenderLimit(99999);
+        }, 150);
+        return () => clearTimeout(timer);
+    }, [dataToRender, isExporting, groupType]);
+
     const headers: { label: string; key: string; colorClass: string; textColor: string; align?: 'left' | 'center' | 'right'; sos?: boolean; groupName: string; groupColorClass: string; groupTextColor: string; noSubHeader?: boolean }[] =
         groupType === 'doanhThu' ? [
             { label: 'Thực', key: 'doanhThuThuc', colorClass: 'bg-emerald-50 dark:bg-emerald-900/20', textColor: 'text-emerald-700 dark:text-emerald-400', align: 'center', groupName: 'DOANH THU', groupColorClass: 'bg-emerald-50 dark:bg-emerald-900/20', groupTextColor: 'text-emerald-700 dark:text-emerald-300' },
@@ -316,6 +331,10 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                         {Object.entries(dataToRender).map(([dept, employees]: [string, any], deptIdx) => {
                             if (!Array.isArray(employees)) return null;
                             const dc = DEPT_COLORS[deptIdx % DEPT_COLORS.length];
+                            
+                            // Apply render limit to avoid freezing the browser on tab switch
+                            const visibleEmployees = isExporting ? employees : employees.slice(0, renderLimit);
+
 
                             return (
                                 <React.Fragment key={dept || 'unknown'}>
@@ -334,7 +353,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     )}
 
                                     {/* Employee rows */}
-                                    {employees.map((emp: any, idx: number) => {
+                                    {visibleEmployees.map((emp: any, idx: number) => {
                                         if (!emp) return null;
 
                                         return (

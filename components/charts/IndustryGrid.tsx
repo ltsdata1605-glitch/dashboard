@@ -503,4 +503,4 @@ const IndustryGrid: React.FC = React.memo(() => {
 });
 
 IndustryGrid.displayName = 'IndustryGrid';
-export default IndustryGrid;
+export default React.memo(IndustryGrid);

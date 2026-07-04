@@ -1,5 +1,5 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
+import ModalWrapper from './ModalWrapper';
 import { Icon } from '../common/Icon';
 
 export interface UploadConflictInfo {
@@ -50,10 +50,14 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
         return `${formatted.slice(0, 6).join(', ')} và ${formatted.length - 6} ngày khác`;
     };
 
-    return ReactDOM.createPortal(
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] p-4 flex items-center justify-center animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-lg rounded-2xl border border-slate-200/60 dark:border-slate-800 flex flex-col p-6 space-y-5 animate-in zoom-in-95 duration-200">
-                
+    return (
+        <ModalWrapper
+            isOpen={isOpen}
+            onClose={() => onResolve('cancel')}
+            maxWidthClass="max-w-lg"
+            hideHeader
+        >
+            <div className="flex flex-col p-6 space-y-5">
                 {/* Header */}
                 <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">
@@ -98,25 +102,23 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                                             📄 {conflict.conflictingFilename}
                                         </span>
                                         <span className={`px-1 rounded text-[8px] font-extrabold uppercase shrink-0 ${
-                                            conflict.targetType === 'realtime'
-                                                ? 'bg-rose-50 text-rose-600 border border-rose-100 dark:bg-rose-950/20 dark:text-rose-400'
-                                                : 'bg-indigo-50 text-indigo-600 border border-indigo-100 dark:bg-indigo-950/20 dark:text-indigo-400'
+                                            conflict.targetType === 'realtime' 
+                                            ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400' 
+                                            : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300'
                                         }`}>
-                                            {conflict.targetType === 'realtime' ? 'Realtime' : 'Lũy kế'}
+                                            {conflict.targetType === 'realtime' ? 'Bảng ĐK Hiện Tại' : 'Lịch Sử'}
                                         </span>
                                     </div>
                                     {conflict.type === 'exact_duplicate' ? (
-                                        <span className="text-rose-500 font-bold">
-                                            ⚠️ File trùng lặp hoàn toàn (trùng tên hoặc ngày chỉnh sửa).
-                                        </span>
+                                        <span className="text-amber-600 dark:text-amber-500 font-medium">⚠️ Trùng lặp hoàn toàn tên tệp & thời gian</span>
                                     ) : (
-                                        <div className="text-slate-500 dark:text-slate-400 flex flex-col gap-0.5">
+                                        <div className="text-slate-500 dark:text-slate-400 flex flex-col gap-0.5 pl-4">
                                             <span>
-                                                • Trùng ngày: <strong className="text-amber-600 dark:text-amber-400 font-semibold">{formatOverlappingDates(conflict.overlappingDates)}</strong> ({conflict.overlappingDates.length} ngày)
+                                                • {conflict.overlappingDates.length} ngày bị trùng ({formatOverlappingDates(conflict.overlappingDates)})
                                             </span>
                                             {conflict.totalOverlappingOrdersCount !== undefined && conflict.totalOverlappingOrdersCount > 0 && (
-                                                <span className="text-rose-500 font-medium">
-                                                    • Phát hiện {conflict.totalOverlappingOrdersCount} đơn hàng bị trùng mã.
+                                                <span className="text-amber-600 dark:text-amber-500 font-medium">
+                                                    • {conflict.totalOverlappingOrdersCount} đơn hàng có thể bị lặp
                                                 </span>
                                             )}
                                         </div>
@@ -210,8 +212,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                     </button>
                 </div>
             </div>
-        </div>,
-        document.body
+        </ModalWrapper>
     );
 };
 

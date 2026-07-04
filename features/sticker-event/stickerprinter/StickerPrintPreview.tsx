@@ -489,10 +489,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
             </style>
             <div id="print-section" className="w-full">
                 {batchItems.length > 0 ? (
-                    <>
-                        {batchItems.filter(it => it.selected).slice(0, 20).map((item, index, arr) => (
-                            <div key={item.id} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto', backgroundImage: `url(${bgImage})` }}>
-                                {showBarcode && item.imei && (
+                    batchItems.filter(it => it.selected).map((item, index, arr) => (
+                        <div key={item.id} className="sticker-container" data-type={stickerType} style={{ pageBreakAfter: index < arr.length - 1 ? 'always' : 'auto', backgroundImage: `url(${bgImage})` }}>
+                            {showBarcode && item.imei && (
                                 <div className="barcode">
                                     <BarcodeCanvas value={item.imei} />
                                 </div>
@@ -537,14 +536,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             </div>
                             <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} onBlur={(e) => setFooterTextContent(e.currentTarget.innerText)}>{footerTextContent}</div>
                         </div>
-                        ))}
-                        {batchItems.filter(it => it.selected).length > 20 && (
-                            <div className="w-full py-4 text-center text-sm font-medium text-slate-500 bg-white/50 rounded-lg border border-slate-200 mt-4 shadow-sm">
-                                <span className="text-indigo-600 font-bold">Chế độ xem trước:</span> Đang hiển thị 20 sticker đầu tiên (trong tổng số {batchItems.filter(it => it.selected).length} sticker).<br/>
-                                <i>Tất cả sticker sẽ được in đầy đủ khi bấm nút IN.</i>
-                            </div>
-                        )}
-                    </>
+                    ))
                 ) : (
                     <div className="sticker-container" data-type={stickerType} style={{ backgroundImage: `url(${bgImage})` }}>
                         {showBarcode && barcodeImei && (

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import ModalWrapper from './ModalWrapper';
 import { Icon } from '../common/Icon';
 
 interface FileNamingModalProps {
@@ -35,10 +35,15 @@ export const FileNamingModal: React.FC<FileNamingModalProps> = ({
         "YCX Tháng 5.2026"
     ];
 
-    return ReactDOM.createPortal(
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] p-4 flex items-center justify-center animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.3)] w-full max-w-md rounded-2xl border border-slate-200/60 dark:border-slate-800 flex flex-col p-6 space-y-5 animate-in zoom-in-95 duration-200">
-                
+    return (
+        <ModalWrapper
+            isOpen={isOpen}
+            onClose={() => {}}
+            maxWidthClass="max-w-md"
+            hideHeader
+            hideCloseButton
+        >
+            <div className="flex flex-col p-6 space-y-5">
                 {/* Header */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">
@@ -102,8 +107,7 @@ export const FileNamingModal: React.FC<FileNamingModalProps> = ({
                     </div>
                 </form>
             </div>
-        </div>,
-        document.body
+        </ModalWrapper>
     );
 };
 

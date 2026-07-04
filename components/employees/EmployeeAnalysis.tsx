@@ -305,4 +305,4 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
 
 EmployeeAnalysis.displayName = 'EmployeeAnalysis';
 
-export default EmployeeAnalysis;
+export default React.memo(EmployeeAnalysis);

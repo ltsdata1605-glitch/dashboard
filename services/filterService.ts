@@ -7,7 +7,7 @@ import { processTrendData } from './trendService';
 import { processEmployeeData } from './employeeService';
 import { processSummaryTable, calculateWarehouseSummary } from './summaryService';
 import { processIndustryData } from './industryService';
-import { cleanAndNormalize } from '../utils/dataUtils';
+import { cleanAndNormalize, calculateRowMetrics } from '../utils/dataUtils';
 
 /** WeakMap cache for deduplication — keyed by allData array reference, auto-GC'd when data changes */
 const _dedupCache = new WeakMap<DataRow[], DataRow[]>();
@@ -136,8 +136,15 @@ function processDataForPeriod(
 
     const hasHTXConfig = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0;
 
+    
     for (let i = 0, len = periodData.length; i < len; i++) {
         const row = periodData[i];
+        
+        // --- PRE-CALCULATE METRICS ---
+        row._metrics = calculateRowMetrics(row, productConfig);
+        row._parentGroup = getParentGroup(getRowValue(row, COL.MA_NHOM_HANG), productConfig);
+        // -----------------------------
+
         const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
 
         if (thuTien === 'đã thu') {
@@ -145,7 +152,7 @@ function processDataForPeriod(
 
             // Check revenue eligibility for "đã thu" rows
             const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-            const parentGroup = getParentGroup(maNhomHang, productConfig);
+            const parentGroup = row._parentGroup;
             if (parentGroup !== 'Không tính doanh thu') {
                 const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
                 const isRevenueOk = hasHTXConfig
@@ -173,7 +180,7 @@ function processDataForPeriod(
             ) {
                 // Check base revenue eligibility (no thuTien check)
                 const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-                const parentGroup = getParentGroup(maNhomHang, productConfig);
+                const parentGroup = row._parentGroup;
                 if (parentGroup !== 'Không tính doanh thu') {
                     const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT) || '';
                     const isRevenueBase = hasHTXConfig
