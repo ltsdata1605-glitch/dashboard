@@ -136,7 +136,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
 
     return (
         <div className="w-full mb-4 z-[90] lg:z-[100] sticky top-[44px] lg:top-1.5 hide-on-export">
-            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-y sm:border border-slate-200/80 dark:border-slate-700/60 rounded-none sm:rounded-lg lg:rounded-full p-1.5 lg:px-3 lg:py-2 transition-all">
+            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-y sm:border border-slate-200/80 dark:border-slate-700/60 rounded-none sm:rounded-xl lg:rounded-full p-1.5 lg:px-3 lg:py-2 transition-all">
 
                 {/* === MOBILE LAYOUT (<lg): 2 compact rows === */}
                 <div className="lg:hidden space-y-1.5">
@@ -172,7 +172,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             <button
                                 onClick={onNewFile}
                                 title="Tải YCX lên"
-                                className="flex items-center justify-center w-9 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-md border border-emerald-200/50 dark:border-emerald-800/40 transition-colors active:scale-95 shrink-0 cursor-pointer"
+                                className="flex items-center justify-center w-[36px] bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
                             >
                                 <Icon name="file-up" size={4} />
                             </button>
@@ -182,7 +182,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                 onClick={onOpenHistory}
                                 id="btn-mobile-history"
                                 title="Quản lý tệp đã lưu"
-                                className="flex items-center justify-center w-9 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-md border border-rose-200/50 dark:border-rose-800/40 transition-colors active:scale-95 shrink-0 cursor-pointer"
+                                className="flex items-center justify-center w-[36px] bg-red-100 hover:bg-red-200 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-700 dark:text-red-400 rounded-lg transition-all active:scale-95 shrink-0"
                             >
                                 <Icon name="database" size={4} />
                             </button>
@@ -192,14 +192,14 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             target="_blank"
                             rel="noopener noreferrer"
                             title="Tải dữ liệu báo cáo (BCNB)"
-                            className="flex items-center justify-center w-9 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-md border border-emerald-200/50 dark:border-emerald-800/40 transition-colors active:scale-95 shrink-0"
+                            className="flex items-center justify-center w-[36px] bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-lg transition-all active:scale-95 shrink-0"
                         >
                             <Icon name="link" size={4} />
                         </a>
                         <button
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
-                            className="flex items-center justify-center w-9 bg-sky-600 hover:bg-sky-700 text-white rounded-md shadow-sm transition-colors active:scale-95 shrink-0 cursor-pointer"
+                            className="flex items-center justify-center w-[36px] bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-lg shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
                         >
                             <Icon name="settings" size={4} className="group-hover:rotate-90 transition-transform duration-300" />
                         </button>
@@ -244,7 +244,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                                 handleDateRangeClick(range);
                                             }
                                         }}
-                                        className={`px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-md transition-all duration-200 relative z-0 ${
+                                        className={`px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-md transition-all duration-200 relative z-0 ${
                                             filterState.dateRange === range
                                             ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/30'
                                             : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50'
@@ -356,9 +356,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                             handleDateRangeClick(range);
                                         }
                                     }}
-                                    className={`px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider rounded-md transition-all relative z-0 ${
+                                    className={`px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all relative z-0 ${
                                         filterState.dateRange === range
-                                        ? 'bg-sky-50 text-sky-600 dark:bg-sky-950/30 dark:text-sky-400'
+                                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
                                         : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                                     }`}
                                 >
@@ -406,9 +406,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             <button
                                 onClick={onNewFile}
                                 title="Tải YCX lên"
-                                className="flex items-center justify-center h-9 w-9 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-md border border-emerald-200/50 dark:border-emerald-800/40 transition-colors active:scale-95 cursor-pointer"
+                                className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-full transition-all active:scale-95 group"
                             >
-                                <Icon name="file-up" size={4} />
+                                <Icon name="file-up" size={4.5} />
                             </button>
                         )}
                         {onOpenHistory && (
@@ -416,9 +416,9 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                 onClick={onOpenHistory}
                                 id="btn-desktop-history"
                                 title="Quản lý tệp đã lưu"
-                                className="flex items-center justify-center h-9 w-9 bg-rose-50 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 rounded-md border border-rose-200/50 dark:border-rose-800/40 transition-colors active:scale-95 cursor-pointer"
+                                className="flex items-center justify-center p-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/10 dark:hover:bg-red-950/20 text-red-600 dark:text-red-500 rounded-full transition-all active:scale-95 group"
                             >
-                                <Icon name="database" size={4} />
+                                <Icon name="database" size={4.5} />
                             </button>
                         )}
                         <a
@@ -426,16 +426,16 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                             target="_blank"
                             rel="noopener noreferrer"
                             title="Tải dữ liệu báo cáo (BCNB)"
-                            className="flex items-center justify-center h-9 w-9 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-md border border-emerald-200/50 dark:border-emerald-800/40 transition-colors active:scale-95"
+                            className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-full transition-all active:scale-95 group"
                         >
-                            <Icon name="link" size={4} />
+                            <Icon name="link" size={4.5} />
                         </a>
                         <button
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
-                            className="flex items-center justify-center h-9 w-9 bg-sky-600 hover:bg-sky-700 text-white rounded-md shadow-sm transition-colors active:scale-95 cursor-pointer"
+                            className="flex items-center justify-center p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-sm transition-all active:scale-95 group"
                         >
-                            <Icon name="settings" size={4} className="group-hover:rotate-90 transition-transform duration-300" />
+                            <Icon name="settings" size={4.5} className="group-hover:rotate-90 transition-transform duration-300" />
                         </button>
                     </div>
                 </div>

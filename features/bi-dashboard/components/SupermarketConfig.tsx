@@ -51,7 +51,7 @@ const BulkRenameModal: React.FC<{
             <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-3xl w-full max-w-3xl flex flex-col h-[85vh] border border-slate-200/50 dark:border-slate-700 animate-in zoom-in-95 overflow-hidden">
                 <div className="p-4 border-b border-sky-100/50 dark:border-slate-700 bg-sky-50/50 dark:bg-slate-800/50 flex justify-between items-center shrink-0 gap-4">
                     <div className="flex-1">
-                        <h3 className="font-bold text-lg text-sky-800 dark:text-sky-400 uppercase tracking-tight">Sửa cấu hình nhóm thi đua</h3>
+                        <h3 className="font-black text-lg text-sky-800 dark:text-sky-400 uppercase tracking-tight">Sửa cấu hình nhóm thi đua</h3>
                         <p className="text-[10px] text-sky-600/70 font-bold uppercase tracking-widest mt-0.5">Cấu hình tên hiển thị và tái định vị các nhóm. Thông tin sẽ đồng bộ toàn báo cáo.</p>
                     </div>
                     <div className="w-64 shrink-0">
@@ -60,49 +60,49 @@ const BulkRenameModal: React.FC<{
                             placeholder="Tìm kiếm nhóm BI..."
                             value={searchQuery}
                             onChange={e => setSearchQuery(e.target.value)}
-                            className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 rounded-lg border border-sky-200 dark:border-sky-800 text-sm focus:ring-2 focus:ring-sky-500/20 outline-none text-slate-700 dark:text-slate-300 placeholder:text-slate-400"
+                            className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-sky-200 dark:border-sky-800 text-sm focus:ring-2 focus:ring-sky-500/20 outline-none text-slate-700 dark:text-slate-300 placeholder:text-slate-400"
                         />
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 rounded-lg transition-colors shrink-0"><XIcon className="h-4 w-4 text-sky-600/60 dark:text-slate-400" /></button>
+                    <button onClick={onClose} className="p-2 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 rounded-xl transition-colors shrink-0"><XIcon className="h-4 w-4 text-sky-600/60 dark:text-slate-400" /></button>
                 </div>
                 <div className="p-3 flex-1 overflow-y-auto space-y-2 bg-white dark:bg-slate-800">
                     <datalist id="group-list">
                         {availableGroups.map(g => <option key={g} value={g} />)}
                     </datalist>
                     {filteredComps.length > 0 ? filteredComps.map(comp => (
-                        <div key={comp.name} className="p-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-3 hover:border-sky-300 dark:hover:border-sky-600 transition-colors">
+                        <div key={comp.name} className="p-3 bg-slate-50/50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center gap-3 hover:border-sky-300 dark:hover:border-sky-600 transition-colors">
                             <div className="flex-1 min-w-0">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Tên gốc trong BI</p>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Tên gốc trong BI</p>
                                 <p className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">{comp.name}</p>
                             </div>
                             <div className="flex-1">
-                                <p className="text-[10px] font-bold text-sky-600 dark:text-sky-400 uppercase tracking-widest mb-1">Tên hiển thị mới</p>
+                                <p className="text-[9px] font-black text-sky-600 dark:text-sky-400 uppercase tracking-widest mb-1">Tên hiển thị mới</p>
                                 <input 
                                     value={tempName[comp.name] ?? ''}
                                     onChange={e => setTempName({...tempName, [comp.name]: e.target.value})}
                                     placeholder={shortenName(comp.name)}
-                                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 outline-none transition-all placeholder:text-slate-300"
+                                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 outline-none transition-all placeholder:text-slate-300"
                                 />
                             </div>
                             <div className="flex-1">
-                                <p className="text-[10px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-1">Nhóm Tiêu Chí</p>
+                                <p className="text-[9px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-widest mb-1">Nhóm Tiêu Chí</p>
                                 <input 
                                     list="group-list"
                                     value={tempGroup[comp.name] ?? ''}
                                     onChange={e => setTempGroup({...tempGroup, [comp.name]: e.target.value})}
                                     placeholder={comp.criteria === 'SLLK' ? 'Số lượng' : comp.criteria === 'DTLK' ? 'Doanh thu' : comp.criteria === 'DTQĐ' ? 'Doanh thu quy đổi' : comp.criteria}
-                                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 rounded-lg border border-slate-200 dark:border-slate-700 text-xs font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-400 outline-none transition-all placeholder:text-slate-300"
+                                    className="w-full px-3 py-1.5 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold focus:ring-4 focus:ring-purple-500/10 focus:border-purple-400 outline-none transition-all placeholder:text-slate-300"
                                 />
                             </div>
                         </div>
                     )) : <div className="flex flex-col items-center justify-center py-10 opacity-60">
                             <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2"><XIcon className="h-5 w-5 text-slate-400" /></div>
-                            <p className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-500">Không có nhóm nào để sửa.</p>
+                            <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Không có nhóm nào để sửa.</p>
                         </div>}
                 </div>
                 <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex gap-3 bg-slate-50/80 dark:bg-slate-900/50 shrink-0">
-                    <button onClick={() => { setTempName({}); setTempGroup({}); }} className="flex-1 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg text-xs font-bold transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</button>
-                    <button onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="flex-[2] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-lg text-xs font-bold hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</button>
+                    <button onClick={() => { setTempName({}); setTempGroup({}); }} className="flex-1 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</button>
+                    <button onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="flex-[2] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</button>
                 </div>
             </div>
         </div>
@@ -170,7 +170,7 @@ const StatusTile: React.FC<{
             <div 
                 onClick={() => !isPasting && setIsPasting(true)}
                 className={`
-                    cursor-pointer min-h-[56px] rounded-lg transition-all duration-200 flex items-center px-3 relative overflow-hidden active:scale-[0.99] border hover:scale-[1.01] shadow-sm
+                    cursor-pointer min-h-[56px] rounded-xl transition-all duration-200 flex items-center px-3 relative overflow-hidden active:scale-[0.99] border hover:scale-[1.01] shadow-sm
                     ${isPasting 
                         ? `bg-white dark:bg-slate-800 ${currentTheme.ring}`
                         : hasData 
@@ -299,7 +299,7 @@ const CompetitionTarget: React.FC<{
             <div className="flex justify-between items-center mb-2 px-1">
                 <div className="flex items-center gap-2">
                     <div className="w-1 h-3 bg-orange-600 rounded-full"></div>
-                    <h2 className="text-[11px] font-bold text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình Target Thi đua</h2>
+                    <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình Target Thi đua</h2>
                 </div>
                 <div className="flex gap-2">
                     <button onClick={() => {
@@ -313,10 +313,10 @@ const CompetitionTarget: React.FC<{
                                 closeConfirm();
                             }
                         });
-                    }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-all active:scale-95" title="Reset">
+                    }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                         <ResetIcon className="h-4 w-4" />
                     </button>
-                    <button onClick={() => setIsRenameModalOpen(true)} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-lg transition-all active:scale-95" title="Sửa tên và phân nhóm">
+                    <button onClick={() => setIsRenameModalOpen(true)} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Sửa tên và phân nhóm">
                         <PencilIcon className="h-4 w-4" />
                     </button>
                 </div>
@@ -333,10 +333,10 @@ const CompetitionTarget: React.FC<{
                 });
 
                 return (
-                    <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-lg p-6">
+                    <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-6">
                         {Object.entries(groupedCompetitions).map(([criteria, comps]) => (
                             <div key={criteria} className="space-y-3">
-                                <h3 className="text-[14px] font-bold text-slate-500 uppercase tracking-widest px-1 flex items-center gap-2">
+                                <h3 className="text-[14px] font-black text-slate-500 uppercase tracking-widest px-1 flex items-center gap-2">
                                     <div className="w-1.5 h-1.5 bg-slate-300 dark:bg-slate-600 rounded-sm"></div>
                                     Nhóm Tiêu Chí: <span className="text-slate-700 dark:text-slate-200">{criteria}</span>
                                 </h3>
@@ -362,19 +362,19 @@ const CompetitionTarget: React.FC<{
                                         return (
                                             <div key={comp.name} className={`relative group p-2 sm:p-2.5 ${t.bg} border ${t.border} rounded-lg shadow-sm transition-all hover:scale-[1.01]`}>
                                                 <div className="mb-2">
-                                                    <span className={`text-[12px] font-bold uppercase tracking-wider ${t.label}`} title={comp.name}>
+                                                    <span className={`text-[12px] font-black uppercase tracking-wider ${t.label}`} title={comp.name}>
                                                         {shortenName(comp.name, nameOverrides)}
                                                     </span>
                                                     <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
-                                                        <span className="text-[10px] font-bold uppercase opacity-70">Gốc:</span>
-                                                        <span className="text-[11px] font-bold tabular-nums">{f.format(baseVal)}{unitSuffix}</span>
-                                                        <span className="text-[10px] opacity-40">|</span>
-                                                        <span className="text-[10px] font-bold uppercase">Sau:</span>
-                                                        <span className={`text-[11px] font-bold tabular-nums ${t.after}`}>{f.format(adjVal)}{unitSuffix}</span>
+                                                        <span className="text-[9px] font-black uppercase opacity-70">Gốc:</span>
+                                                        <span className="text-[11px] font-black tabular-nums">{f.format(baseVal)}{unitSuffix}</span>
+                                                        <span className="text-[9px] opacity-40">|</span>
+                                                        <span className="text-[9px] font-black uppercase">Sau:</span>
+                                                        <span className={`text-[11px] font-black tabular-nums ${t.after}`}>{f.format(adjVal)}{unitSuffix}</span>
                                                         {perPerson > 0 && (
                                                             <>
-                                                                <span className="text-[10px] opacity-40">|</span>
-                                                                <span className={`text-[11px] font-bold tabular-nums`}>{f.format(perPerson)} {perPersonUnit}</span>
+                                                                <span className="text-[9px] opacity-40">|</span>
+                                                                <span className={`text-[11px] font-black tabular-nums`}>{f.format(perPerson)} {perPersonUnit}</span>
                                                             </>
                                                         )}
                                                     </div>
@@ -399,9 +399,9 @@ const CompetitionTarget: React.FC<{
                                                                     const v = parseInt(val, 10); 
                                                                     if (!isNaN(v)) handleSliderChange(comp.name)(v); 
                                                                 }}
-                                                                className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-bold ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                                className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                                             />
-                                                            <span className="text-[10px] font-bold opacity-60">%</span>
+                                                            <span className="text-[9px] font-bold opacity-60">%</span>
                                                         </div>
                                                         <button 
                                                             onClick={() => handleSaveAsPrevMonth(comp.name)}
@@ -423,7 +423,7 @@ const CompetitionTarget: React.FC<{
             })() : (
                 <div className="col-span-full py-16 text-center bg-slate-50 dark:bg-slate-900/40 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
                     <AlertTriangleIcon className="h-8 w-8 text-slate-300 mx-auto mb-2" />
-                    <p className="text-[11px] font-bold text-slate-500 uppercase tracking-widest px-4">Hãy cập nhật dữ liệu "Luỹ kế" bên dưới nhóm "Thi đua Cụm" để cấu hình.</p>
+                    <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest px-4">Hãy cập nhật dữ liệu "Luỹ kế" bên dưới nhóm "Thi đua Cụm" để cấu hình.</p>
                 </div>
             )}
 
@@ -535,7 +535,7 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
     };
 
     return (
-        <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-lg p-6">
+        <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-6">
             <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 mb-4 overflow-x-auto scrollbar-hide">
                 <nav className="flex space-x-6 min-w-max" aria-label="Tabs">
                     {[

@@ -222,10 +222,16 @@ export function processEmployeeData(
         const creator = getRowValue(row, COL.NGUOI_TAO);
         if (!creator || creator.trim().startsWith('Yêu cầu xuất')) continue;
 
-        const metrics = row._metrics || { revenue: 0, revenueQD: 0, quantity: 0, isTraCham: false };
-        const { revenue, revenueQD, quantity, isTraCham } = metrics;
+        const price = Number(getRowValue(row, COL.PRICE)) || 0;
+        const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
+        const revenue = price; // Doanh thu là giá trị của cột Giá bán_1
         const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+        const productName = getRowValue(row, COL.PRODUCT);
+        
+        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
+        const revenueQD = revenue * heso;
         const customer = getRowValue(row, COL.CUSTOMER_NAME);
         const dateCreated: Date = row.parsedDate;
         const dateKey = dateCreated.toISOString().split('T')[0];
@@ -253,9 +259,6 @@ export function processEmployeeData(
         if (!employeeDailyTrend[creator][dateKey]) employeeDailyTrend[creator][dateKey] = 0;
 
         // Logic trọng số số lượng: Vieon dùng hệ số quy đổi, các SP khác dùng quantityMultiplierMap
-        const productName = getRowValue(row, COL.PRODUCT);
-        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-        const heso = metrics.revenueQD > 0 && revenue > 0 ? metrics.revenueQD / revenue : 1;
         const subgroup = productConfig.childToSubgroupMap[maNhomHang];
         const isVieon = subgroup === 'Vieon' || (productName || '').toString().includes('VieON');
         const qtyMultiplier = productConfig.quantityMultiplierMap?.[productCode];
@@ -267,7 +270,7 @@ export function processEmployeeData(
         emp.doanhThuQD! += revenueQD;
         emp.totalOrders! += 1;
         if (customer) emp.customerSet.add(customer);
-        if (isTraCham) {
+        if (getHinhThucThanhToan(row, productConfig) === 'tra_gop') {
             emp.slTraCham! += weightedQuantity; // Cập nhật số lượng trọng số
             emp.doanhThuTraCham! += revenue;
         }
@@ -276,7 +279,7 @@ export function processEmployeeData(
         if (parentGroupForPerf === 'CE' || parentGroupForPerf === 'ICT') {
             emp.slCE_ICT! += weightedQuantity; // Cập nhật số lượng trọng số
             emp.doanhThu_CE_ICT! += revenue;
-            if (isTraCham) {
+            if (getHinhThucThanhToan(row, productConfig) === 'tra_gop') {
                 emp.slTraCham_CE_ICT! += weightedQuantity; // Cập nhật số lượng trọng số
                 emp.doanhThuTraCham_CE_ICT! += revenue;
             }

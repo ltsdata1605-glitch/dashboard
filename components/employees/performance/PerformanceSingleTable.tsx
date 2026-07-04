@@ -46,21 +46,6 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
     const theme = TAB_THEMES[groupType];
     const dataToRender = groupType === 'vuotTroi' ? outstandingData : groupedData;
 
-    const [renderLimit, setRenderLimit] = useState(20);
-
-    // Optimize lag by lazy rendering
-    React.useEffect(() => {
-        if (isExporting) {
-            setRenderLimit(99999);
-            return;
-        }
-        setRenderLimit(20);
-        const timer = setTimeout(() => {
-            setRenderLimit(99999);
-        }, 150);
-        return () => clearTimeout(timer);
-    }, [dataToRender, isExporting, groupType]);
-
     const headers: { label: string; key: string; colorClass: string; textColor: string; align?: 'left' | 'center' | 'right'; sos?: boolean; groupName: string; groupColorClass: string; groupTextColor: string; noSubHeader?: boolean }[] =
         groupType === 'doanhThu' ? [
             { label: 'Thực', key: 'doanhThuThuc', colorClass: 'bg-emerald-50 dark:bg-emerald-900/20', textColor: 'text-emerald-700 dark:text-emerald-400', align: 'center', groupName: 'DOANH THU', groupColorClass: 'bg-emerald-50 dark:bg-emerald-900/20', groupTextColor: 'text-emerald-700 dark:text-emerald-300' },
@@ -167,13 +152,13 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
             {/* Header */}
             <div className="flex justify-between items-center mb-3 sm:mb-6">
                 <div className="flex items-center gap-2 sm:gap-4">
-                    <div className={`w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 ${theme.iconBlockBg} ${theme.iconBlockText}`}>
+                    <div className={`w-6 h-6 sm:w-10 sm:h-10 rounded-md sm:rounded-xl flex items-center justify-center shrink-0 ${theme.iconBlockBg} ${theme.iconBlockText}`}>
                         <Icon name={theme.icon} size={3.5} className="sm:hidden" />
                         <Icon name={theme.icon} size={5} className="hidden sm:block" />
                     </div>
                     <div className="min-w-0">
-                        <h3 className="text-[11px] sm:text-lg font-bold text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">{theme.title}</h3>
-                        <p className="text-[10px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{theme.subtitle}</p>
+                        <h3 className="text-[11px] sm:text-lg font-black text-slate-800 dark:text-white uppercase tracking-tight truncate leading-tight">{theme.title}</h3>
+                        <p className="text-[8px] sm:text-[11px] font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate leading-none mt-0.5">{theme.subtitle}</p>
                     </div>
                 </div>
 
@@ -229,7 +214,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                     {/* Thead */}
                     <thead className="sticky top-0 z-20">
                         {/* Group Headers */}
-                        <tr className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
+                        <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
                             <th 
                                 colSpan={2} 
                                 rowSpan={2} 
@@ -263,7 +248,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                             ))}
                         </tr>
                         {/* Sub Headers */}
-                        <tr className="bg-white dark:bg-slate-900 text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                        <tr className="bg-white dark:bg-slate-900 text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                             {/* Data cols */}
                             {headers.map(h => {
                                 if (h.noSubHeader) return null;
@@ -301,7 +286,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                         if (e.key === 'Escape') setIsEditingTarget(false);
                                                     }}
                                                 />
-                                                <span className="text-[10px] font-bold text-violet-500 dark:text-violet-400 whitespace-nowrap">Tr</span>
+                                                <span className="text-[9px] font-bold text-violet-500 dark:text-violet-400 whitespace-nowrap">Tr</span>
                                             </div>
                                         ) : (
                                             <div className={`flex items-center gap-1 ${h.align === 'center' ? 'justify-center' : h.align === 'right' ? 'justify-end' : 'justify-start'}`}>
@@ -331,10 +316,6 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                         {Object.entries(dataToRender).map(([dept, employees]: [string, any], deptIdx) => {
                             if (!Array.isArray(employees)) return null;
                             const dc = DEPT_COLORS[deptIdx % DEPT_COLORS.length];
-                            
-                            // Apply render limit to avoid freezing the browser on tab switch
-                            const visibleEmployees = isExporting ? employees : employees.slice(0, renderLimit);
-
 
                             return (
                                 <React.Fragment key={dept || 'unknown'}>
@@ -344,7 +325,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                             <td colSpan={2 + headers.length} className={`px-2 sm:px-4 py-1 sm:py-1.5 ${dc.strip} border-y border-slate-200 dark:border-slate-700`}>
                                                 <div className="flex items-center gap-1.5 sm:gap-2">
                                                     <span className={`w-1 sm:w-2 h-3 sm:h-4 rounded-full ${dc.badge} flex-shrink-0`} />
-                                                    <span className={`text-[10px] sm:text-[10px] font-bold uppercase tracking-widest ${dc.text}`}>
+                                                    <span className={`text-[8px] sm:text-[10px] font-black uppercase tracking-widest ${dc.text}`}>
                                                         {dept || 'Không Phân Ca'} — {employees.length} người
                                                     </span>
                                                 </div>
@@ -353,7 +334,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                     )}
 
                                     {/* Employee rows */}
-                                    {visibleEmployees.map((emp: any, idx: number) => {
+                                    {employees.map((emp: any, idx: number) => {
                                         if (!emp) return null;
 
                                         return (
@@ -399,7 +380,7 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                             </span>
                                                         )}
                                                         {(h.key === 'weakPointsRevenue' || h.key === 'weakPointsExploitation') && (
-                                                            <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold ${Number(emp[h.key] || 0) > 0
+                                                            <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-black ${Number(emp[h.key] || 0) > 0
                                                                 ? 'bg-rose-100 text-rose-600 dark:bg-rose-500/20 dark:text-rose-400'
                                                                 : 'text-slate-300 dark:text-slate-700'}`}>
                                                                 {emp[h.key] || '—'}

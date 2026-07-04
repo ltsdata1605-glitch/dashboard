@@ -204,7 +204,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
         const val = metricToDisplay === 'revenue' ? d.revenue : d.quantity;
         const pct = total > 0 ? (val / total * 100).toFixed(1) : '0.0';
         return (
-            <div className="p-3 shadow-xl rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans min-w-[170px]">
+            <div className="p-3 shadow-xl rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans min-w-[170px]">
                 <div className="font-extrabold text-slate-800 dark:text-slate-100 mb-2 border-b border-slate-100 dark:border-slate-700 pb-1.5 truncate text-xs">{d.name}</div>
                 <div className="text-slate-600 dark:text-slate-300 mb-1 flex justify-between gap-3 text-xs"><span>{metricToDisplay === 'revenue' ? 'Doanh thu:' : 'Số lượng:'}</span><span className={`font-bold ${metricToDisplay === 'revenue' ? 'text-indigo-600 dark:text-indigo-400' : 'text-emerald-600 dark:text-emerald-400'}`}>{metricToDisplay === 'revenue' ? formatCurrency(d.revenue) : formatQuantity(d.quantity)}</span></div>
                 <div className="text-slate-500 dark:text-slate-400 flex justify-between gap-3 text-[11px]"><span>Tỷ trọng:</span><span className="font-bold">{pct}%</span></div>
@@ -218,7 +218,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
     return (
         <div
             ref={cardRef}
-            className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-slate-800 overflow-hidden rounded-none sm:rounded-lg lg:rounded-none mb-3 lg:mb-8"
+            className="bg-white dark:bg-slate-900 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-y sm:border border-slate-100 dark:border-slate-800 overflow-hidden rounded-none sm:rounded-xl lg:rounded-none mb-3 lg:mb-8"
         >
             {/* ──── SECTION HEADER ──── */}
             <SectionHeader
@@ -294,7 +294,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                 <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
 
                     {/* ══════ LEFT 50%: CARD GRID ══════ */}
-                    <div className="w-full lg:w-1/2 lg:shrink-0 flex flex-col gap-3 bg-white dark:bg-slate-900 rounded-lg" ref={gridRef}>
+                    <div className="w-full lg:w-1/2 lg:shrink-0 flex flex-col gap-3 bg-white dark:bg-slate-900 rounded-xl" ref={gridRef}>
                         {/* Left Side Header (Level indicator) - always rendered for export, hidden on mobile screen only */}
                         <div className="hidden lg:flex export-always-show items-center justify-between pr-2 pb-1 border-b border-transparent dark:border-white/5">
                             {currentLevelLabel && (
@@ -317,7 +317,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                         </div>
 
                         {currentView.data.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-14 bg-slate-50/50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-lg">
+                            <div className="flex flex-col items-center justify-center py-14 bg-slate-50/50 dark:bg-white/5 border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
                                 <Icon name="search-x" size={8} className="text-slate-300 dark:text-slate-700 mb-3" />
                                 <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Không có dữ liệu</p>
                             </div>
@@ -340,7 +340,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 'group relative',
                                                 'bg-white dark:bg-[#1c1c1e] border border-slate-100 dark:border-white/5',
                                                 'shadow-[0_2px_8px_rgba(0,0,0,0.03)] hover:shadow-[0_6px_18px_rgba(0,0,0,0.07)]',
-                                                'transition-all duration-200 hover:-translate-y-0.5 rounded-lg select-none premium-card-shadow',
+                                                'transition-all duration-200 hover:-translate-y-0.5 rounded-xl select-none premium-card-shadow',
                                                 isDrillable ? 'cursor-pointer active:scale-[0.97]' : 'cursor-default',
                                                 // Mobile: single row, Desktop: block card
                                                 'flex items-center gap-1.5 p-1.5 lg:flex-col lg:justify-between lg:items-stretch lg:p-2.5',
@@ -351,15 +351,15 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 <Icon name={icon} size={3} />
                                             </div>
                                             <div className="flex items-center gap-1 min-w-0 flex-1 lg:hidden">
-                                                <span className={`text-[10px] font-extrabold uppercase tracking-wide ${iClass.text} truncate`} title={name}>{name}</span>
-                                                <span className="text-[10px] font-bold text-slate-800 dark:text-white truncate">
+                                                <span className={`text-[9px] font-extrabold uppercase tracking-wide ${iClass.text} truncate`} title={name}>{name}</span>
+                                                <span className="text-[9px] font-black text-slate-800 dark:text-white truncate">
                                                     {formatCurrency(revenue)}
                                                 </span>
-                                                <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold whitespace-nowrap">
+                                                <span className="text-[8px] text-slate-400 dark:text-slate-500 font-bold whitespace-nowrap">
                                                     {formatQuantity(quantity)} SP
                                                 </span>
                                             </div>
-                                            <span className={`text-[10px] font-bold px-1 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter shrink-0 lg:hidden`}>
+                                            <span className={`text-[7px] font-black px-1 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter shrink-0 lg:hidden`}>
                                                 {pct.toFixed(1)}%
                                             </span>
                                             {isDrillable && (
@@ -371,19 +371,19 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 <div className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${iClass.bg} ${iClass.text} transition-transform group-hover:scale-110`}>
                                                     <Icon name={icon} size={3.5} />
                                                 </div>
-                                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter`}>
+                                                <span className={`text-[8px] font-black px-1.5 py-0.5 rounded ${iClass.bg} ${iClass.text} tracking-tighter`}>
                                                     {pct.toFixed(1)}%
                                                 </span>
                                             </div>
                                             <div className="hidden lg:block min-w-0">
-                                                <div className={`text-[10px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5 w-full`} title={name}>{name}</div>
-                                                <div className="text-[11px] font-bold tracking-tight leading-none truncate">
+                                                <div className={`text-[9px] font-extrabold uppercase tracking-widest ${iClass.text} truncate mb-0.5 w-full`} title={name}>{name}</div>
+                                                <div className="text-[11px] font-black tracking-tight leading-none truncate">
                                                     {metricToDisplay === 'revenue' 
                                                         ? <span className="text-slate-900 dark:text-white">{formatCurrency(revenue)}</span> 
                                                         : <span className={iClass.text}>{`${formatQuantity(quantity)} SP`}</span>
                                                     }
                                                 </div>
-                                                <div className="mt-1 flex items-center gap-1 text-[10px] font-bold">
+                                                <div className="mt-1 flex items-center gap-1 text-[8px] font-bold">
                                                     <Icon name={metricToDisplay === 'revenue' ? 'package' : 'dollar-sign'} size={2.5} className="text-slate-400 dark:text-slate-500" />
                                                     {metricToDisplay === 'revenue' 
                                                         ? <span className={iClass.text}>{`${formatQuantity(quantity)} SP`}</span> 
@@ -404,7 +404,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                     </div>
 
                     {/* ══════ RIGHT 50%: PIE CHART ══════ */}
-                    <div className="w-full lg:w-1/2 flex flex-col gap-1.5 lg:gap-3 bg-white dark:bg-slate-900 rounded-lg" ref={pieRef}>
+                    <div className="w-full lg:w-1/2 flex flex-col gap-1.5 lg:gap-3 bg-white dark:bg-slate-900 rounded-xl" ref={pieRef}>
                         {/* Right Side Header (Pie Chart Title) - always rendered for export */}
                         <div className="hidden lg:flex export-always-show items-center justify-between pr-1 pb-1 border-b border-transparent dark:border-white/5">
                             <div className="flex items-center gap-2">
@@ -428,7 +428,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                             </button>
                         </div>
 
-                        <div className="flex-grow bg-transparent lg:bg-slate-50/70 dark:lg:bg-slate-800/40 rounded-lg lg:rounded-lg border-0 lg:border border-slate-100 dark:border-white/5 p-0 lg:p-3 flex flex-col">
+                        <div className="flex-grow bg-transparent lg:bg-slate-50/70 dark:lg:bg-slate-800/40 rounded-xl lg:rounded-2xl border-0 lg:border border-slate-100 dark:border-white/5 p-0 lg:p-3 flex flex-col">
                             {pieChartData.length > 0 ? (
                                 <>
                                     <div className="h-[180px] lg:h-[230px] -mx-2">
@@ -468,7 +468,7 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                                 <div key={item.name} className="flex items-center min-w-0" title={`${item.name}: ${metricToDisplay === 'revenue' ? formatCurrency(item.revenue) : formatQuantity(item.quantity)} (${pct}%)`}>
                                                     <span className="w-2 h-2 rounded-full flex-shrink-0 mr-1.5" style={{ background: COLORS[idx % COLORS.length] }} />
                                                     <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 truncate">{item.name}</span>
-                                                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex-shrink-0 ml-1.5">{pct}%</span>
+                                                    <span className="text-[9px] font-bold text-slate-400 dark:text-slate-500 flex-shrink-0 ml-1.5">{pct}%</span>
                                                 </div>
                                             );
                                         })}
@@ -503,4 +503,4 @@ const IndustryGrid: React.FC = React.memo(() => {
 });
 
 IndustryGrid.displayName = 'IndustryGrid';
-export default React.memo(IndustryGrid);
+export default IndustryGrid;

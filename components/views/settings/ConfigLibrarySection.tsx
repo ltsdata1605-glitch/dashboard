@@ -95,7 +95,7 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
             
             {showShareModal && (
                 <div className="fixed inset-0 z-[100] bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-slate-800 rounded-lg shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200">
                         <div className="p-5 border-b border-slate-100 dark:border-slate-700/50 flex justify-between items-center bg-slate-50 dark:bg-slate-800/80">
                             <h3 className="font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                 <Icon name="share-2" size={5} className="text-indigo-500" />

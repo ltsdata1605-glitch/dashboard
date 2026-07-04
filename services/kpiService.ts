@@ -25,14 +25,19 @@ export function processKpis(
 
     for (let i = 0, len = validSalesData.length; i < len; i++) {
         const row = validSalesData[i];
-        const metrics = row._metrics || { revenue: 0, revenueQD: 0, isTraCham: false };
-        const rowRevenue = metrics.revenue;
+        const price = Number(getRowValue(row, COL.PRICE)) || 0;
+        const rowRevenue = price; // Doanh thu là giá trị của cột Giá bán_1
+        const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
         const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+        const productName = getRowValue(row, COL.PRODUCT);
+        
+        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
 
         totalRevenue += rowRevenue;
-        doanhThuQD += metrics.revenueQD;
+        doanhThuQD += rowRevenue * heso;
 
-        if (metrics.isTraCham) {
+        if (getHinhThucThanhToan(row, productConfig) === 'tra_gop') {
             traGopValue += rowRevenue;
             traGopCount++;
         }
@@ -71,9 +76,16 @@ export function processKpis(
     let doanhThuQDChoXuat = 0;
     for (let i = 0, len = unshippedOrders.length; i < len; i++) {
         const row = unshippedOrders[i];
-        const metrics = row._metrics || { revenue: 0, revenueQD: 0, isTraCham: false };
-        doanhThuThucChoXuat += metrics.revenue;
-        doanhThuQDChoXuat += metrics.revenueQD;
+        const price = Number(getRowValue(row, COL.PRICE)) || 0;
+        const rowRevenue = price; // Doanh thu là giá trị của cột Giá bán_1
+        const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
+        const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+        const productName = getRowValue(row, COL.PRODUCT);
+        
+        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
+        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
+        doanhThuThucChoXuat += rowRevenue;
+        doanhThuQDChoXuat += rowRevenue * heso;
     }
 
     let soLuongThuHo = 0;

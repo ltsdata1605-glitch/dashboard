@@ -24,7 +24,7 @@ const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: T
         className={`
             flex-1 sm:flex-none px-5 py-2.5 text-[12px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap border-b-2
             ${activeTab === tab 
-                ? 'font-bold text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400' 
+                ? 'font-black text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400' 
                 : 'font-bold text-slate-400 dark:text-slate-500 border-transparent hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300'
             }
         `} 
@@ -312,15 +312,15 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                                 <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeSupermarkets.length === supermarkets.length ? 'Tất cả siêu thị' : Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).join(', ')}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}</span>
+                                <span className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-1.5 py-0.5">{Array.from(new Set(activeSupermarkets.map(s => shortenSupermarketName(s)))).length}</span>
                                 <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isSmFilterOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </button>
                         {isSmFilterOpen && (
-                            <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
+                            <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
                                 <div className="space-y-0.5">
                                     <div onClick={() => toggleSupermarket('all')} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-indigo-50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">Chọn tất cả</span>
+                                        <span className="text-xs font-black text-indigo-600 dark:text-indigo-400">Chọn tất cả</span>
                                         <Switch checked={activeSupermarkets.length === supermarkets.length} onChange={() => {}} />
                                     </div>
                                     {Array.from(new Map(supermarkets.map(sm => [shortenSupermarketName(sm), sm])).values()).map(sm => (
@@ -342,15 +342,15 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
                                 <span className="truncate text-left max-w-[100px] sm:max-w-[160px]">{activeDepartments.includes('all') ? 'Tất cả bộ phận' : activeDepartments.join(', ')}</span>
                             </div>
                             <div className="flex items-center gap-2 flex-shrink-0 ml-2">
-                                <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-1.5 py-0.5">{activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}</span>
+                                <span className="text-[10px] font-black text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-1.5 py-0.5">{activeDepartments.includes('all') ? departmentOptions.length : activeDepartments.length}</span>
                                 <ChevronDownIcon className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isDeptFilterOpen ? 'rotate-180' : ''}`} />
                             </div>
                         </button>
                         {isDeptFilterOpen && (
-                            <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
+                            <div className="absolute top-[calc(100%+8px)] right-0 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-1.5 max-h-72 overflow-y-auto custom-scrollbar animate-in fade-in slide-in-from-top-2 duration-150">
                                 <div className="space-y-0.5">
                                     <div onClick={() => toggleDepartment('all')} className="flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-sky-50 dark:hover:bg-slate-700/50 transition-colors">
-                                        <span className="text-xs font-bold text-sky-600 dark:text-sky-400">Tất cả bộ phận</span>
+                                        <span className="text-xs font-black text-sky-600 dark:text-sky-400">Tất cả bộ phận</span>
                                         <Switch checked={activeDepartments.includes('all')} onChange={() => {}} />
                                     </div>
                                     {departmentOptions.map(dept => (

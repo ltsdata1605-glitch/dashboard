@@ -20,18 +20,18 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
   return (
     <div className="w-full mx-auto space-y-12 pb-12 pt-8">
       <div className="mb-8">
-         <h2 className="text-3xl font-bold text-slate-900 uppercase tracking-widest text-center mb-4">LỊCH LÀM VIỆC - THÁNG {month}</h2>
+         <h2 className="text-3xl font-black text-slate-900 uppercase tracking-widest text-center mb-4">LỊCH LÀM VIỆC - THÁNG {month}</h2>
          <h3 className="text-xl font-bold text-slate-700 uppercase tracking-wider text-left pl-2">{staff.name}</h3>
       </div>
       
       <table className="w-full border-collapse bg-white border border-slate-200 shadow-sm">
         <thead>
           <tr>
-            <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-sky-50 text-sky-700 font-bold text-[13px] uppercase tracking-widest border-b-2 !border-b-slate-400">Giờ Công</th>
-            <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-fuchsia-50 text-fuchsia-700 font-bold text-[13px] uppercase tracking-widest border-b-2 !border-b-slate-400">Số Ngày SBH</th>
-            <th colSpan={2} className="border-r-2 border-slate-400 py-3 bg-orange-50 text-orange-700 font-bold text-[13px] uppercase tracking-widest border-b-2 !border-b-slate-400">Số Lần</th>
+            <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-sky-50 text-sky-700 font-black text-[13px] uppercase tracking-widest border-b-2 !border-b-slate-400">Giờ Công</th>
+            <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-fuchsia-50 text-fuchsia-700 font-black text-[13px] uppercase tracking-widest border-b-2 !border-b-slate-400">Số Ngày SBH</th>
+            <th colSpan={2} className="border-r-2 border-slate-400 py-3 bg-orange-50 text-orange-700 font-black text-[13px] uppercase tracking-widest border-b-2 !border-b-slate-400">Số Lần</th>
           </tr>
-          <tr className="text-[11px] font-bold uppercase tracking-wider">
+          <tr className="text-[11px] font-black uppercase tracking-wider">
             <th className="py-2 px-3 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-400">SBH</th>
             <th className="py-2 px-3 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-400">TV</th>
             <th className="py-2 px-3 border-r-2 border-slate-400 bg-sky-50 text-sky-800 border-b-[3px] !border-b-slate-400">TỔNG</th>
@@ -53,7 +53,7 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
               <span className="text-[13px] font-bold text-slate-500">{Math.round(normalHours)}</span>
             </td>
             <td className="py-3 px-2 border-r-2 border-slate-400 text-center">
-              <span className="text-[14px] font-bold text-slate-900">{Math.round(totalHours)}</span>
+              <span className="text-[14px] font-black text-slate-900">{Math.round(totalHours)}</span>
             </td>
             
             <td className="py-3 px-2 border-r border-slate-300 text-center">
@@ -118,7 +118,7 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
             return (
               <tr key={dayIndex} className={`${rowClass} hover:bg-slate-50 transition-colors border-b border-slate-300`}>
                 <td className={`py-3 px-4 border-r border-slate-300 text-center whitespace-nowrap`}>
-                  <span className={`text-[11px] font-bold ${isSun ? 'text-rose-600' : 'text-slate-800'}`}>
+                  <span className={`text-[11px] font-black ${isSun ? 'text-rose-600' : 'text-slate-800'}`}>
                     {date.getDate().toString().padStart(2, '0')}/{month.toString().padStart(2, '0')}
                   </span>
                 </td>
@@ -128,7 +128,7 @@ const VerticalIndividualSchedule: React.FC<VerticalIndividualScheduleProps> = ({
                   </span>
                 </td>
                 <td className="py-3 px-6 border-r border-slate-300 text-center whitespace-nowrap">
-                   <span className={`text-[14px] font-bold tracking-wide ${info.role === "OFF" ? "text-rose-600" : "text-slate-900"}`}>
+                   <span className={`text-[14px] font-black tracking-wide ${info.role === "OFF" ? "text-rose-600" : "text-slate-900"}`}>
                       {info.role === "OFF" ? "OFF" : info.shift}
                    </span>
                 </td>

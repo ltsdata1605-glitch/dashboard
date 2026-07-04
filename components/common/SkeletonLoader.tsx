@@ -104,7 +104,7 @@ export const TabbedTableSkeleton: React.FC<{ rows?: number }> = ({ rows = 5 }) =
                  </div>
                  {/* Table Body */}
                 {Array.from({ length: rows }).map((_, i) => (
-                    <SkeletonPulse key={i} className="h-16 w-full rounded-lg" />
+                    <SkeletonPulse key={i} className="h-16 w-full rounded-xl" />
                 ))}
             </div>
         </div>

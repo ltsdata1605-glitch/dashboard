@@ -146,7 +146,7 @@ const FontSelector: React.FC = () => {
                 <div
                     ref={dropdownRef}
                     style={dropdownStyles}
-                    className="absolute bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm overflow-hidden"
+                    className="absolute bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm overflow-hidden"
                 >
                     <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-900/30">
                         <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Tùy chọn Font</span>

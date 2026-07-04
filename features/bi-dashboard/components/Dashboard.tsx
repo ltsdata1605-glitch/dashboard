@@ -56,7 +56,7 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
                         <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur-xl rounded-[20px] overflow-hidden border border-slate-100 dark:border-white/5 p-5">
                             
                             <div className="flex flex-col items-center gap-4">
-                                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-lg flex items-center justify-center border border-indigo-100 dark:border-indigo-800/50">
+                                <div className="w-12 h-12 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center border border-indigo-100 dark:border-indigo-800/50">
                                     <UploadIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                                 </div>
                                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full">

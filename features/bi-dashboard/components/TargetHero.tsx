@@ -114,17 +114,17 @@ const CreateDeptModal: React.FC<{
         >
             <div className="space-y-5">
                     <div>
-                        <label className="block text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-widest mb-2">Tên nhóm / Bộ phận</label>
-                        <input value={name} onChange={e => setName(e.target.value)} placeholder="Ví dụ: Nhóm Online..." className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 outline-none transition-all font-bold text-slate-700 dark:text-slate-200 text-sm placeholder:text-slate-400 placeholder:font-normal" />
+                        <label className="block text-[10px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-widest mb-2">Tên nhóm / Bộ phận</label>
+                        <input value={name} onChange={e => setName(e.target.value)} placeholder="Ví dụ: Nhóm Online..." className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 outline-none transition-all font-bold text-slate-700 dark:text-slate-200 text-sm placeholder:text-slate-400 placeholder:font-normal" />
                     </div>
 
                     {/* Selected employees summary with remove buttons */}
                     {selectedEmps.size > 0 && (
                         <div>
-                            <label className="block text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-2">
+                            <label className="block text-[10px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest mb-2">
                                 Đã chọn ({selectedEmps.size})
                             </label>
-                            <div className="flex flex-wrap gap-1.5 p-2 border border-emerald-100 dark:border-emerald-800/50 rounded-lg bg-emerald-50/30 dark:bg-emerald-900/10 max-h-[15vh] overflow-y-auto">
+                            <div className="flex flex-wrap gap-1.5 p-2 border border-emerald-100 dark:border-emerald-800/50 rounded-xl bg-emerald-50/30 dark:bg-emerald-900/10 max-h-[15vh] overflow-y-auto">
                                 {Array.from(selectedEmps).map(empName => (
                                     <span key={empName} className="inline-flex items-center gap-1 px-2.5 py-1 bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-700 rounded-lg text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 group/tag hover:border-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
                                         <span className="truncate max-w-[150px]">{allEmployees.find(e => e.originalName === empName)?.name || empName}</span>
@@ -139,7 +139,7 @@ const CreateDeptModal: React.FC<{
 
                     <div>
                         <div className="flex justify-between items-end mb-2">
-                            <label className="block text-[10px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-widest">
+                            <label className="block text-[10px] font-black text-sky-700 dark:text-sky-400 uppercase tracking-widest">
                                 Chọn nhân sự
                             </label>
                             <div className="flex items-center gap-2">
@@ -152,7 +152,7 @@ const CreateDeptModal: React.FC<{
                                                 setSelectedEmps(new Set(availableEmps.map(e => e.originalName)));
                                             }
                                         }}
-                                        className="text-[10px] font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400 uppercase tracking-wider transition-colors"
+                                        className="text-[9px] font-bold text-sky-600 hover:text-sky-800 dark:text-sky-400 uppercase tracking-wider transition-colors"
                                     >
                                         {selectedEmps.size === availableEmps.length ? 'Bỏ tất cả' : 'Chọn tất cả'}
                                     </button>
@@ -160,10 +160,10 @@ const CreateDeptModal: React.FC<{
                                 <span className="text-[10px] uppercase font-bold text-sky-600/70 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-100">{selectedEmps.size} đã chọn</span>
                             </div>
                         </div>
-                        <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm kiếm tên nhân viên..." className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 text-sm mb-3 outline-none transition-all font-medium placeholder:text-slate-400" />
-                        <div className="space-y-1.5 max-h-[30vh] overflow-y-auto p-1.5 border border-slate-100 dark:border-slate-700/50 rounded-lg bg-slate-50/30 dark:bg-slate-900/30">
+                        <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Tìm kiếm tên nhân viên..." className="w-full px-4 py-3 bg-slate-50/50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:ring-4 focus:ring-sky-500/10 focus:border-sky-400 text-sm mb-3 outline-none transition-all font-medium placeholder:text-slate-400" />
+                        <div className="space-y-1.5 max-h-[30vh] overflow-y-auto p-1.5 border border-slate-100 dark:border-slate-700/50 rounded-xl bg-slate-50/30 dark:bg-slate-900/30">
                             {filteredEmps.length > 0 ? filteredEmps.map(emp => (
-                                <div key={emp.originalName} className={`flex items-center gap-3 p-3 rounded-lg transition-all border ${selectedEmps.has(emp.originalName) ? 'bg-sky-50/80 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700 shadow-sm' : 'border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'}`}>
+                                <div key={emp.originalName} className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${selectedEmps.has(emp.originalName) ? 'bg-sky-50/80 dark:bg-sky-900/30 border-sky-200 dark:border-sky-700 shadow-sm' : 'border-transparent hover:bg-white dark:hover:bg-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-sm'}`}>
                                     <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
                                         <input type="checkbox" checked={selectedEmps.has(emp.originalName)} onChange={() => toggleEmp(emp.originalName)} className="rounded-md border-slate-300 text-sky-500 focus:ring-sky-500 h-4.5 w-4.5 cursor-pointer bg-white shrink-0" />
                                         <span className={`text-sm font-medium truncate ${selectedEmps.has(emp.originalName) ? 'text-sky-800 dark:text-sky-300 font-bold' : 'text-slate-600 dark:text-slate-300'}`}>{emp.originalName}</span>
@@ -178,7 +178,7 @@ const CreateDeptModal: React.FC<{
                                 </div>
                             )) : <div className="flex flex-col items-center justify-center py-8 opacity-60">
                                     <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-2"><XIcon className="h-5 w-5 text-slate-400" /></div>
-                                    <p className="text-center text-[10px] font-bold uppercase tracking-widest text-slate-500">Nhân sự đã được phân bổ hết</p>
+                                    <p className="text-center text-[10px] font-black uppercase tracking-widest text-slate-500">Nhân sự đã được phân bổ hết</p>
                                 </div>}
                         </div>
                     </div>
@@ -212,17 +212,17 @@ const CompactTargetItem: React.FC<{
     return (
         <div className={`p-2 sm:p-2.5 rounded-lg transition-all border ${t.bg} ${t.border} ${t.shadow}`}>
             <div className="mb-2">
-                <span className={`text-[11px] font-bold uppercase tracking-wider ${t.label}`}>{label}</span>
+                <span className={`text-[11px] font-black uppercase tracking-wider ${t.label}`}>{label}</span>
                 <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
-                    <span className="text-[10px] font-bold uppercase opacity-70">Gốc:</span>
-                    <span className="text-[11px] font-bold tabular-nums">{f.format(baseValue)}{unit}</span>
-                    <span className="text-[10px] opacity-40">|</span>
-                    <span className="text-[10px] font-bold uppercase">Sau:</span>
-                    <span className={`text-[11px] font-bold tabular-nums ${t.after}`}>{f.format(adjValue)}{unit}</span>
+                    <span className="text-[9px] font-black uppercase opacity-70">Gốc:</span>
+                    <span className="text-[11px] font-black tabular-nums">{f.format(baseValue)}{unit}</span>
+                    <span className="text-[9px] opacity-40">|</span>
+                    <span className="text-[9px] font-black uppercase">Sau:</span>
+                    <span className={`text-[11px] font-black tabular-nums ${t.after}`}>{f.format(adjValue)}{unit}</span>
                     {perPerson != null && perPerson > 0 && (
                         <>
-                            <span className="text-[10px] opacity-40">|</span>
-                            <span className="text-[10px] font-bold uppercase">{f.format(perPerson)}Tr/ng</span>
+                            <span className="text-[9px] opacity-40">|</span>
+                            <span className="text-[9px] font-black uppercase">{f.format(perPerson)}Tr/ng</span>
                         </>
                     )}
                 </div>
@@ -246,9 +246,9 @@ const CompactTargetItem: React.FC<{
                             const v = parseInt(val, 10); 
                             if (!isNaN(v)) onChange(v); 
                         }}
-                        className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-bold ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                        className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                     />
-                    <span className="text-[10px] font-bold opacity-60">%</span>
+                    <span className="text-[9px] font-bold opacity-60">%</span>
                 </div>
             </div>
         </div>
@@ -325,7 +325,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                     <div className="flex justify-between items-center mb-1 px-1">
                         <div className="flex items-center gap-2">
                             <div className="w-1 h-3 bg-primary-600 rounded-full"></div>
-                            <h2 className="text-[11px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target</h2>
+                            <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Cấu hình Target</h2>
                         </div>
                         <button onClick={() => {
                             showConfirm({
@@ -340,7 +340,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                     closeConfirm();
                                 }
                             });
-                        }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-all active:scale-95" title="Reset">
+                        }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                             <ResetIcon className="h-4 w-4" />
                         </button>
                     </div>
@@ -354,7 +354,7 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                     <div className="flex justify-between items-center px-1 mb-1">
                         <div className="flex items-center gap-2">
                             <div className="w-1 h-3 bg-emerald-600 rounded-full"></div>
-                            <h2 className="text-[11px] font-bold text-slate-800 dark:text-white uppercase tracking-wider">Phân bổ bộ phận</h2>
+                            <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-wider">Phân bổ bộ phận</h2>
                         </div>
                         <div className="flex gap-2">
                             <button onClick={() => {
@@ -370,24 +370,24 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                         closeConfirm();
                                     }
                                 });
-                            }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-lg transition-all active:scale-95" title="Reset">
+                            }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                                 <ResetIcon className="h-4 w-4" />
                             </button>
-                            <button onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-lg transition-all active:scale-95" title="Tạo mới">
+                            <button onClick={() => { setEditingDept(null); setIsModalOpen(true); }} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Tạo mới">
                                 <PlusIcon className="h-4 w-4" />
                             </button>
                         </div>
                     </div>
 
-                    <div className="bg-white dark:bg-slate-800 p-3 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm mb-3 relative overflow-hidden">
+                    <div className="bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm mb-3 relative overflow-hidden">
                         <div className="flex justify-between items-center mb-2 z-10 relative">
                             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Tổng Ngân Sách Phân Bổ</span>
                             <div className="flex items-center gap-2">
-                                <span className={`text-[13px] font-bold ${totalAllocatedWeight > 100.01 ? 'text-red-500' : totalAllocatedWeight === 100 ? 'text-emerald-500' : 'text-slate-700 dark:text-white'}`}>
+                                <span className={`text-[13px] font-black ${totalAllocatedWeight > 100.01 ? 'text-red-500' : totalAllocatedWeight === 100 ? 'text-emerald-500' : 'text-slate-700 dark:text-white'}`}>
                                     {totalAllocatedWeight.toFixed(1)}<span className="text-[10px]">%</span>
                                 </span>
                                 {totalAllocatedWeight !== 100 && (
-                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${totalAllocatedWeight > 100.01 ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
+                                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md ${totalAllocatedWeight > 100.01 ? 'bg-red-50 text-red-600 border border-red-200' : 'bg-slate-100 text-slate-600 border border-slate-200'}`}>
                                         {totalAllocatedWeight > 100.01 ? `VƯỢT ${(totalAllocatedWeight - 100).toFixed(1)}%` : `DƯ ${(100 - totalAllocatedWeight).toFixed(1)}%`}
                                     </span>
                                 )}
@@ -426,8 +426,8 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                 <div key={dept.name} className={`relative group p-2 sm:p-2.5 ${t.bg} border ${t.border} rounded-lg shadow-sm transition-all hover:scale-[1.01]`}>
                                     <div className="mb-2">
                                         <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-                                            <span className={`text-[12px] font-bold uppercase tracking-wider ${t.label}`}>{dept.name}</span>
-                                            <span className="text-[10px] opacity-70 font-bold uppercase">({dept.employeeCount} NV)</span>
+                                            <span className={`text-[12px] font-black uppercase tracking-wider ${t.label}`}>{dept.name}</span>
+                                            <span className="text-[9px] opacity-70 font-bold uppercase">({dept.employeeCount} NV)</span>
                                             {isManual && (
                                                 <div className="flex gap-1 ml-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
                                                     <button onClick={() => { setEditingDept({ name: dept.name, employees: manualMapping[dept.name] || [] }); setIsModalOpen(true); }} className="p-1 text-slate-400 bg-white shadow-sm border border-slate-100 rounded-md hover:text-sky-600 hover:bg-sky-100 hover:border-sky-300 transition-colors" title="Chỉnh sửa"><PencilIcon className="h-3 w-3" /></button>
@@ -452,9 +452,9 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                             )}
                                         </div>
                                         <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-0.5">
-                                            <span className={`text-[11px] font-bold ${t.after} tabular-nums`}>{f.format(allocated)}<span className="text-[10px] opacity-60 ml-0.5 uppercase">Tr</span></span>
-                                            <span className="text-[10px] opacity-50">—</span>
-                                            <span className={`text-[11px] font-bold ${t.label}`}>{f.format(perEmployee)}Tr/ng</span>
+                                            <span className={`text-[11px] font-black ${t.after} tabular-nums`}>{f.format(allocated)}<span className="text-[8px] opacity-60 ml-0.5 uppercase">Tr</span></span>
+                                            <span className="text-[9px] opacity-50">—</span>
+                                            <span className={`text-[11px] font-black ${t.label}`}>{f.format(perEmployee)}Tr/ng</span>
                                         </div>
                                     </div>
                                     <div className="px-1 flex items-center gap-3">
@@ -476,14 +476,14 @@ const TargetHero: React.FC<TargetHeroProps> = ({ supermarketName, addUpdate, dep
                                                     const v = parseInt(val, 10); 
                                                     if (!isNaN(v)) handleDepartmentSliderChange(dept.name)(v); 
                                                 }}
-                                                className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-bold ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+                                                className={`w-7 sm:w-8 bg-transparent text-center text-[11px] font-black ${t.inputText} outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                                             />
-                                            <span className="text-[10px] font-bold opacity-60">%</span>
+                                            <span className="text-[9px] font-bold opacity-60">%</span>
                                         </div>
                                     </div>
                                 </div>
                             );
-                        }) : <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-lg text-slate-400 text-[10px] font-bold uppercase tracking-widest">Trống</div>}
+                        }) : <div className="text-center p-6 border-2 border-dashed border-slate-200 rounded-xl text-slate-400 text-[10px] font-black uppercase tracking-widest">Trống</div>}
                     </div>
                 </div>
             </div>

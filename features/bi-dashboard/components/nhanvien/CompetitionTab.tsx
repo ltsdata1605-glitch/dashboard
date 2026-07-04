@@ -438,7 +438,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
 
     const cardTitle = (
         <div className="flex flex-col items-start leading-none py-1 w-full">
-            <span className="js-report-title text-2xl font-bold uppercase text-slate-800 dark:text-white mt-1">HIỆU QUẢ THI ĐUA NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
+            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">HIỆU QUẢ THI ĐUA NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Thi đua là động lực, hiệu quả là mục tiêu - Vượt qua giới hạn, khẳng định bản thân.</span>
             <TimeProgressBar className="mt-2.5" />
         </div>
@@ -507,7 +507,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {/* Lọc nhóm */}
                                     <div className="relative" ref={filterRef}>
-                                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}><FilterIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Lọc nhóm</span>{isFiltered && <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold rounded-full">{activeFilterCount}</span>}</button>
+                                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}><FilterIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Lọc nhóm</span>{isFiltered && <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-black rounded-full">{activeFilterCount}</span>}</button>
                                         {isFilterOpen && (
                                             <div className="absolute right-0 top-full mt-1 w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden">
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50">
@@ -542,7 +542,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     {/* Highlight */}
                                     <div className="relative" ref={employeeFilterRef}>
                                         <button onClick={() => setIsEmployeeFilterOpen(!isEmployeeFilterOpen)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
-                                            <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-indigo-600 text-white text-[10px] font-bold rounded-full">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3 w-3 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
+                                            <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-indigo-600 text-white text-[9px] font-black rounded-full">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3 w-3 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
                                         </button>
                                         {isEmployeeFilterOpen && (
                                             <div className="absolute right-0 top-full mt-1 w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden">
@@ -574,7 +574,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                             ) : (
                                 <div className="space-y-8" ref={groupViewRef}>
                                     <div className="mb-6 text-center py-3 px-4 bg-gradient-to-r from-indigo-600 via-indigo-700 to-sky-600 shadow-lg">
-                                        <h3 className="text-2xl font-bold uppercase text-white leading-normal drop-shadow-sm">
+                                        <h3 className="text-2xl font-black uppercase text-white leading-normal drop-shadow-sm">
                                             {exportTitleOverride || `NHÓM HÀNG THI ĐUA ĐẾN NGÀY ${getYesterdayDateString()}`}
                                         </h3>
                                     </div>
@@ -672,7 +672,7 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         <button 
                                             type="button"
                                             onClick={handleAddSummaryTable}
-                                            className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 text-white text-xs font-bold uppercase rounded-lg hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 cursor-pointer"
+                                            className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 text-white text-xs font-bold uppercase rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 cursor-pointer"
                                         >
                                             <PlusIcon className="h-4 w-4" />
                                             <span>Thêm bảng tổng hợp</span>

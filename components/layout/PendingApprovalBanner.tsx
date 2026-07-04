@@ -26,7 +26,7 @@ const PendingApprovalBanner: React.FC = () => {
             
             <div className="flex-1 overflow-hidden whitespace-nowrap">
                 <span className="font-medium">
-                    Bạn có <span className="font-bold text-xl px-1">{pendingCount}</span> yêu cầu chờ duyệt mới! Nhấn vào đây để xem chi tiết.
+                    Bạn có <span className="font-black text-xl px-1">{pendingCount}</span> yêu cầu chờ duyệt mới! Nhấn vào đây để xem chi tiết.
                 </span>
             </div>
 

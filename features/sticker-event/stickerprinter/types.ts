@@ -21,7 +21,7 @@ export interface SavedStickerList {
     name: string;
     pages: StickerPage[];
     timestamp: number;
-    stickerType: 'gia_soc' | 'gio_vang' | 'rut_tham';
+    stickerType: 'gia_soc' | 'gio_vang';
     headerTextContent: string;
 }
 
@@ -30,7 +30,7 @@ export interface PrintHistoryEntry {
     timestamp: number;
     label: string;
     pageCount: number;
-    stickerType: 'gia_soc' | 'gio_vang' | 'rut_tham';
+    stickerType: 'gia_soc' | 'gio_vang';
     bgImage: string;
     headerTextSize: number;
     subHeaderTextSize?: number;

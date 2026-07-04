@@ -81,7 +81,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
       {/* Promotion */}
       {result.khuyenMai && result.khuyenMai.trim() && (
         <div className="flex items-center gap-1 mt-0.5">
-          <span className="shrink-0 text-[10px] font-bold text-orange-600 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded">KM</span>
+          <span className="shrink-0 text-[9px] font-bold text-orange-600 bg-orange-50 border border-orange-200 px-1.5 py-0.5 rounded">KM</span>
           <p className="text-[11px] font-medium text-slate-700 line-clamp-1" title={result.khuyenMai}>
             {result.khuyenMai}
           </p>
@@ -152,7 +152,7 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
 ProductCard.displayName = 'ProductCard';
 
 const EmptyState: React.FC<{ icon: React.ReactNode; title: string; message: string }> = ({ icon, title, message }) => (
-    <div className="flex flex-col items-center justify-center text-center p-8 bg-white rounded-lg shadow-lg border border-slate-200 min-h-[400px]">
+    <div className="flex flex-col items-center justify-center text-center p-8 bg-white rounded-2xl shadow-lg border border-slate-200 min-h-[400px]">
         <div className="p-4 bg-slate-100 rounded-full mb-4">
             {icon}
         </div>
@@ -170,7 +170,7 @@ const Annotation: React.FC<{ number: number; className: string }> = ({ number, c
 );
 
 const InstructionsPanel = () => (
-  <div className="text-left p-8 bg-white rounded-lg shadow-xl border-2 border-indigo-100 min-h-[400px] flex flex-col justify-center transition-all duration-300">
+  <div className="text-left p-8 bg-white rounded-2xl shadow-xl border-2 border-indigo-100 min-h-[400px] flex flex-col justify-center transition-all duration-300">
     <div className="flex items-center gap-4 mb-6">
         <div className="p-3 bg-indigo-100 rounded-full">
             <InfoIcon className="h-8 w-8 text-indigo-600" />
@@ -215,7 +215,7 @@ const InstructionsPanel = () => (
                             {/* Top right info */}
                             <div className="absolute top-0 right-0 text-center z-10">
                                 <div className="w-10 h-10 bg-gray-200 p-0.5 border border-gray-400"><img src="https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=123456789&bgcolor=ffffff" alt="QR Code"/></div>
-                                <p className="text-[10px] font-sans mt-0.5">21707 - 1.200</p>
+                                <p className="text-[7px] font-sans mt-0.5">21707 - 1.200</p>
                             </div>
                             {/* Main content */}
                             <p className="text-sm font-bold leading-tight px-12">IPHONE 15 PRO MAX 256GB</p>
@@ -226,7 +226,7 @@ const InstructionsPanel = () => (
                             <p className="text-xs">• PMH 500K</p>
                         </div>
                         <div className="w-4 flex justify-center items-end pb-1">
-                            <p className="text-[10px] [writing-mode:vertical-rl] text-gray-500 whitespace-nowrap">Ngày in: 14/08</p>
+                            <p className="text-[7px] [writing-mode:vertical-rl] text-gray-500 whitespace-nowrap">Ngày in: 14/08</p>
                         </div>
                     </div>
                 </div>
@@ -242,9 +242,9 @@ const InstructionsPanel = () => (
                     <p className="text-xs font-bold leading-tight">NỒI CƠM ĐIỆN TỬ SHARP</p>
                     <div>
                         <p className="text-2xl font-extrabold" style={{fontFamily: 'Oswald, sans-serif'}}>1.490</p>
-                        <p className="text-violet-600 text-[10px] font-bold">Thưởng: 500</p>
+                        <p className="text-violet-600 text-[9px] font-bold">Thưởng: 500</p>
                     </div>
-                     <p className="text-[10px]">• Giảm ngay 100K</p>
+                     <p className="text-[8px]">• Giảm ngay 100K</p>
                 </div>
             </div>
 
@@ -255,7 +255,7 @@ const InstructionsPanel = () => (
                      <div>
                         <p className="text-2xl font-extrabold" style={{fontFamily: 'Oswald, sans-serif'}}>890</p>
                     </div>
-                     <p className="text-[10px]">• Bảo hành 12 tháng</p>
+                     <p className="text-[8px]">• Bảo hành 12 tháng</p>
                 </div>
             </div>
          </div>
@@ -302,7 +302,7 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
                 <div className="flex justify-center py-4 hide-on-export">
                     <button
                         onClick={() => setVisibleCount(prev => prev + 50)}
-                        className="px-6 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-semibold rounded-lg border border-indigo-200 dark:border-indigo-800 transition-colors text-sm shadow-sm flex items-center gap-2"
+                        className="px-6 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-semibold rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors text-sm shadow-sm flex items-center gap-2"
                     >
                         Hiển thị thêm (còn {results.length - visibleCount} sản phẩm)
                     </button>

@@ -62,7 +62,7 @@ const Controls: React.FC<ControlsProps> = ({
           {tooltip(3, 'Bước 3: Thời gian', 'Chọn Tháng/Năm, ngày bắt đầu và số ngày.')}
           
           <div className="flex flex-col">
-            <label htmlFor="cfgMonth" className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+            <label htmlFor="cfgMonth" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Tháng / Năm
             </label>
             <input 
@@ -76,7 +76,7 @@ const Controls: React.FC<ControlsProps> = ({
           </div>
           
           <div className="flex flex-col">
-            <label htmlFor="cfgStartDay" className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+            <label htmlFor="cfgStartDay" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Bắt đầu
             </label>
             <input 
@@ -92,7 +92,7 @@ const Controls: React.FC<ControlsProps> = ({
           </div>
 
           <div className="flex flex-col">
-            <label htmlFor="cfgDuration" className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+            <label htmlFor="cfgDuration" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Số ngày
             </label>
             <input 
@@ -114,7 +114,7 @@ const Controls: React.FC<ControlsProps> = ({
       {/* Store & Department selectors */}
       <div className="flex items-end gap-3">
         <div className="flex flex-col">
-          <label htmlFor="cfgSupermarket" className="text-[10px] font-bold text-indigo-500 mb-1 uppercase tracking-wider">
+          <label htmlFor="cfgSupermarket" className="text-[9px] font-bold text-indigo-500 mb-1 uppercase tracking-wider">
             Siêu thị
           </label>
           <select 
@@ -134,7 +134,7 @@ const Controls: React.FC<ControlsProps> = ({
         </div>
         
         <div className="flex flex-col">
-            <label htmlFor="cfgDepartment" className="text-[10px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
+            <label htmlFor="cfgDepartment" className="text-[9px] font-semibold text-slate-400 mb-1 uppercase tracking-wider">
               Bộ phận
             </label>
             <select 

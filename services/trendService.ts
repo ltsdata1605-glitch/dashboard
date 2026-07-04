@@ -11,9 +11,14 @@ export function processTrendData(
     const shifts: { [key: string]: { revenue: number, revenueQD: number } } = { "Ca 1": { revenue: 0, revenueQD: 0 }, "Ca 2": { revenue: 0, revenueQD: 0 }, "Ca 3": { revenue: 0, revenueQD: 0 }, "Ca 4": { revenue: 0, revenueQD: 0 }, "Ca 5": { revenue: 0, revenueQD: 0 }, "Ca 6": { revenue: 0, revenueQD: 0 } };
 
     salesData.forEach(row => {
-        const metrics = row._metrics || { revenue: 0, revenueQD: 0, isTraCham: false };
-        const revenue = metrics.revenue;
-        const revenueQD = metrics.revenueQD;
+        const price = Number(getRowValue(row, COL.PRICE)) || 0;
+        const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
+        const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
+        const productName = getRowValue(row, COL.PRODUCT);
+        
+        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName);
+        const revenue = price; // Doanh thu là giá trị của cột Giá bán_1
+        const revenueQD = revenue * heso;
 
         const dateCreated: Date = row.parsedDate;
         if (dateCreated && !isNaN(dateCreated.getTime())) {

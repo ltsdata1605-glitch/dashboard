@@ -48,7 +48,7 @@ export const SettingsAccountTab: React.FC = () => {
                 <div className="bg-slate-50 dark:bg-slate-900/50 p-3 sm:p-6 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col gap-4 sm:gap-6 rounded-lg">
                     {/* Top: Avatar & Basic Info */}
                     <div className="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-6 border-b border-slate-200 dark:border-slate-700/50 pb-4 sm:pb-6">
-                        <div className="w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 relative group rounded-lg">
+                        <div className="w-20 h-20 sm:w-24 sm:h-24 overflow-hidden shadow-md bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center flex-shrink-0 relative group rounded-xl">
                             {user?.photoURL ? (
                                 <img src={user.photoURL} alt="Avatar" className="w-full h-full object-cover" />
                             ) : (
@@ -57,7 +57,7 @@ export const SettingsAccountTab: React.FC = () => {
                         </div>
                         
                         <div className="flex-1 text-center sm:text-left flex flex-col justify-center h-full mt-1 sm:mt-0">
-                            <h4 className="text-lg sm:text-2xl font-bold text-slate-800 dark:text-white leading-tight mb-1">{user?.displayName || 'Thành viên YCX'}</h4>
+                            <h4 className="text-lg sm:text-2xl font-black text-slate-800 dark:text-white leading-tight mb-1">{user?.displayName || 'Thành viên YCX'}</h4>
                             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium mb-2">{user?.email}</p>
                             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                                 <span className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 rounded-md ${

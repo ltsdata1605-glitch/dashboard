@@ -43,26 +43,26 @@ export const RevenueMobileCard = React.memo(({
                 <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-start">
                         <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
-                        <span className="text-[10px] font-bold text-sky-600 dark:text-sky-400">{roundUp(row.calculatedCompletion)}% HT</span>
+                        <span className="text-[10px] font-black text-sky-600 dark:text-sky-400">{roundUp(row.calculatedCompletion)}% HT</span>
                     </div>
 
                 </div>
             </div>
             
             <div className="grid grid-cols-3 gap-2">
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">DTQĐ</p>
-                    <p className="text-sm font-bold tabular-nums" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || '#0284c7' }}>{f.format(roundUp(row.dtqd))}</p>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">DTQĐ</p>
+                    <p className="text-sm font-black tabular-nums" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || '#0284c7' }}>{f.format(roundUp(row.dtqd))}</p>
                     <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">HQQĐ</p>
-                    <p className="text-sm font-bold tabular-nums" style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) }}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</p>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">HQQĐ</p>
+                    <p className="text-sm font-black tabular-nums" style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) }}>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</p>
                     <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Trả góp</p>
-                    <p className="text-sm font-bold tabular-nums" style={{ color: getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>{roundUp(row.calculatedInstallment)}%</p>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">Trả góp</p>
+                    <p className="text-sm font-black tabular-nums" style={{ color: getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>{roundUp(row.calculatedInstallment)}%</p>
                     <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
                 </div>
             </div>
@@ -76,8 +76,8 @@ export const RevenueMobileCard = React.memo(({
                     Xem chi tiết xu hướng
                 </button>
                 <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase">Bán kèm:</span>
-                    <span className="text-[10px] font-bold" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>{roundUp(row.pctBillBk)}%</span>
+                    <span className="text-[9px] font-bold text-slate-400 uppercase">Bán kèm:</span>
+                    <span className="text-[10px] font-black" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>{roundUp(row.pctBillBk)}%</span>
                 </div>
             </div>
         </div>

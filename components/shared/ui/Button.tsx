@@ -33,21 +33,21 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium transition-colors duration-200 outline-none disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap';
+    const baseStyles = 'inline-flex items-center justify-center font-bold transition-all duration-200 active:scale-[0.98] outline-none disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 whitespace-nowrap';
     
     const variants: Record<ButtonVariant, string> = {
-      primary: 'bg-sky-600 hover:bg-sky-700 text-white border border-transparent',
-      secondary: 'bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700',
-      danger: 'bg-rose-600 hover:bg-rose-700 text-white border border-transparent',
+      primary: 'bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 text-white shadow-md shadow-sky-500/20 border border-transparent',
+      secondary: 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm',
+      danger: 'bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800/50 shadow-sm',
       ghost: 'bg-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 border border-transparent',
-      outline: 'bg-transparent text-sky-600 dark:text-sky-400 border border-sky-300 dark:border-sky-700 hover:bg-sky-50 dark:hover:bg-sky-900/20'
+      outline: 'bg-transparent text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 hover:bg-sky-50 dark:hover:bg-sky-900/20'
     };
 
     const sizes: Record<ButtonSize, string> = {
-      sm: 'h-8 px-3 text-xs rounded-md',
-      md: 'h-9 px-4 text-sm rounded-md',
-      lg: 'h-11 px-6 text-base rounded-md',
-      icon: 'h-9 w-9 rounded-md p-0'
+      sm: 'h-8 px-3 text-[11px] rounded-lg tracking-wide uppercase',
+      md: 'h-10 px-4 text-xs rounded-xl tracking-widest uppercase',
+      lg: 'h-12 px-6 text-sm rounded-xl tracking-widest uppercase',
+      icon: 'h-10 w-10 rounded-xl p-0'
     };
 
     return (

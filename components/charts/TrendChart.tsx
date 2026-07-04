@@ -31,7 +31,7 @@ const CustomTooltip = ({ active, payload, metricName }: any) => {
     }
 
     return (
-        <div className="p-3 shadow-xl rounded-lg bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans z-50 min-w-[180px]">
+        <div className="p-3 shadow-xl rounded-xl bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border border-slate-200 dark:border-slate-700 text-sm font-sans z-50 min-w-[180px]">
             <div className="font-extrabold text-slate-800 dark:text-slate-100 mb-2 border-b border-slate-100 dark:border-slate-700 pb-1.5 text-xs">{label}</div>
             <div className="text-slate-600 dark:text-slate-300 flex justify-between gap-3 text-xs mb-1">
                 <span>{metricName}:</span>
@@ -482,7 +482,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                   title="Chọn khoảng thời gian"
               >
                   <Icon name="clock" size={4} />
-                  <span className="absolute -top-0.5 -right-0.5 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 rounded px-0.5 leading-tight uppercase">
+                  <span className="absolute -top-0.5 -right-0.5 text-[7px] font-black text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 rounded px-0.5 leading-tight uppercase">
                       {trendState.view === 'shift' ? 'Ca' : trendState.view === 'daily' ? 'N' : trendState.view === 'weekly' ? 'T' : 'Th'}
                   </span>
               </button>
@@ -576,7 +576,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
            {displayMode === 'calendar' ? (
                 <div className="flex flex-col gap-4">
                     {toastMsg && (
-                        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/50 text-emerald-700 dark:text-emerald-300 text-sm font-bold shadow-lg animate-fade-in flex items-center gap-2 pointer-events-none">
+                        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] px-5 py-3 rounded-xl bg-emerald-50 dark:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-700/50 text-emerald-700 dark:text-emerald-300 text-sm font-bold shadow-lg animate-fade-in flex items-center gap-2 pointer-events-none">
                             <span className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0"></span>
                             {toastMsg}
                         </div>
@@ -584,7 +584,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
 
                     {savedCalendars.length > 0 && (
                         <div className="flex items-center gap-1 overflow-x-auto no-scrollbar hide-on-export">
-                            <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-lg shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
+                            <div className="flex bg-slate-100 dark:bg-slate-800/80 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-sm border border-slate-200/50 dark:border-slate-700/50 shrink-0">
                                 {savedCalendars.map((cal) => {
                                     const pg = Array.isArray(cal.parentGroup) ? cal.parentGroup : [];
                                     const cg = Array.isArray(cal.childGroup) ? cal.childGroup : [];
@@ -605,7 +605,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                         <button
                                             key={cal.id}
                                             onClick={() => setActiveCalendarTab(cal.id)}
-                                            className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[10px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-lg transition-all ${
+                                            className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-lg transition-all ${
                                                 isActive
                                                 ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-200 dark:border-indigo-700'
                                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 border border-transparent'
@@ -719,4 +719,4 @@ const TrendChart: React.FC = React.memo(() => {
 
 TrendChart.displayName = 'TrendChart';
 
-export default React.memo(TrendChart);
+export default TrendChart;

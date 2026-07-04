@@ -35,8 +35,8 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
                 iconColor: 'text-amber-600 dark:text-amber-400', textColor: 'text-amber-700 dark:text-amber-300', switchBg: 'bg-amber-600'
             };
             default: return {
-                 bg: 'bg-sky-50 dark:bg-sky-900/20', iconBg: 'bg-sky-100 dark:bg-sky-900/40',
-                 iconColor: 'text-sky-600 dark:text-sky-400', textColor: 'text-sky-700 dark:text-sky-300', switchBg: 'bg-sky-600'
+                 bg: 'bg-indigo-50 dark:bg-indigo-900/20', iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
+                 iconColor: 'text-indigo-600 dark:text-indigo-400', textColor: 'text-indigo-700 dark:text-indigo-300', switchBg: 'bg-indigo-600'
             };
         }
     };
@@ -46,7 +46,7 @@ const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; o
     return (
         <label
             htmlFor={`switch-${label}`}
-            className={`flex items-center cursor-pointer justify-between w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-lg ${classes.bg} transition-all duration-200 hover:brightness-95`}
+            className={`flex items-center cursor-pointer justify-between w-full px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl ${classes.bg} transition-all duration-200 hover:brightness-95`}
         >
             <div className="flex items-center gap-1.5 sm:gap-2">
                 <div className={`p-0.5 sm:p-1 rounded-md sm:rounded-lg transition-colors ${classes.iconBg}`}>
@@ -165,7 +165,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
             <div className="flex items-center justify-between px-3 sm:px-5 py-2.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-20">
                 <div className="flex items-center gap-1.5 sm:gap-2">
                     <div className="w-1 sm:w-1.5 h-4 sm:h-5 bg-indigo-600 rounded-full" />
-                    <h2 className="text-xs sm:text-base font-bold text-slate-800 dark:text-white uppercase tracking-tight">Bộ Lọc Phân Tích</h2>
+                    <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Bộ Lọc Phân Tích</h2>
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1">
                     <button 
@@ -196,7 +196,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     <Icon name="warehouse" size={3} className="sm:hidden" />
                                     <Icon name="warehouse" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kho Tạo</label>
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Kho Tạo</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="Kho Tạo" 
@@ -213,7 +213,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     <Icon name="truck" size={3} className="sm:hidden" />
                                     <Icon name="truck" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">T.Thái Xuất</label>
+                                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">T.Thái Xuất</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="T.Thái Xuất" 
@@ -236,7 +236,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     <Icon name="user" size={3} className="sm:hidden" />
                                     <Icon name="user" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="block text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-widest">Người Tạo</label>
+                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Người Tạo</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="Người Tạo" 
@@ -253,7 +253,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     <Icon name="file-text" size={3} className="sm:hidden" />
                                     <Icon name="file-text" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="block text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-widest">Trạng thái hồ sơ</label>
+                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Trạng thái hồ sơ</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="Trạng thái hồ sơ" 
@@ -273,7 +273,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     <Icon name="users" size={3} className="sm:hidden" />
                                     <Icon name="users" size={3.5} className="hidden sm:block" />
                                 </div>
-                                <label className="block text-[10px] font-bold uppercase text-slate-400 dark:text-slate-500 tracking-widest">Bộ phận</label>
+                                <label className="block text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-widest">Bộ phận</label>
                             </div>
                             <MultiSelectDropdown 
                                 label="Bộ phận" 
@@ -288,7 +288,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                     {/* Date Selection */}
                     <div className="space-y-2 sm:space-y-3 pt-1 px-1">
                         <div className="space-y-1 sm:space-y-1.5">
-                            <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Khoảng Thời Gian Nhanh</label>
+                            <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Khoảng Thời Gian Nhanh</label>
                             <div className="grid grid-cols-3 gap-1.5">
                                 {[
                                     { range: 'today', label: 'Hôm nay' }, { range: 'yesterday', label: 'Hôm qua' },
@@ -298,7 +298,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     <button 
                                         key={range} 
                                         onClick={() => handleDateRangeClick(range)} 
-                                        className={`py-1 text-[10px] font-bold rounded-md transition-all border ${localFilters.dateRange === range ? 'bg-sky-600 border-sky-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-sky-300'}`}
+                                        className={`py-1 text-[10px] font-bold rounded-md transition-all border ${localFilters.dateRange === range ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-indigo-300'}`}
                                     >
                                         {label}
                                     </button>
@@ -308,21 +308,21 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                         
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Từ ngày</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Từ ngày</label>
                                 <input 
                                     type="date" 
                                     value={localFilters.startDate} 
                                     onChange={e => handleDateChange('startDate', e.target.value)} 
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] sm:text-[12px] font-bold px-1.5 sm:px-2 py-1 sm:py-1.5 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all outline-none shadow-sm" 
+                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] sm:text-[12px] font-bold px-1.5 sm:px-2 py-1 sm:py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm" 
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-1">Đến ngày</label>
+                                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Đến ngày</label>
                                 <input 
                                     type="date" 
                                     value={localFilters.endDate} 
                                     onChange={e => handleDateChange('endDate', e.target.value)} 
-                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] sm:text-[12px] font-bold px-1.5 sm:px-2 py-1 sm:py-1.5 focus:ring-2 focus:ring-sky-500/20 focus:border-sky-500 transition-all outline-none shadow-sm" 
+                                className="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-[11px] sm:text-[12px] font-bold px-1.5 sm:px-2 py-1 sm:py-1.5 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all outline-none shadow-sm" 
                                 />
                             </div>
                         </div>
@@ -330,7 +330,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
 
                     {/* Section Visibility */}
                     <div className="space-y-1.5 sm:space-y-2 pt-1.5 sm:pt-2 px-1">
-                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hiển Thị Các Khu Vực</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Hiển Thị Các Khu Vực</label>
                         <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
                             {visibilityOptions.map(opt => (
                                 <ModernSwitch
@@ -347,23 +347,23 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
 
                     {/* GTĐH Settings */}
                     <div className="space-y-2 sm:space-y-2.5 pt-2 sm:pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 pb-4 sm:pb-6 px-1">
-                        <label className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cấu Hình GTĐH Mục Tiêu</label>
+                        <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cấu Hình GTĐH Mục Tiêu</label>
                         <button
                             onClick={() => setGtdhModalOpen(true)}
-                            className="w-full flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:border-sky-400 dark:hover:border-sky-500 hover:shadow-sm transition-all group"
+                            className="w-full flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-all group"
                         >
                             <div className="flex items-center gap-2 sm:gap-2.5">
-                                <div className="p-1 sm:p-1.5 bg-sky-50 dark:bg-sky-900/40 rounded-md text-sky-600 dark:text-sky-400 group-hover:bg-sky-100 dark:group-hover:bg-sky-900/60 transition-colors">
+                                <div className="p-1 sm:p-1.5 bg-indigo-50 dark:bg-indigo-900/40 rounded-md sm:rounded-lg text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/60 transition-colors">
                                     <Icon name="settings-2" size={3.5} className="sm:hidden" />
                                     <Icon name="settings-2" size={4} className="hidden sm:block" />
                                 </div>
                                 <div className="flex flex-col items-start leading-tight">
                                     <span className="text-[11px] sm:text-[13px] font-bold text-slate-800 dark:text-slate-200">Quản lý GTĐH Target</span>
-                                    <span className="text-[10px] sm:text-[10px] whitespace-nowrap font-medium text-slate-500 dark:text-slate-400 mt-[1px]">Thêm/Sửa/Xóa Mục Tiêu AOV</span>
+                                    <span className="text-[8px] sm:text-[9px] whitespace-nowrap font-medium text-slate-500 dark:text-slate-400 mt-[1px]">Thêm/Sửa/Xóa Mục Tiêu AOV</span>
                                 </div>
                             </div>
-                            <Icon name="chevron-right" size={3.5} className="text-slate-300 dark:text-slate-600 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors sm:hidden" />
-                            <Icon name="chevron-right" size={4} className="text-slate-300 dark:text-slate-600 group-hover:text-sky-500 dark:group-hover:text-sky-400 transition-colors hidden sm:block" />
+                            <Icon name="chevron-right" size={3.5} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors sm:hidden" />
+                            <Icon name="chevron-right" size={4} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors hidden sm:block" />
                         </button>
                     </div>
                 </div>

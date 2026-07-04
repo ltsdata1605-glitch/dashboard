@@ -80,9 +80,9 @@ const NavItem = React.memo(({
                     }
                 }}
                 className={`
-                    flex items-center w-full px-3 py-3 my-1 rounded-md transition-all duration-200 group relative
+                    flex items-center w-full px-3 py-3 my-1 rounded-xl transition-all duration-200 group relative
                     ${isActive 
-                        ? 'bg-[#0584c7] text-white shadow-sm' 
+                        ? 'bg-[#0584c7] text-white shadow-lg shadow-[#0584c7]/20 dark:shadow-[#0584c7]/20' 
                         : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-[#0584c7] dark:hover:text-[#0584c7]'
                     }
                 `}
@@ -257,13 +257,13 @@ export default function Sidebar() {
                     hidden lg:flex fixed top-0 left-0 h-screen z-[120] 
                     bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800
                     flex-col transition-colors duration-300
-                    ${!effectiveCollapsed ? 'shadow-sm' : ''}
+                    ${!effectiveCollapsed ? 'shadow-2xl' : ''}
                 `}
             >
                 {/* Logo Section */}
                 <div className="h-20 flex items-center px-5 border-b border-slate-100 dark:border-slate-800/50">
                     <div className="flex items-center gap-3 overflow-hidden w-full">
-                        <div className="w-10 h-10 bg-sky-600 rounded-md flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg shadow-indigo-200 dark:shadow-indigo-900/20">
                             <BarChart3 className="text-white" size={24} />
                         </div>
                         <motion.div

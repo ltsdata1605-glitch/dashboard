@@ -32,11 +32,11 @@ const ImportPrevMonthModal: React.FC<{
                     value={pastedData}
                     onChange={e => setPastedData(e.target.value)}
                     placeholder="Click vào đây rồi nhấn Ctrl + V để dán bảng từ HRM..."
-                    className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-lg font-mono text-[10px] focus:ring-2 focus:ring-primary-500 outline-none transition-all"
+                    className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl font-mono text-[10px] focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                 />
                 <div className="mt-6 flex gap-3">
-                    <button onClick={onClose} className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-lg">Huỷ</button>
-                    <button onClick={() => { onSave(pastedData); onClose(); }} className="flex-[2] py-3 bg-primary-600 text-white text-sm font-bold rounded-lg shadow-lg hover:bg-primary-700 transition-colors">Lưu dữ liệu</button>
+                    <button onClick={onClose} className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl">Huỷ</button>
+                    <button onClick={() => { onSave(pastedData); onClose(); }} className="flex-[2] py-3 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-primary-700 transition-colors">Lưu dữ liệu</button>
                 </div>
             </div>
         </div>
@@ -160,24 +160,24 @@ const CrossSellingMobileRow = React.memo<CrossSellingMobileRowProps>(({
                     </div>
                 </div>
                 <div className="flex flex-col items-end">
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${row.pctBillBk >= 20 ? 'bg-emerald-50 text-emerald-600' : (row.pctBillBk < 10 ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600')}`}>
+                    <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.pctBillBk >= 20 ? 'bg-emerald-50 text-emerald-600' : (row.pctBillBk < 10 ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600')}`}>
                         {f.format(row.pctBillBk)}% BILL BK
                     </span>
                     <DeltaBadge current={row.pctBillBk} previous={oldRow?.pctBillBk} />
                 </div>
             </div>
             <div className="grid grid-cols-3 gap-2">
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">DT THỰC</p>
-                    <p className="text-xs font-bold tabular-nums">{f.format(row.dtlk)}</p>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">DT THỰC</p>
+                    <p className="text-xs font-black tabular-nums">{f.format(row.dtlk)}</p>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">BILL BK/TỔNG</p>
-                    <p className="text-xs font-bold tabular-nums">{f.format(row.billBk)}/{f.format(row.totalBill)}</p>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">BILL BK/TỔNG</p>
+                    <p className="text-xs font-black tabular-nums">{f.format(row.billBk)}/{f.format(row.totalBill)}</p>
                 </div>
-                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-lg border border-slate-100 dark:border-slate-700">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">%SP BK</p>
-                    <p className={`text-xs font-bold tabular-nums ${row.pctSpBk >= 25 ? 'text-emerald-600' : (row.pctSpBk < 15 ? 'text-rose-600' : 'text-amber-600')}`}>
+                <div className="bg-slate-50 dark:bg-slate-800/50 p-2 rounded-xl border border-slate-100 dark:border-slate-700">
+                    <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">%SP BK</p>
+                    <p className={`text-xs font-black tabular-nums ${row.pctSpBk >= 25 ? 'text-emerald-600' : (row.pctSpBk < 15 ? 'text-rose-600' : 'text-amber-600')}`}>
                         {f.format(row.pctSpBk)}%
                     </p>
                     <DeltaBadge current={row.pctSpBk} previous={oldRow?.pctSpBk} />
@@ -433,7 +433,7 @@ const CrossSellingTab: React.FC<{
 
     const cardTitle = (
         <div className="flex flex-col items-start leading-none py-1 w-full">
-            <span className="js-report-title text-2xl font-bold uppercase text-slate-800 dark:text-white mt-1">HIỆU QUẢ BÁN KÈM NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
+            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">HIỆU QUẢ BÁN KÈM NHÂN VIÊN ĐẾN NGÀY {getYesterdayDateString()}</span>
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Không chỉ là bán hàng, đó là sự quan tâm và mang lại giải pháp toàn diện cho khách hàng.</span>
             <TimeProgressBar className="mt-2.5" />
         </div>
@@ -477,7 +477,7 @@ const CrossSellingTab: React.FC<{
                                             const isGrandTotal = row.type === 'total';
                                             const oldRow = row.oldRow;
                                             return (
-                                                <div key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-900/90 text-slate-800 dark:text-slate-100'} px-4 py-3 flex justify-between items-center font-bold uppercase tracking-wider text-xs`}>
+                                                <div key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-900/90 text-slate-800 dark:text-slate-100'} px-4 py-3 flex justify-between items-center font-black uppercase tracking-wider text-xs`}>
                                                     <span>{row.name}</span>
                                                     <div className="flex flex-col items-end">
                                                         <span>{f.format(row.pctBillBk)}% BILL BK</span>
@@ -503,16 +503,16 @@ const CrossSellingTab: React.FC<{
                                     <thead className="sticky top-0 z-10">
                                         {/* Tier 1: Group Headers */}
                                         <tr>
-                                            <th rowSpan={2} className="px-3 py-2 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('name')}>
+                                            <th rowSpan={2} className="px-3 py-2 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750" onClick={() => handleSort('name')}>
                                                 Nhân viên
                                             </th>
-                                            <th rowSpan={2} className="px-2 py-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-b-2 border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => handleSort('dtlk')}>
+                                            <th rowSpan={2} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-b-2 border-sky-100 dark:border-sky-800/50 cursor-pointer hover:bg-sky-100 transition-colors" onClick={() => handleSort('dtlk')}>
                                                 <div>D.THU</div><div>THỰC</div>
                                             </th>
-                                            <th colSpan={3} className="px-2 py-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-r border-b border-amber-100 dark:border-amber-800/50">
+                                            <th colSpan={3} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-r border-b border-amber-100 dark:border-amber-800/50">
                                                 Sản phẩm bán kèm
                                             </th>
-                                            <th colSpan={3} className="px-2 py-1.5 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-b border-emerald-100 dark:border-emerald-800/50">
+                                            <th colSpan={3} className="px-2 py-1.5 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-b border-emerald-100 dark:border-emerald-800/50">
                                                 Hiệu quả bill bán kèm
                                             </th>
                                         </tr>
@@ -533,7 +533,7 @@ const CrossSellingTab: React.FC<{
                                                 const oldRow = row.oldRow;
                                                 return (
                                                     <tr key={`${row.type}-${idx}`} className={`${isGrandTotal ? 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-800 dark:text-emerald-200 font-extrabold border-t-2 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900/60 font-bold text-slate-700 dark:text-slate-300'} border-t border-slate-200 dark:border-slate-700`}>
-                                                        <td className={`px-2 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center font-bold' : 'border-slate-200 dark:border-slate-700 font-extrabold'}`}>{row.name}</td>
+                                                        <td className={`px-2 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} uppercase tracking-wider border-r ${isGrandTotal ? 'border-slate-200 dark:border-slate-700 text-center font-black' : 'border-slate-200 dark:border-slate-700 font-extrabold'}`}>{row.name}</td>
                                                         <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(Math.round(row.dtlk))}</td>
                                                         <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(row.totalSl)}</td>
                                                         <td className={`px-1.5 ${isGrandTotal ? 'py-1 text-[13px]' : 'py-1 text-[12px]'} text-center border-r tabular-nums border-slate-200 dark:border-slate-700`}>{f.format(row.slBk)}</td>

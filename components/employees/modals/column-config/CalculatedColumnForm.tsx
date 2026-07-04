@@ -26,55 +26,55 @@ export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({
     availableOperands
 }) => {
     return (
-        <div className="space-y-6">
-            <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
-                <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                    <Icon name="sigma" size={4} className="text-sky-500" /> Thuật toán ghép cột
+        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mt-3 sm:mt-5">
+            <div className="bg-amber-50/50 dark:bg-amber-900/20 px-3 sm:px-5 py-2 sm:py-3 border-b border-amber-100 dark:border-amber-900">
+                <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-base text-amber-700 dark:text-amber-300">
+                    <Icon name="sigma" size={3.5} className="sm:hidden" /><Icon name="sigma" size={4} className="hidden sm:block" /> Thuật toán ghép cột
                 </h4>
             </div>
-            <div className="space-y-5">
+            <div className="p-3 sm:p-5">
                 <div className="flex flex-row items-center gap-2 sm:gap-3 w-full">
                     <div className="flex-1 w-full relative">
-                        <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Nguồn dữ liệu 1</label>
-                        <Select value={operand1} onChange={e => setOperand1(e.target.value)} className="h-9">
+                        <label className="block text-[9px] sm:text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-1 sm:mb-1.5">Nguồn dữ liệu 1</label>
+                        <Select value={operand1} onChange={e => setOperand1(e.target.value)} className="h-8 sm:h-12 text-[10px] sm:text-sm">
                             <option value="">– Chọn –</option>
                             {availableOperands.map(c => <option key={c.id} value={c.id}>{c.mainHeader ? `[${c.mainHeader}] ${c.columnName}` : c.columnName}</option>)}
                         </Select>
                     </div>
-                    <div className="flex-shrink-0 relative w-8 sm:w-10 h-8 sm:h-10 mt-6 flex items-center justify-center">
+                    <div className="flex-shrink-0 relative w-8 sm:w-16 h-8 sm:h-12 mt-4 sm:mt-5 flex items-center justify-center">
                         <select value={operation} onChange={e => setOperation(e.target.value as any)} className="absolute inset-0 z-10 opacity-0 cursor-pointer w-full h-full">
                             <option value="+">+</option>
                             <option value="-">-</option>
                             <option value="*">*</option>
                             <option value="/">/</option>
                         </select>
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 font-medium text-lg pointer-events-none transition-colors">
+                        <div className="w-6 h-6 sm:w-10 sm:h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-xs sm:text-lg pointer-events-none">
                             {operation === '*' ? '×' : operation === '/' ? '÷' : operation}
                         </div>
                     </div>
                     <div className="flex-1 w-full relative">
-                        <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 opacity-0">Nguồn 2</label>
-                        <Select value={operand2} onChange={e => setOperand2(e.target.value)} className="h-9">
+                        <label className="block text-[9px] sm:text-[11px] uppercase tracking-wider font-bold text-slate-500 dark:text-slate-400 mb-1 sm:mb-1.5 opacity-0">Nguồn 2</label>
+                        <Select value={operand2} onChange={e => setOperand2(e.target.value)} className="h-8 sm:h-12 text-[10px] sm:text-sm">
                             <option value="">– Chọn –</option>
                             {availableOperands.map(c => <option key={c.id} value={c.id}>{c.mainHeader ? `[${c.mainHeader}] ${c.columnName}` : c.columnName}</option>)}
                         </Select>
                     </div>
                 </div>
-                <div className="pt-2 flex flex-wrap justify-end gap-4">
-                    <div className="w-full sm:w-[220px]">
-                        <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Làm tròn số</label>
-                        <div className="flex rounded-md p-1 bg-slate-100/50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 w-full">
-                            <button type="button" onClick={() => setDecimalPlaces(0)} className={`flex-1 py-1.5 px-2 text-xs sm:text-sm rounded transition-colors ${decimalPlaces === 0 ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>Bỏ số lẻ</button>
-                            <button type="button" onClick={() => setDecimalPlaces(1)} className={`flex-1 py-1.5 px-2 text-xs sm:text-sm rounded transition-colors ${decimalPlaces === 1 ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>1 chữ số</button>
-                            <button type="button" onClick={() => setDecimalPlaces(2)} className={`flex-1 py-1.5 px-2 text-xs sm:text-sm rounded transition-colors ${decimalPlaces === 2 ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>2 chữ số</button>
+                <div className="mt-3 sm:mt-5 flex flex-wrap justify-end gap-2 sm:gap-5">
+                    <div className="w-full sm:w-[200px]">
+                        <label className="block text-[10px] sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">Làm tròn số</label>
+                        <div className="flex rounded-lg p-0.5 sm:p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
+                            <button type="button" onClick={() => setDecimalPlaces(0)} className={`flex-1 py-0.5 sm:py-1 px-1 text-[10px] sm:text-xs font-semibold rounded-md transition-all ${decimalPlaces === 0 ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Bỏ số lẻ</button>
+                            <button type="button" onClick={() => setDecimalPlaces(1)} className={`flex-1 py-0.5 sm:py-1 px-1 text-[10px] sm:text-xs font-semibold rounded-md transition-all ${decimalPlaces === 1 ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>1 chữ số</button>
+                            <button type="button" onClick={() => setDecimalPlaces(2)} className={`flex-1 py-0.5 sm:py-1 px-1 text-[10px] sm:text-xs font-semibold rounded-md transition-all ${decimalPlaces === 2 ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>2 chữ số</button>
                         </div>
                     </div>
                     {operation === '/' && (
-                        <div className="w-full sm:w-[140px]">
-                            <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Định dạng</label>
-                            <div className="flex rounded-md p-1 bg-slate-100/50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 w-full">
-                                <button type="button" onClick={() => setDisplayAs('number')} className={`flex-1 py-1.5 px-2 text-xs sm:text-sm rounded transition-colors ${displayAs === 'number' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>Số</button>
-                                <button type="button" onClick={() => setDisplayAs('percentage')} className={`flex-1 py-1.5 px-2 text-xs sm:text-sm rounded transition-colors ${displayAs === 'percentage' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>%</button>
+                        <div className="w-full sm:w-[120px]">
+                            <label className="block text-[10px] sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">Định dạng</label>
+                            <div className="flex rounded-lg p-0.5 sm:p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full">
+                                <button type="button" onClick={() => setDisplayAs('number')} className={`flex-1 py-0.5 sm:py-1 px-1 sm:px-2 text-[10px] sm:text-sm font-semibold rounded-md transition-all ${displayAs === 'number' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>Số</button>
+                                <button type="button" onClick={() => setDisplayAs('percentage')} className={`flex-1 py-0.5 sm:py-1 px-1 sm:px-2 text-[10px] sm:text-sm font-semibold rounded-md transition-all ${displayAs === 'percentage' ? 'bg-white dark:bg-slate-700 text-indigo-600 shadow-sm' : 'text-slate-500'}`}>%</button>
                             </div>
                         </div>
                     )}

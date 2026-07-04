@@ -121,7 +121,7 @@ const KpiCard: React.FC<{
     return (
         <div
             onClick={onClick}
-            className={`relative flex flex-col justify-between h-full bg-white dark:bg-[#1c1c1e] rounded-lg lg:rounded-lg overflow-hidden border border-slate-200/80 dark:border-white/[0.06] transition-all duration-300 group touch-feedback ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
+            className={`relative flex flex-col justify-between h-full bg-white dark:bg-[#1c1c1e] rounded-xl lg:rounded-2xl overflow-hidden border border-slate-200/80 dark:border-white/[0.06] transition-all duration-300 group touch-feedback ${style.borderHover} ${isClickable ? 'cursor-pointer hover:-translate-y-1 hover:shadow-xl active:scale-[0.98]' : 'hover:shadow-lg'} premium-card-shadow`}
         >
             {/* Gradient accent strip */}
             <div className={`h-[3px] lg:h-[3px] w-full bg-gradient-to-r rounded-t-xl lg:rounded-t-2xl ${style.gradient}`} />
@@ -133,7 +133,7 @@ const KpiCard: React.FC<{
                         <Icon name={icon} size={3} className="lg:hidden" />
                         <Icon name={icon} size={4.5} className="hidden lg:block" />
                     </div>
-                    <h3 className="text-[10px] lg:text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-1 lg:line-clamp-2 flex-1 min-w-0">{title}</h3>
+                    <h3 className="text-[9px] lg:text-[11px] font-semibold uppercase tracking-wide text-slate-400 dark:text-slate-500 leading-tight line-clamp-1 lg:line-clamp-2 flex-1 min-w-0">{title}</h3>
                     {/* Mobile inline value */}
                     <div className="lg:hidden shrink-0">
                         {children}
@@ -150,8 +150,8 @@ const KpiCard: React.FC<{
                     {clampedProgress !== undefined && (
                         <div className="mt-1.5 lg:mt-2">
                             <div className="flex items-center justify-between mb-0.5">
-                                <span className="text-[10px] lg:text-[10px] font-semibold text-slate-400 dark:text-slate-500">Tiến độ</span>
-                                <span className={`text-[10px] lg:text-[11px] font-bold ${style.iconText}`}>
+                                <span className="text-[8px] lg:text-[10px] font-semibold text-slate-400 dark:text-slate-500">Tiến độ</span>
+                                <span className={`text-[9px] lg:text-[11px] font-bold ${style.iconText}`}>
                                     {Math.round(clampedProgress)}%
                                 </span>
                             </div>
@@ -167,8 +167,8 @@ const KpiCard: React.FC<{
                     {/* Trend / Target footer */}
                     {(trendLabel || trendValue) && (
                         <div className="flex items-center justify-between gap-1 lg:gap-1.5 mt-1.5 lg:mt-2 pt-1.5 lg:pt-2 border-t border-slate-100 dark:border-white/[0.04]">
-                            <span className="text-[10px] lg:text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider truncate">{trendLabel}</span>
-                            <div className="text-[10px] lg:text-[11px] font-bold text-slate-600 dark:text-slate-400 text-right shrink-0">
+                            <span className="text-[8px] lg:text-[10px] text-slate-400 dark:text-slate-500 font-semibold uppercase tracking-wider truncate">{trendLabel}</span>
+                            <div className="text-[9px] lg:text-[11px] font-bold text-slate-600 dark:text-slate-400 text-right shrink-0">
                                 {trendValue}
                             </div>
                         </div>
@@ -438,7 +438,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                         finalTrendValue = revenueTarget > 0
                             ? <span className="cursor-pointer hover:text-blue-500 transition-colors flex flex-col items-end leading-tight">
                                 <span>{formatCurrency(activeTarget)} / {pctHT.toFixed(0)}%</span>
-                                <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyRevTarget)}` : `Tháng: ${formatCurrency(revenueTarget)}`}</span>
+                                <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyRevTarget)}` : `Tháng: ${formatCurrency(revenueTarget)}`}</span>
                             </span>
                             : <span className="cursor-pointer text-slate-400 hover:text-blue-500 italic text-[10px] transition-colors">Nhấp để cài đặt</span>;
                     } else if (config.targetRef === 'hieuQua') {
@@ -492,7 +492,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     finalTrendValue = monthlyTarget > 0
                         ? <span className="flex flex-col items-end leading-tight">
                             <span>{formattedActive} / {pctHT.toFixed(0)}%</span>
-                            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formattedDaily}` : `Tháng: ${formattedMonthly}`}</span>
+                            <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formattedDaily}` : `Tháng: ${formattedMonthly}`}</span>
                           </span>
                         : <span className="text-slate-400 italic text-[10px]">Chưa cài đặt</span>;
                 }
@@ -512,7 +512,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
                     finalTrendValue = monthlyTarget > 0
                         ? <span className="cursor-pointer hover:text-blue-500 transition-colors flex flex-col items-end leading-tight">
                             <span>{formatCurrency(activeTarget)}</span>
-                            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyDTThuc)}` : `Tháng: ${formatCurrency(monthlyTarget)}`}</span>
+                            <span className="text-[9px] font-medium text-slate-400 dark:text-slate-500">{isLuyKe ? `Ngày: ${formatCurrency(dailyDTThuc)}` : `Tháng: ${formatCurrency(monthlyTarget)}`}</span>
                         </span>
                         : <span className="cursor-pointer text-slate-400 hover:text-blue-500 italic text-[10px] transition-colors">Chưa cài đặt</span>;
                 }
@@ -620,5 +620,5 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     );
 };
 
-export default React.memo(KpiCards);
+export default KpiCards;
 

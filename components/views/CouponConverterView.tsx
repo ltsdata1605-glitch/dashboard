@@ -160,7 +160,7 @@ export default function CouponConverterView() {
                     </button>
                     
                     {showGuide && (
-                        <div className="mt-6 max-w-4xl mx-auto rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 shadow-md animate-in fade-in slide-in-from-top-4 duration-300">
+                        <div className="mt-6 max-w-4xl mx-auto rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-md animate-in fade-in slide-in-from-top-4 duration-300">
                             <img 
                                 src="/Tuts/Coupon.png" 
                                 alt="Hướng dẫn sử dụng" 
@@ -190,7 +190,7 @@ export default function CouponConverterView() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 flex-grow">
                     {/* Input Section */}
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md rounded-lg">
+                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md rounded-xl">
                           <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50">
                               <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
                                   <div className="w-2.5 h-2.5 bg-indigo-500" />
@@ -254,7 +254,7 @@ export default function CouponConverterView() {
                     </div>
 
                     {/* Output Section */}
-                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md relative group rounded-lg">
+                    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col overflow-hidden transition-all duration-300 hover:shadow-md relative group rounded-xl">
                         <div className="flex justify-between items-center px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 relative z-10">
                             <div className="flex items-center gap-4">
                                 <h2 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">

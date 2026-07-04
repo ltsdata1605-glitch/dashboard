@@ -555,7 +555,7 @@ export default function App(): React.JSX.Element {
                   </div>
                 )}
                 {error && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg flex flex-col sm:flex-row items-center justify-between gap-4" role="alert">
+                  <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4" role="alert">
                     <div className="flex items-center gap-3">
                         <WarningIcon className="h-5 w-5 text-red-500 shrink-0" />
                         <p className="text-sm font-medium">{error}</p>

@@ -79,22 +79,10 @@ const resolvePagePrices = (page: StickerPage, priceSource: 'sale' | 'service') =
     return { newPrice, percent };
 };
 
-const incrementCode = (codeStr: string, increment: number): string => {
-    if (!codeStr) return '';
-    const match = codeStr.match(/\d+$/);
-    if (!match) return codeStr;
-    const numStr = match[0];
-    const num = parseInt(numStr, 10);
-    const prefix = codeStr.substring(0, codeStr.length - numStr.length);
-    const incrementedNum = num + increment;
-    const paddedNum = incrementedNum.toString().padStart(numStr.length, '0');
-    return `${prefix}${paddedNum}`;
-};
-
 const generatePageHtml = (
     page: StickerPage, 
     priceSource: 'sale' | 'service', 
-    stickerType: 'gia_soc' | 'gio_vang' | 'rut_tham',
+    stickerType: 'gia_soc' | 'gio_vang',
     bgImage: string,
     discountDisplayMode: 'percent' | 'amount' = 'percent'
 ) => {
@@ -150,56 +138,6 @@ const generatePageHtml = (
         }
     }
 
-    if (stickerType === 'rut_tham') {
-        const baseCode = page.code || '1';
-        return `<div class="sticker-container" data-type="${stickerType}" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:197/285;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;">
-            <div class="slot slot-1">
-                <div class="header-text">${header || ''}</div>
-                <div class="sub-header">${subHeader || ''}</div>
-                <div class="old">${page.oldPrice || ''}</div>
-                <div class="left-code">${baseCode}</div>
-                <div class="name">${page.label || ''}</div>
-                <div class="right-code">${baseCode}</div>
-                <div class="extra2">${newPrice || ''}</div>
-                <div class="footer-text">${footer || ''}</div>
-                <div class="extra1">${percent || ''}</div>
-            </div>
-            <div class="slot slot-2">
-                <div class="header-text">${header || ''}</div>
-                <div class="sub-header">${subHeader || ''}</div>
-                <div class="old">${page.oldPrice || ''}</div>
-                <div class="left-code">${incrementCode(baseCode, 1)}</div>
-                <div class="name">${page.label || ''}</div>
-                <div class="right-code">${incrementCode(baseCode, 1)}</div>
-                <div class="extra2">${newPrice || ''}</div>
-                <div class="footer-text">${footer || ''}</div>
-                <div class="extra1">${percent || ''}</div>
-            </div>
-            <div class="slot slot-3">
-                <div class="header-text">${header || ''}</div>
-                <div class="sub-header">${subHeader || ''}</div>
-                <div class="old">${page.oldPrice || ''}</div>
-                <div class="left-code">${incrementCode(baseCode, 2)}</div>
-                <div class="name">${page.label || ''}</div>
-                <div class="right-code">${incrementCode(baseCode, 2)}</div>
-                <div class="extra2">${newPrice || ''}</div>
-                <div class="footer-text">${footer || ''}</div>
-                <div class="extra1">${percent || ''}</div>
-            </div>
-            <div class="slot slot-4">
-                <div class="header-text">${header || ''}</div>
-                <div class="sub-header">${subHeader || ''}</div>
-                <div class="old">${page.oldPrice || ''}</div>
-                <div class="left-code">${incrementCode(baseCode, 3)}</div>
-                <div class="name">${page.label || ''}</div>
-                <div class="right-code">${incrementCode(baseCode, 3)}</div>
-                <div class="extra2">${newPrice || ''}</div>
-                <div class="footer-text">${footer || ''}</div>
-                <div class="extra1">${percent || ''}</div>
-            </div>
-        </div>`;
-    }
-
     return `<div class="sticker-container" data-type="${stickerType}" style="background-image:url('${bgImage}');background-size:100% 100%;background-repeat:no-repeat;background-position:center;width:100%;aspect-ratio:197/285;position:relative;overflow:hidden;container-type:inline-size;font-family:Arial,sans-serif;">
         ${barcodeHtml}
         <div class="header-text">${header || ''}</div>
@@ -218,12 +156,12 @@ export default function StickerPrinterView() {
     const [mounted, setMounted] = useState(false);
     const [stickerMode, setStickerMode] = useState<'sticker' | 'event'>('sticker');
     const [eventEverOpened, setEventEverOpened] = useState(false);
-    const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang' | 'rut_tham'>('gia_soc');
+    const [stickerType, setStickerType] = useState<'gia_soc' | 'gio_vang'>('gia_soc');
     const [bgImage, setBgImage] = useState('/frame/X24_NEW.png');
     const [priceSource, setPriceSource] = useState<'sale' | 'service'>('sale');
     
     // Dynamic Font Sizes and Active Field Trackers
-    const [activeField, setActiveField] = useState<'header' | 'subHeader' | 'percent' | 'oldPrice' | 'name' | 'newPrice' | 'footer' | 'code'>('header');
+    const [activeField, setActiveField] = useState<'header' | 'subHeader' | 'percent' | 'oldPrice' | 'name' | 'newPrice' | 'footer'>('header');
     const [headerTextSize, setHeaderTextSize] = useState(8);
     const [subHeaderTextSize, setSubHeaderTextSize] = useState(13);
     const [percentTextSize, setPercentTextSize] = useState(36.9);
@@ -240,12 +178,11 @@ export default function StickerPrinterView() {
         switch (activeField) {
             case 'header': return 'Tiêu đề';
             case 'subHeader': return 'Tiêu đề phụ';
-            case 'percent': return stickerType === 'rut_tham' ? 'Tên Siêu Thị' : 'Tỷ lệ Giảm';
-            case 'oldPrice': return stickerType === 'rut_tham' ? 'Chi tiết Trúng Left' : 'Giá gốc';
-            case 'name': return stickerType === 'rut_tham' ? 'Tiêu đề Trúng Right' : 'Tên sản phẩm';
-            case 'newPrice': return stickerType === 'rut_tham' ? 'Quà Tặng Right' : 'Giá sốc/Giờ vàng';
-            case 'footer': return stickerType === 'rut_tham' ? 'Điều kiện áp dụng' : 'Khuyến mãi / Footer';
-            case 'code': return 'Mã số phiếu';
+            case 'percent': return '% Giảm';
+            case 'oldPrice': return 'Giá cũ';
+            case 'name': return 'Tên SP';
+            case 'newPrice': return 'Giá mới';
+            case 'footer': return 'Khuyến mãi';
             default: return 'Cỡ chữ';
         }
     };
@@ -283,143 +220,20 @@ export default function StickerPrinterView() {
     const updateBatchItem = (id: string, updates: Partial<BatchItem>) => {
         setBatchItems(prev => prev.map(it => it.id === id ? { ...it, ...updates } : it));
     };
-    const [headerTextContent, setHeaderTextContent] = useState('');
-    const [subHeaderTextContent, setSubHeaderTextContent] = useState('');
-    const [footerTextContent, setFooterTextContent] = useState('');
+    const [headerTextContent, setHeaderTextContent] = useState('QUẠT ĐIỀU HOÀ');
+    const [subHeaderTextContent, setSubHeaderTextContent] = useState('0 SUẤT/NGÀY');
+    const [footerTextContent, setFooterTextContent] = useState('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
     const [searchTerm, setSearchTerm] = useState('');
     const [showBarcode, setShowBarcode] = useState(false);
-    const [barcodeImei, setBarcodeImei] = useState('1');
+    const [barcodeImei, setBarcodeImei] = useState('123456');
     const [manualPages, setManualPages] = useState<StickerPage[]>([]);
     const [printHistory, setPrintHistory] = useState<PrintHistoryEntry[]>([]);
     const [showHistory, setShowHistory] = useState(false);
     const [savedLists, setSavedLists] = useState<SavedStickerList[]>([]);
     const [showSavedLists, setShowSavedLists] = useState(false);
-    const [previewName, setPreviewName] = useState('');
-    const [previewOldPrice, setPreviewOldPrice] = useState('');
-    const [previewNewPrice, setPreviewNewPrice] = useState('');
-    const [branchName, setBranchName] = useState('');
-
-    const [tabSettings, setTabSettings] = useState<Record<string, any>>({
-        gia_soc: { headerTextContent: '', subHeaderTextContent: '', footerTextContent: '', previewName: '', previewOldPrice: '', previewNewPrice: '', barcodeImei: '', branchName: '' },
-        gio_vang: { headerTextContent: '', subHeaderTextContent: '', footerTextContent: '', previewName: '', previewOldPrice: '', previewNewPrice: '', barcodeImei: '', branchName: '' },
-        rut_tham: { headerTextContent: '', subHeaderTextContent: '', footerTextContent: '', previewName: '', previewOldPrice: '', previewNewPrice: '', barcodeImei: '1', branchName: '' }
-    });
-
-    const switchStickerType = useCallback((newType: 'gia_soc' | 'gio_vang' | 'rut_tham') => {
-        setStickerType(prevType => {
-            if (prevType === newType) return prevType;
-
-            // 1. Save current states to tabSettings for prevType
-            setTabSettings(prev => ({
-                ...prev,
-                [prevType]: {
-                    headerTextContent,
-                    subHeaderTextContent,
-                    footerTextContent,
-                    previewName,
-                    previewOldPrice,
-                    previewNewPrice,
-                    barcodeImei,
-                    branchName
-                }
-            }));
-
-            // 2. Load states from tabSettings for newType
-            const newSettings = tabSettings[newType] || {};
-            setHeaderTextContent(newSettings.headerTextContent || '');
-            setSubHeaderTextContent(newSettings.subHeaderTextContent || '');
-            setFooterTextContent(newSettings.footerTextContent || '');
-            setPreviewName(newSettings.previewName || '');
-            setPreviewOldPrice(newSettings.previewOldPrice || '');
-            setPreviewNewPrice(newSettings.previewNewPrice || '');
-            setBarcodeImei(newSettings.barcodeImei || (newType === 'rut_tham' ? '1' : ''));
-            setBranchName(newSettings.branchName || '');
-
-            // Adjust default settings and sizes when switching
-            if (newType === 'rut_tham') {
-                setHeaderTextSize(3.2);
-                setSubHeaderTextSize(3.5);
-                setOldPriceTextSize(3.5);
-                setNameTextSize(3.8);
-                setNewPriceTextSize(6.5);
-                setFooterTextSize(3.5);
-                setPercentTextSize(3.2);
-                setBgImage('/bg_phieu.png');
-            } else if (newType === 'gia_soc') {
-                setHeaderTextSize(8);
-                setBgImage('/frame/X24_NEW.png');
-            } else if (newType === 'gio_vang') {
-                setHeaderTextSize(8);
-                setBgImage('/frame/GVO2-scaled.png');
-            }
-
-            return newType;
-        });
-    }, [headerTextContent, subHeaderTextContent, footerTextContent, previewName, previewOldPrice, previewNewPrice, barcodeImei, branchName, tabSettings]);
-
-    const setHeaderVal = useCallback((val: string) => {
-        setHeaderTextContent(val);
-        setTabSettings(prev => ({
-            ...prev,
-            [stickerType]: { ...(prev[stickerType] || {}), headerTextContent: val }
-        }));
-    }, [stickerType]);
-
-    const setSubHeaderVal = useCallback((val: string) => {
-        setSubHeaderTextContent(val);
-        setTabSettings(prev => ({
-            ...prev,
-            [stickerType]: { ...(prev[stickerType] || {}), subHeaderTextContent: val }
-        }));
-    }, [stickerType]);
-
-    const setFooterVal = useCallback((val: string) => {
-        setFooterTextContent(val);
-        setTabSettings(prev => ({
-            ...prev,
-            [stickerType]: { ...(prev[stickerType] || {}), footerTextContent: val }
-        }));
-    }, [stickerType]);
-
-    const setBarcodeVal = useCallback((val: string) => {
-        setBarcodeImei(val);
-        setTabSettings(prev => ({
-            ...prev,
-            [stickerType]: { ...(prev[stickerType] || {}), barcodeImei: val }
-        }));
-    }, [stickerType]);
-
-    const setPreviewNameVal = useCallback((val: string) => {
-        setPreviewName(val);
-        setTabSettings(prev => ({
-            ...prev,
-            [stickerType]: { ...(prev[stickerType] || {}), previewName: val }
-        }));
-    }, [stickerType]);
-
-    const setPreviewOldPriceVal = useCallback((val: string) => {
-        setPreviewOldPrice(val);
-        setTabSettings(prev => ({
-            ...prev,
-            [stickerType]: { ...(prev[stickerType] || {}), previewOldPrice: val }
-        }));
-    }, [stickerType]);
-
-    const setPreviewNewPriceVal = useCallback((val: string) => {
-        setPreviewNewPrice(val);
-        setTabSettings(prev => ({
-            ...prev,
-            [stickerType]: { ...(prev[stickerType] || {}), previewNewPrice: val }
-        }));
-    }, [stickerType]);
-
-    const setBranchNameVal = useCallback((val: string) => {
-        setBranchName(val);
-        setTabSettings(prev => ({
-            ...prev,
-            [stickerType]: { ...(prev[stickerType] || {}), branchName: val }
-        }));
-    }, [stickerType]);
+    const [previewName, setPreviewName] = useState('Quạt điều hoà Daikiosan DMI03');
+    const [previewOldPrice, setPreviewOldPrice] = useState('5.490.000');
+    const [previewNewPrice, setPreviewNewPrice] = useState('3.490');
 
     const [isLoaded, setIsLoaded] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -479,35 +293,15 @@ export default function StickerPrinterView() {
         if (sub === 'gia-soc') {
             setStickerMode('sticker');
             setStickerType('gia_soc');
-            setHeaderTextContent('');
+            setHeaderTextContent('QUẠT ĐIỀU HOÀ');
             setBgImage('/frame/X24_NEW.png');
             setHeaderTextSize(8);
         } else if (sub === 'gio-vang') {
             setStickerMode('sticker');
             setStickerType('gio_vang');
-            setHeaderTextContent('');
-            setSubHeaderTextContent('');
+            setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
             setBgImage('/frame/GVO2-scaled.png');
             setHeaderTextSize(8);
-        } else if (sub === 'rut-tham') {
-            setStickerMode('sticker');
-            setStickerType('rut_tham');
-            setHeaderTextContent('');
-            setSubHeaderTextContent('');
-            setPreviewOldPrice('');
-            setPreviewName('');
-            setPreviewNewPrice('');
-            setFooterTextContent('');
-            setBarcodeImei('1');
-            setBranchName('');
-            setBgImage('/bg_phieu.png');
-            setHeaderTextSize(3.2);
-            setSubHeaderTextSize(3.5);
-            setOldPriceTextSize(3.5);
-            setNameTextSize(3.8);
-            setNewPriceTextSize(6.5);
-            setFooterTextSize(3.5);
-            setPercentTextSize(3.2);
         } else if (sub === 'event') {
             setStickerMode('event');
             setEventEverOpened(true);
@@ -534,82 +328,31 @@ export default function StickerPrinterView() {
                     const urlParams = new URLSearchParams(window.location.search);
                     const currentSub = urlParams.get('sub');
                     
-                    let loadedType = savedState.stickerType || 'gia_soc';
-                    if (currentSub) {
-                        if (currentSub === 'gia-soc') loadedType = 'gia_soc';
-                        else if (currentSub === 'gio-vang') loadedType = 'gio_vang';
-                        else if (currentSub === 'rut-tham') loadedType = 'rut_tham';
-                    }
-                    
                     if (!currentSub) {
                         if (savedState.stickerMode) setStickerMode(savedState.stickerMode);
-                        setStickerType(loadedType);
+                        if (savedState.stickerType) setStickerType(savedState.stickerType);
                     } else {
-                        if (currentSub === 'event') {
+                        if (currentSub === 'gia-soc') {
+                            setStickerMode('sticker');
+                            setStickerType('gia_soc');
+                        } else if (currentSub === 'gio-vang') {
+                            setStickerMode('sticker');
+                            setStickerType('gio_vang');
+                        } else if (currentSub === 'event') {
                             setStickerMode('event');
                             setEventEverOpened(true);
-                        } else {
-                            setStickerMode('sticker');
-                            setStickerType(loadedType);
                         }
                     }
                     if (savedState.bgImage) setBgImage(savedState.bgImage);
+                    if (savedState.headerTextContent) setHeaderTextContent(savedState.headerTextContent);
+                    if (savedState.subHeaderTextContent) setSubHeaderTextContent(savedState.subHeaderTextContent);
+                    if (savedState.footerTextContent) setFooterTextContent(savedState.footerTextContent);
                     if (savedState.showBarcode != null) setShowBarcode(savedState.showBarcode);
-                    
-                    // Load tabSettings
-                    let activeSettings: any = {};
-                    if (savedState.tabSettings) {
-                        setTabSettings(savedState.tabSettings);
-                        activeSettings = savedState.tabSettings[loadedType] || {};
-                    } else {
-                        // Migrate/Upgrade logic for older DB versions
-                        const initialSettings = {
-                            gia_soc: {
-                                headerTextContent: loadedType === 'gia_soc' ? savedState.headerTextContent || '' : '',
-                                subHeaderTextContent: loadedType === 'gia_soc' ? savedState.subHeaderTextContent || '' : '',
-                                footerTextContent: loadedType === 'gia_soc' ? savedState.footerTextContent || '' : '',
-                                previewName: loadedType === 'gia_soc' ? savedState.previewName || '' : '',
-                                previewOldPrice: loadedType === 'gia_soc' ? savedState.previewOldPrice || '' : '',
-                                previewNewPrice: loadedType === 'gia_soc' ? savedState.previewNewPrice || '' : '',
-                                barcodeImei: loadedType === 'gia_soc' ? savedState.barcodeImei || '' : '',
-                                branchName: loadedType === 'gia_soc' ? savedState.branchName || '' : ''
-                            },
-                            gio_vang: {
-                                headerTextContent: loadedType === 'gio_vang' ? savedState.headerTextContent || '' : '',
-                                subHeaderTextContent: loadedType === 'gio_vang' ? savedState.subHeaderTextContent || '' : '',
-                                footerTextContent: loadedType === 'gio_vang' ? savedState.footerTextContent || '' : '',
-                                previewName: loadedType === 'gio_vang' ? savedState.previewName || '' : '',
-                                previewOldPrice: loadedType === 'gio_vang' ? savedState.previewOldPrice || '' : '',
-                                previewNewPrice: loadedType === 'gio_vang' ? savedState.previewNewPrice || '' : '',
-                                barcodeImei: loadedType === 'gio_vang' ? savedState.barcodeImei || '' : '',
-                                branchName: loadedType === 'gio_vang' ? savedState.branchName || '' : ''
-                            },
-                            rut_tham: {
-                                headerTextContent: loadedType === 'rut_tham' ? savedState.headerTextContent || '' : '',
-                                subHeaderTextContent: loadedType === 'rut_tham' ? savedState.subHeaderTextContent || '' : '',
-                                footerTextContent: loadedType === 'rut_tham' ? savedState.footerTextContent || '' : '',
-                                previewName: loadedType === 'rut_tham' ? savedState.previewName || '' : '',
-                                previewOldPrice: loadedType === 'rut_tham' ? savedState.previewOldPrice || '' : '',
-                                previewNewPrice: loadedType === 'rut_tham' ? savedState.previewNewPrice || '' : '',
-                                barcodeImei: loadedType === 'rut_tham' ? savedState.barcodeImei || '1' : '1',
-                                branchName: loadedType === 'rut_tham' ? savedState.branchName || '' : ''
-                            }
-                        };
-                        setTabSettings(initialSettings);
-                        activeSettings = initialSettings[loadedType] || {};
-                    }
-
-                    // Apply active settings to states
-                    setHeaderTextContent(activeSettings.headerTextContent || '');
-                    setSubHeaderTextContent(activeSettings.subHeaderTextContent || '');
-                    setFooterTextContent(activeSettings.footerTextContent || '');
-                    setPreviewName(activeSettings.previewName || '');
-                    setPreviewOldPrice(activeSettings.previewOldPrice || '');
-                    setPreviewNewPrice(activeSettings.previewNewPrice || '');
-                    setBarcodeImei(activeSettings.barcodeImei || (loadedType === 'rut_tham' ? '1' : ''));
-                    setBranchName(activeSettings.branchName || '');
-
+                    if (savedState.previewName) setPreviewName(savedState.previewName);
+                    if (savedState.previewOldPrice) setPreviewOldPrice(savedState.previewOldPrice);
+                    if (savedState.previewNewPrice) setPreviewNewPrice(savedState.previewNewPrice);
                     if (savedState.discountDisplayMode) setDiscountDisplayMode(savedState.discountDisplayMode);
+                    if (savedState.barcodeImei) setBarcodeImei(savedState.barcodeImei);
                     if (savedState.discountThreshold != null) setDiscountThreshold(savedState.discountThreshold);
                     if (savedState.searchTerm != null) setSearchTerm(savedState.searchTerm);
                     const loadedPages = savedState.manualPages || [];
@@ -702,7 +445,6 @@ export default function StickerPrinterView() {
                 manualPages,
                 batchItems,
                 priceSource,
-                tabSettings,
                 updatedAt: new Date().toISOString()
             };
             
@@ -740,8 +482,7 @@ export default function StickerPrinterView() {
         activeSubTab,
         manualPages,
         batchItems,
-        priceSource,
-        tabSettings
+        priceSource
     ]);
 
     // Sync savedLists to IndexedDB
@@ -1463,17 +1204,10 @@ export default function StickerPrinterView() {
     const handleReset = () => {
         setBatchItems([]);
         setSearchTerm('');
-        setHeaderTextContent('');
-        setSubHeaderTextContent('');
-        setFooterTextContent('');
-        setPreviewName('');
-        setPreviewOldPrice('');
-        setPreviewNewPrice('');
-        setBarcodeImei('1');
-        setBranchName('');
+        setHeaderTextContent('HÀNG TRƯNG BÀY');
+        setFooterTextContent('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
+        setHeaderTextSize(8);
         setActiveQueuePageId(null);
-        saveSetting(STICKER_DB_KEY, null).catch(() => {});
-        toast.success('Đã xoá sạch toàn bộ nội dung!');
     };
 
     const handlePrint = () => {
@@ -1502,151 +1236,6 @@ export default function StickerPrinterView() {
                 #print-host .sticker-container {
                     outline: 1.5px dashed #6366f1;
                     outline-offset: 1px;
-                }
-
-                /* Raffle Ticket Print Styles */
-                #print-host .sticker-container[data-type="rut_tham"] .slot {
-                    position: absolute;
-                    left: 0;
-                    width: 100%;
-                    height: 25%;
-                    overflow: hidden;
-                }
-                #print-host .sticker-container[data-type="rut_tham"] .slot-1 { top: 0%; }
-                #print-host .sticker-container[data-type="rut_tham"] .slot-2 { top: 25%; }
-                #print-host .sticker-container[data-type="rut_tham"] .slot-3 { top: 50%; }
-                #print-host .sticker-container[data-type="rut_tham"] .slot-4 { top: 75%; }
-
-                #print-host .sticker-container[data-type="rut_tham"] .slot > div {
-                    position: absolute;
-                    background: white;
-                    color: black;
-                    display: flex;
-                    align-items: center;
-                    outline: none;
-                    box-sizing: border-box;
-                }
-
-                #print-host .sticker-container[data-type="rut_tham"] .header-text {
-                    font-size: ${headerTextSize}cqi !important;
-                    font-weight: bold;
-                    top: 0%;
-                    height: 6.5%;
-                    width: 98%;
-                    left: 1%;
-                    justify-content: center;
-                    text-align: center;
-                    font-family: 'UTM Avo', sans-serif !important;
-                    text-transform: uppercase;
-                }
-
-                #print-host .sticker-container[data-type="rut_tham"] .sub-header {
-                    font-size: ${subHeaderTextSize}cqi !important;
-                    font-weight: bold;
-                    top: 13.5%;
-                    left: 4.5%;
-                    width: 32%;
-                    height: 18%;
-                    justify-content: flex-start;
-                    text-align: left;
-                    font-family: 'UTM Avo', sans-serif !important;
-                    padding-left: 2px;
-                }
-
-                #print-host .sticker-container[data-type="rut_tham"] .old {
-                    white-space: pre-line !important;
-                    font-size: ${oldPriceTextSize}cqi !important;
-                    font-weight: bold;
-                    top: 32%;
-                    left: 4.5%;
-                    width: 32%;
-                    height: 38%;
-                    justify-content: flex-start;
-                    text-align: left;
-                    text-decoration: none !important;
-                    font-family: 'UTM Avo', sans-serif !important;
-                    line-height: 1.2;
-                    padding-left: 2px;
-                    align-items: flex-start;
-                }
-
-                #print-host .sticker-container[data-type="rut_tham"] .left-code {
-                    font-size: 8cqi !important;
-                    font-weight: bold;
-                    top: 22.5%;
-                    left: 36.8%;
-                    width: 11.5%;
-                    height: 23%;
-                    justify-content: center;
-                    text-align: center;
-                    font-family: 'UTM Avo', sans-serif !important;
-                }
-
-                #print-host .sticker-container[data-type="rut_tham"] .name {
-                    font-size: ${nameTextSize}cqi !important;
-                    font-weight: bold;
-                    top: 13.5%;
-                    left: 51%;
-                    width: 32%;
-                    height: 18%;
-                    justify-content: flex-start;
-                    text-align: left;
-                    font-family: 'UTM Avo', sans-serif !important;
-                    padding-left: 2px;
-                }
-
-                #print-host .sticker-container[data-type="rut_tham"] .right-code {
-                    font-size: 8cqi !important;
-                    font-weight: bold;
-                    top: 22.5%;
-                    left: 85.7%;
-                    width: 11.5%;
-                    height: 23%;
-                    justify-content: center;
-                    text-align: center;
-                    font-family: 'UTM Avo', sans-serif !important;
-                }
-
-                #print-host .sticker-container[data-type="rut_tham"] .extra2 {
-                    font-size: ${newPriceTextSize}cqi !important;
-                    font-weight: 900 !important;
-                    top: 32%;
-                    left: 51%;
-                    width: 46%;
-                    height: 34%;
-                    justify-content: flex-start;
-                    text-align: left;
-                    font-family: 'UTM Avo', sans-serif !important;
-                    padding-left: 2px;
-                }
-
-                #print-host .sticker-container[data-type="rut_tham"] .footer-text {
-                    font-size: ${footerTextSize}cqi !important;
-                    font-weight: bold;
-                    top: 67%;
-                    left: 51%;
-                    width: 46%;
-                    height: 15%;
-                    justify-content: flex-start;
-                    text-align: left;
-                    font-family: 'UTM Avo', sans-serif !important;
-                    padding-left: 2px;
-                }
-
-                #print-host .sticker-container[data-type="rut_tham"] .extra1 {
-                    font-size: ${percentTextSize}cqi !important;
-                    font-weight: bold;
-                    top: 83.6%;
-                    left: 17.8%;
-                    width: 31.3%;
-                    height: 10%;
-                    background-color: #0d0d0d !important;
-                    color: white !important;
-                    justify-content: flex-start;
-                    text-align: left;
-                    text-transform: uppercase;
-                    font-family: 'UTM Avo', sans-serif !important;
-                    padding-left: 2px;
                 }
             </style>
         `;
@@ -1731,7 +1320,10 @@ export default function StickerPrinterView() {
                         <button
                             onClick={() => {
                                 setStickerMode('sticker');
-                                switchStickerType('gia_soc');
+                                setStickerType('gia_soc');
+                                setHeaderTextContent('QUẠT ĐIỀU HOÀ');
+                                setBgImage('/frame/X24_NEW.png');
+                                setHeaderTextSize(8);
                                 updateSubQueryParam('gia-soc');
                             }}
                             className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
@@ -1746,7 +1338,10 @@ export default function StickerPrinterView() {
                         <button
                             onClick={() => {
                                 setStickerMode('sticker');
-                                switchStickerType('gio_vang');
+                                setStickerType('gio_vang');
+                                setHeaderTextContent('TỪ 00/00 ĐẾN 00/00');
+                                setBgImage('/frame/GVO2-scaled.png');
+                                setHeaderTextSize(8);
                                 updateSubQueryParam('gio-vang');
                             }}
                             className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
@@ -1773,30 +1368,15 @@ export default function StickerPrinterView() {
                             <span className="lg:hidden">Event</span>
                             <span className="hidden lg:inline">{stickerMode === 'event' && <CheckCircle2 size={14} className="inline mr-1 text-emerald-600 dark:text-emerald-400" />}<Package size={14} className="inline mr-1" />Event - Tồn kho</span>
                         </button>
-                        <button
-                            onClick={() => {
-                                setStickerMode('sticker');
-                                switchStickerType('rut_tham');
-                                updateSubQueryParam('rut-tham');
-                            }}
-                            className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
-                                stickerMode === 'sticker' && stickerType === 'rut_tham' 
-                                    ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 shadow-sm' 
-                                    : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                            }`}
-                        >
-                            <span className="lg:hidden">Rút Thăm</span>
-                            <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'rut_tham' && <CheckCircle2 size={14} className="inline mr-1 text-rose-600 dark:text-rose-400" />}Phiếu rút thăm</span>
-                        </button>
                     </div>
                     
                     {stickerMode === 'sticker' && (
                         <div className="flex items-center gap-1 ml-0.5 lg:ml-1 pl-1.5 lg:pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
                             <span className="text-[10px] lg:text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400">{getActiveFieldLabel()}:</span>
                             <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[22px] lg:h-[26px]">
-                                <button onClick={() => setActiveFontSize(s => Math.max(1, s - 0.2))} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-bold transition-colors" title="Giảm size">-</button>
+                                <button onClick={() => setActiveFontSize(s => Math.max(1, s - 0.2))} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Giảm size">-</button>
                                 <span className="px-0 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 w-6 lg:w-8 text-center">{getActiveFontSize()}</span>
-                                <button onClick={() => setActiveFontSize(s => s + 0.2)} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-bold transition-colors" title="Tăng size">+</button>
+                                <button onClick={() => setActiveFontSize(s => s + 0.2)} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Tăng size">+</button>
                             </div>
                         </div>
                     )}
@@ -1843,18 +1423,16 @@ export default function StickerPrinterView() {
                         previewName={previewName}
                         previewOldPrice={previewOldPrice}
                         previewNewPrice={previewNewPrice}
-                        setPreviewOldPrice={setPreviewOldPriceVal}
-                        setPreviewNewPrice={setPreviewNewPriceVal}
+                        setPreviewOldPrice={setPreviewOldPrice}
+                        setPreviewNewPrice={setPreviewNewPrice}
                         activeField={activeField}
                         setActiveField={setActiveField}
-                        setHeaderTextContent={setHeaderVal}
-                        setSubHeaderTextContent={setSubHeaderVal}
-                        setFooterTextContent={setFooterVal}
-                        setBarcodeImei={setBarcodeVal}
-                        setPreviewName={setPreviewNameVal}
+                        setHeaderTextContent={setHeaderTextContent}
+                        setSubHeaderTextContent={setSubHeaderTextContent}
+                        setFooterTextContent={setFooterTextContent}
+                        setBarcodeImei={setBarcodeImei}
+                        setPreviewName={setPreviewName}
                         updateBatchItem={updateBatchItem}
-                        branchName={branchName}
-                        setBranchName={setBranchNameVal}
                     />
                 </div>
                 <StickerPrintControls

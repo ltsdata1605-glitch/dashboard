@@ -94,7 +94,7 @@ const StatusTile: React.FC<{
             <div 
                 onClick={() => !isPasting && setIsPasting(true)}
                 className={`
-                    cursor-pointer min-h-[56px] rounded-lg transition-all duration-200 flex items-center px-3 relative overflow-hidden group/tile border hover:scale-[1.01] active:scale-[0.99] shadow-sm
+                    cursor-pointer min-h-[56px] rounded-xl transition-all duration-200 flex items-center px-3 relative overflow-hidden group/tile border hover:scale-[1.01] active:scale-[0.99] shadow-sm
                     ${isPasting 
                         ? `bg-white dark:bg-slate-800 ${currentTheme.ring}`
                         : hasData 

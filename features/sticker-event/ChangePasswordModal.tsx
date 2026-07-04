@@ -58,7 +58,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
 
     return (
         <div className="fixed inset-0 z-[80] bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md">
-            <div className="bg-white rounded-lg shadow-2xl flex flex-col max-w-md w-full overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-2xl flex flex-col max-w-md w-full overflow-hidden">
                 <div className="flex justify-between items-center p-4 border-b border-slate-200">
                     <div className="flex items-center gap-2">
                         <ShieldIcon className="h-6 w-6 text-indigo-600" />

@@ -36,12 +36,12 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
 
                 {/* Header */}
                 <div className="px-4 pt-4 pb-2 text-center sm:text-left flex flex-col items-center sm:items-start relative z-10 w-full">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-900/50 dark:to-blue-900/50 flex items-center justify-center mb-2 shadow-sm">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-50 to-blue-100 dark:from-indigo-900/50 dark:to-blue-900/50 flex items-center justify-center mb-2 shadow-sm">
                         <svg className="w-5 h-5 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                         </svg>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">Xuất Ảnh Báo Cáo</h3>
+                    <h3 className="text-lg font-black text-slate-800 dark:text-white tracking-tight">Xuất Ảnh Báo Cáo</h3>
                     <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 mt-1 truncate w-full text-center sm:text-left">{filename}</p>
                 </div>
 
@@ -50,7 +50,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                     {/* Download option */}
                     <button
                         onClick={onDownload}
-                        className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/80 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:scale-[0.98] transition-all group"
+                        className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 active:scale-[0.98] transition-all group"
                     >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -74,7 +74,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                     {canShare && (
                         <button
                             onClick={onShare}
-                            className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.98] transition-all group"
+                            className="w-full flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 active:scale-[0.98] transition-all group"
                         >
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-500/20 dark:text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
@@ -98,7 +98,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                     {/* Cancel button */}
                     <button
                         onClick={onClose}
-                        className="w-full mt-1 py-2.5 rounded-lg text-[12px] font-bold text-slate-500 dark:text-slate-400 bg-slate-200/50 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.98] transition-all"
+                        className="w-full mt-1 py-2.5 rounded-xl text-[12px] font-bold text-slate-500 dark:text-slate-400 bg-slate-200/50 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 active:scale-[0.98] transition-all"
                     >
                         Quay lại
                     </button>

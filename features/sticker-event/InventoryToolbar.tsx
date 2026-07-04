@@ -92,7 +92,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
           <Filter className="w-3 h-3" />
           <span className="uppercase tracking-wider text-[10px]">Bộ lọc</span>
           {activeFilterCount > 0 && (
-            <span className="bg-indigo-600 text-white text-[10px] font-bold px-1.5 py-px rounded-full min-w-[16px] text-center leading-none">
+            <span className="bg-indigo-600 text-white text-[9px] font-bold px-1.5 py-px rounded-full min-w-[16px] text-center leading-none">
               {activeFilterCount}
             </span>
           )}

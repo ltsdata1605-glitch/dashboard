@@ -289,7 +289,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
     <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[60] backdrop-blur-sm">
       <div className="bg-white p-5 shadow-2xl w-full max-w-4xl max-h-[95vh] flex flex-col border border-slate-200">
         <div className="flex justify-between items-center mb-3">
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">Quản Lý Mẫu Ca Xoay</h2>
+            <h2 className="text-lg font-black text-slate-900 tracking-tight">Quản Lý Mẫu Ca Xoay</h2>
             <button onClick={handleClose} className="p-1 hover:bg-slate-100 transition-colors">
                 <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
             </button>
@@ -307,7 +307,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                 >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
-                <h4 className="font-bold flex items-center gap-1.5 uppercase tracking-wider mb-1.5">
+                <h4 className="font-black flex items-center gap-1.5 uppercase tracking-wider mb-1.5">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
@@ -324,7 +324,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
         )}
 
         <div className="mb-3 flex items-center gap-3 bg-slate-50 border border-slate-200 p-2">
-            <label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">Chọn bộ phận:</label>
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest whitespace-nowrap">Chọn bộ phận:</label>
             <select
                 value={selectedDept}
                 onChange={(e) => setSelectedDept(e.target.value)}
@@ -339,20 +339,20 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
         {previewStats && (
             <div className="mb-3 border border-slate-200 bg-white">
                 <div className="bg-slate-50 p-2 border-b border-slate-200 flex justify-between items-center">
-                    <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Xem trước số lượng (Trung bình/ngày)</h3>
+                    <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Xem trước số lượng (Trung bình/ngày)</h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-center text-xs border-collapse">
                         <thead>
                             <tr className="bg-slate-50 border-b border-slate-200 text-[10px] uppercase tracking-widest text-slate-400">
-                                <th className="p-1.5 text-left w-20 font-bold">Chỉ số</th>
-                                <th className="p-1.5 font-bold">Ca 1</th>
-                                <th className="p-1.5 font-bold">Ca 2</th>
-                                <th className="p-1.5 font-bold">Ca 3</th>
-                                <th className="p-1.5 font-bold">Ca 4</th>
-                                <th className="p-1.5 font-bold">Ca 5</th>
-                                <th className="p-1.5 font-bold">Ca 6</th>
-                                <th className="p-1.5 font-bold text-indigo-600 bg-indigo-50 border-l border-slate-200">GC/Ngày</th>
+                                <th className="p-1.5 text-left w-20 font-black">Chỉ số</th>
+                                <th className="p-1.5 font-black">Ca 1</th>
+                                <th className="p-1.5 font-black">Ca 2</th>
+                                <th className="p-1.5 font-black">Ca 3</th>
+                                <th className="p-1.5 font-black">Ca 4</th>
+                                <th className="p-1.5 font-black">Ca 5</th>
+                                <th className="p-1.5 font-black">Ca 6</th>
+                                <th className="p-1.5 font-black text-indigo-600 bg-indigo-50 border-l border-slate-200">GC/Ngày</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -365,13 +365,13 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                                                 type="time" 
                                                 value={shiftDefinitions[slot]?.startTime || ''} 
                                                 onChange={(e) => onShiftDefinitionsUpdate({ ...shiftDefinitions, [slot]: { ...shiftDefinitions[slot], startTime: e.target.value } })}
-                                                className="w-[60px] text-[10px] font-mono font-bold text-slate-600 border border-slate-200 rounded p-0.5 text-center focus:border-indigo-500 outline-none" 
+                                                className="w-[60px] text-[9px] font-mono font-bold text-slate-600 border border-slate-200 rounded p-0.5 text-center focus:border-indigo-500 outline-none" 
                                             />
                                             <input 
                                                 type="time" 
                                                 value={shiftDefinitions[slot]?.endTime || ''} 
                                                 onChange={(e) => onShiftDefinitionsUpdate({ ...shiftDefinitions, [slot]: { ...shiftDefinitions[slot], endTime: e.target.value } })}
-                                                className="w-[60px] text-[10px] font-mono font-bold text-slate-600 border border-slate-200 rounded p-0.5 text-center focus:border-indigo-500 outline-none" 
+                                                className="w-[60px] text-[9px] font-mono font-bold text-slate-600 border border-slate-200 rounded p-0.5 text-center focus:border-indigo-500 outline-none" 
                                             />
                                         </div>
                                     </td>
@@ -427,7 +427,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                                     }
                                     return <td key={slot} className={`p-1.5 font-mono font-bold text-sm ${statusColor}`}>{scheduled}</td>
                                 })}
-                                <td className="p-1.5 font-mono font-bold text-sm text-indigo-700 bg-indigo-50 border-l border-slate-200">{previewStats.totalHours}</td>
+                                <td className="p-1.5 font-mono font-black text-sm text-indigo-700 bg-indigo-50 border-l border-slate-200">{previewStats.totalHours}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -437,7 +437,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
 
         <div className="overflow-y-auto flex-grow mb-3 pr-2 border-t border-slate-200 pt-3">
           <div className="flex justify-between items-center mb-3">
-            <h3 className="text-xs font-bold text-slate-700">Danh sách ca: <span className="text-indigo-600">{selectedDept}</span></h3>
+            <h3 className="text-xs font-black text-slate-700">Danh sách ca: <span className="text-indigo-600">{selectedDept}</span></h3>
             <button 
                 onClick={suggestPattern}
                 disabled={isSuggesting || !selectedDept}
@@ -453,7 +453,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
           </div>
           
           <div className="bg-white border border-slate-200">
-              <div className="grid grid-cols-12 gap-1 text-[10px] font-bold uppercase tracking-widest text-slate-400 bg-slate-50 border-b border-slate-200 py-2 pr-8">
+              <div className="grid grid-cols-12 gap-1 text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-50 border-b border-slate-200 py-2 pr-8">
                   <div className="col-span-1 text-center">STT</div>
                   {SHIFTS.map(s => <div key={s} className="col-span-1 text-center">Ca {s}</div>)}
                   <div className="col-span-2 text-center border-l border-slate-200">Mã Ca</div>

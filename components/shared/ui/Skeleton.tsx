@@ -22,7 +22,7 @@ const variantClasses = {
   text:        'rounded-md',
   circular:    'rounded-full',
   rectangular: 'rounded-none',
-  rounded:     'rounded-lg',
+  rounded:     'rounded-xl',
 };
 
 export const Skeleton: React.FC<SkeletonProps> = ({
@@ -70,7 +70,7 @@ Skeleton.displayName = 'Skeleton';
 
 /** Card skeleton — mimics a stat card loading state */
 export const SkeletonCard: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={cn('bg-white dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 p-5 space-y-3', className)}>
+  <div className={cn('bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-5 space-y-3', className)}>
     <Skeleton width="40%" height="12px" />
     <Skeleton width="60%" height="28px" variant="rounded" />
     <Skeleton width="80%" height="10px" />
@@ -105,7 +105,7 @@ SkeletonTable.displayName = 'SkeletonTable';
 
 /** Chart skeleton — mimics a chart loading state */
 export const SkeletonChart: React.FC<{ className?: string }> = ({ className }) => (
-  <div className={cn('bg-white dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 p-5', className)}>
+  <div className={cn('bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800 p-5', className)}>
     <div className="flex items-center justify-between mb-4">
       <Skeleton width="120px" height="14px" />
       <Skeleton width="80px" height="14px" />

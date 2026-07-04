@@ -221,7 +221,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
     return (
         <div className="fixed inset-0 z-[60] bg-slate-900/30 flex items-center justify-center p-4 backdrop-blur-md" onClick={onClose}>
             <div
-                className="relative bg-white w-full max-w-3xl rounded-lg shadow-2xl flex flex-col max-h-[95vh]"
+                className="relative bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[95vh]"
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Header */}
@@ -308,7 +308,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                         </div>
 
                         {manualProducts.length === 0 ? (
-                            <div className="text-center py-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-lg">
+                            <div className="text-center py-8 text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
                                 <p>Chưa có sản phẩm nào. Nhập thông tin ở trên và bấm "Thêm sản phẩm".</p>
                             </div>
                         ) : (
@@ -319,7 +319,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                     return (
                                         <div
                                             key={p.firebaseId || p.msp}
-                                            className={`flex items-center gap-3 p-3 rounded-lg border transition-colors cursor-pointer ${
+                                            className={`flex items-center gap-3 p-3 rounded-xl border transition-colors cursor-pointer ${
                                                 isEditing
                                                     ? 'bg-amber-50 border-amber-300 ring-2 ring-amber-200'
                                                     : isSelected

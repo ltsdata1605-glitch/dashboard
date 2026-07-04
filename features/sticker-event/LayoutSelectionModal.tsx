@@ -44,7 +44,7 @@ const LayoutSelectionModal: React.FC<LayoutSelectionModalProps> = ({ onSelect, o
     return (
         <div className="fixed inset-0 z-50 bg-slate-900/30 backdrop-blur-md flex items-center justify-center p-4" onClick={onClose}>
             <div
-                className="relative bg-white w-full max-w-2xl rounded-lg shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto"
+                className="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="flex justify-between items-center pb-2 border-b border-slate-200">

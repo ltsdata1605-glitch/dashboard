@@ -129,8 +129,8 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     .bi-report-module .mb-6 { margin-bottom: 12px !important; }
                     .bi-report-module .mb-4 { margin-bottom: 8px !important; }
                     
-                    .bi-report-module .rounded-lg { border-radius: 12px !important; }
-                    .bi-report-module .rounded-lg { border-radius: 8px !important; }
+                    .bi-report-module .rounded-2xl { border-radius: 12px !important; }
+                    .bi-report-module .rounded-xl { border-radius: 8px !important; }
                     
                     /* Icon sizes */
                     .bi-report-module .w-12 { width: 32px !important; }
@@ -165,7 +165,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     })}
                     
                     <div className={`flex shrink-0 items-center ${isMobile ? 'pl-0.5 ml-0.5' : 'pl-1 border-l border-slate-200 dark:border-slate-700 ml-1'}`}>
-                        <div className={`rounded-lg overflow-hidden ${isMobile ? 'scale-90 origin-right' : 'shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
+                        <div className={`rounded-xl overflow-hidden ${isMobile ? 'scale-90 origin-right' : 'shadow-sm border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800'}`}>
                             <FontSelector />
                         </div>
                     </div>

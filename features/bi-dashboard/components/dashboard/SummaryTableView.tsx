@@ -308,7 +308,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
             </button>
             {isSupermarketFilterOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Lọc siêu thị</p>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Lọc siêu thị</p>
                     <input
                         type="text"
                         value={supermarketFilterSearch}
@@ -354,8 +354,8 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 <CogIcon className="h-4 w-4" />
             </button>
             {isColumnSelectorOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
                     <div className="grid gap-0.5">
                         {orderedHeaders.filter(h => h !== 'Tên miền').map((h) => (
                             <div key={h} className="flex items-center justify-between px-2 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
@@ -410,7 +410,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                         <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap compact-export-table">
                             <thead>
                                 {/* TIER 1: GROUP HEADERS — pastel bg + colored text like KHO */}
-                                <tr className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
+                                <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
                                     {/* Sticky 'SIÊU THỊ' merged header (rowSpan=2) — rose style like MÃ KHO */}
                                     {visibleColumns.has('Tên miền') && (
                                         <th
@@ -427,7 +427,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                 <th
                                                     key={`group-${idx}`}
                                                     rowSpan={2}
-                                                    className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                    className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${g.bg} ${g.text}`}
                                                     dangerouslySetInnerHTML={{ __html: headerMapping[g.singleHeader] || g.singleHeader }}
                                                 />
                                             );
@@ -437,7 +437,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                             <th
                                                 key={`group-${idx}`}
                                                 colSpan={g.colspan}
-                                                className={`px-1 sm:px-2 py-1.5 sm:py-3 ${g.text} ${g.bg} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold border-r text-center align-middle`}
+                                                className={`px-1 sm:px-2 py-1.5 sm:py-3 ${g.text} ${g.bg} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[9px] sm:text-[11px] font-bold border-r text-center align-middle`}
                                             >
                                                 {g.label}
                                             </th>
@@ -457,7 +457,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                         return (
                                             <th
                                                 key={h}
-                                                className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle ${g.bg} ${g.text}`}
+                                                className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${g.bg} ${g.text}`}
                                                 dangerouslySetInnerHTML={{ __html: (headerMapping[h] || h).replace(/((<br\/?>)?V\.TRỘI)/gi, '').trim() }}
                                             />
                                         );
@@ -500,7 +500,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                             {cell?.isMerged ? (
                                                                 <div className="flex flex-col items-center leading-tight justify-center">
                                                                     <span>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
-                                                                    <span className="text-[10px] font-bold opacity-70">
+                                                                    <span className="text-[8px] font-black opacity-70">
                                                                         {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%
                                                                     </span>
                                                                 </div>
@@ -551,7 +551,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                                                         {cell?.isMerged ? (
                                                             <div className="flex flex-col items-center leading-tight justify-center">
                                                                 <span className={h === 'DT Dự Kiến' || h === 'DT Dự Kiến (QĐ)' ? 'text-indigo-700 dark:text-indigo-400 font-extrabold' : ''}>{cell.type === 'percent' ? roundUp(val) + '%' : f.format(roundUp(val))}</span>
-                                                                <span className={`text-[10px] font-bold ${
+                                                                <span className={`text-[8px] font-black ${
                                                                     parseNumber(cell.growth) >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
                                                                 }`}>
                                                                     {(parseNumber(cell.growth) >= 0 ? '+' : '') + roundUp(parseNumber(cell.growth))}%

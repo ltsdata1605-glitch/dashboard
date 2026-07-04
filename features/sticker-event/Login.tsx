@@ -227,7 +227,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
         <div className="flex flex-col items-center mb-6">
             <h2 className="text-2xl font-bold text-slate-800">
             {isLogin ? 'Đăng Nhập' : 'Đăng Ký'}

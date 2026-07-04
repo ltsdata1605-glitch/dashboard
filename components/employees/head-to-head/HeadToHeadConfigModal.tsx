@@ -329,10 +329,10 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
             titleColorClass="text-indigo-600 dark:text-indigo-400"
             maxWidthClass="max-w-4xl"
         >
-            <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0 bg-white dark:bg-slate-900">
-                <div className="flex-grow p-4 sm:p-6 space-y-8 overflow-y-auto custom-scrollbar min-h-0">
+            <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0">
+                <div className="flex-grow p-3 sm:p-4 space-y-3 sm:space-y-4 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar min-h-0">
                     {feedback && (
-                        <div className={`p-2.5 sm:p-3 border rounded-lg sm:rounded-lg text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
+                        <div className={`p-2.5 sm:p-3 border rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
                             feedback.type === 'error' 
                             ? 'bg-rose-50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300'
                             : 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
@@ -343,76 +343,89 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                         </div>
                     )}
                     
-                    {/* Tabs for Table Type */}
-                    <div className="border-b border-slate-200 dark:border-slate-800">
-                        <nav className="-mb-px flex space-x-6 sm:space-x-8 overflow-x-auto custom-scrollbar">
-                            <button type="button" onClick={() => setTableType('data')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'data' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
-                                <Icon name="database" size={4} /> Truy vấn Data
-                            </button>
-                            <button type="button" onClick={() => setTableType('calculated')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'calculated' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
-                                <Icon name="calculator" size={4} /> Bảng Tính Toán
-                            </button>
-                            <button type="button" onClick={() => setTableType('target')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'target' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
-                                <Icon name="target" size={4} /> Thiết lập Target
-                            </button>
-                        </nav>
-                    </div>
-                    
                     {/* SECTION 1: Cấu trúc Bảng */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <div ref={headersRef} className="relative z-50">
-                            <label htmlFor="mainHeader" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex justify-between">
-                                Tiêu đề nhóm (Cha)
-                                {existingMainHeaders.length > 0 && <span className="text-[10px] sm:text-xs text-slate-400">Chọn từ danh sách</span>}
-                            </label>
-                            <div className="relative">
-                                <Input 
-                                    id="mainHeader" 
-                                    type="text" 
-                                    value={mainHeader} 
-                                    onChange={e => { setMainHeader(e.target.value); setShowHeadersList(true); }}
-                                    onFocus={() => setShowHeadersList(true)}
-                                    placeholder="Tạo nhóm mới hoặc chọn..." 
-                                    className="h-10" 
-                                    autoComplete="off"
-                                    rightIcon="chevron-down"
-                                    onRightIconClick={() => setShowHeadersList(!showHeadersList)}
-                                />
-                            </div>
-                            {showHeadersList && (
-                                <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg max-h-56 overflow-y-auto py-1 z-20">
-                                    {existingMainHeaders.filter(h => h.includes(mainHeader)).length === 0 && mainHeader && (
-                                        <div className="px-3 py-2 text-xs text-slate-500 italic bg-slate-50">Tạo nhóm chỉ số mới: <span className="font-semibold text-sky-600">{mainHeader}</span></div>
-                                    )}
-                                    {existingMainHeaders.filter(h => h.includes(mainHeader)).map(h => (
-                                        <div 
-                                            key={h} 
-                                            className="px-3 py-2 text-sm text-slate-700 hover:bg-sky-50 cursor-pointer transition-colors flex items-center justify-between"
-                                            onClick={() => { setMainHeader(h); setShowHeadersList(false); }}
-                                        >
-                                            {h}
-                                            {mainHeader === h && <Icon name="check" size={4} className="text-sky-600" />}
-                                        </div>
-                                    ))}
+                    <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 p-3 sm:p-4 shadow-sm">
+                        <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold mb-2 sm:mb-3 text-xs sm:text-base text-slate-800 dark:text-slate-100">
+                            <Icon name="layout" size={3.5} className="text-indigo-500 sm:hidden" /><Icon name="layout" size={4} className="text-indigo-500 hidden sm:block" /> Cấu trúc Bảng
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                            <div ref={headersRef} className="relative z-50">
+                                <label htmlFor="mainHeader" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5 flex justify-between">
+                                    Tiêu đề nhóm (Cha)
+                                    {existingMainHeaders.length > 0 && <span className="text-[10px] sm:text-xs font-normal text-slate-400">Chọn từ danh sách</span>}
+                                </label>
+                                <div className="relative">
+                                    <Input 
+                                        id="mainHeader" 
+                                        type="text" 
+                                        value={mainHeader} 
+                                        leftIcon="layers"
+                                        onChange={e => { setMainHeader(e.target.value); setShowHeadersList(true); }}
+                                        onFocus={() => setShowHeadersList(true)}
+                                        placeholder="Tạo nhóm mới hoặc chọn..." 
+                                        className="h-10 text-sm font-medium" 
+                                        autoComplete="off"
+                                        rightIcon="chevron-down"
+                                        onRightIconClick={() => setShowHeadersList(!showHeadersList)}
+                                    />
                                 </div>
-                            )}
+                                {showHeadersList && (
+                                    <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-56 overflow-y-auto py-1.5 z-20">
+                                        {existingMainHeaders.filter(h => h.includes(mainHeader)).length === 0 && mainHeader && (
+                                            <div className="px-4 py-2.5 text-xs text-slate-500 italic bg-slate-50">Tạo nhóm chỉ số mới: <span className="font-bold text-indigo-600">{mainHeader}</span></div>
+                                        )}
+                                        {existingMainHeaders.filter(h => h.includes(mainHeader)).map(h => (
+                                            <div 
+                                                key={h} 
+                                                className="px-4 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 cursor-pointer font-bold transition-colors flex items-center justify-between"
+                                                onClick={() => { setMainHeader(h); setShowHeadersList(false); }}
+                                            >
+                                                {h}
+                                                {mainHeader === h && <Icon name="check" size={4} className="text-indigo-600" />}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <label htmlFor="tableName" className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1 sm:mb-1.5">Tên Bảng (Bắt buộc) *</label>
+                                <div className="relative">
+                                    <Input 
+                                        id="tableName" 
+                                        type="text" 
+                                        leftIcon="type"
+                                        value={tableName} 
+                                        onChange={e => setTableName(e.target.value.toUpperCase())} 
+                                        placeholder="VD: SL SIM, DT APPLE..." 
+                                        className="h-10 text-sm font-bold text-indigo-700 dark:text-indigo-300" 
+                                        required 
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="md:col-span-2 mt-1">
+                                <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2 flex justify-between">
+                                    Phân loại bảng
+                                    <span className="font-normal text-[10px] sm:text-xs text-slate-500">Tính toán dữ liệu 7 ngày</span>
+                                </label>
+                                <div className="flex bg-slate-100 dark:bg-slate-900 p-1 sm:p-1.5 rounded-lg sm:rounded-xl border border-slate-200 shadow-inner">
+                                    <button type="button" onClick={() => setTableType('data')} className={`flex-1 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1.5 sm:px-2 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all ${tableType === 'data' ? 'bg-white text-indigo-600 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'}`}>
+                                        <Icon name="database" size={3.5} className="mb-0.5 sm:mb-1 opacity-80 sm:hidden" /><Icon name="database" size={4} className="mb-0.5 sm:mb-1 opacity-80 hidden sm:block" /> Truy vấn Data
+                                    </button>
+                                    <button type="button" onClick={() => setTableType('calculated')} className={`flex-1 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1.5 sm:px-2 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all ${tableType === 'calculated' ? 'bg-white text-indigo-600 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'}`}>
+                                        <Icon name="calculator" size={3.5} className="mb-0.5 sm:mb-1 opacity-80 sm:hidden" /><Icon name="calculator" size={4} className="mb-0.5 sm:mb-1 opacity-80 hidden sm:block" /> Bảng Tính Toán
+                                    </button>
+                                    <button type="button" onClick={() => setTableType('target')} className={`flex-1 flex flex-col items-center justify-center py-1.5 sm:py-2 px-1.5 sm:px-2 text-xs sm:text-sm rounded-md sm:rounded-lg transition-all ${tableType === 'target' ? 'bg-white text-indigo-600 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 hover:text-slate-900 font-medium'}`}>
+                                        <Icon name="target" size={3.5} className="mb-0.5 sm:mb-1 opacity-80 sm:hidden" /><Icon name="target" size={4} className="mb-0.5 sm:mb-1 opacity-80 hidden sm:block" /> Thiết lập Target
+                                    </button>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <label htmlFor="tableName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Tên Bảng (Bắt buộc) *</label>
-                            <Input 
-                                id="tableName" 
-                                type="text" 
-                                value={tableName} 
-                                onChange={e => setTableName(e.target.value.toUpperCase())} 
-                                placeholder="VD: SL SIM, DT APPLE..." 
-                                className="h-10" 
-                                required 
-                            />
-                        </div>
+
                     </div>
 
                     {/* SECTION 2: Cấu trúc chi tiết */}
-                    <div className="pt-2">
+                    <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         {tableType === 'data' && (
                             <DataColumnForm 
                                 metricType={metricType as any} setMetricType={setMetricType as any}
@@ -448,14 +461,13 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                     </div>
                     
                     {/* SECTION 2.5: Total Calculation */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-slate-200 dark:border-slate-800">
-                         <div>
-                             <h4 className="font-medium text-sm text-slate-800 dark:text-slate-100">Cột tổng chốt cuối bảng</h4>
-                             <p className="text-xs text-slate-500 mt-0.5">Phương pháp tính tổng cho nhóm</p>
-                         </div>
-                         <div className="flex bg-slate-100/50 p-1 rounded-md border border-slate-200/60 w-full sm:w-auto">
-                             <button type="button" onClick={() => setTotalCalculationMethod('sum')} className={`flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm rounded transition-colors ${totalCalculationMethod === 'sum' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>Tổng</button>
-                             <button type="button" onClick={() => setTotalCalculationMethod('average')} className={`flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm rounded transition-colors ${totalCalculationMethod === 'average' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>T.Bình / Ngày</button>
+                    <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0">
+                         <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-base text-slate-800 dark:text-slate-100">
+                             <Icon name="calculator" size={3.5} className="text-indigo-500 sm:hidden" /><Icon name="calculator" size={4} className="text-indigo-500 hidden sm:block" /> Cột tổng chốt cuối bảng
+                         </h4>
+                         <div className="flex bg-slate-100 p-0.5 sm:p-1 rounded-lg sm:rounded-xl shadow-inner border border-slate-200 font-medium w-full sm:w-auto">
+                             <button type="button" onClick={() => setTotalCalculationMethod('sum')} className={`flex-1 sm:flex-none px-3 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-sm rounded-md sm:rounded-lg transition-all ${totalCalculationMethod === 'sum' ? 'bg-white text-indigo-700 shadow ring-1 ring-black/5 font-bold' : 'text-slate-500 hover:text-slate-900'}`}>Tổng</button>
+                             <button type="button" onClick={() => setTotalCalculationMethod('average')} className={`flex-1 sm:flex-none px-3 sm:px-4 py-1 sm:py-1.5 text-[10px] sm:text-sm rounded-md sm:rounded-lg transition-all ${totalCalculationMethod === 'average' ? 'bg-white text-indigo-700 shadow ring-1 ring-black/5 font-bold' : 'text-slate-500 hover:text-slate-900'}`}>T.Bình / Ngày</button>
                          </div>
                     </div>
 
@@ -470,10 +482,9 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                 </div>
                 
                 {/* FOOTER */}
-                {/* FOOTER */}
-                <div className="p-3 sm:p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-md border-t border-slate-200 z-20">
+                <div className="p-3 sm:p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-xl border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-20">
                     <Button variant="ghost" type="button" onClick={onClose}> Hủy Bỏ </Button>
-                    <Button variant="primary" type="submit">
+                    <Button variant="primary" type="submit" className="shadow-md">
                         <Icon name="save" size={4} /> {editingConfig ? "Lưu Chỉnh Sửa" : "Thêm Bảng Mới"}
                     </Button>
                 </div>

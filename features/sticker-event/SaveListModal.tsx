@@ -21,7 +21,7 @@ const SaveListModal: React.FC<SaveListModalProps> = ({ isOpen, onClose, onSave, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-md p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
         <div className="p-6">
           <h2 className="text-xl font-bold text-slate-800 mb-4">Lưu Danh Sách</h2>
           <form onSubmit={handleSubmit}>

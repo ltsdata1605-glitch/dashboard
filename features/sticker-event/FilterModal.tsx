@@ -39,7 +39,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/30 backdrop-blur-md">
-      <div className="bg-white w-full max-w-2xl rounded-lg shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <h2 className="text-lg font-bold text-slate-900">Bộ lọc & Sắp xếp</h2>
           <button
@@ -67,7 +67,7 @@ const FilterModal: React.FC<FilterModalProps> = ({
         <div className="p-4 border-t border-slate-100 bg-slate-50 flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 transition-colors shadow-md"
+            className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-colors shadow-md"
           >
             Xong
           </button>

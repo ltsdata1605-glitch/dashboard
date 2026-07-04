@@ -1293,7 +1293,7 @@ const App: React.FC = () => {
           <div className={`px-8 pt-8 pb-6 border-b border-slate-100 ${isIndividualExport ? 'hidden' : ''}`}>
             <div className="flex justify-between items-start mb-6">
               <div>
-                <h1 className="text-3xl font-bold text-slate-900 tracking-tight uppercase">
+                <h1 className="text-3xl font-black text-slate-900 tracking-tight uppercase">
                   {exportTitle || `LỊCH PHÂN CA - ${currentSupermarket || 'Cửa Hàng'}`}
                 </h1>
               </div>
@@ -1364,7 +1364,7 @@ const App: React.FC = () => {
               <div className="px-8 py-8 flex justify-end">
                   <div className="text-center w-56 border-t-2 border-slate-200 pt-4">
                       <p className="font-bold text-slate-800 uppercase text-[10px] tracking-wider mb-10">Quản Lý Duyệt</p>
-                      <p className="font-semibold text-slate-400 text-[10px] italic">(Ký và ghi rõ họ tên)</p>
+                      <p className="font-semibold text-slate-400 text-[9px] italic">(Ký và ghi rõ họ tên)</p>
                   </div>
               </div>
           )}

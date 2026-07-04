@@ -118,7 +118,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
         if (!isIndividualExport && staff.department !== lastDepartment) {
             rows.push(
                 <tr key={`dept-${staff.department}`} className="bg-slate-50">
-                    <td colSpan={isIndividualExport ? 8 + duration : 10 + duration} className="p-3 text-left font-bold text-slate-400 border-y border-slate-200 uppercase tracking-[0.15em] text-xs sticky left-0 z-10">
+                    <td colSpan={isIndividualExport ? 8 + duration : 10 + duration} className="p-3 text-left font-black text-slate-400 border-y border-slate-200 uppercase tracking-[0.15em] text-xs sticky left-0 z-10">
                         🏢 {staff.department}
                     </td>
                 </tr>
@@ -160,7 +160,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                     {Math.round(specialHours)}
                 </td>
                 <td className="col-total border-r border-slate-300 text-sm font-bold text-center text-slate-400">{Math.round(normalHours)}</td>
-                <td className="col-total col-total-final border-r-2 border-slate-400 text-sm font-bold text-center">{Math.round(totalHours)}</td>
+                <td className="col-total col-total-final border-r-2 border-slate-400 text-sm font-black text-center">{Math.round(totalHours)}</td>
                 
                 {/* SỐ NGÀY SBH */}
                 <StatCell value={stats.gh} target={staff.gender === 'Nam' ? safeTargets.gh : 0} className="border-r border-slate-300" />
@@ -205,7 +205,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
                     const dragClass = isDragging ? 'opacity-50 scale-90 ring-2 ring-indigo-400 z-50' : isDragOver ? 'bg-indigo-100 ring-2 ring-indigo-500 scale-105 z-50 shadow-lg' : '';
 
                     return (
-                        <td key={dayIndex} className={`editable-cell ${className} ${manualClass} ${warningClass} ${dragClass} font-bold transition-all duration-200`} 
+                        <td key={dayIndex} className={`editable-cell ${className} ${manualClass} ${warningClass} ${dragClass} font-black transition-all duration-200`} 
                             draggable={true}
                             onDragStart={(e) => handleDragStart(e, staff.id, dayIndex)}
                             onDragOver={(e) => handleDragOver(e, staff.id, dayIndex)}
@@ -243,7 +243,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
         const avgTn = totalTnHours / count;
 
         rows.push(
-            <tr key="summary-row" className="bg-slate-100/80 font-bold border-t-2 border-slate-300">
+            <tr key="summary-row" className="bg-slate-100/80 font-black border-t-2 border-slate-300">
                 <td colSpan={2} className="sticky-col text-right px-4 py-3 border-r border-slate-400 text-xs uppercase tracking-widest text-slate-500 bg-slate-100">
                     GIỜ CÔNG TRUNG BÌNH
                 </td>
@@ -281,7 +281,7 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
         
         if (!weekRange || (day === weekRange.start)) {
             const headerLen = weekRange ? (weekRange.end - weekRange.start + 1) : len;
-            headers.push(<th key={day} colSpan={headerLen} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b-2 border-r-2 border-slate-400 text-base py-3 font-bold uppercase tracking-widest shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tuần {weekNum}</th>);
+            headers.push(<th key={day} colSpan={headerLen} style={{ backgroundColor: theme.bg, color: theme.text, borderColor: theme.border }} className="border-b-2 border-r-2 border-slate-400 text-base py-3 font-black uppercase tracking-widest shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tuần {weekNum}</th>);
         }
         
         day += len;
@@ -296,16 +296,16 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
           <tr>
             {!isIndividualExport && (
                 <>
-                    <th rowSpan={2} className="sticky-col px-1 text-center border-r-2 border-slate-400 z-40 text-base font-bold uppercase tracking-wider bg-teal-50 text-teal-700 border-b-[3px] !border-b-slate-400 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
-                    <th rowSpan={2} className="sticky-col px-5 text-left border-r-2 border-slate-400 z-40 text-base font-bold uppercase tracking-wider bg-teal-50 text-teal-700 border-b-[3px] !border-b-slate-400 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: '40px' }}>Họ và Tên</th>
+                    <th rowSpan={2} className="sticky-col px-1 text-center border-r-2 border-slate-400 z-40 text-base font-black uppercase tracking-wider bg-teal-50 text-teal-700 border-b-[3px] !border-b-slate-400 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: 0, width: '40px', minWidth: '40px' }}>STT</th>
+                    <th rowSpan={2} className="sticky-col px-5 text-left border-r-2 border-slate-400 z-40 text-base font-black uppercase tracking-wider bg-teal-50 text-teal-700 border-b-[3px] !border-b-slate-400 shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]" style={{ left: '40px' }}>Họ và Tên</th>
                 </>
             )}
-            <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-sky-50 text-sky-700 font-bold text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Giờ Công</th>
-            <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-fuchsia-50 text-fuchsia-700 font-bold text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Số Ngày SBH</th>
-            <th colSpan={2} className="border-r-2 border-slate-400 py-3 bg-orange-50 text-orange-700 font-bold text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Số Lần</th>
+            <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-sky-50 text-sky-700 font-black text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Giờ Công</th>
+            <th colSpan={3} className="border-r-2 border-slate-400 py-3 bg-fuchsia-50 text-fuchsia-700 font-black text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Số Ngày SBH</th>
+            <th colSpan={2} className="border-r-2 border-slate-400 py-3 bg-orange-50 text-orange-700 font-black text-base uppercase tracking-widest border-b-2 !border-b-slate-400">Số Lần</th>
             {weekHeaders}
           </tr>
-          <tr className="text-[15px] font-bold uppercase tracking-tighter">
+          <tr className="text-[15px] font-black uppercase tracking-tighter">
             <th className="px-1 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-400">SBH</th>
             <th className="px-1 border-r border-slate-300 bg-sky-50 text-sky-700 border-b-[3px] !border-b-slate-400">TV</th>
             <th className="px-1 border-r-2 border-slate-400 bg-sky-50 text-sky-800 border-b-[3px] !border-b-slate-400">TỔNG</th>

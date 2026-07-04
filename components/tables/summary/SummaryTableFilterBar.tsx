@@ -72,7 +72,7 @@ export const SummaryTableFilterBar: React.FC<SummaryTableFilterBarProps> = ({
                             >
                                 <Icon name="maximize-2" size={3} className="lg:hidden" />
                                 <Icon name="maximize-2" size={4} className="hidden lg:block" />
-                                {expandLevel > 0 && <span className="absolute -top-1 -right-1 flex items-center justify-center w-3 h-3 lg:w-3.5 lg:h-3.5 bg-teal-500 text-white text-[10px] lg:text-[10px] font-bold rounded-full">{expandLevel}</span>}
+                                {expandLevel > 0 && <span className="absolute -top-1 -right-1 flex items-center justify-center w-3 h-3 lg:w-3.5 lg:h-3.5 bg-teal-500 text-white text-[7px] lg:text-[8px] font-bold rounded-full">{expandLevel}</span>}
                             </button>
                             <div className="hidden lg:block w-px h-4 bg-slate-200 dark:bg-slate-700 mx-1"></div>
                             <button

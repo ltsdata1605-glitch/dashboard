@@ -46,24 +46,24 @@ export const RevenueDesktopRow = React.memo(({
                     </div>
                 </div>
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
+            <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.dtlk, colorSettings.dtthuc) }}>
                 <div>{f.format(roundUp(row.dtlk))}</div>
                 <DeltaBadge current={row.dtlk} previous={prev?.dtlk} isCurrency />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion) }}>
+            <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.dtqd, colorSettings.dtqd) || getHtColor(row.calculatedCompletion) }}>
                 <div>{f.format(roundUp(row.dtqd))}</div>
                 <DeltaBadge current={row.dtqd} previous={prev?.dtqd} isCurrency />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-bold text-slate-400 dark:text-slate-500 border-r border-slate-100 dark:border-slate-800/60">
+            <td className="px-3 py-1 text-[13px] text-center font-black text-slate-400 dark:text-slate-500 border-r border-slate-100 dark:border-slate-800/60">
                 <div>{f.format(roundUp(row.calculatedTarget || 0))}</div>
                 <DeltaBadge current={row.calculatedTarget} previous={prev?.target} isCurrency />
             </td>
             {isShowRemaining && (
                 <>
-                    <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 text-slate-500 dark:text-slate-400">
+                    <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 text-slate-500 dark:text-slate-400">
                         <div>{f.format(roundUp(row.remaining_total || 0))}</div>
                     </td>
-                    <td className={`px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 ${
+                    <td className={`px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60 bg-orange-50/10 dark:bg-orange-950/5 ${
                         row.type === 'employee' && row.remaining_daily_status === 'warning' ? 'text-rose-600 dark:text-rose-400' :
                         row.type === 'employee' && row.remaining_daily_status === 'success' ? 'text-emerald-600 dark:text-emerald-400' :
                         'text-orange-700 dark:text-orange-400'
@@ -72,27 +72,27 @@ export const RevenueDesktopRow = React.memo(({
                     </td>
                 </>
             )}
-            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getHtColor(row.calculatedCompletion) }}>
+            <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60" style={{ color: getHtColor(row.calculatedCompletion) }}>
                 <div>{roundUp(row.calculatedCompletion)}%</div>
                 <DeltaBadge current={row.calculatedCompletion} previous={prev?.completion} isPercent />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion) }}>
+            <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.hieuQuaQD * 100, colorSettings.hqqd) || getHtColor(row.calculatedCompletion) }}>
                 <div>{isNaN(row.hieuQuaQD) ? '0%' : (row.hieuQuaQD * 100).toFixed(0)}%</div>
                 <DeltaBadge current={row.hieuQuaQD * 100} previous={prev?.hqqd * 100} isPercent />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60">
+            <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60">
                 <div style={{ color: getDynamicColor(row.calculatedInstallment, colorSettings.tragop) }}>{roundUp(row.calculatedInstallment)}%</div>
                 <DeltaBadge current={row.calculatedInstallment} previous={prev?.installment} isPercent />
             </td>
-            <td className="px-3 py-1 text-[13px] text-center font-bold border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
+            <td className="px-3 py-1 text-[13px] text-center font-black border-r border-slate-100 dark:border-slate-800/60" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>
                 <div>{roundUp(row.pctBillBk)}%</div>
                 <DeltaBadge current={row.pctBillBk} previous={prev?.pctBillBk} isPercent />
             </td>
             <td className={`px-3 py-1 text-center ${
                 !row.bonus_tong ? 'text-slate-400 dark:text-slate-500 font-medium text-[13px]' :
-                row.bonus_tier === 'top' ? 'text-emerald-600 dark:text-emerald-400 text-[14px] font-bold' :
+                row.bonus_tier === 'top' ? 'text-emerald-600 dark:text-emerald-400 text-[14px] font-black' :
                 row.bonus_tier === 'bot' ? 'text-rose-500 dark:text-rose-400 text-[13px] font-bold' :
-                'text-slate-900 dark:text-white text-[13px] font-bold'
+                'text-slate-900 dark:text-white text-[13px] font-black'
             }`}>
                 <div>{row.bonus_tong ? f.format(Math.ceil(row.bonus_tong / 1000)) : '-'}</div>
             </td>

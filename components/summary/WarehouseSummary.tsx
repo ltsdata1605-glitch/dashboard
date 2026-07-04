@@ -349,7 +349,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
     return (
         <>
-            <div id="warehouse-summary-view" className={`bg-white dark:bg-slate-900 border-y sm:border border-slate-200 dark:border-slate-700 overflow-hidden mb-2 lg:mb-8 transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[100] m-0 w-full h-full overflow-y-auto rounded-none shadow-2xl' : 'rounded-none sm:rounded-lg lg:rounded-none'}`} ref={summaryRef}>
+            <div id="warehouse-summary-view" className={`bg-white dark:bg-slate-900 border-y sm:border border-slate-200 dark:border-slate-700 overflow-hidden mb-2 lg:mb-8 transition-all duration-300 ${isFullScreen ? 'fixed inset-0 z-[100] m-0 w-full h-full overflow-y-auto rounded-none shadow-2xl' : 'rounded-none sm:rounded-xl lg:rounded-none'}`} ref={summaryRef}>
                 {(isProcessing || isExporting) && (
                     <div className="hide-on-export">
                         <LoadingOverlay />
@@ -449,7 +449,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                     <table className="w-full min-w-max text-[11px] sm:text-sm text-center border-collapse border border-slate-200 dark:border-slate-700 whitespace-nowrap">
                         <thead>
                             {/* Top Level Group Headers */}
-                            <tr className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider">
+                            <tr className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider">
                                 <th rowSpan={2} onClick={() => handleSort('khoName')} className="px-1.5 sm:px-4 py-1.5 sm:py-3 text-center text-[10px] sm:text-[12px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer select-none align-middle sticky left-0 z-20 hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors uppercase tracking-wider shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">
                                     <div className="flex items-center justify-center gap-1">
                                         MÃ KHO
@@ -464,7 +464,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                         return colsInGroup.map((col, idx) => {
                                             const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                             return (
-                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                                <th key={`${i}-${idx}`} rowSpan={2} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                                     <div className="flex items-center justify-center gap-1">
                                                         {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
                                                         {sortConfig.key === col.id && (
@@ -478,7 +478,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
 
                                     const styles = groupColorMap[group.name] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                     return (
-                                        <th key={i} colSpan={group.colSpan} className={`px-1 sm:px-2 py-1.5 sm:py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[10px] sm:text-[11px] font-bold border-r text-center align-middle`}>
+                                        <th key={i} colSpan={group.colSpan} className={`px-1 sm:px-2 py-1.5 sm:py-3 ${styles.text} ${styles.sub} border-b border-slate-200 dark:border-slate-700 uppercase tracking-wider text-[9px] sm:text-[11px] font-bold border-r text-center align-middle`}>
                                             {group.name}
                                         </th>
                                     );
@@ -492,7 +492,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                     }
                                     const styles = groupColorMap[col.mainHeader] || { sub: 'bg-slate-50 dark:bg-slate-900/20', text: 'text-slate-500 dark:text-slate-400' };
                                     return (
-                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[10px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
+                                        <th key={col.id} onClick={() => handleSort(col.id)} className={`px-1 sm:px-2 py-1.5 sm:py-3 border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity uppercase tracking-wider text-[9px] sm:text-[11px] font-bold text-center align-middle ${styles.sub} ${styles.text}`}>
                                             <div className="flex items-center justify-center gap-1">
                                                 {col.metric === 'percentHT' && isLuyKe ? '%DKHT' : col.subHeader}
                                                 {sortConfig.key === col.id && (
@@ -580,7 +580,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                             let classNameStr = customColor ? "font-bold" : "font-bold text-orange-500";
                                             if (value !== undefined && value >= 120) {
                                                 extraIcon = <span title="Tuyệt đỉnh" className="ml-1 text-[13px]">🔥</span>;
-                                                if (!customColor) classNameStr = "font-bold text-rose-600 drop-shadow-sm";
+                                                if (!customColor) classNameStr = "font-black text-rose-600 drop-shadow-sm";
                                             } else if (value !== undefined && value >= 100) {
                                                 extraIcon = <span title="Đạt Mục Tiêu" className="ml-1 text-[13px]">🏆</span>;
                                                 if (!customColor) classNameStr = "font-extrabold text-yellow-600";
@@ -623,7 +623,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         {/* Table Footer / Total Row */}
                         <tfoot className="bg-slate-100 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
                             <tr className="font-bold text-slate-900 dark:text-slate-100">
-                                <td className="px-1 sm:px-2 py-1.5 sm:py-3 uppercase tracking-tight text-[10px] sm:text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tổng</td>
+                                <td className="px-1 sm:px-2 py-1.5 sm:py-3 uppercase tracking-tight text-[9px] sm:text-[11px] sticky left-0 z-10 bg-slate-100 dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 text-center shadow-[4px_0_6px_-4px_rgba(0,0,0,0.08)]">Tổng</td>
                                 {visibleColumns.map((col, index) => {
                                     let value;
                                     if (col.isCustom) {
@@ -751,7 +751,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 value={editingTargetKho?.valueDTThuc || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTThuc', e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleTargetSave(); } }}
-                                className="w-full p-2.5 sm:p-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300 transition-all"
+                                className="w-full p-2.5 sm:p-3 border-2 border-emerald-200 dark:border-emerald-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-base sm:text-lg font-bold text-emerald-700 dark:text-emerald-300 transition-all"
                                 placeholder="VD: 1,500"
                             />
                         </div>
@@ -766,7 +766,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 value={editingTargetKho?.valueDTQD || ''}
                                 onChange={(e) => handleTargetInputChange('valueDTQD', e.target.value)}
                                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleTargetSave(); } }}
-                                className="w-full p-2.5 sm:p-3 border-2 border-blue-200 dark:border-blue-800 rounded-lg bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-bold text-blue-700 dark:text-blue-300 transition-all"
+                                className="w-full p-2.5 sm:p-3 border-2 border-blue-200 dark:border-blue-800 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base sm:text-lg font-bold text-blue-700 dark:text-blue-300 transition-all"
                                 placeholder="VD: 2,000"
                             />
                         </div>
@@ -786,7 +786,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                                 days = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
                             }
                             return (
-                                <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 space-y-2">
+                                <div className="mb-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-200 dark:border-slate-700 space-y-2">
                                     <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Quy đổi Target ngày ({days} ngày)</div>
                                     <div className="grid grid-cols-2 gap-3">
                                         {valDTThuc > 0 && (
@@ -817,4 +817,4 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     );
 };
 
-export default React.memo(WarehouseSummary);
+export default WarehouseSummary;

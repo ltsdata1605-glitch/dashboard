@@ -55,7 +55,7 @@ export const HeaderCell: React.FC<{
     return (
         <th
             onClick={() => onSort(sortKey)}
-            className={`px-1.5 sm:px-3 py-1 sm:py-2 text-[10px] sm:text-[11px] font-bold cursor-pointer select-none text-center uppercase tracking-wider border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${bgClass} ${textClass} hover:opacity-80 transition-opacity ${className || ''} h-px relative group/th`}
+            className={`px-1.5 sm:px-3 py-1 sm:py-2 text-[9px] sm:text-[11px] font-bold cursor-pointer select-none text-center uppercase tracking-wider border-b-[3px] !border-b-slate-300 dark:!border-b-slate-600 border-r border-slate-200 dark:border-slate-700 ${bgClass} ${textClass} hover:opacity-80 transition-opacity ${className || ''} h-px relative group/th`}
         >
             <div className="flex items-center justify-center gap-1">
                 {label}

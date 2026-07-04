@@ -256,7 +256,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                 {/* Revenue (Doanh thu thực) */}
                 {visibleColumns.includes('totalRevenue') && (
                     <>
-                        <td className={`${cellClass} font-bold text-slate-900 dark:text-white tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
+                        <td className={`${cellClass} font-black text-slate-900 dark:text-white tracking-tight ${!isComparisonMode ? separatorClass : ''}`}>
                             {formatCurrency(revenue)}
                         </td>
                         {isComparisonMode && (
@@ -322,7 +322,7 @@ const RecursiveRow: React.FC<RecursiveRowProps> = React.memo(({
                                 const target = gtdhTargets?.[nodeKey] || 0;
                                 const isWarning = target > 0 && revenueQD < target;
                                 return (
-                                    <div className="flex items-center justify-center gap-1.5 font-bold">
+                                    <div className="flex items-center justify-center gap-1.5 font-black">
                                         <span className={isWarning ? 'text-red-500 dark:text-red-400' : 'text-primary-600 dark:text-primary-400'}>
                                             {formatCurrency(revenueQD)}
                                         </span>

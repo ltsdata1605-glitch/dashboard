@@ -32,7 +32,7 @@ const FilterChip: React.FC<FilterChipProps> = ({
     if (!value || (Array.isArray(value) && value.length === 0)) return null;
 
     return (
-        <div className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1.5 rounded-md border text-[10px] font-semibold uppercase tracking-wider transition-all animate-in fade-in zoom-in duration-200 ${getColorClasses()}`}>
+        <div className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all shadow-sm animate-in fade-in zoom-in duration-200 ${getColorClasses()}`}>
             <span className="opacity-60">{label}:</span>
             <span className="max-w-[120px] truncate">{displayValue}</span>
             <button 
@@ -40,7 +40,6 @@ const FilterChip: React.FC<FilterChipProps> = ({
                     e.stopPropagation();
                     onRemove();
                 }}
-                aria-label={`Xóa lọc ${label}`}
                 className="ml-0.5 p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 title={`Xóa lọc ${label}`}
             >

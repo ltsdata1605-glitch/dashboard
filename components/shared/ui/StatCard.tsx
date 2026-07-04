@@ -86,7 +86,7 @@ export const StatCard = React.memo<StatCardProps>(({
           </p>
 
           {/* Value */}
-          <p className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mt-1.5 tracking-tight leading-none">
+          <p className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white mt-1.5 tracking-tight leading-none">
             {value}
           </p>
 
@@ -117,7 +117,7 @@ export const StatCard = React.memo<StatCardProps>(({
         {/* Icon */}
         {icon && (
           <div className={cn(
-            'w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ml-3',
+            'w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ml-3',
             colors.bg, colors.icon
           )}>
             {icon}

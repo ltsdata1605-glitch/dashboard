@@ -239,12 +239,12 @@ const Settings: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-lg p-6">
+        <div className="space-y-6 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-6">
             {/* Header */}
             <header className="flex items-center gap-3 pb-4 border-b-2 border-slate-200 dark:border-slate-700">
                 <div className="w-1.5 h-8 bg-indigo-600"></div>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 uppercase tracking-tight">Cài đặt & Quản lý</h1>
+                    <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight">Cài đặt & Quản lý</h1>
                     <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-0.5">Sao lưu · Khôi phục · Quản lý dữ liệu</p>
                 </div>
             </header>
@@ -253,18 +253,18 @@ const Settings: React.FC = () => {
             <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
                 <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
                     <SaveIcon className="h-4 w-4 text-indigo-500" />
-                    <h2 className="text-[12px] font-bold text-slate-700 dark:text-slate-200 uppercase tracking-wider">Sao lưu & Khôi phục (Chuyển thiết bị)</h2>
+                    <h2 className="text-[12px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-wider">Sao lưu & Khôi phục (Chuyển thiết bị)</h2>
                 </div>
                 <div className="p-5">
                     <p className="text-[12px] text-slate-500 dark:text-slate-400 mb-5 leading-relaxed">
                         Chuyển toàn bộ dữ liệu (Báo cáo, Target, Snapshot, Dữ liệu Thưởng) sang máy tính khác hoặc lưu trữ dự phòng.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <button onClick={handleBackup} disabled={!!isLoading} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[11px] font-bold uppercase tracking-widest text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 disabled:opacity-50 transition-all active:scale-95 shadow-sm">
+                        <button onClick={handleBackup} disabled={!!isLoading} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 disabled:opacity-50 transition-all active:scale-95 shadow-sm">
                             {isLoading === 'backup' ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
                             <span>Sao lưu (.json)</span>
                         </button>
-                        <button onClick={handleRestore} disabled={!!isLoading} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[11px] font-bold uppercase tracking-widest text-slate-600 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-all active:scale-95 shadow-sm">
+                        <button onClick={handleRestore} disabled={!!isLoading} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-all active:scale-95 shadow-sm">
                             {isLoading === 'restore' ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UploadIcon className="h-4 w-4" />}
                             <span>Khôi phục từ File</span>
                         </button>

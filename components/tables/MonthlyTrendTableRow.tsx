@@ -94,7 +94,7 @@ export const MonthlyTrendTableRow: React.FC<MonthlyTrendTableRowProps> = React.m
     const currentLevelName = drilldownOrder[level - 1] || 'Unknown';
     const textColorClass = ROW_TEXT_COLORS[currentLevelName] || 'text-slate-700 dark:text-slate-300';
     const levelLabelStyles = {
-        1: `font-bold uppercase tracking-tight text-sm drop-shadow-sm ${textColorClass}`,
+        1: `font-black uppercase tracking-tight text-sm drop-shadow-sm ${textColorClass}`,
         2: `font-bold text-[13px] ${textColorClass}`,
         3: `font-medium text-[12px] italic ${textColorClass}`,
         4: `text-xs ${textColorClass}`,

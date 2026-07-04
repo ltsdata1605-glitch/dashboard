@@ -278,13 +278,13 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
             onClose={onClose}
             title={editingColumn ? "Chỉnh Sửa Cột" : "Tạo Cột Mới"}
             subTitle="Cấu hình số liệu hiển thị trong bảng"
-            titleColorClass="text-sky-600 dark:text-sky-400"
+            titleColorClass="text-indigo-600 dark:text-indigo-400"
             maxWidthClass="max-w-4xl"
         >
-            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 bg-white dark:bg-slate-900">
-                <div ref={scrollContainerRef} className="flex-grow p-4 sm:p-6 space-y-8 overflow-y-auto custom-scrollbar min-h-0">
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+                <div ref={scrollContainerRef} className="flex-grow p-4 space-y-4 bg-slate-50 dark:bg-slate-900/50 overflow-y-auto custom-scrollbar min-h-0">
                     {feedback && (
-                        <div className={`p-2.5 sm:p-3 border rounded-md text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
+                        <div className={`p-2.5 sm:p-3 border rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
                             feedback.type === 'error' 
                             ? 'bg-rose-50 dark:bg-rose-900/30 border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300'
                             : 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
@@ -294,76 +294,88 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                            {feedback.message}
                         </div>
                     )}
-                    {/* Tabs for Table Type */}
-                    <div className="border-b border-slate-200 dark:border-slate-800">
-                        <nav className="-mb-px flex space-x-6 sm:space-x-8 overflow-x-auto custom-scrollbar">
-                            <button type="button" onClick={() => setColumnType('data')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${columnType === 'data' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
-                                <Icon name="database" size={4} /> Truy vấn Data
-                            </button>
-                            <button type="button" onClick={() => setColumnType('calculated')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${columnType === 'calculated' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
-                                <Icon name="calculator" size={4} /> Cột Tính Toán
-                            </button>
-                            <button type="button" onClick={() => setColumnType('target')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${columnType === 'target' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
-                                <Icon name="target" size={4} /> Thiết lập Target
-                            </button>
-                        </nav>
-                    </div>
-
                     {/* SECTION 1: Cấu trúc Cột */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                        <div ref={headersRef} className="relative z-50">
-                            <label htmlFor="mainHeader" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5 flex justify-between">
-                                Tiêu đề nhóm
-                            </label>
-                            <div className="relative">
-                                <Input 
-                                    id="mainHeader" 
-                                    type="text" 
-                                    value={mainHeader} 
-                                    onChange={e => { setMainHeader(e.target.value); setShowHeadersList(true); }}
-                                    onFocus={() => setShowHeadersList(true)}
-                                    placeholder="Tạo nhóm mới hoặc chọn..." 
-                                    className="h-10" 
-                                    autoComplete="off"
-                                    rightIcon="chevron-down"
-                                    onRightIconClick={() => setShowHeadersList(!showHeadersList)}
-                                />
-                            </div>
-                            {showHeadersList && (
-                                <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md shadow-lg max-h-56 overflow-y-auto py-1 z-20">
-                                    {existingMainHeaders.filter(h => h.includes(mainHeader)).length === 0 && mainHeader && (
-                                        <div className="px-3 py-2 text-xs text-slate-500 italic bg-slate-50">Tạo nhóm mới: <span className="font-semibold text-sky-600">{mainHeader}</span></div>
-                                    )}
-                                    {existingMainHeaders.filter(h => h.includes(mainHeader)).map(h => (
-                                        <div 
-                                            key={h} 
-                                            className="px-3 py-2 text-sm text-slate-700 hover:bg-sky-50 cursor-pointer transition-colors flex items-center justify-between"
-                                            onClick={() => { setMainHeader(h); setShowHeadersList(false); }}
-                                        >
-                                            {h}
-                                            {mainHeader === h && <Icon name="check" size={4} className="text-sky-600" />}
-                                        </div>
-                                    ))}
+                    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+                        <h4 className="flex items-center gap-2 font-bold mb-4 text-sm text-slate-800 dark:text-slate-100">
+                            <Icon name="layout" size={4} className="text-indigo-500" /> Cấu trúc cột
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div ref={headersRef} className="relative z-50">
+                                <label htmlFor="mainHeader" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+                                    Tiêu đề nhóm
+                                </label>
+                                <div className="relative">
+                                    <Input 
+                                        id="mainHeader" 
+                                        type="text" 
+                                        leftIcon="layers"
+                                        value={mainHeader} 
+                                        onChange={e => { setMainHeader(e.target.value); setShowHeadersList(true); }}
+                                        onFocus={() => setShowHeadersList(true)}
+                                        placeholder="Tạo nhóm mới hoặc chọn..." 
+                                        className="h-10 text-sm font-medium" 
+                                        autoComplete="off"
+                                        rightIcon="chevron-down"
+                                        onRightIconClick={() => setShowHeadersList(!showHeadersList)}
+                                    />
                                 </div>
-                            )}
-                        </div>
-                        <div>
-                            <label htmlFor="columnName" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">Tiêu đề cột (Bắt buộc) *</label>
-                            <Input 
-                                ref={columnNameInputRef}
-                                id="columnName" 
-                                type="text" 
-                                value={columnName} 
-                                onChange={e => setColumnName(e.target.value.toUpperCase())} 
-                                placeholder="VD: SL SIM, DT APPLE..." 
-                                className="h-10" 
-                                required 
-                            />
+                                {showHeadersList && (
+                                    <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl max-h-56 overflow-y-auto py-1.5 z-20 overflow-hidden ring-1 ring-black/5 dark:ring-white/10 animate-in fade-in slide-in-from-top-1">
+                                        {existingMainHeaders.filter(h => h.includes(mainHeader)).length === 0 && mainHeader && (
+                                            <div className="px-4 py-2.5 text-xs text-slate-500 dark:text-slate-400 italic bg-slate-50 dark:bg-slate-900/50">Tạo nhóm mới: <span className="font-bold text-indigo-600 dark:text-indigo-400">{mainHeader}</span></div>
+                                        )}
+                                        {existingMainHeaders.filter(h => h.includes(mainHeader)).map(h => (
+                                            <div 
+                                                key={h} 
+                                                className="px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-indigo-900/40 cursor-pointer font-bold transition-colors flex items-center justify-between"
+                                                onClick={() => { setMainHeader(h); setShowHeadersList(false); }}
+                                            >
+                                                {h}
+                                                {mainHeader === h && <Icon name="check" size={4} className="text-indigo-600" />}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            <div>
+                                <label htmlFor="columnName" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Tiêu đề cột (Bắt buộc) *</label>
+                                <div className="relative">
+                                    <Input 
+                                        ref={columnNameInputRef}
+                                        id="columnName" 
+                                        type="text" 
+                                        leftIcon="type"
+                                        value={columnName} 
+                                        onChange={e => setColumnName(e.target.value.toUpperCase())} 
+                                        placeholder="VD: SL SIM, DT APPLE..." 
+                                        className="h-10 text-sm font-bold text-indigo-700 dark:text-indigo-300" 
+                                        required 
+                                    />
+                                </div>
+                            </div>
+                            
+                            <div className="sm:col-span-2 mt-1">
+                                <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2 flex justify-between">
+                                    Phân loại cột
+                                    <span className="font-normal text-xs text-slate-500">Quyết định cách tính toán dữ liệu</span>
+                                </label>
+                                <div className="flex bg-slate-100 dark:bg-slate-900 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-inner">
+                                    <button type="button" onClick={() => setColumnType('data')} className={`flex-1 flex flex-col items-center justify-center py-2 px-2 text-sm rounded-lg transition-all ${columnType === 'data' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium'}`}>
+                                        <Icon name="database" size={4} className="mb-1 opacity-80" /> Truy vấn Data
+                                    </button>
+                                    <button type="button" onClick={() => setColumnType('calculated')} className={`flex-1 flex flex-col items-center justify-center py-2 px-2 text-sm rounded-lg transition-all ${columnType === 'calculated' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium'}`}>
+                                        <Icon name="calculator" size={4} className="mb-1 opacity-80" /> Cột Tính Toán
+                                    </button>
+                                    <button type="button" onClick={() => setColumnType('target')} className={`flex-1 flex flex-col items-center justify-center py-2 px-2 text-sm rounded-lg transition-all ${columnType === 'target' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-300 shadow ring-1 ring-black/5 font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 font-medium'}`}>
+                                        <Icon name="target" size={4} className="mb-1 opacity-80" /> Thiết lập Target
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     {/* SECTION 2: Cấu trúc chi tiết */}
-                    <div className="pt-2">
+                    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
                         {columnType === 'data' && (
                             <DataColumnForm 
                                 metricType={metricType} setMetricType={setMetricType}
@@ -408,7 +420,7 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                 </div>
                 
                 {/* FOOTER */}
-                <div className="p-4 sm:px-6 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 rounded-b-md flex justify-end gap-3 sticky bottom-0 z-30 mt-auto shrink-0">
+                <div className="p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 rounded-b-xl flex justify-end gap-3 sticky bottom-0 z-30 shadow-sm mt-auto shrink-0">
                     <Button variant="ghost" type="button" onClick={onClose}>Hủy Bỏ</Button>
                     <Button variant="primary" type="submit">
                         <Icon name="save" size={4} /> {editingColumn ? "Lưu Thay Đổi" : "Lưu & Bắt Đầu Cột Mới"}

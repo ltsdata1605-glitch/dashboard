@@ -12,7 +12,7 @@ const AlertModal: React.FC<AlertModalProps> = ({ isOpen, onClose, message, title
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-md p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden transform transition-all">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-sm overflow-hidden transform transition-all">
         <div className="p-6 text-center">
           <h3 className="text-lg leading-6 font-medium text-slate-900 mb-2">{title}</h3>
           <div className="mt-2">

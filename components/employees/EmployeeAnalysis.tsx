@@ -211,13 +211,13 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                             <Icon name="settings-2" size={5} className="hidden sm:block"/>
                         </Button>
                         {isSettingsOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-md shadow-lg p-2 sm:p-3 border border-slate-200 dark:border-slate-700 z-[200]">
-                                <h4 className="font-semibold text-xs sm:text-sm mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 text-slate-800 dark:text-slate-100">Hiển thị màn hình thi đua</h4>
+                            <div className="absolute top-full right-0 mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
+                                <h4 className="font-bold text-xs sm:text-sm mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 text-slate-800 dark:text-slate-100">Hiển thị màn hình thi đua</h4>
                                 <div className="space-y-1 sm:space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
                                     {allAvailableTabs.map(tab => (
-                                        <label key={tab.id} htmlFor={`vis-toggle-${tab.id}`} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
-                                            <span className="text-[11px] sm:text-[13px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 sm:gap-2">
-                                                <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-800 rounded-md text-slate-500">
+                                        <label key={tab.id} htmlFor={`vis-toggle-${tab.id}`} className="flex items-center justify-between cursor-pointer p-1.5 sm:p-2.5 rounded-lg sm:rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700">
+                                            <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 sm:gap-2">
+                                                <div className="p-1 sm:p-1.5 bg-slate-100 dark:bg-slate-800 rounded-md sm:rounded-lg text-slate-500">
                                                     <Icon name={tab.icon} size={3.5}/>
                                                 </div>
                                                 {tab.label || (tab as any).name}
@@ -230,7 +230,7 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
                                                     className="sr-only peer"
                                                     id={`vis-toggle-${tab.id}`}
                                                 />
-                                                <div className="w-8 h-[18px] sm:w-9 sm:h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-[14px] sm:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 sm:after:h-4 sm:after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-sky-600"></div>
+                                                <div className="w-8 h-[18px] sm:w-9 sm:h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:after:translate-x-[14px] sm:peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3.5 after:w-3.5 sm:after:h-4 sm:after:w-4 after:transition-all dark:border-slate-600 peer-checked:bg-indigo-500"></div>
                                             </div>
                                         </label>
                                     ))}
@@ -305,4 +305,4 @@ const EmployeeAnalysis: React.FC = React.memo(() => {
 
 EmployeeAnalysis.displayName = 'EmployeeAnalysis';
 
-export default React.memo(EmployeeAnalysis);
+export default EmployeeAnalysis;

@@ -48,7 +48,7 @@ const Slider: React.FC<SliderProps> = ({
                                     const val = parseFloat(e.target.value);
                                     if (!isNaN(val)) onChange(val);
                                 }}
-                                className="w-12 bg-transparent text-right text-xs font-bold text-primary-600 dark:text-primary-400 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                className="w-12 bg-transparent text-right text-xs font-black text-primary-600 dark:text-primary-400 outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                             />
                             <span className="text-[10px] font-bold text-slate-400">{unit}</span>
                         </div>

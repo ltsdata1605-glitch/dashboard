@@ -50,7 +50,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                     <button
                         onClick={onViewReport}
                         id="btn-view-historical-report"
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold rounded-lg shadow-md shadow-indigo-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
                         <Icon name="play" size={3.5} />
                         <span>Xem Báo Cáo Gộp</span>
@@ -58,7 +58,7 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                 )}
             </div>
 
-            <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-lg overflow-hidden shadow-inner">
+            <div className="bg-slate-50/50 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 rounded-xl overflow-hidden shadow-inner">
                 <div className="max-h-[220px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800/50 scrollbar-thin">
                     {registry.map((file) => (
                         <div 
@@ -92,11 +92,11 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                                         >
                                             {file.filename}
                                         </span>
-                                        <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50/50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 border border-indigo-100/30 dark:border-indigo-900/30 shrink-0">
+                                        <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-indigo-50/50 text-indigo-600 dark:bg-indigo-950/50 dark:text-indigo-400 border border-indigo-100/30 dark:border-indigo-900/30 shrink-0">
                                             {file.rowCount.toLocaleString('vi-VN')} dòng
                                         </span>
                                         {file.isMissingLocalData && (
-                                            <span className="px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-100/30 shrink-0 flex items-center gap-1" title="Tệp tin chỉ tồn tại trên đám mây, thiếu dữ liệu chi tiết trên thiết bị này. Vui lòng nạp lại tệp!">
+                                            <span className="px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-rose-50 text-rose-600 dark:bg-rose-950/50 dark:text-rose-400 border border-rose-100/30 shrink-0 flex items-center gap-1" title="Tệp tin chỉ tồn tại trên đám mây, thiếu dữ liệu chi tiết trên thiết bị này. Vui lòng nạp lại tệp!">
                                                 <Icon name="alert-triangle" size={2.5} className="text-rose-500 animate-pulse" />
                                                 Thiếu dữ liệu - Hãy nạp lại
                                             </span>

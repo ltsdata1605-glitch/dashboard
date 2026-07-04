@@ -19,7 +19,7 @@ import toast from 'react-hot-toast';
 let hrmWindowRef: Window | null = null;
 
 const MedalBadge: React.FC<{ rank: number }> = ({ rank }) => {
-    const base = "w-7 text-center text-[13px] font-bold tabular-nums";
+    const base = "w-7 text-center text-[13px] font-black tabular-nums";
     if (rank === 1) return <span className={`${base} text-amber-500`} title="TOP 1">#1</span>;
     if (rank === 2) return <span className={`${base} text-slate-400`} title="TOP 2">#2</span>;
     if (rank === 3) return <span className={`${base} text-amber-700`} title="TOP 3">#3</span>;
@@ -91,7 +91,7 @@ export const BonusDataModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => onClose('stop')}>
-            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-lg p-6 w-full max-w-2xl relative focus:outline-none flex flex-col gap-5 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-2xl p-6 w-full max-w-2xl relative focus:outline-none flex flex-col gap-5 animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
                 <div className="flex justify-between items-start">
                     <div>
                         <div className="flex items-center gap-3 mb-1">
@@ -138,7 +138,7 @@ export const BonusDataModal: React.FC<{
                             }
                         }} 
                         placeholder="Click vào đây hoặc nhấn tự động dán (Ctrl + V)..." 
-                        className="w-full h-48 py-3 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-lg bg-slate-50 dark:bg-slate-800/50 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors resize-none placeholder-slate-400" 
+                        className="w-full h-48 py-3 px-4 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-50 dark:bg-slate-800/50 font-mono text-xs sm:text-sm text-slate-700 dark:text-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-colors resize-none placeholder-slate-400" 
                     />
                     {error && <p className="mt-2 text-xs font-semibold text-rose-500">{error}</p>}
                 </div>
@@ -150,7 +150,7 @@ export const BonusDataModal: React.FC<{
                             <div className="flex flex-col">
                                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider leading-none mb-1">Chờ duyệt</span>
                                 <div className="flex items-end gap-1.5">
-                                     <span className="text-2xl font-bold text-rose-600 tabular-nums leading-none">{remainingInBatch}</span>
+                                     <span className="text-2xl font-black text-rose-600 tabular-nums leading-none">{remainingInBatch}</span>
                                      <span className="text-[10px] font-semibold text-slate-500">nhân viên</span>
                                 </div>
                             </div>
@@ -160,19 +160,19 @@ export const BonusDataModal: React.FC<{
                     <div className="flex gap-3 w-full sm:w-auto">
                         <button 
                             onClick={() => onClose('stop')} 
-                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-lg hover:bg-rose-100 transition-colors"
+                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
                         >
                             Kết thúc
                         </button>
                         <button 
                             onClick={() => onClose('skip')} 
-                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
                             Bỏ qua
                         </button>
                         <button 
                             onClick={async () => (await processAndSave(pastedData)) && onClose('save')} 
-                            className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-indigo-600 border border-transparent rounded-lg hover:bg-indigo-700 shadow-sm transition-colors"
+                            className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-indigo-600 border border-transparent rounded-xl hover:bg-indigo-700 shadow-sm transition-colors"
                         >
                             Lưu & Tiếp tục
                         </button>
@@ -617,7 +617,7 @@ export const BonusView: React.FC<{
 
     const cardTitle = (
         <div className="flex flex-col items-start leading-none py-1 w-full">
-            <span className="js-report-title text-2xl font-bold uppercase text-slate-800 dark:text-white mt-1">HIỆU SUẤT LÀM VIỆC ĐẾN NGÀY {getYesterdayDateString()}</span>
+            <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">HIỆU SUẤT LÀM VIỆC ĐẾN NGÀY {getYesterdayDateString()}</span>
             <span className="text-[11px] uppercase tracking-wider text-slate-400 mt-1 font-bold">Quản lý tốt thưởng là quản lý tốt động lực của nhân viên.</span>
             <TimeProgressBar className="mt-2.5" />
         </div>
@@ -662,28 +662,28 @@ export const BonusView: React.FC<{
                                         return (
                                             <div key={`${item.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-slate-100 dark:bg-slate-800/80 border-t-2 border-slate-300 dark:border-slate-600' : 'bg-slate-50 dark:bg-slate-900/40'}`}>
                                                 <div className="flex justify-between items-center mb-2">
-                                                    <span className={`text-xs font-bold uppercase tracking-wider ${isGrandTotal ? 'text-slate-800 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>{item.name}</span>
+                                                    <span className={`text-xs font-black uppercase tracking-wider ${isGrandTotal ? 'text-slate-800 dark:text-white' : 'text-slate-600 dark:text-slate-400'}`}>{item.name}</span>
                                                     <div className="text-right">
-                                                        <span className="text-[10px] text-slate-400 font-bold uppercase block mb-0.5">Dự Kiến</span>
-                                                        <span className={`text-sm font-bold tabular-nums leading-none ${isGrandTotal ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-500'}`}>{f.format(Math.ceil(item.sumDkien / 1000))}</span>
+                                                        <span className="text-[9px] text-slate-400 font-bold uppercase block mb-0.5">Dự Kiến</span>
+                                                        <span className={`text-sm font-black tabular-nums leading-none ${isGrandTotal ? 'text-indigo-700 dark:text-indigo-400' : 'text-indigo-600 dark:text-indigo-500'}`}>{f.format(Math.ceil(item.sumDkien / 1000))}</span>
                                                     </div>
                                                 </div>
                                                 <div className="grid grid-cols-4 gap-1.5 mt-2">
-                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">DTQĐ</p>
-                                                        <p className="text-[11px] font-bold tabular-nums">{f.format(item.sumDtqd)}</p>
+                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">DTQĐ</p>
+                                                        <p className="text-[11px] font-black tabular-nums">{f.format(item.sumDtqd)}</p>
                                                     </div>
-                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">ERP</p>
-                                                        <p className="text-[11px] font-bold tabular-nums">{f.format(Math.ceil(item.sumErp / 1000))}</p>
+                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">ERP</p>
+                                                        <p className="text-[11px] font-black tabular-nums">{f.format(Math.ceil(item.sumErp / 1000))}</p>
                                                     </div>
-                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">T.Nóng</p>
-                                                        <p className="text-[11px] font-bold tabular-nums">{f.format(Math.ceil(item.sumTnong / 1000))}</p>
+                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">T.Nóng</p>
+                                                        <p className="text-[11px] font-black tabular-nums">{f.format(Math.ceil(item.sumTnong / 1000))}</p>
                                                     </div>
-                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-lg border border-slate-100 dark:border-slate-700/50">
-                                                        <p className="text-[10px] font-bold text-slate-400 uppercase mb-0.5">Tổng</p>
-                                                        <p className="text-[11px] font-bold tabular-nums">{f.format(Math.ceil(item.sumTong / 1000))}</p>
+                                                    <div className="bg-white dark:bg-slate-800/60 p-2 rounded-xl border border-slate-100 dark:border-slate-700/50">
+                                                        <p className="text-[8px] font-bold text-slate-400 uppercase mb-0.5">Tổng</p>
+                                                        <p className="text-[11px] font-black tabular-nums">{f.format(Math.ceil(item.sumTong / 1000))}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -718,21 +718,21 @@ export const BonusView: React.FC<{
                             </div>
                         ) : isDaily ? (
                             allDates.length === 0 ? (
-                                <div className="text-center py-12 text-slate-500 dark:text-slate-400 font-bold bg-slate-50/50 dark:bg-slate-900/10 rounded-lg border border-dashed border-slate-200 dark:border-slate-800">
+                                <div className="text-center py-12 text-slate-500 dark:text-slate-400 font-bold bg-slate-50/50 dark:bg-slate-900/10 rounded-xl border border-dashed border-slate-200 dark:border-slate-800">
                                     Không có dữ liệu theo ngày. Hãy nhấn "Cập nhật thưởng" để tải lên bảng HRM chứa dữ liệu theo ngày.
                                 </div>
                             ) : (
                                 <table className="w-full border-collapse compact-export-table">
                                     <thead className="sticky top-0 z-10">
                                         <tr>
-                                            <th rowSpan={2} className="px-2 py-2 text-left text-[12px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle">Nhân viên</th>
+                                            <th rowSpan={2} className="px-2 py-2 text-left text-[12px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle">Nhân viên</th>
                                             <th 
                                                 rowSpan={2} 
                                                 onClick={() => {
                                                     setSortField('tong');
                                                     setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                                                 }}
-                                                className="px-2 py-2 text-center text-[12px] font-bold uppercase tracking-wider text-indigo-600 dark:bg-slate-800 dark:text-indigo-400 bg-slate-50 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                                className="px-2 py-2 text-center text-[12px] font-black uppercase tracking-wider text-indigo-600 dark:bg-slate-800 dark:text-indigo-400 bg-slate-50 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                             >
                                                 Tổng {sortField === 'tong' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
                                             </th>
@@ -742,7 +742,7 @@ export const BonusView: React.FC<{
                                                     setSortField('weekBelowAvg');
                                                     setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                                                 }}
-                                                className="px-2 py-2 text-center text-[12px] font-bold uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                                className="px-2 py-2 text-center text-[12px] font-black uppercase tracking-wider text-rose-600 dark:text-rose-400 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                                 title="Số tuần có thưởng < Trung bình tuần"
                                             >
                                                 Tuần &lt;TB {sortField === 'weekBelowAvg' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
@@ -753,7 +753,7 @@ export const BonusView: React.FC<{
                                                     setSortField('belowAvgDays');
                                                     setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                                                 }}
-                                                className="px-2 py-2 text-center text-[12px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                                className="px-2 py-2 text-center text-[12px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                                 title="Số ngày có thu nhập dưới trung bình"
                                             >
                                                 Ngày &lt;TB {sortField === 'belowAvgDays' ? (sortDir === 'asc' ? '↑' : '↓') : ''}
@@ -769,7 +769,7 @@ export const BonusView: React.FC<{
                                                                 setSortField(`week:${week.id}`);
                                                                 setSortDir(d => d === 'asc' ? 'desc' : 'asc');
                                                             }}
-                                                            className="px-2 py-2 text-center text-[12px] font-bold uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50/5 dark:bg-indigo-950/20 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30 select-none"
+                                                            className="px-2 py-2 text-center text-[12px] font-black uppercase tracking-wider text-indigo-700 dark:text-indigo-300 bg-indigo-50/5 dark:bg-indigo-950/20 border-r border-b border-slate-200 dark:border-slate-700 align-middle cursor-pointer hover:bg-indigo-100/50 dark:hover:bg-indigo-900/30 select-none"
                                                         >
                                                             <span 
                                                                 onClick={(e) => {
@@ -788,7 +788,7 @@ export const BonusView: React.FC<{
                                                         <th 
                                                             key={week.id} 
                                                             colSpan={7} 
-                                                            className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-indigo-800 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-r border-b border-slate-200 dark:border-slate-700 align-middle select-none"
+                                                            className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-indigo-800 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-900/30 border-r border-b border-slate-200 dark:border-slate-700 align-middle select-none"
                                                         >
                                                             <span 
                                                                 onClick={() => toggleWeek(week.id)}
@@ -826,7 +826,7 @@ export const BonusView: React.FC<{
                                                             className={`px-1 py-1 text-center text-[10px] font-bold uppercase border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:opacity-80 transition-opacity ${headerBgClass}`}
                                                         >
                                                             <div className="flex flex-col items-center leading-none">
-                                                                <span className="text-[10px] opacity-70 font-semibold">{getWeekdayAbbr(dateStr)}</span>
+                                                                <span className="text-[9px] opacity-70 font-semibold">{getWeekdayAbbr(dateStr)}</span>
                                                                 <span className="font-extrabold text-[11px] mt-0.5">{d}/{m} {isSortingThisDate ? (sortDir === 'asc' ? '↑' : '↓') : ''}</span>
                                                             </div>
                                                         </th>
@@ -999,7 +999,7 @@ export const BonusView: React.FC<{
                                                             let cellClass = "px-2 py-1 text-center border-r tabular-nums text-[13px] border-slate-200 dark:border-slate-700 ";
                                                             if (weekTotal > 0) {
                                                                 if (weekTotal >= weekTop3) {
-                                                                    cellClass += "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold";
+                                                                    cellClass += "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-black";
                                                                 } else if (weekTotal < weekAvg) {
                                                                     cellClass += "bg-indigo-50/5 dark:bg-indigo-950/5 text-rose-600 dark:text-rose-400 font-extrabold";
                                                                 } else {
@@ -1028,7 +1028,7 @@ export const BonusView: React.FC<{
 
                                                                 let cellClass = "px-1.5 py-1 text-center border-r tabular-nums text-[13px] border-slate-200 dark:border-slate-700 ";
                                                                 if (val > 0) {
-                                                                    if (val >= top3Threshold) cellClass += "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-bold";
+                                                                    if (val >= top3Threshold) cellClass += "bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 font-black";
                                                                     else if (val < avg) cellClass += "bg-rose-100/70 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 font-bold";
                                                                     else cellClass += (isWeekend ? "bg-rose-50/40 dark:bg-rose-950/10 " : "bg-emerald-50/20 dark:bg-emerald-950/5 ") + "text-slate-800 dark:text-slate-200 font-medium";
                                                                 } else {
@@ -1053,10 +1053,10 @@ export const BonusView: React.FC<{
                             <thead className="sticky top-0 z-10">
                                 {/* Tier 1: Group Headers */}
                                 <tr>
-                                    <th rowSpan={2} className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 align-middle" onClick={() => { setSortField('name'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Nhân viên</th>
-                                    <th colSpan={2} className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-b border-sky-100 dark:border-sky-800/50">Doanh thu</th>
-                                    <th colSpan={4} className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-r border-b border-emerald-100 dark:border-emerald-800/50">Thưởng</th>
-                                    <th rowSpan={2} className="px-2 py-1 text-center text-[11px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-b border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/40 align-middle leading-tight" onClick={() => { setSortField('dKien'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Dự<br/>Kiến</th>
+                                    <th rowSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border-r border-b border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-750 align-middle" onClick={() => { setSortField('name'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Nhân viên</th>
+                                    <th colSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-900/30 border-r border-b border-sky-100 dark:border-sky-800/50">Doanh thu</th>
+                                    <th colSpan={4} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 border-r border-b border-emerald-100 dark:border-emerald-800/50">Thưởng</th>
+                                    <th rowSpan={2} className="px-2 py-1 text-center text-[11px] font-black uppercase tracking-wider text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 border-b border-amber-100 dark:border-amber-800/50 cursor-pointer hover:bg-amber-100 dark:hover:bg-amber-900/40 align-middle leading-tight" onClick={() => { setSortField('dKien'); setSortDir(d => d === 'asc' ? 'desc' : 'asc'); }}>Dự<br/>Kiến</th>
                                 </tr>
                                 {/* Tier 2: Column Headers */}
                                 <tr>

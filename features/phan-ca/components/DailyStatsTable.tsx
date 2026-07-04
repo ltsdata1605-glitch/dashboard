@@ -85,7 +85,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                         }`}
                                     >
                                         <div className="text-xs font-bold opacity-70 mb-px leading-none">{dh.dowLabel}</div>
-                                        <div className="text-sm font-bold leading-none">{dh.date}</div>
+                                        <div className="text-sm font-black leading-none">{dh.date}</div>
                                     </th>
                                 )
                             })}
@@ -96,7 +96,7 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                             const required = requirements[slot] || 0;
                             return (
                                 <tr key={slot} className="hover:bg-slate-50/50">
-                                    <td className="sticky left-0 bg-white z-10 border-r border-b border-slate-200 px-2 py-2 text-sm font-bold text-slate-700 text-center">
+                                    <td className="sticky left-0 bg-white z-10 border-r border-b border-slate-200 px-2 py-2 text-sm font-black text-slate-700 text-center">
                                         CA {slot}
                                     </td>
                                     {canEditRequirements && (
@@ -130,10 +130,10 @@ const DailyStatsTable: React.FC<DailyStatsTableProps> = ({ staffList, config, re
                                         
                                         if (canEditRequirements && required > 0) {
                                             if (count < required) { 
-                                                textColor = "text-rose-600 font-bold"; 
+                                                textColor = "text-rose-600 font-black"; 
                                                 bgClass = "bg-rose-50/40"; 
                                             } else if (count > required) { 
-                                                textColor = "text-amber-600 font-bold"; 
+                                                textColor = "text-amber-600 font-black"; 
                                                 bgClass = "bg-amber-50/40"; 
                                             } else { 
                                                 textColor = "text-emerald-600 font-bold"; 

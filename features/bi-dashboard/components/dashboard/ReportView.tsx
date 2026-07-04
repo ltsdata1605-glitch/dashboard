@@ -58,7 +58,7 @@ const ReportView = React.forwardRef<HTMLDivElement, ReportViewProps>(({ data, ac
                 <div className="overflow-x-auto scrollbar-hide border border-slate-200 dark:border-slate-700">
                     <table className="w-full border-collapse min-w-max compact-export-table">
                         <thead>
-                            <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                            <tr className="text-[11px] font-black uppercase tracking-wider text-slate-700 dark:text-slate-300">
                                 <th className="px-3 py-2 border-b-2 border-r border-slate-200 dark:border-slate-700 text-left sticky left-0 z-20 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-800 dark:text-indigo-300">
                                     CHỈ TIÊU
                                 </th>
@@ -96,13 +96,13 @@ const ReportView = React.forwardRef<HTMLDivElement, ReportViewProps>(({ data, ac
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-3 py-2 text-[14px] font-bold text-right tabular-nums text-indigo-700 dark:text-indigo-400 border-r border-slate-200 dark:border-slate-700 align-middle">
+                                        <td className="px-3 py-2 text-[14px] font-black text-right tabular-nums text-indigo-700 dark:text-indigo-400 border-r border-slate-200 dark:border-slate-700 align-middle">
                                             {row.isPercent ? `${f.format(roundUp(row.actual))}%` : f.format(roundUp(row.actual))}
                                         </td>
                                         <td className="px-3 py-2 text-[13px] font-bold text-center tabular-nums align-middle">
                                             {targetNum !== 0 ? (
                                                 <div className="flex justify-center items-center">
-                                                    <span className={`px-2 py-0.5 rounded text-[11px] font-bold inline-block min-w-[50px] text-center ${ht >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : ht >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                                                    <span className={`px-2 py-0.5 rounded text-[11px] font-black inline-block min-w-[50px] text-center ${ht >= 100 ? 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : ht >= 85 ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
                                                         {roundUp(ht)}%
                                                     </span>
                                                 </div>
