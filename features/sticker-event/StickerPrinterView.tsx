@@ -211,11 +211,12 @@ export default function StickerPrinterView() {
     
     // Ticket draw state
     const [drawTickets, setDrawTickets] = useState<TicketDrawData[]>([
-        { id: '1', title: '', code: '', footer: '', contentTop: '', contentBottom: '' },
-        { id: '2', title: '', code: '', footer: '', contentTop: '', contentBottom: '' },
-        { id: '3', title: '', code: '', footer: '', contentTop: '', contentBottom: '' },
-        { id: '4', title: '', code: '', footer: '', contentTop: '', contentBottom: '' },
+        { id: '1', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '' },
+        { id: '2', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '' },
+        { id: '3', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '' },
+        { id: '4', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '' },
     ]);
+    const [drawContentTopSize, setDrawContentTopSize] = useState(3.5);
     
     // Dynamic Font Sizes and Active Field Trackers
     const [activeField, setActiveField] = useState<'header' | 'subHeader' | 'percent' | 'oldPrice' | 'name' | 'newPrice' | 'footer'>('header');
@@ -1531,13 +1532,41 @@ export default function StickerPrinterView() {
                         </button>
                     </div>
                     
-                    {stickerMode === 'sticker' && stickerType !== 'draw' && (
+                    {stickerMode === 'sticker' && (
                         <div className="flex items-center gap-1 ml-0.5 lg:ml-1 pl-1.5 lg:pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
-                            <span className="text-[10px] lg:text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400">{getActiveFieldLabel()}:</span>
+                            <span className="text-[10px] lg:text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400">
+                                {stickerType === 'draw' ? 'Cỡ chữ giải thưởng:' : `${getActiveFieldLabel()}:`}
+                            </span>
                             <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[22px] lg:h-[26px]">
-                                <button onClick={() => setActiveFontSize(s => Math.max(1, s - 0.2))} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Giảm size">-</button>
-                                <span className="px-0 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 w-6 lg:w-8 text-center">{getActiveFontSize()}</span>
-                                <button onClick={() => setActiveFontSize(s => s + 0.2)} className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" title="Tăng size">+</button>
+                                <button 
+                                    onClick={() => {
+                                        if (stickerType === 'draw') {
+                                            setDrawContentTopSize(s => Math.max(1, s - 0.2));
+                                        } else {
+                                            setActiveFontSize(s => Math.max(1, s - 0.2));
+                                        }
+                                    }} 
+                                    className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" 
+                                    title="Giảm size"
+                                >
+                                    -
+                                </button>
+                                <span className="px-0 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 w-6 lg:w-8 text-center">
+                                    {stickerType === 'draw' ? drawContentTopSize.toFixed(1) : getActiveFontSize()}
+                                </span>
+                                <button 
+                                    onClick={() => {
+                                        if (stickerType === 'draw') {
+                                            setDrawContentTopSize(s => s + 0.2);
+                                        } else {
+                                            setActiveFontSize(s => s + 0.2);
+                                        }
+                                    }} 
+                                    className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" 
+                                    title="Tăng size"
+                                >
+                                    +
+                                </button>
                             </div>
                         </div>
                     )}
@@ -1593,9 +1622,9 @@ export default function StickerPrinterView() {
                         setFooterTextContent={setFooterTextContent}
                         setBarcodeImei={setBarcodeImei}
                         setPreviewName={setPreviewName}
-                        updateBatchItem={updateBatchItem}
                         drawTickets={drawTickets}
                         setDrawTickets={setDrawTickets}
+                        drawContentTopSize={drawContentTopSize}
                     />
                 </div>
                 <StickerPrintControls

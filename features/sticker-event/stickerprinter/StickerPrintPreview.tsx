@@ -35,15 +35,17 @@ interface StickerPrintPreviewProps {
     updateBatchItem?: (id: string, updates: Partial<BatchItem>) => void;
     drawTickets?: TicketDrawData[];
     setDrawTickets?: React.Dispatch<React.SetStateAction<TicketDrawData[]>>;
+    drawContentTopSize?: number;
 }
 
 interface DrawTicketBlockProps {
     ticket: TicketDrawData;
     onChange: (updates: Partial<TicketDrawData>) => void;
     index: number;
+    drawContentTopSize?: number;
 }
 
-const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, index }) => {
+const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, index, drawContentTopSize }) => {
     const handleTitleChange = useCallback((text: string) => {
         onChange({ title: text });
     }, [onChange]);
@@ -64,10 +66,15 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
         onChange({ contentBottom: text });
     }, [onChange]);
 
+    const handleContentTopRightChange = useCallback((text: string) => {
+        onChange({ contentTopRight: text });
+    }, [onChange]);
+
     const titleEditable = useContentEditable(ticket.title, handleTitleChange);
     const codeEditable = useContentEditable(ticket.code, handleCodeChange);
     const footerEditable = useContentEditable(ticket.footer, handleFooterChange);
     const contentTopEditable = useContentEditable(ticket.contentTop || '', handleContentTopChange);
+    const contentTopRightEditable = useContentEditable(ticket.contentTopRight || '', handleContentTopRightChange);
     const contentBottomEditable = useContentEditable(ticket.contentBottom || '', handleContentBottomChange);
 
     return (
@@ -93,12 +100,19 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
                 contentEditable 
                 suppressContentEditableWarning
                 className="input-content-top-left"
+                style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
                 data-placeholder="Nhập thông tin 1 (Họ tên, SĐT...)"
             />
-            {/* Content Top Right (Syncs automatically) */}
-            <div className="display-content-top-right">
-                {ticket.contentTop}
-            </div>
+            {/* Content Top Right (Editable & independent) */}
+            <div 
+                ref={contentTopRightEditable.ref}
+                onInput={contentTopRightEditable.handleInput}
+                contentEditable 
+                suppressContentEditableWarning
+                className="input-content-top-right"
+                style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
+                data-placeholder="Nhập thông tin bên phải..."
+            />
 
             {/* Code Left */}
             <div 
@@ -260,6 +274,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     updateBatchItem,
     drawTickets = [],
     setDrawTickets,
+    drawContentTopSize,
 }) => {
     const percentRef = useRef<HTMLDivElement>(null);
 
@@ -678,7 +693,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       padding: 0.5cqw 1cqw;
                   }
  
-                  .draw-ticket-block .display-content-top-right {
+                  .draw-ticket-block .input-content-top-right {
                       position: absolute;
                       left: 52.4%;
                       top: 21.0%;
@@ -691,10 +706,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       text-align: left;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
-                      font-size: 2.2cqw;
                       color: #000;
-                      pointer-events: none;
-                      user-select: none;
+                      background: transparent;
+                      outline: none;
+                      cursor: text;
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
@@ -832,6 +847,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 key={ticket.id || index} 
                                 index={index} 
                                 ticket={ticket} 
+                                drawContentTopSize={drawContentTopSize}
                                 onChange={(updates) => {
                                     if (setDrawTickets) {
                                         setDrawTickets(prev => prev.map((t, idx) => idx === index ? { ...t, ...updates } : t));

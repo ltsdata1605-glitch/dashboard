@@ -46,6 +46,7 @@ export interface PrintHistoryEntry {
     showBarcode: boolean;
     manualPages: StickerPage[];
     discountDisplayMode?: 'percent' | 'amount';
+    drawContentTopSize?: number;
 }
 
 export interface BatchItem {
@@ -64,6 +65,7 @@ export interface TicketDrawData {
     code: string;
     footer: string;
     contentTop?: string;
+    contentTopRight?: string;
     contentBottom?: string;
 }
 
