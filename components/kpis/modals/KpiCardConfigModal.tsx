@@ -209,7 +209,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                 onDragOver={(e) => handleDragOver(e, i)}
                                 onDrop={(e) => handleDrop(e, i)}
                                 onDragEnd={handleDragEnd}
-                                className={`flex items-center gap-1.5 sm:gap-3 p-1.5 sm:p-3 bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border ${editingCard?.id === config.id ? 'border-indigo-500 shadow-sm ring-1 ring-indigo-500/20' : 'border-slate-200 dark:border-slate-700'} ${draggedIndex === i ? 'opacity-50 ring-2 ring-indigo-500' : ''} transition-all cursor-pointer hover:border-indigo-300`}
+                                className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-white dark:bg-slate-900 rounded-md border ${editingCard?.id === config.id ? 'border-sky-500 shadow-sm' : 'border-slate-200 dark:border-slate-800'} ${draggedIndex === i ? 'opacity-50 ring-2 ring-sky-500' : ''} transition-all cursor-pointer hover:border-sky-300`}
                                 onClick={() => setEditingCard(config)}
                             >
                                 <div className="hidden sm:flex items-center justify-center cursor-grab active:cursor-grabbing text-slate-400 hover:text-indigo-600 p-1">
@@ -227,7 +227,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                             : config.type === 'data' ? 'Bộ lọc Tùy Biên' : 'Công Thức'}
                                     </p>
                                 </div>
-                                <button onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} className={`p-1 sm:p-1.5 rounded-md ${config.isVisible ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-500/20 dark:text-indigo-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-700'}`}>
+                                <button onClick={(e) => { e.stopPropagation(); toggleVisibility(config.id); }} className={`p-1.5 rounded-md ${config.isVisible ? 'text-sky-600 bg-sky-50 dark:bg-sky-500/10 dark:text-sky-400' : 'text-slate-400 bg-slate-100 dark:bg-slate-800'}`}>
                                     <Icon name={config.isVisible ? "eye" : "eye-off"} size={3.5} className="sm:hidden" />
                                     <Icon name={config.isVisible ? "eye" : "eye-off"} size={4} className="hidden sm:block" />
                                 </button>
@@ -260,7 +260,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                     />
                                 </div>
 
-                                <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-0.5 sm:p-1">
+                                <div className="flex bg-slate-100/50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-md p-1">
                                     {(['metric', 'data', 'calculated'] as const).map(tab => (
                                         <button 
                                             key={tab}
@@ -268,10 +268,10 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 setActiveTab(tab);
                                                 updateEditingCard({ type: tab });
                                             }}
-                                            className={`flex-1 text-[10px] sm:text-sm font-semibold py-1 sm:py-1.5 rounded-md transition-colors ${
+                                            className={`flex-1 text-[10px] sm:text-sm font-medium py-1.5 px-2 rounded transition-colors ${
                                                 (editingCard.type || 'metric') === tab 
-                                                ? 'bg-white text-indigo-600 shadow-sm dark:bg-slate-700 dark:text-indigo-400' 
-                                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700/50'
+                                                ? 'bg-white text-slate-800 shadow-sm border border-slate-200 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-200' 
+                                                : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 border border-transparent dark:hover:bg-slate-800/50'
                                             }`}
                                         >
                                             {tab === 'metric' ? 'Chỉ số gốc' : tab === 'data' ? 'Tạo dữ liệu' : 'Công thức'}
@@ -288,7 +288,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                                                 <button 
                                                     key={m.value}
                                                     onClick={() => updateEditingCard({ metric: m.value })}
-                                                    className={`px-2 sm:px-3 py-1.5 sm:py-2 text-left rounded-lg border text-[10px] sm:text-sm font-medium transition-colors ${editingCard.metric === m.value ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-500/20 dark:border-indigo-500/30 dark:text-indigo-300' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-300'}`}
+                                                    className={`px-3 py-2 text-left rounded-md border text-xs sm:text-sm transition-colors ${editingCard.metric === m.value ? 'bg-sky-50 border-sky-200 text-sky-700 font-medium dark:bg-sky-500/10 dark:border-sky-500/30 dark:text-sky-300' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-400'}`}
                                                 >
                                                     {m.label}
                                                 </button>

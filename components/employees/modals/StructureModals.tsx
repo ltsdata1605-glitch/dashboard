@@ -41,7 +41,7 @@ export const TabModal: React.FC<{
             <form onSubmit={handleSubmit}>
                 <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
                     <div>
-                        <label htmlFor="tabName" className="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Tên Tab</label>
+                        <label htmlFor="tabName" className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5 sm:mb-2">Tên Tab</label>
                         <Input
                             ref={inputRef}
                             id="tabName"

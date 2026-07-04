@@ -85,23 +85,23 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
     // Format display text or tags
     const renderContent = () => {
         const labelText = variant === 'compact' ? label : label;
-        if (selected.length === 0) return <span className="text-slate-400 dark:text-slate-500 font-bold uppercase text-[10px] tracking-wider whitespace-nowrap">{label}</span>;
+        if (selected.length === 0) return <span className="text-slate-500 font-normal text-sm whitespace-nowrap">{label}</span>;
         
         if (selected.length === allUniqueOptions.length) {
-            return <span className="text-indigo-600 dark:text-indigo-400 font-bold text-[10px] uppercase tracking-wider whitespace-nowrap">
+            return <span className="text-sky-600 dark:text-sky-400 font-medium text-sm whitespace-nowrap">
                 {variant === 'compact' ? 'ALL' : `Tất cả ${label}`}
             </span>;
         }
         
         if (variant === 'compact') {
-            return <span className="text-indigo-600 dark:text-indigo-400 font-black text-[10px] uppercase tracking-wider whitespace-nowrap">{label}</span>;
+            return <span className="text-sky-600 dark:text-sky-400 font-medium text-sm whitespace-nowrap">{label}</span>;
         }
 
         if (selected.length <= 2) {
             return (
                 <div className="flex flex-wrap gap-1">
                     {selected.map(item => (
-                        <span key={item} className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] px-1.5 py-0.5 rounded-md border border-indigo-100/50 dark:border-indigo-800/50 font-bold max-w-[80px] truncate">
+                        <span key={item} className="bg-sky-50 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 text-xs px-1.5 py-0.5 rounded-md border border-sky-100/50 dark:border-sky-800/50 max-w-[80px] truncate">
                             {item}
                         </span>
                     ))}
@@ -109,7 +109,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             );
         }
         
-        return <span className="text-indigo-600 dark:text-indigo-400 font-bold whitespace-nowrap">{selected.length} {label}</span>;
+        return <span className="text-sky-600 dark:text-sky-400 font-medium text-sm whitespace-nowrap">{selected.length} {label}</span>;
     };
 
     return (
@@ -117,12 +117,12 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
             <button 
                 type="button" 
                 onClick={() => setIsOpen(!isOpen)} 
-                className={`w-full flex items-center justify-between rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
-                    variant === 'compact' ? 'px-2 py-1.5' : 'px-3 py-1.5 min-h-[38px]'
+                className={`w-full flex items-center justify-between rounded-md border transition-colors focus:outline-none focus:ring-1 focus:border-sky-500 focus:ring-sky-500 ${
+                    variant === 'compact' ? 'px-2 py-1 h-9' : 'px-3 py-2 h-9'
                 } ${
                     isOpen 
-                    ? 'border-indigo-500 bg-white dark:bg-slate-800 ring-2 ring-indigo-500/10' 
-                    : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                    ? 'border-sky-500 bg-white dark:bg-slate-800 ring-1 ring-sky-500' 
+                    : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:border-slate-400 dark:hover:border-slate-500'
                 }`}
             >
                 <div className="flex-grow flex items-center overflow-hidden">
@@ -148,10 +148,10 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                     style={{
                         ...dropdownStyles,
                         position: 'fixed',
-                        top: containerRef.current ? containerRef.current.getBoundingClientRect().bottom + 6 : 0,
+                        top: containerRef.current ? containerRef.current.getBoundingClientRect().bottom + 4 : 0,
                         left: containerRef.current ? Math.min(containerRef.current.getBoundingClientRect().left, window.innerWidth - 260) : 0,
                     }}
-                    className="z-[999999] overflow-hidden bg-white dark:bg-slate-800 rounded-xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] dark:shadow-black/40 border border-slate-200 dark:border-slate-700 flex flex-col backdrop-blur-sm w-max max-w-[85vw] sm:max-w-[90vw]"
+                    className="z-[999999] overflow-hidden bg-white dark:bg-slate-800 rounded-md shadow-lg border border-slate-200 dark:border-slate-700 flex flex-col w-max max-w-[85vw] sm:max-w-[90vw]"
                 >
                     {/* Search Field */}
                     <div className="p-1.5 sm:p-2 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
@@ -187,11 +187,11 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                     onChange={handleSelectAll} 
                                     className="peer sr-only" 
                                 />
-                                <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-2 border-slate-300 dark:border-slate-600 transition-all peer-checked:bg-indigo-600 peer-checked:border-indigo-600" />
-                                <Icon name="check" size={2.5} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 transition-opacity sm:hidden" />
-                                <Icon name="check" size={3} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 transition-opacity hidden sm:block" />
+                                <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border border-slate-300 dark:border-slate-600 transition-colors peer-checked:bg-sky-600 peer-checked:border-sky-600" />
+                                <Icon name="check" size={2.5} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 sm:hidden" />
+                                <Icon name="check" size={3} className="absolute inset-0 m-auto text-white opacity-0 peer-checked:opacity-100 hidden sm:block" />
                             </div>
-                            <span className="text-[10px] sm:text-[11px] font-black text-slate-600 dark:text-slate-300 uppercase tracking-wider group-hover:text-indigo-600 transition-colors">Tất cả {label}</span>
+                            <span className="text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 group-hover:text-sky-600 transition-colors">Tất cả {label}</span>
                         </label>
                         <span className="text-[9px] sm:text-[10px] font-bold text-slate-400">{filteredOptions.length} / {allUniqueOptions.length}</span>
                     </div>

@@ -27,14 +27,14 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           className={cn(
-            "flex h-10 w-full rounded-xl border bg-white px-4 py-2 text-[13px] font-semibold transition-all shadow-sm appearance-none cursor-pointer",
-            "border-slate-200 text-slate-900",
-            "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500",
-            "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50",
-            "dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:focus-visible:ring-indigo-400/20 dark:focus-visible:border-indigo-400 dark:disabled:bg-slate-900/50",
-            leftIcon ? "pl-10" : "",
-            "pr-10", // Space for chevron
-            error && "border-rose-500 focus-visible:ring-rose-500/20 focus-visible:border-rose-500 dark:border-rose-500 dark:focus-visible:ring-rose-400/20 dark:focus-visible:border-rose-400",
+            "flex h-9 w-full rounded-md border bg-white px-3 py-2 text-sm font-normal transition-colors appearance-none cursor-pointer",
+            "border-slate-300 text-slate-900",
+            "focus-visible:outline-none focus-visible:border-sky-500 focus-visible:ring-1 focus-visible:ring-sky-500",
+            "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-100",
+            "dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus-visible:border-sky-400 dark:focus-visible:ring-sky-400 dark:disabled:bg-slate-900/50",
+            leftIcon ? "pl-9" : "",
+            "pr-9", // Space for chevron
+            error && "border-rose-500 focus-visible:border-rose-500 focus-visible:ring-rose-500 dark:border-rose-500 dark:focus-visible:border-rose-400 dark:focus-visible:ring-rose-400",
             className
           )}
           {...props}

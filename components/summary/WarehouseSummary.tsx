@@ -817,4 +817,4 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
     );
 };
 
-export default WarehouseSummary;
+export default React.memo(WarehouseSummary);

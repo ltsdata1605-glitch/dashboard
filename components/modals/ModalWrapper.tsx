@@ -53,19 +53,19 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
     return ReactDOM.createPortal(
         <div 
             ref={overlayRef}
-            className={`modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[99999] p-1.5 sm:p-4 transition-opacity duration-300 opacity-100 flex ${isBottom ? 'items-end sm:items-center justify-center sm:p-0' : 'items-center justify-center'}`}
+            className={`modal-overlay fixed inset-0 bg-slate-900/60 z-[99999] p-1.5 sm:p-4 transition-opacity duration-300 opacity-100 flex ${isBottom ? 'items-end sm:items-center justify-center sm:p-0' : 'items-center justify-center'}`}
             onMouseDown={handleOverlayMouseDown}
         >
             <div
                 ref={modalContentRef}
                 onClick={(e) => e.stopPropagation()}
-                className={`modal-content relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] w-full ${maxWidthClass} flex flex-col border border-white/20 dark:border-white/10 shadow-2xl transition-all duration-300 ${isBottom ? `mb-2 sm:mb-0 transform animate-in slide-in-from-bottom-8 sm:zoom-in-95 ${noRounded ? '' : 'rounded-[32px] sm:rounded-2xl'}` : `max-h-[90vh] opacity-100 scale-100 ${noRounded ? 'rounded-none' : 'rounded-2xl'}`}`}
+                className={`modal-content relative bg-white dark:bg-slate-900 shadow-lg border border-slate-200 dark:border-slate-700 w-full ${maxWidthClass} flex flex-col transition-all duration-300 ${isBottom ? `mb-2 sm:mb-0 transform animate-in slide-in-from-bottom-8 sm:zoom-in-95 ${noRounded ? '' : 'rounded-md'}` : `max-h-[90vh] opacity-100 scale-100 ${noRounded ? 'rounded-none' : 'rounded-md'}`}`}
             >
                 {!hideHeader && (
-                    <div className={`flex justify-between items-center p-2 sm:p-4 border-b border-slate-200/60 dark:border-slate-700/60 bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl flex-shrink-0 z-10 relative ${noRounded ? '' : 'rounded-t-[32px] sm:rounded-t-2xl'}`}>
+                    <div className={`flex justify-between items-center p-3 sm:p-4 bg-white dark:bg-slate-900 flex-shrink-0 z-10 relative ${noRounded ? '' : 'rounded-t-md'}`}>
                         <div>
-                            {subTitle && <p className="text-[9px] sm:text-sm font-medium text-slate-500 dark:text-slate-400">{subTitle}</p>}
-                            {title && <h3 className={`text-sm sm:text-2xl font-black tracking-tight leading-tight ${titleColorClass}`}>{title}</h3>}
+                            {subTitle && <p className="text-[9px] sm:text-xs font-normal text-slate-500 dark:text-slate-400">{subTitle}</p>}
+                            {title && <h3 className={`text-sm sm:text-lg font-semibold tracking-tight ${titleColorClass}`}>{title}</h3>}
                         </div>
                         <div className="flex items-center gap-1 sm:gap-3">
                             {controls}

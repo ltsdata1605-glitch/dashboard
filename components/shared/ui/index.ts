@@ -7,18 +7,14 @@
 export { cn } from './utils';
 
 // Existing components
-export { Button } from './Button';
-export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
-
+export { Select } from './Select';
+export type { SelectProps } from './Select';
 export { Input } from './Input';
 export type { InputProps } from './Input';
-
-export { Modal } from './Modal';
-export type { ModalProps } from './Modal';
-
-export { Select } from './Select';
-
+export { Button } from './Button';
+export type { ButtonProps, ButtonVariant, ButtonSize } from './Button';
 export { ConfirmDialog } from './ConfirmDialog';
+export type { ConfirmDialogProps, ConfirmVariant } from './ConfirmDialog';
 
 // New Design System components
 export { Badge } from './Badge';

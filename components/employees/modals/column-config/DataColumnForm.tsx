@@ -40,19 +40,19 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
     priceValue2, setPriceValue2
 }) => {
     return (
-        <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden mt-3 sm:mt-5">
-            <div className="bg-indigo-50/50 dark:bg-indigo-900/20 px-3 sm:px-5 py-2 sm:py-3 border-b border-slate-200 dark:border-slate-700">
-                <h4 className="flex items-center gap-1.5 sm:gap-2 font-bold text-xs sm:text-base text-indigo-700 dark:text-indigo-300">
-                    <Icon name="filter" size={3.5} className="sm:hidden" /><Icon name="filter" size={4} className="hidden sm:block" /> Chỉ định nguồn dữ liệu
+        <div className="space-y-6">
+            <div className="border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h4 className="font-semibold text-sm text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                    <Icon name="filter" size={4} className="text-sky-500" /> Chỉ định nguồn dữ liệu
                 </h4>
             </div>
-            <div className="p-3 sm:p-5 space-y-3 sm:space-y-5">
+            <div className="space-y-5">
                 <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 mb-1.5 sm:mb-2">Đơn vị đo lường</label>
-                    <div className="inline-flex rounded-lg p-0.5 sm:p-1 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 w-full sm:w-auto">
-                        <button type="button" onClick={() => setMetricType('quantity')} className={`flex-1 sm:flex-none py-1 sm:py-1.5 px-3 sm:px-6 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'quantity' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Số lượng</button>
-                        <button type="button" onClick={() => setMetricType('revenue')} className={`flex-1 sm:flex-none py-1 sm:py-1.5 px-3 sm:px-6 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'revenue' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Doanh thu</button>
-                        <button type="button" onClick={() => setMetricType('revenueQD')} className={`flex-1 sm:flex-none py-1 sm:py-1.5 px-3 sm:px-6 text-[10px] sm:text-sm font-bold rounded-md transition-all ${metricType === 'revenueQD' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'}`}>Doanh thu QĐ</button>
+                    <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Đơn vị đo lường</label>
+                    <div className="inline-flex rounded-md p-1 bg-slate-100/50 dark:bg-slate-900 border border-slate-200/60 dark:border-slate-700 w-full sm:w-auto">
+                        <button type="button" onClick={() => setMetricType('quantity')} className={`flex-1 sm:flex-none py-1.5 px-4 text-xs sm:text-sm rounded transition-colors ${metricType === 'quantity' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>Số lượng</button>
+                        <button type="button" onClick={() => setMetricType('revenue')} className={`flex-1 sm:flex-none py-1.5 px-4 text-xs sm:text-sm rounded transition-colors ${metricType === 'revenue' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>Doanh thu</button>
+                        <button type="button" onClick={() => setMetricType('revenueQD')} className={`flex-1 sm:flex-none py-1.5 px-4 text-xs sm:text-sm rounded transition-colors ${metricType === 'revenueQD' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>Doanh thu QĐ</button>
                     </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
@@ -70,12 +70,12 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
                     </div>
                 </div>
                 <div>
-                    <label htmlFor="productCodes" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1 text-slate-500">Hoặc truy vấn nhanh mã SP (dấu phẩy)</label>
-                    <textarea id="productCodes" value={productCodes} onChange={(e) => setProductCodes(e.target.value)} rows={2} placeholder="Ví dụ: 2515024, 050012..." className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-600 rounded-lg p-2 sm:p-2.5 text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition outline-none font-mono"></textarea>
+                    <label htmlFor="productCodes" className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Hoặc truy vấn nhanh mã SP (dấu phẩy)</label>
+                    <textarea id="productCodes" value={productCodes} onChange={(e) => setProductCodes(e.target.value)} rows={2} placeholder="Ví dụ: 2515024, 050012..." className="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-md p-2 sm:p-2.5 text-xs sm:text-sm focus:ring-1 focus:ring-sky-500 focus:border-sky-500 transition-colors outline-none font-mono"></textarea>
                 </div>
-                    <div className="border-t border-slate-100 dark:border-slate-700 pt-3 sm:pt-4 mt-1 sm:mt-2">
-                    <h5 className="font-semibold text-xs sm:text-sm text-slate-700 dark:text-slate-300 mb-2 sm:mb-3 flex items-center gap-1.5">
-                        <Icon name="tag" size={3.5} /> Lọc theo cấu hình giá trị bán
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <h5 className="font-medium text-sm text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2">
+                        <Icon name="tag" size={4} className="text-slate-400" /> Lọc theo cấu hình giá trị bán
                     </h5>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <div className="w-full sm:w-[160px]">

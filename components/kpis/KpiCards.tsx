@@ -620,5 +620,5 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
     );
 };
 
-export default KpiCards;
+export default React.memo(KpiCards);
 
