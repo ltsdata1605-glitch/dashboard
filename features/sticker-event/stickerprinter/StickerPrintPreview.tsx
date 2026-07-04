@@ -620,7 +620,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                   .draw-ticket-block .input-code-left {
                       position: absolute;
                       left: 39.4%;
-                      top: 37.0%;
+                      top: 35.5%;
                       width: 6.2%;
                       height: 13%;
                       display: flex;
@@ -628,7 +628,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       justify-content: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
-                      font-size: 2.8cqw;
+                      font-size: 4.2cqw;
                       color: #ef4444;
                       background: transparent;
                       outline: none;
@@ -639,7 +639,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                   .draw-ticket-block .display-code-right {
                       position: absolute;
                       left: 89.6%;
-                      top: 37.0%;
+                      top: 35.5%;
                       width: 6.2%;
                       height: 13%;
                       display: flex;
@@ -647,7 +647,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       justify-content: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
-                      font-size: 2.8cqw;
+                      font-size: 4.2cqw;
                       color: #ef4444;
                       text-align: center;
                       pointer-events: none;
