@@ -515,10 +515,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="rut_tham"] .header-text {
                     font-size: ${headerTextSize}cqw;
                     font-weight: bold;
-                    top: 6%;
-                    height: 19%;
-                    width: 91%;
-                    left: 4.5%;
+                    top: 0%;
+                    height: 6.5%;
+                    width: 98%;
+                    left: 1%;
                     justify-content: center;
                     text-align: center;
                     font-family: 'UTM Avo', sans-serif !important;
@@ -528,10 +528,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="rut_tham"] .sub-header {
                     font-size: ${subHeaderTextSize}cqw;
                     font-weight: bold;
-                    top: 31%;
+                    top: 13.5%;
                     left: 4.5%;
                     width: 32%;
-                    height: 20%;
+                    height: 18%;
                     justify-content: flex-start;
                     text-align: left;
                     font-family: 'UTM Avo', sans-serif !important;
@@ -542,15 +542,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     white-space: pre-line !important;
                     font-size: ${oldPriceTextSize}cqw;
                     font-weight: bold;
-                    top: 52%;
+                    top: 32%;
                     left: 4.5%;
                     width: 32%;
-                    height: 36%;
+                    height: 38%;
                     justify-content: flex-start;
                     text-align: left;
                     text-decoration: none !important;
                     font-family: 'UTM Avo', sans-serif !important;
-                    line-height: 1.1;
+                    line-height: 1.2;
                     padding-left: 2px;
                     align-items: flex-start;
                 }
@@ -558,10 +558,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="rut_tham"] .left-code {
                     font-size: 8cqw;
                     font-weight: bold;
-                    top: 37%;
-                    left: 37.5%;
-                    width: 9%;
-                    height: 22%;
+                    top: 22.5%;
+                    left: 36.8%;
+                    width: 11.5%;
+                    height: 23%;
                     justify-content: center;
                     text-align: center;
                     font-family: 'UTM Avo', sans-serif !important;
@@ -570,10 +570,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="rut_tham"] .name {
                     font-size: ${nameTextSize}cqw;
                     font-weight: bold;
-                    top: 31%;
+                    top: 13.5%;
                     left: 51%;
                     width: 32%;
-                    height: 20%;
+                    height: 18%;
                     justify-content: flex-start;
                     text-align: left;
                     font-family: 'UTM Avo', sans-serif !important;
@@ -583,10 +583,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="rut_tham"] .right-code {
                     font-size: 8cqw;
                     font-weight: bold;
-                    top: 37%;
-                    left: 84.5%;
-                    width: 9%;
-                    height: 22%;
+                    top: 22.5%;
+                    left: 85.7%;
+                    width: 11.5%;
+                    height: 23%;
                     justify-content: center;
                     text-align: center;
                     font-family: 'UTM Avo', sans-serif !important;
@@ -595,10 +595,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="rut_tham"] .extra2 {
                     font-size: ${newPriceTextSize}cqw;
                     font-weight: 900 !important;
-                    top: 52%;
+                    top: 32%;
                     left: 51%;
-                    width: 44.5%;
-                    height: 26%;
+                    width: 46%;
+                    height: 34%;
                     justify-content: flex-start;
                     text-align: left;
                     font-family: 'UTM Avo', sans-serif !important;
@@ -608,10 +608,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="rut_tham"] .footer-text {
                     font-size: ${footerTextSize}cqw;
                     font-weight: bold;
-                    top: 79%;
+                    top: 67%;
                     left: 51%;
-                    width: 44.5%;
-                    height: 11.5%;
+                    width: 46%;
+                    height: 15%;
                     justify-content: flex-start;
                     text-align: left;
                     font-family: 'UTM Avo', sans-serif !important;
@@ -621,10 +621,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 .sticker-container[data-type="rut_tham"] .extra1 {
                     font-size: ${percentTextSize}cqw;
                     font-weight: bold;
-                    top: 89.5%;
-                    left: 20.2%;
-                    width: 28%;
-                    height: 7.5%;
+                    top: 83.6%;
+                    left: 17.8%;
+                    width: 31.3%;
+                    height: 10%;
                     background-color: #0d0d0d !important;
                     color: white !important;
                     justify-content: flex-start;
