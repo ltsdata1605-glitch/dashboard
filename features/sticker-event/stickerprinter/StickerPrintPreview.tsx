@@ -405,11 +405,17 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
     // Selection listener for floating text formatting toolbar
     const [toolbarPos, setToolbarPos] = React.useState<{ top: number; left: number } | null>(null);
+    const savedRangeRef = useRef<Range | null>(null);
 
     React.useEffect(() => {
         const handleSelectionChange = () => {
             const selection = window.getSelection();
             if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
+                // If focus is on the dropdown or options of the toolbar, don't hide the toolbar
+                const activeEl = document.activeElement;
+                if (activeEl && (activeEl.tagName === 'SELECT' || activeEl.tagName === 'OPTION')) {
+                    return;
+                }
                 setToolbarPos(null);
                 return;
             }
@@ -434,6 +440,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 return;
             }
 
+            // Cache the selection range
+            savedRangeRef.current = range.cloneRange();
+
             const rects = range.getClientRects();
             if (rects.length > 0) {
                 const rect = rects[0];
@@ -453,10 +462,20 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     }, []);
 
     const applyStyleToSelection = (styleName: string, styleValue: string) => {
+        let range = savedRangeRef.current;
         const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0 || selection.isCollapsed) return;
+        
+        if (!range && selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+            range = selection.getRangeAt(0);
+        }
 
-        const range = selection.getRangeAt(0);
+        if (!range) return;
+
+        if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
         let parent = range.commonAncestorContainer;
         if (parent.nodeType === 3) parent = parent.parentNode || parent;
         let current: Node | null = parent;
@@ -478,6 +497,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
             span.appendChild(range.extractContents());
             range.insertNode(span);
             
+            // Re-select the span element to keep focus and highlight
+            const newRange = document.createRange();
+            newRange.selectNodeContents(span);
+            if (selection) {
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+            }
+            savedRangeRef.current = newRange;
+
             // Trigger React input change
             const event = new Event('input', { bubbles: true });
             editableContainer.dispatchEvent(event);
@@ -487,12 +515,24 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     };
 
     const handleFormat = (command: string) => {
+        let range = savedRangeRef.current;
+        const selection = window.getSelection();
+        
+        if (range && selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
+
         document.execCommand(command, false);
         
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0) return;
-        const range = selection.getRangeAt(0);
-        let parent = range.commonAncestorContainer;
+        if (selection && selection.rangeCount > 0) {
+            savedRangeRef.current = selection.getRangeAt(0).cloneRange();
+        }
+
+        const newSelection = window.getSelection();
+        if (!newSelection || newSelection.rangeCount === 0) return;
+        const newRange = newSelection.getRangeAt(0);
+        let parent = newRange.commonAncestorContainer;
         if (parent.nodeType === 3) parent = parent.parentNode || parent;
         let current: Node | null = parent;
         while (current) {
