@@ -877,7 +877,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 3.8cqw;
-                      color: #fbbc04;
+                      color: #ffffff;
                       background: transparent;
                       outline: none;
                       cursor: text;
@@ -992,7 +992,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 3.8cqw;
-                      color: #fbbc04;
+                      color: #ffffff;
                       text-align: center;
                   }
 
