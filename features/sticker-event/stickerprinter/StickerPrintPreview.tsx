@@ -79,7 +79,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
                 contentEditable 
                 suppressContentEditableWarning
                 className="input-title-left animate-pulse-once"
-                data-placeholder="Nhập chương trình..."
+                data-placeholder="Nhập tiêu đề..."
             />
             {/* Title Right (Syncs automatically) */}
             <div className="display-title-right">
@@ -135,7 +135,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
                 contentEditable 
                 suppressContentEditableWarning
                 className="input-footer-left"
-                data-placeholder="Nhập quà tặng..."
+                data-placeholder="Nhập tên siêu thị..."
             />
         </div>
     );
