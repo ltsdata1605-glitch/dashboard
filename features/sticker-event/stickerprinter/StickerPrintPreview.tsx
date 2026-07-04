@@ -273,6 +273,20 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     font-family: 'Arial', sans-serif;
                 }
 
+                .sticker-container div[contenteditable]:empty::before {
+                    content: attr(placeholder);
+                    color: rgba(156, 163, 175, 0.6) !important;
+                    font-weight: normal !important;
+                    font-style: italic !important;
+                    font-size: 0.85em;
+                    pointer-events: none;
+                    text-transform: none !important;
+                }
+
+                .sticker-container[data-type="gia_soc"] .header-text[contenteditable]:empty::before {
+                    color: rgba(255, 255, 255, 0.7) !important;
+                }
+
                 .sticker-container > div {
                     position: absolute;
                     left: 0;
@@ -302,6 +316,22 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     align-items: center;
                     justify-content: center;
                 }
+
+                .sticker-container[data-type="rut_tham"] .extra1 {
+                     font-size: ${percentTextSize}cqw;
+                     font-weight: bold;
+                     top: 83.6%;
+                     left: 17.8%;
+                     width: 31.3%;
+                     height: 10%;
+                     background-color: transparent !important;
+                     color: white !important;
+                     justify-content: flex-start;
+                     text-align: left;
+                     text-transform: uppercase;
+                     font-family: 'UTM Avo', sans-serif !important;
+                     padding-left: 2px;
+                 }
 
                 .sticker-container .extra1 {
                     font-size: ${percentTextSize}cqw;
@@ -504,7 +534,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
                 .sticker-container[data-type="rut_tham"] .slot > div {
                     position: absolute;
-                    background: white;
+                    background: transparent;
                     color: black;
                     display: flex;
                     align-items: center;
@@ -618,21 +648,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     padding-left: 2px;
                 }
 
-                .sticker-container[data-type="rut_tham"] .extra1 {
-                    font-size: ${percentTextSize}cqw;
-                    font-weight: bold;
-                    top: 83.6%;
-                    left: 17.8%;
-                    width: 31.3%;
-                    height: 10%;
-                    background-color: #0d0d0d !important;
-                    color: white !important;
-                    justify-content: flex-start;
-                    text-align: left;
-                    text-transform: uppercase;
-                    font-family: 'UTM Avo', sans-serif !important;
-                    padding-left: 2px;
-                }
+
 
                 .sticker-container .active-field {
                     outline: 1.5px dashed #6366f1;
@@ -734,15 +750,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         <div className="sticker-container" data-type={stickerType} style={{ backgroundImage: `url(${bgImage})` }}>
                             {/* Slot 1: Active & Editable */}
                             <div className="slot slot-1">
-                                <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} />
-                                <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} />
-                                <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceEditable.ref} onInput={onOldPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')} />
-                                <div className="left-code" contentEditable suppressContentEditableWarning onBlur={(e) => setBarcodeImei(e.currentTarget.innerText)} onClick={() => setActiveField('code')}>{barcodeImei}</div>
-                                <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} />
+                                <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} placeholder="RÚT THĂM MỖI NGÀY..." />
+                                <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} placeholder="Rút thăm 18h" />
+                                <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceEditable.ref} onInput={onOldPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')} placeholder="Chi tiết trúng..." />
+                                <div className="left-code" contentEditable suppressContentEditableWarning onBlur={(e) => setBarcodeImei(e.currentTarget.innerText)} onClick={() => setActiveField('code')} placeholder="1">{barcodeImei}</div>
+                                <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} placeholder="TRÚNG MIỄN PHÍ" />
                                 <div className="right-code">{barcodeImei}</div>
-                                <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceEditable.ref as React.RefObject<HTMLDivElement>} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')} />
-                                <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} />
-                                <div className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={branchEditable.ref} onInput={branchEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')} />
+                                <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceEditable.ref as React.RefObject<HTMLDivElement>} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')} placeholder="Quà tặng..." />
+                                <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} placeholder="Điều kiện áp dụng" />
+                                <div className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={branchEditable.ref} onInput={branchEditable.ref.current ? branchEditable.handleInput : undefined} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')} placeholder="TÊN SIÊU THỊ" />
                             </div>
                             {/* Slot 2: Mirrored */}
                             <div className="slot slot-2">
@@ -789,19 +805,19 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 </div>
                             )}
                             {/* Render without React children to prevent React reconciliation from resetting the caret during typing */}
-                            <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} style={stickerType === 'gia_soc' ? { color: 'white', backgroundColor: 'transparent' } : { color: 'black', backgroundColor: 'transparent' }} ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} />
+                            <div className={`header-text ${activeField === 'header' ? 'active-field' : ''}`} style={stickerType === 'gia_soc' ? { color: 'white', backgroundColor: 'transparent' } : { color: 'black', backgroundColor: 'transparent' }} ref={headerEditable.ref} onInput={headerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('header')} placeholder="NHẬP TIÊU ĐỀ" />
                             {stickerType === 'gio_vang' && (
-                                <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} />
+                                <div className={`sub-header ${activeField === 'subHeader' ? 'active-field' : ''}`} ref={subHeaderEditable.ref} onInput={subHeaderEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('subHeader')} placeholder="NHẬP TIÊU ĐỀ PHỤ" />
                             )}
-                            <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={percentRef} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')}>
+                            <div key={discountDisplayMode} className={`extra1 ${activeField === 'percent' ? 'active-field' : ''}`} ref={percentRef} contentEditable suppressContentEditableWarning onClick={() => setActiveField('percent')} placeholder="Giảm">
                                 {discountDisplayMode === 'amount'
                                     ? renderAmountDiscount(previewOldPrice, previewNewPrice)
                                     : renderPercentDiscount(previewOldPrice, previewNewPrice)}
                             </div>
-                            <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceEditable.ref} onInput={onOldPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')} />
-                            <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} />
-                            <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceEditable.ref as React.RefObject<HTMLDivElement>} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')} />
-                            <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} />
+                            <div className={`old ${activeField === 'oldPrice' ? 'active-field' : ''}`} ref={oldPriceEditable.ref} onInput={onOldPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('oldPrice')} placeholder="Nhập giá gốc" />
+                            <div className={`name ${activeField === 'name' ? 'active-field' : ''}`} ref={nameEditable.ref} onInput={nameEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('name')} placeholder="Nhập tên sản phẩm" />
+                            <div className={`extra2 ${activeField === 'newPrice' ? 'active-field' : ''}`} ref={newPriceEditable.ref as React.RefObject<HTMLDivElement>} onInput={onNewPriceInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('newPrice')} placeholder="Nhập giá mới" />
+                            <div className={`footer-text ${activeField === 'footer' ? 'active-field' : ''}`} ref={footerEditable.ref} onInput={footerEditable.handleInput} contentEditable suppressContentEditableWarning onClick={() => setActiveField('footer')} placeholder="Nhập khuyến mãi..." />
                         </div>
                     )
                 )}
