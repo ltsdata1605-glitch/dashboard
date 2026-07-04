@@ -211,10 +211,10 @@ export default function StickerPrinterView() {
     
     // Ticket draw state
     const [drawTickets, setDrawTickets] = useState<TicketDrawData[]>([
-        { id: '1', title: '', code: '', footer: '' },
-        { id: '2', title: '', code: '', footer: '' },
-        { id: '3', title: '', code: '', footer: '' },
-        { id: '4', title: '', code: '', footer: '' },
+        { id: '1', title: '', code: '', footer: '', contentTop: '', contentBottom: '' },
+        { id: '2', title: '', code: '', footer: '', contentTop: '', contentBottom: '' },
+        { id: '3', title: '', code: '', footer: '', contentTop: '', contentBottom: '' },
+        { id: '4', title: '', code: '', footer: '', contentTop: '', contentBottom: '' },
     ]);
     
     // Dynamic Font Sizes and Active Field Trackers

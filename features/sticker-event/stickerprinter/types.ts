@@ -63,6 +63,8 @@ export interface TicketDrawData {
     title: string;
     code: string;
     footer: string;
+    contentTop?: string;
+    contentBottom?: string;
 }
 
 

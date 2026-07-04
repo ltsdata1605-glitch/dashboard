@@ -56,9 +56,19 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
         onChange({ footer: text });
     }, [onChange]);
 
+    const handleContentTopChange = useCallback((text: string) => {
+        onChange({ contentTop: text });
+    }, [onChange]);
+
+    const handleContentBottomChange = useCallback((text: string) => {
+        onChange({ contentBottom: text });
+    }, [onChange]);
+
     const titleEditable = useContentEditable(ticket.title, handleTitleChange);
     const codeEditable = useContentEditable(ticket.code, handleCodeChange);
     const footerEditable = useContentEditable(ticket.footer, handleFooterChange);
+    const contentTopEditable = useContentEditable(ticket.contentTop || '', handleContentTopChange);
+    const contentBottomEditable = useContentEditable(ticket.contentBottom || '', handleContentBottomChange);
 
     return (
         <div className="draw-ticket-block" data-index={index}>
@@ -76,6 +86,20 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
                 {ticket.title}
             </div>
 
+            {/* Content Top Left */}
+            <div 
+                ref={contentTopEditable.ref}
+                onInput={contentTopEditable.handleInput}
+                contentEditable 
+                suppressContentEditableWarning
+                className="input-content-top-left"
+                data-placeholder="Nhập thông tin 1 (Họ tên, SĐT...)"
+            />
+            {/* Content Top Right (Syncs automatically) */}
+            <div className="display-content-top-right">
+                {ticket.contentTop}
+            </div>
+
             {/* Code Left */}
             <div 
                 ref={codeEditable.ref}
@@ -88,6 +112,20 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, onChange, ind
             {/* Code Right (Syncs automatically) */}
             <div className="display-code-right">
                 {ticket.code}
+            </div>
+
+            {/* Content Bottom Left */}
+            <div 
+                ref={contentBottomEditable.ref}
+                onInput={contentBottomEditable.handleInput}
+                contentEditable 
+                suppressContentEditableWarning
+                className="input-content-bottom-left"
+                data-placeholder="Nhập thông tin 2 (Địa chỉ...)"
+            />
+            {/* Content Bottom Right (Syncs automatically) */}
+            <div className="display-content-bottom-right">
+                {ticket.contentBottom}
             </div>
 
             {/* Footer Left */}
@@ -615,6 +653,96 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       user-select: none;
                       white-space: normal;
                       line-height: 1.2;
+                  }
+ 
+                  .draw-ticket-block .input-content-top-left {
+                      position: absolute;
+                      left: 2.2%;
+                      top: 21.0%;
+                      width: 35.0%;
+                      height: 30.0%;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: flex-start;
+                      align-items: flex-start;
+                      text-align: left;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 2.2cqw;
+                      color: #000;
+                      background: transparent;
+                      outline: none;
+                      cursor: text;
+                      white-space: pre-wrap;
+                      word-break: break-word;
+                      padding: 0.5cqw 1cqw;
+                  }
+ 
+                  .draw-ticket-block .display-content-top-right {
+                      position: absolute;
+                      left: 52.4%;
+                      top: 21.0%;
+                      width: 35.0%;
+                      height: 30.0%;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: flex-start;
+                      align-items: flex-start;
+                      text-align: left;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 2.2cqw;
+                      color: #000;
+                      pointer-events: none;
+                      user-select: none;
+                      white-space: pre-wrap;
+                      word-break: break-word;
+                      padding: 0.5cqw 1cqw;
+                  }
+ 
+                  .draw-ticket-block .input-content-bottom-left {
+                      position: absolute;
+                      left: 2.2%;
+                      top: 53.0%;
+                      width: 45.4%;
+                      height: 30.0%;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: flex-start;
+                      align-items: flex-start;
+                      text-align: left;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 2.2cqw;
+                      color: #000;
+                      background: transparent;
+                      outline: none;
+                      cursor: text;
+                      white-space: pre-wrap;
+                      word-break: break-word;
+                      padding: 0.5cqw 1cqw;
+                  }
+ 
+                  .draw-ticket-block .display-content-bottom-right {
+                      position: absolute;
+                      left: 52.4%;
+                      top: 53.0%;
+                      width: 45.4%;
+                      height: 30.0%;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: flex-start;
+                      align-items: flex-start;
+                      text-align: left;
+                      font-family: 'UTM Avo', sans-serif;
+                      font-weight: bold;
+                      font-size: 2.2cqw;
+                      color: #000;
+                      pointer-events: none;
+                      user-select: none;
+                      white-space: pre-wrap;
+                      word-break: break-word;
+                      padding: 0.5cqw 1cqw;
                   }
  
                   .draw-ticket-block .input-code-left {
