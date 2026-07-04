@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import BarcodeCanvas from '../../../components/views/BarcodeCanvas';
 import { BatchItem, TicketDrawData } from './types';
-import { Bold, Italic, Underline } from 'lucide-react';
+import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
 
 interface StickerPrintPreviewProps {
     batchItems: BatchItem[];
@@ -708,38 +708,6 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         }
     };
 
-    const pressTimeoutRef = React.useRef<any>(null);
-    const adjustIntervalRef = React.useRef<any>(null);
-
-    React.useEffect(() => {
-        return () => {
-            if (pressTimeoutRef.current) clearTimeout(pressTimeoutRef.current);
-            if (adjustIntervalRef.current) clearInterval(adjustIntervalRef.current);
-        };
-    }, []);
-
-    const startAdjustInterval = (direction: number) => {
-        clearAdjustTimer();
-        adjustFontSize(direction * 0.2);
-        
-        pressTimeoutRef.current = setTimeout(() => {
-            adjustIntervalRef.current = setInterval(() => {
-                adjustFontSize(direction * 0.1);
-            }, 80);
-        }, 400);
-    };
-
-    const clearAdjustTimer = () => {
-        if (pressTimeoutRef.current) {
-            clearTimeout(pressTimeoutRef.current);
-            pressTimeoutRef.current = null;
-        }
-        if (adjustIntervalRef.current) {
-            clearInterval(adjustIntervalRef.current);
-            adjustIntervalRef.current = null;
-        }
-    };
-
     return (
         <div className="bg-white p-0 shadow-xl border border-slate-200 shrink-0 w-full max-w-sm mx-auto overflow-hidden no-print-bg">
             <style>
@@ -993,6 +961,29 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                  }
 
                  /* Draw Ticket Styles */
+
+                  /* Vertical alignment resets and constraints for draw tickets */
+                  .draw-ticket-block .input-title-left *,
+                  .draw-ticket-block .display-title-left *,
+                  .draw-ticket-block .display-title-right * {
+                      margin: 0 !important;
+                      padding: 0 !important;
+                      line-height: 1.1 !important;
+                      display: inline-block !important;
+                      vertical-align: middle !important;
+                  }
+
+                  .draw-ticket-block .input-content-top-left *,
+                  .draw-ticket-block .display-content-top-left *,
+                  .draw-ticket-block .display-content-top-right *,
+                  .draw-ticket-block .input-content-bottom-left *,
+                  .draw-ticket-block .display-content-bottom-left *,
+                  .draw-ticket-block .display-content-bottom-right * {
+                      margin: 0 !important;
+                      padding: 0 !important;
+                      line-height: 1.2 !important;
+                  }
+
                  .draw-ticket-block {
                      position: absolute;
                      width: 100%;
@@ -1009,7 +1000,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       left: 2.2%;
                       top: 2.0%;
                       width: 45.4%;
-                      height: auto; min-height: 16%;
+                      height: 16%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1023,14 +1014,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       text-align: center;
                       white-space: normal;
                       line-height: 1.2;
-                  }
+                      overflow: hidden;
+}
  
                   .draw-ticket-block .display-title-right {
                       position: absolute;
                       left: 52.4%;
                       top: 2.0%;
                       width: 45.4%;
-                      height: auto; min-height: 16%;
+                      height: 16%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1043,19 +1035,20 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       user-select: none;
                       white-space: normal;
                       line-height: 1.2;
-                  }
+                      overflow: hidden;
+}
  
                   .draw-ticket-block .input-content-top-left {
                       position: absolute;
                       left: 2.2%;
                       top: 21.0%;
                       width: 35.0%;
-                      height: auto; min-height: 30.0%;
+                      height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: flex-start;
-                      text-align: left;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1066,19 +1059,20 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
-                  }
+                      overflow: hidden;
+}
  
                   .draw-ticket-block .input-content-top-right {
                       position: absolute;
                       left: 52.4%;
                       top: 21.0%;
                       width: 35.0%;
-                      height: auto; min-height: 30.0%;
+                      height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: flex-start;
-                      text-align: left;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
@@ -1088,19 +1082,20 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
-                  }
+                      overflow: hidden;
+}
  
                   .draw-ticket-block .input-content-bottom-left {
                       position: absolute;
                       left: 2.2%;
                       top: 53.0%;
                       width: 45.4%;
-                      height: auto; min-height: 30.0%;
+                      height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: flex-start;
-                      text-align: left;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1111,19 +1106,20 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
-                  }
+                      overflow: hidden;
+}
  
                   .draw-ticket-block .input-content-bottom-right {
                       position: absolute;
                       left: 52.4%;
                       top: 53.0%;
                       width: 45.4%;
-                      height: auto; min-height: 30.0%;
+                      height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: flex-start;
-                      text-align: left;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1134,14 +1130,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
-                  }
+                      overflow: hidden;
+}
  
                   .draw-ticket-block .input-code-left {
                       position: absolute;
                       left: 39.4%;
                       top: 33.0%;
                       width: 6.2%;
-                      height: auto; min-height: 11%;
+                      height: 11%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1153,14 +1150,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       outline: none;
                       cursor: text;
                       text-align: center;
-                  }
+                      overflow: hidden;
+}
 
                    .draw-ticket-block .display-code-left {
                        position: absolute;
                        left: 39.4%;
                        top: 33.0%;
                        width: 6.2%;
-                       height: auto; min-height: 11%;
+                       height: 11%;
                        display: flex;
                        align-items: center;
                        justify-content: center;
@@ -1171,14 +1169,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                        text-align: center;
                        pointer-events: none;
                        user-select: none;
-                   }
+                       overflow: hidden;
+}
  
                   .draw-ticket-block .display-code-right {
                       position: absolute;
                       left: 89.6%;
                       top: 33.0%;
                       width: 6.2%;
-                      height: auto; min-height: 11%;
+                      height: 11%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1189,14 +1188,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       text-align: center;
                       pointer-events: none;
                       user-select: none;
-                  }
+                      overflow: hidden;
+}
  
                   .draw-ticket-block .input-footer-left {
                       position: absolute;
                       left: 19.3%;
                       top: 85.8%;
                       width: 28%;
-                      height: auto; min-height: 10%;
+                      height: 10%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1208,14 +1208,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       outline: none;
                       cursor: text;
                       text-align: center;
-                  }
+                      overflow: hidden;
+}
 
                   .draw-ticket-block .display-title-left {
                       position: absolute;
                       left: 2.2%;
                       top: 2.0%;
                       width: 45.4%;
-                      height: auto; min-height: 16%;
+                      height: 16%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1226,57 +1227,60 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       text-align: center;
                       white-space: normal;
                       line-height: 1.2;
-                  }
+                      overflow: hidden;
+}
 
                   .draw-ticket-block .display-content-top-left {
                       position: absolute;
                       left: 2.2%;
                       top: 21.0%;
                       width: 35.0%;
-                      height: auto; min-height: 30.0%;
+                      height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: flex-start;
-                      text-align: left;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
-                  }
+                      overflow: hidden;
+}
 
                   .draw-ticket-block .display-content-top-right {
                       position: absolute;
                       left: 52.4%;
                       top: 21.0%;
                       width: 35.0%;
-                      height: auto; min-height: 30.0%;
+                      height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: flex-start;
-                      text-align: left;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
-                  }
+                      overflow: hidden;
+}
 
                   .draw-ticket-block .display-content-bottom-left {
                       position: absolute;
                       left: 2.2%;
                       top: 53.0%;
                       width: 45.4%;
-                      height: auto; min-height: 30.0%;
+                      height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: flex-start;
-                      text-align: left;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1284,19 +1288,20 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
-                  }
+                      overflow: hidden;
+}
 
                   .draw-ticket-block .display-content-bottom-right {
                       position: absolute;
                       left: 52.4%;
                       top: 53.0%;
                       width: 45.4%;
-                      height: auto; min-height: 30.0%;
+                      height: 30.0%;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
-                      align-items: flex-start;
-                      text-align: left;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1304,14 +1309,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
-                  }
+                      overflow: hidden;
+}
 
                   .draw-ticket-block .display-footer-left {
                       position: absolute;
                       left: 19.3%;
                       top: 85.8%;
                       width: 28%;
-                      height: auto; min-height: 10%;
+                      height: 10%;
                       display: flex;
                       align-items: center;
                       justify-content: center;
@@ -1320,7 +1326,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-size: 3.8cqw;
                       color: #ffffff;
                       text-align: center;
-                  }
+                      overflow: hidden;
+}
 
                   .draw-ticket-block [class^="display-"],
                   .draw-ticket-block [class*=" display-"] {
@@ -1328,13 +1335,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       user-select: none;
                   }
 
-                 
-                  .draw-ticket-block [contenteditable="true"] > *,
-                  .draw-ticket-block [class^="display-"] > * {
-                      margin: 0 !important;
-                      padding: 0 !important;
-                  }
-                  .draw-ticket-block [contenteditable="true"]:hover,
+                 .draw-ticket-block [contenteditable="true"]:hover,
                  .draw-ticket-block [contenteditable="true"]:focus {
                      outline: 1.5px dashed #ef4444 !important;
                      outline-offset: 1px;
@@ -1552,19 +1553,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         {/* Size adjust controls: - [input] + */}
                         <div className="flex items-center gap-1 bg-slate-800/80 rounded px-1.5 py-0.5 border border-slate-700/50 mr-1 no-print">
                             <button
-                                onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    startAdjustInterval(-1);
-                                }}
-                                onMouseUp={clearAdjustTimer}
-                                onMouseLeave={clearAdjustTimer}
-                                onTouchStart={(e) => {
-                                    e.preventDefault();
-                                    startAdjustInterval(-1);
-                                }}
-                                onTouchEnd={clearAdjustTimer}
-                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors select-none"
-                                title="Giảm size chữ (Nhấn giữ để tự giảm)"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => adjustFontSize(-0.2)}
+                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                                title="Giảm size chữ"
                             >
                                 -
                             </button>
@@ -1578,19 +1570,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 title="Kích thước cqw"
                             />
                             <button
-                                onMouseDown={(e) => {
-                                    e.preventDefault();
-                                    startAdjustInterval(1);
-                                }}
-                                onMouseUp={clearAdjustTimer}
-                                onMouseLeave={clearAdjustTimer}
-                                onTouchStart={(e) => {
-                                    e.preventDefault();
-                                    startAdjustInterval(1);
-                                }}
-                                onTouchEnd={clearAdjustTimer}
-                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors select-none"
-                                title="Tăng size chữ (Nhấn giữ để tự tăng)"
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => adjustFontSize(0.2)}
+                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                                title="Tăng size chữ"
                             >
                                 +
                             </button>
@@ -1617,10 +1600,40 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         {/* Underline button */}
                         <button
                             onClick={() => handleFormat('underline')}
-                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors border-r border-slate-700/80 pr-1.5 mr-0.5"
                             title="Gạch chân (Underline)"
                         >
                             <Underline size={13} className="stroke-[2.5]" />
+                        </button>
+
+                        {/* Alignment buttons */}
+                        <button
+                            onClick={() => handleFormat('justifyLeft')}
+                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            title="Canh lề trái"
+                        >
+                            <AlignLeft size={13} className="stroke-[2.5]" />
+                        </button>
+                        <button
+                            onClick={() => handleFormat('justifyCenter')}
+                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            title="Canh lề giữa"
+                        >
+                            <AlignCenter size={13} className="stroke-[2.5]" />
+                        </button>
+                        <button
+                            onClick={() => handleFormat('justifyRight')}
+                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            title="Canh lề phải"
+                        >
+                            <AlignRight size={13} className="stroke-[2.5]" />
+                        </button>
+                        <button
+                            onClick={() => handleFormat('justifyFull')}
+                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            title="Căn đều hai bên"
+                        >
+                            <AlignJustify size={13} className="stroke-[2.5]" />
                         </button>
 
                         {/* Tooltip arrow */}
