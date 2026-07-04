@@ -16,7 +16,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 
 import ErrorBoundary from '../../../components/common/ErrorBoundary';
 
-const StickerEventApp = lazy(() => import('../StickerEventApp'));
+const StickerEventApp = lazy(() => import('./StickerEventApp'));
 import SaveListModal from '../SaveListModal';
 
 const STICKER_DB_KEY = 'stickerPrinterState';
@@ -202,19 +202,6 @@ export const useStickerPrinter = () => {
         }
     };
 
-    const resetActiveFontSize = () => {
-        switch (activeField) {
-            case 'header': setHeaderTextSize(8); break;
-            case 'subHeader': setSubHeaderTextSize(13); break;
-            case 'percent': setPercentTextSize(36.9); break;
-            case 'oldPrice': setOldPriceTextSize(14.2); break;
-            case 'name': setNameTextSize(3.6); break;
-            case 'newPrice': setNewPriceTextSize(26.5); break;
-            case 'footer': setFooterTextSize(3.2); break;
-        }
-        toast.success(`Đã khôi phục cỡ chữ ${getActiveFieldLabel()} về mặc định`);
-    };
-
     const [batchItems, setBatchItems] = useState<BatchItem[]>([]);
     const updateBatchItem = (id: string, updates: Partial<BatchItem>) => {
         setBatchItems(prev => prev.map(it => it.id === id ? { ...it, ...updates } : it));
@@ -308,7 +295,7 @@ export const useStickerPrinter = () => {
         
         // Preload StickerEventApp in background to avoid lag on click
         const timer = setTimeout(() => {
-            import('../StickerEventApp').catch(err => {
+            import('./StickerEventApp').catch(err => {
                 console.warn('Failed to preload StickerEventApp:', err);
             });
         }, 1000);
@@ -1206,12 +1193,6 @@ export const useStickerPrinter = () => {
         setHeaderTextContent('HÀNG TRƯNG BÀY');
         setFooterTextContent('Khuyến mãi áp dụng đến hết ngày 3/5/2026');
         setHeaderTextSize(8);
-        setSubHeaderTextSize(13);
-        setPercentTextSize(36.9);
-        setOldPriceTextSize(14.2);
-        setNameTextSize(3.6);
-        setNewPriceTextSize(26.5);
-        setFooterTextSize(3.2);
         setActiveQueuePageId(null);
     };
 
@@ -1306,5 +1287,5 @@ export const useStickerPrinter = () => {
         }, 200);
     };
 
-  return { activeTab, mounted, stickerMode, setStickerMode, eventEverOpened, setEventEverOpened, stickerType, setStickerType, bgImage, setBgImage, priceSource, setPriceSource, activeField, setActiveField, getActiveFieldLabel, getActiveFontSize, setActiveFontSize, resetActiveFontSize, discountDisplayMode, setDiscountDisplayMode, discountThreshold, setDiscountThreshold, activeQueuePageId, setActiveQueuePageId, activeSubTab, setActiveSubTab, isMobile, showSettings, setShowSettings, printQueue, setPrintQueue, printHistory, setPrintHistory, savedLists, setSavedLists, selectedHistoryId, setSelectedHistoryId, historyViewMode, setHistoryViewMode, printFrameRef, fileInputRef, isLoaded, hasAutoSaved, historySearchTerm, setHistorySearchTerm, isSaveModalOpen, setIsSaveModalOpen, saveTitle, setSaveTitle, saveDesc, setSaveDesc, selectedSavedListId, setSelectedSavedListId, headerTextSize, subHeaderTextSize, percentTextSize, oldPriceTextSize, nameTextSize, newPriceTextSize, footerTextSize, updatePageField, handleGlobalFieldChange, handleImageUpload, removePage, clearQueue, handleLoadSavedList, handleDeleteSavedList, handleSaveListClick, confirmSaveList, handleFileImport, handlePrintClick, loadHistoryToQueue, deleteHistoryEntry };
+  return { activeTab, mounted, stickerMode, setStickerMode, eventEverOpened, setEventEverOpened, stickerType, setStickerType, bgImage, setBgImage, priceSource, setPriceSource, activeField, setActiveField, getActiveFieldLabel, getActiveFontSize, setActiveFontSize, discountDisplayMode, setDiscountDisplayMode, discountThreshold, setDiscountThreshold, activeQueuePageId, setActiveQueuePageId, activeSubTab, setActiveSubTab, isMobile, showSettings, setShowSettings, printQueue, setPrintQueue, printHistory, setPrintHistory, savedLists, setSavedLists, selectedHistoryId, setSelectedHistoryId, historyViewMode, setHistoryViewMode, printFrameRef, fileInputRef, isLoaded, hasAutoSaved, historySearchTerm, setHistorySearchTerm, isSaveModalOpen, setIsSaveModalOpen, saveTitle, setSaveTitle, saveDesc, setSaveDesc, selectedSavedListId, setSelectedSavedListId, headerTextSize, subHeaderTextSize, percentTextSize, oldPriceTextSize, nameTextSize, newPriceTextSize, footerTextSize, updatePageField, handleGlobalFieldChange, handleImageUpload, removePage, clearQueue, handleLoadSavedList, handleDeleteSavedList, handleSaveListClick, confirmSaveList, handleFileImport, handlePrintClick, loadHistoryToQueue, deleteHistoryEntry };
 };

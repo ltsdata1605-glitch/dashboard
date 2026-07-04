@@ -17,7 +17,8 @@ const defaultConfig = {
 };
 
 // Safe load for AI Studio config file (ignored on GitHub)
-const configs = (import.meta as any).glob('./firebase-applet-config.json', { eager: true });
+// @ts-ignore
+const configs = import.meta.glob('./firebase-applet-config.json', { eager: true });
 const firebaseConfigJson: any = (configs['./firebase-applet-config.json'] as any)?.default || {};
 
 // Prioritize JSON config (from user's manual setup or AIS setup) over environment variables
