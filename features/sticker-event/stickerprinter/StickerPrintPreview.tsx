@@ -35,7 +35,13 @@ interface StickerPrintPreviewProps {
     updateBatchItem?: (id: string, updates: Partial<BatchItem>) => void;
     drawTickets?: TicketDrawData[];
     setDrawTickets?: React.Dispatch<React.SetStateAction<TicketDrawData[]>>;
-    drawContentTopSize?: number;
+    drawContentTopLeftSize?: number;
+    drawContentTopRightSize?: number;
+    drawContentBottomLeftSize?: number;
+    drawContentBottomRightSize?: number;
+    drawTitleSize?: number;
+    drawCodeSize?: number;
+    drawFooterSize?: number;
 }
 
 interface DrawTicketBlockProps {
@@ -43,10 +49,32 @@ interface DrawTicketBlockProps {
     firstTicket?: TicketDrawData;
     onChange: (updates: Partial<TicketDrawData>) => void;
     index: number;
-    drawContentTopSize?: number;
+    drawContentTopLeftSize?: number;
+    drawContentTopRightSize?: number;
+    drawContentBottomLeftSize?: number;
+    drawContentBottomRightSize?: number;
+    drawTitleSize?: number;
+    drawCodeSize?: number;
+    drawFooterSize?: number;
+    activeField?: string;
+    setActiveField?: (field: any) => void;
 }
 
-const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, firstTicket, onChange, index, drawContentTopSize }) => {
+const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ 
+    ticket, 
+    firstTicket, 
+    onChange, 
+    index, 
+    drawContentTopLeftSize,
+    drawContentTopRightSize,
+    drawContentBottomLeftSize,
+    drawContentBottomRightSize,
+    drawTitleSize,
+    drawCodeSize,
+    drawFooterSize,
+    activeField,
+    setActiveField
+}) => {
     const handleTitleChange = useCallback((text: string) => {
         onChange({ title: text });
     }, [onChange]);
@@ -93,35 +121,43 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, firstTicket, 
                 <div 
                     ref={titleEditable.ref}
                     onInput={titleEditable.handleInput}
+                    onClick={() => setActiveField?.('drawTitle')}
                     contentEditable 
                     suppressContentEditableWarning
-                    className="input-title-left animate-pulse-once"
+                    className={`input-title-left animate-pulse-once ${activeField === 'drawTitle' ? 'active-field' : ''}`}
+                    style={{ fontSize: `${drawTitleSize || 3.6}cqw` }}
                     data-placeholder="Nhập tiêu đề..."
                 />
             ) : (
                 <div 
                     className="display-title-left"
+                    style={{ fontSize: `${drawTitleSize || 3.6}cqw` }}
                     dangerouslySetInnerHTML={{ __html: activeFirstTicket.title }}
                 />
             )}
             {/* Title Right (Syncs automatically) */}
-            <div className="display-title-right" dangerouslySetInnerHTML={{ __html: activeFirstTicket.title }} />
+            <div 
+                className="display-title-right" 
+                style={{ fontSize: `${drawTitleSize || 3.6}cqw` }}
+                dangerouslySetInnerHTML={{ __html: activeFirstTicket.title }} 
+            />
 
             {/* Content Top Left */}
             {isFirst ? (
                 <div 
                     ref={contentTopEditable.ref}
                     onInput={contentTopEditable.handleInput}
+                    onClick={() => setActiveField?.('drawContentTopLeft')}
                     contentEditable 
                     suppressContentEditableWarning
-                    className="input-content-top-left"
-                    style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
+                    className={`input-content-top-left ${activeField === 'drawContentTopLeft' ? 'active-field' : ''}`}
+                    style={{ fontSize: `${drawContentTopLeftSize || 3.5}cqw` }}
                     data-placeholder="Nhập thông tin 1 (Họ tên, SĐT...)"
                 />
             ) : (
                 <div 
                     className="display-content-top-left"
-                    style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
+                    style={{ fontSize: `${drawContentTopLeftSize || 3.5}cqw` }}
                     dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentTop || '' }}
                 />
             )}
@@ -130,16 +166,17 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, firstTicket, 
                 <div 
                     ref={contentTopRightEditable.ref}
                     onInput={contentTopRightEditable.handleInput}
+                    onClick={() => setActiveField?.('drawContentTopRight')}
                     contentEditable 
                     suppressContentEditableWarning
-                    className="input-content-top-right"
-                    style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
+                    className={`input-content-top-right ${activeField === 'drawContentTopRight' ? 'active-field' : ''}`}
+                    style={{ fontSize: `${drawContentTopRightSize || 3.5}cqw` }}
                     data-placeholder="Nhập thông tin 3 (Tự gõ...)"
                 />
             ) : (
                 <div 
                     className="display-content-top-right"
-                    style={{ fontSize: `${drawContentTopSize || 3.5}cqw` }}
+                    style={{ fontSize: `${drawContentTopRightSize || 3.5}cqw` }}
                     dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentTopRight || '' }}
                 />
             )}
@@ -148,13 +185,18 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, firstTicket, 
             <div 
                 ref={codeEditable.ref}
                 onInput={codeEditable.handleInput}
+                onClick={() => setActiveField?.('drawCode')}
                 contentEditable 
                 suppressContentEditableWarning
-                className="input-code-left"
+                className={`input-code-left ${activeField === 'drawCode' ? 'active-field' : ''}`}
+                style={{ fontSize: `${drawCodeSize || 3.8}cqw` }}
                 data-placeholder="Số"
             />
             {/* Code Right (Syncs automatically) */}
-            <div className="display-code-right">
+            <div 
+                className="display-code-right"
+                style={{ fontSize: `${drawCodeSize || 3.8}cqw` }}
+            >
                 {ticket.code}
             </div>
 
@@ -163,14 +205,17 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, firstTicket, 
                 <div 
                     ref={contentBottomEditable.ref}
                     onInput={contentBottomEditable.handleInput}
+                    onClick={() => setActiveField?.('drawContentBottomLeft')}
                     contentEditable 
                     suppressContentEditableWarning
-                    className="input-content-bottom-left"
+                    className={`input-content-bottom-left ${activeField === 'drawContentBottomLeft' ? 'active-field' : ''}`}
+                    style={{ fontSize: `${drawContentBottomLeftSize || 2.2}cqw` }}
                     data-placeholder="Nhập thông tin 2 (Địa chỉ...)"
                 />
             ) : (
                 <div 
                     className="display-content-bottom-left"
+                    style={{ fontSize: `${drawContentBottomLeftSize || 2.2}cqw` }}
                     dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentBottom || '' }}
                 />
             )}
@@ -179,14 +224,17 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, firstTicket, 
                 <div 
                     ref={contentBottomRightEditable.ref}
                     onInput={contentBottomRightEditable.handleInput}
+                    onClick={() => setActiveField?.('drawContentBottomRight')}
                     contentEditable 
                     suppressContentEditableWarning
-                    className="input-content-bottom-right"
+                    className={`input-content-bottom-right ${activeField === 'drawContentBottomRight' ? 'active-field' : ''}`}
+                    style={{ fontSize: `${drawContentBottomRightSize || 2.2}cqw` }}
                     data-placeholder="Nhập thông tin 4 (Tự gõ...)"
                 />
             ) : (
                 <div 
                     className="display-content-bottom-right"
+                    style={{ fontSize: `${drawContentBottomRightSize || 2.2}cqw` }}
                     dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentBottomRight || '' }}
                 />
             )}
@@ -196,14 +244,17 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ ticket, firstTicket, 
                 <div 
                     ref={footerEditable.ref}
                     onInput={footerEditable.handleInput}
+                    onClick={() => setActiveField?.('drawFooter')}
                     contentEditable 
                     suppressContentEditableWarning
-                    className="input-footer-left"
+                    className={`input-footer-left ${activeField === 'drawFooter' ? 'active-field' : ''}`}
+                    style={{ fontSize: `${drawFooterSize || 3.8}cqw` }}
                     data-placeholder="Nhập tên siêu thị..."
                 />
             ) : (
                 <div 
                     className="display-footer-left"
+                    style={{ fontSize: `${drawFooterSize || 3.8}cqw` }}
                     dangerouslySetInnerHTML={{ __html: activeFirstTicket.footer }}
                 />
             )}
@@ -341,7 +392,13 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     updateBatchItem,
     drawTickets = [],
     setDrawTickets,
-    drawContentTopSize,
+    drawContentTopLeftSize,
+    drawContentTopRightSize,
+    drawContentBottomLeftSize,
+    drawContentBottomRightSize,
+    drawTitleSize,
+    drawCodeSize,
+    drawFooterSize,
 }) => {
     const percentRef = useRef<HTMLDivElement>(null);
 
@@ -1034,7 +1091,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 index={index} 
                                 ticket={ticket} 
                                 firstTicket={drawTickets[0]}
-                                drawContentTopSize={drawContentTopSize}
+                                drawContentTopLeftSize={drawContentTopLeftSize}
+                                drawContentTopRightSize={drawContentTopRightSize}
+                                drawContentBottomLeftSize={drawContentBottomLeftSize}
+                                drawContentBottomRightSize={drawContentBottomRightSize}
+                                drawTitleSize={drawTitleSize}
+                                drawCodeSize={drawCodeSize}
+                                drawFooterSize={drawFooterSize}
+                                activeField={activeField}
+                                setActiveField={setActiveField}
                                 onChange={(updates) => {
                                     if (setDrawTickets) {
                                         setDrawTickets(prev => prev.map((t, idx) => idx === index ? { ...t, ...updates } : t));

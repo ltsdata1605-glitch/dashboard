@@ -46,7 +46,13 @@ export interface PrintHistoryEntry {
     showBarcode: boolean;
     manualPages: StickerPage[];
     discountDisplayMode?: 'percent' | 'amount';
-    drawContentTopSize?: number;
+    drawContentTopLeftSize?: number;
+    drawContentTopRightSize?: number;
+    drawContentBottomLeftSize?: number;
+    drawContentBottomRightSize?: number;
+    drawTitleSize?: number;
+    drawCodeSize?: number;
+    drawFooterSize?: number;
 }
 
 export interface BatchItem {

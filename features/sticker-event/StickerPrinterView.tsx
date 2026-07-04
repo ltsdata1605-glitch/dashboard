@@ -216,10 +216,16 @@ export default function StickerPrinterView() {
         { id: '3', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
         { id: '4', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
     ]);
-    const [drawContentTopSize, setDrawContentTopSize] = useState(3.5);
+    const [drawContentTopLeftSize, setDrawContentTopLeftSize] = useState(3.5);
+    const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(3.5);
+    const [drawContentBottomLeftSize, setDrawContentBottomLeftSize] = useState(2.2);
+    const [drawContentBottomRightSize, setDrawContentBottomRightSize] = useState(2.2);
+    const [drawTitleSize, setDrawTitleSize] = useState(3.6);
+    const [drawCodeSize, setDrawCodeSize] = useState(3.8);
+    const [drawFooterSize, setDrawFooterSize] = useState(3.8);
     
     // Dynamic Font Sizes and Active Field Trackers
-    const [activeField, setActiveField] = useState<'header' | 'subHeader' | 'percent' | 'oldPrice' | 'name' | 'newPrice' | 'footer'>('header');
+    const [activeField, setActiveField] = useState<string>('header');
     const [headerTextSize, setHeaderTextSize] = useState(8);
     const [subHeaderTextSize, setSubHeaderTextSize] = useState(13);
     const [percentTextSize, setPercentTextSize] = useState(36.9);
@@ -296,6 +302,46 @@ export default function StickerPrinterView() {
             case 'newPrice': return newPriceTextSize;
             case 'footer': return footerTextSize;
             default: return headerTextSize;
+        }
+    };
+
+    const getDrawActiveFontSize = (): number => {
+        switch (activeField) {
+            case 'drawTitle': return drawTitleSize;
+            case 'drawContentTopLeft': return drawContentTopLeftSize;
+            case 'drawContentTopRight': return drawContentTopRightSize;
+            case 'drawContentBottomLeft': return drawContentBottomLeftSize;
+            case 'drawContentBottomRight': return drawContentBottomRightSize;
+            case 'drawCode': return drawCodeSize;
+            case 'drawFooter': return drawFooterSize;
+            default: return drawContentTopLeftSize;
+        }
+    };
+
+    const setDrawActiveFontSize = (newVal: number | ((prev: number) => number)) => {
+        const getVal = (prev: number) => typeof newVal === 'function' ? newVal(prev) : newVal;
+        switch (activeField) {
+            case 'drawTitle': setDrawTitleSize(getVal); break;
+            case 'drawContentTopLeft': setDrawContentTopLeftSize(getVal); break;
+            case 'drawContentTopRight': setDrawContentTopRightSize(getVal); break;
+            case 'drawContentBottomLeft': setDrawContentBottomLeftSize(getVal); break;
+            case 'drawContentBottomRight': setDrawContentBottomRightSize(getVal); break;
+            case 'drawCode': setDrawCodeSize(getVal); break;
+            case 'drawFooter': setDrawFooterSize(getVal); break;
+            default: setDrawContentTopLeftSize(getVal);
+        }
+    };
+
+    const getDrawActiveFieldLabel = () => {
+        switch (activeField) {
+            case 'drawTitle': return 'Cỡ chữ Tiêu đề';
+            case 'drawContentTopLeft': return 'Cỡ chữ Giải thưởng trái';
+            case 'drawContentTopRight': return 'Cỡ chữ Giải thưởng phải';
+            case 'drawContentBottomLeft': return 'Cỡ chữ Thông tin trái';
+            case 'drawContentBottomRight': return 'Cỡ chữ Thông tin phải';
+            case 'drawCode': return 'Cỡ chữ Mã số';
+            case 'drawFooter': return 'Cỡ chữ Siêu thị';
+            default: return 'Cỡ chữ Giải thưởng trái';
         }
     };
 
@@ -1546,6 +1592,7 @@ export default function StickerPrinterView() {
                                 setStickerType('draw');
                                 setBgImage('/frame/bg_phieu.png');
                                 updateSubQueryParam('draw');
+                                setActiveField('drawContentTopLeft');
                             }}
                             className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
                                 stickerMode === 'sticker' && stickerType === 'draw' 
@@ -1576,15 +1623,16 @@ export default function StickerPrinterView() {
                     {stickerMode === 'sticker' && (
                         <div className="flex items-center gap-1 ml-0.5 lg:ml-1 pl-1.5 lg:pl-2 border-l border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-left-2 duration-200">
                             <span className="text-[10px] lg:text-[11px] font-medium text-slate-500 mr-0.5 dark:text-slate-400">
-                                {stickerType === 'draw' ? 'Cỡ chữ giải thưởng:' : `${getActiveFieldLabel()}:`}
+                                {stickerType === 'draw' ? `${getDrawActiveFieldLabel()}:` : `${getActiveFieldLabel()}:`}
                             </span>
                             <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[22px] lg:h-[26px]">
                                 <button 
                                     onMouseDown={(e) => e.preventDefault()}
                                     onClick={() => {
                                         if (stickerType === 'draw') {
-                                            const newSize = Math.max(1, drawContentTopSize - 0.2);
-                                            setDrawContentTopSize(newSize);
+                                            const curSize = getDrawActiveFontSize();
+                                            const newSize = Math.max(1, curSize - 0.2);
+                                            setDrawActiveFontSize(newSize);
                                             applyFontSizeToSelection(newSize);
                                         } else {
                                             setActiveFontSize(s => Math.max(1, s - 0.2));
@@ -1596,14 +1644,15 @@ export default function StickerPrinterView() {
                                     -
                                 </button>
                                 <span className="px-0 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 w-6 lg:w-8 text-center">
-                                    {stickerType === 'draw' ? drawContentTopSize.toFixed(1) : getActiveFontSize()}
+                                    {stickerType === 'draw' ? getDrawActiveFontSize().toFixed(1) : getActiveFontSize()}
                                 </span>
                                 <button 
                                     onMouseDown={(e) => e.preventDefault()}
                                     onClick={() => {
                                         if (stickerType === 'draw') {
-                                            const newSize = drawContentTopSize + 0.2;
-                                            setDrawContentTopSize(newSize);
+                                            const curSize = getDrawActiveFontSize();
+                                            const newSize = curSize + 0.2;
+                                            setDrawActiveFontSize(newSize);
                                             applyFontSizeToSelection(newSize);
                                         } else {
                                             setActiveFontSize(s => s + 0.2);
@@ -1671,7 +1720,13 @@ export default function StickerPrinterView() {
                         setPreviewName={setPreviewName}
                         drawTickets={drawTickets}
                         setDrawTickets={setDrawTickets}
-                        drawContentTopSize={drawContentTopSize}
+                        drawContentTopLeftSize={drawContentTopLeftSize}
+                        drawContentTopRightSize={drawContentTopRightSize}
+                        drawContentBottomLeftSize={drawContentBottomLeftSize}
+                        drawContentBottomRightSize={drawContentBottomRightSize}
+                        drawTitleSize={drawTitleSize}
+                        drawCodeSize={drawCodeSize}
+                        drawFooterSize={drawFooterSize}
                     />
                 </div>
                 <StickerPrintControls
