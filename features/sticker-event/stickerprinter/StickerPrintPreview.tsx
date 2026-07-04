@@ -708,6 +708,38 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         }
     };
 
+    const pressTimeoutRef = React.useRef<any>(null);
+    const adjustIntervalRef = React.useRef<any>(null);
+
+    React.useEffect(() => {
+        return () => {
+            if (pressTimeoutRef.current) clearTimeout(pressTimeoutRef.current);
+            if (adjustIntervalRef.current) clearInterval(adjustIntervalRef.current);
+        };
+    }, []);
+
+    const startAdjustInterval = (direction: number) => {
+        clearAdjustTimer();
+        adjustFontSize(direction * 0.2);
+        
+        pressTimeoutRef.current = setTimeout(() => {
+            adjustIntervalRef.current = setInterval(() => {
+                adjustFontSize(direction * 0.1);
+            }, 80);
+        }, 400);
+    };
+
+    const clearAdjustTimer = () => {
+        if (pressTimeoutRef.current) {
+            clearTimeout(pressTimeoutRef.current);
+            pressTimeoutRef.current = null;
+        }
+        if (adjustIntervalRef.current) {
+            clearInterval(adjustIntervalRef.current);
+            adjustIntervalRef.current = null;
+        }
+    };
+
     return (
         <div className="bg-white p-0 shadow-xl border border-slate-200 shrink-0 w-full max-w-sm mx-auto overflow-hidden no-print-bg">
             <style>
@@ -1021,9 +1053,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       height: 30.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: flex-start;
-                      align-items: flex-start;
-                      text-align: left;
+                      justify-content: center;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1044,9 +1076,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       height: 30.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: flex-start;
-                      align-items: flex-start;
-                      text-align: left;
+                      justify-content: center;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
@@ -1066,9 +1098,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       height: 30.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: flex-start;
-                      align-items: flex-start;
-                      text-align: left;
+                      justify-content: center;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1089,9 +1121,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       height: 30.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: flex-start;
-                      align-items: flex-start;
-                      text-align: left;
+                      justify-content: center;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1204,9 +1236,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       height: 30.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: flex-start;
-                      align-items: flex-start;
-                      text-align: left;
+                      justify-content: center;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
@@ -1223,9 +1255,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       height: 30.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: flex-start;
-                      align-items: flex-start;
-                      text-align: left;
+                      justify-content: center;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
@@ -1242,9 +1274,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       height: 30.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: flex-start;
-                      align-items: flex-start;
-                      text-align: left;
+                      justify-content: center;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1262,9 +1294,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       height: 30.0%;
                       display: flex;
                       flex-direction: column;
-                      justify-content: flex-start;
-                      align-items: flex-start;
-                      text-align: left;
+                      justify-content: center;
+                      align-items: center;
+                      text-align: center;
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 2.2cqw;
@@ -1514,10 +1546,19 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         {/* Size adjust controls: - [input] + */}
                         <div className="flex items-center gap-1 bg-slate-800/80 rounded px-1.5 py-0.5 border border-slate-700/50 mr-1 no-print">
                             <button
-                                onMouseDown={(e) => e.preventDefault()}
-                                onClick={() => adjustFontSize(-0.2)}
-                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
-                                title="Giảm size chữ"
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    startAdjustInterval(-1);
+                                }}
+                                onMouseUp={clearAdjustTimer}
+                                onMouseLeave={clearAdjustTimer}
+                                onTouchStart={(e) => {
+                                    e.preventDefault();
+                                    startAdjustInterval(-1);
+                                }}
+                                onTouchEnd={clearAdjustTimer}
+                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors select-none"
+                                title="Giảm size chữ (Nhấn giữ để tự giảm)"
                             >
                                 -
                             </button>
@@ -1531,10 +1572,19 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 title="Kích thước cqw"
                             />
                             <button
-                                onMouseDown={(e) => e.preventDefault()}
-                                onClick={() => adjustFontSize(0.2)}
-                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
-                                title="Tăng size chữ"
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
+                                    startAdjustInterval(1);
+                                }}
+                                onMouseUp={clearAdjustTimer}
+                                onMouseLeave={clearAdjustTimer}
+                                onTouchStart={(e) => {
+                                    e.preventDefault();
+                                    startAdjustInterval(1);
+                                }}
+                                onTouchEnd={clearAdjustTimer}
+                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors select-none"
+                                title="Tăng size chữ (Nhấn giữ để tự tăng)"
                             >
                                 +
                             </button>
