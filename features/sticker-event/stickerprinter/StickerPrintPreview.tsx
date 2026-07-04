@@ -554,6 +554,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     font-size: 40%;
                     letter-spacing: normal;
                     font-weight: 400 !important;
+                }
                 .sticker-container[data-type="gio_vang"] .extra1,
                 .sticker-container[data-type="gio_vang"] .footer-text {
                     display: none !important;
