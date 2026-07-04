@@ -405,18 +405,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
     // Selection listener for floating text formatting toolbar
     const [toolbarPos, setToolbarPos] = React.useState<{ top: number; left: number } | null>(null);
+    const [activeMenu, setActiveMenu] = React.useState<'font' | 'size' | null>(null);
     const savedRangeRef = useRef<Range | null>(null);
 
     React.useEffect(() => {
         const handleSelectionChange = () => {
             const selection = window.getSelection();
             if (!selection || selection.rangeCount === 0 || selection.isCollapsed) {
-                // If focus is on the dropdown or options of the toolbar, don't hide the toolbar
-                const activeEl = document.activeElement;
-                if (activeEl && (activeEl.tagName === 'SELECT' || activeEl.tagName === 'OPTION')) {
-                    return;
-                }
                 setToolbarPos(null);
+                setActiveMenu(null);
                 return;
             }
 
@@ -437,6 +434,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
             if (!isInsideEditable) {
                 setToolbarPos(null);
+                setActiveMenu(null);
                 return;
             }
 
@@ -452,6 +450,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 });
             } else {
                 setToolbarPos(null);
+                setActiveMenu(null);
             }
         };
 
@@ -1333,7 +1332,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 )}
             {toolbarPos && (
                 <div 
-                    className="fixed z-[9999] -translate-x-1/2 flex items-center gap-1.5 bg-slate-900/95 dark:bg-slate-950/95 border border-slate-700/60 p-1.5 rounded-lg shadow-xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 print:hidden"
+                    className="fixed z-[9999] -translate-x-1/2 flex items-center gap-1 bg-slate-900/95 dark:bg-slate-950/95 border border-slate-700/60 p-1.5 rounded-lg shadow-xl backdrop-blur-md animate-in fade-in zoom-in-95 duration-150 print:hidden"
                     style={{ 
                         top: `${toolbarPos.top}px`, 
                         left: `${toolbarPos.left}px` 
@@ -1343,45 +1342,74 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         e.preventDefault();
                     }}
                 >
-                    {/* Font Dropdown */}
-                    <select 
-                        className="bg-transparent text-white text-[11px] font-semibold px-2 py-0.5 border-r border-slate-700/80 outline-none cursor-pointer text-slate-100 hover:bg-slate-800 rounded transition-colors"
-                        onChange={(e) => {
-                            applyStyleToSelection('fontFamily', e.target.value);
-                        }}
-                        defaultValue=""
-                    >
-                        <option value="" disabled className="bg-slate-900 text-white">Font</option>
-                        <option value="'UTM Avo', sans-serif" className="bg-slate-900 text-white">UTM Avo</option>
-                        <option value="'UTM Colossalis', sans-serif" className="bg-slate-900 text-white">Colossalis</option>
-                        <option value="'Alata Regular', sans-serif" className="bg-slate-900 text-white">Alata</option>
-                        <option value="'Inter', sans-serif" className="bg-slate-900 text-white">Inter</option>
-                    </select>
+                    {/* Font Custom Dropdown */}
+                    <div className="relative">
+                        <button 
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => setActiveMenu(activeMenu === 'font' ? null : 'font')}
+                            className="bg-transparent text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-0.5"
+                        >
+                            Font <span className="text-[7px] opacity-75">▼</span>
+                        </button>
+                        
+                        {activeMenu === 'font' && (
+                            <div 
+                                onMouseDown={(e) => e.preventDefault()}
+                                className="absolute bottom-full left-0 mb-2 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl py-1 flex flex-col min-w-[120px] z-[10000] overflow-hidden"
+                            >
+                                {[
+                                    { name: 'UTM Avo', val: "'UTM Avo', sans-serif" },
+                                    { name: 'Colossalis', val: "'UTM Colossalis', sans-serif" },
+                                    { name: 'Alata', val: "'Alata Regular', sans-serif" },
+                                    { name: 'Inter', val: "'Inter', sans-serif" }
+                                ].map(font => (
+                                    <button
+                                        key={font.val}
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => {
+                                            applyStyleToSelection('fontFamily', font.val);
+                                            setActiveMenu(null);
+                                        }}
+                                        className="px-3 py-1.5 text-left text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
+                                    >
+                                        {font.name}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
-                    {/* Size Dropdown */}
-                    <select 
-                        className="bg-transparent text-white text-[11px] font-semibold px-1 py-0.5 border-r border-slate-700/80 outline-none cursor-pointer text-slate-100 hover:bg-slate-800 rounded transition-colors w-16"
-                        onChange={(e) => {
-                            applyStyleToSelection('fontSize', `${e.target.value}cqw`);
-                        }}
-                        defaultValue=""
-                    >
-                        <option value="" disabled className="bg-slate-900 text-white">Size</option>
-                        <option value="1.0" className="bg-slate-900 text-white">1.0 cqw</option>
-                        <option value="1.5" className="bg-slate-900 text-white">1.5 cqw</option>
-                        <option value="2.0" className="bg-slate-900 text-white">2.0 cqw</option>
-                        <option value="2.5" className="bg-slate-900 text-white">2.5 cqw</option>
-                        <option value="3.0" className="bg-slate-900 text-white">3.0 cqw</option>
-                        <option value="3.5" className="bg-slate-900 text-white">3.5 cqw</option>
-                        <option value="4.0" className="bg-slate-900 text-white">4.0 cqw</option>
-                        <option value="4.5" className="bg-slate-900 text-white">4.5 cqw</option>
-                        <option value="5.0" className="bg-slate-900 text-white">5.0 cqw</option>
-                        <option value="6.0" className="bg-slate-900 text-white">6.0 cqw</option>
-                        <option value="7.0" className="bg-slate-900 text-white">7.0 cqw</option>
-                        <option value="8.0" className="bg-slate-900 text-white">8.0 cqw</option>
-                        <option value="9.0" className="bg-slate-900 text-white">9.0 cqw</option>
-                        <option value="10.0" className="bg-slate-900 text-white">10.0 cqw</option>
-                    </select>
+                    {/* Size Custom Dropdown */}
+                    <div className="relative">
+                        <button 
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => setActiveMenu(activeMenu === 'size' ? null : 'size')}
+                            className="bg-transparent text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-1"
+                        >
+                            Size <span className="text-[7px] opacity-75">▼</span>
+                        </button>
+                        
+                        {activeMenu === 'size' && (
+                            <div 
+                                onMouseDown={(e) => e.preventDefault()}
+                                className="absolute bottom-full left-0 mb-2 bg-slate-950 border border-slate-800 rounded-lg shadow-2xl py-1 flex flex-col min-w-[80px] max-h-[160px] overflow-y-auto z-[10000] scrollbar-thin overflow-x-hidden"
+                            >
+                                {['1.0', '1.5', '2.0', '2.5', '3.0', '3.5', '4.0', '4.5', '5.0', '6.0', '7.0', '8.0', '9.0', '10.0'].map(sz => (
+                                    <button
+                                        key={sz}
+                                        onMouseDown={(e) => e.preventDefault()}
+                                        onClick={() => {
+                                            applyStyleToSelection('fontSize', `${sz}cqw`);
+                                            setActiveMenu(null);
+                                        }}
+                                        className="px-3 py-1.5 text-center text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
+                                    >
+                                        {sz} cqw
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
 
                     {/* Bold button */}
                     <button
