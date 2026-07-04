@@ -211,11 +211,46 @@ export default function StickerPrinterView() {
     
     // Ticket draw state
     const [drawTickets, setDrawTickets] = useState<TicketDrawData[]>([
-        { id: '1', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
-        { id: '2', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
-        { id: '3', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
-        { id: '4', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
+        { id: '1', title: '', code: '1', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
+        { id: '2', title: '', code: '2', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
+        { id: '3', title: '', code: '3', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
+        { id: '4', title: '', code: '4', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' },
     ]);
+    const [drawStartNumber, setDrawStartNumber] = useState<number>(1);
+    const [drawTotalTickets, setDrawTotalTickets] = useState<number>(4);
+    const [drawAutoIncrement, setDrawAutoIncrement] = useState<boolean>(true);
+
+    useEffect(() => {
+        if (stickerType !== 'draw') return;
+
+        setDrawTickets(prev => {
+            const firstTicketData = prev[0] || { id: '1', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' };
+            const newTickets: TicketDrawData[] = [];
+            for (let i = 0; i < drawTotalTickets; i++) {
+                const ticketCode = drawAutoIncrement ? (drawStartNumber + i).toString() : (prev[i]?.code || '');
+                if (i === 0) {
+                    newTickets.push({
+                        ...firstTicketData,
+                        id: '1',
+                        code: drawAutoIncrement ? drawStartNumber.toString() : (firstTicketData.code || '1')
+                    });
+                } else {
+                    newTickets.push({
+                        id: (i + 1).toString(),
+                        title: '', 
+                        footer: '',
+                        contentTop: '',
+                        contentTopRight: '',
+                        contentBottom: '',
+                        contentBottomRight: '',
+                        code: ticketCode
+                    });
+                }
+            }
+            return newTickets;
+        });
+    }, [drawStartNumber, drawTotalTickets, drawAutoIncrement, stickerType]);
+
     const [drawContentTopLeftSize, setDrawContentTopLeftSize] = useState(3.5);
     const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(3.5);
     const [drawContentBottomLeftSize, setDrawContentBottomLeftSize] = useState(2.2);
@@ -1720,6 +1755,7 @@ export default function StickerPrinterView() {
                         setPreviewName={setPreviewName}
                         drawTickets={drawTickets}
                         setDrawTickets={setDrawTickets}
+                        drawAutoIncrement={drawAutoIncrement}
                         drawContentTopLeftSize={drawContentTopLeftSize}
                         drawContentTopRightSize={drawContentTopRightSize}
                         drawContentBottomLeftSize={drawContentBottomLeftSize}
@@ -1772,6 +1808,13 @@ export default function StickerPrinterView() {
                     priceSource={priceSource}
                     setPriceSource={setPriceSource}
                     handleErpPriceUpload={handleErpPriceUpload}
+                    stickerType={stickerType}
+                    drawStartNumber={drawStartNumber}
+                    setDrawStartNumber={setDrawStartNumber}
+                    drawTotalTickets={drawTotalTickets}
+                    setDrawTotalTickets={setDrawTotalTickets}
+                    drawAutoIncrement={drawAutoIncrement}
+                    setDrawAutoIncrement={setDrawAutoIncrement}
                 />
             </div>
 

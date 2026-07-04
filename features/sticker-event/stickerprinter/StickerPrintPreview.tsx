@@ -43,6 +43,7 @@ interface StickerPrintPreviewProps {
     drawTitleSize?: number;
     drawCodeSize?: number;
     drawFooterSize?: number;
+    drawAutoIncrement?: boolean;
 }
 
 interface DrawTicketBlockProps {
@@ -59,6 +60,8 @@ interface DrawTicketBlockProps {
     drawFooterSize?: number;
     activeField?: string;
     setActiveField?: (field: any) => void;
+    isAutoIncrement?: boolean;
+    totalIndex?: number;
 }
 
 const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ 
@@ -74,7 +77,9 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({
     drawCodeSize,
     drawFooterSize,
     activeField,
-    setActiveField
+    setActiveField,
+    isAutoIncrement,
+    totalIndex
 }) => {
     const handleTitleChange = useCallback((text: string) => {
         onChange({ title: text });
@@ -112,7 +117,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({
     const contentBottomEditable = useContentEditable(ticket.contentBottom || '', handleContentBottomChange, true);
     const contentBottomRightEditable = useContentEditable(ticket.contentBottomRight || '', handleContentBottomRightChange, true);
 
-    const isFirst = index === 0;
+    const isFirst = totalIndex !== undefined ? totalIndex === 0 : index === 0;
     const activeFirstTicket = firstTicket || ticket;
 
     return (
@@ -183,16 +188,25 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({
             )}
 
             {/* Code Left */}
-            <div 
-                ref={codeEditable.ref}
-                onInput={codeEditable.handleInput}
-                onClick={() => setActiveField?.('drawCode')}
-                contentEditable 
-                suppressContentEditableWarning
-                className={`input-code-left ${activeField === 'drawCode' ? 'active-field' : ''}`}
-                style={{ fontSize: `${drawCodeSize || 3.8}cqw` }}
-                data-placeholder="Số"
-            />
+            {isAutoIncrement ? (
+                <div 
+                    className="display-code-left"
+                    style={{ fontSize: `${drawCodeSize || 3.8}cqw` }}
+                >
+                    {ticket.code}
+                </div>
+            ) : (
+                <div 
+                    ref={codeEditable.ref}
+                    onInput={codeEditable.handleInput}
+                    onClick={() => setActiveField?.('drawCode')}
+                    contentEditable 
+                    suppressContentEditableWarning
+                    className={`input-code-left ${activeField === 'drawCode' ? 'active-field' : ''}`}
+                    style={{ fontSize: `${drawCodeSize || 3.8}cqw` }}
+                    data-placeholder="Số"
+                />
+            )}
             {/* Code Right (Syncs automatically) */}
             <div 
                 className="display-code-right"
@@ -400,6 +414,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     drawTitleSize,
     drawCodeSize,
     drawFooterSize,
+    drawAutoIncrement,
 }) => {
     const percentRef = useRef<HTMLDivElement>(null);
 
@@ -1226,30 +1241,52 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
             </style>
             <div id="print-section" className="w-full">
                 {stickerType === 'draw' ? (
-                    <div className="sticker-container" data-type="draw" style={{ backgroundImage: `url(${bgImage})` }}>
-                        {drawTickets.map((ticket, index) => (
-                            <DrawTicketBlock 
-                                key={ticket.id || index} 
-                                index={index} 
-                                ticket={ticket} 
-                                firstTicket={drawTickets[0]}
-                                drawContentTopLeftSize={drawContentTopLeftSize}
-                                drawContentTopRightSize={drawContentTopRightSize}
-                                drawContentBottomLeftSize={drawContentBottomLeftSize}
-                                drawContentBottomRightSize={drawContentBottomRightSize}
-                                drawTitleSize={drawTitleSize}
-                                drawCodeSize={drawCodeSize}
-                                drawFooterSize={drawFooterSize}
-                                activeField={activeField}
-                                setActiveField={setActiveField}
-                                onChange={(updates) => {
-                                    if (setDrawTickets) {
-                                        setDrawTickets(prev => prev.map((t, idx) => idx === index ? { ...t, ...updates } : t));
-                                    }
-                                }} 
-                            />
-                        ))}
-                    </div>
+                    (() => {
+                        const pages: TicketDrawData[][] = [];
+                        for (let i = 0; i < drawTickets.length; i += 4) {
+                            pages.push(drawTickets.slice(i, i + 4));
+                        }
+                        return pages.map((pageTickets, pageIndex) => (
+                            <div 
+                                key={pageIndex} 
+                                className="sticker-container" 
+                                data-type="draw" 
+                                style={{ 
+                                    backgroundImage: `url(${bgImage})`,
+                                    pageBreakAfter: pageIndex < pages.length - 1 ? 'always' : 'auto',
+                                    marginBottom: pageIndex < pages.length - 1 ? '20px' : '0'
+                                }}
+                            >
+                                {pageTickets.map((ticket, index) => {
+                                    const totalIndex = pageIndex * 4 + index;
+                                    return (
+                                        <DrawTicketBlock 
+                                            key={ticket.id || totalIndex} 
+                                            index={index} 
+                                            ticket={ticket} 
+                                            firstTicket={drawTickets[0]}
+                                            isAutoIncrement={drawAutoIncrement}
+                                            drawContentTopLeftSize={drawContentTopLeftSize}
+                                            drawContentTopRightSize={drawContentTopRightSize}
+                                            drawContentBottomLeftSize={drawContentBottomLeftSize}
+                                            drawContentBottomRightSize={drawContentBottomRightSize}
+                                            drawTitleSize={drawTitleSize}
+                                            drawCodeSize={drawCodeSize}
+                                            drawFooterSize={drawFooterSize}
+                                            activeField={activeField}
+                                            setActiveField={setActiveField}
+                                            totalIndex={totalIndex}
+                                            onChange={(updates) => {
+                                                if (setDrawTickets) {
+                                                    setDrawTickets(prev => prev.map((t, idx) => idx === totalIndex ? { ...t, ...updates } : t));
+                                                }
+                                            }} 
+                                        />
+                                    );
+                                })}
+                            </div>
+                        ));
+                    })()
                 ) : batchItems.length > 0 ? (
                     <>
                         {batchItems.filter(it => it.selected).slice(0, 20).map((item, index, arr) => (
