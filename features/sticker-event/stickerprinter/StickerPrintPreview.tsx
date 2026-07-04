@@ -416,6 +416,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     drawFooterSize,
     drawAutoIncrement,
 }) => {
+    const [activeDrawPage, setActiveDrawPage] = React.useState(0);
+    const totalDrawPages = Math.ceil((drawTickets || []).length / 4);
+
+    React.useEffect(() => {
+        if (activeDrawPage >= totalDrawPages) {
+            setActiveDrawPage(0);
+        }
+    }, [drawTickets?.length, totalDrawPages, activeDrawPage]);
+
     const percentRef = useRef<HTMLDivElement>(null);
 
     // Selection listener for floating text formatting toolbar
@@ -676,6 +685,20 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     overflow: hidden;
                     container-type: inline-size;
                     font-family: 'Arial', sans-serif;
+                }
+
+                @media screen {
+                    .sticker-container.draw-page {
+                        display: none;
+                    }
+                    .sticker-container.draw-page.active-preview-page {
+                        display: block;
+                    }
+                }
+                @media print {
+                    .sticker-container.draw-page {
+                        display: block !important;
+                    }
                 }
 
                 .sticker-container > div {
@@ -1054,7 +1077,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 3.8cqw;
-                      color: #ef4444;
+                      color: #000000;
                       background: transparent;
                       outline: none;
                       cursor: text;
@@ -1073,7 +1096,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                        font-family: 'UTM Avo', sans-serif;
                        font-weight: bold;
                        font-size: 3.8cqw;
-                       color: #ef4444;
+                       color: #000000;
                        text-align: center;
                        pointer-events: none;
                        user-select: none;
@@ -1091,7 +1114,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       font-size: 3.8cqw;
-                      color: #ef4444;
+                      color: #000000;
                       text-align: center;
                       pointer-events: none;
                       user-select: none;
@@ -1267,7 +1290,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         return pages.map((pageTickets, pageIndex) => (
                             <div 
                                 key={pageIndex} 
-                                className="sticker-container" 
+                                className={`sticker-container draw-page ${pageIndex === activeDrawPage ? 'active-preview-page' : ''}`}
                                 data-type="draw" 
                                 style={{ 
                                     backgroundImage: `url(${bgImage})`,
@@ -1516,6 +1539,55 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                 );
             })()}
             </div>
+            {stickerType === 'draw' && totalDrawPages > 1 && (
+                <div className="flex flex-wrap items-center justify-center gap-1.5 mt-4 p-2 bg-slate-50 dark:bg-slate-900/40 rounded-xl border border-slate-100 dark:border-slate-800/40 no-print">
+                    <span className="text-[10px] lg:text-[11px] font-bold text-slate-500 mr-1.5 uppercase">
+                        Trang xem trước:
+                    </span>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => setActiveDrawPage(p => Math.max(0, p - 1))}
+                            disabled={activeDrawPage === 0}
+                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50"
+                        >
+                            &lt;
+                        </button>
+                        {Array.from({ length: totalDrawPages }).map((_, idx) => {
+                            if (totalDrawPages > 5) {
+                                if (idx !== 0 && idx !== totalDrawPages - 1 && Math.abs(idx - activeDrawPage) > 1) {
+                                    if (idx === 1 && activeDrawPage > 2) {
+                                        return <span key={idx} className="text-[10px] text-slate-400">...</span>;
+                                    }
+                                    if (idx === totalDrawPages - 2 && activeDrawPage < totalDrawPages - 3) {
+                                        return <span key={idx} className="text-[10px] text-slate-400">...</span>;
+                                    }
+                                    return null;
+                                }
+                            }
+                            return (
+                                <button
+                                    key={idx}
+                                    onClick={() => setActiveDrawPage(idx)}
+                                    className={`w-6 h-6 flex items-center justify-center rounded-lg text-xs font-bold transition-all ${
+                                        activeDrawPage === idx
+                                            ? 'bg-rose-600 text-white shadow-sm font-black'
+                                            : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    {idx + 1}
+                                </button>
+                            );
+                        })}
+                        <button
+                            onClick={() => setActiveDrawPage(p => Math.min(totalDrawPages - 1, p + 1))}
+                            disabled={activeDrawPage === totalDrawPages - 1}
+                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50"
+                        >
+                            &gt;
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
