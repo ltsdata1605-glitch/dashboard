@@ -1013,10 +1013,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
                  .draw-ticket-block .input-title-left {
                       position: absolute;
-                      left: 2.2%;
-                      top: 2.0%;
-                      width: 45.4%;
-                      height: 16%;
+                      left: 4.0%;
+                      top: 4.5%;
+                      width: 32.5%;
+                      height: 10.5%;
                       display: block;
                       
                       
@@ -1029,16 +1029,16 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       cursor: text;
                       text-align: left;
                       white-space: normal;
-                      line-height: 1.2;
+                      line-height: 10.5%;
                       overflow: hidden;
 }
  
                   .draw-ticket-block .display-title-right {
                       position: absolute;
-                      left: 52.4%;
-                      top: 2.0%;
-                      width: 45.4%;
-                      height: 16%;
+                      left: 54.0%;
+                      top: 4.5%;
+                      width: 32.5%;
+                      height: 10.5%;
                       display: block;
                       
                       
@@ -1050,7 +1050,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       pointer-events: none;
                       user-select: none;
                       white-space: normal;
-                      line-height: 1.2;
+                      line-height: 10.5%;
                       overflow: hidden;
 }
  
@@ -1229,10 +1229,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
                   .draw-ticket-block .display-title-left {
                       position: absolute;
-                      left: 2.2%;
-                      top: 2.0%;
-                      width: 45.4%;
-                      height: 16%;
+                      left: 4.0%;
+                      top: 4.5%;
+                      width: 32.5%;
+                      height: 10.5%;
                       display: block;
                       
                       
@@ -1242,7 +1242,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       color: #000;
                       text-align: left;
                       white-space: normal;
-                      line-height: 1.2;
+                      line-height: 10.5%;
                       overflow: hidden;
 }
 
