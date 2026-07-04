@@ -967,6 +967,9 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                      height: 25%;
                      left: 0;
                  }
+                 .draw-ticket-block > div {
+                     overflow: hidden;
+                 }
                  .draw-ticket-block[data-index="0"] { top: 0%; }
                  .draw-ticket-block[data-index="1"] { top: 25%; }
                  .draw-ticket-block[data-index="2"] { top: 50%; }
