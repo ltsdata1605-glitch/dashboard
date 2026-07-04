@@ -1311,7 +1311,35 @@ export default function StickerPrinterView() {
 
         // Then append queued manual pages
         selectedManualPages.forEach(page => {
-            printHost.innerHTML += generatePageHtml(page, priceSource, stickerType, bgImage, discountDisplayMode);
+            let finalHeader = page.header || '';
+            let finalSubHeader = page.subHeader || '';
+            let finalFooter = page.footer || '';
+
+            if (stickerType === 'gio_vang') {
+                // If printing Giờ Vàng, override header if it's a Giá Sốc header or empty
+                const isGiaSocHeader = !finalHeader || finalHeader === 'SẢN PHẨM GIÁ SỐC' || finalHeader === 'QUẠT ĐIỀU HOÀ' || !finalHeader.toUpperCase().startsWith('TỪ');
+                if (isGiaSocHeader) {
+                    finalHeader = headerTextContent;
+                }
+                // Override subHeader if empty or invalid for Giờ Vàng
+                if (!finalSubHeader || !finalSubHeader.toUpperCase().includes('SUẤT')) {
+                    finalSubHeader = subHeaderTextContent;
+                }
+            } else if (stickerType === 'gia_soc') {
+                // If printing Giá Sốc, override header if it contains Giờ Vàng time range
+                const isGioVangHeader = finalHeader && (finalHeader.toUpperCase().startsWith('TỪ') || finalHeader.includes('/'));
+                if (isGioVangHeader) {
+                    finalHeader = headerTextContent;
+                }
+            }
+
+            const tempPage: StickerPage = {
+                ...page,
+                header: finalHeader,
+                subHeader: finalSubHeader,
+                footer: finalFooter || footerTextContent
+            };
+            printHost.innerHTML += generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode);
         });
 
         document.body.appendChild(printHost);
