@@ -50,6 +50,17 @@ interface StickerPrintControlsProps {
     priceSource: 'sale' | 'service';
     setPriceSource: (source: 'sale' | 'service') => void;
     handleErpPriceUpload: (e: React.ChangeEvent<HTMLInputElement>, type: 'purifier' | 'appliance') => void;
+    
+    // Lucky draw props
+    stickerType?: 'gia_soc' | 'gio_vang' | 'draw';
+    drawPrefix?: string;
+    setDrawPrefix?: (val: string) => void;
+    drawStart?: number;
+    setDrawStart?: (val: number) => void;
+    drawCount?: number;
+    setDrawCount?: (val: number) => void;
+    drawPadding?: number;
+    setDrawPadding?: (val: number) => void;
 }
 
 export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
@@ -95,6 +106,15 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     priceSource,
     setPriceSource,
     handleErpPriceUpload,
+    stickerType,
+    drawPrefix,
+    setDrawPrefix,
+    drawStart,
+    setDrawStart,
+    drawCount,
+    setDrawCount,
+    drawPadding,
+    setDrawPadding,
 }) => {
     const selectedCount = batchItems.filter(i => i.selected).length;
     const selectedManualPagesCount = manualPages.filter(p => p.selected !== false).length;
@@ -133,16 +153,18 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 >
                     Dữ liệu
                 </button>
-                <button
-                    onClick={() => setActiveSubTab('queue')}
-                    className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
-                        activeSubTab === 'queue'
-                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                    }`}
-                >
-                    D.Sách ({manualPages.length})
-                </button>
+                {stickerType !== 'draw' && (
+                    <button
+                        onClick={() => setActiveSubTab('queue')}
+                        className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
+                            activeSubTab === 'queue'
+                                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                        }`}
+                    >
+                        D.Sách ({manualPages.length})
+                    </button>
+                )}
                 <button
                     onClick={() => setActiveSubTab('history')}
                     className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
@@ -175,47 +197,114 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             </Button>
                         </div>
 
-                        {/* Import from template */}
-                        <div className="p-2 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
-                            <p className="text-[10px] lg:text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1">
-                                <FileSpreadsheet size={12} />
-                                Nhập từ File Mẫu
-                            </p>
-                            <div className="flex gap-1.5">
-                                <button 
-                                    onClick={downloadTemplate}
-                                    className="flex-1 flex items-center justify-center gap-1 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm"
-                                >
-                                    <Download size={10} />
-                                    Tải File Mẫu
-                                </button>
-                                <label className="flex-1 flex items-center justify-center gap-1 py-1 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm">
-                                    <Upload size={10} />
-                                    Nhập File Mẫu
-                                    <input type="file" accept=".xlsx, .xls, .csv" onChange={handleTemplateUpload} className="hidden" />
-                                </label>
+                        {stickerType === 'draw' ? (
+                            <div className="space-y-4 p-4 bg-slate-50 dark:bg-slate-900/30 rounded-xl border border-slate-100 dark:border-slate-700/30 animate-in fade-in duration-200">
+                                <h3 className="font-bold text-xs text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-2">
+                                    CẤU HÌNH NHẢY SỐ TỰ ĐỘNG
+                                </h3>
+                                
+                                <div className="space-y-3">
+                                    <div>
+                                        <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                            Tiền tố mã số (Prefix):
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            value={drawPrefix || ''}
+                                            onChange={(e) => setDrawPrefix?.(e.target.value)}
+                                            placeholder="Ví dụ: MB"
+                                            className="h-8 text-xs font-bold"
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                                Số bắt đầu:
+                                            </label>
+                                            <Input
+                                                type="number"
+                                                value={drawStart || 1}
+                                                onChange={(e) => setDrawStart?.(Number(e.target.value))}
+                                                className="h-8 text-xs font-bold"
+                                                min={1}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                                Độ dài chữ số:
+                                            </label>
+                                            <Input
+                                                type="number"
+                                                value={drawPadding || 4}
+                                                onChange={(e) => setDrawPadding?.(Number(e.target.value))}
+                                                className="h-8 text-xs font-bold"
+                                                min={1}
+                                                max={10}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[11px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                                            Số lượng phiếu cần in:
+                                        </label>
+                                        <Input
+                                            type="number"
+                                            value={drawCount || 4}
+                                            onChange={(e) => setDrawCount?.(Number(e.target.value))}
+                                            className="h-8 text-xs font-bold"
+                                            min={1}
+                                        />
+                                        <span className="text-[10px] text-slate-400 mt-1 block leading-relaxed">
+                                            * Sẽ tự động phân trang và in ra <strong>{Math.ceil((drawCount || 4) / 4)} trang A4</strong> dọc (4 phiếu rút thăm xếp dọc/trang).
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        ) : (
+                            <>
+                                {/* Import from template */}
+                                <div className="p-2 bg-emerald-50 dark:bg-emerald-900/10 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
+                                    <p className="text-[10px] lg:text-[11px] font-bold text-emerald-700 dark:text-emerald-400 mb-1 flex items-center gap-1">
+                                        <FileSpreadsheet size={12} />
+                                        Nhập từ File Mẫu
+                                    </p>
+                                    <div className="flex gap-1.5">
+                                        <button 
+                                            onClick={downloadTemplate}
+                                            className="flex-1 flex items-center justify-center gap-1 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm"
+                                        >
+                                            <Download size={10} />
+                                            Tải File Mẫu
+                                        </button>
+                                        <label className="flex-1 flex items-center justify-center gap-1 py-1 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm">
+                                            <Upload size={10} />
+                                            Nhập File Mẫu
+                                            <input type="file" accept=".xlsx, .xls, .csv" onChange={handleTemplateUpload} className="hidden" />
+                                        </label>
+                                    </div>
+                                </div>
 
-                        {/* Import price file from ERP */}
-                        <div className="p-2 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-800/30">
-                            <p className="text-[10px] lg:text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-1.5 flex items-center gap-1">
-                                <Package size={12} />
-                                Nhập file in giá từ ERP
-                            </p>
-                            <div className="grid grid-cols-1 gap-2">
-                                <label className="flex items-center justify-center gap-1 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm text-center">
-                                    <Upload size={10} />
-                                    Máy Lọc Nước (Mẫu in 99)
-                                    <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'purifier')} className="hidden" />
-                                </label>
-                                <label className="flex items-center justify-center gap-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm text-center">
-                                    <Upload size={10} />
-                                    Điện Tử/Lạnh (Mẫu in 97)
-                                    <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'appliance')} className="hidden" />
-                                </label>
-                            </div>
-                        </div>
+                                {/* Import price file from ERP */}
+                                <div className="p-2 bg-amber-50 dark:bg-amber-900/10 rounded-xl border border-amber-100 dark:border-amber-800/30">
+                                    <p className="text-[10px] lg:text-[11px] font-bold text-amber-700 dark:text-amber-400 mb-1.5 flex items-center gap-1">
+                                        <Package size={12} />
+                                        Nhập file in giá từ ERP
+                                    </p>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        <label className="flex items-center justify-center gap-1 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm text-center">
+                                            <Upload size={10} />
+                                            Máy Lọc Nước (Mẫu in 99)
+                                            <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'purifier')} className="hidden" />
+                                        </label>
+                                        <label className="flex items-center justify-center gap-1 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm text-center">
+                                            <Upload size={10} />
+                                            Điện Tử/Lạnh (Mẫu in 97)
+                                            <input type="file" accept=".xlsx, .xls, .csv" onChange={(e) => handleErpPriceUpload(e, 'appliance')} className="hidden" />
+                                        </label>
+                                    </div>
+                                </div>
+                            </>
+                        )}
 
                         {/* Batch items list */}
                         {batchItems.length > 0 && (

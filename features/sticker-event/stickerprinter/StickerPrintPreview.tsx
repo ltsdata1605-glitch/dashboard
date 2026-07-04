@@ -4,7 +4,7 @@ import { BatchItem } from './types';
 
 interface StickerPrintPreviewProps {
     batchItems: BatchItem[];
-    stickerType: 'gia_soc' | 'gio_vang';
+    stickerType: 'gia_soc' | 'gio_vang' | 'draw';
     showBarcode: boolean;
     discountDisplayMode: 'percent' | 'amount';
     headerTextContent: string;
@@ -33,6 +33,18 @@ interface StickerPrintPreviewProps {
     setPreviewOldPrice: (val: string) => void;
     setPreviewNewPrice: (val: string) => void;
     updateBatchItem?: (id: string, updates: Partial<BatchItem>) => void;
+
+    // Lucky draw props
+    drawTitle?: string;
+    setDrawTitle?: (val: string) => void;
+    drawInfo?: string;
+    setDrawInfo?: (val: string) => void;
+    drawCode?: string;
+    setDrawCode?: (val: string) => void;
+    drawDetails?: string;
+    setDrawDetails?: (val: string) => void;
+    drawFooter?: string;
+    setDrawFooter?: (val: string) => void;
 }
 
 /**
@@ -152,6 +164,16 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     setPreviewOldPrice,
     setPreviewNewPrice,
     updateBatchItem,
+    drawTitle,
+    setDrawTitle,
+    drawInfo,
+    setDrawInfo,
+    drawCode,
+    setDrawCode,
+    drawDetails,
+    setDrawDetails,
+    drawFooter,
+    setDrawFooter,
 }) => {
     const percentRef = useRef<HTMLDivElement>(null);
 
@@ -177,6 +199,13 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     const headerEditable = useContentEditable(headerTextContent, setHeaderTextContent);
     const subHeaderEditable = useContentEditable(subHeaderTextContent, setSubHeaderTextContent);
     const footerEditable = useContentEditable(footerTextContent, setFooterTextContent);
+
+    // --- contentEditable hooks for lucky draw fields ---
+    const drawTitleEditable = useContentEditable(drawTitle || '', setDrawTitle);
+    const drawInfoEditable = useContentEditable(drawInfo || '', setDrawInfo);
+    const drawCodeEditable = useContentEditable(drawCode || '', setDrawCode);
+    const drawDetailsEditable = useContentEditable(drawDetails || '', setDrawDetails);
+    const drawFooterEditable = useContentEditable(drawFooter || '', setDrawFooter);
 
     const handlePriceInput = (e: React.FormEvent<any>) => {
         const el = e.currentTarget;
@@ -493,6 +522,45 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     outline: 1.5px dashed #6366f1;
                     outline-offset: 1px;
                 }
+                .draw-ticket-container {
+                    position: relative !important;
+                    width: 100% !important;
+                    aspect-ratio: 2482 / 878 !important;
+                    box-sizing: border-box !important;
+                    background-size: 100% 400% !important;
+                    background-repeat: no-repeat !important;
+                    border-radius: 12px !important;
+                    overflow: hidden !important;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08), 0 2px 5px rgba(0, 0, 0, 0.04);
+                    font-family: 'UTM Avo', sans-serif !important;
+                }
+                .draw-field {
+                    position: absolute !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    text-align: center !important;
+                    overflow: hidden !important;
+                    color: black !important;
+                    box-sizing: border-box !important;
+                    word-break: break-word !important;
+                    outline: none !important;
+                    cursor: text !important;
+                    border: 1px dashed rgba(239, 68, 68, 0.4) !important;
+                    background-color: rgba(239, 68, 68, 0.02) !important;
+                    transition: all 0.15s ease !important;
+                }
+                .draw-field:focus {
+                    border: 1.5px dashed #ef4444 !important;
+                    background-color: rgba(239, 68, 68, 0.06) !important;
+                    box-shadow: inset 0 0 4px rgba(239, 68, 68, 0.08) !important;
+                }
+                .draw-read-only {
+                    border: none !important;
+                    background-color: transparent !important;
+                    cursor: default !important;
+                    pointer-events: none !important;
+                }
                 `}
             </style>
             <div id="print-section" className="w-full">
@@ -553,6 +621,56 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                             </div>
                         )}
                     </>
+                ) : stickerType === 'draw' ? (
+                    <div className="draw-ticket-container" style={{ backgroundImage: `url(${bgImage})`, backgroundPosition: '0 0', backgroundSize: '100% 400%' }}>
+                        {/* Left editable inputs */}
+                        <div 
+                            className="draw-field font-bold" 
+                            ref={drawTitleEditable.ref} 
+                            onInput={drawTitleEditable.handleInput} 
+                            contentEditable 
+                            suppressContentEditableWarning 
+                            style={{ left: '1.8%', width: '46.2%', top: '4.5%', height: '15%', fontSize: '4.2cqw', fontWeight: 900 }} 
+                        />
+                        <div 
+                            className="draw-field" 
+                            ref={drawInfoEditable.ref} 
+                            onInput={drawInfoEditable.handleInput} 
+                            contentEditable 
+                            suppressContentEditableWarning 
+                            style={{ left: '0.8%', width: '34.7%', top: '27%', height: '21.5%', fontSize: '3cqw', textAlign: 'left', alignItems: 'flex-start', justifyContent: 'flex-start', paddingTop: '2px', whiteSpace: 'pre-wrap', lineHeight: '1.3' }} 
+                        />
+                        <div 
+                            className="draw-field font-bold" 
+                            ref={drawCodeEditable.ref} 
+                            onInput={drawCodeEditable.handleInput} 
+                            contentEditable 
+                            suppressContentEditableWarning 
+                            style={{ left: '39.8%', width: '6%', top: '37.5%', height: '8%', fontSize: '3.3cqw', fontWeight: 900, color: '#dc2626' }} 
+                        />
+                        <div 
+                            className="draw-field" 
+                            ref={drawDetailsEditable.ref} 
+                            onInput={drawDetailsEditable.handleInput} 
+                            contentEditable 
+                            suppressContentEditableWarning 
+                            style={{ left: '1.2%', width: '48.1%', top: '52.5%', height: '30%', fontSize: '2.4cqw', textAlign: 'left', alignItems: 'flex-start', justifyContent: 'flex-start', whiteSpace: 'pre-wrap', lineHeight: '1.2' }} 
+                        />
+                        <div 
+                            className="draw-field font-bold" 
+                            ref={drawFooterEditable.ref} 
+                            onInput={drawFooterEditable.handleInput} 
+                            contentEditable 
+                            suppressContentEditableWarning 
+                            style={{ left: '19.3%', width: '27.8%', top: '87.5%', height: '10%', color: '#fbbf24', fontSize: '3cqw', fontWeight: 900 }} 
+                        />
+
+                        {/* Right synced read-only text placeholders */}
+                        <div className="draw-field font-bold draw-read-only" style={{ left: '53.0%', width: '45%', top: '4.5%', height: '15%', fontSize: '4.2cqw', fontWeight: 900 }}>{drawTitle}</div>
+                        <div className="draw-field draw-read-only" style={{ left: '52.0%', width: '33.3%', top: '27%', height: '21.5%', fontSize: '3cqw', textAlign: 'left', alignItems: 'flex-start', justifyContent: 'flex-start', paddingTop: '2px', whiteSpace: 'pre-line', lineHeight: '1.3' }}>{drawInfo}</div>
+                        <div className="draw-field font-bold draw-read-only" style={{ left: '90.5%', width: '6%', top: '37.5%', height: '8%', fontSize: '3.3cqw', fontWeight: 900, color: '#dc2626' }}>{drawCode}</div>
+                        <div className="draw-field draw-read-only" style={{ left: '52.5%', width: '45.8%', top: '52.5%', height: '30%', fontSize: '2.4cqw', textAlign: 'left', alignItems: 'flex-start', justifyContent: 'flex-start', whiteSpace: 'pre-line', lineHeight: '1.2' }}>{drawDetails}</div>
+                    </div>
                 ) : (
                     <div className="sticker-container" data-type={stickerType} style={{ backgroundImage: `url(${bgImage})` }}>
                         {showBarcode && barcodeImei && (

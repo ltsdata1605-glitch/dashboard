@@ -14,6 +14,12 @@ export interface StickerPage {
     footer?: string;
     code?: string;
     selected?: boolean;
+    // Lucky draw fields
+    drawTitle?: string;
+    drawInfo?: string;
+    drawCode?: string;
+    drawDetails?: string;
+    drawFooter?: string;
 }
 
 export interface SavedStickerList {
@@ -21,7 +27,7 @@ export interface SavedStickerList {
     name: string;
     pages: StickerPage[];
     timestamp: number;
-    stickerType: 'gia_soc' | 'gio_vang';
+    stickerType: 'gia_soc' | 'gio_vang' | 'draw';
     headerTextContent: string;
 }
 
@@ -30,7 +36,7 @@ export interface PrintHistoryEntry {
     timestamp: number;
     label: string;
     pageCount: number;
-    stickerType: 'gia_soc' | 'gio_vang';
+    stickerType: 'gia_soc' | 'gio_vang' | 'draw';
     bgImage: string;
     headerTextSize: number;
     subHeaderTextSize?: number;
