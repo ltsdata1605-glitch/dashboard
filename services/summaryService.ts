@@ -179,6 +179,7 @@ export function calculateWarehouseSummary(
                     byManufacturer: {},
                     byIndustryAndManufacturer: {},
                     byGroupAndManufacturer: {},
+                    byProduct: {},
                 },
             };
         }
@@ -260,6 +261,14 @@ export function calculateWarehouseSummary(
             summary.metrics.byGroupAndManufacturer[group][manufacturer].quantity += weightedQuantity;
             summary.metrics.byGroupAndManufacturer[group][manufacturer].revenue += rowRevenue;
             summary.metrics.byGroupAndManufacturer[group][manufacturer].revenueQD += rowRevenueQD;
+
+            // Aggregate by product
+            if (productCode) {
+                if (!summary.metrics.byProduct[productCode]) summary.metrics.byProduct[productCode] = initMetricValues();
+                summary.metrics.byProduct[productCode].quantity += weightedQuantity;
+                summary.metrics.byProduct[productCode].revenue += rowRevenue;
+                summary.metrics.byProduct[productCode].revenueQD += rowRevenueQD;
+            }
         }
     }
 

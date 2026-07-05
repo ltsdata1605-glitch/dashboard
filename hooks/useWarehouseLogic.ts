@@ -193,12 +193,20 @@ export const useWarehouseLogic = ({
              if (!targetCol) return 0;
              if (targetCol.metric) return (row as any)[targetCol.metric] || 0;
              
-             if (targetCol.categoryType && targetCol.categoryName && targetCol.metricType) {
+             if (targetCol.categoryType && (targetCol.categoryName || targetCol.productCodes) && targetCol.metricType) {
                 const metrics = (row as any).metrics;
                 if (!metrics) return 0;
+                if (targetCol.productCodes && targetCol.productCodes.length > 0) {
+                    if (!metrics.byProduct) return 0;
+                    let total = 0;
+                    targetCol.productCodes.forEach(code => {
+                        total += metrics.byProduct[code]?.[targetCol.metricType!] || 0;
+                    });
+                    return total;
+                }
                 if (targetCol.manufacturerName) {
                     const primaryKey = targetCol.categoryType === 'industry' ? 'byIndustryAndManufacturer' : 'byGroupAndManufacturer';
-                    if (targetCol.categoryName.includes(',')) {
+                    if (targetCol.categoryName && targetCol.categoryName.includes(',')) {
                         const names = targetCol.categoryName.split(',').map(n => n.trim());
                         let total = 0;
                         names.forEach(name => {
@@ -206,10 +214,10 @@ export const useWarehouseLogic = ({
                         });
                         return total;
                     }
-                    return metrics[primaryKey]?.[targetCol.categoryName]?.[targetCol.manufacturerName]?.[targetCol.metricType] || 0;
+                    return metrics[primaryKey]?.[targetCol.categoryName!]?.[targetCol.manufacturerName]?.[targetCol.metricType] || 0;
                 } else {
                     const primaryKey = targetCol.categoryType === 'industry' ? 'byIndustry' : targetCol.categoryType === 'group' ? 'byGroup' : 'byManufacturer';
-                    if (targetCol.categoryName.includes(',')) {
+                    if (targetCol.categoryName && targetCol.categoryName.includes(',')) {
                         const names = targetCol.categoryName.split(',').map(n => n.trim());
                         let total = 0;
                         names.forEach(name => {
@@ -217,7 +225,7 @@ export const useWarehouseLogic = ({
                         });
                         return total;
                     }
-                    return metrics[primaryKey]?.[targetCol.categoryName]?.[targetCol.metricType] || 0;
+                    return metrics[primaryKey]?.[targetCol.categoryName!]?.[targetCol.metricType] || 0;
                 }
              }
              return 0;
@@ -258,10 +266,23 @@ export const useWarehouseLogic = ({
         }
 
         if (column.categoryType && (column.categoryName || column.productCodes) && column.metricType) {
-            if(column.productCodes) return undefined;
-            
             const metrics = (row as any).metrics;
             if (!metrics) return 0;
+
+            if (column.productCodes && column.productCodes.length > 0) {
+                if (!metrics.byProduct) return 0;
+                let total = 0;
+                column.productCodes.forEach(code => {
+                    let val = metrics.byProduct[code]?.[column.metricType!];
+                    if (val !== undefined) {
+                        if (column.metricType === 'revenue' || column.metricType === 'revenueQD') {
+                            val = val / 1000000;
+                        }
+                        total += val;
+                    }
+                });
+                return total;
+            }
 
             if (column.manufacturerName) {
                 const primaryKey = column.categoryType === 'industry' ? 'byIndustryAndManufacturer' : 'byGroupAndManufacturer';

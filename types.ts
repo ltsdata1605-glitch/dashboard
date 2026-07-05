@@ -255,6 +255,7 @@ export interface WarehouseSummaryRow {
         byManufacturer: Record<string, MetricValues>;
         byIndustryAndManufacturer: Record<string, Record<string, MetricValues>>;
         byGroupAndManufacturer: Record<string, Record<string, MetricValues>>;
+        byProduct?: Record<string, MetricValues>;
     };
 }
 
