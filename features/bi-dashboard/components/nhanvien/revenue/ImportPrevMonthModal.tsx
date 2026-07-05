@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Modal } from '../../../../../components/shared/ui/Modal';
+import { Button } from '../../../../../components/shared/ui/Button';
 
 export const ImportPrevMonthModal: React.FC<{
     isOpen: boolean;
@@ -16,8 +17,8 @@ export const ImportPrevMonthModal: React.FC<{
             maxWidth="xl"
             footer={
                 <div className="flex gap-3">
-                    <button onClick={onClose} className="flex-1 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Huỷ</button>
-                    <button onClick={() => { onSave(pastedData); onClose(); }} className="flex-[2] py-2 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-primary-700 active:scale-95 transition-all">Lưu dữ liệu</button>
+                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-2 text-sm font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl transition-colors">Huỷ</Button>
+                    <Button variant="ghost" onClick={() => { onSave(pastedData); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-2 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-primary-700 active:scale-95 transition-all">Lưu dữ liệu</Button>
                 </div>
             }
         >

@@ -3,6 +3,7 @@ import { Icon } from '../../common/Icon';
 import { formatQuantity, formatCurrency } from '../../../utils/dataUtils';
 import { Select } from '../../shared/ui/Select';
 import { Input } from '../../shared/ui/Input';
+import { Button } from '../../shared/ui/Button';
 
 type ComparisonMode = 'day_adjacent' | 'day_same_period' | 'week_adjacent' | 'week_same_period' | 'month_adjacent' | 'custom_range' | 'month_same_period_year' | 'monthly_trend' | 'quarter_adjacent' | 'quarter_same_period_year' | 'ytd_same_period_year';
 
@@ -114,18 +115,19 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                             {weeksInSelectedMonth.map(w => {
                                 const isSelected = selectedWeeks.includes(w.id);
                                 return (
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         key={w.id}
                                         onClick={() => handleWeekPillClick(w.id)}
-                                        className={`whitespace-nowrap px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full border transition-colors ${
-                                            isSelected 
-                                            ? 'bg-teal-600 text-white border-teal-600 shadow-sm' 
+                                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full border transition-colors ${
+                                            isSelected
+                                            ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
                                             : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
                                         }`}
                                         title={w.label}
                                     >
                                         {w.shortLabel}
-                                    </button>
+                                    </Button>
                                 );
                             })}
                         </div>
@@ -151,18 +153,19 @@ export const SummaryTableComparisonBar: React.FC<SummaryTableComparisonBarProps>
                             {trendData.months.map((m: any) => {
                                 const isSelected = trendSelectedMonths.includes(m.id);
                                 return (
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         key={m.id}
                                         onClick={() => setTrendSelectedMonths(prev => prev.includes(m.id) ? prev.filter(id => id !== m.id) : [...prev, m.id])}
-                                        className={`whitespace-nowrap px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full border transition-colors ${
-                                            isSelected 
-                                            ? 'bg-rose-600 text-white border-rose-600 shadow-sm' 
+                                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-3 py-1 text-[10px] sm:text-xs font-semibold rounded-full border transition-colors ${
+                                            isSelected
+                                            ? 'bg-rose-600 text-white border-rose-600 shadow-sm'
                                             : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50 dark:bg-slate-700 dark:text-slate-300 dark:border-slate-600'
                                         }`}
                                         title={m.label}
                                     >
                                         {`T${parseInt(m.id.split('-')[1], 10)}`}
-                                    </button>
+                                    </Button>
                                 );
                             })}
                         </div>

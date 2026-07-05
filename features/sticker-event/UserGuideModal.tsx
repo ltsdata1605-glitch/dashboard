@@ -25,12 +25,13 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
               <p className="text-xs text-slate-500 font-medium uppercase tracking-wider">Hệ thống In Sticker Event</p>
             </div>
           </div>
-          <button
+          <Button
+            variant="ghost"
             onClick={onClose}
-            className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
 
         {/* Content */}
@@ -148,12 +149,13 @@ const UserGuideModal: React.FC<UserGuideModalProps> = ({ isOpen, onClose, userRo
 
         {/* Footer */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
-          <button
+          <Button
+            variant="ghost"
             onClick={onClose}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-200 active:scale-95"
           >
             Đã hiểu
-          </button>
+          </Button>
         </div>
       </div>
     </div>

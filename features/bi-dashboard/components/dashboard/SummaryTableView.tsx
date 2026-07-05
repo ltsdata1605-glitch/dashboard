@@ -5,6 +5,7 @@ import { parseSummaryData, roundUp, shortenSupermarketName, parseNumber } from '
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
+import { Button } from '../../../../components/shared/ui/Button';
 
 // --- COLUMN GROUPS FOR ANALYSIS STYLE ---
 const COLUMN_GROUPS: Record<string, { label: string, bg: string, text: string }> = {
@@ -295,9 +296,10 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     // Supermarket filter dropdown element
     const supermarketFilterDropdown = (
         <div className="relative" ref={supermarketFilterRef}>
-            <button
+            <Button
+                variant="ghost"
                 onClick={() => setIsSupermarketFilterOpen(prev => !prev)}
-                className={`p-1.5 transition-colors ${
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
                     hiddenSupermarkets.length > 0
                         ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -305,7 +307,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 title="Lọc danh sách siêu thị"
             >
                 <FilterIcon className="h-4 w-4" />
-            </button>
+            </Button>
             {isSupermarketFilterOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Lọc siêu thị</p>
@@ -342,9 +344,10 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
     // Column settings dropdown element — exposed for parent to place in toolbar
     const columnSettingsDropdown = (
         <div className="relative" ref={selectorRef}>
-            <button
+            <Button
+                variant="ghost"
                 onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                className={`p-1.5 transition-colors ${
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
                     isColumnSelectorOpen
                         ? 'text-indigo-600 dark:text-indigo-400'
                         : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -352,7 +355,7 @@ const SummaryTableView = React.forwardRef<HTMLDivElement, SummaryTableViewProps>
                 title="Tuỳ chỉnh hiển thị cột"
             >
                 <CogIcon className="h-4 w-4" />
-            </button>
+            </Button>
             {isColumnSelectorOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>

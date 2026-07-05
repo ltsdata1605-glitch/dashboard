@@ -1,6 +1,7 @@
 import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { cn } from './utils';
 import { ChevronDown } from 'lucide-react';
+import { Button } from './Button';
 
 /* ─── Dropdown ─── */
 
@@ -90,12 +91,13 @@ export const Dropdown: React.FC<DropdownProps> = ({
                 return <div key={`d-${idx}`} className="h-px bg-slate-100 dark:bg-slate-700 my-1" />;
               }
               return (
-                <button
+                <Button
+                  variant="ghost"
                   key={item.id}
                   onClick={() => handleSelect(item)}
                   disabled={item.disabled}
                   className={cn(
-                    'w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
+                    'bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full flex items-center gap-2.5 px-3 py-2 text-left text-sm transition-colors',
                     item.danger
                       ? 'text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10'
                       : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50',
@@ -111,7 +113,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
                       </div>
                     )}
                   </div>
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -132,9 +134,10 @@ export interface DropdownButtonProps {
 }
 
 export const DropdownButton: React.FC<DropdownButtonProps> = ({ label, icon, className }) => (
-  <button
+  <Button
+    variant="ghost"
     className={cn(
-      'inline-flex items-center gap-1.5 px-3 h-9 text-sm font-medium',
+      'bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center gap-1.5 px-3 h-9 text-sm font-medium',
       'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700',
       'rounded-lg shadow-sm hover:bg-slate-50 dark:hover:bg-slate-700',
       'text-slate-700 dark:text-slate-300 transition-colors',
@@ -144,7 +147,7 @@ export const DropdownButton: React.FC<DropdownButtonProps> = ({ label, icon, cla
     {icon && <span className="shrink-0">{icon}</span>}
     <span className="truncate">{label}</span>
     <ChevronDown size={14} className="shrink-0 text-slate-400" />
-  </button>
+  </Button>
 );
 
 DropdownButton.displayName = 'DropdownButton';

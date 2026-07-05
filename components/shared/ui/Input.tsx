@@ -1,6 +1,7 @@
 import React, { forwardRef } from 'react';
 import { cn } from './utils';
 import { Icon } from '../../common/Icon';
+import { Button } from './Button';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string;
@@ -16,17 +17,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className={cn("relative", fullWidth ? "w-full" : "w-auto")}>
         {leftIcon && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={onLeftIconClick}
             disabled={!onLeftIconClick}
             className={cn(
-              "absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
+              "bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
               onLeftIconClick ? "cursor-pointer hover:text-indigo-500 transition-colors" : "cursor-default"
             )}
           >
             <Icon name={leftIcon} size={4.5} />
-          </button>
+          </Button>
         )}
         
         <input
@@ -46,17 +48,18 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         />
         
         {rightIcon && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
             onClick={onRightIconClick}
             disabled={!onRightIconClick}
             className={cn(
-              "absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
+              "bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 flex items-center justify-center",
               onRightIconClick ? "cursor-pointer hover:text-indigo-500 transition-colors" : "cursor-default"
             )}
           >
             <Icon name={rightIcon} size={4.5} />
-          </button>
+          </Button>
         )}
         
         {error && (

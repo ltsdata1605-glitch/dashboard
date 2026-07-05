@@ -1039,7 +1039,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                        outline: none;
                        cursor: text;
                        text-align: center;
-                       white-space: normal;
+                       white-space: nowrap;
                        line-height: 1.4;
                   }
  
@@ -1227,7 +1227,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                        background: #ffffff;
                        z-index: 10;
                        text-align: center;
-                       white-space: normal;
+                       white-space: nowrap;
                        line-height: 1.4;
                   }
                   .draw-ticket-block .input-title-single *,
@@ -1361,9 +1361,10 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
                      /* Khống chế font-size tuyệt đối khi in để tránh Chrome Print Engine phóng to sai lệch */
                      .draw-ticket-block .input-title-single,
-                     .draw-ticket-block .display-title-single {
-                         font-size: 13pt !important;
-                         line-height: 1.4 !important;
+                      .draw-ticket-block .display-title-single {
+                          font-size: 13pt !important;
+                          line-height: 1.4 !important;
+                          white-space: nowrap !important;
                      }
                      .draw-ticket-block .input-content-top-left,
                      .draw-ticket-block .display-content-top-left {
