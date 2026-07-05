@@ -256,9 +256,13 @@ export function processEmployeeData(
         const productName = getRowValue(row, COL.PRODUCT);
         const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
         const heso = metrics.revenueQD > 0 && revenue > 0 ? metrics.revenueQD / revenue : 1;
-        const subgroup = productConfig.childToSubgroupMap[maNhomHang];
+        const subgroup = productConfig.childToSubgroupMap[maNhomHang] || '';
+        const parentGroupCheck = productConfig.childToParentMap[maNhomHang] || '';
         const isVieon = subgroup === 'Vieon' || (productName || '').toString().includes('VieON');
-        const qtyMultiplier = (productConfig.vasMultiplierMap?.[productCode]) ?? (productConfig.quantityMultiplierMap?.[productCode]);
+        const isInsurance = parentGroupCheck === 'Bảo hiểm' || parentGroupCheck === 'Bảo hiểm ĐMX' || subgroup === 'Bảo hiểm' || subgroup === 'Bảo hiểm ĐMX';
+        const qtyMultiplier = isInsurance 
+            ? undefined 
+            : ((productConfig.vasMultiplierMap?.[productCode]) ?? (productConfig.quantityMultiplierMap?.[productCode]));
         const weightedQuantity = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
 
         // --- Aggregate general stats ---

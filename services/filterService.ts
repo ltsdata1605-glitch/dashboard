@@ -378,7 +378,10 @@ export function applyFiltersAndProcess(
     } else {
         warehouseGlobalData = mainPeriodData.filter(row => {
             const thuTien = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_THU_TIEN));
-            return thuTien === 'đã thu';
+            const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+            const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
+            const isValid = (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && nhapTra === 'chưa trả';
+            return thuTien === 'đã thu' && isValid;
         });
         warehouseSummary = calculateWarehouseSummary(warehouseGlobalData, productConfig) || [];
         _lastAllData = sourceData;

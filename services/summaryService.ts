@@ -187,6 +187,11 @@ export function calculateWarehouseSummary(
 
         const summary = summaryByKho[khoName];
 
+        const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+        const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
+        const isValid = (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && nhapTra === 'chưa trả';
+        if (!isValid) continue;
+
         const htx = getRowValue(row, COL.HINH_THUC_XUAT);
         const isThuHo = productConfig && productConfig.htxClassification
             ? productConfig.htxClassification[cleanAndNormalize(htx)] === 'thu_ho'
@@ -221,7 +226,10 @@ export function calculateWarehouseSummary(
             // Trọng số số lượng dựa trên mã sản phẩm (cột AF) và bảng hệ số từ file cấu hình
             const industry = getParentGroup(maNhomHang, productConfig) || 'Khác';
             const group = getSubgroup(maNhomHang, productConfig) || 'Khác';
-            const qtyMultiplier = (productConfig.vasMultiplierMap?.[productCode]) ?? (productConfig.quantityMultiplierMap?.[productCode]);
+            const isInsurance = industry === 'Bảo hiểm' || industry === 'Bảo hiểm ĐMX' || group === 'Bảo hiểm' || group === 'Bảo hiểm ĐMX';
+            const qtyMultiplier = isInsurance 
+                ? undefined 
+                : ((productConfig.vasMultiplierMap?.[productCode]) ?? (productConfig.quantityMultiplierMap?.[productCode]));
             const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;
 
             if (customer) summary.customers.add(customer);
