@@ -137,36 +137,56 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
 
     return (
         <div className="w-full mb-4 z-[90] lg:z-[100] sticky top-[44px] lg:top-1.5 hide-on-export">
+            
+            <style>{`
+                .grouped-filters button {
+                    border: 0 !important;
+                    border-radius: 0 !important;
+                    box-shadow: none !important;
+                }
+                .grouped-filters > div:first-of-type button {
+                    border-top-left-radius: 0.5rem !important;
+                    border-bottom-left-radius: 0.5rem !important;
+                }
+                .grouped-filters > div:last-of-type button {
+                    border-top-right-radius: 0.5rem !important;
+                    border-bottom-right-radius: 0.5rem !important;
+                }
+            `}</style>
+
             <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-y sm:border border-slate-200/80 dark:border-slate-700/60 rounded-none sm:rounded-xl lg:rounded-full p-1.5 lg:px-3 lg:py-2 transition-all">
 
                 {/* === MOBILE LAYOUT (<lg): 2 compact rows === */}
                 <div className="lg:hidden space-y-1.5">
                     {/* Row 1: Dropdowns */}
                     <div className="flex gap-1.5 items-stretch w-full">
-                        <div className="flex-1 min-w-0">
-                            <MultiSelectDropdown
-                                label="Kho"
-                                options={uniqueFilterOptions.kho}
-                                selected={filterState.kho}
-                                onChange={(sel) => handleFilterChange({ kho: sel })}
-                                variant="compact"
-                            />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <MultiSelectDropdown
-                                label="Tháng"
-                                options={availableMonths}
-                                selected={filterState.selectedMonths || []}
-                                onChange={(sel) => {
-                                    handleFilterChange({ 
-                                        selectedMonths: sel, 
-                                        dateRange: sel.length > 0 ? '' : 'all',
-                                        startDate: '',
-                                        endDate: '',
-                                    });
-                                }}
-                                variant="compact"
-                            />
+                        <div className="flex-1 flex gap-0 items-stretch grouped-filters bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 min-w-0">
+                            <div className="flex-1 min-w-0">
+                                <MultiSelectDropdown
+                                    label="Kho"
+                                    options={uniqueFilterOptions.kho}
+                                    selected={filterState.kho}
+                                    onChange={(sel) => handleFilterChange({ kho: sel })}
+                                    variant="compact"
+                                />
+                            </div>
+                            <div className="self-center h-4 w-[1px] bg-slate-200 dark:bg-slate-600" />
+                            <div className="flex-1 min-w-0">
+                                <MultiSelectDropdown
+                                    label="Tháng"
+                                    options={availableMonths}
+                                    selected={filterState.selectedMonths || []}
+                                    onChange={(sel) => {
+                                        handleFilterChange({ 
+                                            selectedMonths: sel, 
+                                            dateRange: sel.length > 0 ? '' : 'all',
+                                            startDate: '',
+                                            endDate: '',
+                                        });
+                                    }}
+                                    variant="compact"
+                                />
+                            </div>
                         </div>
 
                         {onNewFile && (
@@ -295,33 +315,34 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                 {/* === DESKTOP LAYOUT (lg+): Original horizontal row === */}
                 <div className="hidden lg:flex flex-row gap-3 items-center">
                     
-                    {/* 1. Primary: Warehouse Multi-select (Compact) */}
-                    <div className="w-auto shrink-0">
-                        <MultiSelectDropdown
-                            label="Kho"
-                            options={uniqueFilterOptions.kho}
-                            selected={filterState.kho}
-                            onChange={(sel) => handleFilterChange({ kho: sel })}
-                            variant="compact"
-                        />
-                    </div>
-
-                    {/* Month Filter */}
-                    <div className="w-auto shrink-0 transform transition-transform hover:scale-105">
-                        <MultiSelectDropdown
-                            label="Tháng"
-                            options={availableMonths}
-                            selected={filterState.selectedMonths || []}
-                            onChange={(sel) => {
-                                handleFilterChange({ 
-                                    selectedMonths: sel, 
-                                    dateRange: sel.length > 0 ? '' : 'all',
-                                    startDate: '',
-                                    endDate: '',
-                                });
-                            }}
-                            variant="compact"
-                        />
+                    {/* 1. Primary: Warehouse Multi-select & Month (Grouped) */}
+                    <div className="grouped-filters relative flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
+                        <div className="w-[110px] shrink-0">
+                            <MultiSelectDropdown
+                                label="Kho"
+                                options={uniqueFilterOptions.kho}
+                                selected={filterState.kho}
+                                onChange={(sel) => handleFilterChange({ kho: sel })}
+                                variant="compact"
+                            />
+                        </div>
+                        <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-600" />
+                        <div className="w-[110px] shrink-0">
+                            <MultiSelectDropdown
+                                label="Tháng"
+                                options={availableMonths}
+                                selected={filterState.selectedMonths || []}
+                                onChange={(sel) => {
+                                    handleFilterChange({ 
+                                        selectedMonths: sel, 
+                                        dateRange: sel.length > 0 ? '' : 'all',
+                                        startDate: '',
+                                        endDate: '',
+                                    });
+                                }}
+                                variant="compact"
+                            />
+                        </div>
                     </div>
 
                     {/* Quick Date Ranges */}
