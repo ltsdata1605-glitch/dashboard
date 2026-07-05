@@ -51,9 +51,10 @@ export function processSummaryTable(
             : !HINH_THUC_XUAT_THU_HO.has(hinhThucXuat);
         if (!isRevenue) continue;
 
-        // Bỏ qua sản phẩm không xác định nhóm hàng (không có trong cấu hình)
+        // Bỏ qua sản phẩm không xác định nhóm hàng hoặc không tính doanh thu
         const maNhomHangCheck = getRowValue(row, COL.MA_NHOM_HANG);
-        if (!getParentGroup(maNhomHangCheck, productConfig)) continue;
+        const parentGroupCheck = getParentGroup(maNhomHangCheck, productConfig);
+        if (!parentGroupCheck || parentGroupCheck === 'Không tính doanh thu') continue;
 
         // Compute all values ONCE per row (eliminating double computation)
         const allValues: Record<string, string> = {};

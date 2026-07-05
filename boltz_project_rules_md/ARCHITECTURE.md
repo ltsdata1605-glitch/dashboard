@@ -13,42 +13,56 @@ Kiến trúc dự án phải giúp:
 
 ---
 
-## Cấu trúc thư mục đề xuất
+## Cấu trúc thư mục thật (audit 2026-07-05)
 
-Claude phải kiểm tra source hiện tại trước khi áp dụng. Không đổi toàn bộ cấu trúc một lần nếu rủi ro cao. Ưu tiên migrate từng phần.
+**Nguồn chân lý đầy đủ và chi tiết nhất là `RULES.md` (mục 1 "Cấu trúc thư mục" và mục 2
+"Kiến trúc module") — file này chỉ tóm tắt lại ở mức tổng quan, khi có mâu thuẫn hoặc cần
+chi tiết, ưu tiên đọc `RULES.md`.**
+
+Dự án **không dùng thư mục `src/`** — cấu trúc phẳng ngay tại root, KHÔNG có `app/`,
+`modules/`, `shared/lib/`, `shared/services/`, `stores/` như template gốc mô tả trước đây
+(bản mô tả đó là lý thuyết chung, chưa từng khớp với dự án này):
 
 ```txt
-src/
-├── app/                       # App entry, routes, layout cấp cao
-├── modules/                   # 4 app/module chính và các module nghiệp vụ
-│   ├── module-a/
-│   ├── module-b/
-│   ├── module-c/
-│   └── module-d/
-├── shared/
-│   ├── components/            # Component nghiệp vụ dùng chung
-│   ├── ui/                    # UI primitives: Button, Modal, Table, Card...
-│   ├── hooks/                 # Hooks dùng chung
-│   ├── lib/                   # Helpers, utils, calculation engine
-│   ├── services/              # API client, service layer
-│   ├── stores/                # Global/shared state nếu có
-│   ├── types/                 # Type/interface dùng chung
-│   └── constants/             # Constants dùng chung
-├── styles/
-│   ├── globals.css
-│   ├── tokens.css
-│   └── components.css
-├── assets/
-└── config/
+dashboardycx/
+├── App.tsx                  # Router chính — tab-based qua LayoutContext, KHÔNG dùng react-router
+├── index.tsx / index.html   # Entry point
+├── styles.css               # Tailwind 4 @theme tokens + global CSS
+├── styles/tokens.css        # Design token 3 tầng (Primitive → Semantic → Component)
+├── constants.ts / types.ts  # Hằng số & type dùng chung toàn app
+├── contexts/                # AuthContext, LayoutContext, DashboardContext, ThemeContext
+├── hooks/                   # CHỈ dành cho module analysis (Dashboard) + check-thuong (Root)
+├── services/                # Firebase/Firestore/IndexedDB/parser — CHỈ dành cho Root
+├── utils/                   # Pure function dùng CHUNG cho cả 4 khu vực (dataUtils.ts...)
+├── components/
+│   ├── shared/ui/           # ⭐ Bộ component chuẩn dùng chung 4 khu vực — xem danh sách thật bên dưới
+│   ├── layout/               # Sidebar, Header, MobileBottomNav (Root, nhưng Header là điểm
+│   │                          #   mount portal desktop-toolbar dùng chung qua #global-header-actions)
+│   ├── views/                # Các module chính của Root (mỗi file = 1 tab)
+│   ├── employees/ charts/ tables/ filters/ modals/ common/ upload/  # Root only
+├── features/                 # ⭐ 3 khu vực CÁCH LY, mỗi thư mục = 1 "mini-app" riêng
+│   ├── bi-dashboard/         # Report BI — tab `employees`, mount qua <BiWrapper/>
+│   ├── phan-ca/              # Phân ca — tab `tools-phanca`, mount qua <PhanCaView/>
+│   └── sticker-event/        # In Sticker — tab `tools-print-sticker`, mount qua <StickerPrinterView/>
+└── public/                  # Static assets
 ```
 
-Nếu project không dùng React/Next/Vite, hãy điều chỉnh theo framework thực tế nhưng vẫn giữ nguyên nguyên tắc:
+**Các thư mục KHÁC ở root tồn tại nhưng KHÔNG phải là 1 phần của ứng dụng** — không import
+gì từ đây khi bàn về kiến trúc app: `_agents/` (cũ, đã archive — không nhầm với `.agents/`
+chính thức), `archive/` (file zip backup), `design-system/` (dự án tham khảo riêng),
+`scratch/`, `tasks/`, `telegram-agent/` (hạ tầng cho 1 công cụ AI khác chạy song song trên
+cùng repo — xem CHANGELOG 2026-07-05 "Lưu ý môi trường phát hiện giữa chừng").
 
-- Module code nằm trong `modules` hoặc vùng tương đương.
-- UI dùng chung nằm trong `shared/ui`.
-- Logic dùng chung nằm trong `shared/lib`.
-- API/service nằm trong `shared/services`.
-- Type/schema nằm trong `shared/types`.
+Nguyên tắc áp dụng cho cấu trúc thật này:
+
+- Mỗi zone (`features/bi-dashboard`, `features/phan-ca`, `features/sticker-event`) code
+  nằm trong chính thư mục của nó — KHÔNG có thư mục `modules/` chung.
+- UI dùng chung nằm trong `components/shared/ui/` (không phải `shared/ui`).
+- Logic tính toán dùng chung nằm trong `utils/dataUtils.ts` (không có `shared/lib/`).
+- Service/API nằm trong `services/` (Root) hoặc `features/*/services/` (mỗi zone tự có,
+  không dùng chung) — xem `API.md`.
+- Type/interface dùng chung nằm trong `types.ts` (Root) hoặc `features/*/types/` riêng
+  từng zone (KHÔNG có `shared/types/` tập trung).
 
 ---
 
@@ -65,89 +79,110 @@ Không nên chứa:
 - Mapping dữ liệu phức tạp.
 - Business rule lặp lại.
 
-### Module
+### Module (= mỗi zone trong `features/*`)
 
 Module chịu trách nhiệm gom màn hình, logic nghiệp vụ và data mapping của một miền chức năng.
-
-Một module nên có cấu trúc:
+Cấu trúc lý tưởng bên dưới KHÔNG bắt buộc giống hệt 100% — 3 zone thật hiện đã khác nhau
+đôi chút (audit 2026-07-05), không cần ép về 1 khuôn cứng nếu rủi ro cao khi đổi:
 
 ```txt
-module-name/
-├── components/
+features/zone-name/
+├── components/     # bi-dashboard, phan-ca đi theo mẫu này
 ├── hooks/
 ├── services/
 ├── utils/
 ├── types.ts
-├── constants.ts
-└── index.ts
+└── ...             # phan-ca có thêm db/, model/; bi-dashboard có thêm contexts/, store/, workers/
 ```
+
+Riêng `features/sticker-event/` để phần lớn file `.tsx` NGAY tại top-level (không gom vào
+`components/`) — đây là hiện trạng đã tồn tại lâu, không migrate lại chỉ vì lý do "cho giống
+2 zone kia" trừ khi có yêu cầu refactor rõ ràng cho riêng zone này.
 
 ### Shared UI
 
-Dành cho component nền tảng dùng toàn app:
+`components/shared/ui/` — danh sách THẬT hiện có (2026-07-05, xem
+`components/shared/ui/index.ts` để biết export chính xác):
 
 ```txt
-shared/ui/
-├── Button/
-├── Card/
-├── Modal/
-├── Dialog/
-├── Table/
-├── Input/
-├── Select/
-├── Tabs/
-├── Badge/
-├── Dropdown/
-├── Popover/
-├── LoadingState/
-├── EmptyState/
-└── ErrorState/
+components/shared/ui/
+├── Button.tsx          # variant: primary/secondary/danger/ghost/outline; size: sm/md/lg/icon
+├── Card.tsx
+├── Modal.tsx           # thay cho Dialog — maxWidth: sm/md/lg/xl/2xl/4xl/full
+├── ConfirmDialog.tsx    # dialog xác nhận dựng sẵn trên Modal
+├── DataTable.tsx
+├── Input.tsx
+├── Select.tsx
+├── Tabs.tsx
+├── Badge.tsx
+├── Dropdown.tsx
+├── Skeleton.tsx         # loading state — KHÔNG có component "LoadingState" riêng
+├── EmptyState.tsx
+├── StatCard.tsx
+├── ProgressBar.tsx
+├── Tooltip.tsx
+└── utils.ts             # cn() helper (clsx + tailwind-merge)
 ```
+
+Không có `Popover.tsx`, `ErrorState.tsx`, `Dialog.tsx` riêng biệt tính đến thời điểm audit
+— nếu cần, phải kiểm tra lại xem đã thật sự thiếu chưa trước khi tạo mới (tránh trùng
+component nếu tên khác nhưng chức năng đã có sẵn ở `Modal`/`ConfirmDialog`/`Skeleton`).
 
 ---
 
-## Data flow chuẩn
+## Data flow chuẩn (thật)
 
-Luồng dữ liệu nên đi theo hướng:
+Nguồn dữ liệu CHÍNH của app là file Excel/CSV người dùng tự upload, không phải gọi API —
+xem `API.md`/`DATABASE.md` để biết chi tiết. Luồng thật:
 
 ```txt
-API/Database
+File Excel/CSV người dùng upload
    ↓
-Service layer
+Parser (services/parsers/, features/*/utils/*Parser.ts) — map cột Excel → field camelCase
    ↓
-Mapper/Normalizer
+(tùy chọn) Đồng bộ lên Firestore / cache IndexedDB để dùng lại lần sau
    ↓
-Store/Hook/Query
+Hook tính toán (VD: useDashboardLogic, useIndustryViewLogic) — áp dụng filter, tính KPI
    ↓
-Module container
+Context (DashboardContext...) hoặc props truyền xuống
    ↓
-UI component
+UI component (chỉ hiển thị, không tự tính toán/parse lại)
 ```
 
-Không nên để UI component gọi API và tự format dữ liệu phức tạp.
+Không nên để UI component tự parse Excel hoặc tự tính công thức nghiệp vụ phức tạp — dồn
+về hook/parser/`utils/dataUtils.ts`.
 
 ---
 
 ## Filter architecture
 
-Tất cả filter nên đi qua một cấu trúc chuẩn:
+`FilterState` thật đã tồn tại tại `types.ts` (Root, dùng cho `analysis`/`check-thuong`) —
+KHÔNG dùng shape generic `keyword/status/category` như lý thuyết chung, mà theo đúng nghiệp
+vụ retail của dự án:
 
 ```ts
-type FilterState = {
-  dateRange?: {
-    from?: string;
-    to?: string;
-  };
-  keyword?: string;
-  status?: string[];
-  category?: string[];
-  module?: string;
-  page?: number;
-  pageSize?: number;
-  sortBy?: string;
-  sortDirection?: 'asc' | 'desc';
-};
+// types.ts (rút gọn, xem file thật để đầy đủ)
+export interface FilterState {
+    kho: string[];              // mã kho/siêu thị được chọn
+    xuat: string;                // trạng thái xuất hàng
+    trangThai: string[];
+    nguoiTao: string[];          // người tạo đơn
+    department: string[];
+    parent: string[];            // ngành hàng cha
+    startDate: string;
+    endDate: string;
+    dateRange: string;
+    selectedMonths: string[];
+    industryGrid: { selectedGroups: string[]; selectedSubgroups: string[] };
+    summaryTable: { kho: string[]; child: string[]; manufacturer: string[]; creator: string[]; product: string[] };
+    // ... còn field khác, xem types.ts
+}
 ```
+
+Mỗi zone `features/*` **không dùng chung `FilterState` này** — mỗi zone tự định nghĩa
+filter state riêng phù hợp nghiệp vụ của nó (VD: `phan-ca` filter theo tháng/bộ phận,
+`sticker-event` filter theo mã kho/loại sản phẩm) vì các zone cách ly theo `RULES.md` §2.0,
+không chia sẻ state cross-zone.
 
 Quy tắc:
 
@@ -159,24 +194,26 @@ Quy tắc:
 
 ---
 
-## Calculation architecture
+## Calculation architecture (thật)
 
-Công thức tính toán phải nằm ở:
-
-```txt
-shared/lib/calculations/
-```
-
-Ví dụ:
+Không có thư mục `shared/lib/calculations/` — công thức tính toán dùng chung thật sự nằm ở:
 
 ```txt
-shared/lib/calculations/
-├── totals.ts
-├── percentages.ts
-├── currency.ts
-├── statistics.ts
-└── index.ts
+utils/dataUtils.ts        # Dùng chung cho CẢ 4 khu vực — formatCurrency, formatQuantity,
+                           # calculateRowMetrics (revenue/revenueQD/quantity), getHeSoQuyDoi...
+features/*/utils/*.ts     # Công thức riêng của từng zone (KHÔNG dùng chung, KHÔNG import
+                           # chéo sang zone khác) — VD: features/phan-ca/utils/scheduleUtils.ts,
+                           # features/sticker-event/utils/format.ts
 ```
+
+Xem `DATABASE.md` mục "Quy tắc dữ liệu cho calculation" để biết danh sách chỉ số thật
+(DT, DTQĐ, HQQĐ, Trả góp, Số lượng) kèm tên hàm/file cụ thể.
+
+**Lưu ý đã biết (nợ kỹ thuật)**: một hàm cùng tên ở 2 zone không mặc nhiên là trùng lặp cần
+gộp — ví dụ `features/sticker-event/utils/format.ts:formatCurrency` format đầy đủ để in
+sticker, khác mục đích với `utils/dataUtils.ts:formatCurrency` rút gọn cho dashboard. Kiểm
+tra ngữ cảnh dùng trước khi "dedupe" (xem `RULES.md` §2.0). Ngoài ra HQQĐ (hiệu quả quy đổi)
+hiện tính rải rác ở nhiều hook khác nhau, chưa gom về 1 helper dùng chung.
 
 Quy tắc:
 

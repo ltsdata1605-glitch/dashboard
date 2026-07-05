@@ -18,6 +18,10 @@ Mục tiêu chính:
 
 ## Tài liệu quan trọng
 
+**⭐ Đọc `RULES.md` và `UI_GUIDELINES.md` ở ROOT dự án TRƯỚC TIÊN** — đây là nguồn chân lý
+chính xác nhất về kiến trúc 4-zone/design system thật (không nằm trong thư mục này). Các
+file bên dưới đã được đối chiếu và cập nhật khớp với 2 file đó (2026-07-05):
+
 | File | Mục đích |
 |---|---|
 | `CLAUDE.md` | Luật làm việc bắt buộc cho Claude |
@@ -40,6 +44,8 @@ Mục tiêu chính:
 Trước khi code, hãy đọc:
 
 ```txt
+RULES.md            (root — ⭐ đọc trước tiên)
+UI_GUIDELINES.md     (root)
 CLAUDE.md
 REQUIREMENTS.md
 DESIGN.md
@@ -61,18 +67,19 @@ Sau đó audit dự án và xác định:
 
 ## Lệnh thường dùng
 
-Claude phải tự kiểm tra `package.json` để xác định lệnh chính xác. Nếu tồn tại, ưu tiên dùng:
+Dự án dùng **npm** (có `package-lock.json`, xác nhận thật — không phải pnpm/yarn/bun).
+Lệnh thật (xem `TESTING.md`/`DEPLOYMENT.md` để biết chi tiết đầy đủ):
 
 ```bash
 npm install
 npm run dev
-npm run lint
-npm run typecheck
-npm run test
+npm run lint          # = tsc --noEmit, KHÔNG phải eslint
+npx eslint .           # eslint thật sự
 npm run build
+npm run check          # gộp typecheck + build + lint:ratchet
 ```
 
-Nếu project dùng `pnpm`, `yarn`, `bun` thì dùng đúng package manager đang có lockfile.
+**Không có `npm run test`** — dự án chưa có test runner tự động (không Vitest/Jest).
 
 ---
 

@@ -234,3 +234,91 @@ tiên sửa 4 file sai/thiếu nghiêm trọng nhất trước: `API.md`, `DATAB
 
 - Chỉ sửa file Markdown thuần (không đụng source code) — không cần chạy `eslint`/`tsc`/
   `build`, chỉ xác nhận qua `git status --short` rằng đúng 4 file dự kiến đã thay đổi.
+
+## 2026-07-05 — Phase 2: Hoàn tất 4 file tài liệu còn lại (ARCHITECTURE, CODE_STYLE, SECURITY, DESIGN)
+
+### Bối cảnh
+
+Người dùng yêu cầu "HOÀN TẤT CÁC MỤC CHƯA LÀM" — hoàn thành nốt 4 file còn lại trong Phase 2
+(`ARCHITECTURE.md`, `CODE_STYLE.md`, `SECURITY.md`, `DESIGN.md`) sau khi đã xong 4 file sai
+nặng nhất ở lượt trước (`API.md`, `DATABASE.md`, `TESTING.md`, `DEPLOYMENT.md`).
+
+### Phát hiện quan trọng trước khi sửa
+
+Dự án đã có sẵn 2 tài liệu RẤT chi tiết và chính xác ở project root mà bộ `boltz_project_rules_md/`
+chưa hề tham chiếu tới: **`RULES.md`** (cấu trúc thư mục thật, kiến trúc 4 zone, design
+system, deployment, coding pattern — do 1 phiên làm việc khác/công cụ khác viết, rất sát
+thực tế) và **`UI_GUIDELINES.md`** (style bảng biểu chi tiết). Quyết định: KHÔNG chép lại
+nội dung 2 file này vào `boltz_project_rules_md/`, mà sửa các file sai để **trỏ về** `RULES.md`/
+`UI_GUIDELINES.md` làm nguồn chân lý, tránh 2 nơi ghi cùng 1 sự thật rồi lệch nhau theo thời gian.
+
+Cũng phát hiện `styles/tokens.css` (382 dòng) đã có sẵn hệ token 3 tầng Primitive → Semantic
+→ Component rất bài bản (brand = Sky, không phải hex tùy tiện như `DESIGN.md` bản gốc).
+
+### Đã làm
+
+- **`ARCHITECTURE.md`**: viết lại "Cấu trúc thư mục" — xóa cấu trúc lý thuyết
+  `src/app/modules/shared/` (chưa từng tồn tại), thay bằng cấu trúc phẳng thật + trỏ về
+  `RULES.md` mục 1-2. Liệt kê đúng 14 file trong `components/shared/ui/` (không có
+  `Popover`/`ErrorState`/`Dialog` riêng — cảnh báo kiểm tra kỹ trước khi tạo mới tránh trùng).
+  Sửa "Data flow" (nguồn dữ liệu chính là Excel upload, không phải gọi API), "Filter
+  architecture" (dẫn `FilterState` thật từ `types.ts`, giải thích rõ mỗi zone tự có filter
+  riêng không dùng chung), "Calculation architecture" (trỏ `utils/dataUtils.ts`, không có
+  `shared/lib/calculations`, ghi chú nợ kỹ thuật HQQĐ chưa gom 1 helper). Bổ sung ghi chú các
+  thư mục root KHÔNG thuộc app: `_agents/`, `archive/`, `design-system/`, `scratch/`,
+  `tasks/`, `telegram-agent/` (hạ tầng công cụ AI khác chạy song song trên repo).
+- **`CODE_STYLE.md`**: sửa "Logic rules" và "CSS/UI rules" theo đúng path/bảng màu thật, bổ
+  sung rule cứng zone-isolation (`import/no-restricted-paths`) vào "Import/export rules".
+- **`SECURITY.md`**: thêm mục mới "Firebase Auth & Security Rules" — xác định đúng ranh giới
+  bảo mật thật của app (Firebase Auth + Firestore Rules, không phải API token truyền thống);
+  ghi nhận `firestore.rules` không có trong repo (rule quản lý ngoài Firebase Console, không
+  version-control/review qua PR được — rủi ro quy trình cần lưu ý). **Audit thật phát hiện 1
+  lỗ hổng đang tồn tại**: `features/sticker-event/stickerprinter/StickerPrintPreview.tsx`
+  render nội dung sticker (nhân viên tự nhập, lưu chung `stores/{storeId}` giữa các nhân
+  viên cùng kho) bằng `dangerouslySetInnerHTML` không sanitize — stored XSS phạm vi 1 kho.
+  Đã ghi rõ trong file, CHƯA sửa code (ngoài phạm vi task viết docs, cần làm riêng với đánh
+  giá kỹ hơn vì phải giữ được tính năng bold/italic/underline hiện có). Cũng xác nhận
+  `MarkdownRenderer.tsx` có cùng vấn đề nhưng là dead code (không import ở đâu) — an toàn.
+- **`DESIGN.md`**: bỏ hoàn toàn bảng token hex "Boltz Crypto Admin Dashboard" gốc, thay bằng
+  hệ token 3 tầng thật từ `styles/tokens.css`. Sửa Button variants (xóa `success` không tồn
+  tại trong `Button.tsx`, thêm size `icon` bị thiếu), sửa sai lệch "bo góc lớn/pill" → thật
+  là `rounded-md`/`rounded-xl` nhỏ (button 6-8px, card 12px, modal 16px). Bổ sung 3 giá trị
+  `maxWidth` Modal bị thiếu (`2xl`/`4xl`/`full`). Sửa Typography (font thật: UTM Avo/Plus
+  Jakarta Sans, không phải Inter/Poppins/Nunito Sans). Ghi chú đặc thù màu "indigo≈sky"
+  (theo `RULES.md` §2.5 điểm 2, không tự ý tìm-thay hàng loạt). Cập nhật checklist cuối file
+  để tick đúng mục Button (đã hoàn tất Bước 4) và làm rõ các mục còn lại thật sự cần làm gì.
+
+### Verify
+
+- Chỉ sửa file Markdown thuần, không đụng source code — xác nhận qua `git status --short`
+  đúng 4 file `ARCHITECTURE.md`/`CODE_STYLE.md`/`SECURITY.md`/`DESIGN.md` đã thay đổi.
+- **Toàn bộ Phase 2 (8 file tài liệu) nay đã hoàn tất**: `REQUIREMENTS.md` (đã đúng từ
+  trước), `API.md`, `DATABASE.md`, `TESTING.md`, `DEPLOYMENT.md`, `ARCHITECTURE.md`,
+  `CODE_STYLE.md`, `SECURITY.md`, `DESIGN.md`.
+
+## 2026-07-05 — Phase 2: Hoàn tất CLAUDE.md (mục cuối cùng còn lại)
+
+### Đã làm
+
+- **`CLAUDE.md`**: rà soát lại theo yêu cầu "HOÀN TẤT CÁC MỤC CHƯA LÀM". Phát hiện thiếu sót
+  quan trọng nhất trong toàn bộ đợt audit Phase 2: mục "Tài liệu bắt buộc phải đọc" **chưa
+  từng nhắc tới `RULES.md`/`UI_GUIDELINES.md`** — 2 tài liệu nằm ở root dự án (không phải
+  trong `boltz_project_rules_md/`) mà chính đợt audit 4 file trước đó (API/DATABASE/
+  ARCHITECTURE/DESIGN...) đã phát hiện là nguồn chân lý chính xác nhất về kiến trúc/design
+  system thật. Đã thêm 2 file này lên đầu danh sách bắt buộc đọc, quy định rõ thứ tự ưu
+  tiên (RULES.md thắng nếu có mâu thuẫn với các file khác trong `boltz_project_rules_md/`).
+  Sửa "Bước 4 — Kiểm tra": thay lệnh generic sai (`npm run test` không tồn tại) bằng lệnh
+  thật (`npm run lint` = `tsc --noEmit`, `npx eslint .`, `npm run check`), ghi rõ dự án
+  không có test runner tự động nên bắt buộc test thủ công qua trình duyệt sau khi sửa UI.
+- **`README.md`** (trong `boltz_project_rules_md/`, không nằm trong checklist gốc nhưng sửa
+  luôn vì cùng phát hiện): thêm tham chiếu `RULES.md`/`UI_GUIDELINES.md` vào đầu mục "Tài
+  liệu quan trọng" và "Cách bắt đầu cho Claude"; sửa "Lệnh thường dùng" theo thực tế npm
+  (bỏ `npm run test` không tồn tại, thêm `npx eslint .`/`npm run check`).
+
+### Verify
+
+- Chỉ sửa file Markdown, xác nhận qua `git status --short` đúng các file dự kiến đã đổi.
+- **Toàn bộ Phase 2 (10 file tài liệu trong `boltz_project_rules_md/`) nay đã hoàn tất**:
+  `CLAUDE.md`, `README.md`, `REQUIREMENTS.md`, `DESIGN.md`, `ARCHITECTURE.md`, `API.md`,
+  `DATABASE.md`, `CODE_STYLE.md`, `TESTING.md`, `SECURITY.md`, `DEPLOYMENT.md` — không còn
+  mục nào trong Phase 2 để làm tiếp.

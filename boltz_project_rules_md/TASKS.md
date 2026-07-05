@@ -73,18 +73,57 @@ Rủi ro: 4 module cố ý cách ly nhau (không được gộp state/filter cro
 
 ## Phase 2 — Chuẩn hóa tài liệu và rule
 
-- [ ] Hoàn thiện `CLAUDE.md`.
+- [x] **Hoàn thiện `CLAUDE.md` (2026-07-05)**: phát hiện thiếu sót lớn nhất — mục "Tài liệu
+      bắt buộc phải đọc" chưa từng nhắc tới `RULES.md`/`UI_GUIDELINES.md` (2 tài liệu ở root
+      dự án, chi tiết và chính xác nhất về kiến trúc thật). Đã thêm 2 file này lên đầu danh
+      sách, ghi rõ thứ tự ưu tiên (RULES.md thắng nếu mâu thuẫn với file khác). Sửa "Bước 4
+      — Kiểm tra": lệnh thật là `npm run lint` = `tsc --noEmit` (không phải eslint), không có
+      test runner tự động — thay `npm run test` (không tồn tại) bằng `npx eslint .` +
+      `npm run check`. Tiện thể sửa luôn `boltz_project_rules_md/README.md` (cùng bộ tài
+      liệu, phát hiện cùng loại lỗi: thiếu RULES.md, lệnh npm sai) dù không nằm trong
+      checklist gốc — vì đây là phần nối tiếp tự nhiên của cùng 1 phát hiện.
 - [x] Hoàn thiện `REQUIREMENTS.md` — mục "4 app/module riêng lẻ" đã điền đúng 4 zone thật.
-- [ ] Hoàn thiện `DESIGN.md`.
-- [ ] Hoàn thiện `ARCHITECTURE.md` theo source thực tế.
-- [ ] Hoàn thiện `CODE_STYLE.md`.
+- [x] **Hoàn thiện `DESIGN.md` (2026-07-05)**: bỏ hoàn toàn token hex "Boltz Crypto Admin
+      Dashboard" gốc (không tồn tại trong code) — thay bằng hệ token 3 tầng THẬT đã có sẵn
+      trong `styles/tokens.css` (Primitive → Semantic → Component, brand = Sky). Sửa Button
+      variants (bỏ `success` không tồn tại, thêm size `icon` thiếu), sửa claim "bo góc lớn
+      18-24px/pill" → thật là `rounded-md`/`rounded-xl` nhỏ hơn nhiều (card 12px, modal 16px,
+      button 6-8px). Sửa Modal sizes (bổ sung `2xl`/`4xl`/`full` thiếu). Sửa Typography (font
+      thật: UTM Avo/Plus Jakarta Sans, không phải Inter/Poppins). Ghi chú đặc thù "indigo ≈
+      sky" (RULES.md §2.5). Checklist cuối đã tick mục Button (hoàn tất Bước 4).
+- [x] **Hoàn thiện `ARCHITECTURE.md` (2026-07-05)**: viết lại "Cấu trúc thư mục" — bỏ cấu
+      trúc `src/app/modules/shared` không tồn tại, thay bằng cấu trúc phẳng thật (không có
+      `src/`, 4 zone cách ly). Trỏ về `RULES.md` mục 1-2 làm nguồn chi tiết đầy đủ thay vì
+      lặp lại. Liệt kê đúng danh sách component thật trong `components/shared/ui/` (14 file,
+      không có `Popover`/`ErrorState`/`Dialog` riêng). Sửa "Data flow" (nguồn chính là file
+      Excel upload, không phải "API/Database"), "Filter architecture" (FilterState thật từ
+      `types.ts`, không dùng chung cross-zone), "Calculation architecture" (trỏ về
+      `utils/dataUtils.ts`, không có `shared/lib/calculations`). Ghi chú rõ các thư mục root
+      KHÔNG thuộc app (`_agents/`, `archive/`, `design-system/`, `scratch/`, `tasks/`,
+      `telegram-agent/` — hạ tầng công cụ AI khác chạy song song).
+- [x] **Hoàn thiện `CODE_STYLE.md` (2026-07-05)**: sửa "Logic rules" (trỏ về
+      `utils/dataUtils.ts` + `features/*/utils/`, không phải `shared/lib/calculations`).
+      Viết lại "CSS/UI rules" theo đúng bảng màu semantic thật (sky/slate/emerald/amber/rose)
+      + ghi chú đặc thù "indigo≈sky". Bổ sung rule cứng về zone isolation (ESLint
+      `import/no-restricted-paths` chặn import chéo `features/*` và import `hooks/services`
+      root) vào "Import/export rules".
 - [x] **Hoàn thiện `TESTING.md` (2026-07-05)**: điền mục "Test 4 module" (trước đó để trống
       hẳn) khớp đúng 4 zone của `REQUIREMENTS.md`, kèm test case cụ thể theo tính năng thật
       của từng zone (upload YCX/KPI, Thi đua/Target, Phân ca/EditShiftModal, In Sticker/in
       bill 80mm). Sửa lại mục "Lệnh kiểm tra": xác nhận dự án dùng npm (không phải
       pnpm/yarn), và **không có test runner tự động** — `npm run lint` thực chất là
       `tsc --noEmit`, không phải eslint (dễ nhầm) — đã ghi rõ để tránh hiểu sai lệnh.
-- [ ] Hoàn thiện `SECURITY.md`.
+- [x] **Hoàn thiện `SECURITY.md` (2026-07-05)**: bổ sung phần "Firebase Auth & Security
+      Rules" — ranh giới bảo mật thật của app nằm ở Firebase Auth + Firestore Rules (không
+      phải API token truyền thống); ghi nhận `firestore.rules` KHÔNG có trong repo (rule
+      quản lý ngoài Firebase Console, không version-control được). **Phát hiện bảo mật thật
+      khi audit**: `StickerPrintPreview.tsx` render nội dung sticker do nhân viên tự nhập qua
+      `dangerouslySetInnerHTML` KHÔNG sanitize, nội dung này lưu chung `stores/{storeId}` nên
+      1 nhân viên có thể chèn HTML/script ảnh hưởng nhân viên khác cùng kho (stored XSS phạm
+      vi 1 kho, rủi ro thực tế thấp vì app nội bộ nhưng vẫn là lỗ hổng thật — CHƯA sửa, ngoài
+      phạm vi task docs, cần làm riêng). Cũng phát hiện `MarkdownRenderer.tsx` không sanitize
+      nhưng là dead code (không import ở đâu) — an toàn ở hiện trạng. Sửa mục Environment
+      variables theo `.env.local` thật (biến `GEMINI_API_KEY`, không phải `.env.example`).
 - [x] **Hoàn thiện `DEPLOYMENT.md` (2026-07-05)**: viết lại hoàn toàn theo quy trình deploy
       thật — `npm run deploy` = commit + push `main` + `gh-pages -d dist` lên domain riêng
       `dashboard.pro.vn` (không có CI/CD, không có staging). Đã cảnh báo rõ: lệnh này tự

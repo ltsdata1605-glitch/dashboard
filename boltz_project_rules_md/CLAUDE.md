@@ -19,8 +19,16 @@ Dự án này bắt đầu bằng hình thức Vibecoding nên trước đây c�
 
 ## Tài liệu bắt buộc phải đọc trước khi sửa code
 
+**Quan trọng (bổ sung 2026-07-05):** `RULES.md` và `UI_GUIDELINES.md` nằm ở **root dự án**
+(không phải trong `boltz_project_rules_md/`) và là **nguồn chân lý chính xác nhất, chi tiết
+nhất** về kiến trúc/4-zone/design system thật của dự án — đọc 2 file này **TRƯỚC**, các file
+bên dưới chỉ bổ sung/mở rộng, không thay thế. Khi `RULES.md` và các file dưới đây mâu
+thuẫn, `RULES.md` thắng (đã đối chiếu source thật, xem CHANGELOG 2026-07-05 "Phase 2").
+
 Trước mọi task, hãy đọc hoặc kiểm tra các file sau nếu có:
 
+- `RULES.md` (root) — ⭐ kiến trúc 4-zone, quy tắc cách ly, design system, deployment thật.
+- `UI_GUIDELINES.md` (root) — style bảng biểu chi tiết.
 - `README.md`
 - `REQUIREMENTS.md`
 - `DESIGN.md`
@@ -114,16 +122,20 @@ Trước khi sửa, hãy nêu kế hoạch 3-7 bước. Không viết kế hoạ
 
 ### Bước 4 — Kiểm tra
 
-Sau khi sửa, chạy các lệnh phù hợp nếu tồn tại trong project:
+Lệnh thật của dự án này (đã xác nhận trong `package.json`, xem `TESTING.md` để biết đầy đủ)
+— **lưu ý `npm run lint` thực chất là `tsc --noEmit`, không phải eslint, và dự án không có
+test runner tự động**:
 
 ```bash
-npm run lint
-npm run typecheck
-npm run test
-npm run build
+npm run lint          # = tsc --noEmit (type-check, KHÔNG phải eslint)
+npx eslint .           # eslint thật sự — dùng lệnh này để bắt lỗi cấu trúc/zone-boundary
+npm run build          # vite build
+npm run lint:ratchet   # kiểm tra không có vi phạm design-token mới so với baseline
+npm run check          # gộp nhanh: typecheck + build + lint:ratchet
 ```
 
-Nếu project không có lệnh tương ứng, hãy ghi rõ.
+Vì không có test tự động, sau khi sửa UI/tương tác phải test thủ công qua trình duyệt
+(`npm run dev`) — không coi build/lint pass là đủ để kết luận tính năng đúng.
 
 ### Bước 5 — Cập nhật tài liệu
 

@@ -96,21 +96,37 @@ Không nên:
 
 ## Logic rules
 
-- Calculation nằm trong `shared/lib/calculations` hoặc module utils.
-- API logic nằm trong service layer.
-- Format currency/date/number dùng helper chung.
-- Filter logic dùng helper/state chuẩn.
+- Calculation dùng chung nằm trong `utils/dataUtils.ts` (KHÔNG có `shared/lib/calculations`
+  — xem `ARCHITECTURE.md`); calculation riêng từng zone nằm trong `features/*/utils/`.
+- Không có backend/API server riêng — logic gọi Firebase/Firestore nằm trong `services/`
+  (Root) hoặc `features/*/services/` (mỗi zone tự có, xem `API.md`).
+- Format currency/date/number dùng helper chung `utils/dataUtils.ts` (`formatCurrency`,
+  `formatQuantity`...) khi cùng mục đích hiển thị — nhưng 1 hàm cùng tên ở 2 zone không mặc
+  nhiên là bản trùng lặp cần gộp (VD: format tiền đầy đủ để in sticker khác format rút gọn
+  cho dashboard) — kiểm tra ngữ cảnh trước khi "dedupe" (xem `RULES.md` §2.0).
+- Filter logic: mỗi zone tự quản lý `FilterState` riêng (không dùng chung 1 type filter
+  cross-zone) — xem `ARCHITECTURE.md` mục "Filter architecture".
 - Business rule quan trọng phải có tên hàm rõ nghĩa.
 
 ---
 
 ## CSS/UI rules
 
-- Ưu tiên design tokens trong `DESIGN.md`.
-- Không dùng màu hex rải rác nếu token đã có.
-- Không inline style nếu có thể dùng class/component.
-- Không tạo nhiều class khác nhau cho cùng một loại button/card/table.
-- Không dùng shadow quá đậm, radius quá khác biệt với design system.
+- Chỉ dùng bảng màu semantic đã duyệt: `sky`=primary, `slate`=secondary, `emerald`=success,
+  `amber`=warning, `rose`=danger (định nghĩa tại `styles.css`'s `@theme` + `styles/tokens.css`
+  — Tailwind CSS 4, KHÔNG có file `tailwind.config.js`). Xem `DESIGN.md` để biết chi tiết.
+- **Lưu ý đặc thù dự án này**: `styles.css` override `--color-indigo-*` bằng hex của `sky`,
+  nên `indigo-*` và `sky-*` hiện render giống hệt nhau ở nhiều nơi — 1 số chỗ khác lại dùng
+  `indigo` như màu riêng biệt trong bảng màu xoay vòng (VD: `TargetHero.tsx`,
+  `CompetitionTab.tsx`). KHÔNG tự ý tìm-thay `indigo` → `sky` hàng loạt — xử lý thủ công
+  từng trường hợp nếu cần đụng tới (xem `RULES.md` §2.5 điểm 2).
+- Mọi class có màu phải có `dark:` tương ứng — không có ngoại lệ theo zone.
+- Mọi phần tử tương tác (button, modal, input, badge, bảng, dropdown, loading) BẮT BUỘC
+  dùng `components/shared/ui/*` — cấm viết `<button>` thô hoặc tự dựng modal `fixed inset-0`
+  mới (xem `RULES.md` §2.5 điểm 1; việc migrate toàn bộ `<button>` cũ đã hoàn tất, xem
+  CHANGELOG 2026-07-05 "Bước 4").
+- Không dùng `rounded-3xl` hoặc bo góc quá mạnh — ưu tiên `rounded-lg`/`rounded-xl`
+  (`RULES.md` §4.1).
 
 ---
 
@@ -118,8 +134,12 @@ Không nên:
 
 - Import theo đường dẫn rõ ràng.
 - Tránh import vòng lặp.
-- Nếu có barrel export (`index.ts`), dùng nhất quán.
+- Nếu có barrel export (`index.ts`, VD: `components/shared/ui/index.ts`), dùng nhất quán.
 - Không import từ file sâu nếu module đã có public export.
+- **Bắt buộc theo `RULES.md` §2.0**: `features/bi-dashboard`, `features/phan-ca`,
+  `features/sticker-event` KHÔNG được import chéo lẫn nhau, và KHÔNG được import
+  `hooks/*`/`services/*` ở root — ESLint rule `import/no-restricted-paths` chặn việc này,
+  chạy `npx eslint .` sẽ báo lỗi ngay nếu vi phạm.
 
 ---
 
