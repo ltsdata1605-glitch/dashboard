@@ -4,6 +4,7 @@ import { parseCurrency } from './services/fileParser';
 import { XIcon, TrashIcon, MinusCircleIcon, PlusCircleIcon } from './Icons';
 import { formatCurrency as formatCurrencyForDisplay } from './utils/format';
 import { ManualProductDoc } from './services/firebaseService';
+import { Button } from '../../components/shared/ui/Button';
 
 export interface ManualProductWithId extends Product {
     firebaseId?: string; // ID from Firestore document
@@ -231,9 +232,9 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                             <h2 className="text-xl font-bold text-slate-900">Nhập thông tin sản phẩm thủ công</h2>
                             <p className="text-xs text-slate-500 mt-0.5">Ngành hàng: <b className="text-indigo-600">Nhóm thủ công</b> • Dữ liệu dùng chung cho mã kho</p>
                         </div>
-                        <button type="button" onClick={onClose} className="p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors" aria-label="Đóng">
+                        <Button type="button" variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors" aria-label="Đóng">
                             <XIcon className="h-6 w-6" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
 
@@ -244,7 +245,7 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                         {editingId && (
                             <div className="flex items-center gap-2 text-sm bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                                 <span className="text-amber-700 font-medium">✏️ Đang chỉnh sửa sản phẩm — Thay đổi thông tin và bấm "Lưu thay đổi"</span>
-                                <button type="button" onClick={handleCancelEdit} className="ml-auto text-amber-600 hover:text-amber-800 font-medium text-xs underline">Hủy sửa</button>
+                                <Button type="button" variant="ghost" onClick={handleCancelEdit} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 ml-auto text-amber-600 hover:text-amber-800 font-medium text-xs underline">Hủy sửa</Button>
                             </div>
                         )}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -270,17 +271,17 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                             </div>
                             {editingId ? (
                                 <div className="flex gap-2">
-                                    <button type="button" onClick={handleCancelEdit} className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-slate-300 bg-white hover:bg-slate-100 h-10 px-4 py-2">
+                                    <Button type="button" variant="ghost" onClick={handleCancelEdit} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium border border-slate-300 bg-white hover:bg-slate-100 h-10 px-4 py-2">
                                         Hủy sửa
-                                    </button>
-                                    <button type="submit" disabled={isSaving} className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 h-10 px-6 py-2 disabled:opacity-50">
+                                    </Button>
+                                    <Button type="submit" variant="ghost" disabled={isSaving} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-amber-500 text-white hover:bg-amber-600 h-10 px-6 py-2 disabled:opacity-50">
                                         {isSaving ? 'Đang lưu...' : '💾 Lưu thay đổi'}
-                                    </button>
+                                    </Button>
                                 </div>
                             ) : (
-                                <button type="submit" disabled={isSaving} className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-blue-600 text-blue-50 hover:bg-blue-700 h-10 px-6 py-2 disabled:opacity-50">
+                                <Button type="submit" variant="ghost" disabled={isSaving} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-blue-600 text-blue-50 hover:bg-blue-700 h-10 px-6 py-2 disabled:opacity-50">
                                     {isSaving ? 'Đang lưu...' : 'Thêm sản phẩm'}
-                                </button>
+                                </Button>
                             )}
                         </div>
                     </form>
@@ -357,13 +358,14 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
                                             </div>
 
                                             {/* Delete */}
-                                            <button
+                                            <Button
+                                                variant="ghost"
                                                 onClick={(e) => { e.stopPropagation(); p.firebaseId && onDeleteProduct(p.firebaseId); }}
-                                                className="p-1.5 text-slate-400 hover:text-red-600 transition-colors flex-shrink-0"
+                                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-red-600 transition-colors flex-shrink-0"
                                                 title="Xóa sản phẩm"
                                             >
                                                 <TrashIcon className="h-4 w-4" />
-                                            </button>
+                                            </Button>
                                         </div>
                                     );
                                 })}
@@ -374,27 +376,29 @@ const ManualInputModal: React.FC<ManualInputModalProps> = ({
 
                 {/* Footer */}
                 <div className="p-4 flex justify-between items-center border-t border-slate-200 flex-shrink-0 bg-slate-50 rounded-b-2xl">
-                    <button type="button" onClick={onClose} className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-white hover:bg-slate-100 h-10 px-4 py-2">
+                    <Button type="button" variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium border border-input bg-white hover:bg-slate-100 h-10 px-4 py-2">
                         Đóng
-                    </button>
+                    </Button>
                     <div className="flex items-center gap-2">
                         {selectedCount > 0 && (
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={handlePrintSelected}
-                                className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 h-10 px-5 py-2"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 h-10 px-5 py-2"
                             >
                                 In đã chọn ({selectedCount})
-                            </button>
+                            </Button>
                         )}
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={handlePrintAll}
                             disabled={manualProducts.length === 0}
-                            className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 h-10 px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 h-10 px-5 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             In tất cả ({manualProducts.length})
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

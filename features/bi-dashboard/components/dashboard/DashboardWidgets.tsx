@@ -2,15 +2,17 @@
 import React from 'react';
 import { SpinnerIcon, CameraIcon } from '../Icons';
 import { shortenSupermarketName } from '../../utils/dashboardHelpers';
+import { Button } from '../../../../components/shared/ui/Button';
 
 export const Switch: React.FC<{ checked: boolean; onChange: () => void; id?: string }> = ({ checked, onChange, id }) => (
-    <button
+    <Button
+      variant="ghost"
       type="button"
       role="switch"
       aria-checked={checked}
       id={id}
       onClick={onChange}
-      className={`${
+      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start ${
         checked ? 'bg-sky-500 shadow-inner' : 'bg-slate-300 dark:bg-slate-600'
       } relative inline-flex h-4 w-7 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none`}
     >
@@ -20,7 +22,7 @@ export const Switch: React.FC<{ checked: boolean; onChange: () => void; id?: str
           checked ? 'translate-x-3' : 'translate-x-0'
         } pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out`}
       />
-    </button>
+    </Button>
   );
 
 export const GaugeChart: React.FC<{ value: number; label: string; target: number; size?: number; strokeWidth?: number }> = ({ value, label, target, size = 90, strokeWidth = 8 }) => {
@@ -117,9 +119,11 @@ export const KpiCard: React.FC<{ title: string; value: React.ReactNode; color: s
 );
 
 export const MainTabButton: React.FC<{ icon: React.ReactNode; label: string; isActive: boolean; onClick: () => void; }> = ({ icon, label, isActive, onClick }) => (
-    <button
+    <Button
+        variant="ghost"
         onClick={onClick}
         className={`
+            bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit
             flex items-center gap-2 px-6 py-2 text-sm font-semibold rounded-xl transition-all duration-300
             ${isActive
                 ? 'bg-white dark:bg-slate-700 text-primary-600 dark:text-primary-400 shadow-lg shadow-black/5 ring-1 ring-slate-200 dark:ring-slate-600'
@@ -128,17 +132,18 @@ export const MainTabButton: React.FC<{ icon: React.ReactNode; label: string; isA
     >
         {icon}
         <span>{label}</span>
-    </button>
+    </Button>
 );
 
 export const SubTabButton: React.FC<{ label: string; isActive: boolean; onClick: () => void; icon?: React.ReactNode; }> = ({ label, isActive, onClick, icon }) => (
-    <button
+    <Button
+        variant="ghost"
         onClick={onClick}
-        className={`flex items-center gap-2 py-3 px-4 border-b-2 font-medium text-sm transition-colors ${isActive ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:border-slate-300 dark:text-slate-400 dark:hover:border-slate-600'}`}
+        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-2 py-3 px-4 border-b-2 font-medium text-sm transition-colors ${isActive ? 'border-primary-500 text-primary-600 dark:text-primary-400' : 'border-transparent text-slate-500 hover:border-slate-300 dark:text-slate-400 dark:hover:border-slate-600'}`}
     >
         {icon}
         <span>{label}</span>
-    </button>
+    </Button>
 );
 
 export const ProgressBar: React.FC<{ value: number }> = ({ value }) => {
@@ -177,10 +182,12 @@ export const SupermarketNavBar: React.FC<{
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 flex-wrap mt-1 mb-3 sm:mt-2 sm:mb-6">
             <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-2 -mb-2 w-full sm:w-auto scrollbar-hide">
                 {['Tổng', ...supermarkets].map(sm => (
-                    <button
+                    <Button
+                        variant="ghost"
                         key={sm}
                         onClick={() => setActiveSupermarket(sm)}
                         className={`
+                            bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit
                             shrink-0 px-3 py-1.5 sm:px-5 sm:py-2 text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest rounded-xl transition-all duration-300 border
                             ${activeSupermarket === sm
                                 ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 border-sky-200 dark:border-sky-800 shadow-sm'
@@ -188,18 +195,19 @@ export const SupermarketNavBar: React.FC<{
                         `}
                     >
                         {sm === 'Tổng' ? 'CỤM' : shortenSupermarketName(sm).toUpperCase()}
-                    </button>
+                    </Button>
                 ))}
             </div>
-            <button
+            <Button
+                variant="ghost"
                 onClick={onBatchExport}
                 disabled={isBatchExporting}
-                className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 transition-all duration-300 px-3 py-1.5 sm:px-5 sm:py-2 rounded-xl disabled:opacity-50 disabled:cursor-wait ml-auto sm:ml-0 shadow-sm active:scale-95"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-semibold uppercase tracking-widest text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 border border-indigo-200 dark:border-indigo-800 transition-all duration-300 px-3 py-1.5 sm:px-5 sm:py-2 rounded-xl disabled:opacity-50 disabled:cursor-wait ml-auto sm:ml-0 shadow-sm active:scale-95"
                 title="Xuất hàng loạt ảnh cho tất cả siêu thị"
             >
                 {isBatchExporting ? <SpinnerIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" /> : <CameraIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                 <span>{isBatchExporting ? 'ĐANG XUẤT ẢNH...' : 'Xuất All'}</span>
-            </button>
+            </Button>
         </div>
     );
 };

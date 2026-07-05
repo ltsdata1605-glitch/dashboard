@@ -9,6 +9,7 @@ import CompetitionListView from './competition/CompetitionListView';
 import { exportElementAsImage } from '../../../../services/uiService';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
+import { Button } from '../../../../components/shared/ui/Button';
 
 interface CompetitionViewProps {
     data: Record<string, SupermarketCompetitionData>;
@@ -168,9 +169,10 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                 <div className="absolute right-3 top-1/2 -translate-y-1/2 hide-on-export flex items-center gap-1">
                     {/* Program filter */}
                     <div className="relative" ref={programFilterRef}>
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => setIsProgramFilterOpen(p => !p)}
-                            className={`p-1.5 rounded transition-colors relative ${isProgramFilterOpen ? 'bg-white/30 text-white' : 'text-white/60 hover:text-white hover:bg-white/20'}`}
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 rounded transition-colors relative ${isProgramFilterOpen ? 'bg-white/30 text-white' : 'text-white/60 hover:text-white hover:bg-white/20'}`}
                             title="Lọc chương trình thi đua"
                         >
                             <FilterIcon className="h-4 w-4" />
@@ -180,7 +182,7 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                 const isFiltered = validSelected.length > 0 && validSelected.length < allProgramNames.length;
                                 return isFiltered ? <span className="absolute -top-0.5 -right-0.5 bg-amber-400 text-slate-900 text-[7px] font-bold w-3.5 h-3.5 flex items-center justify-center rounded-full">{validSelected.length}</span> : null;
                             })()}
-                        </button>
+                        </Button>
                         {isProgramFilterOpen && (
                             <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-[100] p-3 flex flex-col max-h-96 text-left">
                                 <div className="mb-2">
@@ -193,8 +195,8 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                                     />
                                 </div>
                                 <div className="flex justify-between items-center mb-2 px-1">
-                                    <button onClick={() => setSelectedPrograms(allProgramNames)} className="text-[10px] font-bold text-indigo-600 hover:underline uppercase tracking-wider">Chọn tất cả</button>
-                                    <button onClick={() => setSelectedPrograms([])} className="text-[10px] font-bold text-slate-400 hover:underline uppercase tracking-wider">Bỏ chọn</button>
+                                    <Button variant="ghost" onClick={() => setSelectedPrograms(allProgramNames)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-indigo-600 hover:underline uppercase tracking-wider">Chọn tất cả</Button>
+                                    <Button variant="ghost" onClick={() => setSelectedPrograms([])} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-slate-400 hover:underline uppercase tracking-wider">Bỏ chọn</Button>
                                 </div>
                                 <div className="flex-1 overflow-y-auto space-y-0.5 max-h-60">
                                     {allProgramNames.filter(name => !programFilterSearch || name.toLowerCase().includes(programFilterSearch.toLowerCase())).map(name => (
@@ -214,13 +216,14 @@ const CompetitionView = React.forwardRef<HTMLDivElement, CompetitionViewProps>((
                     </div>
                     {/* Column selector */}
                     <div className="relative" ref={columnSelectorRef}>
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => setIsColumnSelectorOpen(p => !p)}
-                            className={`p-1.5 rounded transition-colors ${isColumnSelectorOpen ? 'bg-white/30 text-white' : 'text-white/60 hover:text-white hover:bg-white/20'}`}
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 rounded transition-colors ${isColumnSelectorOpen ? 'bg-white/30 text-white' : 'text-white/60 hover:text-white hover:bg-white/20'}`}
                             title="Cột hiển thị"
                         >
                             <CogIcon className="h-4 w-4" />
-                        </button>
+                        </Button>
                         {isColumnSelectorOpen && (
                             <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto text-left">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Cột hiển thị</p>

@@ -249,9 +249,9 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                                 <option value="">Tất cả</option>
                                                 {departments.map(d => <option key={d} value={d}>{d}</option>)}
                                             </select>
-                                            <button className={`p-1 rounded transition-colors ${filterDept ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:bg-slate-200'}`}>
+                                            <Button variant="ghost" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded transition-colors ${filterDept ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 hover:bg-slate-200'}`}>
                                                 <Icon name="filter" size={3.5} />
-                                            </button>
+                                            </Button>
                                         </div>
                                     </div>
                                 </th>
@@ -288,12 +288,12 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                             </td>
                                             <td className="px-2 sm:px-4 py-1.5 sm:py-3 text-center border-r border-slate-200 dark:border-slate-700">
                                                 <div className="flex justify-center gap-1 sm:gap-2">
-                                                    <button onClick={handleSave} className="p-1 sm:p-1.5 text-emerald-600 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
+                                                    <Button variant="ghost" onClick={handleSave} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 sm:p-1.5 text-emerald-600 hover:bg-emerald-50 rounded dark:text-emerald-400 dark:hover:bg-emerald-900/30" title="Lưu">
                                                         <Icon name="check" size={3.5} className="sm:hidden" /><Icon name="check" size={4} className="hidden sm:block" />
-                                                    </button>
-                                                    <button onClick={() => setEditingId(null)} className="p-1 sm:p-1.5 text-rose-600 hover:bg-rose-50 rounded dark:text-rose-400 dark:hover:bg-rose-900/30" title="Hủy">
+                                                    </Button>
+                                                    <Button variant="ghost" onClick={() => setEditingId(null)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 sm:p-1.5 text-rose-600 hover:bg-rose-50 rounded dark:text-rose-400 dark:hover:bg-rose-900/30" title="Hủy">
                                                         <Icon name="x" size={3.5} className="sm:hidden" /><Icon name="x" size={4} className="hidden sm:block" />
-                                                    </button>
+                                                    </Button>
                                                 </div>
                                             </td>
                                         </>
@@ -307,12 +307,12 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                                             </td>
                                             <td className="px-2 sm:px-4 py-1.5 sm:py-3 text-center border-r border-slate-200 dark:border-slate-700">
                                                 <div className="flex justify-center gap-1" style={{ opacity: 1 }}>
-                                                    <button onClick={() => handleEdit(emp)} className="p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Sửa">
+                                                    <Button variant="ghost" onClick={() => handleEdit(emp)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 sm:p-1.5 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded transition-colors" title="Sửa">
                                                         <Icon name="pencil" size={3.5} className="sm:hidden" /><Icon name="pencil" size={4} className="hidden sm:block" />
-                                                    </button>
-                                                    <button onClick={() => handleDelete(emp.id)} className="p-1 sm:p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors" title="Xóa">
+                                                    </Button>
+                                                    <Button variant="ghost" onClick={() => handleDelete(emp.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 sm:p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors" title="Xóa">
                                                         <Icon name="trash-2" size={3.5} className="sm:hidden" /><Icon name="trash-2" size={4} className="hidden sm:block" />
-                                                    </button>
+                                                    </Button>
                                                 </div>
                                             </td>
                                         </>

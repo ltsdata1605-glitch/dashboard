@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icon } from '../../common/Icon';
 import { HEADER_CONFIG } from './SummaryTableUtils';
+import { Button } from '../../shared/ui/Button';
 
 interface SummaryTableHeaderProps {
     displayTitle: string;
@@ -87,62 +88,66 @@ export const SummaryTableHeader: React.FC<SummaryTableHeaderProps> = ({
                     
                     <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
                         <div className="flex items-center hide-on-export">
-                            <button 
+                            <Button
+                                variant="ghost"
                                 onClick={() => setTableMode('standard')}
-                                className={`p-1.5 lg:p-2 rounded-md transition-colors ${
-                                    tableMode === 'standard' 
-                                    ? 'text-indigo-600 dark:text-indigo-400' 
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 lg:p-2 rounded-md transition-colors ${
+                                    tableMode === 'standard'
+                                    ? 'text-indigo-600 dark:text-indigo-400'
                                     : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
                                 title="Tiêu chuẩn"
                             >
                                 <Icon name="table" size={4} className="lg:hidden" />
                                 <Icon name="table" size={5} className="hidden lg:block" />
-                            </button>
-                            <button 
+                            </Button>
+                            <Button
+                                variant="ghost"
                                 onClick={() => setTableMode('comparison')}
-                                className={`p-1.5 lg:p-2 rounded-md transition-colors ${
-                                    tableMode === 'comparison' 
-                                    ? 'text-indigo-600 dark:text-indigo-400' 
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 lg:p-2 rounded-md transition-colors ${
+                                    tableMode === 'comparison'
+                                    ? 'text-indigo-600 dark:text-indigo-400'
                                     : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                                 }`}
                                 title="So sánh"
                             >
                                 <Icon name="columns-2" size={4} className="lg:hidden" />
                                 <Icon name="columns-2" size={5} className="hidden lg:block" />
-                            </button>
+                            </Button>
                         </div>
                         
                         <div className="relative z-[100] hide-on-export shrink-0" ref={columnsPopupRef}>
                             {isCrossSellingMode ? (
-                                <button 
-                                    onClick={handleExport} 
-                                    disabled={isExporting} 
-                                    title="Xuất Ảnh" 
-                                    className="p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                <Button
+                                    variant="ghost"
+                                    onClick={handleExport}
+                                    disabled={isExporting}
+                                    title="Xuất Ảnh"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                 >
                                     {isExporting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="camera" size={5} />}
-                                </button>
+                                </Button>
                             ) : (
                                 <>
                                     <div className="flex items-center gap-2">
-                                        <button
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => setActiveFilterKey(prev => prev === 'columns' ? null : 'columns')}
-                                            className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                                             title="Tùy chọn hiển thị cột"
                                         >
                                             <Icon name="settings-2" size={4.5}/>
-                                        </button>
-                                        <button onClick={handleExport} disabled={isExporting} title="Xuất Ảnh" className="p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
+                                        </Button>
+                                        <Button variant="ghost" onClick={handleExport} disabled={isExporting} title="Xuất Ảnh" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 sm:p-2 text-slate-500 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                                             {isExporting ? <Icon name="loader-2" size={4.5} className="animate-spin" /> : <Icon name="camera" size={4.5} />}
-                                        </button>
+                                        </Button>
                                     </div>
 
                                     {activeFilterKey === 'columns' && (
                                         <div className="absolute right-0 sm:left-0 sm:right-auto md:right-0 md:left-auto mt-2 w-56 sm:w-72 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-2xl p-2 sm:p-3 border border-slate-100 dark:border-slate-700 z-[200]">
                                             <div className="flex justify-between items-center mb-2 sm:mb-3 px-1.5 sm:px-2 pt-0.5 sm:pt-1 border-b border-slate-50 pb-1.5 sm:pb-2 dark:border-slate-700/50">
                                                 <h4 className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100">Tùy chọn hiển thị cột</h4>
-                                                <button onClick={() => setActiveFilterKey(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={3.5} className="sm:hidden"/><Icon name="x" size={4} className="hidden sm:block"/></button>
+                                                <Button variant="ghost" onClick={() => setActiveFilterKey(null)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-md transition-colors"><Icon name="x" size={3.5} className="sm:hidden"/><Icon name="x" size={4} className="hidden sm:block"/></Button>
                                             </div>
                                             <div className="space-y-1 sm:space-y-1.5 max-h-64 overflow-y-auto custom-scrollbar">
                                                 {HEADER_CONFIG.filter((col: any) => {

@@ -8,6 +8,7 @@ import { Employee, BonusMetrics } from '../../types/nhanVienTypes';
 import { parseNumber, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { Button } from '../../../../components/shared/ui/Button';
 import * as db from '../../utils/db';
 import { exportElementAsImage } from '../../../../services/uiService';
 import { BonusMobileCard } from './bonus/BonusMobileCard';
@@ -158,24 +159,27 @@ export const BonusDataModal: React.FC<{
                     </div>
                     
                     <div className="flex gap-3 w-full sm:w-auto">
-                        <button 
-                            onClick={() => onClose('stop')} 
-                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
+                        <Button
+                            variant="ghost"
+                            onClick={() => onClose('stop')}
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 sm:flex-none px-6 py-2.5 text-sm font-bold text-rose-600 bg-rose-50 border border-rose-200 rounded-xl hover:bg-rose-100 transition-colors"
                         >
                             Kết thúc
-                        </button>
-                        <button 
-                            onClick={() => onClose('skip')} 
-                            className="flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={() => onClose('skip')}
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 sm:flex-none px-6 py-2.5 text-sm font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                         >
                             Bỏ qua
-                        </button>
-                        <button 
-                            onClick={async () => (await processAndSave(pastedData)) && onClose('save')} 
-                            className="flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-indigo-600 border border-transparent rounded-xl hover:bg-indigo-700 shadow-sm transition-colors"
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={async () => (await processAndSave(pastedData)) && onClose('save')}
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 sm:flex-none px-8 py-2.5 text-sm font-bold text-white bg-indigo-600 border border-transparent rounded-xl hover:bg-indigo-700 shadow-sm transition-colors"
                         >
                             Lưu & Tiếp tục
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -633,19 +637,20 @@ export const BonusView: React.FC<{
         <div className="space-y-0">
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-3 items-center">
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={() => { hrmWindowRef = window.open('https://newinsite.thegioididong.com/office/thuong-nhan-vien', '_blank'); onBatchUpdate(); }}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[11px] font-bold border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-all active:scale-95"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 text-[11px] font-bold border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition-all active:scale-95"
                     >
                         <UploadIcon className="h-3.5 w-3.5" />
                         <span>Cập nhật thưởng</span>
-                    </button>
+                    </Button>
                 </div>
                 <div className="flex gap-1.5 items-center">
-                    <button onClick={() => setViewMode('group')} title="Bộ phận" className={`p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></button>
-                    <button onClick={() => setViewMode('list')} title="Danh sách" className={`p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></button>
+                    <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" onClick={() => setViewMode('list')} title="Danh sách" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <button onClick={() => setIsDaily(prev => !prev)} title="Xem theo ngày" className={`p-1 transition-all ${isDaily ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><CalendarIcon className="h-4 w-4"/></button>
+                    <Button variant="ghost" onClick={() => setIsDaily(prev => !prev)} title="Xem theo ngày" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${isDaily ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><CalendarIcon className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
                     <ExportButton onExportPNG={handleExportPNG} />
                 </div>

@@ -19,6 +19,7 @@ import { ImportPrevMonthModal } from './revenue/ImportPrevMonthModal';
 import { RevenueMobileCard } from './revenue/RevenueMobileCard';
 import { RevenueDesktopRow } from './revenue/RevenueDesktopRow';
 import { useRevenueData } from '../../hooks/useRevenueData';
+import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
 
 
@@ -225,43 +226,46 @@ const RevenueView: React.FC<{
         <div className="space-y-0">
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-3 items-center">
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={() => setIsPrevMonthModalOpen(true)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-750'}`}
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-750'}`}
                     >
                         <ClockIcon className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">Cùng kỳ</span>
                         {prevMonthRaw && (
-                            <button onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800">
+                            <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800">
                                 <XIcon className="h-3 w-3" />
-                            </button>
+                            </Button>
                         )}
-                    </button>
-                    <button 
+                    </Button>
+                    <Button
+                        variant="ghost"
                         onClick={() => setIsShowRemaining(p => !p)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isShowRemaining ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-750'}`}
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isShowRemaining ? 'bg-amber-50 border-amber-200 text-amber-700 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-750'}`}
                     >
-                        <input 
-                            type="checkbox" 
-                            checked={isShowRemaining} 
+                        <input
+                            type="checkbox"
+                            checked={isShowRemaining}
                             onChange={() => {}} // handled by button click
-                            className="h-3.5 w-3.5 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer pointer-events-none" 
+                            className="h-3.5 w-3.5 rounded border-slate-300 text-amber-600 focus:ring-amber-500 cursor-pointer pointer-events-none"
                         />
                         <span>Còn lại</span>
-                    </button>
+                    </Button>
                 </div>
                 <div className="flex gap-1.5 items-center">
-                    <button onClick={() => setViewMode('group')} title="Bộ phận" className={`p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></button>
-                    <button onClick={() => setViewMode('list')} title="Danh sách" className={`p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></button>
+                    <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></Button>
+                    <Button variant="ghost" onClick={() => setViewMode('list')} title="Danh sách" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={handleBatchExportByDept}
                         disabled={isExportingByDept}
                         title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'}
-                        className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-50"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-50"
                     >
                         {isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}
-                    </button>
+                    </Button>
                     <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
                 </div>
             </div>

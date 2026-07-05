@@ -9,6 +9,7 @@ import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem, TicketDraw
 import { StickerPrintPreview } from './stickerprinter/StickerPrintPreview';
 import { StickerManualQueue } from './stickerprinter/StickerManualQueue';
 import { StickerPrintControls } from './stickerprinter/StickerPrintControls';
+import { Button } from '../../components/shared/ui/Button';
 import { generateBarcodeDataUrl } from '../../components/views/BarcodeCanvas';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -1634,7 +1635,8 @@ export default function StickerPrinterView() {
             {mounted && activeTab === 'tools-print-sticker' && document.getElementById(isMobile ? 'mobile-topbar-actions' : 'global-header-actions') && createPortal(
                 <div className="flex items-center gap-0.5 lg:gap-1 bg-white/60 dark:bg-slate-900/60 p-1 lg:p-1.5 rounded-full border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-xl shadow-sm animate-in fade-in zoom-in duration-300 mr-1 lg:mr-0">
                     <div className="flex bg-slate-100/80 dark:bg-slate-800/80 p-0.5 lg:p-1 rounded-full border border-slate-200/50 dark:border-slate-700/50">
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => {
                                 setStickerMode('sticker');
                                 setStickerType('gia_soc');
@@ -1643,16 +1645,17 @@ export default function StickerPrinterView() {
                                 setHeaderTextSize(8);
                                 updateSubQueryParam('gia-soc');
                             }}
-                            className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
-                                stickerMode === 'sticker' && stickerType === 'gia_soc' 
-                                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' 
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
+                                stickerMode === 'sticker' && stickerType === 'gia_soc'
+                                    ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                             }`}
                         >
                             <span className="lg:hidden">Giá Sốc</span>
                             <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'gia_soc' && <CheckCircle2 size={14} className="inline mr-1 text-indigo-600 dark:text-indigo-400" />}Giá Sốc</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="ghost"
                             onClick={() => {
                                 setStickerMode('sticker');
                                 setStickerType('gio_vang');
@@ -1661,16 +1664,17 @@ export default function StickerPrinterView() {
                                 setHeaderTextSize(8);
                                 updateSubQueryParam('gio-vang');
                             }}
-                            className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
-                                stickerMode === 'sticker' && stickerType === 'gio_vang' 
-                                    ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 shadow-sm' 
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
+                                stickerMode === 'sticker' && stickerType === 'gio_vang'
+                                    ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 shadow-sm'
                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                             }`}
                         >
                             <span className="lg:hidden">Giờ Vàng</span>
                             <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'gio_vang' && <CheckCircle2 size={14} className="inline mr-1 text-amber-600 dark:text-amber-400" />}Giờ Vàng</span>
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="ghost"
                             onClick={() => {
                                 setStickerMode('sticker');
                                 setStickerType('draw');
@@ -1678,30 +1682,31 @@ export default function StickerPrinterView() {
                                 updateSubQueryParam('draw');
                                 setActiveField('drawContentTopLeft');
                             }}
-                            className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
-                                stickerMode === 'sticker' && stickerType === 'draw' 
-                                    ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 shadow-sm' 
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
+                                stickerMode === 'sticker' && stickerType === 'draw'
+                                    ? 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-400 shadow-sm'
                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                             }`}
                         >
                             <span className="lg:hidden">Rút Thăm</span>
                             <span className="hidden lg:inline">{stickerMode === 'sticker' && stickerType === 'draw' && <CheckCircle2 size={14} className="inline mr-1 text-rose-600 dark:text-rose-400" />}Phiếu Rút Thăm</span>
-                        </button>
-                        <button
-                            onClick={() => { 
-                                setStickerMode('event'); 
-                                setEventEverOpened(true); 
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={() => {
+                                setStickerMode('event');
+                                setEventEverOpened(true);
                                 updateSubQueryParam('event');
                             }}
-                            className={`flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
-                                stickerMode === 'event' 
-                                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 shadow-sm' 
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2 lg:px-3 py-1 lg:py-1.5 rounded-full font-semibold text-[11px] lg:text-[13px] transition-all ${
+                                stickerMode === 'event'
+                                    ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 shadow-sm'
                                     : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                             }`}
                         >
                             <span className="lg:hidden">Event</span>
                             <span className="hidden lg:inline">{stickerMode === 'event' && <CheckCircle2 size={14} className="inline mr-1 text-emerald-600 dark:text-emerald-400" />}<Package size={14} className="inline mr-1" />Event - Tồn kho</span>
-                        </button>
+                        </Button>
                     </div>
                     
                     {stickerMode === 'sticker' && (
@@ -1710,7 +1715,8 @@ export default function StickerPrinterView() {
                                 {stickerType === 'draw' ? `${getDrawActiveFieldLabel()}:` : `${getActiveFieldLabel()}:`}
                             </span>
                             <div className="flex items-center bg-white dark:bg-slate-800 border border-slate-200/50 dark:border-slate-700/50 rounded-full overflow-hidden shadow-sm h-[22px] lg:h-[26px]">
-                                <button 
+                                <Button
+                                    variant="ghost"
                                     onMouseDown={(e) => e.preventDefault()}
                                     onClick={() => {
                                         if (stickerType === 'draw') {
@@ -1721,16 +1727,17 @@ export default function StickerPrinterView() {
                                         } else {
                                             setActiveFontSize(s => Math.max(1, s - 0.2));
                                         }
-                                    }} 
-                                    className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" 
+                                    }}
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-full w-auto px-1.5 lg:px-2 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
                                     title="Giảm size"
                                 >
                                     -
-                                </button>
+                                </Button>
                                 <span className="px-0 text-[10px] lg:text-[11px] font-bold text-slate-700 dark:text-slate-300 w-6 lg:w-8 text-center">
                                     {stickerType === 'draw' ? getDrawActiveFontSize().toFixed(1) : getActiveFontSize()}
                                 </span>
-                                <button 
+                                <Button
+                                    variant="ghost"
                                     onMouseDown={(e) => e.preventDefault()}
                                     onClick={() => {
                                         if (stickerType === 'draw') {
@@ -1741,12 +1748,12 @@ export default function StickerPrinterView() {
                                         } else {
                                             setActiveFontSize(s => s + 0.2);
                                         }
-                                    }} 
-                                    className="px-1.5 lg:px-2 h-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors" 
+                                    }}
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-full w-auto px-1.5 lg:px-2 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400 font-black transition-colors"
                                     title="Tăng size"
                                 >
                                     +
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     )}

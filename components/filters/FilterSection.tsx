@@ -5,6 +5,7 @@ import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import GtdhTargetModal from '../modals/GtdhTargetModal';
+import { Button } from '../shared/ui/Button';
 
 const ModernSwitch: React.FC<{ label: string; icon: string; isActive: boolean; onToggle: () => void; color: string; }> = ({ label, icon, isActive, onToggle, color }) => {
     const getColorClasses = (colorStr: string, active: boolean) => {
@@ -168,21 +169,23 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                     <h2 className="text-xs sm:text-base font-black text-slate-800 dark:text-white uppercase tracking-tight">Bộ Lọc Phân Tích</h2>
                 </div>
                 <div className="flex items-center gap-0.5 sm:gap-1">
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={handleResetFilters}
-                        className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
                         title="Đặt lại bộ lọc"
                     >
                         <Icon name="rotate-ccw" size={4} className="sm:hidden" />
                         <Icon name="rotate-ccw" size={5} className="hidden sm:block" />
-                    </button>
-                    <button 
+                    </Button>
+                    <Button
+                        variant="ghost"
                         onClick={onClose}
-                        className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 sm:p-2 text-slate-400 hover:text-slate-800 dark:hover:text-slate-100 transition-colors"
                     >
                         <Icon name="x" size={5} className="sm:hidden" />
                         <Icon name="x" size={6} className="hidden sm:block" />
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -295,13 +298,14 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                                     { range: 'week', label: 'Tuần này' }, { range: 'month', label: 'Tháng này' },
                                     { range: 'all', label: 'Tất cả' }
                                 ].map(({ range, label }) => (
-                                    <button 
-                                        key={range} 
-                                        onClick={() => handleDateRangeClick(range)} 
-                                        className={`py-1 text-[10px] font-bold rounded-md transition-all border ${localFilters.dateRange === range ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-indigo-300'}`}
+                                    <Button
+                                        variant="ghost"
+                                        key={range}
+                                        onClick={() => handleDateRangeClick(range)}
+                                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-1 text-[10px] font-bold rounded-md transition-all border ${localFilters.dateRange === range ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm dark:shadow-none' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-indigo-300'}`}
                                     >
                                         {label}
-                                    </button>
+                                    </Button>
                                 ))}
                             </div>
                         </div>
@@ -348,9 +352,10 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                     {/* GTĐH Settings */}
                     <div className="space-y-2 sm:space-y-2.5 pt-2 sm:pt-3 mt-1 border-t border-slate-200 dark:border-slate-800 pb-4 sm:pb-6 px-1">
                         <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Cấu Hình GTĐH Mục Tiêu</label>
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => setGtdhModalOpen(true)}
-                            className="w-full flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-all group"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex items-center justify-between px-2 sm:px-3 py-1.5 sm:py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg sm:rounded-xl hover:border-indigo-400 dark:hover:border-indigo-500 hover:shadow-sm transition-all group"
                         >
                             <div className="flex items-center gap-2 sm:gap-2.5">
                                 <div className="p-1 sm:p-1.5 bg-indigo-50 dark:bg-indigo-900/40 rounded-md sm:rounded-lg text-indigo-600 dark:text-indigo-400 group-hover:bg-indigo-100 dark:group-hover:bg-indigo-900/60 transition-colors">
@@ -364,7 +369,7 @@ const FilterSection: React.FC<FilterSectionProps> = ({ options, visibility, onVi
                             </div>
                             <Icon name="chevron-right" size={3.5} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors sm:hidden" />
                             <Icon name="chevron-right" size={4} className="text-slate-300 dark:text-slate-600 group-hover:text-indigo-500 dark:group-hover:text-indigo-400 transition-colors hidden sm:block" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

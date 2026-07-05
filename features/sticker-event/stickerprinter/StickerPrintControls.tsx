@@ -141,38 +141,41 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
 
             {/* Tab Navigation */}
             <div className="flex border-b border-slate-100 dark:border-slate-700 mb-4 shrink-0">
-                <button
+                <Button
+                    variant="ghost"
                     onClick={() => setActiveSubTab('data')}
-                    className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
                         activeSubTab === 'data'
                             ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                             : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     }`}
                 >
                     Dữ liệu
-                </button>
+                </Button>
                 {stickerType !== 'draw' && (
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={() => setActiveSubTab('queue')}
-                        className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
                             activeSubTab === 'queue'
                                 ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                                 : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                         }`}
                     >
                         D.Sách ({manualPages.length})
-                    </button>
+                    </Button>
                 )}
-                <button
+                <Button
+                    variant="ghost"
                     onClick={() => setActiveSubTab('history')}
-                    className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
                         activeSubTab === 'history'
                             ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
                             : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     }`}
                 >
                     Lịch sử ({filteredHistory.length})
-                </button>
+                </Button>
             </div>
 
             {/* Tab Content (Scrollable Area) */}
@@ -255,13 +258,14 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         Nhập từ File Mẫu
                                     </p>
                                     <div className="flex gap-1.5">
-                                        <button 
+                                        <Button
+                                            variant="ghost"
                                             onClick={downloadTemplate}
-                                            className="flex-1 flex items-center justify-center gap-1 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 flex items-center justify-center gap-1 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm"
                                         >
                                             <Download size={10} />
                                             Tải File Mẫu
-                                        </button>
+                                        </Button>
                                         <label className="flex-1 flex items-center justify-center gap-1 py-1 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 rounded-lg font-bold text-[10px] lg:text-[11px] cursor-pointer transition-colors shadow-sm">
                                             <Upload size={10} />
                                             Nhập File Mẫu
@@ -298,9 +302,9 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                                 Danh sách in ({selectedCount}/{batchItems.length})
                                             </h4>
                                             <div className="flex gap-2">
-                                                <button onClick={() => toggleAllSelection(true)} className="text-[10px] text-indigo-600 hover:text-indigo-700 font-bold uppercase">Chọn hết</button>
-                                                <button onClick={() => toggleAllSelection(false)} className="text-[10px] text-slate-500 hover:text-slate-600 font-bold uppercase">Bỏ chọn</button>
-                                                <button onClick={clearBatchItems} className="text-[10px] text-red-500 hover:text-red-600 font-bold uppercase">Xóa</button>
+                                                <Button variant="ghost" onClick={() => toggleAllSelection(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-indigo-600 hover:text-indigo-700 font-bold uppercase">Chọn hết</Button>
+                                                <Button variant="ghost" onClick={() => toggleAllSelection(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-slate-500 hover:text-slate-600 font-bold uppercase">Bỏ chọn</Button>
+                                                <Button variant="ghost" onClick={clearBatchItems} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] text-red-500 hover:text-red-600 font-bold uppercase">Xóa</Button>
                                             </div>
                                         </div>
                                         <Input 
@@ -432,20 +436,22 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex gap-1 shrink-0 ml-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                                        <button 
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => restoreHistory(entry)}
-                                            className="p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-lg hover:bg-indigo-200 dark:hover:bg-indigo-900/50 transition-colors"
                                             title="Khôi phục"
                                         >
                                             <RotateCcw size={13} />
-                                        </button>
-                                        <button 
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => deleteHistory(entry.id)}
-                                            className="p-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
                                             title="Xóa"
                                         >
                                             <Trash2 size={13} />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             ))

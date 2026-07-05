@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icon } from '../../common/Icon';
 import { type SharedConfig } from '../../../services/firestoreService';
+import { Button } from '../../shared/ui/Button';
 
 interface ConfigLibrarySectionProps {
     sharedConfigs: SharedConfig[];
@@ -36,13 +37,14 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 border-b border-slate-100 dark:border-slate-700 pb-2">
                 <h3 className="text-lg font-bold text-slate-800 dark:text-white">Thư Viện Cấu Hình</h3>
                 {(userRole === 'admin' || userRole === 'manager' || userRole === 'employee') && (
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={() => setShowShareModal(true)}
-                        className="px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 font-bold flex items-center gap-2 transition-colors text-sm border border-indigo-100 dark:border-indigo-800 rounded-lg"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 bg-indigo-50 text-indigo-600 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 font-bold flex items-center gap-2 transition-colors text-sm border border-indigo-100 dark:border-indigo-800 rounded-lg"
                     >
                         <Icon name="share-2" size={4} />
                         Đăng Bài Chia Sẻ
-                    </button>
+                    </Button>
                 )}
             </div>
             
@@ -71,22 +73,24 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                             
                             <div className="flex items-center justify-between mt-2 pt-4 border-t border-slate-100 dark:border-slate-700/50">
                                 {(user?.uid === config.uid || userRole === 'admin') ? (
-                                    <button 
+                                    <Button
+                                        variant="ghost"
                                         onClick={() => onDeleteConfig(config)}
-                                        className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors tooltip rounded-md"
+                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors tooltip rounded-md"
                                         title="Xoá bài đăng của bạn"
                                     >
                                         <Icon name="trash-2" size={4} />
-                                    </button>
+                                    </Button>
                                 ) : <div />}
-                                
-                                <button 
+
+                                <Button
+                                    variant="ghost"
                                     onClick={() => onApplyConfig(config)}
-                                    className="px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40 text-sm font-bold flex items-center gap-2 transition-colors rounded-lg"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 bg-emerald-50 text-emerald-600 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:hover:bg-emerald-900/40 text-sm font-bold flex items-center gap-2 transition-colors rounded-lg"
                                 >
                                     <Icon name="download-cloud" size={4} />
                                     Đồng Bộ Về Máy
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     ))}
@@ -101,7 +105,7 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                                 <Icon name="share-2" size={5} className="text-indigo-500" />
                                 Chia Sẻ Cấu Hình
                             </h3>
-                            <button onClick={() => setShowShareModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><Icon name="x" size={5} /></button>
+                            <Button variant="ghost" onClick={() => setShowShareModal(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><Icon name="x" size={5} /></Button>
                         </div>
                         <div className="p-5 space-y-4">
                             <p className="text-sm text-slate-500 dark:text-slate-400">
@@ -120,11 +124,11 @@ export const ConfigLibrarySection: React.FC<ConfigLibrarySectionProps> = ({
                             </div>
                         </div>
                         <div className="p-4 bg-slate-50 dark:bg-slate-800/80 border-t border-slate-100 dark:border-slate-700/50 flex justify-end gap-3">
-                            <button onClick={() => setShowShareModal(false)} className="px-4 py-2 font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Hủy Bỏ</button>
-                            <button onClick={onShareConfig} disabled={isSharing} className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center gap-2 disabled:opacity-50">
+                            <Button variant="ghost" onClick={() => setShowShareModal(false)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors">Hủy Bỏ</Button>
+                            <Button variant="ghost" onClick={onShareConfig} disabled={isSharing} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-lg shadow-md transition-all flex items-center gap-2 disabled:opacity-50">
                                 {isSharing ? <Icon name="loader-2" size={4} className="animate-spin" /> : <Icon name="check" size={4} />}
                                 {isSharing ? 'Đang Đăng...' : 'Đăng Tải'}
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

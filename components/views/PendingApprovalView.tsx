@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
 import { motion } from 'motion/react';
 import toast from 'react-hot-toast';
+import { Button } from '../shared/ui/Button';
 
 interface PendingApprovalViewProps {
     forceDeptUpdate?: boolean;
@@ -126,21 +127,23 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                             </div>
 
                             <div className="flex gap-2">
-                                <button 
+                                <Button
+                                    variant="ghost"
                                     onClick={() => window.location.reload()}
-                                    className="flex-1 py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 text-sm"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-3 px-4 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-semibold hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2 text-sm"
                                 >
                                     <Icon name="refresh-ccw" size={4} />
                                     Tải lại
-                                </button>
-                                <button 
-                                    type="button" 
-                                    onClick={logout} 
-                                    className="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-rose-500 font-semibold hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center gap-2 text-sm"
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    type="button"
+                                    onClick={logout}
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-rose-500 font-semibold hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors flex items-center justify-center gap-2 text-sm"
                                 >
                                     <Icon name="log-out" size={4} />
                                     Đăng xuất
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     ) : (
@@ -149,22 +152,24 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                             <div className="mb-4">
                                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Vai trò muốn đăng ký:</label>
                                 <div className="grid grid-cols-2 gap-3">
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         type="button"
                                         onClick={() => setSelectedRole('manager')}
-                                        className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${selectedRole === 'manager' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 text-slate-500'}`}
+                                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${selectedRole === 'manager' ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-700 dark:text-indigo-400' : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 text-slate-500'}`}
                                     >
                                         <Icon name="briefcase" size={6} />
                                         <span className="font-semibold text-sm">Quản lý Kho</span>
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
                                         type="button"
                                         onClick={() => setSelectedRole('employee')}
-                                        className={`p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${selectedRole === 'employee' ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400' : 'border-slate-200 dark:border-slate-700 hover:border-teal-300 text-slate-500'}`}
+                                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start p-3 rounded-xl border-2 transition-all flex flex-col items-center gap-2 ${selectedRole === 'employee' ? 'border-teal-500 bg-teal-50 dark:bg-teal-900/20 text-teal-700 dark:text-teal-400' : 'border-slate-200 dark:border-slate-700 hover:border-teal-300 text-slate-500'}`}
                                     >
                                         <Icon name="users" size={6} />
                                         <span className="font-semibold text-sm">Nhân viên</span>
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
                             )}
@@ -210,35 +215,38 @@ const PendingApprovalView: React.FC<PendingApprovalViewProps> = ({ forceDeptUpda
                                 </div>
                                 {(selectedRole || forceDeptUpdate) && (
                                     <div className="pt-4 flex gap-3">
-                                        <button 
-                                            type="button" 
-                                            onClick={logout} 
-                                            className="flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+                                        <Button
+                                            variant="ghost"
+                                            type="button"
+                                            onClick={logout}
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-3 px-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400 font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
                                         >
                                             <Icon name="log-out" size={4} />
                                             Đăng xuất
-                                        </button>
-                                        <button 
-                                            type="submit" 
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            type="submit"
                                             disabled={isSubmitting}
-                                            className="flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-indigo-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-3 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-md hover:shadow-lg transition-all focus:ring-4 focus:ring-indigo-500/20 disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
                                             {isSubmitting ? <Icon name="loader-2" size={5} className="animate-spin" /> : <Icon name="check-circle" size={5} />}
                                             {isSubmitting ? 'Đang gửi...' : forceDeptUpdate ? 'Cập nhật Mã Kho' : 'Gửi Đăng Ký'}
-                                        </button>
+                                        </Button>
                                     </div>
                                 )}
                             </motion.div>
                         </form>
                     )}
 
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={() => logout()}
-                        className="w-full mt-4 py-3 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-semibold transition-colors flex items-center justify-center gap-2"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full mt-4 py-3 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-semibold transition-colors flex items-center justify-center gap-2"
                     >
                         <Icon name="log-out" size={4} />
                         <span>Đăng xuất tài khoản khác</span>
-                    </button>
+                    </Button>
                 </div>
             </motion.div>
         </div>

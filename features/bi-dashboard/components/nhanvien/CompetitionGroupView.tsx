@@ -5,6 +5,7 @@ import { ChevronDownIcon, ChevronUpIcon, CameraIcon } from '../Icons';
 import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
 import { roundUp, shortenName } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage } from '../../../../services/uiService';
 
 interface CompetitionGroupCardProps {
@@ -259,14 +260,15 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                         {displayTitle}
                     </h4>
                     <div className="absolute right-0 top-1/2 -translate-y-1/2">
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={handleExportPNG}
-                            className="export-button-component p-1 text-slate-400 hover:text-indigo-600 transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit export-button-component p-1 text-slate-400 hover:text-indigo-600 transition-colors"
                             title="Xuất ảnh báo cáo (PNG)"
                         >
                             <CameraIcon className="h-4 w-4" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
                 {/* Time budget bar */}
@@ -299,19 +301,19 @@ export const CompetitionGroupCard: React.FC<CompetitionGroupCardProps> = ({
                     <thead>
                         <tr className="text-[11px] font-black uppercase tracking-wider">
                             <th className="text-center px-2 py-1.5 border-b-2 border-r border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
-                                <button onClick={() => handleCardSort('name')} className="flex items-center justify-center w-full group">NHÂN VIÊN{getSortIcon('name')}</button>
+                                <Button variant="ghost" onClick={() => handleCardSort('name')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit font-black uppercase tracking-wider flex items-center justify-center w-full group">NHÂN VIÊN{getSortIcon('name')}</Button>
                             </th>
                             <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-2 border-r border-slate-200 dark:border-slate-700 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
-                                <button onClick={() => handleCardSort('target')} className="flex items-center justify-center w-full group">M.TIÊU{getSortIcon('target')}</button>
+                                <Button variant="ghost" onClick={() => handleCardSort('target')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit font-black uppercase tracking-wider flex items-center justify-center w-full group">M.TIÊU{getSortIcon('target')}</Button>
                             </th>
                             <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-2 border-r border-slate-200 dark:border-slate-700 bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400">
-                                <button onClick={() => handleCardSort('actual')} className="flex items-center justify-center w-full group">T.HIỆN{getSortIcon('actual')}</button>
+                                <Button variant="ghost" onClick={() => handleCardSort('actual')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit font-black uppercase tracking-wider flex items-center justify-center w-full group">T.HIỆN{getSortIcon('actual')}</Button>
                             </th>
                             <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-2 border-r border-slate-200 dark:border-slate-700 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400">
-                                <button onClick={() => handleCardSort('completion')} className="flex items-center justify-center w-full group">%HT{getSortIcon('completion')}</button>
+                                <Button variant="ghost" onClick={() => handleCardSort('completion')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit font-black uppercase tracking-wider flex items-center justify-center w-full group">%HT{getSortIcon('completion')}</Button>
                             </th>
                             <th className="text-center px-1.5 py-1.5 whitespace-nowrap border-b-2 bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400">
-                                <button onClick={() => handleCardSort('remaining')} className="flex items-center justify-center w-full group">C.LẠI{getSortIcon('remaining')}</button>
+                                <Button variant="ghost" onClick={() => handleCardSort('remaining')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit font-black uppercase tracking-wider flex items-center justify-center w-full group">C.LẠI{getSortIcon('remaining')}</Button>
                             </th>
                         </tr>
                     </thead>

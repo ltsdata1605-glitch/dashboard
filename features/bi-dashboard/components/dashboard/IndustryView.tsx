@@ -5,6 +5,7 @@ import { FilterIcon, CogIcon } from '../Icons';
 import { parseIndustryRealtimeData, parseIndustryLuyKeData, parseNumber, roundUp } from '../../utils/dashboardHelpers';
 import { Switch } from './DashboardWidgets';
 import { useIndustryViewLogic } from '../../hooks/useIndustryViewLogic';
+import { Button } from '../../../../components/shared/ui/Button';
 
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 
@@ -185,21 +186,23 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
              {/* Expand/Collapse buttons for tree mode */}
              {hasTreeData && (
                 <div className="flex items-center gap-0.5">
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={expandAll}
-                        className="p-1 rounded-full text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-colors"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 dark:hover:bg-emerald-900/30 dark:hover:text-emerald-400 transition-colors"
                         title="Mở rộng tất cả"
                     >
                         <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                        variant="ghost"
                         onClick={collapseAll}
-                        className={`p-1 rounded-full transition-colors ${hasAnyExpanded ? 'text-slate-500 hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-400' : 'text-slate-300 cursor-not-allowed'}`}
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full transition-colors ${hasAnyExpanded ? 'text-slate-500 hover:bg-amber-100 hover:text-amber-700 dark:hover:bg-amber-900/30 dark:hover:text-amber-400' : 'text-slate-300 cursor-not-allowed'}`}
                         title="Thu gọn tất cả"
                         disabled={!hasAnyExpanded}
                     >
                         <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M14.77 12.79a.75.75 0 01-1.06-.02L10 8.832 6.29 12.77a.75.75 0 11-1.08-1.04l4.25-4.5a.75.75 0 011.08 0l4.25 4.5a.75.75 0 01-.02 1.06z" clipRule="evenodd" /></svg>
-                    </button>
+                    </Button>
                 </div>
              )}
 
@@ -208,9 +211,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
              {/* Filter Ngành Hàng */}
              <div className="relative" ref={industryFilterRef}>
-                <button
+                <Button
+                    variant="ghost"
                     onClick={() => setIsIndustryFilterOpen(prev => !prev)}
-                    className={`p-1.5 transition-colors ${
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
                         hiddenIndustries.length > 0
                             ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -218,7 +222,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     title="Lọc ngành hàng"
                 >
                     <FilterIcon className="h-4 w-4" />
-                </button>
+                </Button>
                 {isIndustryFilterOpen && (
                     <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Ngành hàng</p>
@@ -252,9 +256,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
             {/* Filter Nhóm Hàng */}
             {hasTreeData && (
                 <div className="relative" ref={subIndustryFilterRef}>
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={() => setIsSubIndustryFilterOpen(prev => !prev)}
-                        className={`p-1.5 transition-colors ${
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
                             hiddenSubIndustries.length > 0
                                 ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 rounded-md'
                                 : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -265,7 +270,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                             <FilterIcon className="h-4 w-4" />
                             <span className="absolute -bottom-1 -right-1 text-[8px] font-black text-slate-400">N</span>
                         </div>
-                    </button>
+                    </Button>
                     {isSubIndustryFilterOpen && (
                         <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-lg shadow-lg border dark:border-slate-700 z-[100] p-2 flex flex-col max-h-96 text-left">
                             <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Nhóm hàng</p>
@@ -299,9 +304,10 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
 
             {/* Column settings */}
             <div className="relative" ref={selectorRef}>
-                <button
+                <Button
+                    variant="ghost"
                     onClick={() => setIsColumnSelectorOpen(prev => !prev)}
-                    className={`p-1.5 transition-colors ${
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 transition-colors ${
                         isColumnSelectorOpen
                             ? 'text-indigo-600 dark:text-indigo-400'
                             : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
@@ -309,7 +315,7 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                     title="Tuỳ chỉnh hiển thị cột"
                 >
                     <CogIcon className="h-4 w-4" />
-                </button>
+                </Button>
                 {isColumnSelectorOpen && (
                     <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-3 z-[100] max-h-[400px] overflow-y-auto">
                         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 px-1">Tuỳ chỉnh hiển thị cột</p>
@@ -388,15 +394,16 @@ const IndustryView = React.forwardRef<HTMLDivElement, IndustryViewProps>((props,
                 return (
                     <div className="flex items-center" style={{ paddingLeft: indent }}>
                         {hasChildren && (
-                            <button 
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 onClick={(e) => { e.stopPropagation(); toggleRow(rowKey); }}
                                 onTouchEnd={(e) => { e.preventDefault(); toggleRow(rowKey); }}
-                                className="mr-1 w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 shrink-0 transition-transform duration-150"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none p-0 mr-1 w-4 h-4 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 shrink-0 transition-transform duration-150"
                                 style={{ transform: isExpanded ? 'rotate(0deg)' : 'rotate(-90deg)' }}
                             >
                                 <svg className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clipRule="evenodd" /></svg>
-                            </button>
+                            </Button>
                         )}
                         {!hasChildren && level > 0 && (
                             <span className="mr-1 w-4 h-4 flex items-center justify-center text-slate-300 dark:text-slate-600 shrink-0">

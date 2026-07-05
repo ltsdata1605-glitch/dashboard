@@ -4,6 +4,7 @@ import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVi
 import { FilterIcon, ChevronDownIcon, UsersIcon, CameraIcon, ImagesIcon } from '../Icons';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
+import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 
@@ -101,10 +102,10 @@ const EmployeeSelector: React.FC<{
 
     return (
         <div className="relative w-full max-w-[200px]" ref={ref}>
-            <button onClick={() => setIsOpen(!isOpen)} className="flex items-center justify-between w-full px-3 py-1.5 text-[12px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all rounded shadow-sm">
+            <Button variant="ghost" onClick={() => setIsOpen(!isOpen)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full px-3 py-1.5 text-[12px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all rounded shadow-sm">
                 <span className="truncate">{selectedEmployee ? selectedEmployee.name : placeholder}</span>
                 <ChevronDownIcon className="h-3.5 w-3.5 ml-2 text-slate-400 shrink-0" />
-            </button>
+            </Button>
             {isOpen && (
                 <div className={`absolute top-full ${alignRight ? 'right-0' : 'left-0'} mt-1 w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden flex flex-col max-h-72`}>
                     <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 sticky top-0">
@@ -112,9 +113,9 @@ const EmployeeSelector: React.FC<{
                     </div>
                     <div className="overflow-y-auto flex-1">
                         {filtered.length > 0 ? filtered.map(emp => (
-                            <button key={emp.originalName} onClick={() => { onSelect(emp); setIsOpen(false); setSearchTerm(''); }} className={`w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee?.originalName === emp.originalName ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
+                            <Button variant="ghost" key={emp.originalName} onClick={() => { onSelect(emp); setIsOpen(false); setSearchTerm(''); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee?.originalName === emp.originalName ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
                                 {emp.name}
-                            </button>
+                            </Button>
                         )) : <div className="p-3 text-center text-sm text-slate-500">Không tìm thấy</div>}
                     </div>
                 </div>
@@ -317,17 +318,18 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                     <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cặp So Sánh Nhanh (Theo DTQĐ):</span>
                     <div className="flex flex-wrap gap-1.5">
                         {autoPairs.map(pair => (
-                            <button
+                            <Button
+                                variant="ghost"
                                 key={pair.label}
                                 onClick={() => { setEmpA(pair.a); setEmpB(pair.b); }}
-                                className={`px-2.5 py-1 text-[11px] font-bold rounded-full transition-colors border ${
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2.5 py-1 text-[11px] font-bold rounded-full transition-colors border ${
                                     (empA?.originalName === pair.a.originalName && empB?.originalName === pair.b.originalName)
                                         ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
                                         : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-indigo-400 hover:text-indigo-600'
                                 }`}
                             >
                                 {pair.label}
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 </div>
@@ -346,15 +348,15 @@ const CompetitionCompareView: React.FC<CompetitionCompareViewProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded border border-slate-200 dark:border-slate-700">
-                        <button onClick={() => setDisplayMode('pct')} className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</button>
-                        <button onClick={() => setDisplayMode('actual')} className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</button>
+                        <Button variant="ghost" onClick={() => setDisplayMode('pct')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'pct' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>%HT</Button>
+                        <Button variant="ghost" onClick={() => setDisplayMode('actual')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 text-[10px] font-bold rounded transition-all ${displayMode === 'actual' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}>Thực hiện</Button>
                     </div>
-                    <button onClick={performBatchExport} disabled={isBatchExporting || autoPairs.length === 0} title="Xuất tất cả cặp so sánh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 disabled:opacity-50 transition-colors">
+                    <Button variant="ghost" onClick={performBatchExport} disabled={isBatchExporting || autoPairs.length === 0} title="Xuất tất cả cặp so sánh" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 disabled:opacity-50 transition-colors">
                         <ImagesIcon className={`w-4 h-4 ${isBatchExporting ? 'animate-pulse text-indigo-500' : ''}`} />
-                    </button>
-                    <button onClick={() => handleExportPNG()} title="Xuất ảnh" className="p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 transition-colors">
+                    </Button>
+                    <Button variant="ghost" onClick={() => handleExportPNG()} title="Xuất ảnh" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 flex items-center justify-center text-slate-500 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-sm hover:text-slate-700 hover:border-slate-300 transition-colors">
                         <CameraIcon className="w-4 h-4" />
-                    </button>
+                    </Button>
                 </div>
             </div>
 

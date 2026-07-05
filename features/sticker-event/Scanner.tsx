@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { XIcon, SwitchCameraIcon, CheckCircleIcon, XCircleIcon } from './Icons';
+import { Button } from '../../components/shared/ui/Button';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 interface CameraDevice {
@@ -263,12 +264,13 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
           <div className="font-semibold text-red-400 bg-red-900 bg-opacity-50 px-4 py-3 rounded-lg space-y-3">
               <p>{error}</p>
               {isIframeError && (
-                  <button
+                  <Button
+                      variant="ghost"
                       onClick={handleOpenInNewTab}
-                      className="w-full inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-indigo-50 hover:bg-indigo-700 h-10 px-6 py-2"
+                      className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-indigo-50 hover:bg-indigo-700 h-10 px-6 py-2"
                   >
                       Mở trong Tab Mới để Quét
-                  </button>
+                  </Button>
               )}
           </div>
         ) : (
@@ -276,31 +278,34 @@ const Scanner: React.FC<ScannerProps> = ({ onScanSuccess, onClose }) => {
         )}
         
         {/* Prominent mobile close/stop button */}
-        <button
+        <Button
+          variant="ghost"
           onClick={onClose}
-          className="w-full mt-4 py-3.5 px-6 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-lg shadow-rose-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 text-base cursor-pointer"
+          className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full mt-4 py-3.5 px-6 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold shadow-lg shadow-rose-600/30 active:scale-98 transition-all flex items-center justify-center gap-2 text-base cursor-pointer"
         >
           <XIcon className="h-5 w-5" />
           Đóng / Dừng quét
-        </button>
+        </Button>
       </div>
        <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
           {cameras.length > 1 && (
-            <button
+            <Button
+                variant="ghost"
                 onClick={handleSwitchCamera}
-                className="p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-colors"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-colors"
                 aria-label="Chuyển camera"
             >
                 <SwitchCameraIcon className="h-6 w-6" />
-            </button>
+            </Button>
           )}
-          <button
+          <Button
+            variant="ghost"
             onClick={onClose}
-            className="p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-colors"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 rounded-full bg-black bg-opacity-50 text-white hover:bg-opacity-75 transition-colors"
             aria-label="Đóng máy quét"
           >
             <XIcon className="h-6 w-6" />
-          </button>
+          </Button>
        </div>
     </div>
   );

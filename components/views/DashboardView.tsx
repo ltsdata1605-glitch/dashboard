@@ -37,6 +37,7 @@ import ExportLoader from '../common/ExportLoader';
 import ChangelogModal from '../modals/ChangelogModal';
 import { SectionHeader } from '../common/SectionHeader';
 import { Icon } from '../common/Icon';
+import { Button } from '../shared/ui/Button';
 import { getExportFilenamePrefix, formatCurrency } from '../../utils/dataUtils';
 import { KpiCardsSkeleton, ChartSkeleton, TableSkeleton, TabbedTableSkeleton } from '../common/SkeletonLoader';
 import { DebugPanel } from '../common/DebugPanel';
@@ -292,24 +293,26 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                 )}
                             </div>
                         </div>
-                        <button onClick={() => setPendingCloudSync(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 -mr-1 -mt-1 shrink-0">
+                        <Button variant="ghost" onClick={() => setPendingCloudSync(null)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1 -mr-1 -mt-1 shrink-0">
                             <Icon name="x" size={3.5} />
-                        </button>
+                        </Button>
                     </div>
                     <div className="flex gap-2 mt-0.5">
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => setPendingCloudSync(null)}
-                            className="flex-1 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium rounded-xl text-[11px] transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-medium rounded-xl text-[11px] transition-colors"
                         >
                             Bỏ qua
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="ghost"
                             onClick={() => handleAcceptCloudSync()}
-                            className="flex-[2] py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors shadow-sm active:scale-[0.98]"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center gap-1.5 rounded-xl text-[11px] transition-colors shadow-sm active:scale-[0.98]"
                         >
                             <Icon name="refresh-cw" size={3.5} />
                             Nạp dữ liệu đám mây
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}
@@ -415,14 +418,15 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                         </div>
                                         <div className="flex items-center gap-3">
                                             {(logic.hasRealtimeData || (logic.fileRegistry && logic.fileRegistry.some(f => f.isActive))) && (
-                                                <button
+                                                <Button
+                                                    variant="ghost"
                                                     onClick={() => logic.hasRealtimeData ? logic.handleClearRealtimeData() : logic.handleClearData()}
                                                     title={logic.hasRealtimeData ? "Xóa dữ liệu xem hiện tại (Realtime)" : "Xóa tất cả dữ liệu báo cáo tích lũy"}
-                                                    className="flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold rounded-md border border-rose-200/50 dark:border-rose-800/40 text-[10px] transition-all hover:scale-105 active:scale-95 shadow-sm"
+                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-2.5 py-1 bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/20 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 font-bold rounded-md border border-rose-200/50 dark:border-rose-800/40 text-[10px] transition-all hover:scale-105 active:scale-95 shadow-sm"
                                                 >
                                                     <Icon name="trash-2" size={3.5} className="text-rose-500 animate-pulse" />
                                                     <span>{logic.hasRealtimeData ? "XÓA YCX REALTIME" : "XÓA YCX LŨY KẾ"}</span>
-                                                </button>
+                                                </Button>
                                             )}
                                             {logic.fileInfo && (
                                                 <div className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 bg-white/50 dark:bg-slate-800/50 px-2 py-1 rounded-md border border-slate-200/50 dark:border-slate-700/50">
@@ -517,30 +521,31 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                                         <span className="md:hidden inline-flex items-center gap-1.5 max-w-full">
                                                             <span className="truncate shrink min-w-0">{processedData.reportSubTitle}</span>
                                                             {processedData.kpis && (processedData.kpis as any).doanhThuThucChoXuat > 0 && (
-                                                                <button
+                                                                <Button
+                                                                    variant="ghost"
                                                                     onClick={(e) => { e.stopPropagation(); openUnshippedModal(); }}
-                                                                    className="inline-flex items-center gap-0.5 shrink-0 text-rose-600 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none"
+                                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 inline-flex items-center gap-0.5 shrink-0 text-rose-600 dark:text-rose-400 font-extrabold whitespace-nowrap active:scale-95 transition-transform uppercase tracking-wider leading-none"
                                                                 >
                                                                     <Icon name="archive-restore" size={2.5} />
                                                                     Chờ xuất: {formatCurrency((processedData.kpis as any).doanhThuThucChoXuat)}
-                                                                </button>
+                                                                </Button>
                                                             )}
                                                         </span>
                                                     </>}
                                                 >
                                                     <div className="flex items-center gap-0.5 lg:gap-2 hide-on-export">
-                                                        <button onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                        <Button variant="ghost" onClick={() => setIsKpiConfigModalOpen(true)} title="Tùy chỉnh KPI" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                             <Icon name="settings-2" size={4} className="lg:hidden" />
                                                             <Icon name="settings-2" size={5} className="hidden lg:block" />
-                                                        </button>
-                                                        <button onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                        </Button>
+                                                        <Button variant="ghost" onClick={handleKpiCardsOnlyExport} disabled={isExporting} title="Chỉ Xuất Ảnh Tổng Quan" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                             <Icon name="download" size={4} className="lg:hidden" />
                                                             <Icon name="download" size={5} className="hidden lg:block" />
-                                                        </button>
-                                                        <button onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+                                                        </Button>
+                                                        <Button variant="ghost" onClick={handleBusinessOverviewExport} disabled={isExporting} title="Xuất Ảnh Chụp Toàn Báo Cáo" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
                                                             <Icon name="camera" size={4} className="lg:hidden" />
                                                             <Icon name="camera" size={5} className="hidden lg:block" />
-                                                        </button>
+                                                        </Button>
                                                     </div>
                                                 </SectionHeader>
                                             </div>

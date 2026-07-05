@@ -10,6 +10,7 @@ import LoadingOverlay from '../common/LoadingOverlay';
 import WarehouseSettingsModal from './WarehouseSettingsModal';
 import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
 import { Modal } from '../shared/ui/Modal';
+import { Button } from '../shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
 const migrateColumns = (savedConfig: WarehouseColumnConfig[]): WarehouseColumnConfig[] => {
     const savedIds = new Set(savedConfig.map(c => c.id));
@@ -364,35 +365,36 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                 >
                     <div className="flex items-center space-x-0.5 lg:space-x-2 hide-on-export">
                         {/* Lũy kế button */}
-                        <button 
+                        <Button
+                            variant="ghost"
                             onClick={() => handleLuyKeChange(!isLuyKe)}
-                            className={`flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 p-1.5 lg:p-2 rounded-md transition-colors ${isLuyKe ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                             title={isLuyKe ? "Tắt chế độ Lũy kế" : "Bật chế độ Lũy kế"}
                         >
                             <Icon name="layers" size={4} className="lg:hidden" />
                             <Icon name="layers" size={5} className="hidden lg:block" />
                             <span className="hidden lg:inline text-[11px] font-bold uppercase tracking-wider mt-0.5">Lũy kế</span>
-                        </button>
+                        </Button>
 
                         {/* Divider */}
                         <div className="hidden lg:block w-px h-5 bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
                         {userRole !== 'employee' && (
-                            <button onClick={() => setIsSettingsModalOpen(true)} className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
+                            <Button variant="ghost" onClick={() => setIsSettingsModalOpen(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Cài đặt">
                                 <Icon name="settings-2" size={4} className="lg:hidden" />
                                 <Icon name="settings-2" size={5} className="hidden lg:block" />
-                            </button>
+                            </Button>
                         )}
 
                         {uniqueFilterOptions.kho.length > 1 && (
-                            <button onClick={onBatchExport} disabled={isExporting} className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
+                            <Button variant="ghost" onClick={onBatchExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Xuất hàng loạt">
                                 <Icon name="images" size={4} className="lg:hidden" />
                                 <Icon name="images" size={5} className="hidden lg:block" />
-                            </button>
+                            </Button>
                         )}
-                        <button onClick={handleSingleExport} disabled={isExporting} className="p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
+                        <Button variant="ghost" onClick={handleSingleExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 text-slate-400 dark:text-slate-500 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Chụp ảnh">
                             {isExporting ? <Icon name="loader-2" className="animate-spin" size={4} /> : <><Icon name="camera" size={4} className="lg:hidden" /><Icon name="camera" size={5} className="hidden lg:block" /></>}
-                        </button>
+                        </Button>
                     </div>
                 </SectionHeader>
 
@@ -695,23 +697,25 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                             Hiển thị {(currentPage - 1) * rowsPerPage + 1} - {Math.min(currentPage * rowsPerPage, sortedData.length)} trên <span className="font-bold">{sortedData.length}</span> kết quả
                         </span>
                         <div className="flex gap-2">
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={currentPage === 1}
-                                className="px-3 py-1 text-sm bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-slate-700 dark:text-slate-200"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1 text-sm bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-slate-700 dark:text-slate-200"
                             >
                                 Trước
-                            </button>
+                            </Button>
                             <div className="px-3 py-1 text-sm font-semibold bg-slate-200/50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center min-w-[3rem]">
                                 {currentPage} / {totalPages}
                             </div>
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                 disabled={currentPage === totalPages}
-                                className="px-3 py-1 text-sm bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-slate-700 dark:text-slate-200"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1 text-sm bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-300 dark:border-slate-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium text-slate-700 dark:text-slate-200"
                             >
                                 Sau
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 )}
@@ -808,8 +812,8 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         return <div className="mb-4" />;
                     })()}
                     <div className="flex justify-end gap-3">
-                        <button type="button" onClick={() => setEditingTargetKho(null)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Hủy</button>
-                        <button type="button" onClick={() => handleTargetSave()} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Lưu</button>
+                        <Button type="button" variant="ghost" onClick={() => setEditingTargetKho(null)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Hủy</Button>
+                        <Button type="button" variant="ghost" onClick={() => handleTargetSave()} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Lưu</Button>
                     </div>
                 </div>
             </Modal>

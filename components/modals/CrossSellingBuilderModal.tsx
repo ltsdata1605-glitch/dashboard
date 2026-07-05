@@ -235,12 +235,13 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
         >
             <div className="-m-5">
                 <div className="flex flex-wrap justify-between items-center p-2.5 sm:p-4 bg-slate-100/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-700 gap-2">
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={loadSampleConfig}
-                        className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] sm:text-xs rounded shadow-sm hover:opacity-80 transition"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 font-bold text-[10px] sm:text-xs rounded shadow-sm hover:opacity-80 transition"
                     >
                         <Icon name="layout-template" size={3.5} /> Nạp Cấu Hình Mẫu
-                    </button>
+                    </Button>
                     <div className="text-[9px] sm:text-[10px] text-slate-400 italic">Tính năng thiết lập Cấu hình mẫu tự động dựa vào ảnh mẫu</div>
                 </div>
 
@@ -254,15 +255,15 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                 Cấu Hình Cột
                             </h3>
                             <div className="flex gap-1.5 sm:gap-2">
-                                <button onClick={() => addColumn('target')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition border border-amber-200 dark:border-amber-800">
+                                <Button variant="ghost" onClick={() => addColumn('target')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-amber-100 dark:hover:bg-amber-900/50 transition border border-amber-200 dark:border-amber-800">
                                     <Icon name="target" size={3} className="sm:hidden" /><Icon name="target" size={3.5} className="hidden sm:block" /> Mục Tiêu
-                                </button>
-                                <button onClick={() => addColumn('data')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition border border-blue-200 dark:border-blue-800">
+                                </Button>
+                                <Button variant="ghost" onClick={() => addColumn('data')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition border border-blue-200 dark:border-blue-800">
                                     <Icon name="plus" size={3} className="sm:hidden" /><Icon name="plus" size={3.5} className="hidden sm:block" /> Dữ Liệu
-                                </button>
-                                <button onClick={() => addColumn('ratio')} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-fuchsia-50 dark:bg-fuchsia-900/30 text-fuchsia-600 dark:text-fuchsia-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/50 transition border border-fuchsia-200 dark:border-fuchsia-800">
+                                </Button>
+                                <Button variant="ghost" onClick={() => addColumn('ratio')} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-fuchsia-50 dark:bg-fuchsia-900/30 text-fuchsia-600 dark:text-fuchsia-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-fuchsia-100 dark:hover:bg-fuchsia-900/50 transition border border-fuchsia-200 dark:border-fuchsia-800">
                                     <Icon name="percent" size={3} className="sm:hidden" /><Icon name="percent" size={3.5} className="hidden sm:block" /> Tỉ Lệ
-                                </button>
+                                </Button>
                             </div>
                         </div>
                         
@@ -352,7 +353,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                             )}
                                         </div>
                                     </div>
-                                    <button onClick={() => removeColumn(col.id)} className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors title='Xóa cột'"><Icon name="trash-2" size={4.5} /></button>
+                                    <Button variant="ghost" onClick={() => removeColumn(col.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors" title="Xóa cột"><Icon name="trash-2" size={4.5} /></Button>
                                 </div>
                             ))}
                             {config.columns.length === 0 && <div className="text-center p-6 text-sm text-slate-400">Chưa có cột nào được thiết lập. Hãy thêm cột Dữ liệu trước.</div>}
@@ -367,9 +368,9 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                 <Icon name="list" size={4.5} className="text-indigo-600 dark:text-indigo-400 hidden sm:block" />
                                 Cấu Hình Dòng
                             </h3>
-                            <button onClick={addSection} className="px-2 sm:px-3 py-1 sm:py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition border border-indigo-200 dark:border-indigo-800">
+                            <Button variant="ghost" onClick={addSection} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3 py-1 sm:py-1.5 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-bold text-[10px] sm:text-xs rounded-lg flex items-center gap-1 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition border border-indigo-200 dark:border-indigo-800">
                                 <Icon name="plus" size={3.5} /> Thêm Nhóm
-                            </button>
+                            </Button>
                         </div>
                         
                         <div className="p-2.5 sm:p-4 space-y-4 sm:space-y-6">
@@ -388,7 +389,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                 placeholder="Tên Nhóm Dòng (Header)..."
                                             />
                                         </div>
-                                        <button onClick={() => removeSection(section.id)} className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"><Icon name="trash-2" size={4.5} /></button>
+                                        <Button variant="ghost" onClick={() => removeSection(section.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors"><Icon name="trash-2" size={4.5} /></Button>
                                     </div>
 
                                     {/* Rows Wrapper */}
@@ -446,16 +447,17 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <button onClick={() => removeRow(section.id, row.id)} className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors flex shrink-0 items-center justify-center"><Icon name="trash-2" size={4.5} /></button>
+                                                <Button variant="ghost" onClick={() => removeRow(section.id, row.id)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg transition-colors flex shrink-0 items-center justify-center"><Icon name="trash-2" size={4.5} /></Button>
                                             </div>
                                         ))}
 
-                                        <button 
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => addRow(section.id)}
-                                            className="w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full py-2 border-2 border-dashed border-slate-300 dark:border-slate-600 text-slate-500 dark:text-slate-400 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition"
                                         >
                                             <Icon name="plus" size={3.5} /> Thêm dòng
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             ))}

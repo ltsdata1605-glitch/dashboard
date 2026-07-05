@@ -8,6 +8,7 @@ import { getYesterdayDateString, parseCrossSellingData } from '../../utils/nhanV
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { ClockIcon, XIcon, ViewGridIcon, ViewListIcon, SpinnerIcon, DownloadIcon, DownloadAllIcon, UsersIcon, UploadIcon } from '../Icons';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
+import { Button } from '../../../../components/shared/ui/Button';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
@@ -24,7 +25,7 @@ const ImportPrevMonthModal: React.FC<{
             <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-white/20 dark:border-white/10 shadow-2xl rounded-3xl p-6 w-full max-w-xl animate-in zoom-in-95 duration-200">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-bold text-slate-800 dark:text-white uppercase">Nhập dữ liệu Bán kèm cùng kỳ</h3>
-                    <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-full"><XIcon className="h-5 w-5" /></button>
+                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 hover:bg-slate-100 rounded-full"><XIcon className="h-5 w-5" /></Button>
                 </div>
                 <p className="text-xs text-slate-500 mb-4">Dán dữ liệu bảng báo cáo "Hiệu quả bán kèm" của tháng trước hoặc cùng kỳ từ HRM vào đây.</p>
                 <textarea
@@ -35,8 +36,8 @@ const ImportPrevMonthModal: React.FC<{
                     className="w-full h-48 p-4 bg-slate-50 dark:bg-slate-800 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl font-mono text-[10px] focus:ring-2 focus:ring-primary-500 outline-none transition-all"
                 />
                 <div className="mt-6 flex gap-3">
-                    <button onClick={onClose} className="flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl">Huỷ</button>
-                    <button onClick={() => { onSave(pastedData); onClose(); }} className="flex-[2] py-3 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-primary-700 transition-colors">Lưu dữ liệu</button>
+                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-3 text-sm font-bold text-slate-500 hover:bg-slate-50 rounded-xl">Huỷ</Button>
+                    <Button variant="ghost" onClick={() => { onSave(pastedData); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] py-3 bg-primary-600 text-white text-sm font-bold rounded-xl shadow-lg hover:bg-primary-700 transition-colors">Lưu dữ liệu</Button>
                 </div>
             </div>
         </div>
@@ -94,7 +95,7 @@ const AvatarUploader: React.FC<{ employeeName: string; supermarketName: string }
                     <UsersIcon className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                 </div>
             )}
-            <button onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="absolute inset-0 bg-black/40 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity no-print"><UploadIcon className="h-3 w-3 text-white" /></button>
+            <Button variant="ghost" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 absolute inset-0 bg-black/40 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 flex items-center justify-center rounded-full transition-opacity no-print"><UploadIcon className="h-3 w-3 text-white" /></Button>
             <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
         </div>
     );
@@ -445,24 +446,25 @@ const CrossSellingTab: React.FC<{
         <div className="space-y-0">
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-3 items-center">
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={() => setIsPrevMonthModalOpen(true)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${prevMonthRaw ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500'}`}
                     >
                         <ClockIcon className="h-3.5 w-3.5" />
                         <span className="hidden sm:inline">Cùng kỳ</span>
                         {prevMonthRaw && (
-                            <button onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800">
+                            <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setPrevMonthRaw(''); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ml-0.5 p-0.5 hover:bg-emerald-200 dark:hover:bg-emerald-800">
                                 <XIcon className="h-3 w-3" />
-                            </button>
+                            </Button>
                         )}
-                    </button>
+                    </Button>
                 </div>
                 <div className="flex gap-1.5 items-center">
-                    <button onClick={() => setViewMode('group')} title="Bộ phận" className={`p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4" /></button>
-                    <button onClick={() => setViewMode('list')} title="Danh sách" className={`p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4" /></button>
+                    <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4" /></Button>
+                    <Button variant="ghost" onClick={() => setViewMode('list')} title="Danh sách" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4" /></Button>
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-0.5" />
-                    <button onClick={handleBatchExportByDept} disabled={isExportingByDept} title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'} className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-50">{isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}</button>
+                    <Button variant="ghost" onClick={handleBatchExportByDept} disabled={isExportingByDept} title={isExportingByDept ? `Đang xuất ${exportDeptProgress.current}/${exportDeptProgress.total}` : 'Xuất ảnh theo bộ phận'} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-50">{isExportingByDept ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <DownloadAllIcon className="h-4 w-4" />}</Button>
                     <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
                 </div>
             </div>

@@ -7,6 +7,7 @@ import { AppNotification, markAsRead, markAllAsRead } from '../../services/notif
 import { useActiveTab } from '../../contexts/LayoutContext';
 import toast from 'react-hot-toast';
 import AdminAnnouncementModal from '../modals/AdminAnnouncementModal';
+import { Button } from '../shared/ui/Button';
 
 interface NotificationDropdownProps {
     buttonClassName?: string;
@@ -200,9 +201,10 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
 
     return (
         <div className="relative z-[300]" ref={dropdownRef}>
-            <button 
+            <Button
+                variant="ghost"
                 onClick={() => setIsOpen(!isOpen)}
-                className={buttonClassName || "relative flex items-center justify-center p-2.5 bg-slate-50/50 dark:bg-slate-900/10 text-slate-600 dark:text-slate-400 border border-transparent rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors tooltip"}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${buttonClassName || "relative flex items-center justify-center p-2.5 bg-slate-50/50 dark:bg-slate-900/10 text-slate-600 dark:text-slate-400 border border-transparent rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors tooltip"}`}
                 title="Thông báo"
             >
                 <Icon name="bell" size={4} />
@@ -212,7 +214,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                         <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500 border border-white dark:border-slate-800"></span>
                     </span>
                 )}
-            </button>
+            </Button>
 
             {isOpen && (
                 <div 
@@ -227,18 +229,19 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                         </h3>
                         <div className="flex items-center gap-2">
                             {(userRole === 'admin' || user?.email === 'lts.truongson@gmail.com' || user?.email === 'nguyendangkhoafit2@gmail.com') && (
-                                <button 
+                                <Button
+                                    variant="ghost"
                                     onClick={() => setIsAdminModalOpen(true)}
-                                    className="p-1.5 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors rounded-lg flex items-center justify-center shrink-0"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors rounded-lg flex items-center justify-center shrink-0"
                                     title="Cấu hình thông báo hệ thống"
                                 >
                                     <Icon name="megaphone" size={3.5} />
-                                </button>
+                                </Button>
                             )}
                             {unreadCount > 0 && (
-                                <button onClick={handleMarkAll} className="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                                <Button variant="ghost" onClick={handleMarkAll} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
                                     Đánh dấu đã đọc
-                                </button>
+                                </Button>
                             )}
                         </div>
                     </div>

@@ -554,7 +554,6 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
     
     const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-    const revenueQD = revenue * heso;
     
     const htx = getRowValue(row, COL.HINH_THUC_XUAT) || '';
     let isTraCham = false;
@@ -563,6 +562,9 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     } else {
         isTraCham = HINH_THUC_XUAT_TRA_GOP.has(htx);
     }
+    
+    // DTQĐ = Doanh thu thực * Hệ số + (30% Doanh thu thực nếu là đơn hàng Trả góp/Trả chậm)
+    const revenueQD = revenue * heso + (isTraCham ? revenue * 0.3 : 0);
     
     return { revenue, revenueQD, quantity, isTraCham };
 }

@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { useAuth } from '../../contexts/AuthContext';
+import { Button } from '../shared/ui/Button';
 
 const MobileBottomNav: React.FC = React.memo(() => {
     const { activeTab, setActiveTab } = useActiveTab();
@@ -85,12 +86,13 @@ const MobileBottomNav: React.FC = React.memo(() => {
                             {/* Header */}
                             <div className="flex items-center justify-between px-5 pb-3 border-b border-slate-100 dark:border-slate-800">
                                 <h3 className="text-base font-bold text-slate-800 dark:text-white">Thêm</h3>
-                                <button 
+                                <Button
+                                    variant="ghost"
                                     onClick={() => setIsMoreOpen(false)}
-                                    className="p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 -mr-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800"
                                 >
                                     <X size={20} />
-                                </button>
+                                </Button>
                             </div>
 
                             {/* Tools section */}
@@ -112,16 +114,17 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                                 <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
                                             </a>
                                         ) : (
-                                            <button
+                                            <Button
+                                                variant="ghost"
                                                 key={tab.id}
                                                 onClick={() => handleTabClick(tab.id)}
-                                                className="flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start flex flex-col items-center gap-1.5 py-3 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                                             >
                                                 <div className="w-11 h-11 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center">
                                                     <tab.icon size={20} className="text-indigo-600 dark:text-indigo-400" />
                                                 </div>
                                                 <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-400 text-center leading-tight">{tab.label}</span>
-                                            </button>
+                                            </Button>
                                         )
                                     ))}
                                 </div>
@@ -150,18 +153,19 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                             );
                                         }
                                         return (
-                                            <button
+                                            <Button
+                                                variant="ghost"
                                                 key={tab.id}
                                                 onClick={() => handleTabClick(tab.id)}
-                                                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                                                    isActive 
-                                                        ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' 
+                                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                                                    isActive
+                                                        ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
                                                         : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                                                 } ${isPending ? 'opacity-70' : ''}`}
                                             >
                                                 <tab.icon size={20} />
                                                 <span className="font-medium text-sm">{tab.label}</span>
-                                            </button>
+                                            </Button>
                                         );
                                     })}
                                 </div>
@@ -177,10 +181,11 @@ const MobileBottomNav: React.FC = React.memo(() => {
                     {mainTabs.map(tab => {
                         const isActive = activeTab === tab.id;
                         return (
-                            <button
+                            <Button
+                                variant="ghost"
                                 key={tab.id}
                                 onClick={() => handleTabClick(tab.id)}
-                                className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
                                     isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
                                 } ${isPending ? 'opacity-70' : ''}`}
                             >
@@ -193,14 +198,15 @@ const MobileBottomNav: React.FC = React.memo(() => {
                                 )}
                                 <tab.icon size={22} strokeWidth={isActive ? 2.5 : 1.8} />
                                 <span className={`text-[11px] leading-tight ${isActive ? 'font-bold' : 'font-medium'}`}>{tab.label}</span>
-                            </button>
+                            </Button>
                         );
                     })}
-                    
+
                     {/* More Tab */}
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={() => setIsMoreOpen(!isMoreOpen)}
-                        className={`flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 flex flex-col items-center justify-center gap-0.5 transition-colors relative ${
                             isMoreActive || isMoreOpen ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500'
                         }`}
                     >
@@ -213,7 +219,7 @@ const MobileBottomNav: React.FC = React.memo(() => {
                         )}
                         <Wrench size={22} strokeWidth={isMoreActive ? 2.5 : 1.8} />
                         <span className={`text-[11px] leading-tight ${isMoreActive ? 'font-bold' : 'font-medium'}`}>Khác</span>
-                    </button>
+                    </Button>
                 </div>
             </nav>
         </>

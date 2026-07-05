@@ -5,6 +5,7 @@ import { collection, query, where, getDocs, doc, updateDoc, orderBy } from 'fire
 import { Icon } from '../common/Icon';
 import { Input } from '../shared/ui/Input';
 import { Select } from '../shared/ui/Select';
+import { Button } from '../shared/ui/Button';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
 import { notifyUser } from '../../services/notificationService';
@@ -330,21 +331,21 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{userRole === 'admin' ? 'Cấp quyền cho các Quản lý Siêu thị mới' : `Quản lý nhân viên cho Siêu thị (Kho: ${departmentId})`}</p>
                         </div>
                     </div>
-                    <button onClick={fetchRequests} disabled={isLoading} className="h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
+                    <Button variant="ghost" onClick={fetchRequests} disabled={isLoading} className="bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-700 hover:bg-indigo-50 hover:text-indigo-700 transition-colors flex items-center gap-1.5 rounded-md shadow-sm">
                         <Icon name="refresh-ccw" size={3.5} className={isLoading ? 'animate-spin' : ''} /> Làm Mới
-                    </button>
+                    </Button>
                 </div>
                 {/* Tabs & Search & Sort */}
                 <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
                     <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                        <button onClick={() => setListMode('pending')} className={`h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'pending' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}>
+                        <Button variant="ghost" onClick={() => setListMode('pending')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 border-r border-slate-200 dark:border-slate-700 ${listMode === 'pending' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}>
                             <Icon name="clock" size={3.5} />
                             Đơn Chờ Duyệt
-                        </button>
-                        <button onClick={() => setListMode('active')} className={`h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'active' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}>
+                        </Button>
+                        <Button variant="ghost" onClick={() => setListMode('active')} className={`bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-4 text-xs font-semibold transition-colors flex items-center gap-1.5 ${listMode === 'active' ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400 hover:bg-indigo-50 hover:text-indigo-700'}`}>
                             <Icon name="users" size={3.5} />
                             Người Dùng Hoạt Động
-                        </button>
+                        </Button>
                     </div>
                     <div className="flex items-center gap-2">
                         <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
@@ -355,9 +356,9 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                 <option value="dept">Mã Kho</option>
                                 <option value="logins">Truy cập</option>
                             </Select>
-                            <button onClick={() => setSortAsc(p => !p)} className="h-9 px-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
+                            <Button variant="ghost" onClick={() => setSortAsc(p => !p)} className="bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-9 px-2 text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 transition-colors border-l border-slate-200 dark:border-slate-700" title={sortAsc ? 'Tăng dần' : 'Giảm dần'}>
                                 <Icon name={sortAsc ? 'arrow-up-narrow-wide' : 'arrow-down-wide-narrow'} size={3.5} />
-                            </button>
+                            </Button>
                         </div>
                         <div className="relative w-full sm:w-56">
                             <Input 
@@ -438,18 +439,18 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                                             <div className="flex items-center gap-1.5 shrink-0">
                                                 {listMode === 'pending' ? (
                                                     <div className="flex items-center border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-md overflow-hidden shadow-sm">
-                                                        <button onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700" title="Từ chối">
+                                                        <Button variant="ghost" onClick={() => handleApproval(req.id, false)} className="bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-8 px-2.5 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center gap-1 border-r border-slate-200 dark:border-slate-700" title="Từ chối">
                                                             <Icon name="x" size={3.5} />
-                                                        </button>
-                                                        <button onClick={() => handleApproval(req.id, true)} className="h-8 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center gap-1">
+                                                        </Button>
+                                                        <Button variant="ghost" onClick={() => handleApproval(req.id, true)} className="bg-transparent hover:bg-transparent border-0 rounded-none w-auto text-inherit h-8 px-3 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors flex items-center gap-1">
                                                             <Icon name="check" size={3.5} /> Duyệt
-                                                        </button>
+                                                        </Button>
                                                     </div>
                                                 ) : (
                                                     <div className="flex items-center gap-1.5">
-                                                        <button onClick={() => handleApproval(req.id, false)} className="h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors rounded-md shadow-sm flex items-center" title="Thu hồi">
+                                                        <Button variant="ghost" onClick={() => handleApproval(req.id, false)} className="bg-transparent hover:bg-transparent border-0 w-auto text-inherit h-8 px-2.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:bg-rose-50 hover:text-rose-600 transition-colors rounded-md shadow-sm flex items-center" title="Thu hồi">
                                                             <Icon name="user-minus" size={3.5} />
-                                                        </button>
+                                                        </Button>
                                                         {savingIds.has(req.id) && (
                                                             <span className="text-[10px] text-indigo-500 font-bold flex items-center gap-1 animate-pulse">
                                                                 <Icon name="loader-2" size={3} className="animate-spin" /> Lưu...

@@ -230,11 +230,11 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                     <div key={index} className="flex items-center gap-2">
                         <input type="text" value={shift.code} onChange={e => handleSpecialShiftChange(role, index, 'code', e.target.value)} placeholder="Mã ca" className="config-input w-1/2 !text-sm !py-1" />
                         <input type="number" value={shift.count} onChange={e => handleSpecialShiftChange(role, index, 'count', e.target.value)} min="1" className="config-input w-1/2 !text-sm !py-1" />
-                        <button onClick={() => removeSpecialShift(role, index)} className="text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 p-1">&times;</button>
+                        <Button variant="ghost" onClick={() => removeSpecialShift(role, index)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-rose-500 hover:text-rose-700 dark:text-rose-400 dark:hover:text-rose-300 p-1">&times;</Button>
                     </div>
                 ))}
             </div>
-            <button onClick={() => addSpecialShift(role)} className="text-xs text-sky-600 dark:text-sky-400 hover:underline mt-2">+ Thêm ca</button>
+            <Button variant="ghost" onClick={() => addSpecialShift(role)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-xs text-sky-600 dark:text-sky-400 hover:underline mt-2">+ Thêm ca</Button>
         </div>
     );
 
@@ -345,25 +345,27 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                                             onDrop={(e) => handleDrop(e, i)}
                                         >
                                              {i > 0 && (
-                                                <button
+                                                <Button
+                                                    variant="ghost"
                                                     onClick={() => moveSuggestionItem(i, 'left')}
-                                                    className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 absolute -left-2 z-10 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400"
+                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit opacity-100 lg:opacity-0 lg:group-hover:opacity-100 absolute -left-2 z-10 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400"
                                                     title="Di chuyển sang trái"
                                                 >
                                                     &#9664;
-                                                </button>
+                                                </Button>
                                             )}
                                             <span className="bg-sky-100 dark:bg-sky-900/40 text-sky-800 dark:text-sky-300 font-mono font-bold px-3 py-1.5 rounded shadow-sm border border-sky-200 dark:border-sky-800 cursor-grab active:cursor-grabbing hover:bg-sky-200 dark:hover:bg-sky-900/60 transition-colors select-none">
                                                 {s}
                                             </span>
                                              {i < suggestion.length - 1 && (
-                                                <button
+                                                <Button
+                                                    variant="ghost"
                                                     onClick={() => moveSuggestionItem(i, 'right')}
-                                                    className="opacity-100 lg:opacity-0 lg:group-hover:opacity-100 absolute -right-2 z-10 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400"
+                                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit opacity-100 lg:opacity-0 lg:group-hover:opacity-100 absolute -right-2 z-10 text-slate-400 hover:text-sky-600 dark:hover:text-sky-400"
                                                     title="Di chuyển sang phải"
                                                 >
                                                     &#9654;
-                                                </button>
+                                                </Button>
                                             )}
                                         </div>
                                     ))}

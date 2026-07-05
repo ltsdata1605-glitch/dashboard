@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { db } from './firebase';
 import { collection, query, where, getDocs, deleteDoc, doc, limit } from 'firebase/firestore';
 import { X, Search, Trash2, ShieldAlert, User as UserIcon } from 'lucide-react';
+import { Button } from '../../components/shared/ui/Button';
 
 interface SuperAdminModalProps {
   isOpen: boolean;
@@ -95,9 +96,9 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
             <ShieldAlert className="w-5 h-5" />
             <h2 className="text-lg font-bold">Công cụ Super Admin</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-red-100 rounded-full transition-colors">
+          <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 hover:bg-red-100 rounded-full transition-colors">
             <X className="w-5 h-5 text-red-700" />
-          </button>
+          </Button>
         </div>
 
         <div className="p-6 space-y-6 overflow-y-auto">
@@ -114,13 +115,14 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
                   className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
                 />
               </div>
-              <button
+              <Button
                 type="submit"
+                variant="ghost"
                 disabled={loading}
-                className="px-6 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-red-600 text-white rounded-lg font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 Tìm kiếm
-              </button>
+              </Button>
             </div>
           </form>
 
@@ -149,14 +151,15 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
                         </div>
                       </div>
                     </div>
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={() => handleDeleteUser(u.id)}
                       disabled={loading || u.username === 'admin'}
-                      className={`p-2 rounded-lg transition-colors ${u.username === 'admin' ? 'text-slate-300 cursor-not-allowed' : 'text-red-500 hover:bg-red-50'}`}
+                      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 rounded-lg transition-colors ${u.username === 'admin' ? 'text-slate-300 cursor-not-allowed' : 'text-red-500 hover:bg-red-50'}`}
                       title={u.username === 'admin' ? "Không thể xóa Super Admin" : "Xóa người dùng"}
                     >
                       <Trash2 className="w-5 h-5" />
-                    </button>
+                    </Button>
                   </div>
                 ))}
               </div>

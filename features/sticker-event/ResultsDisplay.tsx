@@ -2,6 +2,7 @@
 import React, { useState, useEffect, memo } from 'react';
 import { Product } from './types';
 import { InfoIcon, SearchIcon, CheckboxIcon, CheckboxCheckedIcon, MinusCircleIcon, PlusCircleIcon, PrintIcon, Trash2Icon } from './Icons';
+import { Button } from '../../components/shared/ui/Button';
 
 interface ResultsDisplayProps {
   results: Product[];
@@ -92,21 +93,23 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
     {/* Right/Bottom: Controls — LARGER */}
     <div className={`flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 ${isMobile ? 'pt-1' : ''} sm:pl-3 sm:border-l hide-on-export`}>
         <div className="flex items-center gap-2">
-             <button
+             <Button
+                variant="ghost"
                 onClick={() => onToggleSelect(result.msp)}
                 title={result.selected ? "Bỏ chọn" : "Chọn in"}
-                className="text-slate-400 hover:text-indigo-600 transition-colors p-0.5"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-indigo-600 transition-colors p-0.5"
             >
                 {result.selected ? <CheckboxCheckedIcon className="h-7 w-7 text-indigo-600" /> : <CheckboxIcon className="h-7 w-7" />}
-            </button>
+            </Button>
             <div className="flex items-center bg-slate-50 rounded-lg p-0.5 border border-slate-200">
-                <button
+                <Button
+                    variant="ghost"
                     onClick={() => onQuantityChange(result.msp, -1)}
                     disabled={result.quantity <= 0}
-                    className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
                     <MinusCircleIcon className="h-5 w-5" />
-                </button>
+                </Button>
                 <input
                     type="number"
                     value={result.quantity}
@@ -118,32 +121,35 @@ const ProductCard: React.FC<ProductCardProps> = memo(({ result, isHighlighted, o
                     onFocus={(e) => e.target.select()}
                     className="w-10 text-center font-bold text-base text-slate-800 bg-transparent border-none focus:ring-0 p-0 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none -moz-appearance-textfield"
                 />
-                <button
+                <Button
+                    variant="ghost"
                     onClick={() => onQuantityChange(result.msp, 1)}
-                    className="p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-slate-700 transition-colors"
                 >
                     <PlusCircleIcon className="h-5 w-5" />
-                </button>
+                </Button>
             </div>
         </div>
         <div className="flex items-center gap-1.5">
             {!isMobile && (
-                <button
+                <Button
+                    variant="ghost"
                     onClick={() => onPrintSingle(result)}
                     title="In sản phẩm này"
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors"
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg transition-colors"
                 >
                     <PrintIcon className="h-4 w-4" />
                     In
-                </button>
+                </Button>
             )}
-            <button
+            <Button
+                variant="ghost"
                 onClick={() => onDelete(result.msp)}
                 title="Xóa sản phẩm"
-                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
                 <Trash2Icon className="h-5 w-5" />
-            </button>
+            </Button>
         </div>
     </div>
   </div>
@@ -300,12 +306,13 @@ const ResultsDisplay: React.FC<ResultsDisplayProps> = ({ results, hasData, highl
             ))}
             {results.length > visibleCount && (
                 <div className="flex justify-center py-4 hide-on-export">
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={() => setVisibleCount(prev => prev + 50)}
-                        className="px-6 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-semibold rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors text-sm shadow-sm flex items-center gap-2"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-6 py-2 bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/20 dark:hover:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 font-semibold rounded-xl border border-indigo-200 dark:border-indigo-800 transition-colors text-sm shadow-sm flex items-center gap-2"
                     >
                         Hiển thị thêm (còn {results.length - visibleCount} sản phẩm)
-                    </button>
+                    </Button>
                 </div>
             )}
         </div>

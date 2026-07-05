@@ -354,15 +354,15 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                     {/* Tabs for Table Type */}
                     <div className="border-b border-slate-200 dark:border-slate-800">
                         <nav className="-mb-px flex space-x-6 sm:space-x-8 overflow-x-auto custom-scrollbar">
-                            <button type="button" onClick={() => setTableType('data')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'data' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
+                            <Button type="button" variant="ghost" onClick={() => setTableType('data')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'data' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
                                 <Icon name="database" size={4} /> Truy vấn Data
-                            </button>
-                            <button type="button" onClick={() => setTableType('calculated')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'calculated' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
+                            </Button>
+                            <Button type="button" variant="ghost" onClick={() => setTableType('calculated')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'calculated' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
                                 <Icon name="calculator" size={4} /> Bảng Tính Toán
-                            </button>
-                            <button type="button" onClick={() => setTableType('target')} className={`whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'target' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
+                            </Button>
+                            <Button type="button" variant="ghost" onClick={() => setTableType('target')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap pb-3 px-1 border-b-2 font-medium text-sm flex items-center gap-2 transition-colors ${tableType === 'target' ? 'border-sky-500 text-sky-600' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`}>
                                 <Icon name="target" size={4} /> Thiết lập Target
-                            </button>
+                            </Button>
                         </nav>
                     </div>
                     
@@ -462,8 +462,8 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                              <p className="text-xs text-slate-500 mt-0.5">Phương pháp tính tổng cho nhóm</p>
                          </div>
                          <div className="flex bg-slate-100/50 p-1 rounded-md border border-slate-200/60 w-full sm:w-auto">
-                             <button type="button" onClick={() => setTotalCalculationMethod('sum')} className={`flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm rounded transition-colors ${totalCalculationMethod === 'sum' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>Tổng</button>
-                             <button type="button" onClick={() => setTotalCalculationMethod('average')} className={`flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm rounded transition-colors ${totalCalculationMethod === 'average' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>T.Bình / Ngày</button>
+                             <Button type="button" variant="ghost" onClick={() => setTotalCalculationMethod('sum')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm rounded transition-colors ${totalCalculationMethod === 'sum' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>Tổng</Button>
+                             <Button type="button" variant="ghost" onClick={() => setTotalCalculationMethod('average')} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 sm:flex-none px-4 py-1.5 text-xs sm:text-sm rounded transition-colors ${totalCalculationMethod === 'average' ? 'bg-white text-slate-800 shadow-sm border border-slate-200 font-medium' : 'text-slate-500 hover:text-slate-800 font-normal border border-transparent'}`}>T.Bình / Ngày</Button>
                          </div>
                     </div>
 

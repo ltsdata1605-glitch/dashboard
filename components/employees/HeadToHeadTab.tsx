@@ -8,6 +8,7 @@ import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getExportFilenamePrefix, getRowValue } from '../../utils/dataUtils';
 import { COL, DATA_STATUS_COLORS } from '../../constants';
 import { Modal } from '../shared/ui/Modal';
+import { Button } from '../shared/ui/Button';
 
 // Import refactored components
 import HeadToHeadTable from './head-to-head/HeadToHeadTable';
@@ -269,17 +270,17 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     </div>
                     <div className="flex items-center gap-0.5 sm:gap-1 hide-on-export shrink-0">
                         {/* Group 1 (LEFT): CRUD actions — Add, Edit, Delete */}
-                        <button onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors">
+                        <Button variant="ghost" onClick={() => setModalState({ type: 'ADD' })} title="Thêm Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/30 transition-colors">
                             <Icon name="plus" size={3.5} className="sm:hidden"/><Icon name="plus" size={5} className="hidden sm:block"/>
-                        </button>
+                        </Button>
                         {activeTable && (
                             <>
-                                <button onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
+                                <Button variant="ghost" onClick={() => setModalState({ type: 'EDIT', data: activeTable })} title="Sửa Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors">
                                     <Icon name="pencil" size={3.5} className="sm:hidden"/><Icon name="pencil" size={5} className="hidden sm:block"/>
-                                </button>
-                                <button onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                                </Button>
+                                <Button variant="ghost" onClick={() => setModalState({ type: 'DELETE', data: activeTable })} title="Xóa Bảng" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
                                     <Icon name="trash-2" size={3.5} className="sm:hidden"/><Icon name="trash-2" size={5} className="hidden sm:block"/>
-                                </button>
+                                </Button>
                             </>
                         )}
 
@@ -287,32 +288,34 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                         <div className="w-px h-4 sm:h-6 bg-slate-200 dark:bg-slate-700 mx-0.5 sm:mx-1" />
 
                         {/* Group 2 (RIGHT): Calendar → Batch export → Camera */}
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={() => setIncludeToday(p => !p)}
-                            className={`p-1.5 sm:p-2 rounded-lg transition-all ${
-                                includeToday 
-                                ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400' 
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 rounded-lg transition-all ${
+                                includeToday
+                                ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400'
                                 : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
                             title={includeToday ? 'Đang bao gồm hôm nay — Nhấn để loại bỏ' : 'Không bao gồm hôm nay — Nhấn để thêm'}
                         >
                             <Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={3.5} className="sm:hidden"/><Icon name={includeToday ? 'calendar-check' : 'calendar-x'} size={5} className="hidden sm:block"/>
-                        </button>
-                        <button 
-                            onClick={handleBatchExport} 
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            onClick={handleBatchExport}
                             disabled={isBatchExporting || tables.length === 0}
-                            className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all"
                             title="Xuất hàng loạt ảnh toàn bộ bảng 7 ngày"
                         >
                             {isBatchExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="images" size={3.5} className="sm:hidden" />}
                             {isBatchExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="images" size={5} className="hidden sm:block" />}
-                        </button>
+                        </Button>
                         {onExport && (
-                            <button onClick={onExport} disabled={isExporting} className="p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
+                            <Button variant="ghost" onClick={onExport} disabled={isExporting} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 sm:p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-all" title="Xuất ảnh bảng hiện tại">
                                 {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin sm:hidden" /> : <Icon name="camera" size={3.5} className="sm:hidden" />}
                                 {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden sm:block" /> : <Icon name="camera" size={5} className="hidden sm:block" />}
-                            </button>
+                            </Button>
                         )}
                     </div>
                 </div>
@@ -325,10 +328,11 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                                 const isActive = activeTableId === t.id;
                                 const theme = colorThemes[tabIndex % colorThemes.length];
                                 return (
-                                <button
+                                <Button
+                                    variant="ghost"
                                     key={`tab-${t.id}`}
                                     onClick={() => setActiveTableId(t.id)}
-                                    className={`relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
+                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit relative px-2.5 sm:px-4 py-1.5 sm:py-2 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap transition-colors ${
                                         isActive
                                         ? theme.activeTab || 'bg-slate-50 text-slate-800 dark:bg-slate-800 dark:text-white border-b-[2.5px] border-slate-800 dark:border-white'
                                         : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300'
@@ -336,7 +340,7 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                                     title={t.tableName}
                                 >
                                     {t.tableName.replace(/7 NGÀY\s*-\s*/i, '')}
-                                </button>
+                                </Button>
                             )})}
                         </div>
                     </div>
@@ -389,8 +393,8 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                     maxWidth="md"
                     footer={
                         <div className="flex justify-end gap-2 sm:gap-3">
-                            <button onClick={() => setModalState({ type: null })} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                            <button onClick={handleDelete} className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xóa</button>
+                            <Button type="button" variant="ghost" onClick={() => setModalState({ type: null })} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</Button>
+                            <Button type="button" variant="ghost" onClick={handleDelete} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xóa</Button>
                         </div>
                     }
                 >

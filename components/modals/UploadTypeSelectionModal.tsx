@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
+import { Button } from '../shared/ui/Button';
 
 interface UploadTypeSelectionModalProps {
     isOpen: boolean;
@@ -36,9 +37,10 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                 </div>
 
                 <div className="space-y-3">
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={() => onSelect(false)}
-                        className="w-full text-left p-4 rounded-xl border border-slate-100 hover:border-emerald-500/30 dark:border-slate-800 dark:hover:border-emerald-500/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/10 transition-all flex items-start gap-3.5 group"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full text-left p-4 rounded-xl border border-slate-100 hover:border-emerald-500/30 dark:border-slate-800 dark:hover:border-emerald-500/30 hover:bg-emerald-50/10 dark:hover:bg-emerald-950/10 transition-all flex items-start gap-3.5 group"
                     >
                         <div className="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-100/50 dark:border-emerald-500/20 group-hover:scale-105 transition-transform">
                             <Icon name="zap" size={4} />
@@ -51,11 +53,12 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                                 Phân tích nhanh tức thời, hữu ích để xem nhanh số liệu. Không lưu vào cơ sở dữ liệu lịch sử.
                             </p>
                         </div>
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={() => onSelect(true)}
-                        className="w-full text-left p-4 rounded-xl border border-slate-100 hover:border-indigo-500/30 dark:border-slate-800 dark:hover:border-indigo-500/30 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/10 transition-all flex items-start gap-3.5 group"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full text-left p-4 rounded-xl border border-slate-100 hover:border-indigo-500/30 dark:border-slate-800 dark:hover:border-indigo-500/30 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/10 transition-all flex items-start gap-3.5 group"
                     >
                         <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 border border-indigo-100/50 dark:border-indigo-500/20 group-hover:scale-105 transition-transform">
                             <Icon name="database" size={4} />
@@ -68,16 +71,17 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                                 Đặt tên gợi nhớ và lưu trữ dài hạn vào kho dữ liệu để tự động gộp báo cáo lũy kế.
                             </p>
                         </div>
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={onClose}
-                        className="px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-semibold rounded-xl text-xs transition-all"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 font-semibold rounded-xl text-xs transition-all"
                     >
                         Hủy bỏ
-                    </button>
+                    </Button>
                 </div>
             </div>
         </Modal>

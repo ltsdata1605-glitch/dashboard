@@ -4,6 +4,7 @@ import { fetchSavedListsFromFirestore, deleteSavedListFromFirestore } from './se
 import { XIcon, TrashIcon } from './Icons';
 import ConfirmModal from './ConfirmModal';
 import AlertModal from './AlertModal';
+import { Button } from '../../components/shared/ui/Button';
 
 interface SavedListsModalProps {
     storeId: string;
@@ -70,13 +71,14 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
             >
                 <div className="flex justify-between items-center">
                     <h2 className="text-xl font-bold text-slate-900">Danh sách đã lưu</h2>
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={onClose}
-                        className="p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
                         aria-label="Đóng"
                     >
                         <XIcon className="h-6 w-6" />
-                    </button>
+                    </Button>
                 </div>
 
                 {error && (
@@ -113,22 +115,24 @@ const SavedListsModal: React.FC<SavedListsModalProps> = ({ storeId, userId, isAd
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2 ml-4">
-                                        <button
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => {
                                                 onLoadList(list.items);
                                                 onClose();
                                             }}
-                                            className="px-3 py-1.5 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-lg text-sm font-medium transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1.5 bg-indigo-100 text-indigo-700 hover:bg-indigo-200 rounded-lg text-sm font-medium transition-colors"
                                         >
                                             Mở
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => handleDelete(list.id)}
-                                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             title="Xóa danh sách"
                                         >
                                             <TrashIcon className="h-5 w-5" />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             ))}

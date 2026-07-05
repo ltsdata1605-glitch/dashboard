@@ -1,5 +1,6 @@
 import React, { useCallback, useRef, useEffect } from 'react';
 import { cn } from './utils';
+import { Button } from './Button';
 
 /* ─── Tabs ─── */
 
@@ -73,13 +74,14 @@ export const Tabs = React.memo<TabsProps>(({
         {items.map(item => {
           const isActive = item.id === activeId;
           return (
-            <button
+            <Button
+              variant="ghost"
               key={item.id}
               ref={isActive ? activeRef : undefined}
               onClick={() => handleClick(item.id)}
               disabled={item.disabled}
               className={cn(
-                'relative flex items-center gap-1.5 px-3 font-medium whitespace-nowrap transition-colors shrink-0',
+                'bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit relative flex items-center gap-1.5 px-3 font-medium whitespace-nowrap transition-colors shrink-0',
                 sizeClasses[size],
                 fullWidth && 'flex-1 justify-center',
                 isActive
@@ -104,7 +106,7 @@ export const Tabs = React.memo<TabsProps>(({
               {isActive && (
                 <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-sky-500 dark:bg-sky-400 rounded-full" />
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -124,13 +126,14 @@ export const Tabs = React.memo<TabsProps>(({
         {items.map(item => {
           const isActive = item.id === activeId;
           return (
-            <button
+            <Button
+              variant="ghost"
               key={item.id}
               ref={isActive ? activeRef : undefined}
               onClick={() => handleClick(item.id)}
               disabled={item.disabled}
               className={cn(
-                'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-lg transition-all shrink-0',
+                'bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-lg transition-all shrink-0',
                 sizeClasses[size],
                 fullWidth && 'flex-1 justify-center',
                 isActive
@@ -151,7 +154,7 @@ export const Tabs = React.memo<TabsProps>(({
                   {item.badge}
                 </span>
               )}
-            </button>
+            </Button>
           );
         })}
       </div>
@@ -171,13 +174,14 @@ export const Tabs = React.memo<TabsProps>(({
       {items.map(item => {
         const isActive = item.id === activeId;
         return (
-          <button
+          <Button
+            variant="ghost"
             key={item.id}
             ref={isActive ? activeRef : undefined}
             onClick={() => handleClick(item.id)}
             disabled={item.disabled}
             className={cn(
-              'flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-md transition-all shrink-0',
+              'bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 font-medium whitespace-nowrap rounded-md transition-all shrink-0',
               sizeClasses[size],
               fullWidth && 'flex-1 justify-center',
               isActive
@@ -198,7 +202,7 @@ export const Tabs = React.memo<TabsProps>(({
                 {item.badge}
               </span>
             )}
-          </button>
+          </Button>
         );
       })}
     </div>

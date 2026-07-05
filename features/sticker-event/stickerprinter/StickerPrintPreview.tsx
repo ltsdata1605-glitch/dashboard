@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import BarcodeCanvas from '../../../components/views/BarcodeCanvas';
 import { BatchItem, TicketDrawData } from './types';
 import { Bold, Italic, Underline } from 'lucide-react';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface StickerPrintPreviewProps {
     batchItems: BatchItem[];
@@ -1530,13 +1531,14 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                     >
                         {/* Font Custom Dropdown */}
                         <div className="relative">
-                            <button 
+                            <Button
+                                variant="ghost"
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={() => setActiveMenu(activeMenu === 'font' ? null : 'font')}
-                                className="bg-transparent text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-0.5"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-white text-[11px] font-semibold px-2 py-1 hover:bg-slate-800 rounded transition-colors flex items-center gap-1 border-r border-slate-700/80 mr-0.5"
                             >
                                 Font <span className="text-[7px] opacity-75">▼</span>
-                            </button>
+                            </Button>
                             
                             {activeMenu === 'font' && (
                                 <div 

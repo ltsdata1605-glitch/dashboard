@@ -6,6 +6,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Employee, Criterion, CompetitionHeader, RevenueRow } from '../../types/nhanVienTypes';
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { Switch } from '../dashboard/DashboardWidgets';
+import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
 import { PieChart, Pie, Cell } from 'recharts';
 
@@ -488,18 +489,18 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                 <div className="mb-4 flex flex-wrap items-center justify-end gap-2 px-1 no-print js-individual-view-toolbar relative z-50">
                     <div className="flex items-center gap-2 flex-wrap">
                         <div className="relative" ref={filterRef}>
-                            <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}>
+                            <Button variant="ghost" onClick={() => setIsFilterOpen(!isFilterOpen)} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}>
                                 <FilterIcon className="h-3.5 w-3.5" />
                                 <span className="hidden sm:inline">Lọc nhóm</span>
                                 {isFiltered && <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-black rounded-full">{activeFilterCount}</span>}
-                            </button>
+                            </Button>
                             {isFilterOpen && (
                                 <div className="absolute right-0 top-full mt-1 w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden">
                                     <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50">
                                         <input type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} placeholder="Tìm nhóm thi đua..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 bg-white placeholder-slate-400" autoFocus />
                                         <div className="flex items-center justify-between mt-1.5">
-                                            <button onClick={handleSelectAllCompetitions} className="text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</button>
-                                            <button onClick={handleDeselectAllCompetitions} className="text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</button>
+                                            <Button variant="ghost" onClick={handleSelectAllCompetitions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</Button>
+                                            <Button variant="ghost" onClick={handleDeselectAllCompetitions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button>
                                         </div>
                                     </div>
                                     <div className="overflow-y-auto flex-1 p-1.5 space-y-3">
@@ -530,10 +531,10 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                             )}
                         </div>
                         <div className="relative" ref={employeeSelectorRef}>
-                            <button onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="flex items-center justify-between w-full md:w-56 px-3 py-1.5 text-[11px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all">
+                            <Button variant="ghost" onClick={() => setIsEmployeeSelectorOpen(!isEmployeeSelectorOpen)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full md:w-56 px-3 py-1.5 text-[11px] font-bold border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-all">
                                 <span className="truncate">{selectedEmployee ? selectedEmployee.name : "Chọn nhân viên..."}</span>
                                 <ChevronDownIcon className="h-3.5 w-3.5 ml-2 text-slate-400" />
-                            </button>
+                            </Button>
                             {isEmployeeSelectorOpen && (
                                 <div className="absolute top-full right-0 mt-1 w-full md:w-64 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl z-50 overflow-hidden flex flex-col max-h-72">
                                     <div className="p-2 border-b border-slate-200 dark:border-slate-700 bg-slate-50 sticky top-0">
@@ -542,9 +543,9 @@ export const IndividualCompetitionView = forwardRef<IndividualCompetitionViewHan
                                     <div className="overflow-y-auto flex-1">
                                         {filteredEmployees.length > 0 ? (
                                             filteredEmployees.map(emp => (
-                                                <button key={emp.originalName} onClick={() => { onSelectIndividual(emp); setIsEmployeeSelectorOpen(false); setEmployeeSearchTerm(''); }} className={`w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee.originalName === emp.originalName ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
+                                                <Button variant="ghost" key={emp.originalName} onClick={() => { onSelectIndividual(emp); setIsEmployeeSelectorOpen(false); setEmployeeSearchTerm(''); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full text-left px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${selectedEmployee.originalName === emp.originalName ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-slate-700 dark:text-slate-300'}`}>
                                                     {emp.name}
-                                                </button>
+                                                </Button>
                                             ))
                                         ) : (
                                             <div className="p-3 text-center text-sm text-slate-500">Không tìm thấy</div>

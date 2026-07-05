@@ -8,6 +8,7 @@ import { Employee, CompetitionHeader, Criterion } from '../../types/nhanVienType
 import { roundUp, getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Switch } from '../dashboard/DashboardWidgets';
+import { Button } from '../../../../components/shared/ui/Button';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
 import { ConfirmDialog } from '../../../../components/shared/ui/ConfirmDialog';
 
@@ -350,8 +351,12 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                         autoFocus
                         onKeyDown={(e) => e.key === 'Enter' && (onRename(tempName), setIsEditingName(false))}
                     />
-                    <button type="button" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="text-green-600"><CheckCircleIcon className="h-6 w-6" /></button>
-                    <button type="button" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="text-slate-400"><XIcon className="h-6 w-6" /></button>
+                    <Button type="button" variant="ghost" onClick={() => { onRename(tempName); setIsEditingName(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-green-600">
+                        <CheckCircleIcon className="h-6 w-6" />
+                    </Button>
+                    <Button type="button" variant="ghost" onClick={() => { setTempName(tableName); setIsEditingName(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-slate-400">
+                        <XIcon className="h-6 w-6" />
+                    </Button>
                 </div>
             ) : (
                 <span className="js-report-title text-2xl font-black uppercase text-slate-800 dark:text-white mt-1">{tableName} - ĐẾN {getYesterdayDateString()}</span>
@@ -363,9 +368,10 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
     const headerActions = (
         <div className="flex items-center gap-2 relative z-30">
             <div className="relative" ref={filterRef}>
-                <button 
-                    onClick={() => setIsFilterOpen(!isFilterOpen)} 
-                    className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                <Button
+                    variant="ghost"
+                    onClick={() => setIsFilterOpen(!isFilterOpen)}
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
                     title="Chọn cột hiển thị"
                 >
                     <FilterIcon className="h-5 w-5" />
@@ -374,7 +380,7 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                             {selectedTitles.length}
                         </span>
                     )}
-                </button>
+                </Button>
                 {isFilterOpen && (
                     <div className="absolute right-0 top-full mt-1.5 w-64 max-h-80 overflow-y-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-50 p-2 space-y-1">
                         <div className="px-2 py-1.5 border-b border-slate-100 dark:border-slate-700/50 bg-slate-50/50 dark:bg-slate-900/30">
@@ -405,33 +411,36 @@ const CompetitionSummaryView = forwardRef<CompetitionSummaryViewHandle, Competit
                 )}
             </div>
 
-            <button 
-                type="button" 
-                onClick={() => setIsEditingName(true)} 
-                className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+            <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsEditingName(true)}
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
                 title="Đổi tên bảng"
             >
                 <PencilIcon className="h-5 w-5" />
-            </button>
+            </Button>
 
-            <button 
-                type="button" 
-                onClick={() => setShowDeleteConfirm(true)} 
-                className="p-2 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
+            <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setShowDeleteConfirm(true)}
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 text-rose-500 hover:text-rose-700 dark:hover:text-rose-400"
                 title="Xóa bảng"
             >
                 <TrashIcon className="h-5 w-5" />
-            </button>
+            </Button>
 
             <div className="h-5 w-px bg-slate-200 dark:border-slate-700 mx-1" />
 
-            <button 
+            <Button
+                variant="ghost"
                 onClick={() => setShowPercent(!showPercent)}
-                className={`p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 rounded-xl transition-all cursor-pointer ${showPercent ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-350'}`}
                 title={showPercent ? "Hiển thị giá trị thực tế" : "Hiển thị phần trăm hoàn thành"}
             >
                 {showPercent ? <HashIcon className="h-5 w-5" /> : <PercentIcon className="h-5 w-5" />}
-            </button>
+            </Button>
 
             <ExportButton onExportPNG={async () => { await handleExportPNG(); }} />
         </div>

@@ -114,10 +114,12 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                         {SUB_TABS.map(({ tab, label }) => {
                             const isActive = activeSubTab === tab;
                             return (
-                                <button
+                                <Button
+                                    variant="ghost"
                                     key={tab}
                                     onClick={() => setActiveSubTab(tab)}
                                     className={`
+                                        bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit
                                         flex-1 sm:flex-none px-5 py-2.5 text-[12px] uppercase tracking-wider transition-all duration-200 whitespace-nowrap border-b-2
                                         ${isActive
                                             ? 'font-black text-indigo-600 dark:text-indigo-400 border-indigo-600 dark:border-indigo-400'
@@ -126,7 +128,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                                     `}
                                 >
                                     {label}
-                                </button>
+                                </Button>
                             );
                         })}
                     </nav>
@@ -136,34 +138,37 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({
                 <div className="flex items-center justify-between px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 relative z-50">
                     {/* Left: Realtime / Luỹ kế toggle */}
                     <div className="flex items-center border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => setActiveMainTab('realtime')}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors ${activeMainTab === 'realtime'
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors ${activeMainTab === 'realtime'
                                 ? 'bg-indigo-600 text-white'
                                 : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
                                 }`}
                         >
                             Realtime
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="ghost"
                             onClick={() => setActiveMainTab('cumulative')}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${activeMainTab === 'cumulative'
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${activeMainTab === 'cumulative'
                                 ? 'bg-indigo-600 text-white border-transparent'
                                 : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
                                 }`}
                         >
                             Luỹ kế
-                        </button>
+                        </Button>
                         {activeSubTab === 'revenue' && (
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={() => setActiveMainTab('report')}
-                                className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${activeMainTab === 'report'
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold whitespace-nowrap transition-colors border-l border-slate-200 dark:border-slate-700 ${activeMainTab === 'report'
                                     ? 'bg-indigo-600 text-white border-transparent'
                                     : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700'
                                     }`}
                             >
                                 Báo cáo
-                            </button>
+                            </Button>
                         )}
                     </div>
 

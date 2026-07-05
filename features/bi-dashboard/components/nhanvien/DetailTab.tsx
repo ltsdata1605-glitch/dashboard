@@ -7,6 +7,7 @@ import { SpinnerIcon, ChevronDownIcon } from '../Icons';
 import { Search, ChevronRight, ChevronsUpDown, ChevronsDownUp } from 'lucide-react';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
 import * as dbService from '../../../../services/dbService';
+import { Button } from '../../../../components/shared/ui/Button';
 
 const LEVEL_NUMBERS: Record<string, number> = {
     total: 0,
@@ -47,26 +48,28 @@ const LevelSelect: React.FC<{
 
     return (
         <div className={`relative ${widthClass} z-40`} ref={ref}>
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between w-full px-2 py-1.5 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all rounded shadow-sm text-left font-bold"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full px-2 py-1.5 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all rounded shadow-sm text-left font-bold"
             >
                 <span className="truncate">{displayValue}</span>
                 <ChevronDownIcon className="h-3.5 w-3.5 ml-1 text-slate-400 shrink-0" />
-            </button>
+            </Button>
             {isOpen && (
                 <div className="absolute top-full left-0 mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl z-50 overflow-hidden flex flex-col">
                     <div className="overflow-y-auto text-[11px]">
                         {options.map(opt => (
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 key={opt.value}
                                 onClick={() => { onChange(opt.value); setIsOpen(false); }}
-                                className={`w-full text-left px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${value === opt.value ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${value === opt.value ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold' : 'text-slate-700 dark:text-slate-300'}`}
                             >
                                 {opt.label}
-                            </button>
+                            </Button>
                         ))}
                     </div>
                 </div>
@@ -117,15 +120,16 @@ const DetailRow = React.memo<DetailRowProps>(({ node, rowKey, isExpanded, toggle
             <td className={`py-1.5 pr-3 ${style.text} ${style.font} ${style.size} whitespace-nowrap border-r border-slate-200 dark:border-slate-700 sticky left-0 z-10 bg-inherit`}>
                 <div className="flex items-center" style={{ paddingLeft: `${style.indent + 8}px` }}>
                     {hasChildren ? (
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => toggleExpand(rowKey)}
-                            className="mr-1.5 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors flex-shrink-0"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 mr-1.5 p-0.5 rounded hover:bg-slate-200 dark:hover:bg-slate-750 transition-colors flex-shrink-0"
                         >
                             {isExpanded
                                 ? <ChevronDownIcon className="h-3.5 w-3.5 text-slate-400" />
                                 : <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
                             }
-                        </button>
+                        </Button>
                     ) : (
                         <span className="mr-1.5 w-[18px] flex-shrink-0" />
                     )}
@@ -194,14 +198,15 @@ const SearchableSelect: React.FC<{
 
     return (
         <div className={`relative ${widthClass} z-40`} ref={ref}>
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex items-center justify-between w-full px-2 py-1.5 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all rounded shadow-sm text-left"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full px-2 py-1.5 text-[11px] border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 transition-all rounded shadow-sm text-left"
             >
                 <span className="truncate">{displayValue}</span>
                 <ChevronDownIcon className="h-3.5 w-3.5 ml-1 text-slate-400 shrink-0" />
-            </button>
+            </Button>
             {isOpen && (
                 <div className="absolute top-full left-0 mt-1 w-56 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded shadow-xl z-50 overflow-hidden flex flex-col max-h-60">
                     <div className="p-1.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 sticky top-0">
@@ -215,22 +220,24 @@ const SearchableSelect: React.FC<{
                         />
                     </div>
                     <div className="overflow-y-auto flex-1 text-[11px]">
-                        <button
+                        <Button
                             type="button"
+                            variant="ghost"
                             onClick={() => { onChange('all'); setIsOpen(false); setSearch(''); }}
-                            className={`w-full text-left px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${value === 'all' ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${value === 'all' ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold' : 'text-slate-700 dark:text-slate-300'}`}
                         >
                             {placeholder}
-                        </button>
+                        </Button>
                         {filtered.length > 0 ? filtered.map(opt => (
-                            <button
+                            <Button
                                 type="button"
+                                variant="ghost"
                                 key={opt}
                                 onClick={() => { onChange(opt); setIsOpen(false); setSearch(''); }}
-                                className={`w-full text-left px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${value === opt ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold' : 'text-slate-700 dark:text-slate-300'}`}
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-2.5 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors ${value === opt ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400 font-bold' : 'text-slate-700 dark:text-slate-300'}`}
                             >
                                 {opt}
-                            </button>
+                            </Button>
                         )) : <div className="p-2 text-center text-slate-500">{emptyText}</div>}
                     </div>
                 </div>
@@ -560,23 +567,25 @@ const DetailTab: React.FC<DetailTabProps> = ({ rawData, supermarketName, activeD
                         widthClass="w-36"
                     />
                     {/* Expand all button */}
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={handleExpandAll}
                         title="Mở rộng tất cả"
-                        className="p-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all rounded shadow-sm flex items-center justify-center"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all rounded shadow-sm flex items-center justify-center"
                     >
                         <ChevronsUpDown className="h-3.5 w-3.5 text-slate-400" />
-                    </button>
+                    </Button>
                     {/* Collapse all button */}
-                    <button
+                    <Button
                         type="button"
+                        variant="ghost"
                         onClick={handleCollapseAll}
                         title="Thu gọn tất cả"
-                        className="p-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all rounded shadow-sm flex items-center justify-center"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-all rounded shadow-sm flex items-center justify-center"
                     >
                         <ChevronsDownUp className="h-3.5 w-3.5 text-slate-400" />
-                    </button>
+                    </Button>
                 </div>
                 <div className="flex gap-1.5 items-center">
                     <ExportButton onExportPNG={handleExportPNG} />

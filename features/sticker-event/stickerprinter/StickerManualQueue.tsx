@@ -170,10 +170,10 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                 <div className="absolute right-0 top-9 z-50 w-56 bg-indigo-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-indigo-500 animate-in fade-in slide-in-from-top-2 duration-300">
                                     <div className="font-bold flex items-center justify-between">
                                         <span>💡 Kiểu giảm giá mới!</span>
-                                        <button onClick={dismissOnboarding} className="text-indigo-200 hover:text-white p-0.5"><X size={12} /></button>
+                                        <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-indigo-200 hover:text-white"><X size={12} /></Button>
                                     </div>
                                     <p className="leading-relaxed text-slate-100">Click vào đây để chuyển đổi hiển thị giữa <strong>% Giảm</strong> hoặc <strong>Số tiền</strong> trên sticker!</p>
-                                    <button onClick={dismissOnboarding} className="self-end bg-white text-indigo-600 font-bold px-2 py-0.5 rounded text-[10px] hover:bg-indigo-50 transition-colors shadow-sm">Đã hiểu</button>
+                                    <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-indigo-600 font-bold px-2 py-0.5 rounded text-[10px] hover:bg-indigo-50 transition-colors shadow-sm">Đã hiểu</Button>
                                     <div className="absolute top-0 right-3 -mt-1.5 w-3 h-3 bg-indigo-600 rotate-45 border-l border-t border-indigo-500" />
                                 </div>
                             )}
@@ -251,10 +251,10 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                     <div className="absolute right-0 top-8 z-50 w-56 bg-indigo-600 text-white text-[11px] p-2.5 rounded-lg shadow-xl flex flex-col gap-1.5 border border-indigo-500 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <div className="font-bold flex items-center justify-between">
                                             <span>💡 Kiểu giảm giá mới!</span>
-                                            <button onClick={dismissOnboarding} className="text-indigo-200 hover:text-white p-0.5"><X size={12} /></button>
+                                            <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-indigo-200 hover:text-white"><X size={12} /></Button>
                                         </div>
                                         <p className="leading-relaxed text-slate-100">Click vào đây để chuyển đổi hiển thị giữa <strong>% Giảm</strong> hoặc <strong>Số tiền</strong> trên sticker!</p>
-                                        <button onClick={dismissOnboarding} className="self-end bg-white text-indigo-600 font-bold px-2 py-0.5 rounded text-[10px] hover:bg-indigo-50 transition-colors shadow-sm">Đã hiểu</button>
+                                        <Button variant="ghost" onClick={dismissOnboarding} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 self-end bg-white text-indigo-600 font-bold px-2 py-0.5 rounded text-[10px] hover:bg-indigo-50 transition-colors shadow-sm">Đã hiểu</Button>
                                         <div className="absolute top-0 right-3 -mt-1.5 w-3 h-3 bg-indigo-600 rotate-45 border-l border-t border-indigo-500" />
                                     </div>
                                 )}
@@ -305,26 +305,28 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                     {/* Price toggle (Segmented control) for ERP prices */}
                     {manualPages.some(p => p.servicePrice || p.salePrice) && (
                         <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 w-full shrink-0 mb-1">
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={() => setPriceSource('sale')}
-                                className={`flex-1 py-1 rounded-md text-[11px] font-bold transition-all ${
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 rounded-md text-[11px] font-bold transition-all ${
                                     priceSource === 'sale'
                                         ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                                 }`}
                             >
                                 Giá giảm
-                            </button>
-                            <button
+                            </Button>
+                            <Button
+                                variant="ghost"
                                 onClick={() => setPriceSource('service')}
-                                className={`flex-1 py-1 rounded-md text-[11px] font-bold transition-all ${
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 rounded-md text-[11px] font-bold transition-all ${
                                     priceSource === 'service'
                                         ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
                                         : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                                 }`}
                             >
                                 Giá Dịch vụ
-                            </button>
+                            </Button>
                         </div>
                     )}
 
@@ -415,12 +417,13 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                         </div>
                                     </div>
                                 </div>
-                                <button 
-                                    onClick={(e) => { e.stopPropagation(); removeManualPage(page.id); }} 
-                                    className="text-slate-400 hover:text-red-500 transition-colors shrink-0 p-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
+                                <Button
+                                    variant="ghost"
+                                    onClick={(e) => { e.stopPropagation(); removeManualPage(page.id); }}
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto text-slate-400 hover:text-red-500 transition-colors shrink-0 p-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100"
                                 >
                                     <X size={14} />
-                                </button>
+                                </Button>
                             </div>
                         ))}
                         {filteredPages.length === 0 && (
@@ -433,16 +436,17 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
             {/* Saved Lists */}
             {savedLists.length > 0 && manualPages.length === 0 && (
                 <div className="p-0 space-y-3 flex-1 flex flex-col overflow-hidden">
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={() => setShowSavedLists(!showSavedLists)}
-                        className="w-full flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition-colors shrink-0"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full p-0 text-inherit flex items-center justify-between text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-indigo-600 transition-colors shrink-0"
                     >
                         <span className="flex items-center gap-2">
                             <ImageIcon size={16} className="text-emerald-500" />
                             Danh sách đã lưu ({savedLists.length})
                         </span>
                         {showSavedLists ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                    </button>
+                    </Button>
                     {showSavedLists && (
                         <div className="mt-3 space-y-2 flex-1 overflow-y-auto pr-1">
                             {savedLists.map(list => (
@@ -456,20 +460,22 @@ export const StickerManualQueue: React.FC<StickerManualQueueProps> = ({
                                         </div>
                                     </div>
                                     <div className="flex gap-1 shrink-0 ml-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                                        <button 
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => loadSavedList(list)}
-                                            className="p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 transition-colors text-[10px] font-bold"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-lg hover:bg-emerald-200 transition-colors text-[10px] font-bold"
                                             title="Tải danh sách"
                                         >
                                             <RotateCcw size={13} />
-                                        </button>
-                                        <button 
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => deleteSavedList(list.id)}
-                                            className="p-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-lg hover:bg-red-200 transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-red-100 dark:bg-red-900/30 text-red-500 rounded-lg hover:bg-red-200 transition-colors"
                                             title="Xóa"
                                         >
                                             <Trash2 size={13} />
-                                        </button>
+                                        </Button>
                                     </div>
                                 </div>
                             ))}

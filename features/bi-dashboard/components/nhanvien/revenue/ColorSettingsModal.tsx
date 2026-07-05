@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../../../../../components/shared/ui/Modal';
+import { Button } from '../../../../../components/shared/ui/Button';
 
 // --- Vivid/Hot Color Palette ---
 export const VIVID_COLORS = [
@@ -46,13 +47,14 @@ export const DEFAULT_COLOR_SETTINGS: ColorSettings = {
 export const CompactColorPicker: React.FC<{ selected: string; onSelect: (hex: string) => void }> = ({ selected, onSelect }) => (
     <div className="flex gap-1">
         {VIVID_COLORS.map(c => (
-            <button
+            <Button
+                variant="ghost"
                 key={c.hex}
                 onClick={() => onSelect(c.hex)}
-                className={`w-5 h-5 rounded-full border transition-transform ${selected === c.hex ? 'border-slate-900 dark:border-white scale-125 z-10' : 'border-transparent hover:scale-110'}`}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-5 h-5 rounded-full border transition-transform ${selected === c.hex ? 'border-slate-900 dark:border-white scale-125 z-10' : 'border-transparent hover:scale-110'}`}
                 style={{ backgroundColor: c.hex }}
                 title={c.name}
-            />
+            >{null}</Button>
         ))}
     </div>
 );
@@ -135,8 +137,8 @@ export const ColorSettingsModal: React.FC<{
             maxWidth="lg"
             footer={
                 <div className="flex gap-3">
-                    <button onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="px-5 py-2 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-white transition-colors">Mặc định</button>
-                    <button onClick={() => { onSave(temp); onClose(); }} className="flex-1 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-xl hover:bg-primary-700 active:scale-95 transition-all shadow-md shadow-primary-500/20">Lưu cấu hình</button>
+                    <Button variant="ghost" onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-5 py-2 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-white transition-colors">Mặc định</Button>
+                    <Button variant="ghost" onClick={() => { onSave(temp); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-xl hover:bg-primary-700 active:scale-95 transition-all shadow-md shadow-primary-500/20">Lưu cấu hình</Button>
                 </div>
             }
         >

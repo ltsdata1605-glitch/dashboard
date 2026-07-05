@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import ReactDOM from 'react-dom';
 import { Icon } from '../../common/Icon';
+import { Button } from '../../shared/ui/Button';
 
 interface FilterPopoverProps {
     label: string;
@@ -85,11 +86,12 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
 
     return (
         <div className="relative inline-flex items-center ml-1">
-            <button
+            <Button
+                variant="ghost"
                 ref={triggerRef}
                 onClick={(e) => { e.stopPropagation(); onToggle(); }}
                 onMouseDown={stopPropagation}
-                className={`p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${hasFilters ? 'text-primary-600 dark:text-primary-400 bg-white/50' : 'text-inherit opacity-60 hover:opacity-100'}`}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors ${hasFilters ? 'text-primary-600 dark:text-primary-400 bg-white/50' : 'text-inherit opacity-60 hover:opacity-100'}`}
                 title={`Lọc ${label}`}
             >
                 <Icon name="filter" size={3} className={`sm:hidden ${hasFilters ? "fill-current" : ""}`} />
@@ -97,7 +99,7 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                 {hasFilters && (
                     <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-red-500 rounded-full border border-white dark:border-slate-800"></span>
                 )}
-            </button>
+            </Button>
 
             {/* Always use portal to escape parent transform/overflow */}
             {isOpen && ReactDOM.createPortal(
@@ -128,9 +130,9 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                             />
                         </div>
                         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-1.5 mb-1.5">
-                            <button onClick={handleSelectAll} className="text-[10px] font-bold text-primary-600 dark:text-primary-400 hover:underline">Chọn tất cả</button>
+                            <Button variant="ghost" onClick={handleSelectAll} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-primary-600 dark:text-primary-400 hover:underline">Chọn tất cả</Button>
                             <span className="text-[10px] text-slate-400 font-semibold">{selected.length} / {options.length}</span>
-                            <button onClick={handleDeselectAll} className="text-[10px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:underline">Bỏ chọn</button>
+                            <Button variant="ghost" onClick={handleDeselectAll} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:underline">Bỏ chọn</Button>
                         </div>
                         <div className="overflow-y-auto max-h-[40vh] space-y-0.5 custom-scrollbar">
                             {filteredOptions.length > 0 ? (
@@ -178,9 +180,9 @@ export const FilterPopover: React.FC<FilterPopoverProps> = ({
                             />
                         </div>
                         <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2 mb-2">
-                            <button onClick={handleSelectAll} className="text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline">Chọn tất cả</button>
+                            <Button variant="ghost" onClick={handleSelectAll} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-xs font-bold text-primary-600 dark:text-primary-400 hover:underline">Chọn tất cả</Button>
                             <span className="text-xs text-slate-400 font-semibold">{selected.length} / {options.length}</span>
-                            <button onClick={handleDeselectAll} className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:underline">Bỏ chọn</button>
+                            <Button variant="ghost" onClick={handleDeselectAll} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:underline">Bỏ chọn</Button>
                         </div>
                         <div className="overflow-y-auto max-h-60 space-y-0.5 custom-scrollbar">
                             {filteredOptions.length > 0 ? (

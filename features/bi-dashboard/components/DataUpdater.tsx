@@ -6,6 +6,7 @@ import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import * as db from '../utils/db';
 import toast from 'react-hot-toast';
 import { shortenSupermarketName, extractSupermarketList } from '../utils/dashboardHelpers';
+import { Button } from '../../../components/shared/ui/Button';
 
 // --- Validation ---
 const SUMMARY_REALTIME_REPORT_HEADER = 'Tên miền	DTLK	DTQĐ	Target (QĐ)	% HT Target (QĐ)';
@@ -115,7 +116,7 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <button onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-500 transition-colors shrink-0 bg-slate-100 dark:bg-slate-800">HUỶ</button>
+                        <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-500 transition-colors shrink-0 bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between w-full gap-3">
@@ -154,16 +155,17 @@ const StatusTile: React.FC<{
                             <LinkIcon className="h-3.5 w-3.5" />
                         </a>
                     )}
-                     <button 
-                        onClick={(e) => { 
-                            e.stopPropagation(); 
-                            onClear(title); 
-                        }} 
-                        title="Xoá dữ liệu" 
-                        className="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-100 hover:border-red-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm"
+                     <Button
+                        variant="ghost"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClear(title);
+                        }}
+                        title="Xoá dữ liệu"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-100 hover:border-red-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm"
                     >
                         <TrashIcon className="h-3.5 w-3.5" />
-                    </button>
+                    </Button>
                 </div>
             )}
             {error && (
@@ -240,28 +242,31 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                 <div className="flex items-center gap-2 pb-2">
                     {isConfirmingClear ? (
                         <div className="flex items-center gap-1.5">
-                            <button 
+                            <Button
+                                variant="ghost"
                                 onClick={() => setIsConfirmingClear(false)}
-                                className="px-4 py-1.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors border border-transparent"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-1.5 text-[10px] font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors border border-transparent"
                             >
                                 HUỶ
-                            </button>
-                            <button 
+                            </Button>
+                            <Button
+                                variant="ghost"
                                 onClick={handleClearAllData}
-                                className="px-4 py-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full hover:bg-red-600 transition-all shadow-md shadow-red-500/20"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full hover:bg-red-600 transition-all shadow-md shadow-red-500/20"
                             >
                                 XÁC NHẬN XOÁ DỮ LIỆU
-                            </button>
+                            </Button>
                         </div>
                     ) : (
-                        <button 
+                        <Button
+                            variant="ghost"
                             onClick={() => setIsConfirmingClear(true)}
                             title="Xoá tất cả dữ liệu"
-                            className="flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase rounded-full border border-slate-200 dark:border-slate-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-900/40 dark:hover:text-red-400 transition-all shadow-sm"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-4 py-1.5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase rounded-full border border-slate-200 dark:border-slate-700 hover:bg-red-50 hover:text-red-600 hover:border-red-200 dark:hover:bg-red-900/40 dark:hover:text-red-400 transition-all shadow-sm"
                         >
                             <TrashIcon className="h-3.5 w-3.5" />
                             <span>LÀM MỚI TẤT CẢ</span>
-                        </button>
+                        </Button>
                     )}
                 </div>
             </header>
@@ -394,17 +399,18 @@ const DataUpdater: React.FC<{ onNavigateToDashboard?: () => void }> = ({ onNavig
                     {supermarkets.length > 0 && (
                         <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-hide">
                             {supermarkets.map((sm) => (
-                                <button
+                                <Button
+                                    variant="ghost"
                                     key={sm}
                                     onClick={() => setActiveSupermarket(sm)}
-                                    className={`shrink-0 px-4 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
-                                        activeSupermarket === sm 
-                                            ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 shadow-sm ring-1 ring-sky-500/10' 
+                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit shrink-0 px-4 py-1.5 rounded-full text-[11px] font-bold transition-all border ${
+                                        activeSupermarket === sm
+                                            ? 'bg-sky-50 dark:bg-sky-900/30 border-sky-300 dark:border-sky-700 text-sky-700 dark:text-sky-300 shadow-sm ring-1 ring-sky-500/10'
                                             : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:border-sky-200 hover:bg-slate-50'
                                     }`}
                                 >
                                     {sm.split(' - ').pop()}
-                                </button>
+                                </Button>
                             ))}
                         </div>
                     )}

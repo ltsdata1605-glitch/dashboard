@@ -303,16 +303,17 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
     >
         {showHelp && (
             <div className="relative mb-3 p-3 bg-sky-50 dark:bg-sky-900/20 border border-sky-100 dark:border-sky-800 text-sky-800 dark:text-sky-300 text-xs shadow-sm rounded-md">
-                <button
+                <Button
+                    variant="ghost"
                     onClick={async () => {
                         setShowHelp(false);
                         await idb.saveData('hasSeenPatternHelp', true);
                     }}
-                    className="absolute top-1 right-1 text-sky-400 hover:text-sky-600 dark:hover:text-sky-200 font-bold p-1"
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit absolute top-1 right-1 text-sky-400 hover:text-sky-600 dark:hover:text-sky-200 font-bold p-1"
                     title="Đóng hướng dẫn"
                 >
                     <X size={16} />
-                </button>
+                </Button>
                 <h4 className="font-black flex items-center gap-1.5 uppercase tracking-wider mb-1.5">
                     <Zap size={14} />
                     Hướng dẫn nhanh
@@ -442,10 +443,11 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
         <div className="mb-3 border-t border-slate-200 dark:border-slate-700 pt-3">
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-xs font-black text-slate-700 dark:text-slate-300">Danh sách ca: <span className="text-sky-600 dark:text-sky-400">{selectedDept}</span></h3>
-            <button
+            <Button
+                variant="ghost"
                 onClick={suggestPattern}
                 disabled={isSuggesting || !selectedDept}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800 text-xs font-bold transition-all disabled:opacity-50 rounded"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 bg-sky-50 dark:bg-sky-900/20 hover:bg-sky-100 dark:hover:bg-sky-900/40 text-sky-700 dark:text-sky-400 border border-sky-200 dark:border-sky-800 text-xs font-bold transition-all disabled:opacity-50 rounded"
             >
                 {isSuggesting ? (
                     <div className="w-3 h-3 border-2 border-sky-600 border-t-transparent rounded-full animate-spin"></div>
@@ -453,7 +455,7 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                     <Zap size={14} />
                 )}
                 Gợi ý ca xoay
-            </button>
+            </Button>
           </div>
 
           <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden">
@@ -494,9 +496,9 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                             {totalHours > 0 ? totalHours : '-'}
                         </div>
                         <div className="col-span-1 text-center absolute right-2">
-                            <button onClick={() => handleRemovePattern(index)} className="text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-400 font-bold p-1 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition rounded" title="Xóa dòng này">
+                            <Button variant="ghost" onClick={() => handleRemovePattern(index)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-400 font-bold p-1 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition rounded" title="Xóa dòng này">
                                 <Trash2 size={16} />
-                            </button>
+                            </Button>
                         </div>
                     </div>
                   )
@@ -513,9 +515,9 @@ const EditPatternModal: React.FC<EditPatternModalProps> = ({ currentPatterns, al
                         <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-1 w-2 h-2 bg-rose-600 rotate-45"></div>
                     </div>
                 )}
-               <button onClick={handleAddPattern} className={`bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 px-4 border border-slate-300 dark:border-slate-600 transition-all w-full text-xs rounded ${onboardingStep === 2 ? 'ring-2 ring-rose-500' : ''}`} disabled={!selectedDept}>
+               <Button variant="ghost" onClick={handleAddPattern} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-bold py-2 px-4 border border-slate-300 dark:border-slate-600 transition-all w-full text-xs rounded ${onboardingStep === 2 ? 'ring-2 ring-rose-500' : ''}`} disabled={!selectedDept}>
                   + Thêm nhân viên mới
-              </button>
+              </Button>
            </div>
         </div>
     </Modal>

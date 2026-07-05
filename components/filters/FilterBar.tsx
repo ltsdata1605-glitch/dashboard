@@ -5,6 +5,7 @@ import { Icon } from '../common/Icon';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import SingleSelectDropdown from '../common/SingleSelectDropdown';
 import FilterChip from '../common/FilterChip';
+import { Button } from '../shared/ui/Button';
 import { toLocalISOString } from '../../utils/dataUtils';
 
 interface FilterBarProps {
@@ -169,23 +170,25 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                         </div>
 
                         {onNewFile && (
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={onNewFile}
                                 title="Tải YCX lên"
-                                className="flex items-center justify-center w-[36px] bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-500/20 dark:hover:bg-emerald-500/30 text-emerald-700 dark:text-emerald-400 rounded-lg transition-all active:scale-95 shrink-0"
                             >
                                 <Icon name="file-up" size={4} />
-                            </button>
+                            </Button>
                         )}
                         {onOpenHistory && (
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={onOpenHistory}
                                 id="btn-mobile-history"
                                 title="Quản lý tệp đã lưu"
-                                className="flex items-center justify-center w-[36px] bg-red-100 hover:bg-red-200 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-700 dark:text-red-400 rounded-lg transition-all active:scale-95 shrink-0"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-red-100 hover:bg-red-200 dark:bg-red-950/30 dark:hover:bg-red-950/50 text-red-700 dark:text-red-400 rounded-lg transition-all active:scale-95 shrink-0"
                             >
                                 <Icon name="database" size={4} />
-                            </button>
+                            </Button>
                         )}
                         <a
                             href="https://report.mwgroup.vn/home/dashboard/77"
@@ -196,13 +199,14 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                         >
                             <Icon name="link" size={4} />
                         </a>
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
-                            className="flex items-center justify-center w-[36px] bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-lg shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex items-center justify-center w-[36px] bg-gradient-to-br from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white rounded-lg shadow-md shadow-indigo-300/30 dark:shadow-none transition-all active:scale-95 shrink-0"
                         >
                             <Icon name="settings" size={4} className="group-hover:rotate-90 transition-transform duration-300" />
-                        </button>
+                        </Button>
                     </div>
 
                     {/* Row 2: Segments — moved to filter sidebar on mobile, visible on tablet+ */}
@@ -238,20 +242,21 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                             {availableWeeks.map(w => <option key={w.value} value={w.value}>{w.label}</option>)}
                                         </select>
                                     )}
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={() => {
                                             if (range === 'today' || range === 'yesterday' || range === 'all') {
                                                 handleDateRangeClick(range);
                                             }
                                         }}
-                                        className={`px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-md transition-all duration-200 relative z-0 ${
+                                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-md transition-all duration-200 relative z-0 ${
                                             filterState.dateRange === range
                                             ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/30'
                                             : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50'
                                         }`}
                                     >
                                         {label}
-                                    </button>
+                                    </Button>
                                 </div>
                             ))}
                         </div>
@@ -350,20 +355,21 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                                         {availableWeeks.map(w => <option key={w.value} value={w.value}>{w.label}</option>)}
                                     </select>
                                 )}
-                                <button
+                                <Button
+                                    variant="ghost"
                                     onClick={() => {
                                         if (range === 'today' || range === 'yesterday' || range === 'all') {
                                             handleDateRangeClick(range);
                                         }
                                     }}
-                                    className={`px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all relative z-0 ${
+                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all relative z-0 ${
                                         filterState.dateRange === range
                                         ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
                                         : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                                     }`}
                                 >
                                     {label}
-                                </button>
+                                </Button>
                             </div>
                         ))}
                     </div>
@@ -403,23 +409,25 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                     {/* Actions */}
                     <div className="flex items-center gap-2 shrink-0">
                         {onNewFile && (
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={onNewFile}
                                 title="Tải YCX lên"
-                                className="flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-full transition-all active:scale-95 group"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center justify-center p-2.5 bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-500 rounded-full transition-all active:scale-95 group"
                             >
                                 <Icon name="file-up" size={4.5} />
-                            </button>
+                            </Button>
                         )}
                         {onOpenHistory && (
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={onOpenHistory}
                                 id="btn-desktop-history"
                                 title="Quản lý tệp đã lưu"
-                                className="flex items-center justify-center p-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/10 dark:hover:bg-red-950/20 text-red-600 dark:text-red-500 rounded-full transition-all active:scale-95 group"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center justify-center p-2.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/10 dark:hover:bg-red-950/20 text-red-600 dark:text-red-500 rounded-full transition-all active:scale-95 group"
                             >
                                 <Icon name="database" size={4.5} />
-                            </button>
+                            </Button>
                         )}
                         <a
                             href="https://report.mwgroup.vn/home/dashboard/77"
@@ -430,13 +438,14 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                         >
                             <Icon name="link" size={4.5} />
                         </a>
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={onToggleAdvanced}
                             title="Bộ lọc nâng cao"
-                            className="flex items-center justify-center p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-sm transition-all active:scale-95 group"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center justify-center p-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full shadow-sm transition-all active:scale-95 group"
                         >
                             <Icon name="settings" size={4.5} className="group-hover:rotate-90 transition-transform duration-300" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </div>

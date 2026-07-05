@@ -7,6 +7,7 @@ import { SectionHeader } from '../common/SectionHeader';
 import { exportElementAsImage } from '../../services/uiService';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { useIndustryGridLogic } from '../../hooks/useIndustryGridLogic';
+import { Button } from '../shared/ui/Button';
 
 const LIGHT_COLORS = ['#6366f1', '#22c55e', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899', '#10b981', '#60a5fa', '#94a3b8', '#a78bfa'];
 const DARK_COLORS  = ['#818cf8', '#4ade80', '#facc15', '#f87171', '#a78bfa', '#22d3ee', '#fb923c', '#f472b6', '#34d399', '#93c5fd', '#cbd5e1', '#c4b5fd'];
@@ -229,23 +230,25 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                             {drilldownPath.length > 0 && <div className="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>}
                             <nav className="flex items-center text-[10px] sm:text-[11px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider gap-0.5">
                                 {drilldownPath.length > 0 && (
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={() => handleBreadcrumbClick(0)}
-                                        className="px-1 hover:text-[#0584c7] transition-colors"
+                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-1 hover:text-[#0584c7] transition-colors"
                                     >
                                         Tất cả
-                                    </button>
+                                    </Button>
                                 )}
                                 {drilldownPath.map((item, idx) => (
                                     <React.Fragment key={idx}>
                                         <Icon name="chevron-right" size={3} className="opacity-40 mx-0.5" />
-                                        <button
+                                        <Button
+                                            variant="ghost"
                                             onClick={() => handleBreadcrumbClick(idx + 1)}
-                                            className="px-1 max-w-[110px] truncate hover:text-[#0584c7] transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-1 max-w-[110px] truncate hover:text-[#0584c7] transition-colors"
                                             title={item}
                                         >
                                             {item}
-                                        </button>
+                                        </Button>
                                     </React.Fragment>
                                 ))}
                             </nav>
@@ -260,30 +263,33 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                 icon="pie-chart"
             >
                 <div className="flex flex-wrap items-center gap-2 hide-on-export">
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={() => setMetricToDisplay('quantity')}
-                        className={`p-1.5 lg:p-2 rounded-md transition-colors ${metricToDisplay === 'quantity' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 lg:p-2 rounded-md transition-colors ${metricToDisplay === 'quantity' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Số lượng"
                     >
                         <Icon name="package" size={4} className="lg:hidden" />
                         <Icon name="package" size={5} className="hidden lg:block" />
-                    </button>
-                    <button 
+                    </Button>
+                    <Button
+                        variant="ghost"
                         onClick={() => setMetricToDisplay('revenue')}
-                        className={`p-1.5 lg:p-2 rounded-md transition-colors ${metricToDisplay === 'revenue' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 lg:p-2 rounded-md transition-colors ${metricToDisplay === 'revenue' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'}`}
                         title="Doanh thu"
                     >
                         <Icon name="circle-dollar-sign" size={4} className="lg:hidden" />
                         <Icon name="circle-dollar-sign" size={5} className="hidden lg:block" />
-                    </button>
+                    </Button>
                     {drilldownPath.length > 0 && (
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => handleBreadcrumbClick(drilldownPath.length - 1)}
-                            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 text-[11px] font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400 text-[11px] font-bold hover:bg-slate-200 dark:hover:bg-white/10 transition-all"
                         >
                             <Icon name="chevron-left" size={3.5} />
                             Quay lại
-                        </button>
+                        </Button>
                     )}
                 </div>
             </SectionHeader>
@@ -306,14 +312,15 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                     )}
                                 </span>
                             )}
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={handleExportGrid}
                                 disabled={isExporting}
-                                className="text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors hide-on-export shrink-0 flex items-center gap-1"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-indigo-500 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors hide-on-export shrink-0 flex items-center gap-1"
                                 title="Tải ảnh Thẻ Ngành Hàng"
                             >
                                 <Icon name="download" size={3.5} />
-                            </button>
+                            </Button>
                         </div>
 
                         {currentView.data.length === 0 ? (
@@ -418,14 +425,15 @@ const IndustryGridInner: React.FC<IndustryGridInnerProps> = React.memo(({
                                     {pieChartData.length} mục
                                 </span>
                             </div>
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={handleExportPie}
                                 disabled={isExporting}
-                                className="text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors hide-on-export shrink-0 flex items-center gap-1"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-emerald-500 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 transition-colors hide-on-export shrink-0 flex items-center gap-1"
                                 title="Tải ảnh Biểu Đồ Tròn"
                             >
                                 <Icon name="download" size={3.5} />
-                            </button>
+                            </Button>
                         </div>
 
                         <div className="flex-grow bg-transparent lg:bg-slate-50/70 dark:lg:bg-slate-800/40 rounded-xl lg:rounded-2xl border-0 lg:border border-slate-100 dark:border-white/5 p-0 lg:p-3 flex flex-col">

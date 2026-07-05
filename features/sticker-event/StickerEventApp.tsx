@@ -13,6 +13,7 @@ import PdfPreviewModal from './PdfPreviewModal';
 import InventoryToolbar from './InventoryToolbar';
 import FilterModal from './FilterModal';
 import BottomNavigation from './BottomNavigation';
+import { Button } from '../../components/shared/ui/Button';
 import Login from './Login';
 import UserManagementModal from './UserManagementModal';
 import ChangePasswordModal from './ChangePasswordModal';
@@ -461,23 +462,26 @@ export default function App(): React.JSX.Element {
             </div>
             <div className="flex items-center gap-1.5 shrink-0">
               {!isMobile && (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setIsChangePasswordOpen(true)}
-                  className="px-2 py-1 text-[11px] font-medium text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 text-[11px] font-medium text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
                 >
                   Đổi mật khẩu
-                </button>
+                </Button>
               )}
               {!isMobile && (
-                <button
+                <Button
+                  variant="ghost"
                   onClick={() => setIsUserGuideOpen(true)}
-                  className="p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
+                  className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-md transition-colors"
                   title="Hướng dẫn sử dụng"
                 >
                   <Info className="h-4 w-4" />
-                </button>
+                </Button>
               )}
-              <button
+              <Button
+                variant="ghost"
                 onClick={async () => {
                   await auth.signOut();
                   setUser(null);
@@ -493,10 +497,10 @@ export default function App(): React.JSX.Element {
                   setSuggestions([]);
                   await clearData();
                 }}
-                className={`${isMobile ? 'px-2 py-0.5 text-[10px]' : 'px-2 py-1 text-[11px]'} font-bold text-red-500 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors uppercase`}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${isMobile ? 'px-2 py-0.5 text-[10px]' : 'px-2 py-1 text-[11px]'} font-bold text-red-500 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors uppercase`}
               >
                 Đăng xuất
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -560,12 +564,13 @@ export default function App(): React.JSX.Element {
                         <WarningIcon className="h-5 w-5 text-red-500 shrink-0" />
                         <p className="text-sm font-medium">{error}</p>
                     </div>
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={() => userData?.storeId && loadFirestoreData(userData.storeId, allProducts, inventory, uploadTimestamp, inventoryUploadTimestamp)}
-                        className="whitespace-nowrap px-4 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-bold"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit whitespace-nowrap px-4 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-bold"
                     >
                         Thử lại
-                    </button>
+                    </Button>
                   </div>
                 )}
                 {duplicateError && (

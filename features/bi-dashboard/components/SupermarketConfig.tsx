@@ -9,6 +9,7 @@ import Card from './Card';
 import * as db from '../utils/db';
 import { parseNumber, shortenName, shortenSupermarketName } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
+import { Button } from '../../../components/shared/ui/Button';
 import { parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../../../services/parsers/employeeParser';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
@@ -63,7 +64,7 @@ const BulkRenameModal: React.FC<{
                             className="w-full px-3 py-1.5 bg-white dark:bg-slate-900 rounded-xl border border-sky-200 dark:border-sky-800 text-sm focus:ring-2 focus:ring-sky-500/20 outline-none text-slate-700 dark:text-slate-300 placeholder:text-slate-400"
                         />
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 rounded-xl transition-colors shrink-0"><XIcon className="h-4 w-4 text-sky-600/60 dark:text-slate-400" /></button>
+                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-2 hover:bg-white dark:hover:bg-slate-700 border border-transparent hover:border-slate-200 dark:hover:border-slate-600 rounded-xl transition-colors shrink-0"><XIcon className="h-4 w-4 text-sky-600/60 dark:text-slate-400" /></Button>
                 </div>
                 <div className="p-3 flex-1 overflow-y-auto space-y-2 bg-white dark:bg-slate-800">
                     <datalist id="group-list">
@@ -101,8 +102,8 @@ const BulkRenameModal: React.FC<{
                         </div>}
                 </div>
                 <div className="p-4 border-t border-slate-100 dark:border-slate-700 flex gap-3 bg-slate-50/80 dark:bg-slate-900/50 shrink-0">
-                    <button onClick={() => { setTempName({}); setTempGroup({}); }} className="flex-1 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</button>
-                    <button onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="flex-[2] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</button>
+                    <Button variant="ghost" onClick={() => { setTempName({}); setTempGroup({}); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-1 px-4 py-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl text-xs font-black transition-colors shadow-sm uppercase tracking-widest active:scale-95">Mặc định</Button>
+                    <Button variant="ghost" onClick={() => { onSave(tempName, tempGroup); onClose(); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex-[2] px-4 py-3 bg-gradient-to-r from-sky-500 to-sky-600 text-white rounded-xl text-xs font-black hover:from-sky-400 hover:to-sky-500 transition-all shadow-md shadow-sky-500/20 uppercase tracking-widest active:scale-95">Lưu cập nhật</Button>
                 </div>
             </div>
         </div>
@@ -191,7 +192,7 @@ const StatusTile: React.FC<{
                             }}
                             onBlur={() => setIsPasting(false)}
                         />
-                        <button onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</button>
+                        <Button variant="ghost" onClick={(e) => { e.stopPropagation(); setIsPasting(false); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 py-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-[10px] font-bold text-slate-500 transition-colors bg-slate-100 dark:bg-slate-800">HUỶ</Button>
                     </div>
                 ) : (
                     <div className="flex items-center justify-between w-full gap-3">
@@ -229,16 +230,17 @@ const StatusTile: React.FC<{
                 </a>
             )}
             {hasData && !isPasting && (
-                <button 
-                    onClick={(e) => { 
-                        e.stopPropagation(); 
-                        onClear(title); 
-                    }} 
-                    className="absolute top-1/2 -translate-y-1/2 right-2 p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-100 hover:border-red-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10" 
+                <Button
+                    variant="ghost"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onClear(title);
+                    }}
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto absolute top-1/2 -translate-y-1/2 right-2 p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-100 hover:border-red-300 bg-white dark:bg-slate-800 rounded-lg transition-colors border border-white/50 shadow-sm z-10"
                     title="Xoá"
                 >
                     <TrashIcon className="h-3.5 w-3.5" />
-                </button>
+                </Button>
             )}
             {error && <p className="mt-1 text-[10px] text-red-500 dark:text-red-400 animate-in fade-in duration-200 px-1">{error}</p>}
         </div>
@@ -302,7 +304,7 @@ const CompetitionTarget: React.FC<{
                     <h2 className="text-[11px] font-black text-slate-800 dark:text-white uppercase tracking-tight">Cấu hình Target Thi đua</h2>
                 </div>
                 <div className="flex gap-2">
-                    <button onClick={() => {
+                    <Button variant="ghost" onClick={() => {
                         showConfirm({
                             title: 'Khôi phục Target',
                             message: 'Khôi phục tất cả Target phụ về 100%?',
@@ -313,12 +315,12 @@ const CompetitionTarget: React.FC<{
                                 closeConfirm();
                             }
                         });
-                    }} className="flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
+                    }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center p-1.5 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30 rounded-xl transition-all active:scale-95" title="Reset">
                         <ResetIcon className="h-4 w-4" />
-                    </button>
-                    <button onClick={() => setIsRenameModalOpen(true)} className="flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Sửa tên và phân nhóm">
+                    </Button>
+                    <Button variant="ghost" onClick={() => setIsRenameModalOpen(true)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto flex items-center p-1.5 text-sky-500 hover:bg-sky-50 dark:hover:bg-sky-900/30 rounded-xl transition-all active:scale-95" title="Sửa tên và phân nhóm">
                         <PencilIcon className="h-4 w-4" />
-                    </button>
+                    </Button>
                 </div>
             </div>
 
@@ -403,13 +405,14 @@ const CompetitionTarget: React.FC<{
                                                             />
                                                             <span className="text-[9px] font-bold opacity-60">%</span>
                                                         </div>
-                                                        <button 
+                                                        <Button
+                                                            variant="ghost"
                                                             onClick={() => handleSaveAsPrevMonth(comp.name)}
-                                                            className={`p-1 ${t.btnText} ${t.btnHover} rounded-md border border-transparent hover:border-current/20 transition-colors bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm`}
+                                                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 ${t.btnText} ${t.btnHover} rounded-md border border-transparent hover:border-current/20 transition-colors bg-white/50 dark:bg-slate-800/50 backdrop-blur-sm`}
                                                             title="Lưu dữ liệu hiện tại làm mốc so sánh tháng trước"
                                                         >
                                                             <ClockIcon className="h-3.5 w-3.5" />
-                                                        </button>
+                                                        </Button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -543,13 +546,14 @@ const SupermarketConfig: React.FC<SupermarketConfigProps> = ({ supermarketName, 
                         { id: 'revenueTarget', label: 'Target Doanh thu' },
                         { id: 'competitionTarget', label: 'Target Thi đua' }
                     ].map(t => (
-                        <button
+                        <Button
+                            variant="ghost"
                             key={t.id}
                             onClick={() => setActiveTab(t.id as any)}
-                            className={`py-2 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider transition-colors duration-150 ${activeTab === t.id ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'}`}
+                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-2 px-1 border-b-2 font-bold text-[12px] uppercase tracking-wider transition-colors duration-150 ${activeTab === t.id ? 'border-blue-600 text-blue-600 dark:border-blue-500 dark:text-blue-500' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-300'}`}
                         >
                             {t.label}
-                        </button>
+                        </Button>
                     ))}
                 </nav>
                 <div className="shrink-0 pb-1 flex items-center pr-2">

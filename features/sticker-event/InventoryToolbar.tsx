@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { InventoryItem } from './types';
 import MultiSelectDropdown from './MultiSelectDropdown';
 import { ArrowUpDown, Filter, ImageDown } from 'lucide-react';
+import { Button } from '../../components/shared/ui/Button';
 
 export type SortField = 'none' | 'giaGoc' | 'giaGiam' | 'tongThuong' | 'discount' | 'tonKho' | 'sanPham';
 export type SortDirection = 'asc' | 'desc';
@@ -85,9 +86,10 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
       {/* Main row */}
       <div className="flex items-center gap-2 flex-wrap bg-slate-50/80 border border-slate-200 rounded-lg px-2.5 py-1.5">
         {/* BỘ LỌC toggle button */}
-        <button 
+        <Button
+          variant="ghost"
           onClick={() => setShowFilters(!showFilters)}
-          className={`flex items-center gap-1 shrink-0 px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-500 hover:bg-slate-100'} border border-slate-200`}
+          className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 shrink-0 px-2 py-1 rounded-md text-[11px] font-bold transition-colors ${showFilters || activeFilterCount > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-white text-slate-500 hover:bg-slate-100'} border border-slate-200`}
         >
           <Filter className="w-3 h-3" />
           <span className="uppercase tracking-wider text-[10px]">Bộ lọc</span>
@@ -96,7 +98,7 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
               {activeFilterCount}
             </span>
           )}
-        </button>
+        </Button>
 
         <div className="h-4 w-px bg-slate-300/60 shrink-0" />
 
@@ -126,13 +128,14 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
             ))}
           </select>
           {sortField !== 'none' && (
-            <button
+            <Button
+              variant="ghost"
               onClick={() => onSortChange?.(sortField, sortDirection === 'asc' ? 'desc' : 'asc')}
-              className="flex items-center justify-center w-5 h-5 rounded bg-slate-200 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 transition-colors text-[10px] font-bold"
+              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center w-5 h-5 rounded bg-slate-200 hover:bg-indigo-100 text-slate-600 hover:text-indigo-700 transition-colors text-[10px] font-bold"
               title={sortDirection === 'asc' ? 'Tăng dần' : 'Giảm dần'}
             >
               {sortDirection === 'asc' ? '↑' : '↓'}
-            </button>
+            </Button>
           )}
         </div>
 
@@ -141,24 +144,26 @@ const InventoryToolbar: React.FC<InventoryToolbarProps> = ({
 
         {/* Export image button */}
         {onExportImage && (
-          <button
+          <Button
+            variant="ghost"
             onClick={onExportImage}
-            className="flex items-center gap-1 shrink-0 px-2 py-1 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 shrink-0 px-2 py-1 rounded-md text-[11px] font-medium bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors"
             title="Xuất danh sách thành ảnh PNG"
           >
             <ImageDown className="w-3.5 h-3.5" />
             Xuất ảnh
-          </button>
+          </Button>
         )}
 
         {/* Clear button */}
         {(activeFilterCount > 0 || sortField !== 'none') && (
-          <button 
+          <Button
+            variant="ghost"
             onClick={() => { onClearFilters(); onSortChange?.('none', 'desc'); setShowFilters(false); }}
-            className="text-[10px] text-red-500 hover:text-red-700 font-medium shrink-0"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] text-red-500 hover:text-red-700 font-medium shrink-0"
           >
             Xóa
-          </button>
+          </Button>
         )}
       </div>
 

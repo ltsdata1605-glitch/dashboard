@@ -13,6 +13,7 @@ import SavedCalendarCard from './SavedCalendarCard';
 import { saveCustomCalendars, getCustomCalendars } from '../../services/dbService';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import { Select } from '../shared/ui/Select';
+import { Button } from '../shared/ui/Button';
 
 const CustomTooltip = ({ active, payload, metricName }: any) => {
     if (!active || !payload?.length) return null;
@@ -474,11 +475,12 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           ) : (
               <>
           <div className="lg:hidden relative">
-              <button
+              <Button
+                  variant="ghost"
                   onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: !prev._filterOpen }))}
-                  className={`p-1.5 rounded-md transition-colors relative ${
-                      trendState._filterOpen 
-                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' 
+                  className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 rounded-md transition-colors relative ${
+                      trendState._filterOpen
+                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
                       : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                   title="Chọn khoảng thời gian"
@@ -487,7 +489,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                   <span className="absolute -top-0.5 -right-0.5 text-[7px] font-black text-indigo-600 dark:text-indigo-400 bg-white dark:bg-slate-900 rounded px-0.5 leading-tight uppercase">
                       {trendState.view === 'shift' ? 'Ca' : trendState.view === 'daily' ? 'N' : trendState.view === 'weekly' ? 'T' : 'Th'}
                   </span>
-              </button>
+              </Button>
               {trendState._filterOpen && (
                   <>
                       <div className="fixed inset-0 z-[98]" onClick={() => setTrendState(prev => ({ ...prev, _filterOpen: false }))} />
@@ -498,17 +500,18 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                               { value: 'weekly', label: 'Tuần' },
                               { value: 'monthly', label: 'Tháng' },
                           ] as const).map((item) => (
-                              <button
+                              <Button
+                                  variant="ghost"
                                   key={item.value}
                                   onClick={() => setTrendState(prev => ({ ...prev, view: item.value, _filterOpen: false }))}
-                                  className={`w-full text-left px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
-                                      trendState.view === item.value 
-                                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30' 
+                                  className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto p-0 text-inherit justify-start w-full text-left px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                                      trendState.view === item.value
+                                      ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30'
                                       : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50'
                                   }`}
                               >
                                   {item.label}
-                              </button>
+                              </Button>
                           ))}
                       </div>
                   </>
@@ -516,25 +519,27 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           </div>
           <div className="hidden lg:inline-flex rounded-lg p-0.5 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
                     {(['shift', 'daily', 'weekly', 'monthly'] as const).map((v) => (
-                      <button
+                      <Button
+                        variant="ghost"
                         key={v}
                         onClick={() => setTrendState(prev => ({ ...prev, view: v }))}
-                        className={`py-1 px-2 lg:px-2.5 text-[10px] font-bold rounded-md transition-all duration-200 uppercase tracking-wider ${
-                          trendState.view === v 
-                          ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/20' 
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit py-1 px-2 lg:px-2.5 text-[10px] font-bold rounded-md transition-all duration-200 uppercase tracking-wider ${
+                          trendState.view === v
+                          ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/20'
                           : 'text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-white/50 dark:hover:bg-slate-700/50'
                         }`}
                       >
                         {v === 'shift' ? 'Ca' : v === 'daily' ? 'Ngày' : v === 'weekly' ? 'Tuần' : 'Tháng'}
-                      </button>
+                      </Button>
                     ))}
                   </div>
               </>
           )}
 
-          <button
+          <Button
+              variant="ghost"
               onClick={() => setDisplayMode('chart')}
-              className={`p-1.5 lg:p-2 rounded-md transition-colors ${
+              className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 rounded-md transition-colors ${
                   displayMode === 'chart'
                       ? 'text-indigo-600 dark:text-indigo-400'
                       : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -543,10 +548,11 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           >
               <Icon name="bar-chart-2" size={4} className="lg:hidden" />
               <Icon name="bar-chart-2" size={5} className="hidden lg:block" />
-          </button>
-          <button
+          </Button>
+          <Button
+              variant="ghost"
               onClick={() => setDisplayMode('calendar')}
-              className={`p-1.5 lg:p-2 rounded-md transition-colors ${
+              className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 rounded-md transition-colors ${
                   displayMode === 'calendar'
                       ? 'text-indigo-600 dark:text-indigo-400'
                       : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -555,13 +561,14 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           >
               <Icon name="calendar" size={4} className="lg:hidden" />
               <Icon name="calendar" size={5} className="hidden lg:block" />
-          </button>
+          </Button>
 
-          <button 
+          <Button
+            variant="ghost"
             onClick={handleExportClick}
             disabled={isExporting}
-            className={`p-1.5 lg:p-2 rounded-md transition-colors ${
-              isExporting 
+            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 lg:p-2 rounded-md transition-colors ${
+              isExporting
               ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
               : 'text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800'
             }`}
@@ -569,7 +576,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           >
             {isExporting ? <Icon name="loader-2" size={4} className="animate-spin lg:hidden" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={4} className="lg:hidden" />}
             {isExporting ? <Icon name="loader-2" size={5} className="animate-spin hidden lg:block" /> : <Icon name={displayMode === 'calendar' ? 'images' : 'camera'} size={5} className="hidden lg:block" />}
-          </button>
+          </Button>
         </div>
       </SectionHeader>
 
@@ -604,10 +611,11 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                     }
                                     const isActive = activeCalendarTab === cal.id;
                                     return (
-                                        <button
+                                        <Button
+                                            variant="ghost"
                                             key={cal.id}
                                             onClick={() => setActiveCalendarTab(cal.id)}
-                                            className={`px-2 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-lg transition-all ${
+                                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2 sm:px-3.5 py-1 sm:py-1.5 text-[9px] sm:text-[11px] uppercase tracking-wider font-bold whitespace-nowrap rounded-md sm:rounded-lg transition-all ${
                                                 isActive
                                                 ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm border border-indigo-200 dark:border-indigo-700'
                                                 : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 border border-transparent'
@@ -615,7 +623,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                             title={tabLabel}
                                         >
                                             {tabLabel}
-                                        </button>
+                                        </Button>
                                     );
                                 })}
                             </div>
@@ -648,21 +656,23 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
                                 compact={true}
                                 actionButtons={
                                     <>
-                                        <button
+                                        <Button
+                                            variant="ghost"
                                             onClick={handleAddCalendar}
-                                            className="p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition-colors"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition-colors"
                                             title="Lưu bảng nháp thành bảng mới"
                                         >
                                             <Icon name="plus" size={3.5} />
-                                        </button>
-                                        <button
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
                                             onClick={handleExportDraft}
                                             disabled={isExporting}
-                                            className="p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
                                             title="Xuất ảnh"
                                         >
                                             <Icon name="camera" size={3.5} />
-                                        </button>
+                                        </Button>
                                     </>
                                 }
                             />
