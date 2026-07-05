@@ -115,11 +115,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     const filteredItems = batchItems.filter(it => it.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const filteredHistory = useMemo(() => {
-        if (stickerType === 'draw') {
-            return printHistory.filter(entry => entry.stickerType === 'draw');
-        } else {
-            return printHistory.filter(entry => entry.stickerType !== 'draw');
-        }
+        return printHistory.filter(entry => entry.stickerType === stickerType);
     }, [printHistory, stickerType]);
 
     return (
