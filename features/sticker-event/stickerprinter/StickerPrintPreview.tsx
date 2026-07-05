@@ -504,16 +504,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         let range = savedRangeRef.current;
         const selection = window.getSelection();
         
-        if (!range && selection && selection.rangeCount > 0 && !selection.isCollapsed) {
+        if (!range && selection && selection.rangeCount > 0) {
             range = selection.getRangeAt(0);
         }
 
         if (!range) return;
-
-        if (selection) {
-            selection.removeAllRanges();
-            selection.addRange(range);
-        }
 
         let parent = range.commonAncestorContainer;
         if (parent.nodeType === 3) parent = parent.parentNode || parent;
@@ -528,6 +523,38 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         }
 
         if (!editableContainer) return;
+
+        // If selection is collapsed (no text highlighted), apply style to the entire block content
+        if (range.collapsed) {
+            try {
+                const currentHTML = editableContainer.innerHTML;
+                const propName = styleName === 'fontFamily' ? 'font-family' : styleName;
+                
+                // Wrap the whole content in a span with the specified font-family or style
+                editableContainer.innerHTML = `<span style="${propName}: ${styleValue}">${currentHTML}</span>`;
+                
+                // Trigger React input change to sync to state & other tickets
+                const event = new Event('input', { bubbles: true });
+                editableContainer.dispatchEvent(event);
+                
+                // Re-select all contents to allow subsequent edits
+                const newRange = document.createRange();
+                newRange.selectNodeContents(editableContainer);
+                if (selection) {
+                    selection.removeAllRanges();
+                    selection.addRange(newRange);
+                }
+                savedRangeRef.current = newRange;
+                return;
+            } catch (e) {
+                console.error('Error applying custom style to container:', e);
+            }
+        }
+
+        if (selection) {
+            selection.removeAllRanges();
+            selection.addRange(range);
+        }
 
         const span = document.createElement('span');
         span.style[styleName as any] = styleValue;
