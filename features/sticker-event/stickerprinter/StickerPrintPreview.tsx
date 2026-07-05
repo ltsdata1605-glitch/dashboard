@@ -1563,18 +1563,19 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                         { name: 'Shopee Display', val: "Shopee Display, sans-serif" },
                                         { name: 'UTM Colossalis', val: "UTM Colossalis, sans-serif" }
                                     ].map(font => (
-                                        <button
+                                        <Button
+                                            variant="ghost"
                                             key={font.val}
                                             onMouseDown={(e) => e.preventDefault()}
                                             onClick={() => {
                                                 applyStyleToSelection('fontFamily', font.val);
                                                 setActiveMenu(null);
                                             }}
-                                            className="px-3 py-1.5 text-left text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto justify-start px-3 py-1.5 text-left text-[11px] text-slate-200 hover:text-white hover:bg-slate-800 transition-colors w-full whitespace-nowrap"
                                             style={{ fontFamily: font.val }}
                                         >
                                             {font.name}
-                                        </button>
+                                        </Button>
                                     ))}
                                 </div>
                             )}
@@ -1582,14 +1583,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
                         {/* Size adjust controls: - [input] + */}
                         <div className="flex items-center gap-1 bg-slate-800/80 rounded px-1.5 py-0.5 border border-slate-700/50 mr-1 no-print">
-                            <button
+                            <Button
+                                variant="ghost"
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={() => adjustFontSize(-0.2)}
-                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
                                 title="Giảm size chữ"
                             >
                                 -
-                            </button>
+                            </Button>
                             <input 
                                 type="text"
                                 onMouseDown={(e) => e.stopPropagation()} 
@@ -1599,42 +1601,46 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 className="w-9 h-5 bg-slate-900 border border-slate-700 text-white text-[10px] font-bold rounded text-center focus:outline-none focus:border-rose-500"
                                 title="Kích thước cqw"
                             />
-                            <button
+                            <Button
+                                variant="ghost"
                                 onMouseDown={(e) => e.preventDefault()}
                                 onClick={() => adjustFontSize(0.2)}
-                                className="w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-5 h-5 flex items-center justify-center bg-slate-700 hover:bg-slate-600 active:bg-slate-500 text-white rounded text-xs font-black transition-colors"
                                 title="Tăng size chữ"
                             >
                                 +
-                            </button>
+                            </Button>
                         </div>
 
                         {/* Bold button */}
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => handleFormat('bold')}
-                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
                             title="In đậm (Bold)"
                         >
                             <Bold size={13} className="stroke-[2.5]" />
-                        </button>
+                        </Button>
 
                         {/* Italic button */}
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => handleFormat('italic')}
-                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
                             title="In nghiêng (Italic)"
                         >
                             <Italic size={13} className="stroke-[2.5]" />
-                        </button>
+                        </Button>
 
                         {/* Underline button */}
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => handleFormat('underline')}
-                            className="p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
                             title="Gạch chân (Underline)"
                         >
                             <Underline size={13} className="stroke-[2.5]" />
-                        </button>
+                        </Button>
 
                         {/* Tooltip arrow */}
                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full w-0 h-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-slate-900/95" />
@@ -1648,13 +1654,14 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                         Trang xem trước:
                     </span>
                     <div className="flex items-center gap-1">
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => setActiveDrawPage(p => Math.max(0, p - 1))}
                             disabled={activeDrawPage === 0}
-                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-6 h-6 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50"
                         >
                             &lt;
-                        </button>
+                        </Button>
                         {Array.from({ length: totalDrawPages }).map((_, idx) => {
                             if (totalDrawPages > 5) {
                                 if (idx !== 0 && idx !== totalDrawPages - 1 && Math.abs(idx - activeDrawPage) > 1) {
@@ -1668,26 +1675,28 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                 }
                             }
                             return (
-                                <button
+                                <Button
+                                    variant="ghost"
                                     key={idx}
                                     onClick={() => setActiveDrawPage(idx)}
-                                    className={`w-6 h-6 flex items-center justify-center rounded-lg text-xs font-bold transition-all ${
+                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-6 h-6 flex items-center justify-center rounded-lg text-xs font-bold transition-all ${
                                         activeDrawPage === idx
                                             ? 'bg-rose-600 text-white shadow-sm font-black'
                                             : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50'
                                     }`}
                                 >
                                     {idx + 1}
-                                </button>
+                                </Button>
                             );
                         })}
-                        <button
+                        <Button
+                            variant="ghost"
                             onClick={() => setActiveDrawPage(p => Math.min(totalDrawPages - 1, p + 1))}
                             disabled={activeDrawPage === totalDrawPages - 1}
-                            className="w-6 h-6 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-6 h-6 flex items-center justify-center rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-600 dark:text-slate-300 disabled:opacity-40 hover:bg-slate-50"
                         >
                             &gt;
-                        </button>
+                        </Button>
                     </div>
                 </div>
             )}

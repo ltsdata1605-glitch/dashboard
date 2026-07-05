@@ -95,7 +95,7 @@ export function processSummaryTable(
         const revenueQD = revenue * heso + (isTraGop ? revenue * 0.3 : 0);
 
         // Logic trọng số số lượng dựa trên mã sản phẩm (cột AF) và bảng hệ số từ file cấu hình
-        const qtyMultiplier = (productConfig.quantityMultiplierMap?.[productCode]) ?? (productConfig.vasMultiplierMap?.[productCode]);
+        const qtyMultiplier = (productConfig.vasMultiplierMap?.[productCode]) ?? (productConfig.quantityMultiplierMap?.[productCode]);
         const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;
 
         // Reuse already-computed allValues for keys
@@ -220,7 +220,7 @@ export function calculateWarehouseSummary(
             // Trọng số số lượng dựa trên mã sản phẩm (cột AF) và bảng hệ số từ file cấu hình
             const industry = getParentGroup(maNhomHang, productConfig) || 'Khác';
             const group = getSubgroup(maNhomHang, productConfig) || 'Khác';
-            const qtyMultiplier = (productConfig.quantityMultiplierMap?.[productCode]) ?? (productConfig.vasMultiplierMap?.[productCode]);
+            const qtyMultiplier = (productConfig.vasMultiplierMap?.[productCode]) ?? (productConfig.quantityMultiplierMap?.[productCode]);
             const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;
 
             if (customer) summary.customers.add(customer);

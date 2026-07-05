@@ -190,8 +190,8 @@
     "missingMobileToolbar": 0
   },
   "components/filters/FilterBar.tsx": {
-    "nonSemanticColor": 26,
-    "missingDarkVariant": 1,
+    "nonSemanticColor": 35,
+    "missingDarkVariant": 9,
     "missingMobileToolbar": 0
   },
   "components/filters/FilterSection.tsx": {

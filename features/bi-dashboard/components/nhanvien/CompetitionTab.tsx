@@ -13,6 +13,7 @@ import { getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers
 import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
+import { Button } from '../../../../components/shared/ui/Button';
 import TimeProgressBar from './shared/TimeProgressBar';
 
 const PALETTE = [
@@ -450,49 +451,49 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
             <div className="flex flex-wrap justify-between items-center px-4 py-2.5 bg-white dark:bg-slate-800 no-print border-b border-slate-200 dark:border-slate-700 gap-3">
                 <div className="flex gap-2 items-center">
                     {([['canhan', 'Cá nhân'], ['nhom', 'Nhóm'], ['tong', 'Tổng'], ['sosanh', 'So sánh']] as const).map(([key, label]) => (
-                        <button key={key} onClick={() => { setActiveCompetitionTab(key as any); setActiveVersionName(null); }} className={`px-3 py-1.5 text-[11px] font-bold border transition-all ${activeVersionName === null && activeCompetitionTab === key ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'}`}>{label}</button>
+                        <Button variant="ghost" key={key} onClick={() => { setActiveCompetitionTab(key as any); setActiveVersionName(null); }} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1.5 text-[11px] font-bold border transition-all ${activeVersionName === null && activeCompetitionTab === key ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700'}`}>{label}</Button>
                     ))}
                     <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
                     {versions.filter(v => v && typeof v === 'object' && v.name).map(version => (
                         <div key={version.name} role="button" tabIndex={0} onClick={() => onVersionTabClick(version)} className={`group relative flex items-center gap-1 pl-2.5 pr-6 py-1.5 text-[11px] font-bold cursor-pointer transition-all border ${activeVersionName === version.name ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400' : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 hover:bg-slate-50'}`}>
                             <span>{version.name}</span>
-                            <button onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }} className="absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"><XIcon className="h-3 w-3" /></button>
+                            <Button variant="ghost" onClick={(e) => { e.stopPropagation(); onDeleteVersion(version.name); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto absolute right-0.5 top-1/2 -translate-y-1/2 p-0.5 rounded-full text-slate-400 hover:bg-rose-100 hover:text-rose-600 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all"><XIcon className="h-3 w-3" /></Button>
                         </div>
                     ))}
                     {activeVersionName === 'new' ? (
                         <div className="flex items-center gap-1.5">
                             <input type="text" value={newVersionName} onChange={(e) => setNewVersionName(e.target.value)} placeholder={selectedCompetitions.size === 0 ? "Chọn nhóm trước" : "Tên..."} className="px-2 py-1 border border-slate-300 dark:border-slate-600 rounded text-[11px] focus:ring-1 focus:ring-indigo-500 w-28 bg-white dark:bg-slate-800" autoFocus onKeyDown={(e) => e.key === 'Enter' && handleSaveVersionAction()} disabled={selectedCompetitions.size === 0} />
-                            <button onClick={handleSaveVersionAction} className="px-2 py-1 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 disabled:bg-slate-400" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</button>
-                            <button onClick={onCancelNewVersion} className="p-0.5 text-slate-500 hover:bg-slate-200 rounded-full"><XIcon className="h-3 w-3" /></button>
+                            <Button variant="ghost" onClick={handleSaveVersionAction} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto px-2 py-1 bg-indigo-600 text-white rounded text-[11px] font-bold hover:bg-indigo-700 disabled:bg-slate-400" disabled={!newVersionName.trim() || selectedCompetitions.size === 0}>Lưu</Button>
+                            <Button variant="ghost" onClick={onCancelNewVersion} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0.5 text-slate-500 hover:bg-slate-200 rounded-full"><XIcon className="h-3 w-3" /></Button>
                         </div>
                     ) : (
-                        <button onClick={onStartNewVersion} disabled={!supermarket} title="Tạo mới" className="p-1 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40"><PlusIcon className="h-4 w-4" /></button>
+                        <Button variant="ghost" onClick={onStartNewVersion} disabled={!supermarket} title="Tạo mới" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-colors disabled:opacity-40"><PlusIcon className="h-4 w-4" /></Button>
                     )}
                 </div>
                 {/* Bên phải thanh bar — chế độ xem + export */}
                 <div className="flex items-center gap-1">
                     {activeCompetitionTab === 'nhom' && activeVersionName === null && (
                         <>
-                            <button onClick={() => setViewMode('group')} title="Bộ phận" className={`p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></button>
-                            <button onClick={() => setViewMode('list')} title="Danh sách" className={`p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></button>
+                            <Button variant="ghost" onClick={() => setViewMode('group')} title="Bộ phận" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 transition-all ${viewMode === 'group' ? 'text-indigo-700' : 'text-slate-400 hover:text-slate-600'}`}><ViewGridIcon className="h-4 w-4"/></Button>
+                            <Button variant="ghost" onClick={() => setViewMode('list')} title="Danh sách" className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 transition-all ${viewMode === 'list' ? 'text-indigo-700' : 'text-slate-400 hover:text-slate-600'}`}><ViewListIcon className="h-4 w-4"/></Button>
                             <div className="h-4 w-px bg-slate-200 dark:bg-slate-700" />
-                            <button onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title="Xuất tất cả nhóm" className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</button>
-                            <button onClick={handleSmartBatchExport} disabled={isExportingHighlights || highlightedEmployees.size === 0} title="Xuất Highlight" className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}</button>
+                            <Button variant="ghost" onClick={handleGroupBatchExport} disabled={isBatchExporting || selectedHeadersForNhom.length === 0} title="Xuất tất cả nhóm" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">{isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}</Button>
+                            <Button variant="ghost" onClick={handleSmartBatchExport} disabled={isExportingHighlights || highlightedEmployees.size === 0} title="Xuất Highlight" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">{isExportingHighlights ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <CameraIcon className="h-4 w-4" />}</Button>
                         </>
                     )}
                     {activeCompetitionTab === 'canhan' && activeVersionName === null && (
                         <>
-                            <button onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title="Xuất tất cả nhân viên" className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">
+                            <Button variant="ghost" onClick={() => individualViewRef.current?.performBatchExport()} disabled={individualViewRef.current?.isBatchExporting} title="Xuất tất cả nhân viên" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">
                                 {individualViewRef.current?.isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
-                            </button>
-                            <button onClick={() => individualViewRef.current?.handleExportPNG()} title="Xuất ảnh" className="p-1 text-slate-400 hover:text-slate-600 transition-all"><CameraIcon className="h-4 w-4" /></button>
+                            </Button>
+                            <Button variant="ghost" onClick={() => individualViewRef.current?.handleExportPNG()} title="Xuất ảnh" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all"><CameraIcon className="h-4 w-4" /></Button>
                         </>
                     )}
                     {activeCompetitionTab === 'tong' && activeVersionName === null && (
                         <>
-                            <button onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title="Xuất tất cả bảng tổng hợp" className="p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">
+                            <Button variant="ghost" onClick={handleSummaryBatchExport} disabled={isBatchExporting || summaryTables.length === 0} title="Xuất tất cả bảng tổng hợp" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-slate-600 transition-all disabled:opacity-40">
                                 {isBatchExporting ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <ImagesIcon className="h-4 w-4" />}
-                            </button>
+                            </Button>
                         </>
                     )}
                 </div>
@@ -507,12 +508,12 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 <div className="flex items-center gap-2 flex-wrap">
                                     {/* Lọc nhóm */}
                                     <div className="relative" ref={filterRef}>
-                                        <button onClick={() => setIsFilterOpen(!isFilterOpen)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}><FilterIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Lọc nhóm</span>{isFiltered && <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-black rounded-full">{activeFilterCount}</span>}</button>
+                                        <Button variant="ghost" onClick={() => setIsFilterOpen(!isFilterOpen)} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isFilterOpen || isFiltered ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-white text-slate-500 border-slate-200 hover:text-slate-700'}`}><FilterIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Lọc nhóm</span>{isFiltered && <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-[9px] font-black rounded-full">{activeFilterCount}</span>}</Button>
                                         {isFilterOpen && (
                                             <div className="absolute right-0 top-full mt-1 w-80 max-h-[80vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden">
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50">
                                                     <input type="text" value={filterSearch} onChange={(e) => setFilterSearch(e.target.value)} placeholder="Tìm nhóm thi đua..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-indigo-500 bg-white placeholder-slate-400" autoFocus />
-                                                    <div className="flex items-center justify-between mt-1.5"><button onClick={handleSelectAllCompetitions} className="text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</button><button onClick={handleDeselectAllCompetitions} className="text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</button></div>
+                                                    <div className="flex items-center justify-between mt-1.5"><Button variant="ghost" onClick={handleSelectAllCompetitions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</Button><Button variant="ghost" onClick={handleDeselectAllCompetitions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
                                                 </div>
                                                 <div className="overflow-y-auto flex-1 p-1.5 space-y-3">
                                                     {(Object.entries(relevantCompetitions) as [Criterion, { headers: CompetitionHeader[] }][]).map(([criterion, data]) => {
@@ -541,14 +542,14 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                     </div>
                                     {/* Highlight */}
                                     <div className="relative" ref={employeeFilterRef}>
-                                        <button onClick={() => setIsEmployeeFilterOpen(!isEmployeeFilterOpen)} className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
+                                        <Button variant="ghost" onClick={() => setIsEmployeeFilterOpen(!isEmployeeFilterOpen)} className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border transition-all ${isEmployeeFilterOpen || highlightedEmployees.size > 0 ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-200 dark:border-indigo-700' : 'bg-white dark:bg-slate-800 text-slate-500 border-slate-200 dark:border-slate-700 hover:text-slate-700'}`}>
                                             <UsersIcon className="h-3.5 w-3.5" /><span className="hidden sm:inline">Highlight</span>{highlightedEmployees.size > 0 && <span className="px-1.5 py-0.5 bg-indigo-600 text-white text-[9px] font-black rounded-full">{highlightedEmployees.size}</span>}<ChevronDownIcon className={`h-3 w-3 transition-transform ${isEmployeeFilterOpen ? 'rotate-180' : ''}`} />
-                                        </button>
+                                        </Button>
                                         {isEmployeeFilterOpen && (
                                             <div className="absolute right-0 top-full mt-1 w-72 sm:w-80 max-h-[70vh] bg-white dark:bg-slate-800 rounded-lg shadow-xl border border-slate-200 dark:border-slate-700 z-50 flex flex-col overflow-hidden">
                                                 <div className="p-2.5 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
                                                     <input type="text" value={employeeFilterSearch} onChange={(e) => setEmployeeFilterSearch(e.target.value)} placeholder="Tìm nhân viên..." className="w-full px-2.5 py-1.5 text-sm border border-slate-300 dark:border-slate-600 rounded focus:ring-2 focus:ring-indigo-500 bg-white dark:bg-slate-800 dark:text-slate-100 placeholder-slate-400" autoFocus />
-                                                    <div className="flex items-center justify-between mt-1.5 px-0.5"><button onClick={handleSelectAllEmployees} className="text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</button><button onClick={handleDeselectAllEmployees} className="text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</button></div>
+                                                    <div className="flex items-center justify-between mt-1.5 px-0.5"><Button variant="ghost" onClick={handleSelectAllEmployees} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-indigo-600 hover:underline">Chọn tất cả</Button><Button variant="ghost" onClick={handleDeselectAllEmployees} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-slate-500 hover:underline">Bỏ chọn</Button></div>
                                                 </div>
                                                 <div className="overflow-y-auto flex-1 p-1.5 space-y-0.5">
                                                     {allEmployees.filter(emp => emp.name.toLowerCase().includes(employeeFilterSearch.toLowerCase())).map(emp => {
@@ -612,30 +613,32 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                         {/* Left: Summary Table Tabs */}
                                         <div className="flex flex-wrap gap-1.5">
                                             {summaryTables.map((tableConfig) => (
-                                                <button
+                                                <Button
+                                                    variant="ghost"
                                                     key={tableConfig.id}
                                                     type="button"
                                                     onClick={() => setActiveSummaryTableId(tableConfig.id)}
-                                                    className={`px-3.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+                                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3.5 py-1.5 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
                                                         activeTableId === tableConfig.id
                                                             ? 'bg-indigo-50 border-indigo-200 text-indigo-700 dark:bg-indigo-900/30 dark:border-indigo-800 dark:text-indigo-400 shadow-sm'
                                                             : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
                                                     }`}
                                                 >
                                                     {tableConfig.name}
-                                                </button>
+                                                </Button>
                                             ))}
                                         </div>
-                                        
+
                                         {/* Right: Add Button */}
-                                        <button 
+                                        <Button
+                                            variant="ghost"
                                             type="button"
                                             onClick={handleAddSummaryTable}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-[11px] font-bold uppercase rounded-lg hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/10 active:scale-95 cursor-pointer"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white text-[11px] font-bold uppercase rounded-lg hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/10 active:scale-95 cursor-pointer"
                                         >
                                             <PlusIcon className="h-3.5 w-3.5" />
                                             <span>Thêm bảng</span>
-                                        </button>
+                                        </Button>
                                     </div>
                                 )}
 
@@ -669,14 +672,15 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                                 {(!Array.isArray(summaryTables) || summaryTables.length === 0) && (
                                     <div className="py-20 text-center bg-slate-50 dark:bg-slate-900/40 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center gap-4">
                                         <p className="text-slate-500 font-bold">Chưa có bảng tổng hợp nào. Hãy bấm "Thêm bảng tổng hợp" để bắt đầu.</p>
-                                        <button 
+                                        <Button
+                                            variant="ghost"
                                             type="button"
                                             onClick={handleAddSummaryTable}
-                                            className="flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 text-white text-xs font-bold uppercase rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 cursor-pointer"
+                                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 text-white text-xs font-bold uppercase rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 cursor-pointer"
                                         >
                                             <PlusIcon className="h-4 w-4" />
                                             <span>Thêm bảng tổng hợp</span>
-                                        </button>
+                                        </Button>
                                     </div>
                                 )}
                             </div>

@@ -4,6 +4,7 @@ import FileUpload from './FileUpload';
 import SearchBar from './SearchBar';
 import { PrintIcon, SettingsIcon, StarIcon, TagIcon, TrashIcon, ExportIcon, ImportIcon, PenSquareIcon, InventoryIcon, FilePlusIcon, UserIcon } from './Icons';
 import { Trash2, ShieldAlert, Info, Cloud, Save, FolderOpen, FileDown, FileUp } from 'lucide-react';
+import { Button } from '../../components/shared/ui/Button';
 
 interface ControlPanelProps {
     employeeName: string;
@@ -68,14 +69,15 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                             Thông tin người in <span className="text-red-500">*</span>
                         </label>
                         {isAdmin && (
-                            <button 
+                            <Button
+                                variant="ghost"
                                 onClick={props.onClearAll}
-                                className="flex items-center gap-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-md transition-colors"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 px-2 py-1 rounded-md transition-colors"
                                 title="Xóa toàn bộ dữ liệu tồn kho và giá trên hệ thống"
                             >
                                 <Trash2 className="h-3.5 w-3.5" />
                                 Xóa dữ liệu
-                            </button>
+                            </Button>
                         )}
                     </div>
                     {props.isEditingEmployeeName || !props.employeeName ? (
@@ -98,12 +100,13 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                     ) : (
                         <div className="flex items-center gap-2 px-1">
                             <p className="font-bold text-base text-slate-900 truncate" title={props.employeeName}>{props.employeeName}</p>
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={() => props.onSetIsEditingEmployeeName(true)}
-                                className="text-sm text-indigo-600 hover:underline shrink-0"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-sm text-indigo-600 hover:underline shrink-0"
                             >
                                 (Sửa)
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>
@@ -122,13 +125,14 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                                 >
                                     Lấy File Tồn Kho
                                 </a>
-                                <button 
+                                <Button
+                                    variant="ghost"
                                     onClick={props.onOpenUserGuide}
-                                    className="p-1 text-slate-400 hover:text-indigo-600 rounded-full transition-colors"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 text-slate-400 hover:text-indigo-600 rounded-full transition-colors"
                                     title="Xem hướng dẫn"
                                 >
                                     <Info className="h-4 w-4" />
-                                </button>
+                                </Button>
                             </div>
                         </div>
                         <div className="grid grid-cols-2 gap-2">
@@ -174,9 +178,9 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                 {/* Manager instructions */}
                 {isAdmin && props.showManagerInstructions && (
                     <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-4 relative">
-                        <button onClick={props.onCloseInstructions} className="absolute top-2.5 right-2.5 text-indigo-400 hover:text-indigo-700">
+                        <Button variant="ghost" onClick={props.onCloseInstructions} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 absolute top-2.5 right-2.5 text-indigo-400 hover:text-indigo-700">
                             <TrashIcon className="h-4 w-4" />
-                        </button>
+                        </Button>
                         <h3 className="text-sm font-bold text-indigo-900 mb-2 flex items-center gap-2">
                             <ShieldAlert className="h-4 w-4" />
                             Hướng dẫn Quản lý
@@ -195,22 +199,24 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                     <div className="pt-2 border-t border-slate-100">
                         <div className="grid grid-cols-2 gap-2">
                             {isAdmin && props.onOpenUserManagement && (
-                                <button 
+                                <Button
+                                    variant="ghost"
                                     onClick={props.onOpenUserManagement}
-                                    className="flex items-center justify-center gap-1.5 py-2 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors text-xs font-semibold border border-slate-200"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex items-center justify-center gap-1.5 py-2 px-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg transition-colors text-xs font-semibold border border-slate-200"
                                 >
                                     <UserIcon className="h-3.5 w-3.5" />
                                     Người dùng
-                                </button>
+                                </Button>
                             )}
                             {props.onOpenSuperAdminTools && (
-                                <button 
+                                <Button
+                                    variant="ghost"
                                     onClick={props.onOpenSuperAdminTools}
-                                    className="flex items-center justify-center gap-1.5 py-2 px-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors text-xs font-bold border border-red-100"
+                                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex items-center justify-center gap-1.5 py-2 px-2 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg transition-colors text-xs font-bold border border-red-100"
                                 >
                                     <ShieldAlert className="h-3.5 w-3.5" />
                                     Super Admin
-                                </button>
+                                </Button>
                             )}
                         </div>
                     </div>
@@ -239,55 +245,56 @@ const ControlPanel: React.FC<ControlPanelProps> = (props) => {
                  <div className={`space-y-4 ${props.isMobile && props.activeTab === 'home' ? 'hidden' : ''}`}>
 
                     <div className="pt-3 border-t border-slate-100">
-                         <button onClick={props.onOpenManualInput} title="Nhập sản phẩm thủ công để in" className="w-full inline-flex items-center gap-2 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 h-10 px-3 transition-colors">
+                         <Button variant="ghost" onClick={props.onOpenManualInput} title="Nhập sản phẩm thủ công để in" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 text-slate-700 h-10 px-3 transition-colors">
                             <PenSquareIcon className="h-4 w-4 text-blue-600" /> Nhập sản phẩm thủ công
-                         </button>
+                         </Button>
                     </div>
 
                     {/* Thao tác */}
                     <div className="pt-3 border-t border-slate-100">
                         <div className="flex items-center justify-between mb-2">
                             <h3 className="text-sm font-semibold text-slate-800">Thao tác</h3>
-                            <button 
-                                onClick={props.onSaveUserState} 
+                            <Button
+                                variant="ghost"
+                                onClick={props.onSaveUserState}
                                 disabled={props.displayedProducts.length === 0}
-                                className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md hover:bg-indigo-100 transition-colors border border-indigo-100 uppercase tracking-wide disabled:opacity-40"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md hover:bg-indigo-100 transition-colors border border-indigo-100 uppercase tracking-wide disabled:opacity-40"
                                 title="Đồng bộ lên Cloud"
                             >
                                 Đồng bộ Cloud
-                            </button>
+                            </Button>
                         </div>
                         <div className="flex items-center gap-2 mb-2">
-                            <button onClick={props.onSaveList} disabled={props.displayedProducts.length === 0} title="Lưu danh sách" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 disabled:opacity-50 transition-colors">
+                            <Button variant="ghost" onClick={props.onSaveList} disabled={props.displayedProducts.length === 0} title="Lưu danh sách" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 disabled:opacity-50 transition-colors">
                                 Lưu DS
-                            </button>
-                            <button onClick={props.onViewSavedLists} title="Xem DS đã lưu" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 transition-colors">
+                            </Button>
+                            <Button variant="ghost" onClick={props.onViewSavedLists} title="Xem DS đã lưu" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 transition-colors">
                                 DS đã lưu
-                            </button>
+                            </Button>
                         </div>
                         <div className="flex items-center gap-2 mb-3">
-                            <button onClick={props.onTriggerImport} title="Nhập file .json" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 transition-colors">
+                            <Button variant="ghost" onClick={props.onTriggerImport} title="Nhập file .json" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 transition-colors">
                                 <ImportIcon className="h-4 w-4 text-slate-500" /> Nhập
-                            </button>
-                            <button onClick={props.onExport} disabled={props.displayedProducts.length === 0} title="Xuất file .json" className="flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 disabled:opacity-50 transition-colors">
+                            </Button>
+                            <Button variant="ghost" onClick={props.onExport} disabled={props.displayedProducts.length === 0} title="Xuất file .json" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto flex-1 inline-flex items-center gap-1.5 justify-center rounded-xl text-xs font-medium border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 h-9 px-2 disabled:opacity-50 transition-colors">
                                 <ExportIcon className="h-4 w-4 text-slate-500" /> Xuất
-                            </button>
-                            <button onClick={props.onReset} disabled={props.displayedProducts.length === 0} title="Xóa danh sách" className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-600 h-9 w-9 p-0 disabled:opacity-50 transition-colors">
+                            </Button>
+                            <Button variant="ghost" onClick={props.onReset} disabled={props.displayedProducts.length === 0} title="Xóa danh sách" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-9 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-600 h-9 p-0 disabled:opacity-50 transition-colors">
                                 <TrashIcon className="h-4 w-4" />
-                            </button>
-                             <button onClick={props.onOpenPrintSettings} title="Cài đặt in" className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 h-9 w-9 p-0 transition-colors">
+                            </Button>
+                             <Button variant="ghost" onClick={props.onOpenPrintSettings} title="Cài đặt in" className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-9 inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-700 h-9 p-0 transition-colors">
                                 <SettingsIcon className="h-4 w-4" />
-                            </button>
+                            </Button>
                         </div>
 
                         {/* Print buttons — full width stacked */}
                         <div className="flex flex-col gap-2">
-                            <button onClick={props.onPrintSelected} disabled={selectedCount === 0} className="w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-200/40">
+                            <Button variant="ghost" onClick={props.onPrintSelected} disabled={selectedCount === 0} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold bg-gradient-to-r from-indigo-600 to-indigo-700 text-white hover:from-indigo-700 hover:to-indigo-800 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-indigo-200/40">
                                 <PrintIcon className="h-4 w-4" /> In đã chọn ({selectedCount})
-                            </button>
-                            <button onClick={props.onPrintAll} disabled={props.displayedProducts.length === 0} className="w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold border-2 border-indigo-500 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            </Button>
+                            <Button variant="ghost" onClick={props.onPrintAll} disabled={props.displayedProducts.length === 0} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-full inline-flex items-center gap-2 justify-center rounded-xl text-sm font-bold border-2 border-indigo-500 text-indigo-600 bg-indigo-50 hover:bg-indigo-100 h-11 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                                 In tất cả ({props.displayedProducts.length})
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

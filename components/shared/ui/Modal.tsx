@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { X } from 'lucide-react';
 import { cn } from './utils';
+import { Button } from './Button';
 
 export interface ModalProps {
   isOpen: boolean;
@@ -134,12 +135,14 @@ export function Modal({
                 <div className="flex items-center gap-2 shrink-0">
                   {controls}
                   {!hideCloseButton && (
-                    <button
+                    <Button
+                      type="button"
+                      variant="ghost"
                       onClick={onClose}
-                      className="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                      className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-200/50 dark:hover:text-slate-300 dark:hover:bg-slate-700 transition-colors focus:ring-2 focus:ring-sky-500/50"
                     >
                       <X size={18} />
-                    </button>
+                    </Button>
                   )}
                 </div>
               </div>
