@@ -1,6 +1,7 @@
 import React, { useRef } from 'react';
 import { UsersIcon, UploadIcon } from '../../Icons';
 import { useIndexedDBState } from '../../../hooks/useIndexedDBState';
+import { Button } from '../../../../../components/shared/ui/Button';
 
 interface AvatarDisplayProps {
     employeeName: string;
@@ -72,12 +73,13 @@ const AvatarDisplay: React.FC<AvatarDisplayProps> = ({ employeeName, supermarket
                     <UsersIcon className="h-4 w-4 text-slate-400" />
                 </div>
             )}
-            <button 
-                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} 
-                className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-800 p-1 rounded-full shadow-md opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:scale-125 no-print border border-slate-100"
+            <Button
+                variant="ghost"
+                onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit absolute -bottom-1 -right-1 bg-white dark:bg-slate-800 p-1 rounded-full shadow-md opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-all hover:scale-125 no-print border border-slate-100"
             >
                 <UploadIcon className="h-2 w-2 text-primary-600" />
-            </button>
+            </Button>
             <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
         </div>
     );

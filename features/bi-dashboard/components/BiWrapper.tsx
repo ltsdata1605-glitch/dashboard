@@ -4,6 +4,7 @@ import { useActiveTab } from '../../../contexts/LayoutContext';
 import { Icon } from '../../../components/common/Icon';
 import FontSelector from '../../../components/layout/FontSelector';
 import { migrateClusterDataToMain, migrateOldAvatars } from '../utils/dbMigration';
+import { Button } from '../../../components/shared/ui/Button';
 
 // Lazy load heavy sub-views so the initial BiWrapper mount is near-instant
 const Dashboard = lazy(() => import('./Dashboard'));
@@ -146,13 +147,14 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                     {navigationLinks.map(tab => {
                         const isActive = activeView === tab.id;
                         return (
-                            <button
+                            <Button
+                                variant="ghost"
                                 key={tab.id}
                                 onClick={() => handleTabChange(tab.id)}
-                                className={`flex items-center justify-center ${isMobile ? 'gap-1 py-1 px-1.5' : 'gap-2 py-1.5 ' + (tab.label ? 'px-4' : 'px-2 w-[32px]')} rounded-full font-semibold ${isMobile ? 'text-[10px]' : 'text-[13px]'} transition-all whitespace-nowrap shrink-0 focus:outline-none ${
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-center ${isMobile ? 'gap-1 py-1 px-1.5' : 'gap-2 py-1.5 ' + (tab.label ? 'px-4' : 'px-2 w-[32px]')} rounded-full font-semibold ${isMobile ? 'text-[10px]' : 'text-[13px]'} transition-all whitespace-nowrap shrink-0 focus:outline-none ${
                                     isActive
-                                        ? isMobile 
-                                            ? 'text-indigo-600 dark:text-indigo-400' 
+                                        ? isMobile
+                                            ? 'text-indigo-600 dark:text-indigo-400'
                                             : 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.1)] border border-slate-200/60 dark:border-slate-700/60'
                                         : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50'
                                 }`}
@@ -160,7 +162,7 @@ const BiWrapper = React.memo(function BiWrapper({ isActive }: { isActive?: boole
                             >
                                 <Icon name={tab.icon as any} size={isMobile ? 4.5 : 4} />
                                 {(!isMobile && tab.label) && <span>{tab.label}</span>}
-                            </button>
+                            </Button>
                         );
                     })}
                     

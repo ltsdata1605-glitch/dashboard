@@ -99,7 +99,7 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const [announcement, setAnnouncement] = useState<{ content: string; active: boolean } | null>(null);
 
     useEffect(() => {
-        const unsub = onSnapshot(doc(db, 'settings', 'announcement'), (snap) => {
+        const unsub = onSnapshot(doc(db, 'shared_configs', 'system_announcement'), (snap) => {
             if (snap.exists()) {
                 setAnnouncement(snap.data() as any);
             } else {

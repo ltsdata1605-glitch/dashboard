@@ -5,6 +5,7 @@ import { MedalBadge, DeltaBadge } from '../../shared/Badges';
 
 import { UsersIcon } from '../../Icons';
 import { ColorSettings, CriterionConfig } from './ColorSettingsModal';
+import { Button } from '../../../../../components/shared/ui/Button';
 
 interface RevenueMobileCardProps {
     row: RevenueRow;
@@ -68,13 +69,14 @@ export const RevenueMobileCard = React.memo(({
             </div>
             
             <div className="flex justify-between items-center no-print">
-                <button 
+                <Button
+                    variant="ghost"
                     onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }}
-                    className="text-[10px] font-bold text-sky-600 hover:underline flex items-center gap-1"
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-[10px] font-bold text-sky-600 hover:underline flex items-center gap-1"
                 >
                     <UsersIcon className="h-3 w-3" />
                     Xem chi tiết xu hướng
-                </button>
+                </Button>
                 <div className="flex items-center gap-2">
                     <span className="text-[9px] font-bold text-slate-400 uppercase">Bán kèm:</span>
                     <span className="text-[10px] font-black" style={{ color: getDynamicColor(row.pctBillBk, colorSettings.bankem) }}>{roundUp(row.pctBillBk)}%</span>

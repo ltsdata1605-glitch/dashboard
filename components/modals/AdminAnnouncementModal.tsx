@@ -23,7 +23,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
         if (isOpen) {
             const fetchAnnouncement = async () => {
                 try {
-                    const docRef = doc(db, 'settings', 'announcement');
+                    const docRef = doc(db, 'shared_configs', 'system_announcement');
                     const snap = await getDoc(docRef);
                     if (snap.exists()) {
                         const data = snap.data();
@@ -46,7 +46,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
         e.preventDefault();
         setIsLoading(true);
         try {
-            const docRef = doc(db, 'settings', 'announcement');
+            const docRef = doc(db, 'shared_configs', 'system_announcement');
             await setDoc(docRef, {
                 content: content.trim(),
                 active: active,

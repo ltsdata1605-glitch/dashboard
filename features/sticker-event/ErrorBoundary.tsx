@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { WarningIcon } from './Icons';
+import { Button } from '../../components/shared/ui/Button';
 
 interface ErrorBoundaryProps {
   children: React.ReactNode;
@@ -42,12 +43,13 @@ export default class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
             </div>
             <h2 className="text-xl font-bold text-slate-900 text-center mb-2">Rất tiếc, đã có lỗi xảy ra</h2>
             <p className="text-slate-600 text-center mb-6">{displayMessage}</p>
-            <button 
+            <Button
+              variant="ghost"
               onClick={() => window.location.reload()}
-              className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
+              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium"
             >
               Tải lại trang
-            </button>
+            </Button>
           </div>
         </div>
       );

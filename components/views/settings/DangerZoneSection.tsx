@@ -18,13 +18,14 @@ export const DangerZoneSection: React.FC<DangerZoneSectionProps> = ({
                     <h4 className="font-bold text-rose-800 dark:text-rose-400 text-base">Xóa Cứng Toàn Bộ Bộ Nhớ Tạm</h4>
                     <p className="text-sm text-rose-600/80 dark:text-rose-400/70 mt-1 max-w-md">Xóa sạch Dữ Liệu YCX (Sales Data), Cấu Hình, Sơ đồ Kho lưu trong Local Database của Trình duyệt. Bạn sẽ cần tải YCX lại từ đầu.</p>
                 </div>
-                <button 
+                <Button
+                    variant="ghost"
                     onClick={onClearLocalData}
                     disabled={isClearing}
-                    className="px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold transition-colors shadow-sm whitespace-nowrap disabled:opacity-50 rounded-lg"
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold transition-colors shadow-sm whitespace-nowrap disabled:opacity-50 rounded-lg"
                 >
                     {isClearing ? 'Đang Xóa...' : 'Khôi Phục Mặc Định Trình Duyệt'}
-                </button>
+                </Button>
             </div>
         </div>
     );

@@ -3,6 +3,7 @@ import { RevenueRow, Employee } from '../../../types/nhanVienTypes';
 import { roundUp } from '../../../utils/nhanVienHelpers';
 import { MedalBadge, DeltaBadge } from '../../shared/Badges';
 import AvatarDisplay from '../shared/AvatarDisplay';
+import { Button } from '../../../../../components/shared/ui/Button';
 
 import { ColorSettings, CriterionConfig } from './ColorSettingsModal';
 
@@ -41,7 +42,7 @@ export const RevenueDesktopRow = React.memo(({
                     <AvatarDisplay employeeName={row.originalName!} supermarketName={supermarketName} onClick={() => onViewTrend(row as Employee)} />
                     <div className="flex flex-col min-w-0" onClick={() => onHighlightToggle(row.originalName!)}>
                         <div className="flex items-center gap-2">
-                            <button onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="text-left font-bold text-sky-600 dark:text-sky-400 text-[13px] hover:text-sky-700 dark:hover:text-sky-300 transition-colors whitespace-normal break-words">{row.name}</button>
+                            <Button variant="ghost" onClick={(e) => { e.stopPropagation(); onViewTrend(row as Employee); }} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-left font-bold text-sky-600 dark:text-sky-400 text-[13px] hover:text-sky-700 dark:hover:text-sky-300 transition-colors whitespace-normal break-words">{row.name}</Button>
                         </div>
                     </div>
                 </div>
