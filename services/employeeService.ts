@@ -1,6 +1,6 @@
 import type { DataRow, ProductConfig, Employee, EmployeeData, ExploitationData, FilterState } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO } from '../constants';
-import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan, cleanAndNormalize } from '../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, getDisplayParentGroup, getHinhThucThanhToan, cleanAndNormalize, getParentGroup, calculateRowMetrics } from '../utils/dataUtils';
 import { DepartmentMap } from './dataService';
 import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
@@ -222,6 +222,24 @@ export function processEmployeeData(
         const creator = getRowValue(row, COL.NGUOI_TAO);
         if (!creator || creator.trim().startsWith('Yêu cầu xuất')) continue;
 
+        // Lọc đơn hàng bị HỦY hoặc bị TRẢ
+        const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+        const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
+        const isValid = (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && nhapTra === 'chưa trả';
+        if (!isValid) continue;
+
+        // Lọc hình thức xuất tính doanh thu
+        const htx = getRowValue(row, COL.HINH_THUC_XUAT);
+        const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
+            ? productConfig.revenueEligibleHTX.has(cleanAndNormalize(htx))
+            : !HINH_THUC_XUAT_THU_HO.has(htx);
+        if (!isRevenue) continue;
+
+        // Bỏ qua nhóm hàng "Không tính doanh thu"
+        const maNhomHangCheck = getRowValue(row, COL.MA_NHOM_HANG);
+        const parentGroupCheck = getParentGroup(maNhomHangCheck, productConfig);
+        if (!parentGroupCheck || parentGroupCheck === 'Không tính doanh thu') continue;
+
         const metrics = row._metrics || { revenue: 0, revenueQD: 0, quantity: 0, isTraCham: false };
         const { revenue, revenueQD, quantity, isTraCham } = metrics;
         const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
@@ -252,49 +270,39 @@ export function processEmployeeData(
         if (!employeeDailyTrend[creator]) employeeDailyTrend[creator] = {};
         if (!employeeDailyTrend[creator][dateKey]) employeeDailyTrend[creator][dateKey] = 0;
 
-        // Logic trọng số số lượng: Vieon dùng hệ số quy đổi, các SP khác dùng quantityMultiplierMap
-        const productName = getRowValue(row, COL.PRODUCT);
-        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-        const heso = metrics.revenueQD > 0 && revenue > 0 ? metrics.revenueQD / revenue : 1;
-        const subgroup = productConfig.childToSubgroupMap[maNhomHang] || '';
-        const parentGroupCheck = productConfig.childToParentMap[maNhomHang] || '';
-        const isVieon = subgroup === 'Vieon' || (productName || '').toString().includes('VieON');
-        const isInsurance = parentGroupCheck === 'Bảo hiểm' || parentGroupCheck === 'Bảo hiểm ĐMX' || subgroup === 'Bảo hiểm' || subgroup === 'Bảo hiểm ĐMX';
-        const qtyMultiplier = isInsurance 
-            ? undefined 
-            : ((productConfig.vasMultiplierMap?.[productCode]) ?? (productConfig.quantityMultiplierMap?.[productCode]));
-        const weightedQuantity = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
+        // Logic trọng số số lượng và doanh thu đồng bộ
+        const { revenue: calcRevenue, revenueQD: calcRevenueQD, weightedQuantity, isTraCham: calcIsTraGop } = calculateRowMetrics(row, productConfig);
 
         // --- Aggregate general stats ---
         const emp = employeeStats[creator];
-        emp.doanhThuThuc! += revenue;
-        emp.doanhThuQD! += revenueQD;
+        emp.doanhThuThuc! += calcRevenue;
+        emp.doanhThuQD! += calcRevenueQD;
         emp.totalOrders! += 1;
         if (customer) emp.customerSet.add(customer);
         if (isTraCham) {
             emp.slTraCham! += weightedQuantity; // Cập nhật số lượng trọng số
-            emp.doanhThuTraCham! += revenue;
+            emp.doanhThuTraCham! += calcRevenue;
         }
         
         const parentGroupForPerf = productConfig.childToParentMap[maNhomHang] || 'Không xác định';
         if (parentGroupForPerf === 'CE' || parentGroupForPerf === 'ICT') {
             emp.slCE_ICT! += weightedQuantity; // Cập nhật số lượng trọng số
-            emp.doanhThu_CE_ICT! += revenue;
+            emp.doanhThu_CE_ICT! += calcRevenue;
             if (isTraCham) {
                 emp.slTraCham_CE_ICT! += weightedQuantity; // Cập nhật số lượng trọng số
-                emp.doanhThuTraCham_CE_ICT! += revenue;
+                emp.doanhThuTraCham_CE_ICT! += calcRevenue;
             }
         }
 
         // --- Aggregate industry stats ---
         const displayGroup = getDisplayParentGroup(maNhomHang, productConfig);
-        employeeIndustryStats[creator][displayGroup] = (employeeIndustryStats[creator][displayGroup] || 0) + revenue;
-        employeeDailyTrend[creator][dateKey] += revenueQD;
+        employeeIndustryStats[creator][displayGroup] = (employeeIndustryStats[creator][displayGroup] || 0) + calcRevenue;
+        employeeDailyTrend[creator][dateKey] += calcRevenueQD;
         
         // --- Aggregate exploitation stats ---
         const stats = exploitationStats[creator];
-        stats.doanhThuThuc = (stats.doanhThuThuc || 0) + revenue;
-        stats.doanhThuQD = (stats.doanhThuQD || 0) + revenueQD;
+        stats.doanhThuThuc = (stats.doanhThuThuc || 0) + calcRevenue;
+        stats.doanhThuQD = (stats.doanhThuQD || 0) + calcRevenueQD;
         
         const parentGroup = productConfig.childToParentMap[maNhomHang] || 'Không xác định';
         const childGroup = productConfig.childToSubgroupMap[maNhomHang] || 'Không xác định';
@@ -302,10 +310,10 @@ export function processEmployeeData(
         // SP Chính
         if (parentGroup === 'ICT') {
             stats.slICT! += weightedQuantity;
-            stats.doanhThuICT! += revenue;
+            stats.doanhThuICT! += calcRevenue;
         } else if (parentGroup === 'CE') {
             stats.slCE_main! += weightedQuantity;
-            stats.doanhThuCE_main! += revenue;
+            stats.doanhThuCE_main! += calcRevenue;
         } else if (parentGroup === 'Gia dụng') {
             stats.slGiaDung_main! += weightedQuantity; 
         }
@@ -313,22 +321,22 @@ export function processEmployeeData(
         // Bán Kèm & Các nhóm khác
         if (parentGroup === 'Bảo hiểm') {
             stats.slBaoHiem! += weightedQuantity;
-            stats.doanhThuBaoHiem! += revenue;
+            stats.doanhThuBaoHiem! += calcRevenue;
         } else if (parentGroup === 'Sim') {
             stats.slSim! += weightedQuantity;
-            stats.doanhThuSim! += revenue;
+            stats.doanhThuSim! += calcRevenue;
         } else if (parentGroup === 'Đồng hồ') { 
             stats.slDongHo! += weightedQuantity;
-            stats.doanhThuDongHo! += revenue;
+            stats.doanhThuDongHo! += calcRevenue;
         } else if (parentGroup === 'Phụ kiện') {
-            stats.doanhThuPhuKien! += revenue;
+            stats.doanhThuPhuKien! += calcRevenue;
             stats.slPhuKien! += weightedQuantity; 
             if (childGroup === 'Camera') stats.slCamera! += weightedQuantity;
             else if (childGroup === 'Loa') stats.slLoa! += weightedQuantity;
             else if (childGroup === 'Pin SDP') stats.slPinSDP! += weightedQuantity;
             else if (childGroup === 'Tai nghe BLT') stats.slTaiNgheBLT! += weightedQuantity;
         } else if (parentGroup === 'Gia dụng') {
-            stats.doanhThuGiaDung! += revenue;
+            stats.doanhThuGiaDung! += calcRevenue;
             stats.slGiaDung! += weightedQuantity; 
             if (childGroup === 'Máy lọc nước') stats.slMayLocNuoc! += weightedQuantity;
             else if (childGroup === 'Nồi cơm') stats.slNoiCom! += weightedQuantity;

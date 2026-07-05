@@ -1,7 +1,7 @@
 
 import type { DataRow, ProductConfig, FilterState, SummaryTableNode, GrandTotal, WarehouseSummaryRow, MetricValues } from '../types';
 import { COL, HINH_THUC_XUAT_THU_HO, HINH_THUC_XUAT_TRA_GOP } from '../constants';
-import { getRowValue, getHeSoQuyDoi, sortSummaryData, getHinhThucThanhToan, getDisplayParentGroup, abbreviateName, getParentGroup, getSubgroup, cleanAndNormalize } from '../utils/dataUtils';
+import { getRowValue, getHeSoQuyDoi, sortSummaryData, getHinhThucThanhToan, getDisplayParentGroup, abbreviateName, getParentGroup, getSubgroup, cleanAndNormalize, calculateRowMetrics } from '../utils/dataUtils';
 import { calculateHieuQuaQDPercent, calculatePercentage, calculateAOV } from './metricService';
 
 export function processSummaryTable(
@@ -44,6 +44,13 @@ export function processSummaryTable(
 
     for (let i = 0, len = filteredValidSalesData.length; i < len; i++) {
         const row = filteredValidSalesData[i];
+        
+        // Lọc bỏ đơn hàng bị Hủy hoặc bị Trả
+        const trangThaiHuy = cleanAndNormalize(getRowValue(row, COL.TRANG_THAI_HUY));
+        const nhapTra = cleanAndNormalize(getRowValue(row, COL.TINH_TRANG_NHAP_TRA));
+        const isValid = (trangThaiHuy === 'chưa hủy' || trangThaiHuy === 'chưa huỷ') && nhapTra === 'chưa trả';
+        if (!isValid) continue;
+
         // Filter out non-revenue rows to ensure revenue eligibility
         const hinhThucXuat = getRowValue(row, COL.HINH_THUC_XUAT);
         const isRevenue = productConfig && productConfig.revenueEligibleHTX && productConfig.revenueEligibleHTX.size > 0
@@ -83,21 +90,8 @@ export function processSummaryTable(
         if (filters.summaryTable.creator?.length > 0 && !filters.summaryTable.creator.includes(creatorVal)) continue;
         if (filters.summaryTable.product?.length > 0 && !filters.summaryTable.product.includes(productVal)) continue;
 
-        const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
-        const price = Number(getRowValue(row, COL.PRICE)) || 0;
-        const revenue = price;
-        const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
-        const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG);
-        const productName = getRowValue(row, COL.PRODUCT);
-
-        const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-        const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-        const isTraGop = getHinhThucThanhToan(row, productConfig) === 'tra_gop';
-        const revenueQD = revenue * heso + (isTraGop ? revenue * 0.3 : 0);
-
-        // Logic trọng số số lượng dựa trên mã sản phẩm (cột AF) và bảng hệ số từ file cấu hình
-        const qtyMultiplier = (productConfig.vasMultiplierMap?.[productCode]) ?? (productConfig.quantityMultiplierMap?.[productCode]);
-        const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;
+        const { revenue, revenueQD, weightedQuantity, isTraCham } = calculateRowMetrics(row, productConfig);
+        const isTraGop = isTraCham;
 
         // Reuse already-computed allValues for keys
         const keys: string[] = [];
@@ -122,7 +116,7 @@ export function processSummaryTable(
             currentNode[key].totalQuantity += weightedQuantity;
             currentNode[key].totalRevenue += revenue;
             currentNode[key].totalRevenueQD += revenueQD;
-            if (getHinhThucThanhToan(row) === 'tra_gop') {
+            if (isTraGop) {
                 currentNode[key].totalTraGop += revenue;
             }
             currentNode = currentNode[key].children;
@@ -211,26 +205,15 @@ export function calculateWarehouseSummary(
             // Bỏ qua sản phẩm không xác định nhóm hàng hoặc không tính doanh thu
             if (!parentGroup || parentGroup === 'Không tính doanh thu') continue;
 
-            const price = Number(getRowValue(row, COL.PRICE)) || 0;
-            const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
             const maNganhHang = getRowValue(row, COL.MA_NGANH_HANG);
             const productName = getRowValue(row, COL.PRODUCT);
-            const customer = getRowValue(row, COL.CUSTOMER_NAME);
-
             const productCode = String(getRowValue(row, COL.PRODUCT_CODE) || '').trim();
-            const heso = getHeSoQuyDoi(maNganhHang, maNhomHang, productConfig, productName, productCode);
-            const isTraGop = getHinhThucThanhToan(row, productConfig) === 'tra_gop';
-            const rowRevenue = price;
-            const rowRevenueQD = rowRevenue * heso + (isTraGop ? rowRevenue * 0.3 : 0);
-
-            // Trọng số số lượng dựa trên mã sản phẩm (cột AF) và bảng hệ số từ file cấu hình
-            const industry = getParentGroup(maNhomHang, productConfig) || 'Khác';
+            const industry = parentGroup;
             const group = getSubgroup(maNhomHang, productConfig) || 'Khác';
-            const isInsurance = industry === 'Bảo hiểm' || industry === 'Bảo hiểm ĐMX' || group === 'Bảo hiểm' || group === 'Bảo hiểm ĐMX';
-            const qtyMultiplier = isInsurance 
-                ? undefined 
-                : ((productConfig.vasMultiplierMap?.[productCode]) ?? (productConfig.quantityMultiplierMap?.[productCode]));
-            const weightedQuantity = qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity;
+
+            const customer = getRowValue(row, COL.CUSTOMER_NAME);
+            const { revenue: rowRevenue, revenueQD: rowRevenueQD, weightedQuantity, isTraCham } = calculateRowMetrics(row, productConfig);
+            const isTraGop = isTraCham;
 
             if (customer) summary.customers.add(customer);
             if (getHinhThucThanhToan(row, productConfig) === 'tra_gop') {

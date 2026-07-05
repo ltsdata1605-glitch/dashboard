@@ -543,7 +543,7 @@ export function unwrapProductConfigProxies(config: ProductConfig): ProductConfig
     };
 }
 
-export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig | null): { revenue: number, revenueQD: number, quantity: number, isTraCham: boolean } {
+export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig | null): { revenue: number, revenueQD: number, quantity: number, weightedQuantity: number, isTraCham: boolean } {
     const price = Number(getRowValue(row, COL.PRICE)) || 0;
     const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
     const revenue = price;
@@ -566,5 +566,22 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     // DTQĐ = Doanh thu thực * Hệ số + (30% Doanh thu thực nếu là đơn hàng Trả góp/Trả chậm)
     const revenueQD = revenue * heso + (isTraCham ? revenue * 0.3 : 0);
     
-    return { revenue, revenueQD, quantity, isTraCham };
+    // weightedQuantity (Số lượng quy đổi)
+    const industry = getParentGroup(maNhomHang, productConfig) || 'Khác';
+    const group = getSubgroup(maNhomHang, productConfig) || 'Khác';
+    const isInsurance = industry === 'Bảo hiểm' || industry === 'Bảo hiểm ĐMX' || group === 'Bảo hiểm' || group === 'Bảo hiểm ĐMX';
+    
+    let qtyMultiplier = undefined;
+    if (!isInsurance) {
+        qtyMultiplier = (productConfig?.vasMultiplierMap?.[productCode]) ?? (productConfig?.quantityMultiplierMap?.[productCode]);
+    }
+    
+    const subgroup = productConfig?.childToSubgroupMap?.[maNhomHang] || '';
+    const isVieon = subgroup === 'Vieon' || (productName || '').toString().includes('VieON');
+    
+    const weightedQuantity = isVieon 
+        ? (quantity * heso) 
+        : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
+    
+    return { revenue, revenueQD, quantity, weightedQuantity, isTraCham };
 }
