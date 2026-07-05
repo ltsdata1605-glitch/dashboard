@@ -230,6 +230,23 @@ Rủi ro: 4 module cố ý cách ly nhau (không được gộp state/filter cro
 ## Phase 6 — Cleanup và tối ưu
 
 - [x] Xóa code không dùng sau khi kiểm tra references — 18 file `fix_*.cjs` ở root (2026-07-05, xem Phase 1).
+- [x] **Xóa 8 file không dùng thêm (2026-07-05)**: audit toàn bộ codebase bằng script tự viết
+      (quét import thật, resolve đường dẫn tương đối) + xác minh thủ công từng trường hợp
+      (tránh false positive với dynamic import kiểu Vite `?worker`, ambient type declaration
+      `global.d.ts`, barrel export). Đã xóa: `features/bi-dashboard/components/MarkdownRenderer.tsx`,
+      `SharedModal.tsx`, `hooks/useTheme.ts` (cả 3 không được import ở đâu — dark mode thật
+      nằm ở `contexts/LayoutContext.tsx` root), `features/phan-ca/index.css` (272 dòng, bị
+      thay thế bởi `phanca.css`); `dashboardycx_backup.zip` (55MB, backup rác trùng mục đích
+      `archive/`), `bg_phieu.png` ở root (trùng `public/frame/bg_phieu.png`),
+      `Deploy_Dashboard.command` (script deploy cá nhân macOS), `_agents/` (2 file kế hoạch
+      cũ, khác `.agents/` đang hoạt động — theo `AUDIT.md` 04/07 đã ghi là bỏ hoang). Đã
+      loại trừ `archive/` (theo yêu cầu), và loại trừ `.agents/skills/*` dù không được import
+      (đây là tài liệu tham khảo cho hệ thống skill Claude Code, không phải code app chết).
+      Dọn entry `SharedModal.tsx` khỏi `violations-baseline.json`. Verify: `tsc --noEmit`
+      sạch, `eslint .` không phát sinh lỗi mới, `npm run build` thành công, `lint:ratchet`
+      sạch sau khi cập nhật 2 entry baseline bị lệch do 1 commit khác không liên quan
+      (`constants.ts`, `WarehouseSettingsModal.tsx` — xác nhận qua `git log` không phải do
+      việc xóa file gây ra).
 - [ ] Gộp component trùng chức năng.
 - [ ] Gộp helper trùng chức năng.
 - [ ] Xóa CSS class không dùng.

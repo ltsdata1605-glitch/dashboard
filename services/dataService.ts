@@ -161,10 +161,10 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                     const sheet = workbook.Sheets[sheetName];
                     const rows: any[][] = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
                     if (rows.length >= 2) {
-                        const sheetHeaders = rows[0].map(h => String(h || '').trim());
-                        const codeIdx = sheetHeaders.findIndex(h => h.toLowerCase().includes('mã sản phẩm') || h.toLowerCase() === 'mã');
-                        const nameIdx = sheetHeaders.findIndex(h => h.toLowerCase().includes('tên sản phẩm') || h.toLowerCase() === 'tên');
-                        const multiplierIdx = sheetHeaders.findIndex(h => h.toLowerCase().includes('hệ số') || h.toLowerCase().includes('sl quy đổi'));
+                        const sheetHeaders = rows[0].map(h => String(h || '').trim().toLowerCase().normalize('NFC'));
+                        const codeIdx = sheetHeaders.findIndex(h => h.includes('mã sản phẩm') || h === 'mã' || h.includes('mã sp'));
+                        const nameIdx = sheetHeaders.findIndex(h => h.includes('tên sản phẩm') || h === 'tên');
+                        const multiplierIdx = sheetHeaders.findIndex(h => h.includes('hệ số') || h.includes('sl quy đổi') || h.includes('hệ số quy đổi'));
                         
                         if (codeIdx !== -1 && multiplierIdx !== -1) {
                             if (!config.vasNameMultiplierMap) {

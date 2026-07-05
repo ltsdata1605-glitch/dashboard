@@ -360,7 +360,7 @@
     "missingMobileToolbar": 0
   },
   "components/summary/WarehouseSettingsModal.tsx": {
-    "nonSemanticColor": 59,
+    "nonSemanticColor": 80,
     "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
@@ -505,7 +505,7 @@
     "missingMobileToolbar": 0
   },
   "constants.ts": {
-    "nonSemanticColor": 18,
+    "nonSemanticColor": 36,
     "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
@@ -672,11 +672,6 @@
   "features/bi-dashboard/components/shared/Badges.tsx": {
     "nonSemanticColor": 0,
     "missingDarkVariant": 5,
-    "missingMobileToolbar": 0
-  },
-  "features/bi-dashboard/components/shared/SharedModal.tsx": {
-    "nonSemanticColor": 2,
-    "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
   "features/bi-dashboard/components/Slider.tsx": {

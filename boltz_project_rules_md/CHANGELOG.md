@@ -322,3 +322,85 @@ Cũng phát hiện `styles/tokens.css` (382 dòng) đã có sẵn hệ token 3 t
   `CLAUDE.md`, `README.md`, `REQUIREMENTS.md`, `DESIGN.md`, `ARCHITECTURE.md`, `API.md`,
   `DATABASE.md`, `CODE_STYLE.md`, `TESTING.md`, `SECURITY.md`, `DEPLOYMENT.md` — không còn
   mục nào trong Phase 2 để làm tiếp.
+
+## 2026-07-05 — Phase 6: Dọn dẹp file không sử dụng (theo yêu cầu chủ dự án)
+
+### Bối cảnh
+
+Chủ dự án yêu cầu kiểm tra và xóa file không dùng để "làm nhẹ dự án", loại trừ tường minh
+thư mục `archive/` (chứa backup). Do đây là thao tác xóa (khó hoàn tác về mặt tâm lý dù có
+thể khôi phục qua git), đã audit kỹ trước, trình bày danh sách phân loại theo độ tin cậy cho
+chủ dự án xác nhận, rồi mới xóa.
+
+### Phương pháp audit
+
+Viết script Node.js quét toàn bộ import thật (`from '...'`, `import('...')`, `require(...)`,
+`@import`) trong mọi file `.ts/.tsx/.js/.jsx/.css`, resolve từng đường dẫn tương đối về file
+thật (thử các đuôi `.ts/.tsx/.js/.jsx` và `index.*`), rồi so sánh với danh sách toàn bộ file
+để tìm file không bao giờ được resolve. Sau đó **xác minh thủ công từng ứng viên** để loại
+false positive: import kiểu Vite `?worker`/`new URL(..., import.meta.url)` (3 file worker bị
+flag nhầm ban đầu), ambient type declaration `global.d.ts` (TypeScript tự nhận, không cần
+import), barrel export ẩn. Cũng đối chiếu với `AUDIT.md` (audit trước đó, 04/07) để không bỏ
+sót phát hiện đã có.
+
+### Đã xóa (8 file, chủ dự án đã xác nhận cả 4 nhóm)
+
+**Source code chết trong app** (không được import ở bất kỳ đâu, đã verify kỹ):
+- `features/bi-dashboard/components/MarkdownRenderer.tsx` — thêm lý do: dùng
+  `dangerouslySetInnerHTML` không sanitize (đã ghi nhận rủi ro này trong `SECURITY.md`
+  trước đó khi còn là dead code; nay đã xóa hẳn nên rủi ro không còn tồn tại nữa).
+- `features/bi-dashboard/components/shared/SharedModal.tsx` — modal tự viết bị thay thế bởi
+  `components/shared/ui/Modal.tsx` dùng chung.
+- `features/bi-dashboard/hooks/useTheme.ts` — hook theme riêng của zone, không được gọi ở
+  đâu; dark mode thật của toàn app nằm ở `contexts/LayoutContext.tsx` (root), các zone chỉ
+  cần dùng class Tailwind `dark:` (tự động ăn theo class `.dark` ở `<html>`), không cần hook
+  riêng.
+- `features/phan-ca/index.css` (272 dòng) — bị thay thế bởi `phanca.css`, không còn import.
+
+**File rác/trùng lặp ở root** (không thuộc `archive/`):
+- `dashboardycx_backup.zip` (55MB, không track bởi git) — backup trùng mục đích `archive/`.
+- `bg_phieu.png` (188K, ở root) — trùng `public/frame/bg_phieu.png`, code chỉ dùng bản trong
+  `public/frame/`.
+
+**Xác nhận thêm từ chủ dự án trước khi xóa** (không hẳn "unused" theo nghĩa kỹ thuật, mà là
+công cụ cá nhân/kế hoạch cũ):
+- `Deploy_Dashboard.command` — script deploy cá nhân macOS (double-click), chủ dự án xác
+  nhận không còn dùng.
+- `_agents/` (2 file `.md`: `nhanvien_plan.md`, `workflows/deploy.md`) — kế hoạch/workflow cũ,
+  khác với `.agents/` (đang hoạt động, giữ nguyên); `AUDIT.md` 04/07 đã ghi nhận thư mục này
+  "bỏ hoang", chủ dự án xác nhận xóa.
+
+### Loại trừ khỏi phạm vi (cân nhắc kỹ, không xóa dù có thể "không dùng")
+
+- `archive/` — loại trừ tường minh theo yêu cầu chủ dự án.
+- `.agents/skills/*` (VD: `condition-based-waiting-example.ts`, `utility-types.ts`) — không
+  được import bởi app, nhưng đây là tài liệu/ví dụ tham khảo đi kèm định nghĩa skill của
+  Claude Code (`SKILL.md` + file ví dụ), không phải code app chết — xóa nhầm có thể ảnh
+  hưởng hệ thống skill.
+- `scratch/`, `tasks/`, `telegram-agent/`, `design-system/` — không thuộc app nhưng là hạ
+  tầng công cụ AI khác đang chạy song song trên cùng repo (đã biết từ trước, xem CHANGELOG
+  các mục trước) — không nằm trong phạm vi "file dự án" theo nghĩa web app, rủi ro xóa nhầm
+  cao nếu đang hoạt động.
+
+### Dọn dẹp phụ
+
+- Xóa entry `features/bi-dashboard/components/shared/SharedModal.tsx` khỏi
+  `violations-baseline.json` (file không còn tồn tại).
+
+### Phát hiện phụ khi verify `lint:ratchet`
+
+`constants.ts` và `components/summary/WarehouseSettingsModal.tsx` báo "vi phạm mới"
+(`nonSemanticColor` tăng) — điều tra qua `git log`/`git status` xác nhận đây là do 1 commit
+KHÁC không liên quan (`3a8a5fe feat(columns): add BẢO HIỂM ALL...`, thêm cột nghiệp vụ mới)
+của công cụ AI khác chạy song song trên repo, KHÔNG phải do việc xóa file trong task này gây
+ra. Đã cập nhật baseline phản ánh đúng giá trị thật hiện tại, không sửa nội dung 2 file đó
+(ngoài phạm vi task cleanup).
+
+### Verify
+
+- `git status` sạch trước khi xóa (không có thay đổi chưa commit bị mất).
+- `tsc --noEmit` sạch toàn repo — xác nhận không file nào còn import 8 file đã xóa.
+- `npx eslint .` không phát sinh lỗi mới (31 lỗi còn lại đều là `import/no-restricted-paths`
+  tiền tồn tại, không liên quan).
+- `npm run build` thành công.
+- `npm run lint:ratchet` sạch sau khi cập nhật baseline.
