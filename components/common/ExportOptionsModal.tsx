@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import ModalWrapper from '../modals/ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 
 interface ExportOptionsModalProps {
     isOpen: boolean;
@@ -14,18 +14,18 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
     const [mounted, setMounted] = useState(false);
     useEffect(() => setMounted(true), []);
 
-    if (!isOpen || !mounted) return null;
+    if (!mounted) return null;
 
     return (
-        <ModalWrapper 
-            isOpen={isOpen} 
-            onClose={onClose} 
-            position="bottom" 
-            hideHeader={true}
-            maxWidthClass="sm:max-w-md"
-            noRounded={true}
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            position="bottom"
+            hideHeader
+            maxWidth="md"
+            noRounded
         >
-            <div className="relative overflow-hidden flex flex-col items-center">
+            <div className="-m-5 relative overflow-hidden flex flex-col items-center">
                 {/* Glowing Accent Top */}
                 <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-sky-400 via-indigo-500 to-purple-500 opacity-80" />
 
@@ -104,7 +104,7 @@ const ExportOptionsModal: React.FC<ExportOptionsModalProps> = ({ isOpen, onClose
                     </button>
                 </div>
             </div>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

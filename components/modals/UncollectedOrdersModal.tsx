@@ -1,6 +1,6 @@
 import React, { useRef, useState, useMemo, useEffect } from 'react';
 import type { DataRow } from '../../types';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity } from '../../utils/dataUtils';
 import { COL } from '../../constants';
@@ -526,17 +526,17 @@ Link: ${url}`;
     );
     
     return (
-        <ModalWrapper 
-            isOpen={isOpen} 
-            onClose={onClose} 
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
             title="ĐƠN HÀNG CHƯA THU | CHƯA HỦY"
             subTitle={`DTQĐ: ${formatCurrency(totalUncollectedRevenueQD)}`}
             titleColorClass="text-red-600 dark:text-red-400"
             controls={controls}
-            maxWidthClass="max-w-[960px]"
-            noRounded={true}
+            maxWidth="xl"
+            noRounded
         >
-            <div className="p-4 sm:p-8 overflow-y-auto bg-white dark:bg-slate-900" ref={modalBodyRef}>
+            <div className="-m-5 p-4 sm:p-8 bg-white dark:bg-slate-900" ref={modalBodyRef}>
                 {creatorData.length > 0 ? (
                     <div className="space-y-4">
                         <div className="bg-white dark:bg-slate-800 rounded-lg sm:rounded-xl shadow p-3 sm:p-5">
@@ -664,7 +664,7 @@ Link: ${url}`;
                     <p className="text-center text-slate-500 dark:text-slate-400 py-12">Không có đơn hàng nào đang chưa thu trong khoảng thời gian đã chọn.</p>
                 )}
             </div>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

@@ -9,7 +9,7 @@ import { getRowValue, formatCurrency, formatQuantity, getExportFilenamePrefix } 
 import LoadingOverlay from '../common/LoadingOverlay';
 import WarehouseSettingsModal from './WarehouseSettingsModal';
 import { useWarehouseLogic } from '../../hooks/useWarehouseLogic';
-import ModalWrapper from '../modals/ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { useAuth } from '../../contexts/AuthContext';
 const migrateColumns = (savedConfig: WarehouseColumnConfig[]): WarehouseColumnConfig[] => {
     const savedIds = new Set(savedConfig.map(c => c.id));
@@ -729,15 +729,15 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
             />
 
             {/* Target Edit Modal */}
-            <ModalWrapper
+            <Modal
                 isOpen={!!editingTargetKho}
                 onClose={() => setEditingTargetKho(null)}
                 title="Nhập Target Tháng"
                 subTitle={`Đặt chỉ tiêu doanh thu tháng cho kho ${editingTargetKho?.name}`}
                 titleColorClass="text-indigo-600 dark:text-indigo-400"
-                maxWidthClass="max-w-lg"
+                maxWidth="lg"
             >
-                <div className="p-4 sm:p-6">
+                <div>
                     <div className="grid grid-cols-2 gap-4 mb-4">
                         {/* DT Thực */}
                         <div>
@@ -812,7 +812,7 @@ const WarehouseSummary: React.FC<WarehouseSummaryProps> = ({ onBatchExport }) =>
                         <button type="button" onClick={() => handleTargetSave()} className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold">Lưu</button>
                     </div>
                 </div>
-            </ModalWrapper>
+            </Modal>
         </>
     );
 };

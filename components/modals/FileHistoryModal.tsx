@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Icon } from '../common/Icon';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { FileHistoryManager } from '../upload/FileHistoryManager';
 import type { UploadedFileRegistryItem } from '../../types';
 
@@ -37,14 +37,15 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
     };
 
     return (
-        <ModalWrapper
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
-            hideHeader={true}
-            maxWidthClass="max-w-2xl"
+            hideHeader
+            maxWidth="2xl"
         >
+            <div className="-m-5">
             {/* Header */}
-            <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 rounded-t-md">
+            <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center bg-white dark:bg-slate-900 rounded-t-2xl">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-md bg-slate-100 dark:bg-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center border border-slate-200 dark:border-slate-700">
                         <Icon name="database" size={5} />
@@ -60,7 +61,7 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
             </div>
 
             {/* Content */}
-            <div className="p-5 overflow-y-auto custom-scrollbar flex-1 bg-white dark:bg-slate-900 space-y-4">
+            <div className="p-5 space-y-4">
                 {registry.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-8 text-center text-slate-400 dark:text-slate-500">
                         <div className="w-12 h-12 mb-3 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-300 dark:text-slate-600">
@@ -109,7 +110,8 @@ const FileHistoryModal: React.FC<FileHistoryModalProps> = ({
                     </button>
                 </div>
             </div>
-        </ModalWrapper>
+            </div>
+        </Modal>
     );
 };
 

@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import toast from 'react-hot-toast';
 import type { WarehouseColumnConfig, WarehouseCategoryType, WarehouseMetricType } from '../../types';
-import ModalWrapper from '../modals/ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
 import SearchableSelect from '../common/SearchableSelect';
 import { WAREHOUSE_METRIC_TYPE_MAP, DEFAULT_WAREHOUSE_COLUMNS } from '../../constants';
@@ -367,21 +367,31 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
     }, [internalColumns]);
 
     return (
-        <ModalWrapper 
-            isOpen={isOpen} 
-            onClose={onClose} 
-            title="Cấu Hình Cột Báo Cáo" 
-            subTitle="Tùy chỉnh hiển thị dữ liệu kho" 
-            titleColorClass="text-slate-800 dark:text-white" 
-            maxWidthClass="max-w-4xl"
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Cấu Hình Cột Báo Cáo"
+            subTitle="Tùy chỉnh hiển thị dữ liệu kho"
+            titleColorClass="text-slate-800 dark:text-white"
+            maxWidth="4xl"
+            footer={view === 'picker' ? (
+                <div className="flex items-center justify-between">
+                    <button onClick={handleRestoreDefaults} className="py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">
+                        <Icon name="rotate-ccw" size={3.5} className="sm:hidden" /><Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục mặc định
+                    </button>
+                    <button onClick={handleSaveAndClose} className="py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[10px] sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-1 sm:gap-2">
+                        Hoàn tất <Icon name="check" size={3.5} className="ml-0.5 sm:hidden"/><Icon name="check" size={4} className="ml-1 hidden sm:block"/>
+                    </button>
+                </div>
+            ) : undefined}
         >
-            <div className="flex flex-col h-[85vh] sm:h-auto min-h-0 bg-white dark:bg-slate-900">
+            <div className="-m-5 flex flex-col h-[75vh] sm:h-auto min-h-0 bg-white dark:bg-slate-900">
                 {view === 'picker' && (
                     <div className="flex-grow overflow-y-auto custom-scrollbar p-5 sm:p-6 space-y-6 min-h-0">
                         {renderPickerView()}
                     </div>
                 )}
-                
+
                 {view === 'form' && (
                     <ColumnConfigModal
                         isOpen={true}
@@ -444,19 +454,8 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
                         }}
                     />
                 )}
-                
-                {view === 'picker' && (
-                    <div className="p-4 sm:px-6 sm:py-4 flex items-center justify-between bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 z-20 rounded-b-md">
-                        <button onClick={handleRestoreDefaults} className="py-2 px-3 rounded-md text-sm font-medium text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-100 transition-colors flex items-center gap-2">
-                            <Icon name="rotate-ccw" size={3.5} className="sm:hidden" /><Icon name="rotate-ccw" size={4} className="hidden sm:block" /> Khôi phục mặc định
-                        </button>
-                        <button onClick={handleSaveAndClose} className="py-1.5 sm:py-2.5 px-5 sm:px-8 rounded-lg sm:rounded-xl shadow-md text-[10px] sm:text-sm font-black text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:-translate-y-0.5 active:translate-y-0 focus:ring-4 focus:ring-indigo-500/30 flex items-center gap-1 sm:gap-2">
-                            Hoàn tất <Icon name="check" size={3.5} className="ml-0.5 sm:hidden"/><Icon name="check" size={4} className="ml-1 hidden sm:block"/>
-                        </button>
-                    </div>
-                )}
             </div>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

@@ -1,6 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import type { Employee, DataRow, ProductConfig } from '../../types';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
 import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity, getHinhThucThanhToan, cleanAndNormalize } from '../../utils/dataUtils';
 import { COL, HINH_THUC_XUAT_TIEN_MAT, HINH_THUC_XUAT_TRA_GOP, HINH_THUC_XUAT_THU_HO } from '../../constants';
@@ -521,19 +521,19 @@ const PerformanceModal: React.FC<PerformanceModalProps> = ({
     }
 
     return (
-        <ModalWrapper 
-            isOpen={isOpen} 
-            onClose={onClose} 
-            title={employeeName} 
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={employeeName}
             subTitle="Phân Tích Hiệu Quả Cá Nhân"
             titleColorClass="text-indigo-600 dark:text-indigo-400"
             controls={controls}
-            maxWidthClass="max-w-4xl"
+            maxWidth="4xl"
         >
-            <div className="p-3 sm:p-6 overflow-y-auto bg-slate-100 dark:bg-slate-950" ref={modalBodyRef}>
+            <div className="-m-5 p-3 sm:p-6 bg-slate-100 dark:bg-slate-950" ref={modalBodyRef}>
                 {modalContent}
             </div>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

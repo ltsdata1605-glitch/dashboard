@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast from 'react-hot-toast';
-import ModalWrapper from '../../modals/ModalWrapper';
+import { Modal } from '../../shared/ui/Modal';
 import { Icon } from '../../common/Icon';
 import type { ColumnConfig } from '../../../types';
 import { DataColumnForm } from './column-config/DataColumnForm';
@@ -273,16 +273,24 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
     const availableOperands = existingColumns.filter(c => c.id !== editingColumn?.id);
 
     return (
-        <ModalWrapper 
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
             title={editingColumn ? "Chỉnh Sửa Cột" : "Tạo Cột Mới"}
             subTitle="Cấu hình số liệu hiển thị trong bảng"
             titleColorClass="text-indigo-600 dark:text-indigo-400"
-            maxWidthClass="max-w-4xl"
+            maxWidth="4xl"
+            footer={
+                <div className="flex justify-end gap-3">
+                    <Button variant="ghost" type="button" onClick={onClose}>Hủy Bỏ</Button>
+                    <Button variant="primary" type="button" onClick={handleSubmit}>
+                        <Icon name="save" size={4} /> {editingColumn ? "Lưu Thay Đổi" : "Lưu & Bắt Đầu Cột Mới"}
+                    </Button>
+                </div>
+            }
         >
-            <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 bg-white dark:bg-slate-900">
-                <div ref={scrollContainerRef} className="flex-grow p-4 sm:p-6 space-y-8 overflow-y-auto custom-scrollbar min-h-0">
+            <form onSubmit={handleSubmit}>
+                <div ref={scrollContainerRef} className="space-y-8">
                     {feedback && (
                         <div className={`p-2.5 sm:p-3 border rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
                             feedback.type === 'error' 
@@ -406,16 +414,8 @@ const ColumnConfigModal: React.FC<ColumnModalProps> = ({ isOpen, onClose, onSave
                     />
 
                 </div>
-                
-                {/* FOOTER */}
-                <div className="p-4 sm:px-6 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 rounded-b-md flex justify-end gap-3 sticky bottom-0 z-30 mt-auto shrink-0">
-                    <Button variant="ghost" type="button" onClick={onClose}>Hủy Bỏ</Button>
-                    <Button variant="primary" type="submit">
-                        <Icon name="save" size={4} /> {editingColumn ? "Lưu Thay Đổi" : "Lưu & Bắt Đầu Cột Mới"}
-                    </Button>
-                </div>
             </form>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

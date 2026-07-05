@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import ModalWrapper from '../../modals/ModalWrapper';
+import { Modal } from '../../shared/ui/Modal';
 import { ColumnConfig, ContestTableConfig } from '../../../types';
 import { Input } from '../../shared/ui/Input';
 import { Select } from '../../shared/ui/Select';
@@ -37,9 +37,22 @@ export const TabModal: React.FC<{
     };
     
     return (
-          <ModalWrapper isOpen={isOpen} onClose={onClose} title={tabId ? "Sửa Tab Thi Đua" : "Tạo Tab Thi Đua Mới"} subTitle={tabId ? "Chỉnh sửa tên cho tab" : "Tạo một trang báo cáo thi đua mới"} titleColorClass="text-indigo-600 dark:text-indigo-400" maxWidthClass="max-w-md">
+          <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={tabId ? "Sửa Tab Thi Đua" : "Tạo Tab Thi Đua Mới"}
+            subTitle={tabId ? "Chỉnh sửa tên cho tab" : "Tạo một trang báo cáo thi đua mới"}
+            titleColorClass="text-indigo-600 dark:text-indigo-400"
+            maxWidth="md"
+            footer={
+                <div className="flex justify-end gap-2 sm:gap-3">
+                    <Button type="button" onClick={onClose} variant="ghost">Hủy</Button>
+                    <Button type="button" onClick={handleSubmit} variant="primary">{tabId ? "Lưu thay đổi" : "Tạo Tab"}</Button>
+                </div>
+            }
+          >
             <form onSubmit={handleSubmit}>
-                <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                     <div>
                         <label htmlFor="tabName" className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5 sm:mb-2">Tên Tab</label>
                         <Input
@@ -54,12 +67,8 @@ export const TabModal: React.FC<{
                         />
                     </div>
                 </div>
-                 <div className="p-3 sm:p-4 flex justify-end gap-2 sm:gap-3 bg-slate-50 dark:bg-slate-800/80 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <Button type="button" onClick={onClose} variant="ghost">Hủy</Button>
-                    <Button type="submit" variant="primary">{tabId ? "Lưu thay đổi" : "Tạo Tab"}</Button>
-                </div>
             </form>
-         </ModalWrapper>
+         </Modal>
     );
 }
 
@@ -93,9 +102,22 @@ export const TableModal: React.FC<{
     };
 
     return (
-        <ModalWrapper isOpen={isOpen} onClose={onClose} title={isEditing ? "Sửa Bảng Thi Đua" : "Tạo Bảng Thi Đua Mới"} subTitle={isEditing ? "Chỉnh sửa tên và cài đặt cho bảng này" : "Đặt tên cho bảng thi đua trong tab hiện tại"} titleColorClass="text-emerald-600 dark:text-emerald-400" maxWidthClass="max-w-md">
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title={isEditing ? "Sửa Bảng Thi Đua" : "Tạo Bảng Thi Đua Mới"}
+            subTitle={isEditing ? "Chỉnh sửa tên và cài đặt cho bảng này" : "Đặt tên cho bảng thi đua trong tab hiện tại"}
+            titleColorClass="text-emerald-600 dark:text-emerald-400"
+            maxWidth="md"
+            footer={
+                <div className="flex justify-end gap-2 sm:gap-3">
+                    <Button type="button" onClick={onClose} variant="ghost">Hủy</Button>
+                    <Button type="button" onClick={handleSubmit} variant="primary">{isEditing ? "Lưu thay đổi" : "Tạo Bảng"}</Button>
+                </div>
+            }
+        >
             <form onSubmit={handleSubmit}>
-                <div className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                     <div>
                         <label htmlFor="tableName" className="block text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5 sm:mb-2">Tên Bảng</label>
                         <Input
@@ -126,11 +148,7 @@ export const TableModal: React.FC<{
                         </div>
                     )}
                 </div>
-                <div className="p-3 sm:p-4 flex justify-end gap-2 sm:gap-3 bg-slate-50 dark:bg-slate-800/80 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                    <Button type="button" onClick={onClose} variant="ghost">Hủy</Button>
-                    <Button type="submit" variant="primary">{isEditing ? "Lưu thay đổi" : "Tạo Bảng"}</Button>
-                </div>
             </form>
-        </ModalWrapper>
+        </Modal>
     );
 };

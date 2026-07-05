@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import toast from 'react-hot-toast';
 import { Icon } from '../common/Icon';
 import { useDashboardContext } from '../../contexts/DashboardContext';
@@ -180,18 +180,33 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
         onClose();
     };
 
-    if (!isOpen) return null;
-
     return (
-        <ModalWrapper
+        <Modal
             isOpen={isOpen}
             onClose={handleClose}
             title="Quản Lý Danh Sách Nhân Viên"
             subTitle={`Tổng số: ${Object.keys(localMap).length} nhân viên`}
-            maxWidthClass="max-w-4xl"
+            maxWidth="4xl"
             titleColorClass="text-indigo-600 dark:text-indigo-400"
+            footer={
+                <div className="flex justify-between gap-2 sm:gap-3">
+                    <Button
+                        onClick={handleRestore}
+                        variant="secondary"
+                        leftIcon={<Icon name="rotate-ccw" size={4} />}
+                    >
+                        Khôi phục gốc
+                    </Button>
+                    <Button
+                        onClick={handleClose}
+                        variant="primary"
+                    >
+                        {hasUnsavedChanges ? 'Lưu & Đóng' : 'Đóng'}
+                    </Button>
+                </div>
+            }
         >
-            <div className="flex flex-col h-[70vh]">
+            <div className="-m-5 flex flex-col h-[70vh]">
                 {/* Toolbar */}
                 <div className="p-2.5 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-900/50">
                     <div className="relative w-48 sm:w-64">
@@ -321,23 +336,6 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                         <option key={idx} value={dep} />
                     ))}
                 </datalist>
-
-                {/* Footer */}
-                <div className="p-2.5 sm:p-4 border-t border-slate-200 dark:border-slate-700 flex justify-between gap-2 sm:gap-3 bg-slate-50 dark:bg-slate-900/50">
-                    <Button 
-                        onClick={handleRestore} 
-                        variant="secondary"
-                        leftIcon={<Icon name="rotate-ccw" size={4} />}
-                    >
-                        Khôi phục gốc
-                    </Button>
-                    <Button 
-                        onClick={handleClose} 
-                        variant="primary"
-                    >
-                        {hasUnsavedChanges ? 'Lưu & Đóng' : 'Đóng'}
-                    </Button>
-                </div>
             </div>
 
             <ConfirmDialog
@@ -349,7 +347,7 @@ export const EmployeeManagerModal: React.FC<EmployeeManagerModalProps> = ({ isOp
                 confirmText="Khôi phục"
                 variant="warning"
             />
-        </ModalWrapper>
+        </Modal>
     );
 };
 

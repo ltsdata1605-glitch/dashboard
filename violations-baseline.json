@@ -99,11 +99,6 @@
     "missingDarkVariant": 0,
     "missingMobileToolbar": 0
   },
-  "components/employees/EmployeeAnalysisModals.tsx": {
-    "nonSemanticColor": 16,
-    "missingDarkVariant": 8,
-    "missingMobileToolbar": 0
-  },
   "components/employees/EmployeeAnalysisTabs.tsx": {
     "nonSemanticColor": 8,
     "missingDarkVariant": 2,
@@ -250,7 +245,7 @@
     "missingMobileToolbar": 0
   },
   "components/modals/CrossSellingBuilderModal.tsx": {
-    "nonSemanticColor": 54,
+    "nonSemanticColor": 52,
     "missingDarkVariant": 7,
     "missingMobileToolbar": 0
   },
@@ -272,11 +267,6 @@
   "components/modals/GtdhTargetModal.tsx": {
     "nonSemanticColor": 6,
     "missingDarkVariant": 4,
-    "missingMobileToolbar": 0
-  },
-  "components/modals/ModalWrapper.tsx": {
-    "nonSemanticColor": 0,
-    "missingDarkVariant": 1,
     "missingMobileToolbar": 0
   },
   "components/modals/PerformanceModal.tsx": {

@@ -7,6 +7,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 import { usePendingApprovalCount } from '../../hooks/usePendingApprovalCount';
 import { getSetting, saveSetting } from '../../services/dbService';
+import { doc, onSnapshot } from 'firebase/firestore';
+import { db } from '../../services/firebase';
 
 import Header from '../layout/Header';
 import Footer from '../layout/Footer';
@@ -94,6 +96,18 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const [isFileHistoryModalOpen, setIsFileHistoryModalOpen] = useState(false);
     const [pendingUploadFiles, setPendingUploadFiles] = useState<File[] | null>(null);
     const [isUnconfiguredModalOpen, setIsUnconfiguredModalOpen] = useState(false);
+    const [announcement, setAnnouncement] = useState<{ content: string; active: boolean } | null>(null);
+
+    useEffect(() => {
+        const unsub = onSnapshot(doc(db, 'settings', 'announcement'), (snap) => {
+            if (snap.exists()) {
+                setAnnouncement(snap.data() as any);
+            } else {
+                setAnnouncement(null);
+            }
+        });
+        return () => unsub();
+    }, []);
 
     useEffect(() => {
         getSetting<VisibilityState>('dashboard_visibleComponents').then(saved => {
@@ -362,6 +376,20 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                             <FilterProcessingOverlay isVisible={isFilterProcessing} />
                             <main id="dashboard-container" className="pb-[56px] lg:pb-0" ref={dashboardContainerRef}>
                                 <div className="max-w-[960px] mx-auto px-0 sm:px-2 lg:px-4 py-1.5 lg:py-4 space-y-2 lg:space-y-6">
+                                    {/* Super Admin Announcement Marquee */}
+                                    {announcement && announcement.active && announcement.content && (
+                                        <div className="w-full bg-rose-600 dark:bg-rose-750 text-white text-xs font-bold py-2 px-4 flex items-center overflow-hidden relative rounded-xl shadow-md border border-rose-500/25 mb-2 no-print">
+                                            <div className="flex-shrink-0 flex items-center gap-1.5 bg-rose-700 dark:bg-rose-850 px-2 py-0.5 rounded-lg z-10 mr-3 shadow-[2px_0_6px_rgba(0,0,0,0.1)] select-none">
+                                                <Icon name="megaphone" size={3.5} className="animate-bounce shrink-0" />
+                                                <span className="uppercase tracking-wider text-[9px] font-black">Thông báo</span>
+                                            </div>
+                                            <div className="flex-1 overflow-hidden whitespace-nowrap">
+                                                <div className="inline-block animate-marquee pl-[100%]">
+                                                    {announcement.content}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
                                     <FilterBar onToggleAdvanced={() => setIsFilterSidebarOpen(true)} onNewFile={handleNewFileClick} onOpenHistory={() => setIsFileHistoryModalOpen(true)} />
 
                                     {/* Data Coverage Indicator */}

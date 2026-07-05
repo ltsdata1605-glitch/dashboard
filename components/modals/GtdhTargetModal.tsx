@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import SearchableSelect from '../common/SearchableSelect';
 import { Icon } from '../common/Icon';
@@ -62,15 +62,15 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
     const gtdhList = Object.entries(gtdhTargets).sort((a, b) => a[0].localeCompare(b[0]));
 
     return (
-        <ModalWrapper
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
             title="Cấu hình Mục Tiêu GTĐH (AOV)"
             subTitle="Thiết lập chỉ tiêu cảnh báo màu đỏ"
             titleColorClass="text-rose-600 dark:text-rose-400"
-            maxWidthClass="max-w-3xl"
+            maxWidth="lg"
         >
-            <div className="flex flex-col h-full bg-slate-50 dark:bg-slate-900 overflow-hidden rounded-b-xl">
+            <div className="-m-5 h-full flex flex-col bg-slate-50 dark:bg-slate-900">
                 
                 {/* CONFIGURATION FORM */}
                 <div className="p-3 sm:p-6 border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/50 flex-shrink-0">
@@ -173,7 +173,7 @@ const GtdhTargetModal: React.FC<GtdhTargetModalProps> = ({ isOpen, onClose }) =>
                     )}
                 </div>
             </div>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

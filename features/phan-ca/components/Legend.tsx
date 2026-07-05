@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScheduleTargets } from '../types';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface LegendProps {
     targets: ScheduleTargets | null;
@@ -47,37 +48,40 @@ const Legend: React.FC<LegendProps> = ({
                         </span>
 
                         {/* KHO button */}
-                        <button 
-                            onClick={() => onEditRule('kho')} 
-                            className="group flex items-center gap-1.5 h-9 px-4 border border-emerald-200 bg-emerald-50 hover:border-emerald-400 hover:bg-emerald-100 transition-colors cursor-pointer"
+                        <Button
+                            variant="ghost"
+                            onClick={() => onEditRule('kho')}
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 group flex items-center gap-1.5 h-9 px-4 border border-emerald-200 bg-emerald-50 hover:border-emerald-400 hover:bg-emerald-100 transition-colors cursor-pointer"
                         >
                             <span className="text-emerald-700 font-bold text-xs">KHO</span>
                             <span className="font-extrabold text-emerald-900 text-base">~{targets.kho}</span>
                             <span className="text-emerald-600 text-xs font-semibold">ngày</span>
                             <svg className="h-3 w-3 text-slate-300 group-hover:text-emerald-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
+                        </Button>
 
                         {/* TN button */}
-                        <button 
-                            onClick={() => onEditRule('tn')} 
-                            className="group flex items-center gap-1.5 h-9 px-4 border border-purple-200 bg-purple-50 hover:border-purple-400 hover:bg-purple-100 transition-colors cursor-pointer"
+                        <Button
+                            variant="ghost"
+                            onClick={() => onEditRule('tn')}
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 group flex items-center gap-1.5 h-9 px-4 border border-purple-200 bg-purple-50 hover:border-purple-400 hover:bg-purple-100 transition-colors cursor-pointer"
                         >
                             <span className="text-purple-700 font-bold text-xs">TN</span>
                             <span className="font-extrabold text-purple-900 text-base">~{targets.tn}</span>
                             <span className="text-purple-600 text-xs font-semibold">ngày</span>
                             <svg className="h-3 w-3 text-slate-300 group-hover:text-purple-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
+                        </Button>
 
                         {/* GH button */}
-                        <button 
-                            onClick={() => onEditRule('gh')} 
-                            className="group flex items-center gap-1.5 h-9 px-4 border border-amber-200 bg-amber-50 hover:border-amber-400 hover:bg-amber-100 transition-colors cursor-pointer"
+                        <Button
+                            variant="ghost"
+                            onClick={() => onEditRule('gh')}
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 group flex items-center gap-1.5 h-9 px-4 border border-amber-200 bg-amber-50 hover:border-amber-400 hover:bg-amber-100 transition-colors cursor-pointer"
                         >
                             <span className="text-amber-700 font-bold text-xs">GH</span>
                             <span className="font-extrabold text-amber-900 text-base">~{targets.gh}</span>
                             <span className="text-amber-600 text-xs font-semibold">ngày</span>
                             <svg className="h-3 w-3 text-slate-300 group-hover:text-amber-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        </button>
+                        </Button>
 
                         {/* Separator */}
                         <div className="w-px h-6 bg-slate-200"></div>

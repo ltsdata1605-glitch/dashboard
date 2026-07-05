@@ -7,7 +7,7 @@ import { getHeadToHeadCustomTables, saveHeadToHeadCustomTables, getSetting, save
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { getExportFilenamePrefix, getRowValue } from '../../utils/dataUtils';
 import { COL, DATA_STATUS_COLORS } from '../../constants';
-import ModalWrapper from '../modals/ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 
 // Import refactored components
 import HeadToHeadTable from './head-to-head/HeadToHeadTable';
@@ -380,22 +380,22 @@ const HeadToHeadTab = React.memo(forwardRef<HTMLDivElement, HeadToHeadTabProps>(
                 />
             )}
              {modalState.type === 'DELETE' && (
-                <ModalWrapper
+                <Modal
                     isOpen={true}
                     onClose={() => setModalState({ type: null })}
                     title="Xác nhận Xóa Bảng"
                     subTitle={`Bạn có chắc muốn xóa bảng "${modalState.data?.tableName}" không?`}
                     titleColorClass="text-red-600 dark:text-red-400"
-                    maxWidthClass="max-w-md"
+                    maxWidth="md"
+                    footer={
+                        <div className="flex justify-end gap-2 sm:gap-3">
+                            <button onClick={() => setModalState({ type: null })} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
+                            <button onClick={handleDelete} className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xóa</button>
+                        </div>
+                    }
                 >
-                    <div className="p-4 sm:p-6">
-                        <p className="text-xs sm:text-sm">Hành động này không thể hoàn tác.</p>
-                    </div>
-                    <div className="p-3 sm:p-4 flex justify-end gap-2 sm:gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                        <button onClick={() => setModalState({ type: null })} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                        <button onClick={handleDelete} className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xóa</button>
-                    </div>
-                </ModalWrapper>
+                    <p className="text-xs sm:text-sm">Hành động này không thể hoàn tác.</p>
+                </Modal>
             )}
         </div>
     );

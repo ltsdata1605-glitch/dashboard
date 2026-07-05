@@ -1,5 +1,5 @@
 import React from 'react';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
 
 export interface UploadConflictInfo {
@@ -51,13 +51,13 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
     };
 
     return (
-        <ModalWrapper
+        <Modal
             isOpen={isOpen}
             onClose={() => onResolve('cancel')}
-            maxWidthClass="max-w-lg"
+            maxWidth="lg"
             hideHeader
         >
-            <div className="flex flex-col p-6 space-y-5">
+            <div className="-m-5 flex flex-col p-6 space-y-5">
                 {/* Header */}
                 <div className="flex items-start gap-3">
                     <div className="w-12 h-12 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">
@@ -212,7 +212,7 @@ export const UploadConflictModal: React.FC<UploadConflictModalProps> = ({
                     </button>
                 </div>
             </div>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Icon } from './Icon';
+import { Button } from '../shared/ui/Button';
 
 interface FilterChipProps {
     label: string;
@@ -35,16 +36,17 @@ const FilterChip: React.FC<FilterChipProps> = ({
         <div className={`group flex items-center gap-1.5 pl-2.5 pr-1.5 py-1.5 rounded-xl border text-[10px] font-black uppercase tracking-wider transition-all shadow-sm animate-in fade-in zoom-in duration-200 ${getColorClasses()}`}>
             <span className="opacity-60">{label}:</span>
             <span className="max-w-[120px] truncate">{displayValue}</span>
-            <button 
+            <Button
+                variant="ghost"
                 onClick={(e) => {
                     e.stopPropagation();
                     onRemove();
                 }}
-                className="ml-0.5 p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ml-0.5 p-0.5 rounded-md hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
                 title={`Xóa lọc ${label}`}
             >
                 <Icon name="x" size={3} />
-            </button>
+            </Button>
         </div>
     );
 };

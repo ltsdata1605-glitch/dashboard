@@ -1,5 +1,5 @@
 import React from 'react';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
 
 interface UploadTypeSelectionModalProps {
@@ -16,13 +16,13 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
     fileCount
 }) => {
     return (
-        <ModalWrapper
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
-            hideHeader={true}
-            maxWidthClass="max-w-md"
+            hideHeader
+            maxWidth="md"
         >
-            <div className="p-6 bg-white dark:bg-slate-900 rounded-2xl">
+            <div className="-m-5 p-6">
                 <div className="flex flex-col items-center text-center mb-6">
                     <div className="w-12 h-12 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3">
                         <Icon name="file-up" size={6} />
@@ -80,7 +80,7 @@ const UploadTypeSelectionModal: React.FC<UploadTypeSelectionModalProps> = ({
                     </button>
                 </div>
             </div>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

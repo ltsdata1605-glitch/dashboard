@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface ControlsProps {
   monthYear: string;
@@ -157,9 +158,10 @@ const Controls: React.FC<ControlsProps> = ({
       {/* Generate button */}
       <div className="relative ml-auto">
         {tooltip(6, 'Bước 6: Hoàn tất!', 'Bấm vào đây để tạo lịch tự động!')}
-        <button 
-          onClick={onGenerate} 
-          className={`h-9 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:bg-slate-300 disabled:cursor-not-allowed ${controlHighlightClass(6)}`}
+        <Button
+          variant="ghost"
+          onClick={onGenerate}
+          className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 h-9 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm transition-colors flex items-center justify-center gap-2 disabled:bg-slate-300 disabled:cursor-not-allowed ${controlHighlightClass(6)}`}
           disabled={isGenerateDisabled}
           title={isGenerateDisabled ? "Vui lòng nhập danh sách nhân viên và tạo Ca Xoay trước." : "Tạo lịch làm việc mới"}
         >
@@ -167,7 +169,7 @@ const Controls: React.FC<ControlsProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h5M20 20v-5h-5M4 20h5v-5M20 4h-5v5" />
           </svg>
           Tạo Lịch
-        </button>
+        </Button>
       </div>
     </div>
   );

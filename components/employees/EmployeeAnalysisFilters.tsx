@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icon } from '../common/Icon';
 import toast from 'react-hot-toast';
+import { Button } from '../shared/ui/Button';
 
 interface EmployeeAnalysisFiltersProps {
     hideZeroRevenue: boolean;
@@ -20,10 +21,11 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
 
     return (
         <div className="relative flex items-center gap-2 hide-on-export">
-            <button
+            <Button
                 type="button"
+                variant="ghost"
                 onClick={handleToggle}
-                className={`p-1 sm:p-1.5 rounded-lg transition-all ${
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 sm:p-1.5 rounded-lg transition-all ${
                     hideZeroRevenue
                     ? 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/30 dark:text-indigo-400'
                     : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
@@ -31,7 +33,7 @@ const EmployeeAnalysisFilters: React.FC<EmployeeAnalysisFiltersProps> = ({
                 title={hideZeroRevenue ? 'Đang ẩn nhân viên No Sale — Nhấn để hiện' : 'Đang hiện tất cả — Nhấn để ẩn No Sale'}
             >
                 <Icon name={hideZeroRevenue ? 'user-round-x' : 'user-round-check'} size={4} />
-            </button>
+            </Button>
         </div>
     );
 };

@@ -1,5 +1,6 @@
 
 import React, { ErrorInfo, ReactNode } from 'react';
+import { Button } from '../shared/ui/Button';
 
 interface Props {
   children: ReactNode;
@@ -71,7 +72,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
               ? 'Phiên bản mới đã được cập nhật. Hệ thống đang tải lại trang để áp dụng các thay đổi mới nhất.'
               : (this.state.error?.message || 'Vui lòng thử tải lại trang hoặc kiểm tra lại dữ liệu đầu vào.')}
           </p>
-          <button
+          <Button
+            variant="ghost"
             onClick={() => {
               if (isChunkLoadError) {
                 // Force reload to get the new index.html with updated chunk hashes
@@ -80,10 +82,10 @@ export class ErrorBoundary extends React.Component<Props, State> {
                 this.setState({ hasError: false, error: null });
               }
             }}
-            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors text-sm font-medium"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg transition-colors text-sm font-medium"
           >
             {isChunkLoadError ? 'Tải lại trang' : 'Thử lại'}
-          </button>
+          </Button>
         </div>
       );
     }

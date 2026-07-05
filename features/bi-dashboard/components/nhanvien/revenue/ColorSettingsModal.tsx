@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CogIcon, XIcon } from '../../Icons';
-import ModalWrapper from '../../../../../components/modals/ModalWrapper';
+import { Modal } from '../../../../../components/shared/ui/Modal';
 
 // --- Vivid/Hot Color Palette ---
 export const VIVID_COLORS = [
@@ -128,27 +127,25 @@ export const ColorSettingsModal: React.FC<{
     };
 
     return (
-        <ModalWrapper
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
             title="Cấu Hình Màu Hiển Thị"
             subTitle="Tùy chỉnh ngưỡng phần trăm"
-            maxWidthClass="max-w-lg"
-        >
-            <div className="flex flex-col max-h-[85vh] bg-white dark:bg-slate-800 rounded-b-2xl">
-                <div className="overflow-y-auto pr-2 flex-1 scrollbar-thin p-5">
-                    {renderRow("% Hoàn thành", "ht")}
-                    {renderRow("Hiệu quả quy đổi", "hqqd")}
-                    {renderRow("% Trả góp", "tragop")}
-                    {renderRow("% Bán kèm", "bankem")}
-                    {renderRow("Doanh thu quy đổi", "dtqd", true)}
-                    {renderRow("Doanh thu thực", "dtthuc", true)}
-                </div>
-                <div className="flex gap-3 flex-shrink-0 p-5 border-t border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50 rounded-b-2xl">
+            maxWidth="lg"
+            footer={
+                <div className="flex gap-3">
                     <button onClick={() => setTemp(DEFAULT_COLOR_SETTINGS)} className="px-5 py-2 text-xs font-bold border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 dark:text-white transition-colors">Mặc định</button>
                     <button onClick={() => { onSave(temp); onClose(); }} className="flex-1 py-2.5 bg-primary-600 text-white text-sm font-bold rounded-xl hover:bg-primary-700 active:scale-95 transition-all shadow-md shadow-primary-500/20">Lưu cấu hình</button>
                 </div>
-            </div>
-        </ModalWrapper>
+            }
+        >
+            {renderRow("% Hoàn thành", "ht")}
+            {renderRow("Hiệu quả quy đổi", "hqqd")}
+            {renderRow("% Trả góp", "tragop")}
+            {renderRow("% Bán kèm", "bankem")}
+            {renderRow("Doanh thu quy đổi", "dtqd", true)}
+            {renderRow("Doanh thu thực", "dtthuc", true)}
+        </Modal>
     );
 };

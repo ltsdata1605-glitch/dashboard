@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from '../common/Icon';
 import { motion, AnimatePresence } from 'motion/react';
-import ModalWrapper from '../modals/ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import EmployeeManagerModal from '../modals/EmployeeManagerModal';
 
 import FontSelector from './FontSelector';
@@ -207,22 +207,15 @@ const Header: React.FC<HeaderProps> = ({
         )}
 
             {/* Instruction Modal */}
-            <ModalWrapper
+            <Modal
                 isOpen={showInstructionModal}
                 onClose={() => setShowInstructionModal(false)}
                 title="Hướng Dẫn Nhập DS Nhân Viên"
                 subTitle="Thao tác trên Hệ thống BCNB"
                 titleColorClass="text-blue-600 dark:text-blue-400"
-                maxWidthClass="max-w-md"
-            >
-                <div className="p-3 sm:p-6">
-                    <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 space-y-2 sm:space-y-4">
-                        <p><strong>Bước 1:</strong> Nếu chưa đăng nhập BCNB thì hãy đăng nhập hệ thống.</p>
-                        <p><strong>Bước 2:</strong> Click vào "Đã Hiểu & Tiếp Tục" &gt; Chọn siêu thị &gt; Xem &gt; Tùy chọn "Xuất excel".</p>
-                        <p><em>(Nếu cụm có nhiều siêu thị, hãy lặp lại việc xuất cho từng siêu thị)</em></p>
-                        <p><strong>Bước 3:</strong> Quay lại Dashboard &gt; Click "DS Nhân Viên" &gt; Tải lên tất cả file excel bạn vừa tải về.</p>
-                    </div>
-                    <div className="mt-4 sm:mt-8 flex justify-end gap-2 sm:gap-3">
+                maxWidth="md"
+                footer={
+                    <div className="flex justify-end gap-2 sm:gap-3">
                         <button onClick={() => setShowInstructionModal(false)} className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors font-semibold">
                             Hủy
                         </button>
@@ -230,8 +223,15 @@ const Header: React.FC<HeaderProps> = ({
                             Đã Hiểu & Tiếp Tục
                         </button>
                     </div>
+                }
+            >
+                <div className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 space-y-2 sm:space-y-4">
+                    <p><strong>Bước 1:</strong> Nếu chưa đăng nhập BCNB thì hãy đăng nhập hệ thống.</p>
+                    <p><strong>Bước 2:</strong> Click vào "Đã Hiểu & Tiếp Tục" &gt; Chọn siêu thị &gt; Xem &gt; Tùy chọn "Xuất excel".</p>
+                    <p><em>(Nếu cụm có nhiều siêu thị, hãy lặp lại việc xuất cho từng siêu thị)</em></p>
+                    <p><strong>Bước 3:</strong> Quay lại Dashboard &gt; Click "DS Nhân Viên" &gt; Tải lên tất cả file excel bạn vừa tải về.</p>
                 </div>
-            </ModalWrapper>
+            </Modal>
 
             {/* Employee Manager Modal */}
             <EmployeeManagerModal 

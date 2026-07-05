@@ -181,12 +181,13 @@ export default function CouponConverterView() {
                                 <p className="text-sm mt-0.5 opacity-90">{errorMessage}</p>
                             </div>
                         </div>
-                        <button 
-                            onClick={() => setErrorMessage('')} 
-                            className="text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors p-1 hover:bg-red-100 dark:hover:bg-red-900/40"
+                        <Button
+                            variant="ghost"
+                            onClick={() => setErrorMessage('')}
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-red-400 hover:text-red-600 dark:hover:text-red-300 transition-colors p-1 hover:bg-red-100 dark:hover:bg-red-900/40"
                         >
                             <Icon name="x" size={5} />
-                        </button>
+                        </Button>
                     </div>
                 )}
 

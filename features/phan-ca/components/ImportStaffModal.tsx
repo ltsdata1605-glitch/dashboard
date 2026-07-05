@@ -132,18 +132,20 @@ const ImportStaffModal: React.FC<ImportStaffModalProps> = ({ staffList, onClose,
                 <td className="px-4 py-2 text-slate-500 dark:text-slate-400 font-medium text-xs">{staff.department}</td>
                 <td className="px-4 py-1.5">
                   <div className="flex justify-center items-center gap-1">
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={() => handleGenderChange(staff.id, 'Nam')}
-                      className={`flex-1 py-1 px-2 text-[10px] font-black transition-all border rounded ${genderAssignments[staff.id] === 'Nam' ? 'bg-sky-600 text-white border-sky-600' : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
+                      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 px-2 text-[10px] font-black transition-all border rounded ${genderAssignments[staff.id] === 'Nam' ? 'bg-sky-600 text-white border-sky-600' : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
                     >
                       NAM
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="ghost"
                       onClick={() => handleGenderChange(staff.id, 'Nu')}
-                      className={`flex-1 py-1 px-2 text-[10px] font-black transition-all border rounded ${genderAssignments[staff.id] === 'Nu' ? 'bg-rose-500 text-white border-rose-500' : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
+                      className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 flex-1 py-1 px-2 text-[10px] font-black transition-all border rounded ${genderAssignments[staff.id] === 'Nu' ? 'bg-rose-500 text-white border-rose-500' : 'bg-slate-50 dark:bg-slate-700 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-600'}`}
                     >
                       NỮ
-                    </button>
+                    </Button>
                   </div>
                 </td>
               </tr>

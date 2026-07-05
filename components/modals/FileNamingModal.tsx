@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
 
 interface FileNamingModalProps {
@@ -20,8 +20,6 @@ export const FileNamingModal: React.FC<FileNamingModalProps> = ({
         }
     }, [isOpen]);
 
-    if (!isOpen) return null;
-
     const handleConfirm = (e: React.FormEvent) => {
         e.preventDefault();
         const trimmed = inputValue.trim();
@@ -36,14 +34,14 @@ export const FileNamingModal: React.FC<FileNamingModalProps> = ({
     ];
 
     return (
-        <ModalWrapper
+        <Modal
             isOpen={isOpen}
             onClose={() => {}}
-            maxWidthClass="max-w-md"
+            maxWidth="md"
             hideHeader
             hideCloseButton
         >
-            <div className="flex flex-col p-6 space-y-5">
+            <div className="-m-5 flex flex-col p-6 space-y-5">
                 {/* Header */}
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/30 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-100/50 dark:border-amber-900/20 shrink-0">
@@ -107,7 +105,7 @@ export const FileNamingModal: React.FC<FileNamingModalProps> = ({
                     </div>
                 </form>
             </div>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

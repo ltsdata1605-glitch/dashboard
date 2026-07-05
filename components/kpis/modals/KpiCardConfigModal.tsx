@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import type { KpiCardConfig, KpiMetricSource } from '../../../types';
-import ModalWrapper from '../../modals/ModalWrapper';
+import { Modal } from '../../shared/ui/Modal';
 import { Icon } from '../../common/Icon';
 import MultiSelectDropdown from '../../common/MultiSelectDropdown';
 import { Button } from '../../shared/ui/Button';
@@ -187,11 +187,26 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
         if (editingCard?.id === id) setEditingCard(null);
     };
 
-    if (!isOpen) return null;
-
     return (
-        <ModalWrapper isOpen={isOpen} onClose={onClose} title="Cấu hình Dãy thẻ KPI" subTitle="Tuỳ chỉnh hiển thị thẻ tổng quan" titleColorClass="text-slate-800 dark:text-white" maxWidthClass="max-w-4xl max-h-[90vh]">
-            <div className="flex divide-x divide-slate-200 dark:divide-slate-700 h-[55vh] sm:h-[600px] overflow-hidden">
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Cấu hình Dãy thẻ KPI"
+            subTitle="Tuỳ chỉnh hiển thị thẻ tổng quan"
+            titleColorClass="text-slate-800 dark:text-white"
+            maxWidth="4xl"
+            footer={
+                <div className="flex justify-end gap-2 sm:gap-3">
+                    <Button variant="ghost" onClick={onClose}>
+                        Hủy bỏ
+                    </Button>
+                    <Button variant="primary" onClick={handleSave} className="shadow-sm shadow-indigo-600/20 hover:shadow-md hover:shadow-indigo-600/30">
+                        <Icon name="save" size={4.5} /> Lưu Cấu Hình
+                    </Button>
+                </div>
+            }
+        >
+            <div className="flex divide-x divide-slate-200 dark:divide-slate-700 h-[55vh] sm:h-[600px] overflow-hidden -m-5">
                 {/* Left Side: List */}
                 <div className="w-[30%] sm:w-1/3 flex flex-col bg-slate-50 dark:bg-slate-800/50">
                     <div className="p-2 sm:p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center bg-white dark:bg-slate-900">
@@ -487,16 +502,7 @@ const KpiCardConfigModal: React.FC<Props> = ({ isOpen, onClose, configs, onSave 
                     </div>
                 </div>
             </div>
-            {/* Modal Footer */}
-            <div className="p-2 sm:p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 flex justify-end gap-2 sm:gap-3 rounded-b-2xl">
-                <Button variant="ghost" onClick={onClose}>
-                    Hủy bỏ
-                </Button>
-                <Button variant="primary" onClick={handleSave} className="shadow-sm shadow-indigo-600/20 hover:shadow-md hover:shadow-indigo-600/30">
-                    <Icon name="save" size={4.5} /> Lưu Cấu Hình
-                </Button>
-            </div>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

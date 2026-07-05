@@ -1,6 +1,6 @@
 import React from 'react';
 import { Icon } from '../common/Icon';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { Button } from '../shared/ui/Button';
 
 interface ChangelogModalProps {
@@ -10,12 +10,20 @@ interface ChangelogModalProps {
 
 const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
     return (
-        <ModalWrapper
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
-            hideHeader={true}
-            maxWidthClass="max-w-2xl"
+            hideHeader
+            maxWidth="2xl"
+            footer={
+                <div className="flex justify-end">
+                    <Button onClick={onClose} variant="primary">
+                        Đóng
+                    </Button>
+                </div>
+            }
         >
+            <div className="-m-5">
             {/* Header */}
             <div className="px-3 sm:px-6 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 rounded-t-2xl">
                 <div className="flex items-center gap-2 sm:gap-3">
@@ -28,14 +36,14 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                         <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400">Phiên bản 3.1.0 (Dynamic Matrix & Hyper Speed)</p>
                     </div>
                 </div>
-                <button onClick={onClose} className="p-1.5 sm:p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg sm:rounded-xl transition-colors">
+                <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 sm:p-2 text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg sm:rounded-xl transition-colors">
                     <Icon name="x" size={4} className="sm:hidden" />
                     <Icon name="x" size={5} className="hidden sm:block" />
-                </button>
+                </Button>
             </div>
 
             {/* Content */}
-            <div className="p-3 sm:p-6 overflow-y-auto custom-scrollbar flex-1 space-y-5 sm:space-y-8 bg-white dark:bg-slate-900">
+            <div className="p-3 sm:p-6 space-y-5 sm:space-y-8 bg-white dark:bg-slate-900">
                 {/* v3.1.0 */}
                 <div className="relative pl-4 sm:pl-6 border-l-2 border-primary-500 pb-5 sm:pb-8">
                     <div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-primary-500 border-4 border-white dark:border-slate-900"></div>
@@ -107,14 +115,8 @@ const ChangelogModal: React.FC<ChangelogModalProps> = ({ isOpen, onClose }) => {
                     </ul>
                 </div>
             </div>
-
-            {/* Footer */}
-            <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 rounded-b-2xl flex justify-end">
-                <Button onClick={onClose} variant="primary">
-                    Đóng
-                </Button>
             </div>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

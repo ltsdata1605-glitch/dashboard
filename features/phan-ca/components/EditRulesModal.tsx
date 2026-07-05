@@ -68,13 +68,14 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
     const activeClasses = "bg-sky-500 text-white ring-2 ring-sky-300 dark:ring-sky-700 ring-offset-1 dark:ring-offset-slate-800";
     const inactiveClasses = "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600";
     return (
-        <button
+        <Button
             type="button"
+            variant="ghost"
             onClick={() => setRules(prev => ({ ...prev, [genderKey]: value }))}
-            className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
+            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 ${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}
         >
             {text}
-        </button>
+        </Button>
     );
   };
 
@@ -109,13 +110,14 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
                 onChange={(e) => handleInputChange(shift, e.target.value)}
                 min="0"
               />
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => handleRemoveShiftRule(shift)}
-                className="p-1 rounded-full text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 transition"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-1 rounded-full text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 transition"
                 title={`Xóa cấu hình cho ca ${shift}`}
               >
                 <Trash2 size={18} />
-              </button>
+              </Button>
             </div>
           )) : (
             <p className="text-sm text-slate-500 dark:text-slate-400 italic text-center">Chưa có cấu hình ca nào. Hãy thêm ở bên dưới.</p>

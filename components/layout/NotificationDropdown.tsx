@@ -6,6 +6,7 @@ import { Icon } from '../common/Icon';
 import { AppNotification, markAsRead, markAllAsRead } from '../../services/notificationService';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import toast from 'react-hot-toast';
+import AdminAnnouncementModal from '../modals/AdminAnnouncementModal';
 
 interface NotificationDropdownProps {
     buttonClassName?: string;
@@ -16,6 +17,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
     const { setActiveTab } = useActiveTab();
     const [notifications, setNotifications] = useState<AppNotification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
+    const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     
     const knownNotifIdsRef = useRef<Set<string>>(new Set());
@@ -223,11 +225,22 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                                 <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 text-[10px] sm:text-xs">{unreadCount} mới</span>
                             )}
                         </h3>
-                        {unreadCount > 0 && (
-                            <button onClick={handleMarkAll} className="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
-                                Đánh dấu đã đọc
-                            </button>
-                        )}
+                        <div className="flex items-center gap-2">
+                            {userRole === 'admin' && (
+                                <button 
+                                    onClick={() => setIsAdminModalOpen(true)}
+                                    className="p-1.5 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors rounded-lg flex items-center justify-center shrink-0"
+                                    title="Cấu hình thông báo hệ thống"
+                                >
+                                    <Icon name="megaphone" size={3.5} />
+                                </button>
+                            )}
+                            {unreadCount > 0 && (
+                                <button onClick={handleMarkAll} className="text-[10px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300">
+                                    Đánh dấu đã đọc
+                                </button>
+                            )}
+                        </div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto max-h-[350px] sm:max-h-[400px]">
@@ -297,6 +310,10 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                     </div>
                 </div>
             )}
+            <AdminAnnouncementModal 
+                isOpen={isAdminModalOpen} 
+                onClose={() => setIsAdminModalOpen(false)} 
+            />
         </div>
     );
 };

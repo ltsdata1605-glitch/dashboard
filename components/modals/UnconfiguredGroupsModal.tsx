@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Icon } from '../common/Icon';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import toast from 'react-hot-toast';
 
 interface UnconfiguredGroupsModalProps {
@@ -55,12 +55,13 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
     };
 
     return (
-        <ModalWrapper
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
-            hideHeader={true}
-            maxWidthClass="max-w-2xl"
+            hideHeader
+            maxWidth="2xl"
         >
+            <div className="-m-5">
             {/* Header */}
             <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-amber-50 dark:bg-amber-955/20 rounded-t-2xl">
                 <div className="flex items-center gap-3">
@@ -82,7 +83,7 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
             </div>
 
             {/* Content */}
-            <div className="p-5 overflow-y-auto custom-scrollbar flex-1 bg-white dark:bg-slate-900 space-y-4">
+            <div className="p-5 bg-white dark:bg-slate-900 space-y-4">
                 <div className="p-3.5 bg-amber-50/50 dark:bg-amber-955/10 rounded-xl border border-amber-100/60 dark:border-amber-900/30 text-xs text-amber-800 dark:text-amber-300 leading-relaxed">
                     <p className="font-semibold mb-1">💡 Ảnh hưởng đến báo cáo:</p>
                     <p>Các dòng doanh thu thuộc nhóm hàng này sẽ bị <strong>bỏ qua hoàn toàn</strong> trong tất cả các thẻ KPI, bảng tổng hợp và biểu đồ xu hướng để tránh tính toán sai lệch nhóm.</p>
@@ -222,7 +223,8 @@ const UnconfiguredGroupsModal: React.FC<UnconfiguredGroupsModalProps> = ({
                     </a>
                 </div>
             </div>
-        </ModalWrapper>
+            </div>
+        </Modal>
     );
 };
 

@@ -28,9 +28,13 @@ const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
               </svg>
               Hướng dẫn sử dụng phần mềm phân ca tự động
           </h2>
-          <button onClick={onClose} className="text-white hover:text-sky-100 transition-colors shrink-0">
+          <Button
+              variant="ghost"
+              onClick={onClose}
+              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-white hover:text-sky-100 transition-colors shrink-0"
+          >
               <X size={28} />
-          </button>
+          </Button>
       </div>
 
       <div className="text-slate-800 dark:text-slate-300 text-sm leading-relaxed">

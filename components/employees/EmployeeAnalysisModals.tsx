@@ -1,7 +1,7 @@
 import React from 'react';
 import { TabModal, TableModal } from './modals/StructureModals';
 import ColumnConfigModal from './modals/ColumnConfigModal';
-import ModalWrapper from '../modals/ModalWrapper';
+import { ConfirmDialog } from '../shared/ui/ConfirmDialog';
 import { CustomExploitationTabModal } from './modals/CustomExploitationTabModal';
 
 interface EmployeeAnalysisModalsProps {
@@ -90,81 +90,45 @@ const EmployeeAnalysisModals: React.FC<EmployeeAnalysisModalsProps> = ({
                 />
             )}
 
-            {modalState.type === 'CONFIRM_DELETE_TAB' && (
-                <ModalWrapper
-                    isOpen={true}
-                    onClose={() => setModalState({ type: null })}
-                    title="Xác nhận Xóa Tab"
-                    subTitle={`Bạn sắp xóa tab "${modalState.data?.tabName || ''}"`}
-                    titleColorClass="text-red-600 dark:text-red-400"
-                    maxWidthClass="max-w-md"
-                >
-                    <div className="p-4 sm:p-6">
-                        <p className="text-xs sm:text-sm">Hành động này không thể hoàn tác. Toàn bộ các bảng thi đua bên trong tab này cũng sẽ bị xóa vĩnh viễn.</p>
-                    </div>
-                    <div className="p-3 sm:p-4 flex justify-end gap-2 sm:gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                        <button type="button" onClick={() => setModalState({ type: null })} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                        <button type="button" onClick={handleDeleteTab} className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
-                    </div>
-                </ModalWrapper>
-            )}
-            
-            {modalState.type === 'CONFIRM_DELETE_TABLE' && (
-                <ModalWrapper
-                    isOpen={true}
-                    onClose={() => setModalState({ type: null })}
-                    title="Xác nhận Xóa Bảng"
-                    subTitle={`Bạn sắp xóa bảng "${modalState.data?.tableName || ''}"`}
-                    titleColorClass="text-red-600 dark:text-red-400"
-                    maxWidthClass="max-w-md"
-                >
-                    <div className="p-4 sm:p-6">
-                        <p className="text-xs sm:text-sm">Hành động này sẽ xóa vĩnh viễn bảng thi đua này. Bạn có chắc chắn muốn tiếp tục?</p>
-                    </div>
-                    <div className="p-3 sm:p-4 flex justify-end gap-2 sm:gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                        <button type="button" onClick={() => setModalState({ type: null })} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                        <button type="button" onClick={handleDeleteTable} className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
-                    </div>
-                </ModalWrapper>
-            )}
+            <ConfirmDialog
+                isOpen={modalState.type === 'CONFIRM_DELETE_TAB'}
+                onClose={() => setModalState({ type: null })}
+                onConfirm={handleDeleteTab}
+                variant="danger"
+                title="Xác nhận Xóa Tab"
+                confirmText="Xác nhận Xóa"
+                message={`Bạn sắp xóa tab "${modalState.data?.tabName || ''}". Hành động này không thể hoàn tác. Toàn bộ các bảng thi đua bên trong tab này cũng sẽ bị xóa vĩnh viễn.`}
+            />
 
-            {modalState.type === 'CONFIRM_DELETE_COLUMN' && (
-                <ModalWrapper
-                    isOpen={true}
-                    onClose={() => setModalState({ type: null })}
-                    title="Xác nhận Xóa Cột"
-                    subTitle={`Bạn sắp xóa cột "${modalState.data?.columnName || ''}"`}
-                    titleColorClass="text-red-600 dark:text-red-400"
-                    maxWidthClass="max-w-md"
-                >
-                    <div className="p-4 sm:p-6">
-                        <p className="text-xs sm:text-sm">Hành động này sẽ xóa vĩnh viễn cột này khỏi bảng. Bạn có chắc chắn muốn tiếp tục?</p>
-                    </div>
-                    <div className="p-3 sm:p-4 flex justify-end gap-2 sm:gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                        <button type="button" onClick={() => setModalState({ type: null })} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                        <button type="button" onClick={handleConfirmDeleteColumn} className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
-                    </div>
-                </ModalWrapper>
-            )}
+            <ConfirmDialog
+                isOpen={modalState.type === 'CONFIRM_DELETE_TABLE'}
+                onClose={() => setModalState({ type: null })}
+                onConfirm={handleDeleteTable}
+                variant="danger"
+                title="Xác nhận Xóa Bảng"
+                confirmText="Xác nhận Xóa"
+                message={`Bạn sắp xóa bảng "${modalState.data?.tableName || ''}". Hành động này sẽ xóa vĩnh viễn bảng thi đua này. Bạn có chắc chắn muốn tiếp tục?`}
+            />
 
-            {modalState.type === 'CONFIRM_DELETE_CUSTOM_EXPLOITATION_TAB' && (
-                <ModalWrapper
-                    isOpen={true}
-                    onClose={() => setModalState({ type: null })}
-                    title="Xác nhận Xóa Thẻ Tùy Chỉnh"
-                    subTitle={`Bạn sắp xóa thẻ "${modalState.data?.tabName || ''}"`}
-                    titleColorClass="text-red-600 dark:text-red-400"
-                    maxWidthClass="max-w-md"
-                >
-                    <div className="p-4 sm:p-6">
-                        <p className="text-xs sm:text-sm">Hành động này sẽ xóa vĩnh viễn thẻ tùy chỉnh này. Bạn có chắc chắn muốn tiếp tục?</p>
-                    </div>
-                    <div className="p-3 sm:p-4 flex justify-end gap-2 sm:gap-3 bg-slate-100 dark:bg-slate-800 rounded-b-xl border-t border-slate-200 dark:border-slate-700">
-                        <button type="button" onClick={() => setModalState({ type: null })} className="py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 transition-colors">Hủy</button>
-                        <button type="button" onClick={handleDeleteCustomExploitationTab} className="py-1.5 sm:py-2 px-4 sm:px-6 rounded-lg shadow-sm text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 transition-colors">Xác nhận Xóa</button>
-                    </div>
-                </ModalWrapper>
-            )}
+            <ConfirmDialog
+                isOpen={modalState.type === 'CONFIRM_DELETE_COLUMN'}
+                onClose={() => setModalState({ type: null })}
+                onConfirm={handleConfirmDeleteColumn}
+                variant="danger"
+                title="Xác nhận Xóa Cột"
+                confirmText="Xác nhận Xóa"
+                message={`Bạn sắp xóa cột "${modalState.data?.columnName || ''}". Hành động này sẽ xóa vĩnh viễn cột này khỏi bảng. Bạn có chắc chắn muốn tiếp tục?`}
+            />
+
+            <ConfirmDialog
+                isOpen={modalState.type === 'CONFIRM_DELETE_CUSTOM_EXPLOITATION_TAB'}
+                onClose={() => setModalState({ type: null })}
+                onConfirm={handleDeleteCustomExploitationTab}
+                variant="danger"
+                title="Xác nhận Xóa Thẻ Tùy Chỉnh"
+                confirmText="Xác nhận Xóa"
+                message={`Bạn sắp xóa thẻ "${modalState.data?.tabName || ''}". Hành động này sẽ xóa vĩnh viễn thẻ tùy chỉnh này. Bạn có chắc chắn muốn tiếp tục?`}
+            />
         </>
     );
 };

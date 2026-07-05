@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { HeadToHeadTableConfig, HeadToHeadConditionalFormatRule } from '../../../types';
-import ModalWrapper from '../../modals/ModalWrapper';
+import { Modal } from '../../shared/ui/Modal';
 import { Icon } from '../../common/Icon';
 import { DataColumnForm } from '../modals/column-config/DataColumnForm';
 import { CalculatedColumnForm } from '../modals/column-config/CalculatedColumnForm';
@@ -321,16 +321,24 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
     const availableOperands = existingTables.map(t => ({id: t.id, columnName: t.tableName}));
 
     return (
-        <ModalWrapper 
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
             title={editingConfig ? "Chỉnh Sửa Bảng" : "Tạo Bảng Mới"}
             subTitle="Tùy chỉnh bảng so sánh hiệu suất trong 7 ngày"
             titleColorClass="text-indigo-600 dark:text-indigo-400"
-            maxWidthClass="max-w-4xl"
+            maxWidth="4xl"
+            footer={
+                <div className="flex items-center justify-between">
+                    <Button variant="ghost" type="button" onClick={onClose}> Hủy Bỏ </Button>
+                    <Button variant="primary" type="button" onClick={handleSave}>
+                        <Icon name="save" size={4} /> {editingConfig ? "Lưu Chỉnh Sửa" : "Thêm Bảng Mới"}
+                    </Button>
+                </div>
+            }
         >
-            <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0 bg-white dark:bg-slate-900">
-                <div className="flex-grow p-4 sm:p-6 space-y-8 overflow-y-auto custom-scrollbar min-h-0">
+            <form onSubmit={handleSave}>
+                <div className="space-y-8">
                     {feedback && (
                         <div className={`p-2.5 sm:p-3 border rounded-lg sm:rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-1.5 sm:gap-2 shadow-sm ${
                             feedback.type === 'error' 
@@ -468,17 +476,8 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                     />
 
                 </div>
-                
-                {/* FOOTER */}
-                {/* FOOTER */}
-                <div className="p-3 sm:p-4 sm:px-6 sm:py-5 flex items-center justify-between bg-white dark:bg-slate-800 rounded-b-md border-t border-slate-200 z-20">
-                    <Button variant="ghost" type="button" onClick={onClose}> Hủy Bỏ </Button>
-                    <Button variant="primary" type="submit">
-                        <Icon name="save" size={4} /> {editingConfig ? "Lưu Chỉnh Sửa" : "Thêm Bảng Mới"}
-                    </Button>
-                </div>
             </form>
-        </ModalWrapper>
+        </Modal>
     );
 };
 

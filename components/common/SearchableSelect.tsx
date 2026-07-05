@@ -1,6 +1,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Icon } from './Icon';
+import { Button } from '../shared/ui/Button';
 
 interface SearchableSelectProps {
     label: string;
@@ -47,10 +48,11 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
         <div ref={wrapperRef}>
             <label className="block text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">{label}</label>
             <div className="relative">
-                <button
+                <Button
                     type="button"
+                    variant="ghost"
                     onClick={() => setIsOpen(!isOpen)}
-                    className="w-full h-9 sm:h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 pl-2.5 sm:pl-3 pr-8 sm:pr-10 text-left shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm"
+                    className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full h-9 sm:h-11 block rounded-lg border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 pl-2.5 sm:pl-3 pr-8 sm:pr-10 text-left shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-xs sm:text-sm"
                 >
                     <span className={`truncate ${value ? 'text-slate-800 dark:text-slate-100' : 'text-slate-500'}`}>
                         {displayValue}
@@ -59,7 +61,7 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
                         <Icon name="chevrons-up-down" size={3.5} className="text-slate-400 sm:hidden" />
                         <Icon name="chevrons-up-down" size={4} className="text-slate-400 hidden sm:block" />
                     </span>
-                </button>
+                </Button>
                 {isOpen && (
                     <div className="absolute z-20 mt-1 w-full bg-white dark:bg-slate-800 rounded-md shadow-lg border border-slate-200 dark:border-slate-700 max-h-60 flex flex-col">
                         <div className="p-1.5 sm:p-2 border-b border-slate-200 dark:border-slate-700">

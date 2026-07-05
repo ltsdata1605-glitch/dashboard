@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useDashboardContext } from '../../contexts/DashboardContext';
-import ModalWrapper from './ModalWrapper';
+import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
 import { CrossSellingConfig, CrossSellingDynamicSection, CrossSellingDynamicRow, CrossSellingDynamicColumn, CrossSellingColumnType } from '../../types';
@@ -214,22 +214,26 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
         }));
     };
 
-    if (!isOpen) return null;
-
     return (
-        <ModalWrapper isOpen={isOpen} onClose={onClose} title="Cấu Hình Bảng Động" subTitle="Tuỳ biến cột/dòng" titleColorClass="text-indigo-600">
-            <div className="bg-slate-50 dark:bg-slate-900 w-full max-w-5xl max-h-[90vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-700">
-                {/* Header Custom - Hidden as we use ModalWrapper props now */}
-                <div className="hidden items-center justify-between p-5 border-b border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0">
-                    <div>
-                        <h2 className="text-xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
-                            <Icon name="sliders" size={6} className="text-indigo-600 dark:text-indigo-400" />
-                            Cấu Hình Bảng Động (Bán Kèm)
-                        </h2>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Chỉnh sửa tùy chọn Các Cột và Các Dòng giao diện bảng một cách tùy biến hoàn toàn.</p>
-                    </div>
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            title="Cấu Hình Bảng Động"
+            subTitle="Tuỳ biến cột/dòng"
+            titleColorClass="text-indigo-600"
+            maxWidth="xl"
+            footer={
+                <div className="flex items-center justify-end gap-2 sm:gap-3">
+                    <Button onClick={onClose} variant="secondary">
+                        Hủy bỏ
+                    </Button>
+                    <Button onClick={handleSave} variant="primary" leftIcon={<Icon name="save" size={4} />}>
+                        Lưu cấu hình
+                    </Button>
                 </div>
-
+            }
+        >
+            <div className="-m-5">
                 <div className="flex flex-wrap justify-between items-center p-2.5 sm:p-4 bg-slate-100/50 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-700 gap-2">
                     <button 
                         onClick={loadSampleConfig}
@@ -459,16 +463,6 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                         </div>
                     </div>
                 </div>
-
-                {/* Footer */}
-                <div className="flex items-center justify-end gap-2 sm:gap-3 p-3 sm:p-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/80 shrink-0">
-                    <Button onClick={onClose} variant="secondary">
-                        Hủy bỏ
-                    </Button>
-                    <Button onClick={handleSave} variant="primary" leftIcon={<Icon name="save" size={4} />}>
-                        Lưu cấu hình
-                    </Button>
-                </div>
             </div>
 
             <ConfirmDialog
@@ -480,7 +474,7 @@ const CrossSellingBuilderModal: React.FC<CrossSellingBuilderModalProps> = ({ isO
                 confirmText="Xác nhận"
                 variant="warning"
             />
-        </ModalWrapper>
+        </Modal>
     );
 };
 
