@@ -226,7 +226,7 @@ export default function StickerPrinterView() {
     const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(3.5);
     const [drawContentBottomLeftSize, setDrawContentBottomLeftSize] = useState(2.2);
     const [drawContentBottomRightSize, setDrawContentBottomRightSize] = useState(2.2);
-    const [drawTitleSize, setDrawTitleSize] = useState(3.6);
+    const [drawTitleSize, setDrawTitleSize] = useState(2.5);
     const [drawCodeSize, setDrawCodeSize] = useState(3.8);
     const [drawFooterSize, setDrawFooterSize] = useState(3.8);
     

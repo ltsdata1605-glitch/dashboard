@@ -131,13 +131,13 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                     contentEditable 
                     suppressContentEditableWarning
                     className={`input-title-single animate-pulse-once ${activeField === 'drawTitle' ? 'active-field' : ''}`}
-                    style={{ fontSize: `${drawTitleSize || 3.6}cqw` }}
+                    style={{ fontSize: `${Math.min(drawTitleSize || 2.5, 3.0)}cqw` }}
                     data-placeholder="Nhập tiêu đề..."
                 />
             ) : (
                 <div 
                     className="display-title-single"
-                    style={{ fontSize: `${drawTitleSize || 3.6}cqw` }}
+                    style={{ fontSize: `${Math.min(drawTitleSize || 2.5, 3.0)}cqw` }}
                     dangerouslySetInnerHTML={{ __html: activeFirstTicket.title }}
                 />
             )}
