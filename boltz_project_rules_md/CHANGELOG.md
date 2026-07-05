@@ -163,3 +163,74 @@ Pattern áp dụng: mỗi nút được chuyển sang `<Button variant="ghost" c
 - **Phát hiện phụ khi verify `lint:ratchet` cuối cùng**: `components/filters/FilterBar.tsx` báo "vi phạm mới" (`nonSemanticColor` 26→35, `missingDarkVariant` 1→9). Điều tra qua `git log`/`git diff` xác nhận: 1 công cụ AI khác đang chạy song song (đã biết từ trước, chủ dự án xác nhận là chủ đích) đã thêm 1 khối `<style>{\`...\`}</style>` CSS-in-JS mới vào file này (phần "grouped-filters" cho Week-select) — các selector CSS bên trong như `.bg-indigo-50`, `.dark\\:text-indigo-400` bị regex của `lint-ratchet.cjs` hiểu nhầm thành class Tailwind thiếu cặp `dark:` (vì regex chỉ so khớp text, không phân biệt CSS selector string với className JSX thật). Xác nhận đây KHÔNG phải do các nút `Button` tôi vừa migrate gây ra (nút cuối cùng tôi sửa trong file này giữ nguyên y hệt class gốc, không thêm màu mới). Đã cập nhật `violations-baseline.json` phản ánh đúng giá trị thật hiện tại, không sửa nội dung file (khối `<style>` đó không thuộc phạm vi task buttons).
 - Verify cuối cùng trên toàn bộ repo: `eslint .` sạch (1 lỗi còn lại là cố ý ở `Button.tsx`; phần còn lại là `import/no-restricted-paths` tiền tồn tại không liên quan); `tsc --noEmit` sạch; `npm run build` thành công (43 chunk, không lỗi); `npm run lint:ratchet` sạch sau khi cập nhật baseline.
 - **Bước 4 chính thức hoàn tất.** Không còn `<button>` thô nào cần migrate trong phạm vi RULES.md §2.5 Shared Core Contract.
+
+## 2026-07-05 — Phase 2: Hoàn thiện 4 file tài liệu sai lệch nặng nhất (API, DATABASE, TESTING, DEPLOYMENT)
+
+### Bối cảnh
+
+Sau khi hoàn tất Bước 4 (migrate button), chuyển sang Phase 2 (Chuẩn hóa tài liệu). Audit
+lại toàn bộ 10 file trong `boltz_project_rules_md/` phát hiện: hầu hết là **template chung
+chung** viết lúc khởi tạo bộ rule, chưa từng được đối chiếu với source code thật — một số
+file mô tả kiến trúc hoàn toàn không tồn tại (VD: `API.md` giả định có REST API server +
+`apiClient.ts`, trong khi dự án dùng Firebase/Firestore trực tiếp không qua backend riêng),
+một số còn để nguyên chỗ trống dạng placeholder chưa điền (`TESTING.md`'s "Module 1-4",
+`DATABASE.md`'s "Data model hiện tại", `DEPLOYMENT.md`'s env checklist). Người dùng chọn ưu
+tiên sửa 4 file sai/thiếu nghiêm trọng nhất trước: `API.md`, `DATABASE.md`, `TESTING.md`,
+`DEPLOYMENT.md` (4 file còn lại — `ARCHITECTURE.md`, `CODE_STYLE.md`, `SECURITY.md`,
+`DESIGN.md` — để sau).
+
+### Đã làm
+
+- **Khảo sát ground-truth thật** trước khi viết: `package.json` scripts thật (không có test
+  runner, `npm run lint` thực chất là `tsc --noEmit` chứ không phải eslint — dễ gây nhầm
+  lẫn), toàn bộ `collection()`/`doc()` calls trong codebase để lập bản đồ Firestore thật
+  (`users/`, `shared_configs/`, `stores/`, `_system/` + các subcollection), cấu trúc
+  `services/dbService.ts` (IndexedDB qua `idb`), quy trình `npm run deploy` thật (git push +
+  `gh-pages -d dist`), domain thật (`dashboard.pro.vn` qua `public/CNAME`), và xác nhận
+  Firebase config hardcode trong `services/firebase.ts` là chủ đích (API key Web SDK vốn
+  public) chứ không phải lỗ hổng bảo mật.
+- **`API.md`**: viết lại hoàn toàn. Xóa bỏ giả định REST API server/`apiClient.ts`/
+  `ApiResponse<T>` không tồn tại. Thay bằng: liệt kê đúng ~20 service file thật ở
+  `services/` gốc + service riêng từng zone (`features/*/services/`), pattern error handling
+  thật đang dùng (`try/catch` + `react-hot-toast`, không có `normalizeApiError()` dùng
+  chung — ghi nhận là nợ kỹ thuật), vai trò của Excel/CSV parser như "API layer" thật sự của
+  app (nguồn dữ liệu chính), và 2 REST API bên thứ 3 thật sự có (Google Sheets, Gemini).
+- **`DATABASE.md`**: điền đầy đủ mục "Data model hiện tại" (trước đó để trống hẳn) với toàn
+  bộ collection/subcollection Firestore thật + IndexedDB (`dbService.ts` root, `db/idb.ts`
+  riêng của phan-ca) + xác nhận nguồn dữ liệu CHÍNH là file Excel người dùng tự upload (không
+  phải kéo từ database từ xa). Sửa mục "Quy ước đặt tên" (bỏ giả định SQL snake_case — dự án
+  không có SQL backend, field Firestore đã camelCase thống nhất với frontend). Điền mục "Quy
+  tắc dữ liệu cho calculation" với 5 chỉ số thật (DT, DTQĐ, HQQĐ, Trả góp, Số lượng) kèm tên
+  hàm/file tính toán cụ thể, và ghi nhận HQQĐ là nợ kỹ thuật chưa gom về 1 helper dùng chung.
+- **`TESTING.md`**: điền mục "Test 4 module" (trước đó để trống hẳn dạng "Module 1:...")
+  khớp đúng 4 zone đã được `REQUIREMENTS.md` xác định từ trước, kèm test case cụ thể theo
+  tính năng thật (upload YCX/KPI cho Root, Thi đua/Target cho bi-dashboard, EditShiftModal
+  cho phân ca, in bill 80mm cho sticker-event). Sửa mục "Lệnh kiểm tra": xác nhận npm
+  (không phải multi-package-manager chung chung), và ghi rõ **dự án không có test runner tự
+  động** — mọi "test" thực chất là `npm run check` + test thủ công qua trình duyệt.
+- **`DEPLOYMENT.md`**: viết lại hoàn toàn theo quy trình thật — `npm run deploy` = commit +
+  push `main` + `gh-pages -d dist`, domain riêng `dashboard.pro.vn`, không có CI/CD, không
+  có staging (chỉ 1 môi trường production). **Cảnh báo rõ trong file**: lệnh `npm run
+  deploy` tự động push code lên `main` — cần xác nhận người dùng trước khi chạy thay họ,
+  không tự ý deploy. Ghi chú rollback thực tế (rebuild + `gh-pages -d dist` từ commit ổn
+  định, không cần push lại `main` nếu chỉ cần rollback phần hiển thị).
+- Cập nhật `TASKS.md` Phase 2: đánh dấu `[x]` cho `TESTING.md`, `DEPLOYMENT.md`, `API.md`,
+  `DATABASE.md`, `REQUIREMENTS.md` (đã đúng từ trước), kèm tóm tắt thay đổi cho từng file.
+
+### Chưa làm (để sau theo lựa chọn của người dùng)
+
+- `ARCHITECTURE.md` — vẫn mô tả cấu trúc `src/app/`, `src/modules/` không tồn tại; thực tế
+  là cấu trúc phẳng không có `src/`, chia 4 zone cách ly theo `RULES.md` §2.0.
+- `CODE_STYLE.md` — vẫn tham chiếu `shared/lib/calculations` không tồn tại; thực tế dùng
+  `utils/dataUtils.ts` + `features/*/utils/`.
+- `SECURITY.md` — chưa có phần Firebase Security Rules/Firestore permissions dù đây là rủi
+  ro bảo mật chính thật sự của dự án (không phải rủi ro generic OWASP chung chung).
+- `DESIGN.md` — sai vài chi tiết Button thật (liệt kê variant `success` không tồn tại trong
+  `Button.tsx`, thiếu size `icon`, mô tả bo góc "pill" trong khi Button thật dùng
+  `rounded-md`); cần đối chiếu lại token màu với `styles.css`'s `@theme` thật (Tailwind 4,
+  không có `tailwind.config.js`).
+
+### Verify
+
+- Chỉ sửa file Markdown thuần (không đụng source code) — không cần chạy `eslint`/`tsc`/
+  `build`, chỉ xác nhận qua `git status --short` rằng đúng 4 file dự kiến đã thay đổi.

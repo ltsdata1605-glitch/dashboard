@@ -248,6 +248,9 @@ const WarehouseSettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose,
         'SL PHỤ KIỆN': { bg: 'bg-purple-50/30 dark:bg-purple-900/10', text: 'text-purple-600 dark:text-purple-400', indicator: 'bg-purple-500', border: 'border-purple-200 dark:border-purple-800' },
         'SL DỊCH VỤ': { bg: 'bg-fuchsia-50/30 dark:bg-fuchsia-900/10', text: 'text-fuchsia-600 dark:text-fuchsia-400', indicator: 'bg-fuchsia-500', border: 'border-fuchsia-200 dark:border-fuchsia-800' },
         'SL GIA DỤNG': { bg: 'bg-amber-50/30 dark:bg-amber-900/10', text: 'text-amber-600 dark:text-amber-400', indicator: 'bg-amber-500', border: 'border-amber-200 dark:border-amber-800' },
+        'BẢO HIỂM ALL': { bg: 'bg-indigo-50/30 dark:bg-indigo-900/10', text: 'text-indigo-600 dark:text-indigo-400', indicator: 'bg-indigo-500', border: 'border-indigo-200 dark:border-indigo-800' },
+        'BẢO HIỂM ĐỐI TÁC': { bg: 'bg-violet-50/30 dark:bg-violet-900/10', text: 'text-violet-600 dark:text-violet-400', indicator: 'bg-violet-500', border: 'border-violet-200 dark:border-violet-800' },
+        'BẢO HIỂM ĐMX': { bg: 'bg-pink-50/30 dark:bg-pink-900/10', text: 'text-pink-600 dark:text-pink-400', indicator: 'bg-pink-500', border: 'border-pink-200 dark:border-pink-800' },
         'DEFAULT': { bg: 'bg-slate-50/30 dark:bg-slate-800/20', text: 'text-slate-600 dark:text-slate-400', indicator: 'bg-slate-500', border: 'border-slate-200 dark:border-slate-700' },
     };
 

@@ -74,13 +74,35 @@ Rủi ro: 4 module cố ý cách ly nhau (không được gộp state/filter cro
 ## Phase 2 — Chuẩn hóa tài liệu và rule
 
 - [ ] Hoàn thiện `CLAUDE.md`.
-- [ ] Hoàn thiện `REQUIREMENTS.md`.
+- [x] Hoàn thiện `REQUIREMENTS.md` — mục "4 app/module riêng lẻ" đã điền đúng 4 zone thật.
 - [ ] Hoàn thiện `DESIGN.md`.
 - [ ] Hoàn thiện `ARCHITECTURE.md` theo source thực tế.
 - [ ] Hoàn thiện `CODE_STYLE.md`.
-- [ ] Hoàn thiện `TESTING.md`.
+- [x] **Hoàn thiện `TESTING.md` (2026-07-05)**: điền mục "Test 4 module" (trước đó để trống
+      hẳn) khớp đúng 4 zone của `REQUIREMENTS.md`, kèm test case cụ thể theo tính năng thật
+      của từng zone (upload YCX/KPI, Thi đua/Target, Phân ca/EditShiftModal, In Sticker/in
+      bill 80mm). Sửa lại mục "Lệnh kiểm tra": xác nhận dự án dùng npm (không phải
+      pnpm/yarn), và **không có test runner tự động** — `npm run lint` thực chất là
+      `tsc --noEmit`, không phải eslint (dễ nhầm) — đã ghi rõ để tránh hiểu sai lệnh.
 - [ ] Hoàn thiện `SECURITY.md`.
-- [ ] Hoàn thiện `DEPLOYMENT.md`.
+- [x] **Hoàn thiện `DEPLOYMENT.md` (2026-07-05)**: viết lại hoàn toàn theo quy trình deploy
+      thật — `npm run deploy` = commit + push `main` + `gh-pages -d dist` lên domain riêng
+      `dashboard.pro.vn` (không có CI/CD, không có staging). Đã cảnh báo rõ: lệnh này tự
+      động push code, cần xác nhận người dùng trước khi chạy thay họ. Ghi chú Firebase
+      config hardcode trong `services/firebase.ts` là chủ đích (API key Web SDK vốn public),
+      không phải lỗ hổng cần sửa.
+- [x] **Hoàn thiện `API.md` (2026-07-05)**: viết lại hoàn toàn — bản cũ giả định có REST API
+      server + `apiClient.ts`/`ApiResponse<T>` **hoàn toàn không khớp thực tế**. Dự án không
+      có backend riêng: dùng Firebase SDK trực tiếp + parser Excel/CSV client-side (nguồn dữ
+      liệu chính) + vài REST API bên thứ 3 gọi thẳng bằng `fetch()` (Google Sheets, Gemini).
+      Đã liệt kê đúng ~20 service file thật ở `services/` (root) + service riêng từng zone.
+- [x] **Hoàn thiện `DATABASE.md` (2026-07-05)**: điền mục "Data model hiện tại" (trước đó để
+      trống hẳn) với cấu trúc Firestore thật (`users/`, `shared_configs/`, `stores/`, `_system/`
+      và các subcollection) + IndexedDB (`services/dbService.ts`, `db/idb.ts` riêng của
+      phan-ca) + nguồn dữ liệu chính là file Excel/CSV người dùng upload. Sửa mục "Quy ước đặt
+      tên" (bỏ giả định SQL snake_case không áp dụng — Firestore field đã camelCase thống
+      nhất). Điền mục "Quy tắc dữ liệu cho calculation" với 5 chỉ số thật: DT, DTQĐ, HQQĐ,
+      Trả góp, Số lượng — kèm ghi chú HQQĐ là nợ kỹ thuật cần gom về 1 helper ở Phase 4.
 
 ---
 
