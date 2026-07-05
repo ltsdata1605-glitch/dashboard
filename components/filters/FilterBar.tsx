@@ -1,5 +1,5 @@
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { Icon } from '../common/Icon';
 import MultiSelectDropdown from '../common/MultiSelectDropdown';
@@ -21,6 +21,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
         uniqueFilterOptions,
         originalData
     } = useDashboardContext();
+
+    const [selectedWeek, setSelectedWeek] = useState<string>('');
 
     const { availableWeeks, availableMonths } = useMemo(() => {
         const weeksMap = new Map<string, string>();
@@ -66,6 +68,47 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                 })
         };
     }, [originalData]);
+
+    // Dong bo selectedWeek khi dateRange thay doi tu ben ngoai
+    useEffect(() => {
+        if (filterState.dateRange !== 'week') {
+            setSelectedWeek('');
+        } else if (filterState.startDate && filterState.endDate) {
+            if (!selectedWeek) {
+                const startStr = filterState.startDate.split('T')[0];
+                const found = availableWeeks.find(w => {
+                    const [yStr, wStr] = w.value.split('-W');
+                    const year = parseInt(yStr, 10);
+                    const week = parseInt(wStr, 10);
+                    const start = new Date(year, 0, 1 + (week - 1) * 7);
+                    const day = start.getDay();
+                    start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
+                    return toLocalISOString(start).split('T')[0] === startStr;
+                });
+                if (found) {
+                    setSelectedWeek(found.value);
+                }
+            }
+        }
+    }, [filterState.dateRange, filterState.startDate, filterState.endDate, availableWeeks, selectedWeek]);
+
+    const handleWeekSelect = (val: string) => {
+        setSelectedWeek(val);
+        const [yStr, wStr] = val.split('-W');
+        const year = parseInt(yStr, 10);
+        const week = parseInt(wStr, 10);
+        const start = new Date(year, 0, 1 + (week - 1) * 7);
+        const day = start.getDay();
+        start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        handleFilterChange({ 
+            startDate: toLocalISOString(start), 
+            endDate: toLocalISOString(end), 
+            dateRange: 'week', 
+            selectedMonths: [] 
+        });
+    };
 
     const handleDateRangeClick = (range: string) => {
         let start: Date | null = null, end: Date | null = null;
@@ -150,6 +193,8 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                     height: 26px !important;
                     padding-top: 0 !important;
                     padding-bottom: 0 !important;
+                }
+                .grouped-filters button:not(.bg-indigo-50):not(.dark\\:bg-indigo-900\\/40) {
                     background: transparent !important;
                 }
                 .grouped-filters button:focus,
@@ -162,7 +207,22 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                     font-weight: 900 !important;
                     text-transform: uppercase !important;
                     letter-spacing: 0.05em !important;
+                }
+                .grouped-filters button:not(.text-indigo-600):not(.dark\\:text-indigo-400) span {
                     color: #64748b !important;
+                }
+                .grouped-filters button.text-indigo-600 span {
+                    color: #4f46e5 !important;
+                }
+                .grouped-filters button.dark\\:text-indigo-400 span {
+                    color: #818cf8 !important;
+                }
+                /* active background for dropdown button */
+                .grouped-filters button.border-indigo-500 {
+                    background-color: #f5f3ff !important;
+                }
+                .dark .grouped-filters button.border-indigo-500 {
+                    background-color: rgba(79, 70, 229, 0.2) !important;
                 }
                 .grouped-filters button span.text-sky-600,
                 .grouped-filters button span.text-sky-400 {
@@ -261,52 +321,41 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                     {/* Row 2: Segments — moved to filter sidebar on mobile, visible on tablet+ */}
                     <div className="hidden sm:flex items-center gap-2 overflow-x-auto no-scrollbar -mx-0.5 px-0.5">
                         {/* Date Range Segments */}
-                        <div className="flex items-center gap-0.5 bg-slate-100/70 dark:bg-slate-800/60 p-0.5 rounded-lg border border-slate-200/60 dark:border-slate-700/50 shrink-0">
+                        <div className="grouped-filters relative flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
+                            {/* Dropdown chon Tuan */}
+                            <div className="w-[75px] shrink-0">
+                                <SingleSelectDropdown
+                                    label="Tuần"
+                                    options={availableWeeks.map(w => ({
+                                        value: w.value,
+                                        label: w.label.replace('Tuần ', 'T').replace(' - Tháng ', '/').replace(/\/202(\d)/, '/$1')
+                                    }))}
+                                    selected={selectedWeek}
+                                    onChange={handleWeekSelect}
+                                    variant="compact"
+                                />
+                            </div>
+                            
+                            <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-600" />
+                            
+                            {/* Cac nut H.nay, H.qua, All */}
                             {[
-                                { range: 'week', label: 'Tuần' },
                                 { range: 'today', label: 'H.nay' },
                                 { range: 'yesterday', label: 'H.qua' },
                                 { range: 'all', label: 'All' }
                             ].map(({ range, label }) => (
-                                <div key={range} className="relative">
-                                    {range === 'week' && (
-                                        <select 
-                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                            value=""
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                if (!val) return;
-                                                const [yStr, wStr] = val.split('-W');
-                                                const year = parseInt(yStr, 10);
-                                                const week = parseInt(wStr, 10);
-                                                const start = new Date(year, 0, 1 + (week - 1) * 7);
-                                                const day = start.getDay();
-                                                start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
-                                                const end = new Date(start);
-                                                end.setDate(start.getDate() + 6);
-                                                handleFilterChange({ startDate: toLocalISOString(start), endDate: toLocalISOString(end), dateRange: 'week', selectedMonths: [] });
-                                            }}
-                                        >
-                                            <option value="" disabled>Chọn Tuần</option>
-                                            {availableWeeks.map(w => <option key={w.value} value={w.value}>{w.label}</option>)}
-                                        </select>
-                                    )}
-                                    <Button
-                                        variant="ghost"
-                                        onClick={() => {
-                                            if (range === 'today' || range === 'yesterday' || range === 'all') {
-                                                handleDateRangeClick(range);
-                                            }
-                                        }}
-                                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2.5 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-md transition-all duration-200 relative z-0 ${
-                                            filterState.dateRange === range
-                                            ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-sm shadow-indigo-300/30'
-                                            : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-700/50'
-                                        }`}
-                                    >
-                                        {label}
-                                    </Button>
-                                </div>
+                                <Button
+                                    key={range}
+                                    variant="ghost"
+                                    onClick={() => handleDateRangeClick(range)}
+                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all relative z-0 ${
+                                        filterState.dateRange === range
+                                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
+                                        : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                                    }`}
+                                >
+                                    {label}
+                                </Button>
                             ))}
                         </div>
 
@@ -375,68 +424,59 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                     </div>
 
                     {/* Quick Date Ranges */}
-                    <div className="relative flex items-center gap-0.5 bg-white dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
+                    <div className="grouped-filters relative flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
+                        {/* Dropdown chon Tuan */}
+                        <div className="w-[75px] shrink-0">
+                            <SingleSelectDropdown
+                                label="Tuần"
+                                options={availableWeeks.map(w => ({
+                                    value: w.value,
+                                    label: w.label.replace('Tuần ', 'T').replace(' - Tháng ', '/').replace(/\/202(\d)/, '/$1')
+                                }))}
+                                selected={selectedWeek}
+                                onChange={handleWeekSelect}
+                                variant="compact"
+                            />
+                        </div>
+                        
+                        <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-600" />
+                        
+                        {/* Các nút H.Nay, H.Qua, All */}
                         {[
-                            { range: 'week', label: 'Tuần' },
                             { range: 'today', label: 'H.Nay' },
                             { range: 'yesterday', label: 'H.Qua' },
                             { range: 'all', label: 'All' }
                         ].map(({ range, label }) => (
-                            <div key={range} className="relative">
-                                {range === 'week' && (
-                                    <select 
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                                        value=""
-                                        onChange={(e) => {
-                                            const val = e.target.value;
-                                            if (!val) return;
-                                            const [yStr, wStr] = val.split('-W');
-                                            const year = parseInt(yStr, 10);
-                                            const week = parseInt(wStr, 10);
-                                            const start = new Date(year, 0, 1 + (week - 1) * 7);
-                                            const day = start.getDay();
-                                            start.setDate(start.getDate() - day + (day === 0 ? -6 : 1));
-                                            const end = new Date(start);
-                                            end.setDate(start.getDate() + 6);
-                                            handleFilterChange({ startDate: toLocalISOString(start), endDate: toLocalISOString(end), dateRange: 'week', selectedMonths: [] });
-                                        }}
-                                    >
-                                        <option value="" disabled>Chọn Tuần</option>
-                                        {availableWeeks.map(w => <option key={w.value} value={w.value}>{w.label}</option>)}
-                                    </select>
-                                )}
-                                <Button
-                                    variant="ghost"
-                                    onClick={() => {
-                                        if (range === 'today' || range === 'yesterday' || range === 'all') {
-                                            handleDateRangeClick(range);
-                                        }
-                                    }}
-                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-md transition-all relative z-0 ${
-                                        filterState.dateRange === range
-                                        ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
-                                        : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
-                                    }`}
-                                >
-                                    {label}
-                                </Button>
-                            </div>
+                            <Button
+                                key={range}
+                                variant="ghost"
+                                onClick={() => handleDateRangeClick(range)}
+                                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-2.5 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all relative z-0 ${
+                                    filterState.dateRange === range
+                                    ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400'
+                                    : 'text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                                }`}
+                            >
+                                {label}
+                            </Button>
                         ))}
                     </div>
 
                     {/* Export Status (Segmented) */}
-                    <div className="w-auto shrink-0 transition-transform hover:scale-105">
-                        <SingleSelectDropdown
-                            label="T.Thái Xuất"
-                            options={[
-                                { value: 'all', label: 'Tất cả' },
-                                { value: 'Đã', label: 'Đã xuất' },
-                                { value: 'Chưa', label: 'Chưa xuất' }
-                            ]}
-                            selected={filterState.xuat}
-                            onChange={(val) => handleFilterChange({ xuat: val })}
-                            variant="compact"
-                        />
+                    <div className="grouped-filters relative flex items-center bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 shrink-0">
+                        <div className="w-[100px] shrink-0">
+                            <SingleSelectDropdown
+                                label="T.Thái Xuất"
+                                options={[
+                                    { value: 'all', label: 'Tất cả' },
+                                    { value: 'Đã', label: 'Đã xuất' },
+                                    { value: 'Chưa', label: 'Chưa xuất' }
+                                ]}
+                                selected={filterState.xuat}
+                                onChange={(val) => handleFilterChange({ xuat: val })}
+                                variant="compact"
+                            />
+                        </div>
                     </div>
                     
 
