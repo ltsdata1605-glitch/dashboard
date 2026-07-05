@@ -220,36 +220,7 @@ export default function StickerPrinterView() {
     const [drawTotalTickets, setDrawTotalTickets] = useState<number>(4);
     const [drawAutoIncrement, setDrawAutoIncrement] = useState<boolean>(true);
 
-    useEffect(() => {
-        if (stickerType !== 'draw') return;
 
-        setDrawTickets(prev => {
-            const firstTicketData = prev[0] || { id: '1', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' };
-            const newTickets: TicketDrawData[] = [];
-            for (let i = 0; i < drawTotalTickets; i++) {
-                const ticketCode = drawAutoIncrement ? (drawStartNumber + i).toString() : (prev[i]?.code || '');
-                if (i === 0) {
-                    newTickets.push({
-                        ...firstTicketData,
-                        id: '1',
-                        code: drawAutoIncrement ? drawStartNumber.toString() : (firstTicketData.code || '1')
-                    });
-                } else {
-                    newTickets.push({
-                        id: (i + 1).toString(),
-                        title: '', 
-                        footer: '',
-                        contentTop: '',
-                        contentTopRight: '',
-                        contentBottom: '',
-                        contentBottomRight: '',
-                        code: ticketCode
-                    });
-                }
-            }
-            return newTickets;
-        });
-    }, [drawStartNumber, drawTotalTickets, drawAutoIncrement, stickerType]);
 
     const [drawContentTopLeftSize, setDrawContentTopLeftSize] = useState(3.5);
     const [drawContentTopRightSize, setDrawContentTopRightSize] = useState(3.5);
@@ -272,6 +243,12 @@ export default function StickerPrinterView() {
     const [discountThreshold, setDiscountThreshold] = useState('');
     const [activeQueuePageId, setActiveQueuePageId] = useState<string | null>(null);
     const [activeSubTab, setActiveSubTab] = useState<'data' | 'queue' | 'history'>('data');
+
+    useEffect(() => {
+        if (stickerType === 'draw' && activeSubTab === 'queue') {
+            setActiveSubTab('data');
+        }
+    }, [stickerType, activeSubTab]);
 
     const getActiveFieldLabel = () => {
         switch (activeField) {
@@ -418,6 +395,38 @@ export default function StickerPrinterView() {
     const [isLoaded, setIsLoaded] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [isSaveListModalOpen, setIsSaveListModalOpen] = useState(false);
+
+    useEffect(() => {
+        if (!isLoaded) return;
+        if (stickerType !== 'draw') return;
+
+        setDrawTickets(prev => {
+            const firstTicketData = prev[0] || { id: '1', title: '', code: '', footer: '', contentTop: '', contentTopRight: '', contentBottom: '', contentBottomRight: '' };
+            const newTickets: TicketDrawData[] = [];
+            for (let i = 0; i < drawTotalTickets; i++) {
+                const ticketCode = drawAutoIncrement ? (drawStartNumber + i).toString() : (prev[i]?.code || '');
+                if (i === 0) {
+                    newTickets.push({
+                        ...firstTicketData,
+                        id: '1',
+                        code: drawAutoIncrement ? drawStartNumber.toString() : (firstTicketData.code || '1')
+                    });
+                } else {
+                    newTickets.push({
+                        id: (i + 1).toString(),
+                        title: '', 
+                        footer: '',
+                        contentTop: '',
+                        contentTopRight: '',
+                        contentBottom: '',
+                        contentBottomRight: '',
+                        code: ticketCode
+                    });
+                }
+            }
+            return newTickets;
+        });
+    }, [drawStartNumber, drawTotalTickets, drawAutoIncrement, stickerType, isLoaded]);
 
     useEffect(() => {
         const match = previewName.match(/(?:IMEI|CODE):\s*([A-Za-z0-9]+)/i);
@@ -604,6 +613,19 @@ export default function StickerPrinterView() {
                     if (savedState.nameTextSize != null) setNameTextSize(savedState.nameTextSize);
                     if (savedState.newPriceTextSize != null) setNewPriceTextSize(savedState.newPriceTextSize);
                     if (savedState.footerTextSize != null) setFooterTextSize(savedState.footerTextSize);
+
+                    // Ticket draw settings
+                    if (savedState.drawTickets) setDrawTickets(savedState.drawTickets);
+                    if (savedState.drawStartNumber != null) setDrawStartNumber(savedState.drawStartNumber);
+                    if (savedState.drawTotalTickets != null) setDrawTotalTickets(savedState.drawTotalTickets);
+                    if (savedState.drawAutoIncrement != null) setDrawAutoIncrement(savedState.drawAutoIncrement);
+                    if (savedState.drawContentTopLeftSize != null) setDrawContentTopLeftSize(savedState.drawContentTopLeftSize);
+                    if (savedState.drawContentTopRightSize != null) setDrawContentTopRightSize(savedState.drawContentTopRightSize);
+                    if (savedState.drawContentBottomLeftSize != null) setDrawContentBottomLeftSize(savedState.drawContentBottomLeftSize);
+                    if (savedState.drawContentBottomRightSize != null) setDrawContentBottomRightSize(savedState.drawContentBottomRightSize);
+                    if (savedState.drawTitleSize != null) setDrawTitleSize(savedState.drawTitleSize);
+                    if (savedState.drawCodeSize != null) setDrawCodeSize(savedState.drawCodeSize);
+                    if (savedState.drawFooterSize != null) setDrawFooterSize(savedState.drawFooterSize);
                 }
 
                 // 2. Load saved lists
@@ -675,6 +697,18 @@ export default function StickerPrinterView() {
                 manualPages,
                 batchItems,
                 priceSource,
+                // Ticket draw states
+                drawTickets,
+                drawStartNumber,
+                drawTotalTickets,
+                drawAutoIncrement,
+                drawContentTopLeftSize,
+                drawContentTopRightSize,
+                drawContentBottomLeftSize,
+                drawContentBottomRightSize,
+                drawTitleSize,
+                drawCodeSize,
+                drawFooterSize,
                 updatedAt: new Date().toISOString()
             };
             
@@ -712,7 +746,19 @@ export default function StickerPrinterView() {
         activeSubTab,
         manualPages,
         batchItems,
-        priceSource
+        priceSource,
+        // Ticket draw dependencies
+        drawTickets,
+        drawStartNumber,
+        drawTotalTickets,
+        drawAutoIncrement,
+        drawContentTopLeftSize,
+        drawContentTopRightSize,
+        drawContentBottomLeftSize,
+        drawContentBottomRightSize,
+        drawTitleSize,
+        drawCodeSize,
+        drawFooterSize
     ]);
 
     // Sync savedLists to IndexedDB

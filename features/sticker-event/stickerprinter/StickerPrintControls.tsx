@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
     Printer, Settings, CheckCircle2, Upload, Plus, Trash2, 
     RotateCcw, Download, FileSpreadsheet, Package 
@@ -114,6 +114,14 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
     const selectedManualPagesCount = manualPages.filter(p => p.selected !== false).length;
     const filteredItems = batchItems.filter(it => it.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
+    const filteredHistory = useMemo(() => {
+        if (stickerType === 'draw') {
+            return printHistory.filter(entry => entry.stickerType === 'draw');
+        } else {
+            return printHistory.filter(entry => entry.stickerType !== 'draw');
+        }
+    }, [printHistory, stickerType]);
+
     return (
         <div className="w-full max-w-sm aspect-[197/285] bg-white dark:bg-slate-800 rounded-none shadow-xl border border-slate-200 dark:border-slate-700 p-5 lg:p-6 no-print flex flex-col overflow-hidden">
             {/* Primary Action Buttons */}
@@ -147,16 +155,18 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                 >
                     Dữ liệu
                 </button>
-                <button
-                    onClick={() => setActiveSubTab('queue')}
-                    className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
-                        activeSubTab === 'queue'
-                            ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
-                            : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                    }`}
-                >
-                    D.Sách ({manualPages.length})
-                </button>
+                {stickerType !== 'draw' && (
+                    <button
+                        onClick={() => setActiveSubTab('queue')}
+                        className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
+                            activeSubTab === 'queue'
+                                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                                : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
+                        }`}
+                    >
+                        D.Sách ({manualPages.length})
+                    </button>
+                )}
                 <button
                     onClick={() => setActiveSubTab('history')}
                     className={`flex-1 pb-2 text-[11px] lg:text-xs font-bold text-center border-b-2 transition-all ${
@@ -165,7 +175,7 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                             : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
                     }`}
                 >
-                    Lịch sử ({printHistory.length})
+                    Lịch sử ({filteredHistory.length})
                 </button>
             </div>
 
@@ -404,10 +414,10 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
 
                 {activeSubTab === 'history' && (
                     <div className="space-y-2 animate-in fade-in duration-200 pb-2">
-                        {printHistory.length === 0 ? (
+                        {filteredHistory.length === 0 ? (
                             <p className="text-xs text-slate-400 text-center py-12">Chưa có lịch sử in</p>
                         ) : (
-                            printHistory.map(entry => (
+                            filteredHistory.map(entry => (
                                 <div key={entry.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-700 group text-left">
                                     <div className="min-w-0 flex-1">
                                         <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{entry.label}</p>
@@ -416,7 +426,13 @@ export const StickerPrintControls: React.FC<StickerPrintControlsProps> = ({
                                             <span>•</span>
                                             <span>{entry.pageCount} trang</span>
                                             <span>•</span>
-                                            <span>{entry.stickerType === 'gia_soc' ? 'Giá Sốc' : 'Giờ Vàng'}</span>
+                                            <span>
+                                                {entry.stickerType === 'gia_soc' 
+                                                    ? 'Giá Sốc' 
+                                                    : entry.stickerType === 'draw' 
+                                                        ? 'Rút Thăm' 
+                                                        : 'Giờ Vàng'}
+                                            </span>
                                         </div>
                                     </div>
                                     <div className="flex gap-1 shrink-0 ml-2 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
