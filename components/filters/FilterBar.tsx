@@ -138,11 +138,39 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
     return (
         <div className="w-full mb-4 z-[90] lg:z-[100] sticky top-[44px] lg:top-1.5 hide-on-export">
             
+            
             <style>{`
+                .grouped-filters {
+                    height: 28px !important;
+                }
                 .grouped-filters button {
                     border: 0 !important;
                     border-radius: 0 !important;
                     box-shadow: none !important;
+                    height: 26px !important;
+                    padding-top: 0 !important;
+                    padding-bottom: 0 !important;
+                    background: transparent !important;
+                }
+                .grouped-filters button:focus,
+                .grouped-filters button:active {
+                    outline: none !important;
+                    box-shadow: none !important;
+                }
+                .grouped-filters button span {
+                    font-size: 10px !important;
+                    font-weight: 900 !important;
+                    text-transform: uppercase !important;
+                    letter-spacing: 0.05em !important;
+                    color: #64748b !important;
+                }
+                .grouped-filters button span.text-sky-600,
+                .grouped-filters button span.text-sky-400 {
+                    color: #0284c7 !important;
+                }
+                .grouped-filters svg {
+                    width: 10px !important;
+                    height: 10px !important;
                 }
                 .grouped-filters > div:first-of-type button {
                     border-top-left-radius: 0.5rem !important;
@@ -153,6 +181,7 @@ const FilterBar: React.FC<FilterBarProps> = ({ onToggleAdvanced, onNewFile, onOp
                     border-bottom-right-radius: 0.5rem !important;
                 }
             `}</style>
+
 
             <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border-y sm:border border-slate-200/80 dark:border-slate-700/60 rounded-none sm:rounded-xl lg:rounded-full p-1.5 lg:px-3 lg:py-2 transition-all">
 
