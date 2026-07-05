@@ -81,6 +81,7 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
             childToParentMap: {},
             childToSubgroupMap: {},
             quantityMultiplierMap: { ...DEFAULT_QUANTITY_MULTIPLIER_MAP },
+            vasMultiplierMap: {},
             vasNameMultiplierMap: {},
             revenueEligibleHTX: new Set<string>(),
             nonRevenueEligibleHTX: new Set<string>(),
@@ -182,7 +183,12 @@ export async function loadConfigFromSheet(url: string, setStatus: StatusUpdater)
                                     
                                     if (!isNaN(multiplier)) {
                                         if (code) {
-                                            config.quantityMultiplierMap[code] = multiplier;
+                                            if (sheetName.toLowerCase().includes('vas')) {
+                                                if (!config.vasMultiplierMap) config.vasMultiplierMap = {};
+                                                config.vasMultiplierMap[code] = multiplier;
+                                            } else {
+                                                config.quantityMultiplierMap[code] = multiplier;
+                                            }
                                         }
                                         if (nameVal) {
                                             config.vasNameMultiplierMap[nameVal] = multiplier;

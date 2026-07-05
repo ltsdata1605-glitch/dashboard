@@ -258,7 +258,7 @@ export function processEmployeeData(
         const heso = metrics.revenueQD > 0 && revenue > 0 ? metrics.revenueQD / revenue : 1;
         const subgroup = productConfig.childToSubgroupMap[maNhomHang];
         const isVieon = subgroup === 'Vieon' || (productName || '').toString().includes('VieON');
-        const qtyMultiplier = productConfig.quantityMultiplierMap?.[productCode];
+        const qtyMultiplier = (productConfig.quantityMultiplierMap?.[productCode]) ?? (productConfig.vasMultiplierMap?.[productCode]);
         const weightedQuantity = isVieon ? (quantity * heso) : (qtyMultiplier !== undefined ? (quantity * qtyMultiplier) : quantity);
 
         // --- Aggregate general stats ---

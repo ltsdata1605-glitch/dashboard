@@ -1326,6 +1326,9 @@ export async function getProductConfig(): Promise<{ config: ProductConfig, url: 
         if (!data.config.quantityMultiplierMap) {
             data.config.quantityMultiplierMap = {};
         }
+        if (!data.config.vasMultiplierMap) {
+            data.config.vasMultiplierMap = {};
+        }
     }
     return data;
 }

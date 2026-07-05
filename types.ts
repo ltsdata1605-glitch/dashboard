@@ -18,6 +18,7 @@ export interface ProductConfig {
     childToParentMap: { [key: string]: string };
     childToSubgroupMap: { [key: string]: string };
     quantityMultiplierMap: { [productCode: string]: number };
+    vasMultiplierMap?: { [productCode: string]: number };
     vasNameMultiplierMap?: { [productName: string]: number };
     revenueEligibleHTX?: Set<string>;
     nonRevenueEligibleHTX?: Set<string>;
