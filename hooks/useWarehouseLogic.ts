@@ -198,9 +198,25 @@ export const useWarehouseLogic = ({
                 if (!metrics) return 0;
                 if (targetCol.manufacturerName) {
                     const primaryKey = targetCol.categoryType === 'industry' ? 'byIndustryAndManufacturer' : 'byGroupAndManufacturer';
+                    if (targetCol.categoryName.includes(',')) {
+                        const names = targetCol.categoryName.split(',').map(n => n.trim());
+                        let total = 0;
+                        names.forEach(name => {
+                            total += metrics[primaryKey]?.[name]?.[targetCol.manufacturerName!]?.[targetCol.metricType!] || 0;
+                        });
+                        return total;
+                    }
                     return metrics[primaryKey]?.[targetCol.categoryName]?.[targetCol.manufacturerName]?.[targetCol.metricType] || 0;
                 } else {
                     const primaryKey = targetCol.categoryType === 'industry' ? 'byIndustry' : targetCol.categoryType === 'group' ? 'byGroup' : 'byManufacturer';
+                    if (targetCol.categoryName.includes(',')) {
+                        const names = targetCol.categoryName.split(',').map(n => n.trim());
+                        let total = 0;
+                        names.forEach(name => {
+                            total += metrics[primaryKey]?.[name]?.[targetCol.metricType!] || 0;
+                        });
+                        return total;
+                    }
                     return metrics[primaryKey]?.[targetCol.categoryName]?.[targetCol.metricType] || 0;
                 }
              }
@@ -249,6 +265,20 @@ export const useWarehouseLogic = ({
 
             if (column.manufacturerName) {
                 const primaryKey = column.categoryType === 'industry' ? 'byIndustryAndManufacturer' : 'byGroupAndManufacturer';
+                if (column.categoryName && column.categoryName.includes(',')) {
+                    const names = column.categoryName.split(',').map(n => n.trim());
+                    let total = 0;
+                    names.forEach(name => {
+                        let val = metrics[primaryKey]?.[name]?.[column.manufacturerName!]?.[column.metricType!];
+                        if (val !== undefined) {
+                            if (column.metricType === 'revenue' || column.metricType === 'revenueQD') {
+                                val = val / 1000000;
+                            }
+                            total += val;
+                        }
+                    });
+                    return total;
+                }
                 let val = metrics[primaryKey]?.[column.categoryName!]?.[column.manufacturerName]?.[column.metricType];
                 if (val !== undefined && (column.metricType === 'revenue' || column.metricType === 'revenueQD')) {
                     val = val / 1000000;
@@ -256,6 +286,20 @@ export const useWarehouseLogic = ({
                 return val;
             } else {
                 const primaryKey = column.categoryType === 'industry' ? 'byIndustry' : column.categoryType === 'group' ? 'byGroup' : 'byManufacturer';
+                if (column.categoryName && column.categoryName.includes(',')) {
+                    const names = column.categoryName.split(',').map(n => n.trim());
+                    let total = 0;
+                    names.forEach(name => {
+                        let val = metrics[primaryKey]?.[name]?.[column.metricType!];
+                        if (val !== undefined) {
+                            if (column.metricType === 'revenue' || column.metricType === 'revenueQD') {
+                                val = val / 1000000;
+                            }
+                            total += val;
+                        }
+                    });
+                    return total;
+                }
                 let val = metrics[primaryKey]?.[column.categoryName!]?.[column.metricType];
                 if (val !== undefined && (column.metricType === 'revenue' || column.metricType === 'revenueQD')) {
                     val = val / 1000000;

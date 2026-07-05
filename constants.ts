@@ -108,6 +108,7 @@ export const DEFAULT_WAREHOUSE_COLUMNS: WarehouseColumnConfig[] = [
     { id: 'gd_qdien', order: 33, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Quạt điện', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'Q.Điện' },
     { id: 'gd_ncom', order: 34, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Nồi cơm', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'N.Cơm' },
     { id: 'gd_nchien', order: 35, isVisible: false, isCustom: false, categoryType: 'group', categoryName: 'Nồi chiên', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'N.Chiên' },
+    { id: 'gd_lochbui', order: 36, isVisible: true, isCustom: false, categoryType: 'group', categoryName: 'Máy lọc không khí,Hút bụi,Robot hút bụi,Máy tạo/hút ẩm', metricType: 'quantity', mainHeader: 'SL GIA DỤNG', subHeader: 'LỌC/H.BỤI' },
 ];
 
 export const DEFAULT_INDUSTRY_COLUMNS: any[] = [
