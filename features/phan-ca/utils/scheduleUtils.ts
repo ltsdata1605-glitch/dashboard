@@ -136,7 +136,7 @@ const isFriday = (year: number, month: number, startDay: number, dayIndex: numbe
  * Cập nhật mới: Ưu tiên cân bằng công bằng vào cuối tuần (Sales Protection)
  */
 export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleConfig, targets?: ScheduleTargets): StaffMember[] => {
-    let refinedList = JSON.parse(JSON.stringify(staffList));
+    let refinedList = structuredClone(staffList);
     const includeTn = config.includeTn !== undefined ? config.includeTn : true;
     
     // Fix: Mở rộng phạm vi cân bằng cho tất cả nhân viên vận hành (giống logic lúc phân ca)
@@ -844,20 +844,39 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
      * Cập nhật: Ưu tiên giảm chênh lệch cực đại (Max - Min) xuống dưới 3h.
      */
     const greedyPolish = () => {
+        // Thứ-trong-tuần của từng ngày trong tháng không đổi giữa các pass/cặp (i,j) —
+        // trước đây tạo `new Date(...)` lại cho MỖI cặp (i,j,d), tính 1 lần duy nhất ở đây.
+        const dayOfWeekCache: number[] = [];
+        for (let d = 1; d <= duration; d++) {
+            dayOfWeekCache[d] = new Date(year, month - 1, startDay + d - 1).getDay();
+        }
+
         for (let pass = 0; pass < 20; pass++) {
             let improved = false;
             refreshAllStats();
-            allInOneStaff.sort((a, b) => calculateSpecialHours(b, includeTn) - calculateSpecialHours(a, includeTn));
-            
+            // Cache giờ đặc biệt theo nhân viên 1 lần/pass thay vì gọi lại calculateSpecialHours
+            // (duyệt toàn bộ schedule của nhân viên đó) cho mỗi lần so sánh trong sort() và mỗi
+            // cặp (i,j) — lịch của 1 nhân viên chỉ đổi khi có swap, mà swap thì thoát hết pass ngay.
+            const specialHoursCache = new Map<string, number>();
+            const getSpecialHours = (s: StaffMember) => {
+                let h = specialHoursCache.get(s.id);
+                if (h === undefined) {
+                    h = calculateSpecialHours(s, includeTn);
+                    specialHoursCache.set(s.id, h);
+                }
+                return h;
+            };
+            allInOneStaff.sort((a, b) => getSpecialHours(b) - getSpecialHours(a));
+
             for (let i = 0; i < allInOneStaff.length; i++) {
                 for (let j = allInOneStaff.length - 1; j > i; j--) {
                     const sHigh = allInOneStaff[i];
                     const sLow = allInOneStaff[j];
-                    
-                    const hHigh = calculateSpecialHours(sHigh, includeTn);
-                    const hLow = calculateSpecialHours(sLow, includeTn);
+
+                    const hHigh = getSpecialHours(sHigh);
+                    const hLow = getSpecialHours(sLow);
                     const currentDiff = hHigh - hLow;
-                    
+
                     if (currentDiff <= 1) continue;
 
                     for (let d = 1; d <= duration; d++) {
@@ -872,16 +891,15 @@ export const autoRefineSchedule = (staffList: StaffMember[], config: ScheduleCon
                                 // KHÔNG CHO PHÉP nếu việc đổi GH làm lố chênh lệch GH đã được cân bằng
                                 if (sHigh.stats.gh <= sLow.stats.gh) continue;
                             }
-                            
+
                             // Bảo toàn cấu trúc giới tính ca Kho Thứ 2 & Thứ 5 (cấm hoán đổi Nam-Nữ)
-                            const date = new Date(year, month - 1, startDay + d - 1);
-                            const dayOfWeek = date.getDay();
+                            const dayOfWeek = dayOfWeekCache[d];
                             if (roleTag === 'Kho' && (dayOfWeek === 1 || dayOfWeek === 4) && sHigh.gender !== sLow.gender) continue;
 
                             const isSafe = roleTag === 'Kho' ? isSafeForKho(sLow, d) : isSafeForSpecial(sLow, d);
                             if (!isSafe) continue;
 
-                            const shiftHours = (schedHigh!.shift.match(/[1-6]/g) || []).reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
+                            const shiftHours = (schedHigh!.shift.match(/[1-6]/g) || ([] as string[])).reduce((sum, c) => sum + (HOURS_CONFIG[c] || 0), 0);
                             const newDiff = Math.abs((hHigh - shiftHours) - (hLow + shiftHours));
                             
                             if (newDiff < currentDiff) {

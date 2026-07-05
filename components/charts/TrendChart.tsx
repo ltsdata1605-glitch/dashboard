@@ -155,9 +155,11 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
   }, [availableMonths]);
 
   const { uniqueParentGroups, uniqueChildGroups } = useMemo(() => {
+      if (displayMode !== 'calendar') return { uniqueParentGroups: [], uniqueChildGroups: [] };
+
       const parents = new Set<string>();
       const children = new Set<string>();
-      
+
       if (baseFilteredData && productConfig) {
           baseFilteredData.forEach((row: any) => {
               const maNhomHang = getRowValue(row, COL.MA_NHOM_HANG) || '';
@@ -181,7 +183,7 @@ const TrendChartInner: React.FC<TrendChartInnerProps> = React.memo(({
           uniqueParentGroups: Array.from(parents).sort(),
           uniqueChildGroups: Array.from(children).sort()
       };
-  }, [baseFilteredData, productConfig, calendarFilters.parentGroup]);
+  }, [displayMode, baseFilteredData, productConfig, calendarFilters.parentGroup]);
 
   const calendarData = useMemo(() => {
       if (displayMode !== 'calendar' || !baseFilteredData || !productConfig || !calendarFilters.month) return [];

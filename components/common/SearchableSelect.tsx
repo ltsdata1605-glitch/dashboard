@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Icon } from './Icon';
 
 interface SearchableSelectProps {
@@ -30,7 +30,10 @@ const SearchableSelect: React.FC<SearchableSelectProps> = ({ label, options, val
         }
     }, []);
 
-    const filteredOptions = options.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase()));
+    const filteredOptions = useMemo(
+        () => options.filter(opt => opt.toLowerCase().includes(searchTerm.toLowerCase())),
+        [options, searchTerm]
+    );
 
     const handleSelect = (selectedValue: string) => {
         onChange(selectedValue);

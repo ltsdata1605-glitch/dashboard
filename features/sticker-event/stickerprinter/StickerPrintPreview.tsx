@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import BarcodeCanvas from '../../../components/views/BarcodeCanvas';
 import { BatchItem, TicketDrawData } from './types';
 import { Bold, Italic, Underline } from 'lucide-react';
@@ -64,7 +64,7 @@ interface DrawTicketBlockProps {
     totalIndex?: number;
 }
 
-const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({ 
+const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
     ticket, 
     firstTicket, 
     onChange, 
@@ -275,7 +275,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = ({
             )}
         </div>
     );
-};
+});
 
 /**
  * Hook to manage a contentEditable div without cursor-jumping.
@@ -426,6 +426,22 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     }, [drawTickets?.length, totalDrawPages, activeDrawPage]);
 
     const percentRef = useRef<HTMLDivElement>(null);
+
+    // Cache 1 callback ổn định cho mỗi vé (theo totalIndex) thay vì tạo closure mới mỗi render —
+    // kết hợp với DrawTicketBlock đã bọc React.memo, gõ chữ ở 1 vé không còn re-render toàn bộ
+    // các vé còn lại trong lô in.
+    const drawTicketOnChangeCacheRef = useRef<Map<number, (updates: Partial<TicketDrawData>) => void>>(new Map());
+    const getDrawTicketOnChange = useCallback((idx: number) => {
+        const cache = drawTicketOnChangeCacheRef.current;
+        let fn = cache.get(idx);
+        if (!fn) {
+            fn = (updates: Partial<TicketDrawData>) => {
+                setDrawTickets?.(prev => prev.map((t, i) => i === idx ? { ...t, ...updates } : t));
+            };
+            cache.set(idx, fn);
+        }
+        return fn;
+    }, [setDrawTickets]);
 
     // Selection listener for floating text formatting toolbar
     const [toolbarPos, setToolbarPos] = React.useState<{ top: number; left: number } | null>(null);
@@ -711,7 +727,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
     return (
         <div className="bg-white p-0 shadow-xl border border-slate-200 shrink-0 w-full max-w-sm mx-auto overflow-hidden no-print-bg">
             <style>
-                {`
+                {useMemo(() => `
                 .sticker-container {
                     width: 100%;
                     aspect-ratio: ${stickerType === 'draw' ? '2482 / 3512' : '197 / 285'};
@@ -1320,7 +1336,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                          content: "" !important;
                      }
                  }
-                 `}
+                 `, [stickerType, bgImage, headerTextSize, percentTextSize, nameTextSize, oldPriceTextSize, newPriceTextSize, footerTextSize, subHeaderTextSize])}
             </style>
             <div id="print-section" className="w-full">
                 {stickerType === 'draw' ? (
@@ -1359,11 +1375,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                             activeField={activeField}
                                             setActiveField={setActiveField}
                                             totalIndex={totalIndex}
-                                            onChange={(updates) => {
-                                                if (setDrawTickets) {
-                                                    setDrawTickets(prev => prev.map((t, idx) => idx === totalIndex ? { ...t, ...updates } : t));
-                                                }
-                                            }} 
+                                            onChange={getDrawTicketOnChange(totalIndex)}
                                         />
                                     );
                                 })}

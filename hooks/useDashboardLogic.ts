@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import type { Status, AppState } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -9,6 +9,7 @@ import { useFileUploadLogic } from './useFileUploadLogic';
 import { useFilterState, initialFilterState } from './useFilterState';
 import { useDataManagement } from './useDataManagement';
 import { useWarehouseTargets } from './useWarehouseTargets';
+import { useStableCallback } from './useStableCallback';
 import * as dbService from '../services/dbService';
 import { toLocalISOString } from '../utils/dataUtils';
 
@@ -48,17 +49,17 @@ export const useDashboardLogic = () => {
         uniqueFilterOptions,
         crossSellingConfig, setCrossSellingConfig,
         kpiCardsConfig, setKpiCardsConfig,
-        kpiTargets, updateKpiTargets,
+        kpiTargets, updateKpiTargets: updateKpiTargetsRaw,
         isInternalProcessing,
         isFilterProcessing,
         fileInfo, setFileInfo,
         pendingCloudSync, setPendingCloudSync,
-        handleAcceptCloudSync,
-        handleViewReport,
+        handleAcceptCloudSync: handleAcceptCloudSyncRaw,
+        handleViewReport: handleViewReportRaw,
         fileRegistry,
         refreshRegistry,
         handleToggleFileActive,
-        handleDeleteFile,
+        handleDeleteFile: handleDeleteFileRaw,
         hasRealtimeData,
         handleClearRealtimeData,
         unconfiguredGroups,
@@ -115,26 +116,26 @@ export const useDashboardLogic = () => {
     // a bug where empty filters (Select All unselected) would instantly 
     // reset to "Select All" again, blocking the user from selecting just 1 department.
     
-    const openPerformanceModal = (employeeName: string) => {
+    const openPerformanceModal = useStableCallback((employeeName: string) => {
         setModalData({ employeeName });
         setActiveModal('performance');
-    };
+    });
 
-    const openUnshippedModal = () => setActiveModal('unshipped');
+    const openUnshippedModal = useStableCallback(() => setActiveModal('unshipped'));
 
     // NOTE: Settings sync to Firebase is handled automatically by useCloudSync hook
     // which listens to 'ycx-setting-changed' events dispatched by dbService.saveSetting().
     // No need for manual triggerCloudSync calls — saving to IndexedDB triggers the event chain.
 
-    const handleDeduplicationChange = (enabled: boolean) => {
+    const handleDeduplicationChange = useStableCallback((enabled: boolean) => {
         setIsDeduplicationEnabled(enabled);
         dbService.saveDeduplicationSetting(enabled).catch(console.error);
-    };
+    });
 
-    const handleLuyKeChange = (enabled: boolean) => {
+    const handleLuyKeChange = useStableCallback((enabled: boolean) => {
         setIsLuyKe(enabled);
         dbService.saveSetting('kpi_luyke_mode', enabled).catch(console.error);
-    };
+    });
 
     // Load saved settings on mount
     useEffect(() => {
@@ -157,26 +158,126 @@ export const useDashboardLogic = () => {
         return () => window.removeEventListener('dedup-changed', handler);
     }, []);
 
-    const updateWarehouseTarget = (kho: string, target: number) => {
+    const updateWarehouseTarget = useStableCallback((kho: string, target: number) => {
         handleSaveWarehouseTargets({ ...warehouseTargets, [kho]: target });
-    };
+    });
 
-    const updateWarehouseDTThucTarget = async (kho: string, target: number) => {
+    const updateWarehouseDTThucTarget = useStableCallback(async (kho: string, target: number) => {
         const newTargets = { ...warehouseDTThucTargets, [kho]: target };
         setWarehouseDTThucTargets(newTargets);
         await dbService.saveSetting('warehouseDTThucTargets', newTargets);
-    };
-    
+    });
+
     const isProcessing = isInternalProcessing || isFileProcessing;
 
-    return {
+    // Handlers từ các hook con chưa tự memoize (hoặc chỉ là wrapper mỏng) —
+    // bọc bằng useStableCallback để identity ổn định vĩnh viễn, tránh việc object
+    // `logic` trả về cuối hàm bị coi là "đổi" mỗi render và làm toàn bộ consumer
+    // của DashboardContext re-render dù dữ liệu không đổi.
+    const stableHandleClearDepartments = useStableCallback(handleClearDepartments);
+    const stableHandleClearData = useStableCallback(handleClearData);
+    const stableHandleShiftFileProcessing = useStableCallback(handleShiftFileProcessing);
+    const stableHandleFileProcessing = useStableCallback(handleFileProcessing);
+    const stableHandleAcceptCloudSync = useStableCallback(handleAcceptCloudSyncRaw);
+
+    const updateGtdhTarget = useStableCallback(async (nhomHang: string, target: number) => {
+        const newTargets = { ...gtdhTargets, [nhomHang]: target };
+        setGtdhTargets(newTargets);
+        await dbService.saveGtdhTargets(newTargets);
+    });
+
+    const deleteGtdhTarget = useStableCallback(async (nhomHang: string) => {
+        const newTargets = { ...gtdhTargets };
+        delete newTargets[nhomHang];
+        setGtdhTargets(newTargets);
+        await dbService.saveGtdhTargets(newTargets);
+    });
+
+    const updateCrossSellingConfig = useStableCallback(async (config: any) => {
+        setCrossSellingConfig(config);
+        await dbService.saveCrossSellingConfig(config);
+    });
+
+    const updateKpiCardsConfig = useStableCallback(async (config: import('../types').KpiCardConfig[]) => {
+        setKpiCardsConfig(config);
+        await dbService.saveKpiCardConfig(config);
+    });
+
+    const updateKpiTargets = useStableCallback(async (targets: { hieuQua: number, traGop: number, gtdh?: number, doanhThuThuc?: number }) => {
+        updateKpiTargetsRaw(targets);
+        await dbService.saveKpiTargets(targets);
+    });
+
+    const updateDepartmentMap = useStableCallback(async (map: any) => {
+        setDepartmentMap(map);
+        await dbService.saveDepartmentMap(map);
+    });
+
+    const handleDeleteFile = useStableCallback(async (id: string) => {
+        await handleDeleteFileRaw(id);
+        const registry = await dbService.getSalesFilesRegistry();
+        const activeHistoricalCount = registry.filter(f => f.isActive).length;
+        const merged = await dbService.getMergedSalesData();
+        if (merged) {
+            if (activeHistoricalCount > 0) {
+                const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
+                const todayStr = getTodayStr();
+                setFilterState(prev => ({
+                    ...prev,
+                    kho: [],
+                    xuat: 'all',
+                    trangThai: allTrangThai,
+                    nguoiTao: [],
+                    department: [],
+                    startDate: todayStr,
+                    endDate: todayStr,
+                    dateRange: 'today',
+                    selectedMonths: []
+                }));
+            } else {
+                setFilterState(initialFilterState);
+            }
+        }
+    });
+
+    const handleViewReport = useStableCallback(async () => {
+        await handleViewReportRaw();
+        const registry = await dbService.getSalesFilesRegistry();
+        const activeHistoricalCount = registry.filter(f => f.isActive).length;
+        const merged = await dbService.getMergedSalesData();
+        if (merged) {
+            if (activeHistoricalCount > 0) {
+                const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
+                const todayStr = getTodayStr();
+                setFilterState(prev => ({
+                    ...prev,
+                    kho: [],
+                    xuat: 'all',
+                    trangThai: allTrangThai,
+                    nguoiTao: [],
+                    department: [],
+                    startDate: todayStr,
+                    endDate: todayStr,
+                    dateRange: 'today',
+                    selectedMonths: []
+                }));
+            } else {
+                setFilterState(initialFilterState);
+            }
+        }
+    });
+
+    return useMemo(() => ({
         status, appState, setAppState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
         departmentMap, originalData, baseFilteredData, warehouseFilteredData, calendarSourceData, productConfig, processedData, employeeAnalysisData,
         configUrl, setConfigUrl, uniqueFilterOptions,
         filterState, handleFilterChange,
-        pendingCloudSync, setPendingCloudSync, handleAcceptCloudSync,
+        pendingCloudSync, setPendingCloudSync, handleAcceptCloudSync: stableHandleAcceptCloudSync,
         activeModal, setActiveModal, modalData,
-        handleClearDepartments, handleClearData, handleShiftFileProcessing, handleFileProcessing,
+        handleClearDepartments: stableHandleClearDepartments,
+        handleClearData: stableHandleClearData,
+        handleShiftFileProcessing: stableHandleShiftFileProcessing,
+        handleFileProcessing: stableHandleFileProcessing,
         pendingNaming, setPendingNaming,
         pendingConflict, setPendingConflict,
         openPerformanceModal, openUnshippedModal, handleExport,
@@ -197,101 +298,53 @@ export const useDashboardLogic = () => {
         warehouseDTThucTargets,
         updateWarehouseDTThucTarget,
         gtdhTargets,
-        updateGtdhTarget: async (nhomHang: string, target: number) => {
-            const newTargets = { ...gtdhTargets, [nhomHang]: target };
-            setGtdhTargets(newTargets);
-            await dbService.saveGtdhTargets(newTargets);
-        },
-        deleteGtdhTarget: async (nhomHang: string) => {
-            const newTargets = { ...gtdhTargets };
-            delete newTargets[nhomHang];
-            setGtdhTargets(newTargets);
-            await dbService.saveGtdhTargets(newTargets);
-        },
+        updateGtdhTarget,
+        deleteGtdhTarget,
         crossSellingConfig,
-        updateCrossSellingConfig: async (config: any) => {
-            setCrossSellingConfig(config);
-            await dbService.saveCrossSellingConfig(config);
-        },
+        updateCrossSellingConfig,
         kpiCardsConfig,
-        updateKpiCardsConfig: async (config: import('../types').KpiCardConfig[]) => {
-            setKpiCardsConfig(config);
-            await dbService.saveKpiCardConfig(config);
-        },
+        updateKpiCardsConfig,
         kpiTargets,
-        updateKpiTargets: async (targets: { hieuQua: number, traGop: number, gtdh?: number, doanhThuThuc?: number }) => {
-            updateKpiTargets(targets);
-            await dbService.saveKpiTargets(targets);
-        },
-        updateDepartmentMap: async (map: any) => {
-            setDepartmentMap(map);
-            await dbService.saveDepartmentMap(map);
-        },
+        updateKpiTargets,
+        updateDepartmentMap,
         fileRegistry,
         refreshRegistry,
-        handleToggleFileActive: async (id: string) => {
-            await handleToggleFileActive(id);
-        },
-        handleDeleteFile: async (id: string) => {
-            await handleDeleteFile(id);
-            const registry = await dbService.getSalesFilesRegistry();
-            const activeHistoricalCount = registry.filter(f => f.isActive).length;
-            const merged = await dbService.getMergedSalesData();
-            if (merged) {
-                if (activeHistoricalCount > 0) {
-                    const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
-                    const todayStr = getTodayStr();
-                    setFilterState(prev => ({
-                        ...prev,
-                        kho: [],
-                        xuat: 'all',
-                        trangThai: allTrangThai,
-                        nguoiTao: [],
-                        department: [],
-                        startDate: todayStr,
-                        endDate: todayStr,
-                        dateRange: 'today',
-                        selectedMonths: []
-                    }));
-                } else {
-                    setFilterState(initialFilterState);
-                }
-            }
-        },
+        handleToggleFileActive,
+        handleDeleteFile,
         hasRealtimeData,
         handleClearRealtimeData,
-        handleViewReport: async () => {
-            await handleViewReport();
-            const registry = await dbService.getSalesFilesRegistry();
-            const activeHistoricalCount = registry.filter(f => f.isActive).length;
-            const merged = await dbService.getMergedSalesData();
-            if (merged) {
-                if (activeHistoricalCount > 0) {
-                    const allTrangThai = Array.from(new Set(merged.data.map(r => r['Trạng thái hồ sơ'] || r['Trạng thái']).filter(Boolean))) as string[];
-                    const todayStr = getTodayStr();
-                    setFilterState(prev => ({
-                        ...prev,
-                        kho: [],
-                        xuat: 'all',
-                        trangThai: allTrangThai,
-                        nguoiTao: [],
-                        department: [],
-                        startDate: todayStr,
-                        endDate: todayStr,
-                        dateRange: 'today',
-                        selectedMonths: []
-                    }));
-                } else {
-                    setFilterState(initialFilterState);
-                }
-            }
-        },
+        handleViewReport,
         unconfiguredGroups,
         ignoredUnconfiguredGroups,
         handleIgnoreGroup,
         handleRestoreGroup,
         editingTargetKho,
         setEditingTargetKho
-    };
+    }), [
+        status, appState, isProcessing, isFilterProcessing, isClearingDepartments, isExporting, fileInfo,
+        departmentMap, originalData, baseFilteredData, warehouseFilteredData, calendarSourceData, productConfig, processedData, employeeAnalysisData,
+        configUrl, uniqueFilterOptions,
+        filterState, handleFilterChange,
+        pendingCloudSync, stableHandleAcceptCloudSync,
+        activeModal, modalData,
+        stableHandleClearDepartments, stableHandleClearData, stableHandleShiftFileProcessing, stableHandleFileProcessing,
+        pendingNaming, pendingConflict,
+        openPerformanceModal, openUnshippedModal, handleExport, handleBatchExport, handleBatchKhoExport, handleExportUncollectedSheet,
+        pendingExport, handlePendingDownload, handlePendingShare, handlePendingClose,
+        isDeduplicationEnabled, handleDeduplicationChange,
+        isLuyKe, handleLuyKeChange,
+        processingTime,
+        warehouseTargets, updateWarehouseTarget,
+        warehouseDTThucTargets, updateWarehouseDTThucTarget,
+        gtdhTargets, updateGtdhTarget, deleteGtdhTarget,
+        crossSellingConfig, updateCrossSellingConfig,
+        kpiCardsConfig, updateKpiCardsConfig,
+        kpiTargets, updateKpiTargets,
+        updateDepartmentMap,
+        fileRegistry, refreshRegistry, handleToggleFileActive, handleDeleteFile,
+        hasRealtimeData, handleClearRealtimeData, handleViewReport,
+        unconfiguredGroups, ignoredUnconfiguredGroups, handleIgnoreGroup, handleRestoreGroup,
+        editingTargetKho
+    ]);
 };
 

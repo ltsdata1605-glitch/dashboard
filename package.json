@@ -10,8 +10,10 @@
     "preview": "vite preview",
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
+    "lint:eslint": "eslint .",
+    "lint:ratchet": "node scripts/lint-ratchet.cjs",
     "audit": "npm audit || true",
-    "check": "npm run typecheck && npm run build",
+    "check": "npm run typecheck && npm run build && npm run lint:ratchet",
     "predeploy": "npm run build",
     "deploy": "git add -A && git commit -m \"chore: sync source code and deploy latest web changes\" || echo \"No changes to commit\" && git push origin main && gh-pages -d dist"
   },
@@ -48,9 +50,14 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.27",
+    "eslint": "^9.39.4",
+    "eslint-import-resolver-typescript": "^3.10.1",
+    "eslint-plugin-import": "^2.32.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
     "gh-pages": "^6.3.0",
     "tailwindcss": "^4.2.1",
     "typescript": "~5.8.2",
+    "typescript-eslint": "^8.62.1",
     "vite": "^6.2.0"
   }
 }

@@ -1,5 +1,8 @@
-    
-        :root {
+
+        /* Scoped tới .phanca-root (thay vì :root) để không leak custom property ra
+           toàn cục — PhanCaView persist-mount vĩnh viễn sau lần mở tab đầu tiên,
+           trước đây khai báo trên :root sẽ đè lên biến toàn app (RULES.md §2.5). */
+        .phanca-root {
             /* Core palette — refined indigo-slate system */
             --brand-primary: #4338ca;
             --brand-secondary: #6366f1;
@@ -18,17 +21,62 @@
             --cell-kho-bg: #ecfdf5; /* emerald-50 */
             --cell-kho-border: #6ee7b7; /* emerald-300 */
             --cell-kho-text: #059669; /* emerald-600 */
-            
+
             --cell-tn-bg: #faf5ff; /* purple-50 */
             --cell-tn-border: #d8b4fe; /* purple-300 */
             --cell-tn-text: #9333ea; /* purple-600 */
-            
+
             --cell-gh-bg: #fffbeb; /* amber-50 */
             --cell-gh-border: #fcd34d; /* amber-300 */
             --cell-gh-text: #d97706; /* amber-600 */
             --cell-off-bg: #fff1f2;
             --cell-off-text: #be123c;
+
+            /* ─── DARK MODE — map từ tier Primitive của styles/tokens.css ─── */
         }
+
+        .dark .phanca-root {
+            --brand-primary: #818cf8;
+            --brand-secondary: #a5b4fc;
+            --brand-accent: #c7d2fe;
+            --surface-0: var(--p-slate-900);
+            --surface-1: var(--p-slate-800);
+            --surface-2: var(--p-slate-700);
+            --surface-3: var(--p-slate-600);
+            --text-primary: var(--p-slate-50);
+            --text-secondary: var(--p-slate-400);
+            --text-muted: var(--p-slate-500);
+            --border-light: var(--p-slate-700);
+            --border-default: var(--p-slate-600);
+
+            --cell-kho-bg: rgba(16, 185, 129, 0.12);
+            --cell-kho-border: rgba(16, 185, 129, 0.4);
+            --cell-kho-text: #34d399;
+
+            --cell-tn-bg: rgba(168, 85, 247, 0.12);
+            --cell-tn-border: rgba(168, 85, 247, 0.4);
+            --cell-tn-text: #c084fc;
+
+            --cell-gh-bg: rgba(245, 158, 11, 0.12);
+            --cell-gh-border: rgba(245, 158, 11, 0.4);
+            --cell-gh-text: #fbbf24;
+            --cell-off-bg: rgba(244, 63, 94, 0.12);
+            --cell-off-text: #fb7185;
+        }
+
+        /* Các selector dưới đây dùng màu literal (không qua CSS variable) nên cần
+           override riêng cho dark mode thay vì chỉ đổi biến ở khối .dark .phanca-root */
+        .dark .phanca-root .col-stat { background-color: var(--surface-1); }
+        .dark .phanca-root .col-total { background-color: var(--surface-2); }
+        .dark .phanca-root .phan-ca-layout tbody tr:hover,
+        .dark .phanca-root .phan-ca-layout tbody tr:hover td.sticky-col { background-color: var(--surface-2) !important; }
+        .dark .phanca-root .editable-cell:hover {
+            background-color: rgba(129, 140, 248, 0.12) !important;
+            box-shadow: inset 0 0 0 1.5px rgba(129, 140, 248, 0.3);
+        }
+        .dark .phanca-root .stat-badge-ok { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .dark .phanca-root .stat-badge-warn { background: rgba(244, 63, 94, 0.15); color: #fb7185; }
+        .dark .phanca-root .row-export-highlight { background-color: rgba(250, 204, 21, 0.15) !important; }
 
         * { box-sizing: border-box; }
 

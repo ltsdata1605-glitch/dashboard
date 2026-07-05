@@ -12,7 +12,25 @@ export function useIndexedDBState<T>(
     defaultValue: T,
     debounceMs: number = 0
 ): [T, Dispatch<SetStateAction<T>>, boolean] {
-    const state = useSyncExternalStore(configStore.subscribe, configStore.getState);
+    // Snapshot chỉ theo key của riêng hook này, không theo toàn bộ configStore.state —
+    // configStore.getState() trả về object mới mỗi lần BẤT KỲ key nào thay đổi (spread pattern),
+    // nên subscribe trực tiếp vào nó khiến toàn bộ ~30+ chỗ dùng useIndexedDBState re-render
+    // mỗi khi 1 key bất kỳ đổi. Cache lại snapshot theo key để useSyncExternalStore chỉ báo
+    // "đổi" khi đúng cache[key]/loaded[key] của hook này thay đổi.
+    const lastSnapshotRef = useRef<{ cacheVal: any; loadedVal: boolean; result: [any, boolean] } | null>(null);
+    const getSnapshot = useCallback((): [any, boolean] => {
+        const s = configStore.getState();
+        const cacheVal = key ? s.cache[key] : undefined;
+        const loadedVal = key ? !!s.loaded[key] : true;
+        const prev = lastSnapshotRef.current;
+        if (prev && Object.is(prev.cacheVal, cacheVal) && prev.loadedVal === loadedVal) {
+            return prev.result;
+        }
+        const result: [any, boolean] = [cacheVal, loadedVal];
+        lastSnapshotRef.current = { cacheVal, loadedVal, result };
+        return result;
+    }, [key]);
+    const [cacheValueForKey, isLoadedForKey] = useSyncExternalStore(configStore.subscribe, getSnapshot);
     const defaultValueRef = useRef(defaultValue);
     const debounceMsRef = useRef(debounceMs);
     
@@ -147,11 +165,11 @@ export function useIndexedDBState<T>(
         }
     }, [key, performWrite]);
 
-    const currentValue = (key && state.loaded[key] && state.cache[key] !== undefined) 
-        ? state.cache[key] 
+    const currentValue = (key && isLoadedForKey && cacheValueForKey !== undefined)
+        ? cacheValueForKey
         : defaultValueRef.current;
-        
-    const isLoaded = key ? !!state.loaded[key] : true;
+
+    const isLoaded = isLoadedForKey;
 
     return [currentValue, setStoredValue, isLoaded];
 }

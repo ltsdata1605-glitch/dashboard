@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useDashboardLogic } from '../../hooks/useDashboardLogic';
 import type { VisibilityState } from '../../types';
 import { DashboardContext } from '../../contexts/DashboardContext';
@@ -116,6 +116,42 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
 
     const handleNewFileClick = () => mainFileInputRef.current?.click();
     const handleShiftFileClick = () => shiftFileInputRef.current?.click();
+
+    const overdueUnshippedOrders = useMemo(() => {
+        const now = new Date();
+        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        return processedData?.unshippedOrders?.filter(row => {
+            let scheduledDateRaw = row['Thời gian hẹn giao'] || row['TG Hẹn Giao'] || row['Thời Gian Hẹn Giao'];
+            if (!scheduledDateRaw) return false;
+            let scheduledDate: Date | null = null;
+            if (scheduledDateRaw instanceof Date) {
+                scheduledDate = scheduledDateRaw;
+            } else {
+                const str = String(scheduledDateRaw).trim();
+                // Fallback check for DD/MM/YYYY
+                if (str.includes('/')) {
+                    const parts = str.split(/[ /:-]/);
+                    if (parts.length >= 3) {
+                        const day = parseInt(parts[0], 10);
+                        const month = parseInt(parts[1], 10) - 1;
+                        const year = parseInt(parts[2], 10);
+                        if (day >= 1 && day <= 31 && month >= 0 && month <= 11) {
+                            scheduledDate = new Date(year, month, day);
+                        }
+                    }
+                }
+                if (!scheduledDate || isNaN(scheduledDate.getTime())) {
+                    scheduledDate = new Date(str);
+                }
+            }
+
+            if (scheduledDate && !isNaN(scheduledDate.getTime())) {
+                const schedTime = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate()).getTime();
+                return todayStart > schedTime;
+            }
+            return false;
+        }) || [];
+    }, [processedData?.unshippedOrders]);
 
     const handleVisibilityChange = (component: keyof VisibilityState, isVisible: boolean) => {
         setVisibleComponents(prev => {
@@ -396,62 +432,23 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
                                             )}
 
                                             {/* Overdue Export Warning Banner */}
-                                            {(() => {
-                                                const now = new Date();
-                                                const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                                                const overdueOrders = processedData.unshippedOrders?.filter(row => {
-                                                    let scheduledDateRaw = row['Thời gian hẹn giao'] || row['TG Hẹn Giao'] || row['Thời Gian Hẹn Giao'];
-                                                    if (!scheduledDateRaw) return false;
-                                                    let scheduledDate: Date | null = null;
-                                                    if (scheduledDateRaw instanceof Date) {
-                                                        scheduledDate = scheduledDateRaw;
-                                                    } else {
-                                                        const str = String(scheduledDateRaw).trim();
-                                                        // Fallback check for DD/MM/YYYY
-                                                        if (str.includes('/')) {
-                                                            const parts = str.split(/[ /:-]/);
-                                                            if (parts.length >= 3) {
-                                                                const day = parseInt(parts[0], 10);
-                                                                const month = parseInt(parts[1], 10) - 1;
-                                                                const year = parseInt(parts[2], 10);
-                                                                if (day >= 1 && day <= 31 && month >= 0 && month <= 11) {
-                                                                    scheduledDate = new Date(year, month, day);
-                                                                }
-                                                            }
-                                                        }
-                                                        if (!scheduledDate || isNaN(scheduledDate.getTime())) {
-                                                            scheduledDate = new Date(str);
-                                                        }
-                                                    }
-
-                                                    if (scheduledDate && !isNaN(scheduledDate.getTime())) {
-                                                        const schedTime = new Date(scheduledDate.getFullYear(), scheduledDate.getMonth(), scheduledDate.getDate()).getTime();
-                                                        return todayStart > schedTime;
-                                                    }
-                                                    return false;
-                                                }) || [];
-
-                                                if (overdueOrders.length > 0) {
-                                                    return (
-                                                        <div
-                                                            onClick={() => setActiveModal('unshipped_overdue')}
-                                                            className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20]"
-                                                        >
-                                                            <div className="flex items-center gap-2 font-bold text-sm">
-                                                                <span className="relative flex h-3 w-3 mr-1">
-                                                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                                                                    <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
-                                                                </span>
-                                                                ĐƠN HÀNG QUÁ HẠN XUẤT ({overdueOrders.length})
-                                                            </div>
-                                                            <div className="text-xs font-semibold underline underline-offset-2">
-                                                                Xem chi tiết & Cập nhật nhanh
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                }
-                                                return null;
-                                            })()}
+                                            {overdueUnshippedOrders.length > 0 && (
+                                                <div
+                                                    onClick={() => setActiveModal('unshipped_overdue')}
+                                                    className="relative bg-rose-50 dark:bg-rose-900/30 border-b border-rose-200 dark:border-rose-900 text-rose-700 dark:text-rose-400 px-4 py-2 flex items-center justify-between cursor-pointer hover:bg-rose-100 dark:hover:bg-rose-900/50 transition-colors z-[20]"
+                                                >
+                                                    <div className="flex items-center gap-2 font-bold text-sm">
+                                                        <span className="relative flex h-3 w-3 mr-1">
+                                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                                                        </span>
+                                                        ĐƠN HÀNG QUÁ HẠN XUẤT ({overdueUnshippedOrders.length})
+                                                    </div>
+                                                    <div className="text-xs font-semibold underline underline-offset-2">
+                                                        Xem chi tiết & Cập nhật nhanh
+                                                    </div>
+                                                </div>
+                                            )}
 
                                             {/* Uncollected Warning Banner */}
                                             {processedData.uncollectedOrders && processedData.uncollectedOrders.length > 0 && (

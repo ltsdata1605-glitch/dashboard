@@ -19,51 +19,77 @@
 | Charts | Recharts | 3.x |
 
 ### Cấu trúc thư mục
+
+> ⚠️ Dự án thực tế gồm **4 khu vực kiến trúc song song** (Root + 3 `features/*`), không phải 1 hệ thống duy nhất. Xem chi tiết ở mục 2.0.
+
 ```
 dashboardycx/
 ├── App.tsx                  ← Router chính (tab-based, không dùng react-router)
 ├── index.tsx                ← Entry point
 ├── index.html               ← HTML shell
-├── styles.css               ← Global CSS + Tailwind imports
+├── styles.css               ← Global CSS + Tailwind imports + @theme tokens
+├── styles/tokens.css        ← Design token 3-tier (Primitive→Semantic→Component) — nguồn chân lý màu/spacing/radius
 ├── constants.ts             ← Hằng số toàn cục
 ├── types.ts                 ← TypeScript types dùng chung
-├── contexts/                ← React Context providers (Auth, Layout, Dashboard, Theme)
-├── hooks/                   ← Custom hooks — logic nghiệp vụ
-├── services/                ← Firebase, API, data processing, print
-├── utils/                   ← Pure utility functions
+├── contexts/                ← React Context providers (Auth, Layout, Dashboard, Sync)
+├── hooks/                   ← Custom hooks — CHỈ dùng cho module `analysis`(Dashboard)/`check-thuong`
+├── services/                ← Firebase, API, data processing, print — CHỈ dùng cho Root
+├── utils/                   ← Pure utility functions dùng CHUNG cho cả 4 khu vực (vd. dataUtils.ts)
 ├── components/
+│   ├── shared/ui/           ← ⭐ BỘ COMPONENT CHUẨN dùng chung cho cả 4 khu vực (Button, Input, Modal, ConfirmDialog, Skeleton, Card, StatCard, Badge, Tabs, Dropdown, Select, DataTable, Tooltip, EmptyState, ProgressBar)
 │   ├── layout/              ← Shell UI: Sidebar, Header, MobileBottomNav, TopBar
-│   ├── views/               ← ⭐ CÁC MODULE CHÍNH (mỗi file = 1 chức năng độc lập)
+│   ├── views/               ← ⭐ CÁC MODULE CHÍNH của Root (mỗi file = 1 chức năng độc lập)
+│   ├── employees/           ← Phân tích ngành hàng (Dashboard) — khá lớn, cân nhắc tách file khi sửa
 │   ├── charts/              ← Recharts wrappers
-│   ├── tables/              ← Bảng biểu dùng chung
-│   ├── filters/             ← Bộ lọc dùng chung
-│   ├── modals/              ← Modal/Dialog dùng chung
+│   ├── tables/              ← Bảng biểu dùng chung (Root)
+│   ├── filters/             ← Bộ lọc dùng chung (Root)
+│   ├── modals/              ← Modal/Dialog dùng chung kiểu cũ (Root) — song song với `shared/ui/Modal`, xem mục 2.5
 │   ├── common/              ← ErrorBoundary, Loading, ...
 │   └── upload/              ← Upload components
-├── bi-module/               ← Module Report BI (sub-project, tách biệt)
+├── features/                ← ⭐ 3 KHU VỰC ĐỘC LẬP, mỗi thư mục là 1 "mini-app" riêng — xem mục 2.0
+│   ├── bi-dashboard/        ← Report BI (tab `employees`), mount qua BiWrapper
+│   ├── phan-ca/             ← Phân ca nhân viên (tab `tools-phanca`), mount qua PhanCaView
+│   └── sticker-event/       ← In Sticker (tab `tools-print-sticker`), mount qua StickerPrinterView
 ├── public/                  ← Static assets (images, fonts, frames)
-└── _agents/workflows/       ← Workflow scripts (deploy, etc.)
+└── .agents/                 ← Workflow/skill agent (chính thức) — KHÔNG nhầm với `_agents/` (cũ, đã archive)
 ```
 
 ---
 
 ## 2. ⭐ KIẾN TRÚC MODULE — QUY TẮC CÁCH LY
 
-### 2.1 Định nghĩa Module
-Mỗi View trong `components/views/` là một **module độc lập**:
+### 2.0 Tổng quan 4 khu vực (Zones) — ĐỌC TRƯỚC KHI SỬA BẤT KỲ FILE NÀO
 
-| Module ID (Tab) | File chính | Mô tả |
-|---|---|---|
-| `analysis` | `DashboardView.tsx` | Phân tích YCX — biểu đồ, bảng, KPI |
-| `check-thuong` | `CheckThuongView.tsx` | Check thưởng nhân viên |
-| `employees` | `bi-module/BiWrapper` | Report BI (sub-module riêng) |
-| `tools-print-sticker` | `StickerPrinterView.tsx` | In Sticker (Giá Sốc + Giờ Vàng + Event-Tồn kho) |
-| `tools-phanca` | `phanca/PhanCaView.tsx` | Phân ca nhân viên |
-| `tools-coupon` | `CouponConverterView.tsx` | Chuyển đổi Coupon |
-| `tools-tax` | `ExternalToolView` (iframe) | Hoàn thuế (external) |
-| `tools-audit` | `ExternalToolView` (iframe) | Kiểm quỹ (external) |
-| `settings` | `SettingsView.tsx` | Cài đặt hệ thống |
-| `help` | `AboutView.tsx` | Giới thiệu |
+Dự án **THỰC TẾ** gồm 4 khu vực kiến trúc song song, mỗi khu vực phát triển gần như độc lập qua các đợt vibecode khác nhau. Trước khi sửa, luôn xác định bạn đang ở khu vực nào:
+
+| Khu vực | Thư mục | Mount point (`App.tsx`) | Hooks/services riêng | Được dùng chung |
+|---|---|---|---|---|
+| **Root** | `components/` (trừ `employees`), `hooks/`, `services/`, `contexts/`, `utils/` | Trực tiếp trong `TabContent` (`analysis`, `check-thuong`, `settings`...) | `hooks/*`, `services/*` gốc — CHỈ dành cho `analysis`/`check-thuong` | `components/shared/ui/*` |
+| **bi-dashboard** | `features/bi-dashboard/` | `<BiWrapper />` (lazy, preload sớm lúc idle) — tab `employees` | `hooks/`, `store/`, `workers/`, `contexts/` riêng của feature | `components/shared/ui/*`, `utils/dataUtils.ts` |
+| **phan-ca** | `features/phan-ca/` | `<PhanCaView />` (lazy) — tab `tools-phanca` | `hooks/`, `services/`, `model/`, `db/` riêng của feature | `components/shared/ui/*`, `utils/dataUtils.ts` |
+| **sticker-event** | `features/sticker-event/` | `<StickerPrinterView />` (lazy) — tab `tools-print-sticker` | `hooks/`, `services/` riêng của feature | `components/shared/ui/*` |
+
+**Quy tắc cách ly bắt buộc giữa 4 khu vực:**
+- ❌ `features/bi-dashboard`, `features/phan-ca`, `features/sticker-event` **KHÔNG được import chéo lẫn nhau**.
+- ❌ `features/*` **KHÔNG được import** `hooks/*` hoặc `services/*` ở gốc — cần logic tương tự thì viết riêng trong chính feature đó.
+- ✅ Cả 4 khu vực đều dùng chung đúng 2 thứ: `components/shared/ui/*` (xem mục 2.5) và các hàm thuần trong `utils/dataUtils.ts`.
+- ⚠️ Một hàm cùng tên ở 2 khu vực **không mặc nhiên là trùng lặp cần gộp** — ví dụ `features/sticker-event/utils/format.ts:formatCurrency` format đầy đủ "1.200.000 ₫" để in giá lên sticker, khác mục đích với `utils/dataUtils.ts:formatCurrency` chuyên rút gọn "1.2 Tr" cho dashboard. Kiểm tra ngữ cảnh dùng trước khi "dedupe".
+
+### 2.1 Định nghĩa Module
+Mỗi View trong `components/views/` (Root) hoặc mỗi `features/*` là một **module độc lập**:
+
+| Module ID (Tab) | File chính | Khu vực | Mô tả |
+|---|---|---|---|
+| `analysis` | `DashboardView.tsx` | Root | Phân tích YCX — biểu đồ, bảng, KPI |
+| `check-thuong` | `CheckThuongView.tsx` | Root | Check thưởng nhân viên |
+| `employees` | `features/bi-dashboard/components/BiWrapper` | bi-dashboard | Report BI (feature riêng) |
+| `tools-print-sticker` | `features/sticker-event/StickerPrinterView.tsx` | sticker-event | In Sticker (Giá Sốc + Giờ Vàng + Event-Tồn kho) |
+| `tools-phanca` | `features/phan-ca/PhanCaView.tsx` | phan-ca | Phân ca nhân viên |
+| `tools-coupon` | `CouponConverterView.tsx` | Root | Chuyển đổi Coupon |
+| `tools-tax` | `ExternalToolView` (iframe) | Root | Hoàn thuế (external) |
+| `tools-audit` | `ExternalToolView` (iframe) | Root | Kiểm quỹ (external) |
+| `settings` | `SettingsView.tsx` | Root | Cài đặt hệ thống |
+| `help` | `AboutView.tsx` | Root | Giới thiệu |
 
 ### 2.2 ⚠️ QUY TẮC VÀNG: Không xâm phạm module khác
 
@@ -79,10 +105,12 @@ Mỗi View trong `components/views/` là một **module độc lập**:
 
 | Cấp độ | File | Ảnh hưởng khi sửa | Cách xử lý |
 |---|---|---|---|
-| 🔴 **CRITICAL** | `App.tsx`, `index.tsx`, `styles.css`, `constants.ts`, `types.ts` | Toàn bộ app | Cực kỳ cẩn thận. Chỉ thêm, không sửa/xóa code cũ |
-| 🟠 **SHARED** | `contexts/*`, `services/*`, `hooks/*`, `components/layout/*` | Nhiều module | Kiểm tra tất cả nơi import trước khi sửa |
-| 🟢 **ISOLATED** | `components/views/XxxView.tsx` | Chỉ module đó | An toàn sửa, không ảnh hưởng module khác |
-| 🟢 **ISOLATED** | `bi-module/*` | Chỉ Report BI | Hoàn toàn tách biệt |
+| 🔴 **CRITICAL** | `App.tsx`, `index.tsx`, `styles.css`, `styles/tokens.css`, `constants.ts`, `types.ts` | Toàn bộ app | Cực kỳ cẩn thận. Chỉ thêm, không sửa/xóa code cũ |
+| 🟠 **SHARED** | `contexts/*`, `services/*`, `hooks/*`, `components/layout/*`, `components/shared/ui/*`, `utils/dataUtils.ts` | Nhiều module / cả 4 khu vực | Kiểm tra tất cả nơi import trước khi sửa (grep cả `features/*`) |
+| 🟢 **ISOLATED** | `components/views/XxxView.tsx`, `components/employees/*` | Chỉ Root/Dashboard | An toàn sửa, không ảnh hưởng module khác |
+| 🟢 **ISOLATED** | `features/bi-dashboard/*` | Chỉ Report BI | Hoàn toàn tách biệt khỏi 3 khu vực còn lại |
+| 🟢 **ISOLATED** | `features/phan-ca/*` | Chỉ Phân ca | Hoàn toàn tách biệt khỏi 3 khu vực còn lại |
+| 🟢 **ISOLATED** | `features/sticker-event/*` | Chỉ In Sticker | Hoàn toàn tách biệt khỏi 3 khu vực còn lại |
 
 ### 2.4 Checklist trước khi sửa file SHARED / CRITICAL
 
@@ -91,6 +119,18 @@ Mỗi View trong `components/views/` là một **module độc lập**:
 3. **Không thay đổi signature** (tham số) của function đang được dùng ở nhiều nơi
 4. **Thêm optional parameter** thay vì thay đổi parameter bắt buộc: `newParam?: type`
 5. **Build test**: Luôn chạy `npm run build` sau khi sửa file shared
+
+### 2.5 ⭐ SHARED CORE CONTRACT — bắt buộc cho cả 4 khu vực
+
+Đây là "hợp đồng" tối thiểu mà Root, `bi-dashboard`, `phan-ca`, `sticker-event` đều phải tuân theo, bất kể khu vực đó được viết lúc nào hay bởi đợt vibecode nào. Vi phạm các điều này là nguyên nhân chính khiến giao diện/hành vi giữa các khu vực bị lệch nhau (xem AUDIT.md).
+
+1. **UI component**: Mọi phần tử tương tác (button, modal, input, badge, bảng, dropdown, skeleton loading) BẮT BUỘC dùng `components/shared/ui/*`. Cấm viết mới `<button>` thô hoặc tự dựng modal `fixed inset-0` — dùng `Button`, `Modal`, `ConfirmDialog` có sẵn (xem props tại `components/shared/ui/index.ts`).
+2. **Màu & token**: Chỉ dùng bảng màu semantic đã duyệt (`sky`=primary, `slate`=secondary, `emerald`=success, `amber`=warning, `rose`=danger). Cấm khai báo `:root`/custom property CSS mới trong file của `features/*` (nguồn token duy nhất là `styles/tokens.css`). *Lưu ý đã biết*: `styles.css` hiện override `--color-indigo-*` bằng hex của `sky` — một số nơi cố tình dùng `indigo-*` làm alias cho "primary" (đúng ý), một số nơi khác dùng `indigo` như 1 màu riêng biệt trong mảng xoay vòng màu cùng với `sky` (vd. `TargetHero.tsx`, `CompetitionTab.tsx`, `colorTheme` type ở `DataUpdater.tsx`/`SupermarketConfig.tsx`) — 2 nhóm này đang vô tình render giống hệt nhau. **Chưa sửa tự động vì rủi ro làm 2 màu vốn cần phân biệt bị trộn lẫn — khi động tới các nhóm này ở Phase migrate sau, cần xử lý thủ công theo từng trường hợp, không tìm-thay hàng loạt.**
+3. **Utils dùng chung**: Format tiền/số/ngày nên tái sử dụng `utils/dataUtils.ts` khi cùng mục đích hiển thị. Nếu một feature cần định dạng khác về bản chất (vd. giá đầy đủ để in vs số rút gọn để xem dashboard), được phép có hàm riêng — nhưng phải đặt tên/comment rõ mục đích khác biệt, không đặt trùng tên `formatCurrency`/`formatNumber` gây nhầm là bản duplicate.
+4. **Dark mode**: Mọi class có màu phải có `dark:` tương ứng — không có ngoại lệ theo khu vực. Nếu feature dùng CSS custom property riêng (không phải Tailwind), phải có khối `.dark .ten-scope-class {...}` tương ứng.
+5. **Mobile toolbar pattern**: View có toolbar desktop (portal `#global-header-actions`) bắt buộc có toolbar mobile `lg:hidden` tương ứng, theo mẫu `DashboardView.tsx`.
+
+**Checklist cụ thể để tick khi sửa code** nằm ở mục 9.5.
 
 ---
 
@@ -277,6 +317,17 @@ Trước khi sửa, tự hỏi:
   2. Nêu rõ các bước thực hiện và chi tiết mỗi bước đã thay đổi mã nguồn như thế nào.
   3. Trình bày cách hoạt động của tính năng mới/sau khi sửa.
   4. Thực hiện kiểm tra (Typecheck/Lint/Build) để đảm bảo dự án không phát sinh lỗi trước khi báo cáo.
+
+### 9.5 Shared Core Contract Checklist (tick trước khi báo cáo hoàn tất bất kỳ thay đổi UI nào)
+
+- [ ] Không thêm `<button>` thô / modal `fixed inset-0` mới — dùng `components/shared/ui/*`.
+- [ ] Màu dùng đúng scale semantic (sky/slate/emerald/amber/rose) — không thêm màu ngoài danh sách đã duyệt.
+- [ ] Mỗi class màu có `dark:` cặp tương ứng.
+- [ ] Không tạo `:root`/custom property CSS mới trong file của `features/*` — dùng token có sẵn ở `styles/tokens.css`.
+- [ ] Format tiền/số/ngày dùng hàm chung `utils/dataUtils.ts` nếu cùng mục đích hiển thị; nếu viết hàm riêng vì khác mục đích, đặt tên rõ ràng không trùng tên hàm chung.
+- [ ] View có toolbar desktop (portal) phải có toolbar mobile `lg:hidden` tương ứng.
+- [ ] Không import chéo giữa `features/bi-dashboard`, `features/phan-ca`, `features/sticker-event`; không import `hooks/`/`services/` gốc từ `features/*`.
+- [ ] Chạy `npm run check` (typecheck + build) + `npx eslint .` trước khi báo cáo hoàn tất.
 
 ---
 

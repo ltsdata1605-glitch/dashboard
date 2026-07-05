@@ -152,7 +152,7 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             const usersRef = collection(db, 'users');
             let q;
             
-            // Admin and any user with full access fetches all.
+            // Admin scoped by status/listMode (tránh tải toàn bộ collection users mỗi lần mount/toggle).
             // Manager fetches strictly to their scope.
             if (userRole === 'manager' && departmentId) {
                 if (listMode === 'pending') {
@@ -160,9 +160,10 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
                 } else {
                     q = query(usersRef, where('role', '==', 'employee'));
                 }
+            } else if (listMode === 'pending') {
+                q = query(usersRef, where('status', 'in', ['pending', 'new']));
             } else {
-                // admin or any other role: fetch all
-                q = usersRef;
+                q = query(usersRef, where('status', '==', 'approved'));
             }
 
             const querySnapshot = await getDocs(q);

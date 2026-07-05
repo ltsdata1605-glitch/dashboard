@@ -27,7 +27,7 @@ export const useExportLogic = ({
     const [isExporting, setIsExporting] = useState(false);
     const [pendingExport, setPendingExport] = useState<PendingExport | null>(null);
 
-    const handleExport = async (element: HTMLElement | null, filename: string, options: any = {}) => {
+    const handleExport = useCallback(async (element: HTMLElement | null, filename: string, options: any = {}) => {
         if (element) {
             setIsExporting(true);
             showExportOverlay('Đang xuất ảnh...');
@@ -49,7 +49,7 @@ export const useExportLogic = ({
                 }
             }
         }
-    };
+    }, []);
 
     const handlePendingDownload = useCallback(() => {
         if (pendingExport) {
@@ -69,7 +69,7 @@ export const useExportLogic = ({
         setPendingExport(null);
     }, []);
 
-    const handleBatchExport = async (employeesToExport: Employee[]) => {
+    const handleBatchExport = useCallback(async (employeesToExport: Employee[]) => {
         if (!employeesToExport.length || !productConfig || !processedData) return;
         setIsExporting(true);
         const total = employeesToExport.length;
@@ -116,9 +116,9 @@ export const useExportLogic = ({
             root.unmount();
             document.body.removeChild(offscreenContainer);
         }
-    };
+    }, [productConfig, processedData]);
 
-    const handleBatchKhoExport = async () => {
+    const handleBatchKhoExport = useCallback(async () => {
         if (uniqueFilterOptions.kho.length <= 1) {
             setStatus({ message: 'Chỉ có một kho, không thể xuất hàng loạt.', type: 'error', progress: 0 });
             return;
@@ -170,9 +170,9 @@ export const useExportLogic = ({
             setIsExporting(false);
             hideExportOverlay();
         }
-    };
+    }, [uniqueFilterOptions, filterState, handleFilterChange, setStatus]);
 
-    const handleExportUncollectedSheet = async () => {
+    const handleExportUncollectedSheet = useCallback(async () => {
         if (!processedData?.uncollectedOrders || processedData.uncollectedOrders.length === 0) {
             setStatus({ message: 'Không có đơn hàng chưa thu | chưa hủy nào để xuất.', type: 'error', progress: 0 });
             return;
@@ -310,7 +310,7 @@ Link: ${url}`;
                 setTimeout(() => toastEl.remove(), 200);
             }, 4000);
         }
-    };
+    }, [processedData, setStatus]);
 
     return {
         isExporting,

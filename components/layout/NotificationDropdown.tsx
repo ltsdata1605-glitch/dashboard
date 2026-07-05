@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { collection, query, orderBy, limit, onSnapshot, where } from 'firebase/firestore';
+import { collection, query, orderBy, limit, onSnapshot, where, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
@@ -32,8 +32,8 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
             return;
         }
 
-        let unsubPersonal: (() => void) | null = null;
-        let unsubAccessRequests: (() => void) | null = null;
+        const unsubPersonalRef = { current: null as (() => void) | null };
+        const unsubAccessRequestsRef = { current: null as (() => void) | null };
 
         let personalNotifs: AppNotification[] = [];
         let accessNotifs: AppNotification[] = [];
@@ -82,59 +82,87 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
             limit(20)
         );
 
-        unsubPersonal = onSnapshot(personalQuery, (snapshot) => {
+        const processPersonalSnapshot = (snapshot: any) => {
             personalNotifs = [];
-            snapshot.forEach((docSnap) => {
+            snapshot.forEach((docSnap: any) => {
                 personalNotifs.push({ id: docSnap.id, ...docSnap.data() } as AppNotification);
             });
             updateCombinedNotifications();
-        }, (error) => {
-            console.error("Personal notifications realtime error: ", error);
-        });
+        };
 
         // 2. Access requests (if admin or manager)
-        if (userRole === 'admin' || userRole === 'manager') {
-            const allowedKhos = departmentId ? departmentId.split(',').map(s => s.trim()).filter(Boolean) : [];
-            const accessQuery = query(
-                collection(db, 'users'),
-                where('status', 'in', ['pending', 'new'])
-            );
+        const allowedKhos = departmentId ? departmentId.split(',').map(s => s.trim()).filter(Boolean) : [];
+        const isReviewer = userRole === 'admin' || userRole === 'manager';
+        const accessQuery = isReviewer
+            ? query(collection(db, 'users'), where('status', 'in', ['pending', 'new']))
+            : null;
 
-            unsubAccessRequests = onSnapshot(accessQuery, (snapshot) => {
-                accessNotifs = [];
-                snapshot.forEach((docSnap) => {
-                    const docData = docSnap.data();
-                    if (docSnap.id === user.uid) return;
+        const processAccessSnapshot = (snapshot: any) => {
+            accessNotifs = [];
+            snapshot.forEach((docSnap: any) => {
+                const docData = docSnap.data();
+                if (docSnap.id === user.uid) return;
 
-                    let shouldAdd = false;
-                    if (userRole === 'admin') {
+                let shouldAdd = false;
+                if (userRole === 'admin') {
+                    shouldAdd = true;
+                } else if (userRole === 'manager') {
+                    if ((docData.requestedRole === 'employee' || docData.role === 'pending') && allowedKhos.includes(docData.departmentId)) {
                         shouldAdd = true;
-                    } else if (userRole === 'manager') {
-                        if ((docData.requestedRole === 'employee' || docData.role === 'pending') && allowedKhos.includes(docData.departmentId)) {
-                            shouldAdd = true;
-                        }
                     }
+                }
 
-                    if (shouldAdd) {
-                        accessNotifs.push({
-                            id: `pending-${docSnap.id}`,
-                            title: 'Yêu cầu cấp quyền mới',
-                            message: `${docData.displayName || docData.email} đăng ký vai trò ${docData.requestedRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'} tại kho: ${docData.departmentId}`,
-                            type: 'info',
-                            read: false,
-                            createdAt: docData.requestDate || docData.createdAt || null
-                        } as AppNotification);
-                    }
-                });
-                updateCombinedNotifications();
-            }, (error) => {
-                console.error("Access requests realtime error: ", error);
+                if (shouldAdd) {
+                    accessNotifs.push({
+                        id: `pending-${docSnap.id}`,
+                        title: 'Yêu cầu cấp quyền mới',
+                        message: `${docData.displayName || docData.email} đăng ký vai trò ${docData.requestedRole === 'manager' ? 'Quản Lý Kho' : 'Nhân Viên'} tại kho: ${docData.departmentId}`,
+                        type: 'info',
+                        read: false,
+                        createdAt: docData.requestDate || docData.createdAt || null
+                    } as AppNotification);
+                }
             });
-        }
+            updateCombinedNotifications();
+        };
+
+        // FIX: Tắt 2 Firestore WebSocket listener khi tab ẩn, mở lại (kèm fetch bù 1 lần)
+        // khi tab visible trở lại — tránh giữ kết nối realtime chạy nền vô thời hạn
+        // (khớp pattern đã áp dụng ở usePendingApprovalCount.ts / useSystemTraffic.ts).
+        const stopListeners = () => {
+            if (unsubPersonalRef.current) { unsubPersonalRef.current(); unsubPersonalRef.current = null; }
+            if (unsubAccessRequestsRef.current) { unsubAccessRequestsRef.current(); unsubAccessRequestsRef.current = null; }
+        };
+
+        const startListeners = () => {
+            if (!unsubPersonalRef.current) {
+                unsubPersonalRef.current = onSnapshot(personalQuery, processPersonalSnapshot, (error) => {
+                    console.error("Personal notifications realtime error: ", error);
+                });
+            }
+            if (accessQuery && !unsubAccessRequestsRef.current) {
+                unsubAccessRequestsRef.current = onSnapshot(accessQuery, processAccessSnapshot, (error) => {
+                    console.error("Access requests realtime error: ", error);
+                });
+            }
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                getDocs(personalQuery).then(processPersonalSnapshot).catch(console.error);
+                if (accessQuery) getDocs(accessQuery).then(processAccessSnapshot).catch(console.error);
+                startListeners();
+            } else {
+                stopListeners();
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        if (document.visibilityState === 'visible') startListeners();
 
         return () => {
-            if (unsubPersonal) unsubPersonal();
-            if (unsubAccessRequests) unsubAccessRequests();
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            stopListeners();
         };
     }, [user, userRole, departmentId]);
 

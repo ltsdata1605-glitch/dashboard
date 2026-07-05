@@ -214,30 +214,6 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
         return Array.from(subgroups).sort();
     }, [productConfig]);
 
-    const manufacturerDataForChart = useMemo(() => {
-        if (!productConfig) return [];
-        const dataToFilter = selectedChartSubgroups.length > 0
-            ? allSalesData.filter(row => {
-                const subgroup = productConfig.childToSubgroupMap[getRowValue(row, COL.MA_NHOM_HANG)];
-                return subgroup && selectedChartSubgroups.includes(subgroup);
-            })
-            : allSalesData;
-
-        const dataByManufacturer = dataToFilter.reduce((acc: { [key: string]: { revenue: number; quantity: number } }, row) => {
-            const manufacturer = getRowValue(row, COL.MANUFACTURER) || 'Không rõ';
-            const revenue = Number(getRowValue(row, COL.PRICE)) || 0;
-            const quantity = Number(getRowValue(row, COL.QUANTITY)) || 0;
-            if (!acc[manufacturer]) acc[manufacturer] = { revenue: 0, quantity: 0 };
-            acc[manufacturer].revenue += revenue;
-            acc[manufacturer].quantity += quantity;
-            return acc;
-        }, {} as { [key: string]: { revenue: number, quantity: number } });
-        
-        return Object.entries(dataByManufacturer)
-            .map(([name, data]) => ({ name, ...data }))
-            .sort((a,b) => b.revenue - a.revenue);
-    }, [allSalesData, selectedChartSubgroups, productConfig]);
-
     const getTitle = (activeTab: 'card' | 'chart') => {
         if (activeTab === 'chart') return "BIỂU ĐỒ TỶ TRỌNG";
         const level = drilldownPath.length;
@@ -262,7 +238,6 @@ export const useIndustryGridLogic = ({ industryData, allSalesData, productConfig
         allSubgroups,
         selectedChartSubgroups,
         setSelectedChartSubgroups,
-        manufacturerDataForChart,
         getTitle,
         specialGroups
     };

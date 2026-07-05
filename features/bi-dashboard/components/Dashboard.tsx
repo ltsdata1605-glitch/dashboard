@@ -129,6 +129,10 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const columnSelectorRef = useRef<HTMLDivElement>(null);
     const exportOptions = useExportOptions();
+    const exportOptionsContextValue = useMemo(
+        () => ({ showExportOptions: exportOptions.showExportOptions }),
+        [exportOptions.showExportOptions]
+    );
     const [isColumnSelectorOpen, setIsColumnSelectorOpen] = useState(false);
     const [isHeaderExporting, setIsHeaderExporting] = useState(false);
 
@@ -288,7 +292,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onNavigateToUpdater, isActive }) 
     }
 
     return (
-        <ExportOptionsProvider value={{ showExportOptions: exportOptions.showExportOptions }}>
+        <ExportOptionsProvider value={exportOptionsContextValue}>
             <div className="space-y-3 sm:space-y-6" ref={pageRef}>
                 <div ref={printableRef} className="space-y-3 sm:space-y-6">
                     <DashboardHeader

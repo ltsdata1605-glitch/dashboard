@@ -1486,13 +1486,16 @@ export default function StickerPrinterView() {
                     subHeader: subHeaderTextContent,
                     footer: footerTextContent,
                 };
-                printHost.innerHTML += generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode);
+                // insertAdjacentHTML thay vì `innerHTML +=` — `+=` đọc lại serialize toàn bộ nội
+                // dung đã chèn trước đó rồi parse lại từ đầu mỗi lần, khiến in hàng loạt là O(n²)
+                // theo số trang. insertAdjacentHTML chỉ parse+chèn phần HTML mới, O(n) tổng thể.
+                printHost.insertAdjacentHTML('beforeend', generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode));
             });
         } else if (manualPages.length === 0) {
             // If both are empty, this handles the default preview template
             const printSection = document.getElementById('print-section');
             if (printSection) {
-                printHost.innerHTML += printSection.innerHTML;
+                printHost.insertAdjacentHTML('beforeend', printSection.innerHTML);
             }
         }
 
@@ -1526,7 +1529,7 @@ export default function StickerPrinterView() {
                 subHeader: finalSubHeader,
                 footer: finalFooter || footerTextContent
             };
-            printHost.innerHTML += generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode);
+            printHost.insertAdjacentHTML('beforeend', generatePageHtml(tempPage, priceSource, stickerType, bgImage, discountDisplayMode));
         });
 
         document.body.appendChild(printHost);

@@ -287,9 +287,13 @@ export const NhanVien: React.FC<NhanVienProps> = ({ isActive }) => {
     }, [versionToDelete, setVersions, activeVersionName, setActiveVersionName]);
 
     const exportOptions = useExportOptions();
+    const exportOptionsContextValue = useMemo(
+        () => ({ showExportOptions: exportOptions.showExportOptions }),
+        [exportOptions.showExportOptions]
+    );
 
     return (
-        <ExportOptionsProvider value={{ showExportOptions: exportOptions.showExportOptions }}>
+        <ExportOptionsProvider value={exportOptionsContextValue}>
         <div className="space-y-4 sm:space-y-6 relative">
 
 

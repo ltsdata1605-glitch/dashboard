@@ -1,5 +1,7 @@
 import React from 'react';
 import { EmployeeBusyReport } from '../types';
+import { Modal } from '../../../components/shared/ui/Modal';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface BusyReportModalProps {
   report: EmployeeBusyReport[];
@@ -8,57 +10,54 @@ interface BusyReportModalProps {
 
 const BusyReportModal: React.FC<BusyReportModalProps> = ({ report, onClose }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col">
-        <h2 className="text-xl font-bold text-green-700 mb-2">Đã Xử Lý Tự Động Lịch Bận</h2>
-        <p className="text-sm text-gray-600 mb-4">
-          Hệ thống đã tự động xử lý các yêu cầu từ file lịch bận. Dưới đây là kết quả chi tiết:
-        </p>
-        
-        <div className="overflow-y-auto flex-grow border-t border-b py-2 pr-2">
-          <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-gray-100 z-10">
-              <tr>
-                <th className="p-2 text-left font-semibold text-gray-700 w-1/4">Nhân Viên</th>
-                <th className="p-2 text-center font-semibold text-gray-700">Bận Sáng (Y/C | Đã Xử Lý)</th>
-                <th className="p-2 text-center font-semibold text-gray-700">Bận Chiều (Y/C | Đã Xử Lý)</th>
-                <th className="p-2 text-center font-semibold text-gray-700">Nghỉ Cả Ngày (Y/C | Đã Xử Lý)</th>
-                <th className="p-2 text-center font-semibold text-red-700 bg-red-50">Cần Xem Lại</th>
-              </tr>
-            </thead>
-            <tbody>
-              {report.map((item, index) => (
-                <tr key={item.staffId} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                  <td className="p-2 font-medium text-gray-800">{item.staffName}</td>
-                  <td className="p-2 text-center">
-                    <span className="font-bold">{item.requests.morning}</span> | <span className="text-green-600 font-semibold">{item.resolved.morning}</span>
-                  </td>
-                  <td className="p-2 text-center">
-                    <span className="font-bold">{item.requests.afternoon}</span> | <span className="text-green-600 font-semibold">{item.resolved.afternoon}</span>
-                  </td>
-                  <td className="p-2 text-center">
-                    <span className="font-bold">{item.requests.off}</span> | <span className="text-green-600 font-semibold">{item.resolved.off}</span>
-                  </td>
-                  <td className={`p-2 text-center font-bold ${item.unresolvedCount > 0 ? 'text-red-600 bg-red-100' : 'text-gray-500'}`}>
-                    {item.unresolvedCount}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Đã Xử Lý Tự Động Lịch Bận"
+      maxWidth="4xl"
+      footer={
+        <div className="flex justify-end">
+          <Button onClick={onClose}>OK</Button>
         </div>
+      }
+    >
+      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+        Hệ thống đã tự động xử lý các yêu cầu từ file lịch bận. Dưới đây là kết quả chi tiết:
+      </p>
 
-        <div className="flex justify-end mt-6">
-          <button 
-            type="button" 
-            onClick={onClose} 
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition"
-          >
-            OK
-          </button>
-        </div>
+      <div className="border-t border-b border-slate-200 dark:border-slate-700 py-2 pr-2">
+        <table className="w-full text-sm">
+          <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10">
+            <tr>
+              <th className="p-2 text-left font-semibold text-slate-700 dark:text-slate-300 w-1/4">Nhân Viên</th>
+              <th className="p-2 text-center font-semibold text-slate-700 dark:text-slate-300">Bận Sáng (Y/C | Đã Xử Lý)</th>
+              <th className="p-2 text-center font-semibold text-slate-700 dark:text-slate-300">Bận Chiều (Y/C | Đã Xử Lý)</th>
+              <th className="p-2 text-center font-semibold text-slate-700 dark:text-slate-300">Nghỉ Cả Ngày (Y/C | Đã Xử Lý)</th>
+              <th className="p-2 text-center font-semibold text-rose-700 dark:text-rose-400 bg-rose-50 dark:bg-rose-900/20">Cần Xem Lại</th>
+            </tr>
+          </thead>
+          <tbody>
+            {report.map((item, index) => (
+              <tr key={item.staffId} className={index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-slate-50 dark:bg-slate-800/40'}>
+                <td className="p-2 font-medium text-slate-800 dark:text-slate-200">{item.staffName}</td>
+                <td className="p-2 text-center text-slate-700 dark:text-slate-300">
+                  <span className="font-bold">{item.requests.morning}</span> | <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{item.resolved.morning}</span>
+                </td>
+                <td className="p-2 text-center text-slate-700 dark:text-slate-300">
+                  <span className="font-bold">{item.requests.afternoon}</span> | <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{item.resolved.afternoon}</span>
+                </td>
+                <td className="p-2 text-center text-slate-700 dark:text-slate-300">
+                  <span className="font-bold">{item.requests.off}</span> | <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{item.resolved.off}</span>
+                </td>
+                <td className={`p-2 text-center font-bold ${item.unresolvedCount > 0 ? 'text-rose-600 dark:text-rose-400 bg-rose-100 dark:bg-rose-900/30' : 'text-slate-500 dark:text-slate-400'}`}>
+                  {item.unresolvedCount}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </div>
+    </Modal>
   );
 };
 

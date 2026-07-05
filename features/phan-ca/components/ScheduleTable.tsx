@@ -51,12 +51,15 @@ const ScheduleTable: React.FC<ScheduleTableProps> = ({
 
   const handleDragOver = (e: React.DragEvent, employeeId: string, dayIndex: number) => {
       e.preventDefault();
+      // `dragover` fires liên tục (nhiều lần/giây) kể cả khi con trỏ đứng yên trên cùng 1 ô.
+      // Chỉ gọi setDragTarget khi ô đích thực sự đổi — tránh tạo object mới mỗi lần fire
+      // khiến React không thể bailout re-render (so sánh Object.is luôn "khác" với literal mới).
       if (dragSource && dragSource.dayIndex === dayIndex && dragSource.employeeId !== employeeId) {
-           setDragTarget({ employeeId, dayIndex });
            e.dataTransfer.dropEffect = 'move';
+           setDragTarget(prev => (prev && prev.employeeId === employeeId && prev.dayIndex === dayIndex) ? prev : { employeeId, dayIndex });
       } else {
-           setDragTarget(null);
            e.dataTransfer.dropEffect = 'none';
+           setDragTarget(prev => prev === null ? prev : null);
       }
   };
 

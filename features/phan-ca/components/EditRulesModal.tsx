@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { SchedulingRules } from '../types';
+import { Modal } from '../../../components/shared/ui/Modal';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface EditRulesModalProps {
   ruleKey: 'kho' | 'tn' | 'gh';
@@ -16,7 +19,7 @@ const TITLES: { [key in 'kho' | 'tn' | 'gh']: string } = {
 };
 
 const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, availableShifts, onClose, onSave }) => {
-  const [rules, setRules] = useState<SchedulingRules>(JSON.parse(JSON.stringify(currentRules)));
+  const [rules, setRules] = useState<SchedulingRules>(structuredClone(currentRules));
   const [newShiftCode, setNewShiftCode] = useState('');
 
   const handleSave = () => {
@@ -56,14 +59,14 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
         [ruleKey]: newShiftRules
     }));
   };
-  
+
   const genderKey = `${ruleKey}Gender` as 'ghGender' | 'khoGender' | 'tnGender';
-  
+
   const GenderPill: React.FC<{ value: 'Nam' | 'Nu' | 'All', text: string }> = ({ value, text }) => {
     const isActive = rules[genderKey] === value;
     const baseClasses = "px-4 py-2 rounded-full text-sm font-semibold transition-all duration-200 cursor-pointer shadow-sm";
-    const activeClasses = "bg-blue-500 text-white ring-2 ring-blue-300 ring-offset-1";
-    const inactiveClasses = "bg-gray-100 text-gray-700 hover:bg-gray-200";
+    const activeClasses = "bg-sky-500 text-white ring-2 ring-sky-300 dark:ring-sky-700 ring-offset-1 dark:ring-offset-slate-800";
+    const inactiveClasses = "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600";
     return (
         <button
             type="button"
@@ -83,8 +86,8 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
     return (
       <>
         {(ruleKey === 'gh' || ruleKey === 'kho' || ruleKey === 'tn') && (
-            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                <label className="block text-sm font-bold text-gray-700 mb-2">Điều kiện giới tính</label>
+            <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-md">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Điều kiện giới tính</label>
                 <div className="flex justify-center gap-3">
                     <GenderPill value="Nam" text="Chỉ Nam" />
                     <GenderPill value="Nu" text="Chỉ Nữ" />
@@ -92,11 +95,11 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
                 </div>
             </div>
         )}
-        <p className="text-sm text-gray-500 mb-3 italic">Nhập số lượng nhân sự cần trong từng ca:</p>
-        <div className="space-y-3 max-h-56 overflow-y-auto pr-2 mb-4 border-b pb-4">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-3 italic">Nhập số lượng nhân sự cần trong từng ca:</p>
+        <div className="space-y-3 max-h-56 overflow-y-auto pr-2 mb-4 border-b border-slate-200 dark:border-slate-700 pb-4">
           {configuredShifts.length > 0 ? configuredShifts.map(shift => (
             <div key={shift} className="flex items-center gap-3">
-              <label className="w-1/3 block text-sm font-medium text-gray-700">
+              <label className="w-1/3 block text-sm font-medium text-slate-700 dark:text-slate-300">
                 Ca {shift}:
               </label>
               <input
@@ -106,23 +109,21 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
                 onChange={(e) => handleInputChange(shift, e.target.value)}
                 min="0"
               />
-              <button 
+              <button
                 onClick={() => handleRemoveShiftRule(shift)}
-                className="p-1 rounded-full text-gray-400 hover:bg-red-100 hover:text-red-600 transition"
+                className="p-1 rounded-full text-slate-400 hover:bg-rose-100 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 transition"
                 title={`Xóa cấu hình cho ca ${shift}`}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                </svg>
+                <Trash2 size={18} />
               </button>
             </div>
           )) : (
-            <p className="text-sm text-gray-500 italic text-center">Chưa có cấu hình ca nào. Hãy thêm ở bên dưới.</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400 italic text-center">Chưa có cấu hình ca nào. Hãy thêm ở bên dưới.</p>
           )}
         </div>
-        
+
         <div className="flex items-center gap-2">
-            <input 
+            <input
               type="text"
               className="config-input flex-grow"
               placeholder="Nhập mã ca (VD: 123, 456...)"
@@ -133,7 +134,7 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
                   if (e.key === 'Enter') {
                       if (newShiftCode && newShiftCode.trim()) {
                           handleAddShiftRule(newShiftCode.trim());
-                          setNewShiftCode(""); 
+                          setNewShiftCode("");
                       }
                   }
               }}
@@ -141,40 +142,38 @@ const EditRulesModal: React.FC<EditRulesModalProps> = ({ ruleKey, currentRules, 
             <datalist id="available-shifts">
                 {unconfiguredShifts.map(s => <option key={s} value={s} />)}
             </datalist>
-            <button 
-              type="button" 
+            <Button
+              type="button"
               onClick={() => {
                   if (newShiftCode && newShiftCode.trim()) {
                       handleAddShiftRule(newShiftCode.trim());
-                      setNewShiftCode(""); 
+                      setNewShiftCode("");
                   }
               }}
-              className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-3 rounded transition text-sm whitespace-nowrap"
+              variant="secondary"
+              className="whitespace-nowrap"
             >
               + Thêm
-            </button>
+            </Button>
         </div>
       </>
     );
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md">
-        <h2 className="text-lg font-bold mb-4 text-gray-800">{TITLES[ruleKey]}</h2>
-        <div className="mb-6">
-            {renderFields()}
-        </div>
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={TITLES[ruleKey]}
+      footer={
         <div className="flex justify-end gap-3">
-          <button type="button" onClick={onClose} className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded transition">
-            Hủy
-          </button>
-          <button type="button" onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
-            Lưu
-          </button>
+          <Button variant="secondary" onClick={onClose}>Hủy</Button>
+          <Button onClick={handleSave}>Lưu</Button>
         </div>
-      </div>
-    </div>
+      }
+    >
+      {renderFields()}
+    </Modal>
   );
 };
 

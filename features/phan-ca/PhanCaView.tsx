@@ -11,7 +11,6 @@ import Legend from './components/Legend';
 import ScheduleTable from './components/ScheduleTable';
 import VerticalIndividualSchedule from './components/VerticalIndividualSchedule';
 import EditRulesModal from './components/EditRulesModal';
-import ConfirmModal from './components/ConfirmModal';
 import EditShiftModal from './components/EditShiftModal';
 import DailyStatsTable from './components/DailyStatsTable';
 import ImportStaffModal from './components/ImportStaffModal';
@@ -103,7 +102,6 @@ const App: React.FC = () => {
   const [isEditPatternModalOpen, setEditPatternModalOpen] = useState(false);
   const [isHistoryModalOpen, setHistoryModalOpen] = useState(false);
   const [isConflictModalOpen, setConflictModalOpen] = useState(false);
-  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
   // Confirm Dialog State
   const [confirmDialog, setConfirmDialog] = useState<{
       isOpen: boolean;
@@ -360,7 +358,7 @@ const App: React.FC = () => {
     const newEntry: ScheduleHistoryEntry = {
         timestamp: Date.now(),
         description,
-        scheduleSnapshot: JSON.parse(JSON.stringify(staffListRef.current))
+        scheduleSnapshot: structuredClone(staffListRef.current)
     };
     setScheduleHistory(prev => [newEntry, ...prev]);
   }, []);
@@ -381,10 +379,15 @@ const App: React.FC = () => {
     }
   };
   const handleDeleteStaffList = () => {
-      setIsDeleteConfirmOpen(true);
+      showConfirm({
+          title: 'Xóa danh sách nhân viên',
+          message: 'Bạn có chắc chắn muốn xóa danh sách nhân viên hiện tại? Lịch phân ca, mẫu ca, và lịch bận cũng sẽ bị xóa.',
+          variant: 'danger',
+          confirmText: 'Xác nhận Xóa',
+          onConfirm: () => { closeConfirm(); confirmDeleteStaffList(); },
+      });
   };
   const confirmDeleteStaffList = async () => {
-      setIsDeleteConfirmOpen(false);
       // Clear state
       setNams([]);
       setNus([]);
@@ -540,7 +543,7 @@ const App: React.FC = () => {
     return () => { if (durationDebounceTimer.current) clearTimeout(durationDebounceTimer.current); };
   }, [duration, isDbLoaded, nams, nus]);
   const getSortedStaffForExport = (): StaffMember[] => {
-    const staffListCopy = JSON.parse(JSON.stringify(staffList)) as StaffMember[];
+    const staffListCopy = structuredClone(staffList) as StaffMember[];
     const hasImportIndex = staffListCopy.some(s => s.importIndex !== undefined);
     let depts: string[];
     if (hasImportIndex) {
@@ -990,7 +993,7 @@ const App: React.FC = () => {
     if (!editingCellInfo) return;
     const { employeeId, dayIndex } = editingCellInfo;
     setStaffList(currentStaffList => {
-      const newStaffList = JSON.parse(JSON.stringify(currentStaffList));
+      const newStaffList = structuredClone(currentStaffList);
       const staff = newStaffList.find((s: StaffMember) => s.id === employeeId);
       if (staff) {
         const originalShift = staff.schedule[dayIndex] || { role: 'Trống', shift: 'Trống' };
@@ -1188,7 +1191,7 @@ const App: React.FC = () => {
   }, [staffListForExport, staffList, departmentFilter]);
   const isIndividualExport = isExportingImage && staffListForExport && staffListForExport.length === 1 && !weeklyExportConfig;
   return (
-    <div className="phan-ca-layout min-h-screen bg-[#f0f2f5] pb-20">
+    <div className="phanca-root phan-ca-layout min-h-screen bg-[#f0f2f5] pb-20">
       {/* EXPORT OVERLAY */}
       {batchExportProgress && (
           <div className="fixed inset-0 bg-white/80 backdrop-blur-sm flex flex-col items-center justify-center z-[100]">
@@ -1410,12 +1413,7 @@ const App: React.FC = () => {
       }} />}
       {isHistoryModalOpen && <HistoryModal history={scheduleHistory} onClose={() => setHistoryModalOpen(false)} onRestore={(i) => { setStaffList(scheduleHistory[i].scheduleSnapshot); setHistoryModalOpen(false); }} />}
       {isConflictModalOpen && <ConflictListModal conflicts={unresolvedConflicts} onClose={() => setConflictModalOpen(false)} />}
-      {isDeleteConfirmOpen && <ConfirmModal 
-        message="Bạn có chắc chắn muốn xóa danh sách nhân viên hiện tại? Lịch phân ca, mẫu ca, và lịch bận cũng sẽ bị xóa." 
-        onConfirm={confirmDeleteStaffList} 
-        onCancel={() => setIsDeleteConfirmOpen(false)} 
-      />}
-      <ConfirmDialog 
+      <ConfirmDialog
           isOpen={confirmDialog.isOpen}
           onClose={closeConfirm}
           onConfirm={confirmDialog.onConfirm}

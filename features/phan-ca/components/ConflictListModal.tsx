@@ -1,5 +1,7 @@
 import React from 'react';
 import { UnresolvedConflict } from '../types';
+import { Modal } from '../../../components/shared/ui/Modal';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface ConflictListModalProps {
   conflicts: UnresolvedConflict[];
@@ -8,50 +10,47 @@ interface ConflictListModalProps {
 
 const ConflictListModal: React.FC<ConflictListModalProps> = ({ conflicts, onClose }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
-        <h2 className="text-xl font-bold text-red-700 mb-4">Danh Sách Ca Cần Xử Lý</h2>
-        <p className="text-sm text-gray-600 mb-4">
-          Hệ thống không tìm thấy người thay thế tự động cho các ca dưới đây. 
-          Nhân viên đã được cho nghỉ <span className="font-bold text-red-500">OFF</span>, nhưng bạn cần tìm người làm thay cho các ca này bằng cách bấm vào ô tương ứng trên lịch chính.
-        </p>
-        
-        <div className="overflow-y-auto flex-grow border-t border-b py-2 pr-2">
-          {conflicts.length > 0 ? (
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-gray-100 z-10">
-                <tr>
-                  <th className="p-2 text-left font-semibold text-gray-700">Nhân Viên</th>
-                  <th className="p-2 text-center font-semibold text-gray-700">Ngày</th>
-                  <th className="p-2 text-center font-semibold text-gray-700">Ca Cần Thay Thế</th>
-                </tr>
-              </thead>
-              <tbody>
-                {conflicts.map((conflict, index) => (
-                  <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-red-50'}>
-                    <td className="p-2 font-medium text-gray-800">{conflict.employeeName}</td>
-                    <td className="p-2 text-center">{conflict.date}</td>
-                    <td className="p-2 text-center font-mono bg-orange-100 text-orange-800 rounded">{conflict.originalShift.role}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <p className="text-center text-gray-500 italic p-4">Không có ca nào cần xử lý.</p>
-          )}
+    <Modal
+      isOpen
+      onClose={onClose}
+      title="Danh Sách Ca Cần Xử Lý"
+      maxWidth="2xl"
+      footer={
+        <div className="flex justify-end">
+          <Button onClick={onClose}>Đã Hiểu</Button>
         </div>
+      }
+    >
+      <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">
+        Hệ thống không tìm thấy người thay thế tự động cho các ca dưới đây.
+        Nhân viên đã được cho nghỉ <span className="font-bold text-rose-600 dark:text-rose-400">OFF</span>, nhưng bạn cần tìm người làm thay cho các ca này bằng cách bấm vào ô tương ứng trên lịch chính.
+      </p>
 
-        <div className="flex justify-end mt-6">
-          <button 
-            type="button" 
-            onClick={onClose} 
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded transition"
-          >
-            Đã Hiểu
-          </button>
-        </div>
+      <div className="border-t border-b border-slate-200 dark:border-slate-700 py-2 pr-2">
+        {conflicts.length > 0 ? (
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 bg-slate-100 dark:bg-slate-800 z-10">
+              <tr>
+                <th className="p-2 text-left font-semibold text-slate-700 dark:text-slate-300">Nhân Viên</th>
+                <th className="p-2 text-center font-semibold text-slate-700 dark:text-slate-300">Ngày</th>
+                <th className="p-2 text-center font-semibold text-slate-700 dark:text-slate-300">Ca Cần Thay Thế</th>
+              </tr>
+            </thead>
+            <tbody>
+              {conflicts.map((conflict, index) => (
+                <tr key={index} className={index % 2 === 0 ? 'bg-white dark:bg-slate-900' : 'bg-rose-50 dark:bg-rose-900/10'}>
+                  <td className="p-2 font-medium text-slate-800 dark:text-slate-200">{conflict.employeeName}</td>
+                  <td className="p-2 text-center text-slate-700 dark:text-slate-300">{conflict.date}</td>
+                  <td className="p-2 text-center font-mono bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 rounded">{conflict.originalShift.role}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <p className="text-center text-slate-500 dark:text-slate-400 italic p-4">Không có ca nào cần xử lý.</p>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 };
 

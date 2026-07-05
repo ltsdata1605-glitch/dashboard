@@ -64,7 +64,7 @@ function generateSchedule(
     busySchedule: BusySchedule,
     previousMonthStats: MonthlyStats
 ): StaffMember[] {
-    let staffList = JSON.parse(JSON.stringify(initialStaffList));
+    let staffList = structuredClone(initialStaffList);
     const { year, month, startDay, duration } = config;
     const morningRegex = /[123]/;
     const afternoonRegex = /[456]/;
