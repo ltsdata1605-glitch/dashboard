@@ -524,6 +524,15 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
 
         if (!editableContainer) return;
 
+        // Force focus back to the editable container to avoid losing it during active menu changes
+        editableContainer.focus();
+
+        // Clean style value for fontFamily inline JS assignment
+        let cleanValue = styleValue;
+        if (styleName === 'fontFamily') {
+            cleanValue = styleValue.replace(/['"]/g, '');
+        }
+
         // If selection is collapsed (no text highlighted), apply style to the entire block content
         if (range.collapsed) {
             try {
@@ -557,7 +566,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
         }
 
         const span = document.createElement('span');
-        span.style[styleName as any] = styleValue;
+        span.style[styleName as any] = cleanValue;
         
         try {
             span.appendChild(range.extractContents());
@@ -1521,20 +1530,20 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                                     }`}
                                 >
                                     {[
-                                        { name: 'UTM Avo', val: "'UTM Avo', sans-serif" },
-                                        { name: 'Plus Jakarta Sans', val: "'Plus Jakarta Sans', sans-serif" },
-                                        { name: 'Inter', val: "'Inter', sans-serif" },
-                                        { name: 'Oswald', val: "'Oswald', sans-serif" },
-                                        { name: 'Roboto Condensed', val: "'Roboto Condensed', sans-serif" },
-                                        { name: 'Fjalla One', val: "'Fjalla One', sans-serif" },
-                                        { name: 'Jost', val: "'Jost', sans-serif" },
-                                        { name: 'Josefin Sans', val: "'Josefin Sans', sans-serif" },
-                                        { name: 'Alata Regular', val: "'Alata Regular', sans-serif" },
-                                        { name: 'Shopee Text', val: "'Shopee Text', sans-serif" },
-                                        { name: 'SF Pro Display', val: "'SF Pro Display', sans-serif" },
-                                        { name: 'Samsung Sharp Sans', val: "'Samsung Sharp Sans', sans-serif" },
-                                        { name: 'Shopee Display', val: "'Shopee Display', sans-serif" },
-                                        { name: 'UTM Colossalis', val: "'UTM Colossalis', sans-serif" }
+                                        { name: 'UTM Avo', val: "UTM Avo, sans-serif" },
+                                        { name: 'Plus Jakarta Sans', val: "Plus Jakarta Sans, sans-serif" },
+                                        { name: 'Inter', val: "Inter, sans-serif" },
+                                        { name: 'Oswald', val: "Oswald, sans-serif" },
+                                        { name: 'Roboto Condensed', val: "Roboto Condensed, sans-serif" },
+                                        { name: 'Fjalla One', val: "Fjalla One, sans-serif" },
+                                        { name: 'Jost', val: "Jost, sans-serif" },
+                                        { name: 'Josefin Sans', val: "Josefin Sans, sans-serif" },
+                                        { name: 'Alata Regular', val: "Alata Regular, sans-serif" },
+                                        { name: 'Shopee Text', val: "Shopee Text, sans-serif" },
+                                        { name: 'SF Pro Display', val: "SF Pro Display, sans-serif" },
+                                        { name: 'Samsung Sharp Sans', val: "Samsung Sharp Sans, sans-serif" },
+                                        { name: 'Shopee Display', val: "Shopee Display, sans-serif" },
+                                        { name: 'UTM Colossalis', val: "UTM Colossalis, sans-serif" }
                                     ].map(font => (
                                         <button
                                             key={font.val}
