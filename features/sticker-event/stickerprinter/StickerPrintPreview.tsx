@@ -1072,8 +1072,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       background: transparent;
                       outline: none;
                       cursor: text;
-                      white-space: pre-wrap;
-                      word-break: break-word;
+                      white-space: nowrap;
+                      word-break: normal;
                       padding: 0.5cqw 1cqw;
                   }
  
@@ -1118,8 +1118,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       background: transparent;
                       outline: none;
                       cursor: text;
-                      white-space: pre-wrap;
-                      word-break: break-word;
+                      white-space: nowrap;
+                      word-break: normal;
                       padding: 0.5cqw 1cqw;
                   }
  
@@ -1248,8 +1248,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-family: 'UTM Avo', sans-serif;
                       font-weight: bold;
                       color: #000;
-                      white-space: pre-wrap;
-                      word-break: break-word;
+                      white-space: nowrap;
+                      word-break: normal;
                       padding: 0.5cqw 1cqw;
                   }
 
@@ -1288,8 +1288,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-weight: bold;
                       font-size: 2.2cqw;
                       color: #000;
-                      white-space: pre-wrap;
-                      word-break: break-word;
+                      white-space: nowrap;
+                      word-break: normal;
                       padding: 0.5cqw 1cqw;
                   }
 
