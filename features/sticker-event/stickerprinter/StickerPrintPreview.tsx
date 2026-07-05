@@ -1066,6 +1066,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
+                      line-height: 1.15;
                   }
  
                   .draw-ticket-block .input-content-top-right {
@@ -1253,6 +1254,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       white-space: pre-wrap;
                       word-break: break-word;
                       padding: 0.5cqw 1cqw;
+                      line-height: 1.15;
                   }
 
                   .draw-ticket-block .display-content-top-right {
@@ -1366,7 +1368,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                      .draw-ticket-block .input-content-top-left,
                      .draw-ticket-block .display-content-top-left {
                          font-size: 9.5pt !important;
-                         line-height: 1.3 !important;
+                          line-height: 1.15 !important;
                      }
                      .draw-ticket-block .input-content-bottom-left,
                      .draw-ticket-block .display-content-bottom-left {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Button } from '../../components/shared/ui/Button';
 
 interface SaveListModalProps {
   isOpen: boolean;
@@ -41,19 +42,21 @@ const SaveListModal: React.FC<SaveListModalProps> = ({ isOpen, onClose, onSave, 
               />
             </div>
             <div className="flex justify-end gap-3 mt-6">
-              <button
+              <Button
                 type="button"
+                variant="ghost"
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
               >
                 Hủy
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors"
+                variant="ghost"
+                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors"
               >
                 Lưu
-              </button>
+              </Button>
             </div>
           </form>
         </div>

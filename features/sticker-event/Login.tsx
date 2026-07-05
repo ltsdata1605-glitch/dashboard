@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, User } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, query, where, getDocs, limit } from 'firebase/firestore';
+import { Button } from '../../components/shared/ui/Button';
 
 interface LoginProps {
   onLoginSuccess: (user: User, userData: any) => void;
@@ -322,10 +323,11 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             </div>
           )}
 
-          <button
+          <Button
             type="submit"
+            variant="ghost"
             disabled={loading}
-            className="w-full bg-indigo-600 text-white py-2.5 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all font-bold shadow-sm disabled:opacity-50 mt-2"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full bg-indigo-600 text-white py-2.5 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all font-bold shadow-sm disabled:opacity-50 mt-2"
           >
             {loading ? (
                 <div className="flex items-center justify-center gap-2">
@@ -333,20 +335,21 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                     <span>Đang xử lý...</span>
                 </div>
             ) : (isLogin ? 'Đăng Nhập' : 'Đăng Ký')}
-          </button>
+          </Button>
         </form>
 
         <div className="mt-6 text-center border-t border-slate-100 pt-4">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => {
               setIsLogin(!isLogin);
               setError(null);
               setPassword('');
             }}
-            className="text-sm text-indigo-600 hover:text-indigo-800 font-semibold"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-sm text-indigo-600 hover:text-indigo-800 font-semibold"
           >
             {isLogin ? 'Chưa có tài khoản? Đăng ký ngay' : 'Đã có tài khoản? Đăng nhập'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

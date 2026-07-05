@@ -1,5 +1,6 @@
 import React from 'react';
 import { Info, X, User, ShieldCheck, Database, RefreshCw, BookOpen, CheckCircle2 } from 'lucide-react';
+import { Button } from '../../components/shared/ui/Button';
 
 interface UserGuideModalProps {
   isOpen: boolean;

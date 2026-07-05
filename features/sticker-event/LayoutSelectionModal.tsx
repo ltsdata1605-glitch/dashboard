@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { PrintSettings, ModernLayoutPositions } from './services/printService';
 import { XIcon } from './Icons';
+import { Button } from '../../components/shared/ui/Button';
 
 interface LayoutSelectionModalProps {
     onSelect: (tagsPerPage: PrintSettings['tagsPerPage']) => void;
@@ -19,13 +20,16 @@ const LayoutOptionButton: React.FC<{
     description: string;
     onSelect: (value: PrintSettings['tagsPerPage']) => void;
 }> = ({ value, label, description, onSelect }) => (
-    <button
+    <Button
+        variant="ghost"
         onClick={() => onSelect(value)}
-        className="w-full text-left p-4 rounded-lg bg-slate-50 hover:bg-indigo-100 border border-slate-200 hover:border-indigo-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start w-full text-left p-4 rounded-lg bg-slate-50 hover:bg-indigo-100 border border-slate-200 hover:border-indigo-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
     >
-        <p className="font-bold text-lg text-slate-800">{label}</p>
-        <p className="text-sm text-slate-600">{description}</p>
-    </button>
+        <div>
+            <p className="font-bold text-lg text-slate-800">{label}</p>
+            <p className="text-sm text-slate-600">{description}</p>
+        </div>
+    </Button>
 );
 
 const LayoutSelectionModal: React.FC<LayoutSelectionModalProps> = ({ onSelect, onClose, stickerStyle, onStickerStyleChange, modernPositions, onModernPositionsChange }) => {
@@ -49,13 +53,14 @@ const LayoutSelectionModal: React.FC<LayoutSelectionModalProps> = ({ onSelect, o
             >
                 <div className="flex justify-between items-center pb-2 border-b border-slate-200">
                     <h2 className="text-xl font-bold text-slate-900">Chọn Kiểu & Bố Cục In</h2>
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={onClose}
-                        className="p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
                         aria-label="Đóng"
                     >
                         <XIcon className="h-6 w-6" />
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="py-2">

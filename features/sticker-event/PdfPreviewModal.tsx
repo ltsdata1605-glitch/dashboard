@@ -1,5 +1,6 @@
 import React from 'react';
 import { XIcon } from './Icons';
+import { Button } from '../../components/shared/ui/Button';
 
 interface PdfPreviewModalProps {
     url: string;
@@ -27,19 +28,21 @@ const PdfPreviewModal: React.FC<PdfPreviewModalProps> = ({ url, onClose, fileNam
                 <div className="flex justify-between items-center pb-3 border-b border-slate-200 flex-shrink-0">
                     <h2 className="text-xl font-bold text-slate-900">Xem trước PDF</h2>
                     <div className="flex items-center gap-2">
-                         <button
+                         <Button
+                            variant="ghost"
                             onClick={handleDownload}
-                            className="inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-indigo-50 hover:bg-indigo-700 h-9 px-4 py-2"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center rounded-md text-sm font-medium bg-indigo-600 text-indigo-50 hover:bg-indigo-700 h-9 px-4 py-2"
                         >
                             Tải xuống
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                            variant="ghost"
                             onClick={onClose}
-                            className="p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors"
                             aria-label="Đóng"
                         >
                             <XIcon className="h-6 w-6" />
-                        </button>
+                        </Button>
                     </div>
                 </div>
                 <div className="flex-grow mt-4 overflow-hidden">
