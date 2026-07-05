@@ -76,7 +76,7 @@ npm run dev
 npm run lint          # = tsc --noEmit, KHÔNG phải eslint
 npx eslint .           # eslint thật sự
 npm run build
-npm run check          # gộp typecheck + build + lint:ratchet
+npm run check          # gộp typecheck + eslint + build + lint:ratchet (2026-07-05: đã thêm eslint)
 ```
 
 **Không có `npm run test`** — dự án chưa có test runner tự động (không Vitest/Jest).

@@ -18,13 +18,12 @@ npm run typecheck      # alias của lint, cũng là tsc --noEmit
 npm run lint:eslint    # eslint . thật sự (tên lệnh dễ nhầm với "lint" ở trên)
 npm run lint:ratchet   # kiểm tra không có vi phạm mới so với violations-baseline.json
 npm run build          # vite build
-npm run check          # gộp: typecheck + build + lint:ratchet — dùng lệnh này để verify nhanh
+npm run check          # gộp: typecheck + eslint + build + lint:ratchet (2026-07-05: đã thêm eslint vào check)
 ```
 
 Vì không có test runner, việc "test" trong dự án này chủ yếu là:
-1. Chạy `npm run check` để bắt lỗi type/build/design-token-regression.
-2. Chạy `npx eslint .` riêng để bắt lỗi cấu trúc (zone boundary, raw `<button>`...).
-3. Test thủ công qua trình duyệt (`npm run dev`, dùng Playwright nếu cần chụp ảnh/kiểm
+1. Chạy `npm run check` để bắt lỗi type/cấu trúc (zone-boundary, raw `<button>`...)/build/design-token-regression trong một lệnh.
+2. Test thủ công qua trình duyệt (`npm run dev`, dùng Playwright nếu cần chụp ảnh/kiểm
    tra tương tác) theo checklist bên dưới — KHÔNG có test tự động thay thế được bước này.
 
 ---

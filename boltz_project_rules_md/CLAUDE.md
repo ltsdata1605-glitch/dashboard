@@ -131,7 +131,7 @@ npm run lint          # = tsc --noEmit (type-check, KHÔNG phải eslint)
 npx eslint .           # eslint thật sự — dùng lệnh này để bắt lỗi cấu trúc/zone-boundary
 npm run build          # vite build
 npm run lint:ratchet   # kiểm tra không có vi phạm design-token mới so với baseline
-npm run check          # gộp nhanh: typecheck + build + lint:ratchet
+npm run check          # gộp nhanh: typecheck + eslint + build + lint:ratchet (2026-07-05: đã thêm eslint vào check để chặn lỗi zone-isolation lọt qua)
 ```
 
 Vì không có test tự động, sau khi sửa UI/tương tác phải test thủ công qua trình duyệt

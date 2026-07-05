@@ -313,20 +313,11 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         return new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
     }, [filterState.selectedMonths]);
 
-    if (!kpis || !kpiCardsConfig) {
-        return null;
-    }
-
-
-    const visibleCards = kpiCardsConfig
-        .filter(c => c.isVisible && c.id !== 'kpi-runrate' && c.id !== 'kpi-crosssell')
-        .sort((a, b) => a.order - b.order);
-
     const computedValues = useMemo(() => {
         const values: Record<string, number> = {};
 
         // Pass 1: Metric & Data
-        kpiCardsConfig.forEach(config => {
+        (kpiCardsConfig || []).forEach(config => {
             if (!config.type || config.type === 'metric') {
                 let raw = kpis ? (kpis as any)[config.metric as string] || 0 : 0;
                 if (config.metric === 'crossSellRate' || config.metric === 'hieuQuaQD') {
@@ -383,7 +374,7 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
         });
 
         // Pass 2: Calculated
-        kpiCardsConfig.forEach(config => {
+        (kpiCardsConfig || []).forEach(config => {
             if (config.type === 'calculated') {
                 const v1 = values[config.operand1_cardId || ''] || 0;
                 const v2 = values[config.operand2_cardId || ''] || 0;
@@ -400,6 +391,14 @@ const KpiCards: React.FC<KpiCardsProps> = ({ onUnshippedClick }) => {
 
         return values;
     }, [kpiCardsConfig, kpis, warehouseFilteredData, productConfig]);
+
+    if (!kpis || !kpiCardsConfig) {
+        return null;
+    }
+
+    const visibleCards = kpiCardsConfig
+        .filter(c => c.isVisible && c.id !== 'kpi-runrate' && c.id !== 'kpi-crosssell')
+        .sort((a, b) => a.order - b.order);
 
     return (
         <div>

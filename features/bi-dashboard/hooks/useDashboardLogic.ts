@@ -390,8 +390,18 @@ export const useDashboardLogic = (isActive?: boolean) => {
             };
             for (const key in mapping) {
                 let idx = headers.indexOf(mapping[key]);
-                if (idx === -1 && key === 'tyTrongTraGop') idx = headers.indexOf('Tỷ Trọng Trả Chậm');
-                if (idx === -1 && key === 'traGopChange') idx = headers.indexOf('+/- Tỷ Trọng Trả Chậm');
+                if (idx === -1 && key === 'tyTrongTraGop') {
+                    idx = headers.findIndex(h => {
+                        const clean = h.trim().toLowerCase();
+                        return clean === 'tỷ trọng trả chậm' || clean === 'tỷ trọng trả góp' || clean === '%tc' || clean === '% trả chậm' || clean === '% trả góp';
+                    });
+                }
+                if (idx === -1 && key === 'traGopChange') {
+                    idx = headers.findIndex(h => {
+                        const clean = h.trim().toLowerCase();
+                        return clean === '+/- tỷ trọng trả chậm' || clean === '+/- tỷ trọng trả góp' || clean === '+/- %tc' || clean === '+/- % trả chậm' || clean === '+/- % trả góp';
+                    });
+                }
                 if (idx !== -1 && row[idx]) kpis[key] = row[idx];
             }
         }

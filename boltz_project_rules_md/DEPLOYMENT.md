@@ -69,8 +69,7 @@ npm run preview    # xem thử bản build production tại local
 
 ## Pre-deploy checklist
 
-- [ ] `npm run check` chạy sạch (gộp typecheck + build + lint:ratchet).
-- [ ] `npx eslint .` không có lỗi mới phát sinh.
+- [ ] `npm run check` chạy sạch (gộp typecheck + eslint + build + lint:ratchet, đã gộp eslint từ 2026-07-05).
 - [ ] Không có lỗi console nghiêm trọng khi chạy `npm run dev` (test thủ công qua trình duyệt).
 - [ ] Cả 4 zone mở được: Root (`?tab=analysis`), Report BI (`?tab=employees`),
       Phân ca (`?tab=tools-phanca`), In Sticker (`?tab=tools-print-sticker`).

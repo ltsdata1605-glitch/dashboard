@@ -327,7 +327,7 @@ Trước khi sửa, tự hỏi:
 - [ ] Format tiền/số/ngày dùng hàm chung `utils/dataUtils.ts` nếu cùng mục đích hiển thị; nếu viết hàm riêng vì khác mục đích, đặt tên rõ ràng không trùng tên hàm chung.
 - [ ] View có toolbar desktop (portal) phải có toolbar mobile `lg:hidden` tương ứng.
 - [ ] Không import chéo giữa `features/bi-dashboard`, `features/phan-ca`, `features/sticker-event`; không import `hooks/`/`services/` gốc từ `features/*`.
-- [ ] Chạy `npm run check` (typecheck + build) + `npx eslint .` trước khi báo cáo hoàn tất.
+- [ ] Chạy `npm run check` (typecheck + eslint + build + lint:ratchet, đã gộp eslint từ 2026-07-05) trước khi báo cáo hoàn tất.
 
 ---
 
