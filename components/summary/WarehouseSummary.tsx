@@ -16,21 +16,27 @@ const migrateColumns = (savedConfig: WarehouseColumnConfig[]): WarehouseColumnCo
     const savedIds = new Set(savedConfig.map(c => c.id));
     const missingDefaults = DEFAULT_WAREHOUSE_COLUMNS.filter(c => !savedIds.has(c.id));
 
-    let updatedConfig = savedConfig.map(col => {
-        const defaultCol = DEFAULT_WAREHOUSE_COLUMNS.find(d => d.id === col.id);
-        if (defaultCol) {
-            return {
-                ...col,
-                mainHeader: defaultCol.mainHeader,
-                subHeader: defaultCol.subHeader,
-                categoryName: defaultCol.categoryName,
-                categoryType: defaultCol.categoryType,
-                metricType: defaultCol.metricType,
-                metric: defaultCol.metric,
-            };
-        }
-        return col;
-    });
+    let updatedConfig = savedConfig
+        .filter(col => {
+            if (col.isCustom) return true;
+            return DEFAULT_WAREHOUSE_COLUMNS.some(d => d.id === col.id);
+        })
+        .map(col => {
+            const defaultCol = DEFAULT_WAREHOUSE_COLUMNS.find(d => d.id === col.id);
+            if (defaultCol) {
+                return {
+                    ...col,
+                    mainHeader: defaultCol.mainHeader,
+                    subHeader: defaultCol.subHeader,
+                    categoryName: defaultCol.categoryName,
+                    categoryType: defaultCol.categoryType,
+                    metricType: defaultCol.metricType,
+                    metric: defaultCol.metric,
+                    productCodes: defaultCol.productCodes,
+                };
+            }
+            return col;
+        });
 
     if (missingDefaults.length > 0) {
         updatedConfig = [...updatedConfig, ...missingDefaults];
