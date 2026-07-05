@@ -239,6 +239,11 @@
     "missingDarkVariant": 5,
     "missingMobileToolbar": 0
   },
+  "components/modals/AdminAnnouncementModal.tsx": {
+    "nonSemanticColor": 0,
+    "missingDarkVariant": 2,
+    "missingMobileToolbar": 0
+  },
   "components/modals/ChangelogModal.tsx": {
     "nonSemanticColor": 6,
     "missingDarkVariant": 8,

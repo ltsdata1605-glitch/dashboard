@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '../../components/shared/ui/Button';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -33,9 +34,10 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           </div>
         </div>
         <div className="bg-slate-50 px-4 py-3 sm:px-6 flex flex-row-reverse gap-2">
-          <button
+          <Button
             type="button"
-            className={`w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:w-auto sm:text-sm ${
+            variant="ghost"
+            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 sm:w-auto sm:text-sm ${
               type === 'danger' ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'
             }`}
             onClick={() => {
@@ -44,14 +46,15 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
             }}
           >
             {confirmText}
-          </button>
-          <button
+          </Button>
+          <Button
             type="button"
-            className="w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
+            variant="ghost"
+            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full inline-flex justify-center rounded-md border border-slate-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-slate-700 hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:w-auto sm:text-sm"
             onClick={onClose}
           >
             {cancelText}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

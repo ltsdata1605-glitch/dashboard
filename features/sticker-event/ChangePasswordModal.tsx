@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { auth } from './firebase';
 import { updatePassword } from 'firebase/auth';
 import { XIcon, ShieldIcon } from './Icons';
+import { Button } from '../../components/shared/ui/Button';
 
 interface ChangePasswordModalProps {
     isOpen: boolean;
@@ -64,9 +65,9 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                         <ShieldIcon className="h-6 w-6 text-indigo-600" />
                         <h2 className="text-xl font-bold text-slate-900">Đổi mật khẩu</h2>
                     </div>
-                    <button onClick={onClose} className="p-1 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
+                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full text-slate-500 hover:bg-slate-200 transition-colors">
                         <XIcon className="h-6 w-6" />
-                    </button>
+                    </Button>
                 </div>
 
                 <div className="p-6">
@@ -103,13 +104,14 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
                                     minLength={6}
                                 />
                             </div>
-                            <button
+                            <Button
                                 type="submit"
+                                variant="ghost"
                                 disabled={isLoading}
-                                className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium disabled:opacity-50"
                             >
                                 {isLoading ? 'Đang xử lý...' : 'Xác nhận đổi mật khẩu'}
-                            </button>
+                            </Button>
                         </form>
                     )}
                 </div>

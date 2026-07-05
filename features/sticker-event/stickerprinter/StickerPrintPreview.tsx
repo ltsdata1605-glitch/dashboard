@@ -1356,6 +1356,34 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                      .draw-ticket-block [contenteditable="true"]:empty::before {
                          content: "" !important;
                      }
+
+                     /* Khống chế font-size tuyệt đối khi in để tránh Chrome Print Engine phóng to sai lệch */
+                     .draw-ticket-block .input-title-single,
+                     .draw-ticket-block .display-title-single {
+                         font-size: 13pt !important;
+                         line-height: 1.4 !important;
+                     }
+                     .draw-ticket-block .input-content-top-left,
+                     .draw-ticket-block .display-content-top-left {
+                         font-size: 9.5pt !important;
+                         line-height: 1.3 !important;
+                     }
+                     .draw-ticket-block .input-content-bottom-left,
+                     .draw-ticket-block .display-content-bottom-left {
+                         font-size: 8.5pt !important;
+                         line-height: 1.3 !important;
+                     }
+                     .draw-ticket-block .input-code-left,
+                     .draw-ticket-block .display-code-left,
+                     .draw-ticket-block .display-code-right {
+                         font-size: 14pt !important;
+                         line-height: 1.1 !important;
+                     }
+                     .draw-ticket-block .input-footer-left,
+                     .draw-ticket-block .display-footer-left {
+                         font-size: 13pt !important;
+                         line-height: 1.2 !important;
+                     }
                  }
                  `, [stickerType, bgImage, headerTextSize, percentTextSize, nameTextSize, oldPriceTextSize, newPriceTextSize, footerTextSize, subHeaderTextSize])}
             </style>

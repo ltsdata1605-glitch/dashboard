@@ -1,6 +1,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import InventoryToolbar, { SortField, SortDirection } from './InventoryToolbar';
+import { Button } from '../../components/shared/ui/Button';
 import { InventoryItem } from './types';
 
 interface FilterModalProps {
