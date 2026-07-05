@@ -309,9 +309,9 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
                                                 {h.label}
                                                 {isTarget && <Icon name="edit-3" size={2.5} className="opacity-60 group-hover/th:opacity-100 ml-0.5 text-indigo-500 hide-on-export" />}
                                                 {canCopyKeys.has(h.key) && (
-                                                    <button onClick={e => handleCopyList(e, h.key, h.label)} className="opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 ml-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-opacity shrink-0 hide-on-export">
+                                                    <Button variant="ghost" onClick={e => handleCopyList(e, h.key, h.label)} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit opacity-100 lg:opacity-0 lg:group-hover/th:opacity-100 ml-1 hover:text-indigo-600 dark:hover:text-indigo-400 transition-opacity shrink-0 hide-on-export">
                                                         <Icon name="copy" size={3} />
-                                                    </button>
+                                                    </Button>
                                                 )}
                                                 {(sortConfig.key === h.key && showSortArrow) && (
                                                     <span className="hide-on-export"><Icon name={sortConfig.direction === 'asc' ? 'arrow-up' : 'arrow-down'} size={2.5} /></span>
@@ -368,14 +368,15 @@ export const PerformanceSingleTable: React.FC<RenderSingleTableProps> = ({
 
                                                 {/* Name */}
                                                 <td className="px-1.5 sm:px-3 py-1 border-r border-slate-200 dark:border-slate-700 sticky left-8 bg-inherit z-10 outline outline-1 outline-transparent">
-                                                    <button
+                                                    <Button
+                                                        variant="ghost"
                                                         onClick={() => onEmployeeClick(emp.name)}
-                                                        className="flex items-center gap-1 sm:gap-2 min-w-0 group/name"
+                                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1 sm:gap-2 min-w-0 group/name"
                                                     >
                                                         <span className="text-[11px] sm:text-[13px] font-bold text-slate-700 dark:text-slate-200 group-hover/name:text-primary-600 dark:group-hover/name:text-primary-400 transition-colors truncate max-w-[100px] sm:max-w-[140px]">
                                                             {abbreviateName(emp.name)}
                                                         </span>
-                                                    </button>
+                                                    </Button>
                                                 </td>
 
                                                 {/* Data cells */}

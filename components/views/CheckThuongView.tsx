@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useActiveTab } from '../../contexts/LayoutContext';
 import { Icon } from '../common/Icon';
 import { getGlobalFont, saveSetting } from '../../services/dbService';
+import { Button } from '../shared/ui/Button';
 
 
 export const CheckThuongView: React.FC = () => {
@@ -145,23 +146,25 @@ export const CheckThuongView: React.FC = () => {
                 />
             </div>
             <div className={`flex items-center ${isMobile ? 'gap-0.5' : 'gap-1 border-l border-slate-200 dark:border-slate-700 pl-2'}`}>
-                <button
+                <Button
+                    variant="ghost"
                     onClick={() => {
                         setCodes(prev => ({ ...prev, code2: '' }));
                         iframeRef.current?.contentWindow?.postMessage({ type: 'CHECK_THUONG_SEARCH', code1: codes.code1, code2: '' }, '*');
                     }}
-                    className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors`}
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${isMobile ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 text-red-500 dark:text-red-400 transition-colors`}
                     title="Xoá mã kho đang so sánh"
                 >
                     <Icon name="rotate-ccw" size={isMobile ? 3 : 3.5} />
-                </button>
-                <button
+                </Button>
+                <Button
+                    variant="ghost"
                     onClick={handleChangeFile}
-                    className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
+                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit ${isMobile ? 'w-6 h-6' : 'w-8 h-8'} flex items-center justify-center rounded-full bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 transition-colors`}
                     title="Tải file khác"
                 >
                     <Icon name="upload" size={isMobile ? 3 : 3.5} />
-                </button>
+                </Button>
             </div>
         </div>
     );

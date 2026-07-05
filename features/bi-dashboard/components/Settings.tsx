@@ -4,6 +4,7 @@ import Card from './Card';
 import { DownloadIcon, UploadIcon, AlertTriangleIcon, SpinnerIcon, TrashIcon, CheckCircleIcon, SaveIcon, ClockIcon } from './Icons';
 import * as db from '../utils/db';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface SnapshotMetadata {
     id: string;
@@ -260,14 +261,14 @@ const Settings: React.FC = () => {
                         Chuyển toàn bộ dữ liệu (Báo cáo, Target, Snapshot, Dữ liệu Thưởng) sang máy tính khác hoặc lưu trữ dự phòng.
                     </p>
                     <div className="flex flex-col sm:flex-row gap-3">
-                        <button onClick={handleBackup} disabled={!!isLoading} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 disabled:opacity-50 transition-all active:scale-95 shadow-sm">
+                        <Button variant="ghost" onClick={handleBackup} disabled={!!isLoading} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-white bg-emerald-600 hover:bg-emerald-700 border border-emerald-700 disabled:opacity-50 transition-all active:scale-95 shadow-sm">
                             {isLoading === 'backup' ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <SaveIcon className="h-4 w-4" />}
                             <span>Sao lưu (.json)</span>
-                        </button>
-                        <button onClick={handleRestore} disabled={!!isLoading} className="inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-all active:scale-95 shadow-sm">
+                        </Button>
+                        <Button variant="ghost" onClick={handleRestore} disabled={!!isLoading} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit inline-flex items-center justify-center gap-2 px-5 py-2.5 text-[11px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-200 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 transition-all active:scale-95 shadow-sm">
                             {isLoading === 'restore' ? <SpinnerIcon className="h-4 w-4 animate-spin" /> : <UploadIcon className="h-4 w-4" />}
                             <span>Khôi phục từ File</span>
-                        </button>
+                        </Button>
                         <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />
                     </div>
                 </div>

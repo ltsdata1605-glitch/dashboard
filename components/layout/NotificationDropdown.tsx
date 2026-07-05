@@ -199,7 +199,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
     };
 
     return (
-        <div className="relative" ref={dropdownRef}>
+        <div className="relative z-[300]" ref={dropdownRef}>
             <button 
                 onClick={() => setIsOpen(!isOpen)}
                 className={buttonClassName || "relative flex items-center justify-center p-2.5 bg-slate-50/50 dark:bg-slate-900/10 text-slate-600 dark:text-slate-400 border border-transparent rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors tooltip"}
@@ -216,7 +216,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
 
             {isOpen && (
                 <div 
-                    className="absolute right-0 mt-2 w-72 sm:w-96 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden z-[200] flex flex-col animate-in fade-in slide-in-from-top-2 duration-150"
+                    className="absolute right-0 mt-2 w-72 sm:w-96 bg-white dark:bg-slate-800 rounded-xl sm:rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden z-[400] flex flex-col animate-in fade-in slide-in-from-top-2 duration-150"
                 >
                     <div className="p-2.5 sm:p-4 border-b border-slate-100 dark:border-slate-700/50 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/80">
                         <h3 className="font-bold text-sm sm:text-base text-slate-800 dark:text-white flex items-center gap-1.5 sm:gap-2">
@@ -226,7 +226,7 @@ const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ buttonClass
                             )}
                         </h3>
                         <div className="flex items-center gap-2">
-                            {userRole === 'admin' && (
+                            {(userRole === 'admin' || user?.email === 'lts.truongson@gmail.com' || user?.email === 'nguyendangkhoafit2@gmail.com') && (
                                 <button 
                                     onClick={() => setIsAdminModalOpen(true)}
                                     className="p-1.5 text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-700/50 transition-colors rounded-lg flex items-center justify-center shrink-0"

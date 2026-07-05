@@ -16,6 +16,7 @@ import { useExportOptions } from '../../../hooks/useExportOptions';
 import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services/uiService';
+import { Button } from '../../../components/shared/ui/Button';
 
 interface DashboardProps {
     onNavigateToUpdater: () => void;
@@ -60,19 +61,21 @@ const EmptyState: React.FC<{ onNavigate: () => void; onRestore: () => void; mess
                                     <UploadIcon className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                                 </div>
                                 <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={onNavigate}
-                                        className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-white bg-[#0584c7] hover:bg-[#046ca3] shadow-md shadow-[#0584c7]/20 transition-all active:scale-95"
+                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-white bg-[#0584c7] hover:bg-[#046ca3] shadow-md shadow-[#0584c7]/20 transition-all active:scale-95"
                                     >
                                         Cập nhật dữ liệu
-                                    </button>
+                                    </Button>
                                     <span className="text-slate-400 dark:text-slate-500 hidden sm:block text-[11px] font-medium uppercase tracking-wider">hoặc</span>
-                                    <button
+                                    <Button
+                                        variant="ghost"
                                         onClick={onRestore}
-                                        className="w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm transition-all active:scale-95"
+                                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex-1 inline-flex items-center justify-center gap-2 px-5 py-2.5 text-sm font-bold rounded-lg text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm transition-all active:scale-95"
                                     >
                                         <UploadIcon className="h-4 w-4" /> Khôi phục
-                                    </button>
+                                    </Button>
                                 </div>
                             </div>
 

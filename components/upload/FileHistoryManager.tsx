@@ -1,6 +1,7 @@
 import React from 'react';
 import type { UploadedFileRegistryItem } from '../../types';
 import { Icon } from '../common/Icon';
+import { Button } from '../shared/ui/Button';
 
 interface FileHistoryManagerProps {
     registry: UploadedFileRegistryItem[];
@@ -47,14 +48,15 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                     </p>
                 </div>
                 {!compact && onViewReport && activeCount > 0 && (
-                    <button
+                    <Button
+                        variant="ghost"
                         onClick={onViewReport}
                         id="btn-view-historical-report"
-                        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-300/30 dark:shadow-none transition-all flex items-center gap-1.5"
                     >
                         <Icon name="play" size={3.5} />
                         <span>Xem Báo Cáo Gộp</span>
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -111,14 +113,15 @@ export const FileHistoryManager: React.FC<FileHistoryManagerProps> = ({
                                 </div>
                             </div>
 
-                            <button
+                            <Button
+                                variant="ghost"
                                 onClick={() => onDelete(file.id)}
                                 id={`btn-delete-file-${file.id}`}
-                                className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-all ml-4 shrink-0"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-lg transition-all ml-4 shrink-0"
                                 title="Xóa tệp này"
                             >
                                 <Icon name="trash-2" size={4} />
-                            </button>
+                            </Button>
                         </div>
                     ))}
                 </div>

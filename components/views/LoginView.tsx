@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
+import { Button } from '../shared/ui/Button';
 
 const LoginView: React.FC = () => {
     const { loginWithGoogle, setDemoMode, isLoading } = useAuth();
@@ -79,10 +80,11 @@ const LoginView: React.FC = () => {
                 )}
                 
                 <div className="space-y-4">
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={handleLogin}
                         disabled={isLoggingIn}
-                        className="w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl py-3 px-4 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors focus:ring-4 focus:ring-slate-100 dark:focus:ring-slate-800 font-bold text-slate-700 dark:text-white disabled:opacity-50"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex items-center justify-center gap-3 bg-white dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl py-3 px-4 hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors focus:ring-4 focus:ring-slate-100 dark:focus:ring-slate-800 font-bold text-slate-700 dark:text-white disabled:opacity-50"
                     >
                         {isLoggingIn ? (
                             <div className="w-5 h-5 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
@@ -95,7 +97,7 @@ const LoginView: React.FC = () => {
                             </svg>
                         )}
                         Tiếp tục với Cổng Google
-                    </button>
+                    </Button>
                     
                     <div className="relative flex items-center py-2">
                         <div className="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
@@ -103,13 +105,14 @@ const LoginView: React.FC = () => {
                         <div className="flex-grow border-t border-slate-200 dark:border-slate-700"></div>
                     </div>
                     
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={() => setDemoMode(true)}
-                        className="w-full flex items-center justify-center gap-2 bg-transparent border border-dashed border-slate-300 dark:border-slate-600 rounded-xl py-3 px-4 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium text-slate-500 dark:text-slate-400"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex items-center justify-center gap-2 border border-dashed border-slate-300 dark:border-slate-600 rounded-xl py-3 px-4 hover:border-slate-400 dark:hover:border-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors font-medium text-slate-500 dark:text-slate-400"
                     >
                         <Icon name="glasses" size={5} />
                         Kích hoạt Chế độ Dùng Thử
-                    </button>
+                    </Button>
                     <p className="text-[10px] text-center text-slate-400 mt-2 px-2 leading-relaxed">
                         Phiên bản Offline sẽ không lưu được Setting hay File lên Cloud, dữ liệu chỉ xử lý ở local. 
                     </p>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Icon } from '../common/Icon';
 import { saveGlobalFont, getGlobalFont } from '../../services/dbService';
 import { createPortal } from 'react-dom';
+import { Button } from '../shared/ui/Button';
 
 interface FontOption {
     label: string;
@@ -142,14 +143,15 @@ const FontSelector: React.FC = () => {
 
     return (
         <div className="relative flex items-center bg-emerald-50/30 dark:bg-emerald-900/10 border-l border-emerald-100 dark:border-emerald-900/30">
-            <button
+            <Button
+                variant="ghost"
                 ref={buttonRef}
                 onClick={toggleOpen}
-                className={`p-2.5 transition-colors border-r border-emerald-100 dark:border-emerald-900/30 ${isOpen ? 'bg-emerald-200/50 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300' : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'}`}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2.5 transition-colors border-r border-emerald-100 dark:border-emerald-900/30 ${isOpen ? 'bg-emerald-200/50 dark:bg-emerald-800/50 text-emerald-700 dark:text-emerald-300' : 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/30'}`}
                 title={`Font hiện tại: ${currentFontLabel}`}
             >
                 <Icon name="type" size={4} />
-            </button>
+            </Button>
 
             {isOpen && createPortal(
                 <div
@@ -168,10 +170,11 @@ const FontSelector: React.FC = () => {
                         }).map(font => {
                             const isSelected = currentFont === font.value;
                             return (
-                                <button
+                                <Button
+                                    variant="ghost"
                                     key={font.value}
                                     onClick={() => handleSelectFont(font.value)}
-                                    className={`flex items-center gap-2 px-3 py-2 w-full text-left rounded-lg transition-colors ${isSelected
+                                    className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit justify-start flex items-center gap-2 px-3 py-2 w-full text-left rounded-lg transition-colors ${isSelected
                                         ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
                                         : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                         }`}
@@ -181,7 +184,7 @@ const FontSelector: React.FC = () => {
                                         {isSelected && <Icon name="check" size={2.5} className="text-white" />}
                                     </div>
                                     <span className={`text-[13px] ${isSelected ? 'font-bold' : ''} ${font.className || ''}`}>{font.label}</span>
-                                </button>
+                                </Button>
                             );
                         })}
                     </div>

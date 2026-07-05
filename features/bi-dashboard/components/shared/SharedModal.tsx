@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import { XIcon } from '../Icons';
+import { Button } from '../../../../components/shared/ui/Button';
 
 export interface SharedModalProps {
     isOpen: boolean;
@@ -67,21 +68,23 @@ export const SharedModal: React.FC<SharedModalProps> = ({
                         <h2 className="text-lg sm:text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-indigo-600 dark:from-sky-400 dark:to-indigo-400">
                             {title}
                         </h2>
-                        <button 
+                        <Button
+                            variant="ghost"
                             onClick={onClose}
-                            className="p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50 text-slate-500 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                            className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-2 rounded-full hover:bg-slate-200/50 dark:hover:bg-slate-700/50 text-slate-500 transition-colors focus:outline-none focus:ring-2 focus:ring-sky-500/50"
                         >
                             <XIcon className="w-5 h-5" />
-                        </button>
+                        </Button>
                     </div>
                 )}
                 {!title && (
-                    <button 
+                    <Button
+                        variant="ghost"
                         onClick={onClose}
-                        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 transition-colors shadow-sm backdrop-blur-md"
+                        className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit absolute top-4 right-4 z-10 p-2 rounded-full bg-white/50 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 transition-colors shadow-sm backdrop-blur-md"
                     >
                         <XIcon className="w-5 h-5" />
-                    </button>
+                    </Button>
                 )}
 
                 {/* Body */}
