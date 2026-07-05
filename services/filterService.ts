@@ -223,24 +223,42 @@ export function deduplicateSalesData(allData: DataRow[]): DataRow[] {
 
     const deduplicated: DataRow[] = [];
     
-    // 1. Order-item-level deduplication:
-    // Group by Order ID (COL.ID) and Product Code/Name, keeping only the one from the newest file
-    const orderGroups = new Map<string, DataRow[]>();
+    // 1. Group rows by import file source to ensure counters align per file
+    const rowsByFile = new Map<string, DataRow[]>();
     for (let i = 0; i < allData.length; i++) {
         const row = allData[i];
-        const orderId = String(getRowValue(row, COL.ID) || '').trim();
-        const prodCode = String(getRowValue(row, COL.PRODUCT_CODE) || getRowValue(row, COL.PRODUCT) || '').trim();
-        
-        if (!orderId || !prodCode) {
-            deduplicated.push(row);
-            continue;
+        const fileKey = String(row._fileSavedAt || row._fileLastModified || 'default');
+        if (!rowsByFile.has(fileKey)) {
+            rowsByFile.set(fileKey, []);
         }
+        rowsByFile.get(fileKey)!.push(row);
+    }
+
+    // 2. Count occurrence of same product code per order inside each file to prevent dropping valid multi-line rows
+    const orderGroups = new Map<string, DataRow[]>();
+    for (const [_, fileRows] of rowsByFile.entries()) {
+        const counterMap = new Map<string, number>();
         
-        const itemKey = `${orderId}§${prodCode}`;
-        if (!orderGroups.has(itemKey)) {
-            orderGroups.set(itemKey, []);
+        for (let i = 0; i < fileRows.length; i++) {
+            const row = fileRows[i];
+            const orderId = String(getRowValue(row, COL.ID) || '').trim();
+            const prodCode = String(getRowValue(row, COL.PRODUCT_CODE) || getRowValue(row, COL.PRODUCT) || '').trim();
+            
+            if (!orderId || !prodCode) {
+                deduplicated.push(row);
+                continue;
+            }
+            
+            const counterKey = `${orderId}§${prodCode}`;
+            const count = counterMap.get(counterKey) || 0;
+            counterMap.set(counterKey, count + 1);
+            
+            const itemKey = `${orderId}§${prodCode}§${count}`;
+            if (!orderGroups.has(itemKey)) {
+                orderGroups.set(itemKey, []);
+            }
+            orderGroups.get(itemKey)!.push(row);
         }
-        orderGroups.get(itemKey)!.push(row);
     }
     
     for (const [_, rowsList] of orderGroups.entries()) {
