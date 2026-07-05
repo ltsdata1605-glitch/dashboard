@@ -1022,25 +1022,25 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                  .draw-ticket-block[data-index="3"] { top: 75%; }
 
                  .draw-ticket-block .input-title-single {
-                      position: absolute;
-                      left: 2.2%;
-                      top: 2.0%;
-                      width: 95.6%;
-                      height: 16%;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      font-family: 'UTM Avo', sans-serif;
-                      font-weight: bold;
-                      font-size: 3.6cqw;
-                      color: #000;
-                      background: #ffffff;
-                      z-index: 10;
-                      outline: none;
-                      cursor: text;
-                      text-align: center;
-                      white-space: normal;
-                      line-height: 1.2;
+                       position: absolute;
+                       left: 2.2%;
+                       top: 3.5%;
+                       width: 95.6%;
+                       height: 15%;
+                       display: flex;
+                       align-items: center;
+                       justify-content: center;
+                       font-family: 'UTM Avo', sans-serif;
+                       font-weight: bold;
+                       font-size: 3.6cqw;
+                       color: #000;
+                       background: #ffffff;
+                       z-index: 10;
+                       outline: none;
+                       cursor: text;
+                       text-align: center;
+                       white-space: normal;
+                       line-height: 1.4;
                   }
  
                   
@@ -1211,23 +1211,29 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                   }
 
                   .draw-ticket-block .display-title-single {
-                      position: absolute;
-                      left: 2.2%;
-                      top: 2.0%;
-                      width: 95.6%;
-                      height: 16%;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      font-family: 'UTM Avo', sans-serif;
-                      font-weight: bold;
-                      font-size: 3.6cqw;
-                      color: #000;
-                      background: #ffffff;
-                      z-index: 10;
-                      text-align: center;
-                      white-space: normal;
-                      line-height: 1.2;
+                       position: absolute;
+                       left: 2.2%;
+                       top: 3.5%;
+                       width: 95.6%;
+                       height: 15%;
+                       display: flex;
+                       align-items: center;
+                       justify-content: center;
+                       font-family: 'UTM Avo', sans-serif;
+                       font-weight: bold;
+                       font-size: 3.6cqw;
+                       color: #000;
+                       background: #ffffff;
+                       z-index: 10;
+                       text-align: center;
+                       white-space: normal;
+                       line-height: 1.4;
+                  }
+                  .draw-ticket-block .input-title-single *,
+                  .draw-ticket-block .display-title-single * {
+                      margin: 0 !important;
+                      padding: 0 !important;
+                      line-height: 1.4 !important;
                   }
 
                   .draw-ticket-block .display-content-top-left {
