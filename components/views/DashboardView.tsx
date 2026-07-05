@@ -7,7 +7,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useSystemTraffic } from '../../hooks/useSystemTraffic';
 import { usePendingApprovalCount } from '../../hooks/usePendingApprovalCount';
 import { getSetting, saveSetting } from '../../services/dbService';
-import { doc, onSnapshot } from 'firebase/firestore';
+import { doc, onSnapshot, collection, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../services/firebase';
 
 import Header from '../layout/Header';
@@ -99,12 +99,22 @@ const DashboardView = React.memo(function DashboardView({ isActive }: { isActive
     const [announcement, setAnnouncement] = useState<{ content: string; active: boolean } | null>(null);
 
     useEffect(() => {
-        const unsub = onSnapshot(doc(db, 'shared_configs', 'system_announcement'), (snap) => {
-            if (snap.exists()) {
-                setAnnouncement(snap.data() as any);
-            } else {
-                setAnnouncement(null);
-            }
+        const q = query(
+            collection(db, 'shared_configs'),
+            orderBy('createdAt', 'desc'),
+            limit(100)
+        );
+        const unsub = onSnapshot(q, (snapshot) => {
+            let found: any = null;
+            snapshot.forEach(docSnap => {
+                const data = docSnap.data();
+                if (data.isSystemAnnouncement && !found) {
+                    found = { id: docSnap.id, ...data };
+                }
+            });
+            setAnnouncement(found);
+        }, (error) => {
+            console.error("Lỗi khi lắng nghe thông báo hệ thống:", error);
         });
         return () => unsub();
     }, []);

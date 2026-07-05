@@ -5,6 +5,7 @@ import { isKhoMatch } from '../../services/filterService';
 import { getRowValue, getHeSoQuyDoi, getExportFilenamePrefix, getHinhThucThanhToan, getParentGroup, cleanAndNormalize } from '../../utils/dataUtils';
 import { HINH_THUC_XUAT_THU_HO, COL } from '../../constants';
 import { exportElementAsImage } from '../../services/uiService';
+import { Button } from '../shared/ui/Button';
 
 interface SavedCalendarCardProps {
     filter: {
@@ -149,21 +150,23 @@ const SavedCalendarCard: React.FC<SavedCalendarCardProps> = React.memo(({ filter
                     compact={true}
                     actionButtons={
                         <div className="flex items-center gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 transition-opacity">
-                            <button 
-                                onClick={handleExport} 
+                            <Button
+                                variant="ghost"
+                                onClick={handleExport}
                                 disabled={isExporting}
-                                className="p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors shadow-sm"
                                 title="Xuất ảnh"
                             >
                                 {isExporting ? <Icon name="loader-2" size={3.5} className="animate-spin" /> : <Icon name="camera" size={3.5} />}
-                            </button>
-                            <button 
-                                onClick={() => onRemove(filter.id)} 
-                                className="p-1.5 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-700/50 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shadow-sm"
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                onClick={() => onRemove(filter.id)}
+                                className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1.5 bg-white dark:bg-slate-800 border border-red-200 dark:border-red-700/50 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors shadow-sm"
                                 title="Xóa bảng lịch"
                             >
                                 <Icon name="trash-2" size={3.5} />
-                            </button>
+                            </Button>
                         </div>
                     }
                 />

@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Icon } from './Icon';
+import { Button } from '../shared/ui/Button';
 
 interface DebugInfo {
     name: string;
@@ -25,15 +26,16 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ info, isVisible, isInspe
                     <h3 className="font-bold text-lg">Bảng Gỡ Lỗi Giao Diện</h3>
                 </div>
                 <div className="flex items-center gap-4">
-                    <button 
-                        onClick={onToggleInspector} 
-                        className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${isInspectorActive ? 'bg-red-500 text-white animate-pulse' : 'bg-indigo-500 text-white hover:bg-indigo-600'}`}
+                    <Button
+                        variant="ghost"
+                        onClick={onToggleInspector}
+                        className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit px-3 py-1 text-sm font-semibold rounded-md transition-colors ${isInspectorActive ? 'bg-red-500 text-white animate-pulse' : 'bg-indigo-500 text-white hover:bg-indigo-600'}`}
                     >
                         {isInspectorActive ? 'TẮT Inspector' : 'BẬT Inspector'}
-                    </button>
-                    <button onClick={onClose} className="text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100">
+                    </Button>
+                    <Button variant="ghost" onClick={onClose} className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100">
                         <Icon name="x" size={6} />
-                    </button>
+                    </Button>
                 </div>
             </div>
             <div className="debug-panel-body">

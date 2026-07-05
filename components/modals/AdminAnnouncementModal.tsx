@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../services/firebase';
+import { useAuth } from '../../contexts/AuthContext';
 import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
 import toast from 'react-hot-toast';
@@ -14,6 +15,7 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
     isOpen,
     onClose,
 }) => {
+    const { user, userRole } = useAuth();
     const [content, setContent] = useState('');
     const [active, setActive] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -21,37 +23,54 @@ export const AdminAnnouncementModal: React.FC<AdminAnnouncementModalProps> = ({
     // Fetch active announcement settings when modal opens
     useEffect(() => {
         if (isOpen) {
-            const fetchAnnouncement = async () => {
-                try {
-                    const docRef = doc(db, 'shared_configs', 'system_announcement');
-                    const snap = await getDoc(docRef);
-                    if (snap.exists()) {
-                        const data = snap.data();
-                        setContent(data.content || '');
-                        setActive(data.active || false);
-                    } else {
-                        setContent('');
-                        setActive(false);
+            const q = query(
+                collection(db, 'shared_configs'),
+                orderBy('createdAt', 'desc'),
+                limit(100)
+            );
+            const unsub = onSnapshot(q, (snapshot) => {
+                let found: any = null;
+                snapshot.forEach(docSnap => {
+                    const data = docSnap.data();
+                    if (data.isSystemAnnouncement && !found) {
+                        found = data;
                     }
-                } catch (error) {
-                    console.error("Lỗi khi đọc thông báo admin:", error);
-                    toast.error("Không thể tải thông báo hiện tại");
+                });
+                if (found) {
+                    setContent(found.content || '');
+                    setActive(found.active || false);
+                } else {
+                    setContent('');
+                    setActive(false);
                 }
-            };
-            fetchAnnouncement();
+            }, (error) => {
+                console.error("Lỗi khi đọc thông báo admin:", error);
+            });
+            return () => unsub();
         }
     }, [isOpen]);
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!user) {
+            toast.error("Chưa đăng nhập, không thể lưu");
+            return;
+        }
         setIsLoading(true);
         try {
-            const docRef = doc(db, 'shared_configs', 'system_announcement');
-            await setDoc(docRef, {
+            const sharedConfigsRef = collection(db, 'shared_configs');
+            await addDoc(sharedConfigsRef, {
+                uid: user.uid,
+                authorName: user.displayName || 'Super Admin',
+                authorEmail: user.email,
+                role: userRole,
+                departmentId: 'ALL (Super Admin)',
+                description: 'Thông báo hệ thống chạy ngang',
+                isSystemAnnouncement: true,
                 content: content.trim(),
                 active: active,
-                updatedAt: new Date(),
-            }, { merge: true });
+                createdAt: serverTimestamp()
+            });
             
             toast.success("Đã cập nhật thông báo hệ thống!");
             onClose();

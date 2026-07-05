@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect, useMemo, useDeferredValue } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from './Icon';
+import { Button } from '../shared/ui/Button';
 
 interface MultiSelectDropdownProps {
     options: string[];
@@ -114,14 +115,15 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
 
     return (
         <div className={`relative w-full ${className}`} ref={containerRef} style={{ zIndex: isOpen ? 50 : 11 }}>
-            <button 
-                type="button" 
-                onClick={() => setIsOpen(!isOpen)} 
-                className={`w-full flex items-center justify-between rounded-md border transition-colors focus:outline-none focus:ring-1 focus:border-sky-500 focus:ring-sky-500 ${
+            <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsOpen(!isOpen)}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex items-center justify-between rounded-md border transition-colors focus:outline-none focus:ring-1 focus:border-sky-500 focus:ring-sky-500 ${
                     variant === 'compact' ? 'px-2 py-1 h-9' : 'px-3 py-2 h-9'
                 } ${
-                    isOpen 
-                    ? 'border-sky-500 bg-white dark:bg-slate-800 ring-1 ring-sky-500' 
+                    isOpen
+                    ? 'border-sky-500 bg-white dark:bg-slate-800 ring-1 ring-sky-500'
                     : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:border-slate-400 dark:hover:border-slate-500'
                 }`}
             >
@@ -134,13 +136,13 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                             {selected.length}
                         </div>
                     )}
-                    <Icon 
-                        name="chevron-down" 
-                        size={3.5} 
-                        className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+                    <Icon
+                        name="chevron-down"
+                        size={3.5}
+                        className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                     />
                 </div>
-            </button>
+            </Button>
 
             {isOpen && createPortal(
                 <div 
@@ -203,13 +205,14 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                 {filteredOptions.slice(0, 200).map(option => {
                                     const isSelected = selected.includes(option);
                                     return (
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="ghost"
                                             key={option}
                                             onClick={() => handleToggleOption(option)}
-                                            className={`flex items-center gap-1.5 sm:gap-2.5 w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg transition-all ${
-                                                isSelected 
-                                                ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' 
+                                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center gap-1.5 sm:gap-2.5 w-full text-left px-2 sm:px-2.5 py-1.5 sm:py-2 rounded-lg transition-all justify-start ${
+                                                isSelected
+                                                ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
                                                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                             }`}
                                         >
@@ -219,7 +222,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
                                                 {isSelected && <><Icon name="check" size={2.5} className="text-white sm:hidden" /><Icon name="check" size={3} className="text-white hidden sm:block" /></>}
                                             </div>
                                             <span className={`text-[11px] sm:text-[12px] truncate ${isSelected ? 'font-black' : 'font-medium'}`}>{option}</span>
-                                        </button>
+                                        </Button>
                                     );
                                 })}
                                 {filteredOptions.length > 200 && (

@@ -1,6 +1,7 @@
 import React from 'react';
 import { QRIcon } from './Icons';
 import { Product } from './types';
+import { Button } from '../../components/shared/ui/Button';
 
 interface SearchBarProps {
   searchQuery: string;
@@ -42,15 +43,16 @@ const SearchBar: React.FC<SearchBarProps> = ({
             className={`w-full ${isMobile ? 'pl-10 pr-3 py-2 text-sm' : 'pl-12 pr-4 py-3 text-base'} border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-slate-100 disabled:cursor-not-allowed`}
           />
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
-             <button
+             <Button
               type="button"
+              variant="ghost"
               onClick={onIconClick}
               disabled={disabled}
               title="Quét mã vạch/mã QR"
-              className="p-1 rounded-full hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit p-1 rounded-full hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <QRIcon className={`${isMobile ? 'h-4 w-4' : 'h-5 w-5'} text-slate-400`} />
-            </button>
+            </Button>
           </div>
           {(suggestions.length > 0 || showNoResults) && (
              <ul className={`absolute z-20 w-full ${isMobile ? 'bottom-full mb-1' : 'mt-1'} bg-white border border-slate-300 rounded-lg shadow-lg max-h-60 overflow-y-auto`}>

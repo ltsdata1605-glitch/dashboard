@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo, useDeferredValue } from 'react';
 import { createPortal } from 'react-dom';
 import { Icon } from './Icon';
+import { Button } from '../shared/ui/Button';
 
 interface SingleSelectDropdownProps {
     options: { value: string; label: string }[];
@@ -89,14 +90,15 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
 
     return (
         <div className={`relative w-full ${className}`} ref={containerRef} style={{ zIndex: isOpen ? 50 : 11 }}>
-            <button 
-                type="button" 
-                onClick={() => setIsOpen(!isOpen)} 
-                className={`w-full flex items-center justify-between rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+            <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsOpen(!isOpen)}
+                className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit w-full flex items-center justify-between rounded-lg border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
                     variant === 'compact' ? 'px-2 py-1.5' : 'px-3 py-1.5 min-h-[38px]'
                 } ${
                     hasSelection || isOpen
-                    ? 'border-indigo-500 bg-white dark:bg-slate-800 ring-2 ring-indigo-500/10' 
+                    ? 'border-indigo-500 bg-white dark:bg-slate-800 ring-2 ring-indigo-500/10'
                     : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
             >
@@ -104,13 +106,13 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                     {renderContent()}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
-                    <Icon 
-                        name="chevron-down" 
-                        size={3.5} 
-                        className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} 
+                    <Icon
+                        name="chevron-down"
+                        size={3.5}
+                        className={`text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                     />
                 </div>
-            </button>
+            </Button>
 
             {isOpen && createPortal(
                 <div 
@@ -151,19 +153,20 @@ const SingleSelectDropdown: React.FC<SingleSelectDropdownProps> = ({
                                 {filteredOptions.map(option => {
                                     const isSelected = selected === option.value;
                                     return (
-                                        <button
+                                        <Button
                                             type="button"
+                                            variant="ghost"
                                             key={option.value}
                                             onClick={() => handleSelectOption(option.value)}
-                                            className={`flex items-center justify-between w-full text-left px-2.5 py-2 rounded-lg transition-all ${
-                                                isSelected 
-                                                ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400' 
+                                            className={`bg-transparent hover:bg-transparent border-0 rounded-none h-auto w-auto p-0 text-inherit flex items-center justify-between w-full text-left px-2.5 py-2 rounded-lg transition-all ${
+                                                isSelected
+                                                ? 'bg-indigo-50/60 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-400'
                                                 : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                             }`}
                                         >
                                             <span className={`text-[12px] truncate ${isSelected ? 'font-black' : 'font-medium'}`}>{option.label}</span>
                                             {isSelected && <Icon name="check" size={3.5} className="text-indigo-600 dark:text-indigo-400 flex-shrink-0" />}
-                                        </button>
+                                        </Button>
                                     );
                                 })}
                             </div>

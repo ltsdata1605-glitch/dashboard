@@ -1,6 +1,7 @@
 import React from 'react';
 import { Icon } from '../../../common/Icon';
 import { Input } from '../../../shared/ui/Input';
+import { Button } from '../../../shared/ui/Button';
 
 interface TargetColumnFormProps {
     metricType: 'quantity' | 'revenue' | 'revenueQD';
