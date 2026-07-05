@@ -122,7 +122,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
 
     return (
         <div className="draw-ticket-block" data-index={index}>
-            {/* Title Left */}
+            {/* Title Single */}
             {isFirst ? (
                 <div 
                     ref={titleEditable.ref}
@@ -130,23 +130,17 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                     onClick={() => setActiveField?.('drawTitle')}
                     contentEditable 
                     suppressContentEditableWarning
-                    className={`input-title-left animate-pulse-once ${activeField === 'drawTitle' ? 'active-field' : ''}`}
+                    className={`input-title-single animate-pulse-once ${activeField === 'drawTitle' ? 'active-field' : ''}`}
                     style={{ fontSize: `${drawTitleSize || 3.6}cqw` }}
                     data-placeholder="Nhập tiêu đề..."
                 />
             ) : (
                 <div 
-                    className="display-title-left"
+                    className="display-title-single"
                     style={{ fontSize: `${drawTitleSize || 3.6}cqw` }}
                     dangerouslySetInnerHTML={{ __html: activeFirstTicket.title }}
                 />
             )}
-            {/* Title Right (Syncs automatically) */}
-            <div 
-                className="display-title-right" 
-                style={{ fontSize: `${drawTitleSize || 3.6}cqw` }}
-                dangerouslySetInnerHTML={{ __html: activeFirstTicket.title }} 
-            />
 
             {/* Content Top Left */}
             {isFirst ? (
@@ -1027,11 +1021,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                  .draw-ticket-block[data-index="2"] { top: 50%; }
                  .draw-ticket-block[data-index="3"] { top: 75%; }
 
-                 .draw-ticket-block .input-title-left {
+                 .draw-ticket-block .input-title-single {
                       position: absolute;
                       left: 2.2%;
                       top: 2.0%;
-                      width: 45.4%;
+                      width: 95.6%;
                       height: 16%;
                       display: flex;
                       align-items: center;
@@ -1040,7 +1034,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-weight: bold;
                       font-size: 3.6cqw;
                       color: #000;
-                      background: transparent;
+                      background: #ffffff;
+                      z-index: 10;
                       outline: none;
                       cursor: text;
                       text-align: center;
@@ -1048,25 +1043,7 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       line-height: 1.2;
                   }
  
-                  .draw-ticket-block .display-title-right {
-                      position: absolute;
-                      left: 52.4%;
-                      top: 2.0%;
-                      width: 45.4%;
-                      height: 16%;
-                      display: flex;
-                      align-items: center;
-                      justify-content: center;
-                      font-family: 'UTM Avo', sans-serif;
-                      font-weight: bold;
-                      font-size: 3.6cqw;
-                      color: #000;
-                      text-align: center;
-                      pointer-events: none;
-                      user-select: none;
-                      white-space: normal;
-                      line-height: 1.2;
-                  }
+                  
  
                   .draw-ticket-block .input-content-top-left {
                       position: absolute;
@@ -1233,11 +1210,11 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       text-align: center;
                   }
 
-                  .draw-ticket-block .display-title-left {
+                  .draw-ticket-block .display-title-single {
                       position: absolute;
                       left: 2.2%;
                       top: 2.0%;
-                      width: 45.4%;
+                      width: 95.6%;
                       height: 16%;
                       display: flex;
                       align-items: center;
@@ -1246,6 +1223,8 @@ export const StickerPrintPreview: React.FC<StickerPrintPreviewProps> = ({
                       font-weight: bold;
                       font-size: 3.6cqw;
                       color: #000;
+                      background: #ffffff;
+                      z-index: 10;
                       text-align: center;
                       white-space: normal;
                       line-height: 1.2;
