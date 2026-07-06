@@ -1,7 +1,7 @@
 
 import { RevenueRow, CompetitionHeader, Criterion, InstallmentRow, InstallmentProvider, CrossSellingRow } from '../types/nhanVienTypes';
 import { roundUp, parseNumber, normalizeText, shortenName } from '../../../utils/dataUtils';
-import { calculateHieuQuaQDFraction, calculatePercentage } from '../../../services/metricService';
+import { calculateHieuQuaQDFraction, calculatePercentage } from '../services/metricService';
 export { roundUp, parseNumber, normalizeText, shortenName };
 
 export const formatEmployeeName = (fullName: string): string => {
@@ -244,9 +244,17 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
         }
     });
 
+    const fallbackProviders = [
+        { name: 'HomeCredit(HC)', short: 'HC' },
+        { name: 'FECredit(FE)', short: 'FE' },
+        { name: 'Thẻ tín dụng - SMARTPOS', short: 'POS' },
+        { name: 'Trả góp HPL-Home Credit', short: 'HPL' },
+        { name: 'MWG PAYLATER', short: 'MWG' }
+    ];
+
     const detectedProviders = Array.from({ length: numProviders }).map((_, i) => {
-        const fullName = collectedNames[i] || 'Khác';
-        let short = fullName;
+        const fullName = collectedNames[i] || fallbackProviders[i]?.name || 'Khác';
+        let short = fallbackProviders[i]?.short || 'Khác';
         for (const [key, val] of Object.entries(providerMapping)) {
             if (fullName.toUpperCase().includes(key.toUpperCase())) { short = val; break; }
         }
@@ -339,12 +347,11 @@ export const parseInstallmentData = (traGopData: string, employeeDepartmentMap: 
     }
 
     const calcPct = (target: InstallmentRow) => {
-        let sumPct = 0;
+        const totalTraCham = target.providers.reduce((sum, p) => sum + p.dt, 0);
         target.providers.forEach(p => {
-            p.percent = calculatePercentage(p.dt, target.totalDtSieuThi!);
-            sumPct += p.percent;
+            p.percent = totalTraCham > 0 ? (p.dt / totalTraCham) * 100 : 0;
         });
-        target.totalPercent = sumPct;
+        target.totalPercent = target.totalDtSieuThi! > 0 ? (totalTraCham / target.totalDtSieuThi!) * 100 : 0;
     };
 
     calcPct(totalRow);

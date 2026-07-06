@@ -3,7 +3,9 @@ import { Icon } from '../../common/Icon';
 import type { ExploitationData } from '../../../types';
 
 export type SortConfig = {
-    key: keyof ExploitationData | 'name' | 'percentBaoHiem' | 'percentSimKT' | 'percentDongHoKT' | 'percentPhuKienKT' | 'percentGiaDungKT' | 'belowAverageCount' | 'slSPChinh_Tong';
+    // (string & {}) giữ autocomplete cho các key tĩnh nhưng vẫn nhận key động của custom tab
+    // (VD 'val_default_tab_bao_duong_ce_col_bd_ce_3') — tránh phải ép `as any` khi gán.
+    key: keyof ExploitationData | 'name' | 'percentBaoHiem' | 'percentSimKT' | 'percentDongHoKT' | 'percentPhuKienKT' | 'percentGiaDungKT' | 'belowAverageCount' | 'slSPChinh_Tong' | (string & {});
     direction: 'asc' | 'desc';
 };
 
@@ -16,13 +18,13 @@ export const groupToSortKeyMap: Record<string, SortConfig['key']> = {
     baoHiem: 'percentBaoHiem', // Giữ lại cho tương thích sort cũ
     doanhThu: 'doanhThuQD',
     spChinh: 'slSPChinh_Tong',
-    default_tab_bao_duong_ce: 'val_default_tab_bao_duong_ce_col_bd_ce_3' as any,
-    default_tab_bao_hiem_ict: 'val_default_tab_bao_hiem_ict_col_bh_ict_3' as any,
-    default_tab_all_bhiem: 'val_default_tab_all_bhiem_col_all_bh_3' as any,
-    default_tab_phu_kien: 'val_default_tab_phu_kien_col_pk_6' as any,
-    default_tab_gia_dung: 'val_default_tab_gia_dung_col_gd_12' as any,
-    default_tab_dcnb: 'val_default_tab_dcnb_col_dcnb_7' as any,
-    default_tab_dong_ho: 'val_default_tab_dong_ho_col_dh_5' as any,
+    default_tab_bao_duong_ce: 'val_default_tab_bao_duong_ce_col_bd_ce_3',
+    default_tab_bao_hiem_ict: 'val_default_tab_bao_hiem_ict_col_bh_ict_3',
+    default_tab_all_bhiem: 'val_default_tab_all_bhiem_col_all_bh_3',
+    default_tab_phu_kien: 'val_default_tab_phu_kien_col_pk_6',
+    default_tab_gia_dung: 'val_default_tab_gia_dung_col_gd_12',
+    default_tab_dcnb: 'val_default_tab_dcnb_col_dcnb_7',
+    default_tab_dong_ho: 'val_default_tab_dong_ho_col_dh_5',
 };
 
 // Data structure for detail view headers
@@ -30,7 +32,7 @@ export const detailHeaderGroups: Record<string, { label: string; colSpan: number
     doanhThu: { label: 'D.THU', colSpan: 3, bg: 'bg-sky-50 dark:bg-sky-900/20', text: 'text-sky-700 dark:text-sky-300', subHeaders: [
         { label: 'DT Thực', key: 'doanhThuThuc' },
         { label: 'DTQĐ', key: 'doanhThuQD' },
-        { label: 'HQQĐ', key: 'hieuQuaQD' as any }
+        { label: 'HQQĐ', key: 'hieuQuaQD' }
     ]},
     spChinh: { label: 'SP CHÍNH', colSpan: 4, bg: 'bg-emerald-50 dark:bg-emerald-900/20', text: 'text-emerald-700 dark:text-emerald-300', subHeaders: [
         { label: 'ICT', key: 'slICT' },

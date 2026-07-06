@@ -5,7 +5,7 @@ import { FilterIcon, ChevronDownIcon, UsersIcon, CameraIcon, ImagesIcon } from '
 import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
-import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { useExportOptionsContext } from '../../contexts/ExportOptionsContext';
 
 interface CompetitionCompareViewProps {

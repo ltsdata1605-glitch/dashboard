@@ -2,7 +2,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useIndexedDBState } from './useIndexedDBState';
 import * as db from '../utils/db';
-import * as dbService from '../../../services/dbService';
+import * as dbService from '../services/dbService';
 import { 
     MainTab, 
     SubTab, 

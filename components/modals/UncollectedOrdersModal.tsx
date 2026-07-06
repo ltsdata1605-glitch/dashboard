@@ -2,7 +2,7 @@ import React, { useRef, useState, useMemo, useEffect } from 'react';
 import type { DataRow } from '../../types';
 import { Modal } from '../shared/ui/Modal';
 import { Icon } from '../common/Icon';
-import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity } from '../../utils/dataUtils';
+import { getRowValue, formatCurrency, getHeSoQuyDoi, formatQuantity, getErrorMessage } from '../../utils/dataUtils';
 import { COL } from '../../constants';
 import { useDashboardContext } from '../../contexts/DashboardContext';
 import { showExportOverlay, updateExportOverlay, hideExportOverlay } from '../../services/uiService';
@@ -415,9 +415,9 @@ Link: ${url}`;
                 toastEl.appendChild(btnRow);
 
                 setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 15000);
-            } catch (apiErr: any) {
+            } catch (apiErr: unknown) {
                 // If AUTH_EXPIRED and haven't retried yet, re-login and try once more
-                if (apiErr?.message === 'AUTH_EXPIRED' && retryCount < 1) {
+                if (getErrorMessage(apiErr) === 'AUTH_EXPIRED' && retryCount < 1) {
                     toastEl.textContent = '🔄 Token hết hạn, đang xác thực lại...';
                     return attemptExport(retryCount + 1);
                 }
@@ -427,9 +427,9 @@ Link: ${url}`;
 
         try {
             await attemptExport();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error('Google Sheets export error:', err);
-            const errMsg = (err?.message || '').toLowerCase();
+            const errMsg = getErrorMessage(err).toLowerCase();
             if (errMsg.includes('popup') || errMsg.includes('cancel')) {
                 toastEl.textContent = '❌ Đăng nhập bị huỷ.';
             } else if (errMsg.includes('network') || errMsg.includes('failed to fetch')) {
@@ -437,7 +437,7 @@ Link: ${url}`;
             } else if (errMsg === 'auth_expired') {
                 toastEl.textContent = '🔑 Phiên đăng nhập hết hạn. Vui lòng thử lại.';
             } else {
-                toastEl.textContent = `⚠️ Lỗi: ${err?.message || 'Không xác định'}`;
+                toastEl.textContent = `⚠️ Lỗi: ${getErrorMessage(err) || 'Không xác định'}`;
             }
             toastEl.style.background = '#dc2626';
             setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);

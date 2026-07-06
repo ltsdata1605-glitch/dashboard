@@ -9,6 +9,7 @@ import { Button } from '../shared/ui/Button';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'motion/react';
 import { notifyUser } from '../../services/notificationService';
+import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 
 interface AccessRequest {
     id: string;
@@ -226,12 +227,12 @@ const UserManagementView: React.FC<UserManagementViewProps> = ({ isEmbedded }) =
             });
             
             setRequests(filteredData);
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.warn("Lỗi lấy danh sách yêu cầu:", error);
-            if (error?.code === 'permission-denied') {
+            if (getErrorCode(error) === 'permission-denied') {
                 toast.error('Firestore: Quyền truy cập bị từ chối. Vui lòng kiểm tra Security Rules.');
             } else {
-                toast.error(`Không thể tải danh sách yêu cầu. (${error?.code || error?.message || 'Unknown'})`);
+                toast.error(`Không thể tải danh sách yêu cầu. (${getErrorCode(error) || getErrorMessage(error) || 'Unknown'})`);
             }
         } finally {
             setIsLoading(false);

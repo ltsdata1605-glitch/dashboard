@@ -1,7 +1,6 @@
 import React from 'react';
 import { Icon } from '../../../common/Icon';
 import { Select } from '../../../shared/ui/Select';
-import type { ColumnConfig } from '../../../../types';
 import { Button } from '../../../shared/ui/Button';
 
 interface CalculatedColumnFormProps {
@@ -15,7 +14,9 @@ interface CalculatedColumnFormProps {
     setDisplayAs: (val: 'number' | 'percentage') => void;
     decimalPlaces?: 0 | 1 | 2;
     setDecimalPlaces: (val: 0 | 1 | 2) => void;
-    availableOperands: ColumnConfig[];
+    // Chỉ cần 3 field này (xem JSX bên dưới) — dùng shape hẹp thay vì ColumnConfig đầy đủ để
+    // HeadToHeadConfigModal (chỉ có id/columnName) cũng truyền được mà không cần ép any.
+    availableOperands: { id: string; columnName: string; mainHeader?: string }[];
 }
 
 export const CalculatedColumnForm: React.FC<CalculatedColumnFormProps> = ({

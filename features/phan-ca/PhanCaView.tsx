@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import './phanca.css';
 import { exportToImage, generateBusyTemplateTSV } from './utils/exportUtils';
 import { useActiveTab } from '../../contexts/LayoutContext';
+import { getErrorMessage } from '../../utils/dataUtils';
 import { recalculateStatsForStaff, findBestSolution, calculateTotalHours, calculateSpecialHours, calculateNormalHours, findAutomaticReplacement, autoRefineSchedule, generateBalancingFeedback } from './utils/scheduleUtils';
 import * as idb from './db/idb';
 import Controls from './components/Controls';
@@ -25,7 +26,7 @@ import AiSuggestPatternModal from './components/AiSuggestPatternModal';
 import { ConfirmDialog } from '../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../components/shared/ui/Button';
 import { useAuth } from '../../contexts/AuthContext';
-import { syncScheduleToCloud, fetchScheduleFromCloud } from '../../services/firestoreService';
+import { syncScheduleToCloud, fetchScheduleFromCloud } from './services/firestoreSync';
 import { 
   StaffMember, 
   ScheduleInfo, 
@@ -704,12 +705,12 @@ const App: React.FC = () => {
     const attemptExport = async (retryCount = 0): Promise<void> => {
         toastEl.textContent = '🔑 Đang xác thực Google...';
         sessionStorage.removeItem('googleOAuthToken');
-        const { loginWithGoogleForceConsent } = await import('../../services/firebase');
+        const { loginWithGoogleForceConsent } = await import('./services/firebase');
         await loginWithGoogleForceConsent();
         let token = sessionStorage.getItem('googleOAuthToken');
         if (!token) throw new Error('Không thể lấy token xác thực.');
         toastEl.textContent = '📊 Đang tạo Google Sheet...';
-        const { exportToGoogleSheet } = await import('../../services/googleSheetsService');
+        const { exportToGoogleSheet } = await import('./services/googleSheetsService');
         const sortedList = getSortedStaffForExport();
         const [yearVal, monthVal] = monthYear.split('-').map(Number);
         // --- Build Rows ---
@@ -964,8 +965,8 @@ const App: React.FC = () => {
             btnRow.appendChild(closeBtn);
             toastEl.appendChild(btnRow);
             setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 15000);
-        } catch (apiErr: any) {
-            if (apiErr?.message === 'AUTH_EXPIRED' && retryCount < 1) {
+        } catch (apiErr: unknown) {
+            if (getErrorMessage(apiErr) === 'AUTH_EXPIRED' && retryCount < 1) {
                 toastEl.textContent = '🔄 Token hết hạn, đang xác thực lại...';
                 return attemptExport(retryCount + 1);
             }
@@ -974,9 +975,9 @@ const App: React.FC = () => {
     };
     try {
         await attemptExport();
-    } catch (err: any) {
+    } catch (err: unknown) {
         console.error('Google Sheets export error:', err);
-        const errMsg = (err?.message || '').toLowerCase();
+        const errMsg = getErrorMessage(err).toLowerCase();
         if (errMsg.includes('popup') || errMsg.includes('cancel')) {
             toastEl.textContent = '❌ Đăng nhập bị huỷ.';
         } else if (errMsg.includes('network') || errMsg.includes('failed to fetch')) {
@@ -984,7 +985,7 @@ const App: React.FC = () => {
         } else if (errMsg === 'auth_expired') {
             toastEl.textContent = '🔑 Phiên đăng nhập hết hạn. Vui lòng thử lại.';
         } else {
-            toastEl.textContent = `⚠️ Lỗi: ${err?.message || 'Không xác định'}`;
+            toastEl.textContent = `⚠️ Lỗi: ${getErrorMessage(err) || 'Không xác định'}`;
         }
         toastEl.style.background = '#dc2626';
         setTimeout(() => { toastEl.style.opacity = '0'; setTimeout(() => toastEl.remove(), 200); }, 3000);

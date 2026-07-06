@@ -10,7 +10,7 @@ import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { ChevronDownIcon, ViewListIcon, ViewGridIcon, SpinnerIcon, ClockIcon, XIcon, CheckCircleIcon, DownloadAllIcon } from '../Icons';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
-import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';
 import TimeProgressBar from './shared/TimeProgressBar';
@@ -43,12 +43,12 @@ const InstallmentDesktopRow = React.memo<InstallmentDesktopRowProps>(({
                 return (
                     <React.Fragment key={pIdx}>
                         <td className="px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums text-slate-700 dark:text-slate-300"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
-                        {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-400'}`}><div>{p.percent > 0 ? `${Math.round(p.percent)}%` : '-'}</div><DeltaBadge current={p.percent} previous={oldP?.percent} /></td>}
+                        {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-400'}`}><div>{p.percent > 0 ? `${p.percent.toFixed(2)}%` : '-'}</div><DeltaBadge current={p.percent} previous={oldP?.percent} /></td>}
                     </React.Fragment>
                 )
             })}
             <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold text-slate-700 dark:text-slate-300 tabular-nums">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-emerald-600' : (row.totalPercent < 40 ? 'text-rose-500' : 'text-amber-600')}`}><div>{Math.round(row.totalPercent)}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
+            <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 font-bold tabular-nums ${row.totalPercent >= 45 ? 'text-emerald-600' : (row.totalPercent < 40 ? 'text-rose-500' : 'text-amber-600')}`}><div>{row.totalPercent.toFixed(2)}%</div><DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} /></td>
         </tr>
     );
 });
@@ -72,7 +72,7 @@ const InstallmentMobileRow = React.memo<InstallmentMobileRowProps>(({
                     <div className="flex justify-between items-start">
                         <span className="font-bold text-slate-900 dark:text-white truncate">{row.name}</span>
                         <div className="flex flex-col items-end">
-                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.totalPercent >= 45 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'}`}>{f.format(Math.ceil(row.totalPercent))}% TG</span>
+                            <span className={`text-xs font-black px-2 py-0.5 rounded-full ${row.totalPercent >= 45 ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30' : 'bg-amber-50 text-amber-600 dark:bg-amber-900/30'}`}>{row.totalPercent.toFixed(2)}% TG</span>
                             <DeltaBadge current={row.totalPercent} previous={oldRow?.totalPercent} />
                         </div>
                     </div>
@@ -90,7 +90,7 @@ const InstallmentMobileRow = React.memo<InstallmentMobileRowProps>(({
                                 <p className="text-xs font-black tabular-nums">{f.format(Math.ceil(p.dt))} Tr</p>
                             </div>
                             <div className="text-right">
-                                <p className={`text-xs font-bold tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-500'}`}>{f.format(Math.ceil(p.percent))}%</p>
+                                <p className={`text-xs font-bold tabular-nums ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-500'}`}>{p.percent.toFixed(2)}%</p>
                                 <DeltaBadge current={p.percent} previous={oldP?.percent} />
                             </div>
                         </div>
@@ -121,7 +121,7 @@ const InstallmentTab: React.FC<{
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' }>({ key: 'totalPercent', direction: 'desc' });
     const [isHighlightFilterOpen, setIsHighlightFilterOpen] = useState(false);
     const [viewMode, setViewMode] = useIndexedDBState<'group' | 'list'>('installment-view-mode', 'group');
-    const [hidePercent, setHidePercent] = useState(true);
+    const [hidePercent, setHidePercent] = useState(false);
     
     const [prevMonthRaw, setPrevMonthRaw] = useIndexedDBState<string>(`prev-month-installment-${supermarketName}`, '');
     const prevMonthRows = useMemo(() => {
@@ -382,7 +382,7 @@ const InstallmentTab: React.FC<{
                                             <div key={`${row.type}-${idx}`} className={`px-4 py-3 ${isGrandTotal ? 'bg-sky-50 dark:bg-sky-900/50 font-black' : 'bg-slate-50 dark:bg-slate-900/90 font-bold'} flex justify-between items-center`}>
                                                 <span className="uppercase tracking-wider text-xs">{row.name}</span>
                                                 <div className="flex flex-col items-end">
-                                                    <span className="text-primary-600 dark:text-primary-400">{f.format(Math.ceil(row.totalPercent))}% TG</span>
+                                                    <span className="text-primary-600 dark:text-primary-400">{row.totalPercent.toFixed(2)}% TG</span>
                                                     <span className="text-[10px] opacity-60">{f.format(Math.ceil(row.totalDtSieuThi))} Tr</span>
                                                 </div>
                                             </div>
@@ -428,11 +428,11 @@ const InstallmentTab: React.FC<{
                                                     {row.providers.map((p: any, pIdx: number) => (
                                                         <React.Fragment key={pIdx}>
                                                             <td className="px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold"><div>{p.dt > 0 ? f.format(Math.ceil(p.dt)) : '-'}</div></td>
-                                                            {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-500'}`}><div>{p.percent > 0 ? `${Math.round(p.percent)}%` : '-'}</div></td>}
+                                                            {!hidePercent && <td className={`px-1 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold ${p.percent >= 40 ? 'text-emerald-600' : 'text-slate-500'}`}><div>{p.percent > 0 ? `${p.percent.toFixed(2)}%` : '-'}</div></td>}
                                                         </React.Fragment>
                                                     ))}
                                                     <td className="px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-bold">{f.format(Math.ceil(row.totalDtSieuThi))}</td>
-                                                    <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-extrabold ${row.totalPercent >= 45 ? 'text-emerald-600' : 'text-amber-600'}`}>{Math.round(row.totalPercent)}%</td>
+                                                    <td className={`px-1.5 py-1 text-[13px] text-center border-r border-slate-200 dark:border-slate-700 tabular-nums font-extrabold ${row.totalPercent >= 45 ? 'text-emerald-600' : 'text-amber-600'}`}>{row.totalPercent.toFixed(2)}%</td>
                                                 </tr>
                                             );
                                         }

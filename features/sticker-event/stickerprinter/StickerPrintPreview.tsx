@@ -1,8 +1,18 @@
 import React, { useEffect, useRef, useCallback, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import BarcodeCanvas from '../../../components/views/BarcodeCanvas';
 import { BatchItem, TicketDrawData } from './types';
 import { Bold, Italic, Underline } from 'lucide-react';
 import { Button } from '../../../components/shared/ui/Button';
+
+// Nội dung sticker do nhân viên tự nhập (rich-text qua execCommand bold/italic/underline +
+// span style font-size/font-family), lưu chung trên Firestore cho cả nhân viên trong cùng
+// cửa hàng — sanitize trước khi render qua dangerouslySetInnerHTML để chặn stored XSS.
+const sanitizeTicketHtml = (html?: string): string =>
+    DOMPurify.sanitize(html || '', {
+        ALLOWED_TAGS: ['b', 'i', 'u', 'strong', 'em', 'span', 'br'],
+        ALLOWED_ATTR: ['style'],
+    });
 
 interface StickerPrintPreviewProps {
     batchItems: BatchItem[];
@@ -139,7 +149,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 <div 
                     className="display-title-single"
                     style={{ fontSize: `${Math.min(drawTitleSize || 2.5, 3.0)}cqw` }}
-                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.title }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.title) }}
                 />
             )}
 
@@ -159,7 +169,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 <div 
                     className="display-content-top-left"
                     style={{ fontSize: `${drawContentTopLeftSize || 3.5}cqw` }}
-                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentTop || '' }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentTop) }}
                 />
             )}
             {/* Content Top Right */}
@@ -178,7 +188,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 <div 
                     className="display-content-top-right"
                     style={{ fontSize: `${drawContentTopRightSize || 3.5}cqw` }}
-                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentTopRight || '' }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentTopRight) }}
                 />
             )}
 
@@ -226,7 +236,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 <div 
                     className="display-content-bottom-left"
                     style={{ fontSize: `${drawContentBottomLeftSize || 2.2}cqw` }}
-                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentBottom || '' }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentBottom) }}
                 />
             )}
             {/* Content Bottom Right */}
@@ -245,7 +255,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 <div 
                     className="display-content-bottom-right"
                     style={{ fontSize: `${drawContentBottomRightSize || 2.2}cqw` }}
-                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.contentBottomRight || '' }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.contentBottomRight) }}
                 />
             )}
 
@@ -265,7 +275,7 @@ const DrawTicketBlock: React.FC<DrawTicketBlockProps> = React.memo(({
                 <div 
                     className="display-footer-left"
                     style={{ fontSize: `${drawFooterSize || 3.8}cqw` }}
-                    dangerouslySetInnerHTML={{ __html: activeFirstTicket.footer }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeTicketHtml(activeFirstTicket.footer) }}
                 />
             )}
         </div>

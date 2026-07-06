@@ -10,7 +10,7 @@ import { parseNumber, getYesterdayDateString } from '../../utils/nhanVienHelpers
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
 import * as db from '../../utils/db';
-import { exportElementAsImage } from '../../../../services/uiService';
+import { exportElementAsImage } from '../../services/uiService';
 import { BonusMobileCard } from './bonus/BonusMobileCard';
 import { BonusDesktopRow } from './bonus/BonusDesktopRow';
 import AvatarDisplay from './shared/AvatarDisplay';

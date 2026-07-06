@@ -404,3 +404,109 @@ ra. Đã cập nhật baseline phản ánh đúng giá trị thật hiện tại
   tiền tồn tại, không liên quan).
 - `npm run build` thành công.
 - `npm run lint:ratchet` sạch sau khi cập nhật baseline.
+
+## 2026-07-05 — Quality audit (quality-master) + fix bug hook + chặn zone-isolation lọt qua
+
+### Added
+
+- `npm run check` giờ chạy thêm `npm run lint:eslint` (giữa `typecheck` và `build`) — trước
+  đó `check` KHÔNG chạy eslint nên 31 lỗi `import/no-restricted-paths` (vi phạm zone-isolation
+  RULES.md §2.0) đã lọt qua nhiều lần mà không ai biết.
+- Tạo services zone-local (theo đúng quy tắc "viết riêng trong feature" của RULES.md §2.0,
+  thay vì import chéo `services/`/`hooks/` gốc):
+  - `features/bi-dashboard/services/{uiService,dbService,metricService,employeeParser}.ts`
+    + `features/bi-dashboard/hooks/useExportOptions.ts` (move từ root, chỉ bi-dashboard dùng).
+  - `features/phan-ca/services/{uiService,googleSheetsService,firebase,firestoreSync}.ts`
+    (`firebase.ts` dùng Firebase App riêng tên `phanca`, cùng project `dashboa-7e20b` với
+    root — tránh lỗi "App named [DEFAULT] already exists" nhưng vẫn cùng 1 Firestore thật).
+  - `features/sticker-event/services/{uiService,dbService}.ts`.
+  - Tất cả bản `dbService.ts`/`uiService.ts` zone-local giữ nguyên `DB_NAME`
+    (`BI_HUB_DATABASE_V2`), tên store, và event `ycx-setting-changed` như bản gốc — không đổi
+    dữ liệu/hành vi, chỉ tách JS module để hết phụ thuộc chéo.
+
+### Fixed
+
+- **Bug thật** ở [components/kpis/KpiCards.tsx](../components/kpis/KpiCards.tsx): `useMemo`
+  (`computedValues`) bị gọi SAU một `return null` có điều kiện → vi phạm Rules of Hooks, có
+  thể gây crash React khi `kpis`/`kpiCardsConfig` đổi từ falsy→truthy giữa các lần render. Đã
+  chuyển guard `return null` xuống sau toàn bộ hook, thêm `(kpiCardsConfig || [])` bên trong
+  `useMemo` để an toàn khi config chưa sẵn sàng.
+- 30 lỗi `import/no-restricted-paths` (zone-isolation) trên cả 3 feature — xem danh sách file
+  ở mục Added.
+
+### Removed
+
+- `services/parsers/employeeParser.ts`, `hooks/useExportOptions.ts` (root) — move hẳn sang
+  `features/bi-dashboard/`, không còn ai ở root/feature khác dùng (đã grep xác nhận).
+
+### Verify
+
+- `npx eslint .`: 0 lỗi (chỉ còn 5 warning tiền tồn tại, không liên quan).
+- `npm run check` (typecheck + eslint + build + lint:ratchet): sạch hoàn toàn.
+- Cập nhật `violations-baseline.json` cho 3 file `uiService.ts` mới (`missingDarkVariant: 1`
+  mỗi file — kế thừa đúng từ bản gốc `services/uiService.ts`, không phải lỗi mới).
+- Chạy `npm run dev` + Playwright, load thử cả 3 tab (`employees`, `tools-phanca`,
+  `tools-print-sticker`) — 0 console error, xác nhận Firebase App riêng của phan-ca không
+  xung đột với app mặc định của root.
+
+## 2026-07-06 — Vá XSS thật ở StickerPrintPreview.tsx
+
+### Added
+
+- `dompurify` (`^3.4.11`) làm dependency trực tiếp trong `package.json` — trước đó chỉ tồn
+  tại gián tiếp qua `optionalDependencies` của `jspdf`, rủi ro biến mất nếu `jspdf` đổi phiên
+  bản. Không phát sinh vulnerability mới (`npm audit` vẫn chỉ 3 lỗi cũ, không liên quan:
+  `@babel/core`, `@grpc/grpc-js`, `xlsx`).
+- Helper `sanitizeTicketHtml()` trong `StickerPrintPreview.tsx`: bọc `DOMPurify.sanitize()`
+  với `ALLOWED_TAGS: ['b','i','u','strong','em','span','br']`, `ALLOWED_ATTR: ['style']` —
+  khớp đúng những gì toolbar rich-text (bold/italic/underline qua `execCommand`, font-size/
+  font-family qua `applyStyleToSelection` bọc `<span style="...">`) thực sự tạo ra.
+
+### Fixed
+
+- **Stored XSS thật** (đã ghi nhận trong `SECURITY.md` từ 2026-07-05, chưa vá lúc đó vì ngoài
+  phạm vi task viết docs): 6 chỗ `dangerouslySetInnerHTML` render
+  `activeFirstTicket.title/contentTop/contentTopRight/contentBottom/contentBottomRight/footer`
+  không sanitize. Nội dung này do nhân viên tự nhập, lưu vào Firestore
+  `stores/{storeId}/savedLists` dùng chung cho cả kho — 1 nhân viên có thể chèn script độc
+  hại ảnh hưởng đồng nghiệp khác khi họ mở lại danh sách đã lưu.
+
+### Verify
+
+- `tsc --noEmit`, `npx eslint features/sticker-event/`: sạch.
+- `npm run build`: thành công (chunk `StickerPrinterView` tăng ~28KB do bundle dompurify,
+  chunk `purify.es-*.js` cũ từ jspdf không còn tách riêng — đã dedupe vào cùng 1 bản).
+- Playwright: load tab `tools-print-sticker` — 0 console error.
+
+## 2026-07-06 — Giảm `any`: xử lý xong toàn bộ 34 chỗ `catch (x: any)`
+
+### Added
+
+- 3 helper mới trong `utils/dataUtils.ts` (shared cross-zone theo RULES.md §2.5):
+  `getErrorMessage(error: unknown): string`, `getErrorCode(error: unknown): string | undefined`
+  (đọc field `code` kiểu FirebaseError mà không cần `any`), `isAbortError(error: unknown)`
+  (không dùng `instanceof Error` vì `DOMException` — lỗi thật của `navigator.share()` — không
+  kế thừa từ `Error` trong TS `lib.dom`).
+- `AuthErrorLike` (local interface trong `features/sticker-event/Login.tsx`): file này vừa
+  bắt `FirebaseError` thật vừa tự `throw { code, message }` (object thường, không phải
+  `Error`), nên cần 1 type hẹp riêng thay vì `any`.
+
+### Fixed
+
+- **34/34 chỗ `catch (x: any)`** trên toàn dự án (cả 4 khu vực) chuyển sang `catch (x: unknown)`
+  + truy cập `.message`/`.code`/`.name` qua helper thay vì trực tiếp — an toàn hơn `any` (bắt
+  buộc kiểm tra kiểu trước khi đọc property) mà không đổi hành vi runtime. Danh sách file:
+  `Login.tsx` (7), `useStickerEventDb.ts` (3), `SuperAdminModal.tsx` (2),
+  `ChangePasswordModal.tsx` (1, dùng `FirebaseError` từ `firebase/app` để narrow chính xác),
+  4 bản `uiService.ts` (gốc + bi-dashboard + phan-ca + sticker-event, cùng 1 chỗ `shareBlob`),
+  `PhanCaView.tsx` (2), `AiSuggestPatternModal.tsx` (1), `CompetitionTab.tsx` (1),
+  `analytics.worker.ts` (1), `UncollectedOrdersModal.tsx`/`UnshippedOrdersModal.tsx` (2 mỗi
+  file), `LoginView.tsx` (1), `UserManagementView.tsx` (1), `useExportLogic.ts` (1),
+  `useCloudSync.ts` (1), `useDataManagement.ts` (3), `dataService.ts` (1).
+
+### Verify
+
+- `tsc --noEmit`, `npx eslint .`, `npm run build`: sạch (0 lỗi mới).
+- Tổng số lần dùng `any` trong dự án: 608 → 575 (giảm 33; còn lại thuộc 3 nhóm khác chưa xử
+  lý: `as any` ~113, `: any[]` ~99, `(param: any)` ~192 — quy mô lớn hơn nhiều, cần nhiều đợt
+  tiếp theo, mỗi chỗ cần xem ngữ cảnh cụ thể để gán đúng type thay vì tìm-thay hàng loạt).

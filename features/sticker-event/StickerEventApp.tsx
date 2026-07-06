@@ -27,7 +27,7 @@ import SuperAdminModal from './SuperAdminModal';
 import UserGuideModal from './UserGuideModal';
 import { Info } from 'lucide-react';
 import { auth } from './firebase';
-import { exportElementAsImage, downloadBlob, showExportOverlay, hideExportOverlay } from '../../services/uiService';
+import { exportElementAsImage, downloadBlob, showExportOverlay, hideExportOverlay } from './services/uiService';
 
 // Custom Hooks
 import { useStickerEventAuth } from './hooks/useStickerEventAuth';

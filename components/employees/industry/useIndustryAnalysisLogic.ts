@@ -35,7 +35,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                 ? groupToSortKeyMap[firstGroup] 
                 : 'percentBaoHiem';
             
-            setSortConfig({ key: defaultSortKey as any, direction: 'desc' });
+            setSortConfig({ key: defaultSortKey, direction: 'desc' });
             
             setInitialGroupsLoaded(true);
         });
@@ -58,7 +58,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             ? groupToSortKeyMap[firstVisibleGroup] 
             : 'percentBaoHiem';
             
-        setSortConfig({ key: defaultSortKey as any, direction: 'desc' });
+        setSortConfig({ key: defaultSortKey, direction: 'desc' });
     }, [viewMode]);
 
     const dynamicQuickFilters = useMemo(() => {
@@ -99,7 +99,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
                             if (!isStandard) {
                                 finalKey = `val_${key}_${c.id}`;
                             }
-                            return { label: c.name.toUpperCase(), key: finalKey as any, originalColId: c.id, originalType: c.type };
+                            return { label: c.name.toUpperCase(), key: finalKey, originalColId: c.id, originalType: c.type };
                         });
                 } else {
                     baseGroups[key].subHeaders = detailHeaderGroups[key].subHeaders;
@@ -403,8 +403,8 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             }
             
             const key = sortConfig.key as keyof typeof a;
-            const valA = (a as any)[key] ?? 0;
-            const valB = (b as any)[key] ?? 0;
+            const valA = a[key] ?? 0;
+            const valB = b[key] ?? 0;
 
             if (typeof valA === 'number' && typeof valB === 'number') {
                 const result = sortConfig.direction === 'asc' ? valA - valB : valB - valA;
@@ -453,13 +453,13 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
             
             const t = items.reduce((acc, item) => {
                 Object.keys(initialTotals).forEach((key) => {
-                    const value = (item as any)[key];
+                    const value = (item as Record<string, unknown>)[key];
                     if (typeof value === 'number') {
-                        (acc as any)[key] += value;
+                        acc[key] += value;
                     }
                 });
                 return acc;
-            }, { ...initialTotals });
+            }, { ...initialTotals } as Record<string, number>);
             
             const hieuQuaQD = t.doanhThuThuc > 0 ? (t.doanhThuQD - t.doanhThuThuc) / t.doanhThuThuc * 100 : 0;
             const slSPChinh_Tong = t.slICT + t.slCE_main + t.slGiaDung_main;
@@ -526,7 +526,7 @@ export const useIndustryAnalysisLogic = (data: ExploitationData[], baseFilteredD
     const handleSort = (key: string) => {
         let direction: 'asc' | 'desc' = 'desc';
         if (sortConfig.key === key && sortConfig.direction === 'desc') { direction = 'asc'; }
-        setSortConfig({ key: key as any, direction });
+        setSortConfig({ key, direction });
     };
 
     return {

@@ -10,7 +10,7 @@ import * as db from '../utils/db';
 import { parseNumber, shortenName, shortenSupermarketName } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { Button } from '../../../components/shared/ui/Button';
-import { parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../../../services/parsers/employeeParser';
+import { parseSimpleDepartments, parseCompetitions, parseBaseTargetsMap } from '../services/employeeParser';
 
 type UpdateCategory = 'BC Tổng hợp' | 'Thi Đua Cụm' | 'Thiết lập và cập nhật dữ liệu cho siêu thị';
 type Competition = { name: string; criteria: string };

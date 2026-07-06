@@ -7,7 +7,7 @@ import { applyFiltersAndProcess, deduplicateSalesData } from '../services/filter
 import { useAuth } from '../contexts/AuthContext';
 import { DEFAULT_KPI_CARDS, COL, HINH_THUC_XUAT_THU_HO } from '../constants';
 import toast from 'react-hot-toast';
-import { normalizeSalesData, getParentGroup, getRowValue, wrapProductConfigWithProxies, cleanAndNormalize, unwrapProductConfigProxies } from '../utils/dataUtils';
+import { normalizeSalesData, getParentGroup, getRowValue, wrapProductConfigWithProxies, cleanAndNormalize, unwrapProductConfigProxies, getErrorMessage } from '../utils/dataUtils';
 
 interface DataManagementProps {
     filterState: FilterState;
@@ -240,12 +240,12 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                             if (forcePushLight) {
                                 window.dispatchEvent(new CustomEvent('ycx-setting-changed', { detail: { key: 'force_push_override' } }));
                             }
-                        } catch (e: any) {
-                            const errMsg = (e?.message || '').toLowerCase();
+                        } catch (e: unknown) {
+                            const errMsg = getErrorMessage(e).toLowerCase();
                             if (errMsg.includes('failed to fetch') || errMsg.includes('network') || errMsg.includes('offline')) {
                                 console.info("☁️ Đồng bộ cài đặt bỏ qua: không có kết nối mạng.");
                             } else {
-                                console.warn("⚠️ Đồng bộ cài đặt thất bại (không ảnh hưởng app):", e?.message || e);
+                                console.warn("⚠️ Đồng bộ cài đặt thất bại (không ảnh hưởng app):", getErrorMessage(e));
                             }
                         }
                     });
@@ -290,12 +290,12 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
                                     }
                                 }
                             }
-                        } catch (e: any) {
-                            const errMsg = (e?.message || '').toLowerCase();
+                        } catch (e: unknown) {
+                            const errMsg = getErrorMessage(e).toLowerCase();
                             if (errMsg.includes('failed to fetch') || errMsg.includes('network') || errMsg.includes('offline')) {
                                 console.info("☁️ Đồng bộ dữ liệu bỏ qua: không có kết nối mạng.");
                             } else {
-                                console.warn("⚠️ Đồng bộ dữ liệu thất bại (không ảnh hưởng app):", e?.message || e);
+                                console.warn("⚠️ Đồng bộ dữ liệu thất bại (không ảnh hưởng app):", getErrorMessage(e));
                             }
                         }
                     });
@@ -845,9 +845,9 @@ export const useDataManagement = ({ filterState, configUrl, isDeduplicationEnabl
             setAppState('processing');
             setOriginalData(srcData);
             await refreshRegistry();
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error('Lỗi khi nạp dữ liệu từ đám mây:', e);
-            setStatus({ message: `⚠️ Lỗi nạp dữ liệu đám mây: ${e.message}. Dữ liệu trên máy không bị ảnh hưởng.`, type: 'error', progress: 0 });
+            setStatus({ message: `⚠️ Lỗi nạp dữ liệu đám mây: ${getErrorMessage(e)}. Dữ liệu trên máy không bị ảnh hưởng.`, type: 'error', progress: 0 });
             setAppState('dashboard');
         }
     };

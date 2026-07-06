@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { User } from 'firebase/auth';
+import { getErrorMessage } from '../../../utils/dataUtils';
 import { collection, query, where, getDocs, limit, doc, getDoc } from 'firebase/firestore';
 import { db } from '../firebase';
 import { Product, InventoryItem } from '../types';
@@ -94,7 +95,7 @@ export function useStickerEventDb({
               try {
                   adminCheckSnapshot = await getDocs(q);
                   break;
-              } catch (err: any) {
+              } catch (err: unknown) {
                   console.warn(`Lỗi kiểm tra admin (còn ${retries - 1} lần thử):`, err);
                   retries--;
                   if (retries === 0) throw err;
@@ -122,7 +123,7 @@ export function useStickerEventDb({
           try {
               syncMetaSnap = await getDoc(syncMetaRef);
               break;
-          } catch (err: any) {
+          } catch (err: unknown) {
               console.warn(`Lỗi tải metadata (còn ${retries - 1} lần thử):`, err);
               retries--;
               if (retries === 0) throw err;
@@ -208,11 +209,12 @@ export function useStickerEventDb({
         console.error('Error loading manual products:', err);
       }
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error loading from Firestore:", err);
       let displayError = "Lỗi tải dữ liệu từ server. Vui lòng kiểm tra kết nối mạng hoặc quyền truy cập.";
+      const errMessage = getErrorMessage(err);
       try {
-        const errObj = JSON.parse(err.message);
+        const errObj = JSON.parse(errMessage);
         if (errObj.error) {
           displayError = `Lỗi hệ thống: ${errObj.error}`;
           if (errObj.error.includes('insufficient permissions')) {
@@ -221,8 +223,8 @@ export function useStickerEventDb({
             displayError = "Hệ thống đã hết hạn mức truy cập miễn phí trong ngày. Vui lòng quay lại vào ngày mai hoặc nâng cấp gói dịch vụ.";
           }
         }
-      } catch (e) {
-        if (err.message) displayError = err.message;
+      } catch {
+        if (errMessage) displayError = errMessage;
       }
       setError(displayError);
     } finally {

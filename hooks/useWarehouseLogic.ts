@@ -191,10 +191,10 @@ export const useWarehouseLogic = ({
              if (!row) return 0;
              const targetCol = columns.find(c => c.id === colId);
              if (!targetCol) return 0;
-             if (targetCol.metric) return (row as any)[targetCol.metric] || 0;
-             
+             if (targetCol.metric) return row[targetCol.metric] || 0;
+
              if (targetCol.categoryType && (targetCol.categoryName || targetCol.productCodes) && targetCol.metricType) {
-                const metrics = (row as any).metrics;
+                const metrics = row.metrics;
                 if (!metrics) return 0;
                 if (targetCol.productCodes && targetCol.productCodes.length > 0) {
                     if (!metrics.byProduct) return 0;
@@ -258,15 +258,15 @@ export const useWarehouseLogic = ({
     }, [data, columns, baseCustomData]);
 
     const getColumnValue = (row: WarehouseSummaryRow | Partial<WarehouseSummaryRow>, column: WarehouseColumnConfig): number | undefined => {
-        if (column.metric) return (row as any)[column.metric];
-        
+        if (column.metric) return row[column.metric];
+
         if (column.isCustom && row.khoName) {
             const mappedVal = customProductColumnValues.get(column.id)?.get(String(row.khoName));
             if (mappedVal !== undefined) return mappedVal;
         }
 
         if (column.categoryType && (column.categoryName || column.productCodes) && column.metricType) {
-            const metrics = (row as any).metrics;
+            const metrics = row.metrics;
             if (!metrics) return 0;
 
             if (column.productCodes && column.productCodes.length > 0) {
@@ -412,15 +412,15 @@ export const useWarehouseLogic = ({
         }, initialTotals);
 
         if (coreTotals.doanhThuThuc) {
-            (coreTotals as any).hieuQuaQD = (coreTotals.doanhThuThuc || 0) > 0 ? (((coreTotals.doanhThuQD || 0) - (coreTotals.doanhThuThuc || 0)) / (coreTotals.doanhThuThuc || 1)) * 100 : 0;
-            (coreTotals as any).traChamPercent = (coreTotals.doanhThuThuc || 0) > 0 ? (((coreTotals.doanhThuTraCham || 0)) / (coreTotals.doanhThuThuc || 1)) * 100 : 0;
+            coreTotals.hieuQuaQD = (coreTotals.doanhThuThuc || 0) > 0 ? (((coreTotals.doanhThuQD || 0) - (coreTotals.doanhThuThuc || 0)) / (coreTotals.doanhThuThuc || 1)) * 100 : 0;
+            coreTotals.traChamPercent = (coreTotals.doanhThuThuc || 0) > 0 ? (((coreTotals.doanhThuTraCham || 0)) / (coreTotals.doanhThuThuc || 1)) * 100 : 0;
         }
 
         // Second pass: Calculate dynamically for 'calculated' columns
         const getDynamicTotal = (colId: string): number => {
             if (customTotalsMap.has(colId)) return customTotalsMap.get(colId)!;
             const targetCol = columns.find(c => c.id === colId);
-            if (targetCol && targetCol.metric) return (coreTotals as any)[targetCol.metric] || 0;
+            if (targetCol && targetCol.metric) return coreTotals[targetCol.metric] || 0;
             return 0;
         };
 

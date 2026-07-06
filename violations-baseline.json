@@ -898,5 +898,20 @@
     "nonSemanticColor": 0,
     "missingDarkVariant": 1,
     "missingMobileToolbar": 0
+  },
+  "features/bi-dashboard/services/uiService.ts": {
+    "nonSemanticColor": 0,
+    "missingDarkVariant": 1,
+    "missingMobileToolbar": 0
+  },
+  "features/phan-ca/services/uiService.ts": {
+    "nonSemanticColor": 0,
+    "missingDarkVariant": 1,
+    "missingMobileToolbar": 0
+  },
+  "features/sticker-event/services/uiService.ts": {
+    "nonSemanticColor": 0,
+    "missingDarkVariant": 1,
+    "missingMobileToolbar": 0
   }
 }

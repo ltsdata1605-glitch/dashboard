@@ -8,6 +8,14 @@ interface LoginProps {
   onLoginSuccess: (user: User, userData: any) => void;
 }
 
+// Firebase Auth ném FirebaseError (code + message), nhưng code trong file này cũng tự throw
+// object thường { code, message } (không phải instance Error thật) — dùng chung 1 shape lỏng
+// thay vì catch (e: any) để vẫn giữ được .code/.message nhưng hẹp hơn any.
+interface AuthErrorLike {
+  code?: string;
+  message?: string;
+}
+
 const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
@@ -36,13 +44,13 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
           let userDoc;
           let retries = 3;
-          let lastError;
+          let lastError: unknown;
 
           while (retries > 0) {
             try {
               userDoc = await getDoc(doc(db, 'users', user.uid));
               break; // Success
-            } catch (err: any) {
+            } catch (err: unknown) {
               console.warn(`Lỗi tải dữ liệu người dùng (còn ${retries - 1} lần thử):`, err);
               lastError = err;
               retries--;
@@ -68,10 +76,11 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             await signOut(auth);
             setLoading(false);
           }
-        } catch (err: any) {
+        } catch (err: unknown) {
           console.error("Lỗi kết nối Firestore:", err);
-          const errMsg = err.message || "";
-          const errCode = err.code || "";
+          const authErr = err as AuthErrorLike;
+          const errMsg = authErr.message || "";
+          const errCode = authErr.code || "";
           
           if (errMsg.includes("permissions") || errMsg.includes("Quyền") || errCode === 'permission-denied') {
              setError('Lỗi phân quyền. Vui lòng tải lại trang (F5) hoặc liên hệ Admin.');
@@ -115,11 +124,12 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         // Login Logic
         try {
           await signInWithEmailAndPassword(auth, email, finalPassword);
-        } catch (loginErr: any) {
-          if (loginErr.code === 'auth/invalid-credential' || loginErr.code === 'auth/user-not-found') {
-            throw { 
-              code: 'auth/invalid-credential', 
-              message: 'Tên đăng nhập hoặc mật khẩu không đúng.' 
+        } catch (loginErr: unknown) {
+          const code = (loginErr as AuthErrorLike).code;
+          if (code === 'auth/invalid-credential' || code === 'auth/user-not-found') {
+            throw {
+              code: 'auth/invalid-credential',
+              message: 'Tên đăng nhập hoặc mật khẩu không đúng.'
             };
           }
           throw loginErr;
@@ -166,17 +176,17 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
             try {
                 const userCredential = await createUserWithEmailAndPassword(auth, email, finalPassword);
                 user = userCredential.user;
-            } catch (regErr: any) {
-                if (regErr.code === 'auth/email-already-in-use') {
+            } catch (regErr: unknown) {
+                if ((regErr as AuthErrorLike).code === 'auth/email-already-in-use') {
                     // If email exists, try to login to update the profile (allows updating storeId)
                     try {
                         const userCredential = await signInWithEmailAndPassword(auth, email, finalPassword);
                         user = userCredential.user;
-                    } catch (loginErr: any) {
+                    } catch {
                         // If login fails, it means password was wrong or some other issue
-                        throw { 
-                            code: 'auth/email-already-in-use', 
-                            message: 'Tên đăng nhập này đã được sử dụng. Nếu bạn muốn cập nhật mã kho, vui lòng nhập đúng mật khẩu cũ.' 
+                        throw {
+                            code: 'auth/email-already-in-use',
+                            message: 'Tên đăng nhập này đã được sử dụng. Nếu bạn muốn cập nhật mã kho, vui lòng nhập đúng mật khẩu cũ.'
                         };
                     }
                 } else {
@@ -195,32 +205,33 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                   createdAt: new Date()
                 }, { merge: true });
             }
-        } catch (regErr: any) {
+        } catch (regErr: unknown) {
             throw regErr;
         }
       }
       setLoading(false);
-    } catch (err: any) {
-      console.error("Auth Error Details:", err.code, err.message);
-      
-      if (err.code === 'auth/email-already-in-use') {
-        setError(err.message || 'Tên đăng nhập này đã được sử dụng. Vui lòng thử Đăng nhập.');
-      } else if (err.code === 'auth/invalid-email') {
+    } catch (err: unknown) {
+      const authErr = err as AuthErrorLike;
+      console.error("Auth Error Details:", authErr.code, authErr.message);
+
+      if (authErr.code === 'auth/email-already-in-use') {
+        setError(authErr.message || 'Tên đăng nhập này đã được sử dụng. Vui lòng thử Đăng nhập.');
+      } else if (authErr.code === 'auth/invalid-email') {
         setError('Tên đăng nhập không hợp lệ.');
-      } else if (err.code === 'auth/weak-password') {
+      } else if (authErr.code === 'auth/weak-password') {
         setError('Mật khẩu không hợp lệ.');
-      } else if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+      } else if (authErr.code === 'auth/invalid-credential' || authErr.code === 'auth/user-not-found' || authErr.code === 'auth/wrong-password') {
         if (isLogin) {
             setError('Tên đăng nhập hoặc mật khẩu không đúng. Nếu bạn chưa có tài khoản hoặc vừa xóa dữ liệu, vui lòng chọn "Đăng ký" bên dưới.');
         } else {
             setError('Thông tin đăng ký không hợp lệ.');
         }
-      } else if (err.code === 'auth/operation-not-allowed') {
+      } else if (authErr.code === 'auth/operation-not-allowed') {
         setError('Lỗi hệ thống: Đăng nhập bằng Email/Password chưa được bật trong Firebase Console.');
-      } else if (err.code === 'auth/network-request-failed') {
+      } else if (authErr.code === 'auth/network-request-failed') {
         setError('Lỗi kết nối mạng. Vui lòng kiểm tra internet.');
       } else {
-        setError('Lỗi: ' + (err.message || 'Vui lòng thử lại sau.'));
+        setError('Lỗi: ' + (authErr.message || 'Vui lòng thử lại sau.'));
       }
       setLoading(false);
     }

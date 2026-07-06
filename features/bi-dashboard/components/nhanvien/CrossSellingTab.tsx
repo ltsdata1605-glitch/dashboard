@@ -7,7 +7,7 @@ import { CrossSellingRow } from '../../types/nhanVienTypes';
 import { getYesterdayDateString, parseCrossSellingData } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { ClockIcon, XIcon, ViewGridIcon, ViewListIcon, SpinnerIcon, DownloadIcon, DownloadAllIcon, UsersIcon, UploadIcon } from '../Icons';
-import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { Button } from '../../../../components/shared/ui/Button';
 import { MedalBadge, DeltaBadge } from '../shared/Badges';
 import AvatarDisplay from './shared/AvatarDisplay';

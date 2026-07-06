@@ -5,6 +5,7 @@ import { getAllSettings, getSetting, saveSettingFromCloud } from '../services/db
 import { doc, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../services/firebase';
 import toast from 'react-hot-toast';
+import { getErrorMessage, getErrorCode } from '../utils/dataUtils';
 
 type SyncState = 'idle' | 'syncing' | 'synced' | 'error';
 
@@ -85,11 +86,11 @@ export const useCloudSync = () => {
             timeoutRef.current = setTimeout(() => {
                 setSyncState('idle');
             }, 5000);
-        } catch (err: any) {
+        } catch (err: unknown) {
             setSyncState('error');
-            const errMsg = (err?.message || '').toLowerCase();
-            const errCode = err?.code || '';
-            setLastError(err?.message || 'Đồng bộ dữ liệu thất bại. Lỗi mạng hoặc hết phiên.');
+            const errMsg = getErrorMessage(err).toLowerCase();
+            const errCode = getErrorCode(err) || '';
+            setLastError(getErrorMessage(err) || 'Đồng bộ dữ liệu thất bại. Lỗi mạng hoặc hết phiên.');
             
             if (errCode === 'resource-exhausted' || errMsg.includes('quota') || errMsg.includes('429')) {
                 toast('⏳ Đã lưu cài đặt vào máy. Đồng bộ lên đám mây sẽ tự động thử lại sau.', { 

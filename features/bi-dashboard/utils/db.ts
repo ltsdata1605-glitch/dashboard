@@ -6,7 +6,7 @@
 // Trước đây: ClusterDataDB / FormDataStore (chỉ lưu cục bộ, KHÔNG đồng bộ)
 // Bây giờ:   BI_HUB_DATABASE_V2 / settings (đồng bộ lên Firebase qua event ycx-setting-changed)
 
-import { getDb } from '../../../services/dbService';
+import { getDb } from '../services/dbService';
 
 const SETTINGS_STORE = 'settings';
 

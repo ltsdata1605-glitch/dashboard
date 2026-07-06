@@ -1,5 +1,5 @@
 import type { DataRow, ProductConfig, Status } from '../types';
-import { getRowValue, parseExcelDate, toLocalISOString, cleanAndNormalize } from '../utils/dataUtils';
+import { getRowValue, parseExcelDate, toLocalISOString, cleanAndNormalize, getErrorMessage } from '../utils/dataUtils';
 import { COL, DEFAULT_QUANTITY_MULTIPLIER_MAP } from '../constants';
 
 type StatusUpdater = (status: Status) => void;
@@ -510,8 +510,9 @@ export async function processSalesFile(file: File, enableDeduplication: boolean,
         try {
             // Use dense mode for memory efficiency
             workbook = XLSX.read(data, { type: 'array', cellDates: true, dense: true });
-        } catch (err: any) {
-            if (err?.message?.includes('Invalid HTML') || err?.message?.includes('find <table>')) {
+        } catch (err: unknown) {
+            const errMsg = getErrorMessage(err);
+            if (errMsg.includes('Invalid HTML') || errMsg.includes('find <table>')) {
                 throw new Error("File bị lỗi cấu trúc (File HTML bị đổi đuôi xanh .xlsx). Vui lòng đảm bảo bạn đang tải lên file Excel (.xlsx) chuẩn từ hệ thống.");
             }
             throw err;

@@ -6,7 +6,7 @@ import { CompetitionHeader, Employee } from '../../types/nhanVienTypes';
 import { roundUp, shortenName } from '../../utils/nhanVienHelpers';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
 import { Button } from '../../../../components/shared/ui/Button';
-import { exportElementAsImage } from '../../../../services/uiService';
+import { exportElementAsImage } from '../../services/uiService';
 
 interface CompetitionGroupCardProps {
     header: CompetitionHeader;

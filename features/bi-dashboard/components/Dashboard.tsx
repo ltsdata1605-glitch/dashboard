@@ -12,10 +12,10 @@ import IndustryView from './dashboard/IndustryView';
 import DashboardHeader from './dashboard/DashboardHeader';
 import KpiOverview from './dashboard/KpiOverview';
 import * as db from '../utils/db';
-import { useExportOptions } from '../../../hooks/useExportOptions';
+import { useExportOptions } from '../hooks/useExportOptions';
 import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
-import { exportElementAsImage, downloadBlob, shareBlob } from '../../../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../services/uiService';
 import { Button } from '../../../components/shared/ui/Button';
 
 interface DashboardProps {

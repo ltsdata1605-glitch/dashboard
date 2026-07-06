@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, Suspense, lazy } from 'react';
 import { createPortal } from 'react-dom';
 import { CheckCircle2, Package } from 'lucide-react';
 import { useActiveTab } from '../../contexts/LayoutContext';
-import { saveSetting, getSetting } from '../../services/dbService';
+import { saveSetting, getSetting } from './services/dbService';
 import toast from 'react-hot-toast';
 
 import { StickerPage, SavedStickerList, PrintHistoryEntry, BatchItem, TicketDrawData } from './stickerprinter/types';

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { auth } from './firebase';
 import { updatePassword } from 'firebase/auth';
+import { FirebaseError } from 'firebase/app';
 import { XIcon, ShieldIcon } from './Icons';
 import { Button } from '../../components/shared/ui/Button';
 
@@ -45,12 +46,12 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
             setTimeout(() => {
                 onClose();
             }, 2000);
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error("Error updating password:", err);
-            if (err.code === 'auth/requires-recent-login') {
+            if (err instanceof FirebaseError && err.code === 'auth/requires-recent-login') {
                 setError("Vui lòng đăng xuất và đăng nhập lại trước khi đổi mật khẩu để đảm bảo bảo mật.");
             } else {
-                setError("Lỗi khi đổi mật khẩu: " + err.message);
+                setError("Lỗi khi đổi mật khẩu: " + (err instanceof Error ? err.message : String(err)));
             }
         } finally {
             setIsLoading(false);

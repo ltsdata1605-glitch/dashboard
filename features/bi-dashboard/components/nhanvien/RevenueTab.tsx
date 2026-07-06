@@ -20,7 +20,7 @@ import { RevenueMobileCard } from './revenue/RevenueMobileCard';
 import { RevenueDesktopRow } from './revenue/RevenueDesktopRow';
 import { useRevenueData } from '../../hooks/useRevenueData';
 import { Button } from '../../../../components/shared/ui/Button';
-import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 
 
 

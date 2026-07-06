@@ -3,7 +3,7 @@ import type { WorkBook } from 'xlsx';
 import type { StaffMember } from '../types';
 import { abbreviateVietnameseName } from './stringUtils';
 
-import { exportElementAsImage } from '../../../services/uiService';
+import { exportElementAsImage } from '../services/uiService';
 
 export const exportToExcel = async (tableRef: RefObject<HTMLTableElement>) => {
     if (tableRef.current) {

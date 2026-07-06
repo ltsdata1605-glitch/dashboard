@@ -4,6 +4,7 @@ import React, { useState, useCallback, useMemo } from 'react';
 import { DailyRequirements, StaffInitialData } from '../types';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';
+import { getErrorMessage } from '../../../utils/dataUtils';
 
 interface AiSuggestPatternModalProps {
   onClose: () => void;
@@ -202,9 +203,9 @@ Hãy trả về kết quả dưới dạng JSON với định dạng sau:
                 throw new Error("Định dạng phản hồi của AI không chính xác. Vui lòng thử lại.");
             }
 
-        } catch (e: any) {
+        } catch (e: unknown) {
             console.error(e);
-            setError(`Đã có lỗi xảy ra: ${e.message || 'Không thể tạo gợi ý.'}`);
+            setError(`Đã có lỗi xảy ra: ${getErrorMessage(e) || 'Không thể tạo gợi ý.'}`);
         } finally {
             setIsLoading(false);
         }

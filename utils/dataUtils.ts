@@ -585,3 +585,36 @@ export function calculateRowMetrics(row: DataRow, productConfig: ProductConfig |
     
     return { revenue, revenueQD, quantity, weightedQuantity, isTraCham };
 }
+
+/** Lấy message an toàn từ 1 giá trị catch (error: unknown), không giả định error là Error. */
+export function getErrorMessage(error: unknown): string {
+    if (error instanceof Error) return error.message;
+    if (typeof error === 'string') return error;
+    try {
+        return String(error);
+    } catch {
+        return 'Unknown error';
+    }
+}
+
+/**
+ * Lấy field `code` an toàn từ 1 giá trị catch (error: unknown) — dùng cho lỗi kiểu
+ * FirebaseError (`error.code`, VD 'auth/popup-blocked', 'permission-denied') mà không cần
+ * `any`. Trả về undefined nếu error không có field `code` dạng string.
+ */
+export function getErrorCode(error: unknown): string | undefined {
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+        const code = (error as { code?: unknown }).code;
+        return typeof code === 'string' ? code : undefined;
+    }
+    return undefined;
+}
+
+/**
+ * Kiểm tra 1 giá trị catch (error: unknown) có phải AbortError không (VD: user huỷ
+ * navigator.share()). Không dùng `instanceof Error` vì DOMException (loại lỗi thật của
+ * navigator.share()/AbortController) không kế thừa từ Error trong TS lib.dom.
+ */
+export function isAbortError(error: unknown): boolean {
+    return typeof error === 'object' && error !== null && (error as { name?: unknown }).name === 'AbortError';
+}

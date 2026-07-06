@@ -7,7 +7,7 @@ import { Employee, Criterion, CompetitionHeader, RevenueRow } from '../../types/
 import { roundUp, shortenName, getYesterdayDateString } from '../../utils/nhanVienHelpers';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';
-import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { PieChart, Pie, Cell } from 'recharts';
 
 const ProgressBar: React.FC<{ value: number }> = ({ value }) => {

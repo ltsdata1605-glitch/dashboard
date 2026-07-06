@@ -254,6 +254,35 @@ Rủi ro: 4 module cố ý cách ly nhau (không được gộp state/filter cro
 - [ ] Tối ưu import/export.
 - [ ] Tối ưu bundle nếu cần.
 - [ ] Kiểm tra console warning/error.
+- [x] **Quality audit (quality-master) + fix zone-isolation (2026-07-05)**: chạy `npx eslint .`
+      phát hiện `npm run check` chưa từng chạy eslint → 31 lỗi `import/no-restricted-paths`
+      (RULES.md §2.0) lọt qua nhiều lần + 1 bug thật (`useMemo` gọi sau `return null` có điều
+      kiện ở `KpiCards.tsx`, vi phạm Rules of Hooks). Đã: (1) fix bug hook, (2) thêm
+      `lint:eslint` vào `npm run check` để chặn tái diễn, (3) tạo service zone-local cho cả 3
+      feature (`uiService`/`dbService`/`metricService`/`employeeParser` cho bi-dashboard;
+      `uiService`/`googleSheetsService`/`firebase`/`firestoreSync` cho phan-ca — Firebase App
+      riêng tên `phanca` cùng project; `uiService`/`dbService` cho sticker-event), move 2 file
+      chỉ bi-dashboard dùng (`employeeParser.ts`, `useExportOptions.ts`) từ root sang. Giữ
+      nguyên `DB_NAME`/store/event để không đổi hành vi/dữ liệu. Verify: eslint 0 lỗi,
+      `npm run check` sạch, test thủ công qua Playwright cả 3 tab — 0 console error. Còn lại
+      (chưa làm lúc đó): 552 chỗ dùng `any` (136 file), 42 chỗ `div/span onClick` không
+      semantic, XSS chưa vá ở `StickerPrintPreview.tsx`.
+- [x] **Vá XSS thật ở StickerPrintPreview.tsx (2026-07-06)**: 6 chỗ `dangerouslySetInnerHTML`
+      render nội dung sticker nhân viên tự nhập (lưu Firestore `stores/{storeId}/savedLists`,
+      dùng chung cả kho) không sanitize → stored XSS. Đã thêm `dompurify` làm dependency trực
+      tiếp (trước chỉ là optional dep gián tiếp qua `jspdf`) + helper `sanitizeTicketHtml()`
+      với allowlist khớp đúng tag/attr toolbar rich-text thật sự tạo ra (`b/i/u/strong/em/span`
+      + `style`). Verify: tsc/eslint/build sạch, Playwright load tab In Sticker — 0 console
+      error. Xem chi tiết `SECURITY.md`/`CHANGELOG.md`. Còn lại: 552 chỗ `any`, 42 chỗ
+      `div/span onClick` không semantic.
+- [x] **Giảm `any` — nhóm 1/4: toàn bộ 34 chỗ `catch (x: any)` (2026-07-06)**: thêm
+      `getErrorMessage`/`getErrorCode`/`isAbortError` vào `utils/dataUtils.ts` (shared), sửa
+      34/34 catch block trên cả 4 khu vực sang `catch (x: unknown)` + đọc lỗi qua helper thay
+      vì `.message`/`.code` trực tiếp. Verify: tsc/eslint/build sạch. Any: 608 → 575. Xem chi
+      tiết `CHANGELOG.md`.
+      **Còn lại (3 nhóm, quy mô lớn hơn nhiều, chưa làm)**: `as any` (~113 chỗ), `: any[]`
+      (~99 chỗ), `(param: any)` (~192 chỗ) — mỗi chỗ cần xem ngữ cảnh riêng để gán đúng type,
+      không thể tìm-thay hàng loạt an toàn. 42 chỗ `div/span onClick` cũng chưa làm.
 
 ---
 

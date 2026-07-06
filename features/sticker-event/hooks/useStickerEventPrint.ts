@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Product } from '../types';
 import { PrintSettings, defaultModernPositions, ModernLayoutPositions, printPriceTags } from '../services/printService';
-import { getSetting, saveSetting } from '../../../services/dbService';
+import { getSetting, saveSetting } from '../services/dbService';
 
 interface UseStickerEventPrintProps {
   employeeName: string;

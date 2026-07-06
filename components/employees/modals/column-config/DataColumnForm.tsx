@@ -80,13 +80,13 @@ export const DataColumnForm: React.FC<DataColumnFormProps> = ({
                     </h5>
                     <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <div className="w-full sm:w-[160px]">
-                            <Select value={priceType} onChange={e => setPriceType(e.target.value as any)} className="h-8 sm:h-10 text-xs sm:text-sm">
+                            <Select value={priceType} onChange={e => setPriceType(e.target.value as 'original' | 'discounted')} className="h-8 sm:h-10 text-xs sm:text-sm">
                                 <option value="discounted">Giá bán (Khuyến mãi)</option>
                                 <option value="original">Giá niêm yết (Gốc)</option>
                             </Select>
                         </div>
                         <div className="w-full sm:w-[130px]">
-                            <Select value={priceCondition} onChange={e => setPriceCondition(e.target.value as any)} className="h-8 sm:h-10 text-xs sm:text-sm">
+                            <Select value={priceCondition} onChange={e => setPriceCondition(e.target.value as 'greater' | 'less' | 'equal' | 'between' | 'none')} className="h-8 sm:h-10 text-xs sm:text-sm">
                                 <option value="none" className="text-slate-500">Bỏ qua giá</option>
                                 <option value="greater">Lớn hơn - &gt;</option>
                                 <option value="less">Nhỏ hơn - &lt;</option>

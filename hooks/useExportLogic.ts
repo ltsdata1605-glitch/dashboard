@@ -5,7 +5,7 @@ import type { Employee, ProcessedData, ProductConfig, FilterState, PendingExport
 import { exportElementAsImage, downloadBlob, shareBlob, canShareFiles, showExportOverlay, updateExportOverlay, hideExportOverlay } from '../services/uiService';
 import type { ExportMode } from '../services/uiService';
 import { COL } from '../constants';
-import { getRowValue } from '../utils/dataUtils';
+import { getRowValue, getErrorMessage } from '../utils/dataUtils';
 
 interface ExportLogicProps {
     productConfig: ProductConfig | null;
@@ -301,10 +301,10 @@ Link: ${url}`;
                 }
             }, 10000); // 10s auto close
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Lỗi khi xuất google sheet:", error);
             toastEl.style.backgroundColor = '#dc2626';
-            toastEl.textContent = `❌ Lỗi: ${error?.message || 'Không thể xuất file'}`;
+            toastEl.textContent = `❌ Lỗi: ${getErrorMessage(error) || 'Không thể xuất file'}`;
             setTimeout(() => {
                 toastEl.style.opacity = '0';
                 setTimeout(() => toastEl.remove(), 200);

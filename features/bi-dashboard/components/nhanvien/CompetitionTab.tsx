@@ -10,9 +10,10 @@ import { IndividualCompetitionView, IndividualCompetitionViewHandle } from './In
 import CompetitionCompareView from './CompetitionCompareView';
 import CompetitionSummaryView from './CompetitionSummaryView';
 import { getYesterdayDateString, shortenName } from '../../utils/nhanVienHelpers';
+import { getErrorMessage } from '../../../../utils/dataUtils';
 import { Switch } from '../dashboard/DashboardWidgets';
 import { useIndexedDBState } from '../../hooks/useIndexedDBState';
-import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
 import { Button } from '../../../../components/shared/ui/Button';
 import TimeProgressBar from './shared/TimeProgressBar';
 
@@ -321,8 +322,8 @@ export const CompetitionTab: React.FC<CompetitionTabProps> = React.memo(({
                 setExportProgress(prev => ({ ...prev, current: prev.current + 1 }));
                 await new Promise(resolve => setTimeout(resolve, 300));
             }
-        } catch (error: any) {
-            if (error.message !== 'cancelled') {
+        } catch (error: unknown) {
+            if (getErrorMessage(error) !== 'cancelled') {
                 console.error("Batch export failed", error);
                 toast.error("Xuất hàng loạt thất bại.");
             }

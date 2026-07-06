@@ -6,7 +6,7 @@ import { SupermarketCompetitionData, Criterion, shortenName, shortenSupermarketN
 import CompetitionControlBar from './competition/CompetitionControlBar';
 import CompetitionGridView from './competition/CompetitionGridView';
 import CompetitionListView from './competition/CompetitionListView';
-import { exportElementAsImage } from '../../../../services/uiService';
+import { exportElementAsImage } from '../../services/uiService';
 import { CogIcon, FilterIcon } from '../Icons';
 import { Switch } from './DashboardWidgets';
 import { Button } from '../../../../components/shared/ui/Button';

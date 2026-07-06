@@ -1,4 +1,4 @@
-import { parseNumber, shortenSupermarketName } from '../../utils/dataUtils';
+import { parseNumber, shortenSupermarketName } from '../../../utils/dataUtils';
 
 export interface Employee {
     originalName: string;

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Icon } from '../common/Icon';
 import { Button } from '../shared/ui/Button';
+import { getErrorMessage, getErrorCode } from '../../utils/dataUtils';
 
 const LoginView: React.FC = () => {
     const { loginWithGoogle, setDemoMode, isLoading } = useAuth();
@@ -19,16 +20,17 @@ const LoginView: React.FC = () => {
             setError(null);
             setIsLoggingIn(true);
             await loginWithGoogle();
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            let errMsg = err.message || 'Có lỗi xảy ra khi đăng nhập';
-            
-            if (err.code === 'auth/unauthorized-domain') {
+            let errMsg = getErrorMessage(err) || 'Có lỗi xảy ra khi đăng nhập';
+            const errCode = getErrorCode(err);
+
+            if (errCode === 'auth/unauthorized-domain') {
                 const currentDomain = window.location.hostname;
                 errMsg = `Tên miền '${currentDomain}' chưa được cấp phép (unauthorized-domain). \n\nCách khắc phục: Anh/Chị vui lòng truy cập Firebase Console -> Authentication -> Settings -> Authorized Domains và thêm tên miền "${currentDomain}" vào danh sách.`;
-            } else if (err.code === 'auth/popup-blocked') {
+            } else if (errCode === 'auth/popup-blocked') {
                 errMsg = 'Cửa sổ đăng nhập Google bị trình duyệt chặn. Vui lòng kiểm tra lại thiết lập chặn cửa sổ bật lên (popup) trên trình duyệt của Anh/Chị.';
-            } else if (err.code === 'auth/operation-not-supported-in-this-environment') {
+            } else if (errCode === 'auth/operation-not-supported-in-this-environment') {
                 errMsg = 'Môi trường này không hỗ trợ cửa sổ đăng nhập. Hệ thống đang tự chuyển hướng sang phương thức đăng nhập khác, Anh/Chị vui lòng click lại nút Đăng nhập.';
             }
             

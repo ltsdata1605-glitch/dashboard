@@ -11,6 +11,7 @@ import {
     parseCompetitionData
 } from '../utils/nhanVienHelpers';
 import { parseDetailData } from '../utils/detailDataParser';
+import { getErrorMessage } from '../../../utils/dataUtils';
 
 self.onmessage = async (e: MessageEvent) => {
     const { id, type, payload } = e.data;
@@ -48,7 +49,7 @@ self.onmessage = async (e: MessageEvent) => {
                 throw new Error(`Unknown worker task type: ${type}`);
         }
         self.postMessage({ id, type: 'SUCCESS', result });
-    } catch (error: any) {
-        self.postMessage({ id, type: 'ERROR', error: error.message });
+    } catch (error: unknown) {
+        self.postMessage({ id, type: 'ERROR', error: getErrorMessage(error) });
     }
 };

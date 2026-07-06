@@ -37,17 +37,19 @@
   tĩnh); `headerMapping[h]` trong `IndustryView.tsx`/`SummaryTableView.tsx`/
   `CompetitionListView.tsx` (label cột bảng hardcode trong code, chỉ dùng để chèn `<br/>`
   xuống dòng, không nhận input từ người dùng).
-- **⚠️ RỦI RO THẬT — chưa sanitize**: `features/sticker-event/stickerprinter/StickerPrintPreview.tsx`
-  render `activeFirstTicket.title/contentTop/contentBottom/...` bằng `dangerouslySetInnerHTML`
-  KHÔNG qua sanitize. Nội dung này do nhân viên tự nhập/định dạng (bold/italic/underline qua
-  `document.execCommand`) trong `StickerManualQueue.tsx`/`StickerPrintControls.tsx`, và có
-  thể được lưu vào Firestore `stores/{storeId}/savedLists` — **tức là 1 nhân viên có thể lưu
-  nội dung sticker chứa HTML/script độc hại, và nhân viên KHÁC cùng kho xem/tải lại danh
-  sách đó sẽ bị thực thi** (stored XSS trong phạm vi 1 kho). Rủi ro thực tế thấp vì đây là
-  app nội bộ, người dùng là nhân viên đã đăng nhập (không phải public), nhưng vẫn là lỗ hổng
-  thật cần xử lý (thêm sanitize, VD dùng `dompurify` — đã có sẵn trong bundle qua dependency
-  khác, xem `dist/assets/purify.es-*.js`) khi có thời gian, chưa sửa trong lần audit tài
-  liệu này (ngoài phạm vi task viết docs).
+- **✅ ĐÃ VÁ (2026-07-06)**: `features/sticker-event/stickerprinter/StickerPrintPreview.tsx`
+  từng render `activeFirstTicket.title/contentTop/contentBottom/...` bằng
+  `dangerouslySetInnerHTML` KHÔNG qua sanitize. Nội dung này do nhân viên tự nhập/định dạng
+  (bold/italic/underline qua `document.execCommand`, font-size/font-family qua
+  `applyStyleToSelection` bọc `<span style="...">`) và được lưu vào Firestore
+  `stores/{storeId}/savedLists` — 1 nhân viên có thể lưu nội dung sticker chứa HTML/script
+  độc hại, nhân viên KHÁC cùng kho xem/tải lại danh sách đó sẽ bị thực thi (stored XSS trong
+  phạm vi 1 kho). Đã thêm `dompurify` làm dependency trực tiếp (`^3.4.11`, trước đó chỉ là
+  optional dependency gián tiếp của `jspdf`) và bọc cả 6 chỗ `dangerouslySetInnerHTML` qua
+  helper `sanitizeTicketHtml()` với allowlist `ALLOWED_TAGS: ['b','i','u','strong','em','span','br']`,
+  `ALLOWED_ATTR: ['style']` — khớp đúng những gì toolbar rich-text thực sự tạo ra, không rộng
+  hơn. Verify: `tsc --noEmit`/`eslint`/`npm run build` sạch, load thử tab In Sticker qua
+  Playwright — 0 console error.
 - **Dead code — không phải rủi ro đang hoạt động**: `features/bi-dashboard/components/MarkdownRenderer.tsx`
   render `dangerouslySetInnerHTML` hoàn toàn không sanitize, nhưng component này **không
   được import ở bất kỳ đâu khác trong codebase** (đã grep xác nhận) — an toàn ở hiện trạng,
@@ -149,6 +151,6 @@ Khi thêm package mới:
 - [ ] Input quan trọng được validate.
 - [ ] Phân quyền `role` chỉ dùng để quyết định UI (ẩn/hiện) — KHÔNG coi là bảo mật thật nếu
       chưa xác nhận có Firestore Security Rules tương ứng chặn ở tầng server.
-- [ ] `dangerouslySetInnerHTML` (nếu có) chỉ dùng với nội dung developer viết cứng, không
-      dùng trực tiếp với nội dung do người dùng nhập/lưu qua Firestore chưa sanitize (xem
-      phát hiện thật ở `StickerPrintPreview.tsx` phía trên — chưa xử lý, cần làm sau).
+- [x] `dangerouslySetInnerHTML` (nếu có) chỉ dùng với nội dung developer viết cứng, hoặc đã
+      qua `sanitizeTicketHtml()`/`dompurify` nếu là nội dung người dùng nhập/lưu qua Firestore
+      (đã vá `StickerPrintPreview.tsx` 2026-07-06, xem phía trên).

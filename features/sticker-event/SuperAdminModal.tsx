@@ -3,6 +3,7 @@ import { db } from './firebase';
 import { collection, query, where, getDocs, deleteDoc, doc, limit } from 'firebase/firestore';
 import { X, Search, Trash2, ShieldAlert, User as UserIcon } from 'lucide-react';
 import { Button } from '../../components/shared/ui/Button';
+import { getErrorMessage } from '../../utils/dataUtils';
 
 interface SuperAdminModalProps {
   isOpen: boolean;
@@ -47,7 +48,7 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
       if (snapshot.empty && trimmed) {
         setError('Không tìm thấy người dùng nào khớp với từ khóa.');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Search error:", err);
       setError('Lỗi khi tìm kiếm người dùng.');
     } finally {
@@ -76,10 +77,10 @@ const SuperAdminModal: React.FC<SuperAdminModalProps> = ({ isOpen, onClose }) =>
       const userDocRef = doc(db, 'users', userId);
       await deleteDoc(userDocRef);
       setUsers(prev => prev.filter(u => u.id !== userId));
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Delete error:", err);
       let displayError = 'Lỗi khi xóa người dùng.';
-      if (err.message && err.message.includes('permission')) {
+      if (getErrorMessage(err).includes('permission')) {
         displayError = 'Bạn không có quyền xóa người dùng này. Vui lòng kiểm tra lại quyền Super Admin.';
       }
       setError(displayError);

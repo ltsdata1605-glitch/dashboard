@@ -2,7 +2,7 @@ import { Product } from '../types';
 import { parseCurrency } from './fileParser';
 import toast from 'react-hot-toast';
 import QRCode from 'qrcode';
-import { fixOklchColors } from '../../../services/uiService';
+import { fixOklchColors } from './uiService';
 
 export interface ModernLayoutPositions {
   productName: { x: number; y: number; w: number; h: number };

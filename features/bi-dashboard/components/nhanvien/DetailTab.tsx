@@ -5,8 +5,8 @@ import ExportButton from '../ExportButton';
 import Card from '../Card';
 import { SpinnerIcon, ChevronDownIcon } from '../Icons';
 import { Search, ChevronRight, ChevronsUpDown, ChevronsDownUp } from 'lucide-react';
-import { exportElementAsImage, downloadBlob, shareBlob } from '../../../../services/uiService';
-import * as dbService from '../../../../services/dbService';
+import { exportElementAsImage, downloadBlob, shareBlob } from '../../services/uiService';
+import * as dbService from '../../services/dbService';
 import { Button } from '../../../../components/shared/ui/Button';
 
 const LEVEL_NUMBERS: Record<string, number> = {

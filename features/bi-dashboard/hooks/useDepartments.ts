@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { DepartmentInfo, Employee } from '../../../services/parsers/employeeParser';
+import { DepartmentInfo, Employee } from '../services/employeeParser';
 import { ManualDeptMapping } from '../types/nhanVienTypes';
 
 interface UseDepartmentsProps {

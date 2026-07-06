@@ -6,7 +6,7 @@ import Slider from './Slider';
 import { ManualDeptMapping } from '../types/nhanVienTypes';
 import { parseNumber, shortenSupermarketName } from '../utils/dashboardHelpers';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
-import { parseAllEmployees, parseDepartments, parseBaseTargetQuyDoi } from '../../../services/parsers/employeeParser';
+import { parseAllEmployees, parseDepartments, parseBaseTargetQuyDoi } from '../services/employeeParser';
 import { useDepartments } from '../hooks/useDepartments';
 import { Modal } from '../../../components/shared/ui/Modal';
 import { Button } from '../../../components/shared/ui/Button';

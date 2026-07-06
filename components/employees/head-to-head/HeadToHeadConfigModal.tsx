@@ -275,7 +275,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
         };
 
         if (tableType === 'data') {
-            newConfig.metricType = metricType as any;
+            newConfig.metricType = metricType;
             newConfig.filters = {
                 selectedIndustries,
                 selectedSubgroups,
@@ -292,7 +292,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                 showFeedback('error', 'Vui lòng nhập giá trị chỉ tiêu hợp lệ.');
                 return;
             }
-            newConfig.metricType = metricType as any;
+            newConfig.metricType = metricType;
             newConfig.targetValue = parsedTarget;
         } else { // calculated
             if (!operand1 || !operand2) {
@@ -423,13 +423,13 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                     <div className="pt-2">
                         {tableType === 'data' && (
                             <DataColumnForm 
-                                metricType={metricType as any} setMetricType={setMetricType as any}
+                                metricType={(metricType === 'quantity' || metricType === 'revenue' || metricType === 'revenueQD') ? metricType : 'revenue'} setMetricType={setMetricType}
                                 allIndustries={allIndustries} selectedIndustries={selectedIndustries} setSelectedIndustries={setSelectedIndustries}
                                 allSubgroups={allSubgroups} selectedSubgroups={selectedSubgroups} setSelectedSubgroups={setSelectedSubgroups}
                                 allManufacturers={allManufacturers} selectedManufacturers={selectedManufacturers} setSelectedManufacturers={setSelectedManufacturers}
                                 productCodes={productCodes} setProductCodes={setProductCodes}
                                 priceType={priceType} setPriceType={setPriceType}
-                                priceCondition={priceCondition as any} setPriceCondition={setPriceCondition as any}
+                                priceCondition={priceCondition} setPriceCondition={setPriceCondition}
                                 priceValue1={priceValue1} setPriceValue1={setPriceValue1}
                                 priceValue2={priceValue2} setPriceValue2={setPriceValue2}
                             />
@@ -438,7 +438,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                         {tableType === 'target' && (
                             <TargetColumnForm 
                                 metricType={(metricType === 'quantity' || metricType === 'revenue' || metricType === 'revenueQD') ? metricType : 'quantity'} 
-                                setMetricType={setMetricType as any}
+                                setMetricType={setMetricType}
                                 targetValue={targetValue} setTargetValue={setTargetValue}
                             />
                         )}
@@ -450,7 +450,7 @@ const HeadToHeadConfigModal: React.FC<ConfigModalProps> = ({
                                 operand2={operand2} setOperand2={setOperand2}
                                 displayAs={displayAs} setDisplayAs={setDisplayAs}
                                 decimalPlaces={decimalPlaces} setDecimalPlaces={setDecimalPlaces}
-                                availableOperands={availableOperands as any}
+                                availableOperands={availableOperands}
                             />
                         )}
                     </div>

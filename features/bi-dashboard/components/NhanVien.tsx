@@ -9,7 +9,7 @@ import CrossSellingTab from './nhanvien/CrossSellingTab';
 import DetailTab from './nhanvien/DetailTab';
 import { shortenSupermarketName, parseNumber } from '../utils/dashboardHelpers';
 import { Switch } from './dashboard/DashboardWidgets';
-import { useExportOptions } from '../../../hooks/useExportOptions';
+import { useExportOptions } from '../hooks/useExportOptions';
 import ExportOptionsModal from '../../../components/common/ExportOptionsModal';
 import { ExportOptionsProvider } from '../contexts/ExportOptionsContext';
 import { useNhanVienData } from '../hooks/useNhanVienData';
@@ -17,7 +17,7 @@ import { useIndexedDBState } from '../hooks/useIndexedDBState';
 import { ConfirmDialog } from '../../../components/shared/ui/ConfirmDialog';
 import { parseCompetitionData } from '../utils/nhanVienHelpers';
 import * as db from '../utils/db';
-import { parseBaseTargetQuyDoi, parseEmployeeCompetitionTargets } from '../../../services/parsers/employeeParser';
+import { parseBaseTargetQuyDoi, parseEmployeeCompetitionTargets } from '../services/employeeParser';
 import { Button } from '../../../components/shared/ui/Button';
 const NavTabButton: React.FC<{ tab: Tab; children: React.ReactNode; activeTab: Tab; setActiveTab: (t: Tab) => void; icon?: React.ReactNode; }> = React.memo(({ tab, children, activeTab, setActiveTab }) => (
     <Button
